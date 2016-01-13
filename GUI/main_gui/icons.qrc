@@ -1,0 +1,41 @@
+<RCC>
+  <qresource prefix="file">
+    <file>stochastic_power_flow.svg</file>
+    <file>timeseriesicon.png</file>
+    <file>plot_gridA2.svg</file>
+    <file>plot_gridB2.svg</file>
+    <file>ic_add_circle_black_48dp.png</file>
+    <file>ic_remove_circle_black_48dp.png</file>
+    <file>ic_extension_black_48dp.png</file>
+    <file>ic_group_work_black_48dp.png</file>
+    <file>ic_polymer_black_48dp.png</file>
+    <file>ic_settings_black_48dp.png</file>
+    <file>node_add.svg</file>
+    <file>node_del.svg</file>
+    <file>branch_del.svg</file>
+    <file>branch_add.svg</file>
+    <file>ic_trending_down_black_48dp.png</file>
+    <file>ic_memory_black_48dp.png</file>
+    <file>ic_file_download_black_48dp.png</file>
+    <file>ic_file_upload_black_48dp.png</file>
+    <file>ic_content_copy_black_48dp.png</file>
+    <file>ic_clear_black_48dp.png</file>
+    <file>ic_add_black_48dp.png</file>
+    <file>ic_remove_black_48dp.png</file>
+    <file>ic_content_cut_black_48dp.png</file>
+    <file>ic_content_paste_black_48dp.png</file>
+    <file>ic_border_all_black_48dp.png</file>
+    <file>ic_autorenew_black_48dp.png</file>
+    <file>ic_insert_drive_file_black_48dp.png</file>
+    <file>ic_insert_photo_black_48dp.png</file>
+    <file>ic_mode_edit_black_48dp.png</file>
+    <file>ic_vertical_align_bottom_black_48dp.png</file>
+    <file>grid_icon.svg</file>
+    <file>ic_publish_black_48dp.png</file>
+    <file>ic_insert_chart_black_48dp.png</file>
+    <file>ic_description_black_48dp.png</file>
+  </qresource>
+  <qresource prefix="Program">
+    <file>GridCal_icon.svg</file>
+  </qresource>
+</RCC>

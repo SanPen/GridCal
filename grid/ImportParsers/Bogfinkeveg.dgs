@@ -1,0 +1,1744 @@
+********************************************************************************
+*
+* DIgSILENT (R) DGS Export V1.5.4
+* Copyright (C) DIgSILENT GmbH 2015. All rights reserved.
+*
+* DIgSILENT (C) PowerFactory V15.2.4
+*
+* Date:     10/06/2015 14:27
+* Project:  BOg_simple(2) (Study Case: Study Case)
+*
+********************************************************************************
+
+
+$$General;ID(a:40);Descr(a:40);Val(a:40)
+********************************************************************************
+*  General Information
+*
+*  ID: Unique identifier for DGS file
+*  Descr: Setting
+*  Val: Value
+********************************************************************************
+  1;Version;5.0
+
+
+$$ElmFeeder;ID(a:40);loc_name(a:40);fold_id(p);obj_id(p);iorient(i);i_scale(i);Iset(r);icolor(i);outserv(i)
+********************************************************************************
+*  Feeder
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  obj_id: Cubicle in StaCubic*
+*  iorient: Orientation:--> Branch:--> Busbar
+*  i_scale: Load Scaling: Scaling Factor
+*  Iset: Load Scaling: Current in kA
+*  icolor: Colour
+*  outserv: Out of Service
+********************************************************************************
+  2;732_LV_line_732_LV_14383_LV;;1126;0;0;0;13;0
+  3;732_LV_line_732_LV_8688_LV;;1125;0;0;0;12;0
+  4;732_LV_line_8693_LV_732_LV;;1124;0;0;0;5;0
+  5;732_LV_line_8694_LV_732_LV;;1123;0;0;0;4;0
+
+
+$$ElmGenstat;ID(a:40);loc_name(a:40);fold_id(p);bus1(p);outserv(i);sgn(r);cosn(r);ngnum(i);pgini(r);qgini(r);av_mode(a);ip_ctrl(i)
+********************************************************************************
+*  Static Generator
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  bus1: Terminal in StaCubic
+*  outserv: Out of Service
+*  sgn: Ratings: Nominal Apparent Power in MVA
+*  cosn: Ratings: Power Factor
+*  ngnum: Number of: parallel Machines
+*  pgini: Dispatch: Active Power in MW
+*  qgini: Dispatch: Reactive Power in Mvar
+*  av_mode: Local Controller
+*  ip_ctrl: Reference Machine
+********************************************************************************
+  6;10311_LV_PV;234;893;0;0.01;1;1;0;0;cpchar;0
+  7;12681_LV_PV;234;897;0;0.01;1;1;0;0;cpchar;0
+  8;13141_LV_PV;234;902;0;0.01;1;1;0;0;cpchar;0
+  9;13148_LV_PV;234;908;0;0.01;1;1;0;0;cpchar;0
+  10;13904_LV_PV;234;914;0;0.01;1;1;0;0;cpchar;0
+  11;13905_LV_PV;234;918;0;0.01;1;1;0;0;cpchar;0
+  12;13906_LV_PV;234;923;0;0.01;1;1;0;0;cpchar;0
+  13;13907_LV_PV;234;928;0;0.01;1;1;0;0;cpchar;0
+  14;13908_LV_PV;234;932;0;0.01;1;1;0;0;cpchar;0
+  15;13909_LV_PV;234;937;0;0.01;1;1;0;0;cpchar;0
+  16;13910_LV_PV;234;942;0;0.01;1;1;0;0;cpchar;0
+  17;13911_LV_PV;234;946;0;0.01;1;1;0;0;cpchar;0
+  18;13912_LV_PV;234;951;0;0.01;1;1;0;0;cpchar;0
+  19;13913_LV_PV;234;956;0;0.01;1;1;0;0;cpchar;0
+  20;13914_LV_PV;234;960;0;0.01;1;1;0;0;cpchar;0
+  21;13915_LV_PV;234;965;0;0.01;1;1;0;0;cpchar;0
+  22;13916_LV_PV;234;969;0;0.01;1;1;0;0;cpchar;0
+  23;13917_LV_PV;234;974;0;0.01;1;1;0;0;cpchar;0
+  24;13918_LV_PV;234;979;0;0.01;1;1;0;0;cpchar;0
+  25;13919_LV_PV;234;984;0;0.01;1;1;0;0;cpchar;0
+  26;13920_LV_PV;234;988;0;0.01;1;1;0;0;cpchar;0
+  27;14321_LV_PV;234;993;0;0.01;1;1;0;0;cpchar;0
+  28;14322_LV_PV;234;997;0;0.01;1;1;0;0;cpchar;0
+  29;14323_LV_PV;234;1001;0;0.01;1;1;0;0;cpchar;0
+  30;14324_LV_PV;234;1007;0;0.01;1;1;0;0;cpchar;0
+  31;14325_LV_PV;234;1011;0;0.01;1;1;0;0;cpchar;0
+  32;14326_LV_PV;234;1016;0;0.01;1;1;0;0;cpchar;0
+  33;14327_LV_PV;234;1021;0;0.01;1;1;0;0;cpchar;0
+  34;14328_LV_PV;234;1025;0;0.01;1;1;0;0;cpchar;0
+  35;14329_LV_PV;234;1031;0;0.01;1;1;0;0;cpchar;0
+  36;14330_LV_PV;234;1035;0;0.01;1;1;0;0;cpchar;0
+  37;14331_LV_PV;234;1040;0;0.01;1;1;0;0;cpchar;0
+  38;14333_LV_PV;234;1049;0;0.01;1;1;0;0;cpchar;0
+  39;14334_LV_PV;234;1056;0;0.01;1;1;0;0;cpchar;0
+  40;14335_LV_PV;234;1060;0;0.01;1;1;0;0;cpchar;0
+  41;14336_LV_PV;234;1066;0;0.01;1;1;0;0;cpchar;0
+  42;14337_LV_PV;234;1071;0;0.01;1;1;0;0;cpchar;0
+  43;14338_LV_PV;234;1076;0;0.01;1;1;0;0;cpchar;0
+  44;14339_LV_PV;234;1080;0;0.01;1;1;0;0;cpchar;0
+  45;14340_LV_PV;234;1086;0;0.01;1;1;0;0;cpchar;0
+  46;14381_LV_PV;234;1090;0;0.01;1;1;0;0;cpchar;0
+  47;14382_LV_PV;234;1095;0;0.01;1;1;0;0;cpchar;0
+  48;14383_LV_PV;234;1101;0;0.01;1;1;0;0;cpchar;0
+  49;14384_LV_PV;234;1105;0;0.01;1;1;0;0;cpchar;0
+  50;14385_LV_PV;234;1110;0;0.01;1;1;0;0;cpchar;0
+  51;14386_PV_LV;234;1115;0;0.01;1;1;0;0;cpchar;0
+  52;14387_LV_PV;234;1120;0;0.01;1;1;0;0;cpchar;0
+  53;8685_LV_PV;234;1155;0;0.01;1;1;0;0;cpchar;0
+  54;8686_LV_PV;234;1160;0;0.01;1;1;0;0;cpchar;0
+  55;8687_LV_PV;234;1166;0;0.01;1;1;0;0;cpchar;0
+  56;8688_LV_PV;234;1172;0;0.01;1;1;0;0;cpchar;0
+
+
+$$ElmLne;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);dline(r);chr_name(a:20)
+********************************************************************************
+*  Line
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypLne,TypTow,TypGeo,TypCabsys
+*  dline: Parameters: Length of Line in km
+*  chr_name: Characteristic Name
+********************************************************************************
+  57;line_10311_LV_8692_LV;234;1451;0.06707;
+  58;line_12681_LV_8683_LV;234;1451;0.03728;
+  59;line_13148_LV_14333_LV;234;1451;0.02218;
+  60;line_13904_LV_13905_LV;234;1451;0.03825;
+  61;line_13904_LV_8694_LV;234;1451;0.02252;
+  62;line_13906_LV_13904_LV;234;1451;0.05763;
+  63;line_13907_LV_13906_LV;234;1451;0.03387;
+  64;line_13908_LV_13907_LV;234;1451;0.05435;
+  65;line_13909_LV_8694_LV;234;1451;0.10152;
+  66;line_13910_LV_13909_LV;234;1451;0.05472;
+  67;line_13911_LV_13910_LV;234;1451;0.0804;
+  68;line_13912_LV_8693_LV;234;1451;0.03283;
+  69;line_13913_LV_13912_LV;234;1452;0.02901;
+  70;line_13914_LV_13913_LV;234;1452;0.03058;
+  71;line_13915_LV_8693_LV;234;1451;0.07138;
+  72;line_13916_LV_13915_LV;234;1451;0.03402;
+  73;line_13917_LV_8693_LV;234;1452;0.07686;
+  74;line_13918_LV_8692_LV;234;1451;0.01772;
+  75;line_13919_LV_13918_LV;234;1451;0.03413;
+  76;line_13920_LV_13919_LV;234;1451;0.02596;
+  77;line_14321_LV_10311_LV;234;1451;0.03081;
+  78;line_14322_LV_14321_LV;234;1452;0.0177;
+  79;line_14324_LV_14326_LV;234;1451;0.04261;
+  80;line_14325_LV_8689_LV;234;1451;0.03691;
+  81;line_14328_LV_14327_LV;234;1451;0.03557;
+  82;line_14329_LV_8687_LV;234;1452;0.02974;
+  83;line_14332_LV_8686_LV;234;1452;0.02992;
+  84;line_14334_LV_14335_LV;234;1451;0.02871;
+  85;line_14334_LV_8685_LV;234;1451;0.04989;
+  86;line_14336_LV_14334_LV;234;1451;0.04055;
+  87;line_14337_LV_14336_LV;234;1452;0.02722;
+  88;line_14337_LV_14338_LV;234;1451;0.03835;
+  89;line_14338_LV_14339_LV;234;1451;0.01731;
+  90;line_14340_LV_14382_LV;234;1451;0.04076;
+  91;line_14381_LV_8684_LV;234;1451;0.03711;
+  92;line_14383_LV_8682_LV;234;1451;0.03445;
+  93;line_14386_LV_8681_LV;234;1451;0.03613;
+  94;line_14387_LV_8681_LV;234;1451;0.03001;
+  95;line_732_LV_14383_LV;234;1453;0.21232;
+  96;line_732_LV_8688_LV;234;1453;0.0287;
+  97;line_8681_LV_14385_LV;234;1451;0.04456;
+  98;line_8681_LV_8683_LV;234;1451;0.06053;
+  99;line_8682_LV_13141_LV;234;1451;0.04462;
+  100;line_8682_LV_8684_LV;234;1451;0.06178;
+  101;line_8683_LV_14384_LV;234;1451;0.0392;
+  102;line_8683_LV_8682_LV;234;1451;0.0642;
+  103;line_8684_LV_14340_LV;234;1451;0.00958;
+  104;line_8685_LV_13148_LV;234;1451;0.03012;
+  105;line_8685_LV_14332_LV;234;1452;0.02691;
+  106;line_8686_LV_14329_LV;234;1452;0.03738;
+  107;line_8686_LV_14332_LV;234;1451;0.04971;
+  108;line_8687_LV_14330_LV;234;1451;0.046;
+  109;line_8687_LV_8691_LV;234;1452;0.01969;
+  110;line_8688_LV_14327_LV_PQ;234;1451;1;
+  111;line_8688_LV_8691_LV;234;1453;0.03698;
+  112;line_8689_LV_14324_LV;234;1451;0.034;
+  113;line_8690_LV_14323_LV;234;1451;0.04652;
+  114;line_8690_LV_8689_LV;234;1451;0.02663;
+  115;line_8691_LV_8690_LV;234;1451;0.03895;
+  116;line_8692_LV_13917_LV;234;1452;0.04475;
+  117;line_8693_LV_732_LV;234;1452;0.14461;
+  118;line_8694_LV_732_LV;234;1451;0.02644;
+
+
+$$ElmLod;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);chr_name(a:20);plini(r);qlini(r);scale0(r)
+********************************************************************************
+*  General Load
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypLod,TypLodind
+*  chr_name: Characteristic Name
+*  plini: Operating Point: Active Power in MW
+*  qlini: Operating Point: Reactive Power in Mvar
+*  scale0: Operating Point: Scaling Factor
+********************************************************************************
+  119;#BAT_PLATOS121668;234;;;0;0;1
+  120;#BAT_PLATOS124970;234;;;0;0;1
+  121;#BAT_PLATOS134876;234;;;0;0;1
+  122;#BAT_PLATOS13689;234;;;0;0;1
+  123;#BAT_PLATOS16991;234;;;0;0;1
+  124;#BAT_PLATOS183913;234;;;0;0;1
+  125;#BAT_PLATOS190517;234;;;0;0;1
+  126;#BAT_PLATOS193819;234;;;0;0;1
+  127;#BAT_PLATOS208874;234;;;0;0;1
+  128;#BAT_PLATOS212176;234;;;0;0;1
+  129;#BAT_PLATOS218780;234;;;0;0;1
+  130;#BAT_PLATOS222082;234;;;0;0;1
+  131;#BAT_PLATOS264514;234;;;0;0;1
+  132;#BAT_PLATOS320155;234;;;0;0;1
+  133;#BAT_PLATOS323457;234;;;0;0;1
+  134;#BAT_PLATOS379098;234;;;0;0;1
+  135;#BAT_PLATOS385702;234;;;0;0;1
+  136;#BAT_PLATOS389004;234;;;0;0;1
+  137;#BAT_PLATOS434739;234;;;0;0;1
+  138;#BAT_PLATOS438041;234;;;0;0;1
+  139;#BAT_PLATOS441343;234;;;0;0;1
+  140;#BAT_PLATOS444645;234;;;0;0;1
+  141;#BAT_PLATOS459699;234;;;0;0;1
+  142;#BAT_PLATOS472907;234;;;0;0;1
+  143;#BAT_PLATOS515340;234;;;0;0;1
+  144;#BAT_PLATOS518642;234;;;0;0;1
+  145;#BAT_PLATOS570981;234;;;0;0;1
+  146;#BAT_PLATOS574283;234;;;0;0;1
+  147;#BAT_PLATOS577585;234;;;0;0;1
+  148;#BAT_PLATOS584189;234;;;0;0;1
+  149;#BAT_PLATOS626621;234;;;0;0;1
+  150;#BAT_PLATOS629923;234;;;0;0;1
+  151;#BAT_PLATOS633225;234;;;0;0;1
+  152;#BAT_PLATOS636527;234;;;0;0;1
+  153;#BAT_PLATOS639829;234;;;0;0;1
+  154;#BAT_PLATOS685564;234;;;0;0;1
+  155;#BAT_PLATOS688866;234;;;0;0;1
+  156;#BAT_PLATOS692168;234;;;0;0;1
+  157;#BAT_PLATOS69330;234;;;0;0;1
+  158;#BAT_PLATOS695470;234;;;0;0;1
+  159;#BAT_PLATOS723733;234;;;0;0;1
+  160;#BAT_PLATOS727035;234;;;0;0;1
+  161;#BAT_PLATOS75934;234;;;0;0;1
+  162;#BAT_PLATOS766165;234;;;0;0;1
+  163;#BAT_PLATOS769467;234;;;0;0;1
+  164;#BAT_PLATOS772769;234;;;0;0;1
+  165;#BAT_PLATOS779373;234;;;0;0;1
+  166;#BAT_PLATOS79236;234;;;0;0;1
+  167;#BAT_PLATOS818504;234;;;0;0;1
+  168;#BAT_PLATOS821806;234;;;0;0;1
+  169;#BAT_PLATOS825108;234;;;0;0;1
+  170;#BAT_PLATOS828410;234;;;0;0;1
+  171;#BAT_PLATOS835014;234;;;0;0;1
+  172;#BAT_PLATOS874145;234;;;0;0;1
+  173;#BAT_PLATOS877447;234;;;0;0;1
+  174;#BAT_PLATOS880749;234;;;0;0;1
+  175;#BAT_PLATOS884051;234;;;0;0;1
+  176;#BAT_PLATOS887353;234;;;0;0;1
+  177;#BAT_PLATOS890655;234;;;0;0;1
+  178;#BAT_PLATOS939692;234;;;0;0;1
+  179;#BAT_PLATOS946296;234;;;0;0;1
+  180;#BAT_PLATOS964652;234;;;0;0;1
+  181;#BAT_PLATOS967954;234;;;0;0;1
+  182;#BAT_PLATOS971256;234;;;0;0;1
+  183;10311_LV_PQ;234;;;0;0;1
+  184;12681_LV_PQ;234;;;0;0;1
+  185;13141_LV_PQ;234;;;0;0;1
+  186;13148_LV_PQ;234;;;-0.00067;0;1
+  187;13904_LV_PQ;234;;;0;0;1
+  188;13905_LV_PQ;234;;;0;0;1
+  189;13906_LV_PQ;234;;;-0.00166;0;1
+  190;13907_LV_PQ;234;;;0;0;1
+  191;13908_LV_PQ;234;;;0;0;1
+  192;13909_LV_PQ;234;;;-0.00179;0;1
+  193;13910_LV_PQ;234;;;0;0;1
+  194;13911_LV_PQ;234;;;0;0;1
+  195;13912_LV_PQ;234;;;0;0;1
+  196;13913_LV_PQ;234;;;-0.00059;0;1
+  197;13914_LV_PQ;234;;;0;0;1
+  198;13915_LV_PQ;234;;;0;0;1
+  199;13916_LV_PQ;234;;;0;0;1
+  200;13917_LV_PQ;234;;;0;0;1
+  201;13918_LV_PQ;234;;;-0.00049;0;1
+  202;13919_LV_PQ;234;;;0;0;1
+  203;13920_LV_PQ;234;;;0;0;1
+  204;14321_LV_PQ;234;;;0;0;1
+  205;14322_LV_PQ;234;;;0;0;1
+  206;14323_LV_PQ;234;;;0;0;1
+  207;14324_LV_PQ;234;;;0;0;1
+  208;14325_LV_PQ;234;;;0;0;1
+  209;14326_LV_PQ;234;;;-0.00193;0;1
+  210;14327_LV_PQ;234;;;0;0;1
+  211;14328_LV_PQ;234;;;0;0;1
+  212;14329_LV_PQ;234;;;0;0;1
+  213;14330_LV_PQ;234;;;0;0;1
+  214;14331_LV_PQ;234;;;0;0;1
+  215;14333_LV_PQ;234;;;0;0;1
+  216;14334_LV_PQ;234;;;-0.00035;0;1
+  217;14335_LV_PQ;234;;;-0.00041;0;1
+  218;14336_LV_PQ;234;;;0;0;1
+  219;14337_LV_PQ;234;;;0;0;1
+  220;14338_LV_PQ;234;;;0;0;1
+  221;14339_LV_PQ;234;;;0;0;1
+  222;14340_LV_PQ;234;;;0;-0;1
+  223;14381_LV_PQ;234;;;0;0;1
+  224;14382_LV_PQ;234;;;0;0;1
+  225;14383_LV_PQ;234;;;-0.00112;0;1
+  226;14384_LV_PQ;234;;;-0.00086;0;1
+  227;14385_LV_PQ;234;;;-0.0018;0;1
+  228;14386_LV_PQ;234;;;-0.00111;0;1
+  229;14387_LV_PQ;234;;;-0.00203;0;1
+  230;8685_LV_PQ;234;;;-0.00032;0;1
+  231;8686_LV_PQ;234;;;-0.00049;0;1
+  232;8687_LV_PQ;234;;;-0.00023;0;1
+  233;8688_LV_PQ;234;;;-0.00176;0;1
+
+
+$$ElmNet;ID(a:40);loc_name(a:40);fold_id(p);frnom(r)
+********************************************************************************
+*  Grid
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  frnom: Nominal Frequency in Hz
+********************************************************************************
+  234;bogfin_sld;;50
+
+
+$$ElmTerm;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);iUsage(i);uknom(r);chr_name(a:20);outserv(i)
+********************************************************************************
+*  Terminal
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypBar
+*  iUsage: Usage:Busbar:Junction Node:Internal Node
+*  uknom: Nominal Voltage: Line-Line in kV
+*  chr_name: Characteristic Name
+*  outserv: Out of Service
+********************************************************************************
+  235;10311_LV;234;;0;0.4;;0
+  236;12681_LV;234;;0;0.4;;0
+  237;13141_LV;234;;0;0.4;;0
+  238;13148_LV;234;;0;0.4;;0
+  239;13904_LV;234;;0;0.4;;0
+  240;13905_LV;234;;0;0.4;;0
+  241;13906_LV;234;;0;0.4;;0
+  242;13907_LV;234;;0;0.4;;0
+  243;13908_LV;234;;0;0.4;;0
+  244;13909_LV;234;;0;0.4;;0
+  245;13910_LV;234;;0;0.4;;0
+  246;13911_LV;234;;0;0.4;;0
+  247;13912_LV;234;;0;0.4;;0
+  248;13913_LV;234;;0;0.4;;0
+  249;13914_LV;234;;0;0.4;;0
+  250;13915_LV;234;;0;0.4;;0
+  251;13916_LV;234;;0;0.4;;0
+  252;13917_LV;234;;0;0.4;;0
+  253;13918_LV;234;;0;0.4;;0
+  254;13919_LV;234;;0;0.4;;0
+  255;13920_LV;234;;0;0.4;;0
+  256;14321_LV;234;;0;0.4;;0
+  257;14322_LV;234;;0;0.4;;0
+  258;14323_LV;234;;0;0.4;;0
+  259;14324_LV;234;;0;0.4;;0
+  260;14325_LV;234;;0;0.4;;0
+  261;14326_LV;234;;0;0.4;;0
+  262;14327_LV;234;;0;0.4;;0
+  263;14328_LV;234;;0;0.4;;0
+  264;14329_LV;234;;0;0.4;;0
+  265;14330_LV;234;;0;0.4;;0
+  266;14331_LV;234;;0;0.4;;0
+  267;14332_LV;234;;0;0.4;;0
+  268;14333_LV;234;;0;0.4;;0
+  269;14334_LV;234;;0;0.4;;0
+  270;14335_LV;234;;0;0.4;;0
+  271;14336_LV;234;;0;0.4;;0
+  272;14337_LV;234;;0;0.4;;0
+  273;14338_LV;234;;0;0.4;;0
+  274;14339_LV;234;;0;0.4;;0
+  275;14340_LV;234;;0;0.4;;0
+  276;14381_LV;234;;0;0.4;;0
+  277;14382_LV;234;;0;0.4;;0
+  278;14383_LV;234;;0;0.4;;0
+  279;14384_LV;234;;0;0.4;;0
+  280;14385_LV;234;;0;0.4;;0
+  281;14386_LV;234;;0;0.4;;0
+  282;14387_LV;234;;0;0.4;;0
+  283;732_LV;234;;0;0.4;;0
+  284;732_MV;234;;0;20;;0
+  285;8681_LV;234;;0;0.4;;0
+  286;8682_LV;234;;0;0.4;;0
+  287;8683_LV;234;;0;0.4;;0
+  288;8684_LV;234;;0;0.4;;0
+  289;8685_LV;234;;0;0.4;;0
+  290;8686_LV;234;;0;0.4;;0
+  291;8687_LV;234;;0;0.4;;0
+  292;8688_LV;234;;0;0.4;;0
+  293;8689_LV;234;;0;0.4;;0
+  294;8690_LV;234;;0;0.4;;0
+  295;8691_LV;234;;0;0.4;;0
+  296;8692_LV;234;;0;0.4;;0
+  297;8693_LV;234;;0;0.4;;0
+  298;8694_LV;234;;0;0.4;;0
+
+
+$$ElmTr2;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);outserv(i);nntap(i);sernum(a:20);constr(i);chr_name(a:20)
+********************************************************************************
+*  2-Winding Transformer
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypTr2
+*  outserv: Out of Service
+*  nntap: Tap Changer 1: Tap Position
+*  sernum: Serial Number
+*  constr: Year of Construction
+*  chr_name: Characteristic Name
+********************************************************************************
+  299;t_GEAFOL_250;234;1455;0;0;;0;
+
+
+$$ElmXnet;ID(a:40);loc_name(a:40);fold_id(p);outserv(i);snss(r);rntxn(r);z2tz1(r);snssmin(r);rntxnmin(r);z2tz1min(r);chr_name(a:20);bustp(a:2);pgini(r);qgini(r);phiini(r);usetp(r)
+********************************************************************************
+*  External Grid
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  outserv: Out of Service
+*  snss: Max. Values: Short-Circuit Power Sk''max in MVA
+*  rntxn: Max. Values: R/X Ratio (max.)
+*  z2tz1: Max. Values Impedance Ratio: Z2/Z1 max.
+*  snssmin: Min. Values: Short-Circuit Power Sk''min in MVA
+*  rntxnmin: Min. Values: R/X Ratio (min.)
+*  z2tz1min: Min. Values Impedance Ratio: Z2/Z1 min.
+*  chr_name: Characteristic Name
+*  bustp: Bus Type:PQ:PV:SL
+*  pgini: Operation Point: Active Power in MW
+*  qgini: Operation Point: Reactive Power in Mvar
+*  phiini: Operation Point: Angle in deg
+*  usetp: Operation Point: Voltage Setpoint in p.u.
+********************************************************************************
+  300;732_MV(1);234;0;10000;0.1;1;8000;0.1;1;;SL;0;0;0;1
+
+
+$$IntGrf;ID(a:40);loc_name(a:40);fold_id(p);iCol(i);iVis(i);iLevel(i);rCenterX(r);rCenterY(r);sSymNam(a:40);pDataObj(p);iRot(i);rSizeX(r);rSizeY(r)
+********************************************************************************
+*  Graphical Net Object
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  iCol: Colour
+*  iVis: Visible
+*  iLevel: Layer
+*  rCenterX: X-Position
+*  rCenterY: Y-Position
+*  sSymNam: Symbol Name
+*  pDataObj: Net Data Object in Elm*,Sta*,Blk*,RelFuse,IntGrfnet
+*  iRot: Rotation
+*  rSizeX: X-Size
+*  rSizeY: Y-Size
+********************************************************************************
+  301;ColLeg;889;1;1;1;618.235;172.3157;__COLGRAF__;;0;0.6;0.6
+  302;Graphical Net Object100;889;1;1;1;608.125;393.75;d_lin;88;90;1;1
+  303;Graphical Net Object101;889;1;1;1;546.875;367.5;d_lin;84;0;1;1
+  304;Graphical Net Object102;889;1;1;1;634.375;393.75;d_lin;89;90;1;1
+  305;Graphical Net Object117;889;1;1;1;269.0625;503.125;d_lin;95;90;1;1
+  306;Graphical Net Object118;889;1;1;1;297.5;503.125;d_lin;92;90;1;1
+  307;Graphical Net Object119;889;1;1;1;323.75;531.5625;d_lin;99;180;1;1
+  308;Graphical Net Object121;889;1;1;1;336.875;463.75;d_lin;91;0;1;1
+  309;Graphical Net Object122;889;1;1;1;347.8125;490;d_lin;103;90;1;1
+  310;Graphical Net Object123;889;1;1;1;378.4375;485.625;d_lin;90;90;1;1
+  311;Graphical Net Object124;889;1;1;1;369.6875;507.5;d_lin;102;90;1;1
+  312;Graphical Net Object125;889;1;1;1;446.25;531.5625;d_lin;101;180;1;1
+  313;Graphical Net Object126;889;1;1;1;446.25;485.625;d_lin;58;0;1;1
+  314;Graphical Net Object127;889;1;1;1;472.5;507.5;d_lin;98;90;1;1
+  315;Graphical Net Object128;889;1;1;1;538.1249;533.7501;d_lin;97;180;1;1
+  316;Graphical Net Object129;889;1;1;1;538.1249;483.4375;d_lin;93;0;1;1
+  317;Graphical Net Object130;889;1;1;1;555.6251;507.5;d_lin;94;90;1;1
+  318;Graphical Net Object131(1);889;1;1;1;402.5;310.625;d_load;183;180;1;1
+  319;Graphical Net Object131;889;1;1;1;319.375;490;d_lin;100;0;1;1
+  320;Graphical Net Object132;889;1;1;1;481.2501;472.5;d_load;184;90;1;1
+  321;Graphical Net Object133;889;1;1;1;354.375;525.0001;d_load;185;90;1;1
+  322;Graphical Net Object134;889;1;1;1;538.1251;433.125;d_load;186;90;1;1
+  323;Graphical Net Object135;889;1;1;1;350;161.875;d_load;187;180;1;1
+  324;Graphical Net Object136;889;1;1;1;376.25;113.75;d_load;188;0;1;1
+  325;Graphical Net Object137;889;1;1;1;389.375;161.875;d_load;189;180;1;1
+  326;Graphical Net Object138;889;1;1;1;455;161.875;d_load;190;180;1;1
+  327;Graphical Net Object139;889;1;1;1;494.3751;161.875;d_load;191;180;1;1
+  328;Graphical Net Object140;889;1;1;1;345.625;183.75;d_load;192;180;1;1
+  329;Graphical Net Object141;889;1;1;1;406.875;183.75;d_load;193;180;1;1
+  330;Graphical Net Object142;889;1;1;1;446.25;183.75;d_load;194;180;1;1
+  331;Graphical Net Object143;889;1;1;1;284.375;218.75;d_load;195;0;1;1
+  332;Graphical Net Object144;889;1;1;1;328.125;218.75;d_load;196;0;1;1
+  333;Graphical Net Object145;889;1;1;1;380.625;223.125;d_load;197;0;1;1
+  334;Graphical Net Object146;889;1;1;1;275.625;240.625;d_load;198;0;1;1
+  335;Graphical Net Object147;889;1;1;1;332.5;240.625;d_load;199;0;1;1
+  336;Graphical Net Object149;889;1;1;1;406.875;253.75;d_load;201;0;1;1
+  337;Graphical Net Object151(1);889;1;1;1;468.125;253.75;d_load;202;0;1;1
+  338;Graphical Net Object151;889;1;1;1;516.2501;253.75;d_load;203;0;1;1
+  339;Graphical Net Object152;889;1;1;1;459.375;310.625;d_load;204;180;1;1
+  340;Graphical Net Object153;889;1;1;1;516.2501;310.625;d_load;205;180;1;1
+  341;Graphical Net Object154;889;1;1;1;363.125;341.25;d_load;206;270;1;1
+  342;Graphical Net Object155;889;1;1;1;424.375;371.875;d_load;207;270;1;1
+  343;Graphical Net Object156;889;1;1;1;402.5;345.625;d_load;208;270;1;1
+  344;Graphical Net Object157;889;1;1;1;468.125;363.125;d_load;209;270;1;1
+  345;Graphical Net Object158;889;1;1;1;284.375;415.625;d_load;210;270;1;1
+  346;Graphical Net Object16;889;1;1;1;288.7499;153.125;d_lin;118;90;1;1
+  347;Graphical Net Object160;889;1;1;1;380.625;402.5;d_load;212;270;1;1
+  348;Graphical Net Object161;889;1;1;1;354.375;415.625;d_load;213;90;1;1
+  349;Graphical Net Object162;889;1;1;1;411.25;411.25;d_load;214;270;1;1
+  350;Graphical Net Object164;889;1;1;1;568.7501;441.875;d_load;215;90;1;1
+  351;Graphical Net Object165;889;1;1;1;525;389.375;d_load;216;270;1;1
+  352;Graphical Net Object166;889;1;1;1;573.125;358.75;d_load;217;90;1;1
+  353;Graphical Net Object167;889;1;1;1;551.25;406.875;d_load;218;270;1;1
+  354;Graphical Net Object168;889;1;1;1;577.5001;406.875;d_load;219;270;1;1
+  355;Graphical Net Object169;889;1;1;1;603.7501;406.875;d_load;220;270;1;1
+  356;Graphical Net Object17;889;1;1;1;334.6875;148.75;d_lin;61;90;1;1
+  357;Graphical Net Object170;889;1;1;1;630;406.875;d_load;221;270;1;1
+  358;Graphical Net Object171;889;1;1;1;350;481.25;d_load;222;270;1;1
+  359;Graphical Net Object172;889;1;1;1;363.1251;455;d_load;223;90;1;1
+  360;Graphical Net Object173;889;1;1;1;411.25;468.125;d_load;224;90;1;1
+  361;Graphical Net Object174;889;1;1;1;266.875;494.375;d_load;225;270;1;1
+  362;Graphical Net Object175;889;1;1;1;481.2501;529.375;d_load;226;90;1;1
+  363;Graphical Net Object176;889;1;1;1;573.125;529.375;d_load;227;90;1;1
+  364;Graphical Net Object177;889;1;1;1;573.125;476.875;d_load;228;90;1;1
+  365;Graphical Net Object178;889;1;1;1;608.125;520.625;d_load;229;90;1;1
+  366;Graphical Net Object179;889;1;1;1;568.7501;450.625;d_genstat;38;90;1;1
+  367;Graphical Net Object18;889;1;1;1;356.5625;140;d_lin;60;90;1;1
+  368;Graphical Net Object180;889;1;1;1;529.375;310.625;d_genstat;28;180;1;1
+  369;Graphical Net Object181;889;1;1;1;472.5;310.625;d_genstat;27;180;1;1
+  370;Graphical Net Object182;889;1;1;1;529.375;249.375;d_genstat;26;0;1;1
+  371;Graphical Net Object183;889;1;1;1;455;249.375;d_genstat;25;0;1;1
+  372;Graphical Net Object184(1);889;1;1;1;310.625;271.25;d_load;200;270;1;1
+  373;Graphical Net Object184;889;1;1;1;420;249.375;d_genstat;24;0;1;1
+  374;Graphical Net Object185;889;1;1;1;310.625;266.875;d_genstat;23;270;1;1
+  375;Graphical Net Object187(1);889;1;1;1;319.375;249.375;d_genstat;19;180;1;1
+  376;Graphical Net Object187;889;1;1;1;271.25;218.75;d_genstat;18;0;1;1
+  377;Graphical Net Object188;889;1;1;1;376.25;249.375;d_genstat;20;180;1;1
+  378;Graphical Net Object189;889;1;1;1;463.75;183.75;d_genstat;17;180;1;1
+  379;Graphical Net Object19;889;1;1;1;374.0625;144.375;d_lin;62;90;1;1
+  380;Graphical Net Object190;889;1;1;1;393.75;183.75;d_genstat;16;180;1;1
+  381;Graphical Net Object191;889;1;1;1;415.625;310.625;d_genstat;6;180;1;1
+  382;Graphical Net Object192;889;1;1;1;345.625;271.25;d_genstat;22;180;1;1
+  383;Graphical Net Object193;889;1;1;1;288.75;240.625;d_genstat;21;0;1;1
+  384;Graphical Net Object194;889;1;1;1;511.875;161.875;d_genstat;14;180;1;1
+  385;Graphical Net Object195;889;1;1;1;577.5001;389.375;d_genstat;42;270;1;1
+  386;Graphical Net Object196;889;1;1;1;555.6251;389.375;d_genstat;41;270;1;1
+  387;Graphical Net Object197;889;1;1;1;608.1251;389.375;d_genstat;43;270;1;1
+  388;Graphical Net Object198;889;1;1;1;669.3749;389.375;d_genstat;44;90;1;1
+  389;Graphical Net Object199;889;1;1;1;538.1251;446.25;d_genstat;9;90;1;1
+  390;Graphical Net Object20;889;1;1;1;424.375;144.375;d_lin;63;90;1;1
+  391;Graphical Net Object200;889;1;1;1;455;398.125;d_genstat;54;90;1;1
+  392;Graphical Net Object201;889;1;1;1;380.625;393.75;d_genstat;35;270;1;1
+  393;Graphical Net Object202;889;1;1;1;525;402.5;d_genstat;39;270;1;1
+  394;Graphical Net Object203;889;1;1;1;573.125;367.5;d_genstat;40;90;1;1
+  395;Graphical Net Object204;889;1;1;1;411.25;398.125;d_genstat;37;270;1;1
+  396;Graphical Net Object205;889;1;1;1;354.375;406.875;d_genstat;36;90;1;1
+  397;Graphical Net Object206;889;1;1;1;573.125;542.5;d_genstat;50;90;1;1
+  398;Graphical Net Object207;889;1;1;1;621.2501;498.75;d_genstat;52;90;1;1
+  399;Graphical Net Object208;889;1;1;1;573.125;494.375;d_genstat;51;90;1;1
+  400;Graphical Net Object209;889;1;1;1;481.2501;546.875;d_genstat;49;90;1;1
+  401;Graphical Net Object21;889;1;1;1;476.875;144.375;d_lin;64;90;1;1
+  402;Graphical Net Object210;889;1;1;1;354.375;546.875;d_genstat;8;90;1;1
+  403;Graphical Net Object211;889;1;1;1;481.2501;490;d_genstat;7;90;1;1
+  404;Graphical Net Object212;889;1;1;1;266.875;516.25;d_genstat;48;270;1;1
+  405;Graphical Net Object213;889;1;1;1;411.25;490;d_genstat;47;90;1;1
+  406;Graphical Net Object214;889;1;1;1;380.625;468.125;d_genstat;45;90;1;1
+  407;Graphical Net Object215;889;1;1;1;371.875;398.125;d_genstat;55;90;1;1
+  408;Graphical Net Object216;889;1;1;1;363.125;350;d_genstat;29;270;1;1
+  409;Graphical Net Object217;889;1;1;1;507.5;371.875;d_genstat;32;90;1;1
+  410;Graphical Net Object218;889;1;1;1;424.375;358.75;d_genstat;30;270;1;1
+  411;Graphical Net Object219;889;1;1;1;437.5;350;d_genstat;31;90;1;1
+  412;Graphical Net Object22;889;1;1;1;334.6875;161.875;d_lin;65;90;1;1
+  413;Graphical Net Object220;889;1;1;1;271.25;371.875;d_genstat;56;270;1;1
+  414;Graphical Net Object221;889;1;1;1;280;428.75;d_genstat;33;270;1;1
+  415;Graphical Net Object222;889;1;1;1;358.75;183.75;d_genstat;15;180;1;1
+  416;Graphical Net Object223;889;1;1;1;358.75;161.875;d_genstat;10;180;1;1
+  417;Graphical Net Object224;889;1;1;1;402.5;161.875;d_genstat;12;180;1;1
+  418;Graphical Net Object225;889;1;1;1;389.375;113.75;d_genstat;11;0;1;1
+  419;Graphical Net Object226;889;1;1;1;441.875;161.875;d_genstat;13;180;1;1
+  420;Graphical Net Object227;889;1;1;1;363.1251;463.75;d_genstat;46;90;1;1
+  421;Graphical Net Object229;889;1;1;1;498.75;398.125;d_load;230;270;1;1
+  422;Graphical Net Object23;889;1;1;1;376.25;166.25;d_lin;66;90;1;1
+  423;Graphical Net Object230;889;1;1;1;271.25;380.625;d_load;233;270;1;1
+  424;Graphical Net Object231(1);889;1;1;1;336.875;385;d_load;232;270;1;1
+  425;Graphical Net Object231;889;1;1;1;424.375;385;d_load;231;270;1;1
+  426;Graphical Net Object233(1);889;1;1;1;301.8751;415.625;d_genstat;34;270;1;1
+  427;Graphical Net Object233;889;1;1;1;498.75;402.5;d_genstat;53;270;1;1
+  428;Graphical Net Object234(1);889;1;1;1;301.8751;424.375;d_load;211;270;1;1
+  429;Graphical Net Object234(2);889;1;1;1;293.125;400.3125;d_lin;110;180;1;1
+  430;Graphical Net Object234;889;1;1;1;350;126.875;d_load;140;0;1;1
+  431;Graphical Net Object235;889;1;1;1;306.25;385;d_load;157;90;1;1
+  432;Graphical Net Object236;889;1;1;1;520.6251;249.375;d_load;178;0;1;1
+  433;Graphical Net Object237;889;1;1;1;345.625;280;d_load;125;90;1;1
+  434;Graphical Net Object238;889;1;1;1;341.25;155.3125;d_load;119;90;1;1
+  435;Graphical Net Object239;889;1;1;1;446.25;507.5001;d_load;162;90;1;1
+  436;Graphical Net Object24;889;1;1;1;428.75;166.25;d_lin;67;90;1;1
+  437;Graphical Net Object240;889;1;1;1;450.625;126.875;d_load;126;0;1;1
+  438;Graphical Net Object241;889;1;1;1;459.375;369.6875;d_load;175;90;1;1
+  439;Graphical Net Object242;889;1;1;1;612.5;511.875;d_load;149;90;1;1
+  440;Graphical Net Object243;889;1;1;1;354.375;404.6875;d_load;147;90;1;1
+  441;Graphical Net Object244;889;1;1;1;315;415.625;d_load;151;90;1;1
+  442;Graphical Net Object245;889;1;1;1;664.9999;395.9376;d_load;124;90;1;1
+  443;Graphical Net Object246;889;1;1;1;301.875;275.625;d_load;127;90;1;1
+  444;Graphical Net Object247;889;1;1;1;560.0001;395.9376;d_load;174;90;1;1
+  445;Graphical Net Object248;889;1;1;1;385;280.0001;d_load;122;90;1;1
+  446;Graphical Net Object249;889;1;1;1;612.5;395.9376;d_load;150;90;1;1
+  447;Graphical Net Object25(1);889;1;1;1;328.125;280;TermStrip;252;270;1;1
+  448;Graphical Net Object25(10);889;1;1;1;411.25;266.875;TermStrip;253;180;1;1
+  449;Graphical Net Object25(11);889;1;1;1;380.625;231.875;TermStrip;249;180;1;1
+  450;Graphical Net Object25(12);889;1;1;1;463.75;266.875;TermStrip;254;180;1;1
+  451;Graphical Net Object25(13);889;1;1;1;520.6251;266.875;TermStrip;255;180;1;1
+  452;Graphical Net Object25(14);889;1;1;1;288.75;385;TermStrip;292;270;1;1
+  453;Graphical Net Object25(15);889;1;1;1;323.75;385;TermStrip;295;270;1;1
+  454;Graphical Net Object25(16);889;1;1;1;297.5;415.625;TermStrip;262;90;1;1
+  455;Graphical Net Object25(17);889;1;1;1;319.375;415.625;TermStrip;263;90;1;1
+  456;Graphical Net Object25(18);889;1;1;1;354.375;365.3125;TermStrip;294;270;0.833333;1
+  457;Graphical Net Object25(19);889;1;1;1;398.125;365.3126;TermStrip;293;270;0.833333;1
+  458;Graphical Net Object25(2);889;1;1;1;284.375;253.75;TermStrip;250;180;1;1
+  459;Graphical Net Object25(20);889;1;1;1;441.875;369.6875;TermStrip;259;270;0.833333;1
+  460;Graphical Net Object25(21);889;1;1;1;485.625;369.6875;TermStrip;261;270;0.833333;1
+  461;Graphical Net Object25(22);889;1;1;1;380.625;347.8125;TermStrip;258;270;0.833333;1
+  462;Graphical Net Object25(23);889;1;1;1;420;352.1876;TermStrip;260;270;0.833333;1
+  463;Graphical Net Object25(24);889;1;1;1;354.375;389.375;TermStrip;291;270;0.666667;1
+  464;Graphical Net Object25(25);889;1;1;1;398.125;395.9376;TermStrip;264;270;0.833333;1
+  465;Graphical Net Object25(26);889;1;1;1;441.875;395.9375;TermStrip;290;270;0.833333;1
+  466;Graphical Net Object25(27);889;1;1;1;485.625;395.9376;TermStrip;267;270;0.833333;1
+  467;Graphical Net Object25(28);889;1;1;1;516.2501;395.9376;TermStrip;289;270;0.833333;1
+  468;Graphical Net Object25(29);889;1;1;1;336.875;404.6875;TermStrip;265;270;0.833333;1
+  469;Graphical Net Object25(3);889;1;1;1;341.25;253.75;TermStrip;251;180;1;1
+  470;Graphical Net Object25(30);889;1;1;1;428.75;404.6875;TermStrip;266;270;0.833333;1
+  471;Graphical Net Object25(31);889;1;1;1;542.5001;395.9376;TermStrip;269;270;0.833333;1
+  472;Graphical Net Object25(32);889;1;1;1;568.7501;395.9376;TermStrip;271;270;0.833333;1
+  473;Graphical Net Object25(33);889;1;1;1;595;395.9376;TermStrip;272;270;0.833333;1
+  474;Graphical Net Object25(34);889;1;1;1;621.2501;395.9376;TermStrip;273;270;0.833333;1
+  475;Graphical Net Object25(35);889;1;1;1;647.4999;395.9376;TermStrip;274;270;0.833333;1
+  476;Graphical Net Object25(36);889;1;1;1;555.6251;365.3126;TermStrip;270;270;0.833333;1
+  477;Graphical Net Object25(37);889;1;1;1;525.0001;444.0625;TermStrip;238;270;0.833333;1
+  478;Graphical Net Object25(38);889;1;1;1;551.2501;444.0625;TermStrip;268;270;0.833333;1
+  479;Graphical Net Object25(39);889;1;1;1;284.375;503.125;TermStrip;278;270;1;1
+  480;Graphical Net Object25(4);889;1;1;1;367.5;280.0001;TermStrip;296;270;1;1
+  481;Graphical Net Object25(40);889;1;1;1;310.625;503.125;TermStrip;286;270;1;1
+  482;Graphical Net Object25(41);889;1;1;1;328.125;481.25;TermStrip;288;270;1;1
+  483;Graphical Net Object25(42);889;1;1;1;367.5;481.25;TermStrip;275;270;1;1
+  484;Graphical Net Object25(43);889;1;1;1;389.375;481.25;TermStrip;277;270;1;1
+  485;Graphical Net Object25(44);889;1;1;1;336.875;533.7501;TermStrip;237;270;1;1
+  486;Graphical Net Object25(45);889;1;1;1;428.7501;507.5001;TermStrip;287;270;1;1
+  487;Graphical Net Object25(46);889;1;1;1;516.2499;507.5001;TermStrip;285;270;1;1
+  488;Graphical Net Object25(47);889;1;1;1;463.75;538.1251;TermStrip;279;270;1;1
+  489;Graphical Net Object25(48);889;1;1;1;463.75;481.25;TermStrip;236;270;1;1
+  490;Graphical Net Object25(49);889;1;1;1;555.6251;538.1251;TermStrip;280;270;1;1
+  491;Graphical Net Object25(5);889;1;1;1;411.25;293.125;TermStrip;235;180;1;1
+  492;Graphical Net Object25(50);889;1;1;1;555.6251;485.625;TermStrip;281;270;1;1
+  493;Graphical Net Object25(51);889;1;1;1;595;511.875;TermStrip;282;270;1;1
+  494;Graphical Net Object25(52);889;1;1;1;345.625;463.75;TermStrip;276;270;1;1
+  495;Graphical Net Object25(6);889;1;1;1;328.125;231.875;TermStrip;248;180;1;1
+  496;Graphical Net Object25(7);889;1;1;1;275.625;231.875;TermStrip;247;180;1;1
+  497;Graphical Net Object25(8);889;1;1;1;520.6251;293.125;TermStrip;257;180;1;1
+  498;Graphical Net Object25(9);889;1;1;1;463.75;293.125;TermStrip;256;180;1;1
+  499;Graphical Net Object25;889;1;1;1;284.375;275.625;TermStrip;297;270;0.666666;1
+  500;Graphical Net Object250;889;1;1;1;380.625;113.75;d_load;153;0;1;1
+  501;Graphical Net Object251;889;1;1;1;385;481.25;d_load;134;90;1;1
+  502;Graphical Net Object252;889;1;1;1;336.875;415.625;d_load;170;90;1;1
+  503;Graphical Net Object253;889;1;1;1;411.25;249.375;d_load;135;0;1;1
+  504;Graphical Net Object254;889;1;1;1;446.25;404.6875;d_load;164;90;1;1
+  505;Graphical Net Object255;889;1;1;1;354.375;533.7501;d_load;177;90;1;1
+  506;Graphical Net Object256;889;1;1;1;301.875;503.125;d_load;180;90;1;1
+  507;Graphical Net Object257;889;1;1;1;398.125;126.875;d_load;171;0;1;1
+  508;Graphical Net Object258;889;1;1;1;503.125;126.875;d_load;136;0;1;1
+  509;Graphical Net Object259;889;1;1;1;350;148.75;d_load;148;0;1;1
+  510;Graphical Net Object260;889;1;1;1;402.5;148.75;d_load;165;0;1;1
+  511;Graphical Net Object261;889;1;1;1;455;148.75;d_load;156;0;1;1
+  512;Graphical Net Object262;889;1;1;1;275.625;214.375;d_load;176;0;1;1
+  513;Graphical Net Object263;889;1;1;1;328.125;214.375;d_load;159;0;1;1
+  514;Graphical Net Object264;889;1;1;1;380.625;214.375;d_load;139;0;1;1
+  515;Graphical Net Object265;889;1;1;1;284.375;236.25;d_load;152;0;1;1
+  516;Graphical Net Object266;889;1;1;1;341.25;236.25;d_load;142;0;1;1
+  517;Graphical Net Object267;889;1;1;1;463.75;249.375;d_load;130;0;1;1
+  518;Graphical Net Object268;889;1;1;1;463.75;275.625;d_load;121;0;1;1
+  519;Graphical Net Object269;889;1;1;1;520.6251;275.625;d_load;182;0;1;1
+  520;Graphical Net Object270;889;1;1;1;398.125;347.8125;d_load;155;90;1;1
+  521;Graphical Net Object271;889;1;1;1;437.5;352.1876;d_load;166;90;1;1
+  522;Graphical Net Object272;889;1;1;1;503.125;369.6875;d_load;138;90;1;1
+  523;Graphical Net Object273;889;1;1;1;568.7501;444.0625;d_load;154;90;1;1
+  524;Graphical Net Object274;889;1;1;1;573.1251;365.3126;d_load;161;90;1;1
+  525;Graphical Net Object275;889;1;1;1;586.25;395.9376;d_load;137;90;1;1
+  526;Graphical Net Object276;889;1;1;1;638.7501;395.9376;d_load;169;90;1;1
+  527;Graphical Net Object277;889;1;1;1;363.125;463.75;d_load;146;90;1;1
+  528;Graphical Net Object278;889;1;1;1;406.875;481.25;d_load;163;90;1;1
+  529;Graphical Net Object279;889;1;1;1;481.25;538.1251;d_load;133;90;1;1
+  530;Graphical Net Object280;889;1;1;1;573.1251;538.1251;d_load;144;90;1;1
+  531;Graphical Net Object281;889;1;1;1;573.1251;485.625;d_load;173;90;1;1
+  532;Graphical Net Object282;889;1;1;1;271.25;332.5;d_load;168;90;1;1
+  533;Graphical Net Object283;889;1;1;1;236.25;301.875;d_load;123;90;1;1
+  534;Graphical Net Object284;889;1;1;1;533.7499;507.5001;d_load;128;90;1;1
+  535;Graphical Net Object285;889;1;1;1;328.125;503.125;d_load;145;90;1;1
+  536;Graphical Net Object286;889;1;1;1;345.625;481.25;d_load;120;90;1;1
+  537;Graphical Net Object287;889;1;1;1;533.7501;395.9376;d_load;132;90;1;1
+  538;Graphical Net Object288;889;1;1;1;459.375;395.9375;d_load;143;90;1;1
+  539;Graphical Net Object289;889;1;1;1;371.875;389.375;d_load;172;90;1;1
+  540;Graphical Net Object290;889;1;1;1;415.625;365.3126;d_load;131;90;1;1
+  541;Graphical Net Object291;889;1;1;1;371.875;365.3125;d_load;141;90;1;1
+  542;Graphical Net Object292;889;1;1;1;341.25;385;d_load;167;90;1;1
+  543;Graphical Net Object293;889;1;1;1;415.625;395.9376;d_load;129;90;1;1
+  544;Graphical Net Object294;889;1;1;1;411.25;275.625;d_load;179;0;1;1
+  545;Graphical Net Object295;889;1;1;1;503.125;395.9376;d_load;181;90;1;1
+  546;Graphical Net Object296;889;1;1;1;481.25;481.25;d_load;158;90;1;1
+  547;Graphical Net Object297;889;1;1;1;542.5;444.0625;d_load;160;90;1;1
+  548;Graphical Net Object38;889;1;1;1;269.0625;275.625;d_lin;117;90;1;1
+  549;Graphical Net Object39;889;1;1;1;306.25;275.625;d_lin;73;90;1;1
+  550;Graphical Net Object4;889;1;1;1;205.625;301.875;d_net;300;270;1;1
+  551;Graphical Net Object40;889;1;1;1;262.5;251.5625;d_lin;68;0;1;1
+  552;Graphical Net Object41;889;1;1;1;284.375;260.31;d_lin;71;0;1;1
+  553;Graphical Net Object42;889;1;1;1;312.8126;253.75;d_lin;72;90;1;1
+  554;Graphical Net Object43;889;1;1;1;301.875;231.875;d_lin;69;90;1;1
+  555;Graphical Net Object44;889;1;1;1;354.375;231.875;d_lin;70;90;1;1
+  556;Graphical Net Object46;889;1;1;1;385.0001;284.375;d_lin;57;90;1;1
+  557;Graphical Net Object47;889;1;1;1;437.5;293.125;d_lin;77;90;1;1
+  558;Graphical Net Object48;889;1;1;1;492.1875;293.125;d_lin;78;90;1;1
+  559;Graphical Net Object49;889;1;1;1;387.1875;271.25;d_lin;74;90;1;1
+  560;Graphical Net Object5(1);889;1;1;1;253.75;332.5;TermStrip;283;90;14.33333;1
+  561;Graphical Net Object5;889;1;1;1;218.75;301.875;TermStrip;284;90;1;1
+  562;Graphical Net Object50;889;1;1;1;437.5;266.875;d_lin;75;90;1;1
+  563;Graphical Net Object51;889;1;1;1;492.1875;266.875;d_lin;76;90;1;1
+  564;Graphical Net Object52;889;1;1;1;350;280;d_lin;116;0;1;1
+  565;Graphical Net Object57;889;1;1;1;271.25;385;d_lin;96;90;1;1
+  566;Graphical Net Object58;889;1;1;1;306.25;385;d_lin;111;90;1;1
+  567;Graphical Net Object6;889;1;1;1;236.25;301.875;d_tr2;299;90;1;1
+  568;Graphical Net Object65;889;1;1;1;332.5;363.125;d_lin;115;0;1;1
+  569;Graphical Net Object66;889;1;1;1;376.2499;371.875;d_lin;114;0;1;1
+  570;Graphical Net Object67;889;1;1;1;420.0001;374.0625;d_lin;112;180;1;1
+  571;Graphical Net Object68;889;1;1;1;463.75;376.25;d_lin;79;90;1;1
+  572;Graphical Net Object7(1);889;1;1;1;350;166.25;TermStrip;244;180;1;1
+  573;Graphical Net Object7(2);889;1;1;1;402.5;166.25;TermStrip;245;180;1;1
+  574;Graphical Net Object7(3);889;1;1;1;455;166.25;TermStrip;246;180;1;1
+  575;Graphical Net Object7(4);889;1;1;1;350;144.375;TermStrip;239;180;1;1
+  576;Graphical Net Object7(5);889;1;1;1;398.125;144.375;TermStrip;241;180;1;1
+  577;Graphical Net Object7(6);889;1;1;1;450.625;144.375;TermStrip;242;180;1;1
+  578;Graphical Net Object7(7);889;1;1;1;503.125;144.375;TermStrip;243;180;1;1
+  579;Graphical Net Object7(8);889;1;1;1;380.625;131.25;TermStrip;240;180;1;1
+  580;Graphical Net Object7;889;1;1;1;323.75;155.3125;TermStrip;298;90;1.166667;1
+  581;Graphical Net Object71;889;1;1;1;411.25;363.125;d_lin;80;0;1;1
+  582;Graphical Net Object72;889;1;1;1;367.5;358.75;d_lin;113;0;1;1
+  583;Graphical Net Object78;889;1;1;1;339.0625;389.375;d_lin;109;90;1;1
+  584;Graphical Net Object79;889;1;1;1;376.25;389.375;d_lin;82;90;1;1
+  585;Graphical Net Object80;889;1;1;1;420;389.375;d_lin;106;90;1;1
+  586;Graphical Net Object81;889;1;1;1;463.75;389.375;d_lin;83;90;1;1
+  587;Graphical Net Object84;889;1;1;1;345.625;398.125;d_lin;108;90;1;1
+  588;Graphical Net Object85(1);889;1;1;1;308.4375;402.5;d_lin;81;90;1;1
+  589;Graphical Net Object85;889;1;1;1;435.3125;402.5;d_lin;107;270;1;1
+  590;Graphical Net Object86;889;1;1;1;500.9375;389.375;d_lin;105;90;1;1
+  591;Graphical Net Object88;889;1;1;1;529.375;393.75;d_lin;85;90;1;1
+  592;Graphical Net Object96;889;1;1;1;525;468.125;d_lin;104;0;1;1
+  593;Graphical Net Object97;889;1;1;1;538.1251;450.625;d_lin;59;90;1;1
+  594;Graphical Net Object98;889;1;1;1;555.6251;393.75;d_lin;86;90;1;1
+  595;Graphical Net Object99;889;1;1;1;581.8751;393.75;d_lin;87;90;1;1
+
+
+$$IntGrfcon;ID(a:40);loc_name(a:40);fold_id(p);rX:SIZEROW(i);rX:0(r);rX:1(r);rX:2(r);rX:3(r);rY:SIZEROW(i);rY:0(r);rY:1(r);rY:2(r);rY:3(r)
+********************************************************************************
+*  GCO
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  rX:SIZEROW: Number of rows for attribute 'rX'
+*  rX: X in mm
+*  rY:SIZEROW: Number of rows for attribute 'rY'
+*  rY: Y in mm
+********************************************************************************
+  596;GCO_1;302;2;608.125;595;;;2;393.75;393.75;;
+  597;GCO_2;302;2;608.125;621.2501;;;2;393.75;393.75;;
+  598;GCO_1;303;4;546.875;546.875;542.5001;542.5001;4;367.5;376.25;376.25;384.9959
+  599;GCO_2;303;3;546.875;546.875;555.6251;;3;367.5;358.7499;358.7499;
+  600;GCO_1;304;2;634.375;621.2501;;;2;393.75;393.75;;
+  601;GCO_2;304;2;634.375;647.4999;;;2;393.75;393.75;;
+  602;GCO_1;305;2;269.0625;253.75;;;2;503.125;503.125;;
+  603;GCO_2;305;2;269.0625;284.375;;;2;503.125;503.125;;
+  604;GCO_1;306;2;297.5;284.375;;;2;503.125;503.125;;
+  605;GCO_2;306;2;297.5;310.625;;;2;503.125;503.125;;
+  606;GCO_1;307;3;323.75;323.75;310.625;;3;531.5625;516.2501;516.2501;
+  607;GCO_2;307;3;323.75;323.75;336.875;;3;531.5625;546.8751;546.8751;
+  608;GCO_1;308;3;336.875;336.875;328.125;;3;463.75;472.5;472.5;
+  609;GCO_2;308;3;336.875;336.875;345.625;;3;463.75;455;455;
+  610;GCO_1;309;2;347.8125;328.125;;;2;490;490;;
+  611;GCO_2;309;2;347.8125;367.5;;;2;490;490;;
+  612;GCO_1;310;2;378.4375;367.5;;;2;485.625;485.625;;
+  613;GCO_2;310;2;378.4375;389.375;;;2;485.625;485.625;;
+  614;GCO_1;311;2;369.6875;310.625;;;2;507.5;507.5;;
+  615;GCO_2;311;2;369.6875;428.7501;;;2;507.5;507.5;;
+  616;GCO_1;312;3;446.25;446.25;428.7501;;3;531.5625;516.25;516.25;
+  617;GCO_2;312;3;446.25;446.25;463.75;;3;531.5625;546.8751;546.8751;
+  618;GCO_1;313;3;446.25;446.25;428.7501;;3;485.625;498.75;498.75;
+  619;GCO_2;313;3;446.25;446.25;463.75;;3;485.625;472.5;472.5;
+  620;GCO_1;314;2;472.5;428.7501;;;2;507.5;507.5;;
+  621;GCO_2;314;2;472.5;516.2499;;;2;507.5;507.5;;
+  622;GCO_1;315;3;538.1249;538.1249;516.2499;;3;533.7501;516.25;516.25;
+  623;GCO_2;315;3;538.1249;538.1249;555.6251;;3;533.7501;551.25;551.25;
+  624;GCO_1;316;3;538.1249;538.1249;516.2499;;3;483.4375;494.375;494.375;
+  625;GCO_2;316;3;538.1249;538.1249;555.6251;;3;483.4375;472.5;472.5;
+  626;GCO_1;317;2;555.6251;516.2499;;;2;507.5;507.5;;
+  627;GCO_2;317;2;555.6251;595;;;2;507.5;507.5;;
+  628;GCO_1;318;2;402.5;402.5;;;2;306.25;293.125;;
+  629;GCO_1;319;2;319.375;310.625;;;2;490;490;;
+  630;GCO_2;319;3;319.375;319.375;328.125;;3;490;481.25;481.25;
+  631;GCO_1;320;2;476.8751;463.75;;;2;472.5;472.5;;
+  632;GCO_1;321;2;350;336.875;;;2;525.0001;525.0001;;
+  633;GCO_1;322;2;533.7501;525.0001;;;2;433.125;433.125;;
+  634;GCO_1;323;2;350;350;;;2;157.5;144.375;;
+  635;GCO_1;324;2;376.25;376.25;;;2;118.125;131.25;;
+  636;GCO_1;325;2;389.375;389.375;;;2;157.5;144.375;;
+  637;GCO_1;326;2;455;455;;;2;157.5;144.375;;
+  638;GCO_1;327;2;494.3751;494.3751;;;2;157.5;144.375;;
+  639;GCO_1;328;2;345.625;345.625;;;2;179.375;166.25;;
+  640;GCO_1;329;2;406.875;406.875;;;2;179.375;166.25;;
+  641;GCO_1;330;2;446.25;446.25;;;2;179.375;166.25;;
+  642;GCO_1;331;2;284.375;284.375;;;2;223.125;231.875;;
+  643;GCO_1;332;2;328.125;328.125;;;2;223.125;231.875;;
+  644;GCO_1;333;3;380.625;380.625;380.625;;3;227.5;227.5;231.875;
+  645;GCO_1;334;2;275.625;275.625;;;2;245;253.75;;
+  646;GCO_1;335;2;332.5;332.5;;;2;245;253.75;;
+  647;GCO_1;336;2;406.875;406.875;;;2;258.125;266.875;;
+  648;GCO_1;337;2;468.125;468.125;;;2;258.125;266.875;;
+  649;GCO_1;338;3;516.2501;516.2501;516.2501;;3;258.125;258.125;266.875;
+  650;GCO_1;339;2;459.375;459.375;;;2;306.25;293.125;;
+  651;GCO_1;340;2;516.2501;516.2501;;;2;306.25;293.125;;
+  652;GCO_1;341;2;367.5;380.625;;;2;341.25;341.25;;
+  653;GCO_1;342;2;428.7501;441.875;;;2;371.875;371.875;;
+  654;GCO_1;343;2;406.8751;420;;;2;345.625;345.625;;
+  655;GCO_1;344;2;472.5001;485.625;;;2;363.125;363.125;;
+  656;GCO_1;345;2;288.75;297.5;;;2;415.625;415.625;;
+  657;GCO_1;346;2;288.7499;253.75;;;2;153.125;153.125;;
+  658;GCO_2;346;2;288.7499;323.75;;;2;153.125;153.125;;
+  659;GCO_1;347;2;385.0001;398.125;;;2;402.5;402.5;;
+  660;GCO_1;348;2;350;336.875;;;2;415.625;415.625;;
+  661;GCO_1;349;2;415.625;428.75;;;2;411.25;411.25;;
+  662;GCO_1;350;2;564.3751;551.2501;;;2;441.875;441.875;;
+  663;GCO_1;351;2;529.375;542.5001;;;2;389.375;389.375;;
+  664;GCO_1;352;2;568.75;555.6251;;;2;358.75;358.75;;
+  665;GCO_1;353;2;555.6251;568.7501;;;2;406.875;406.875;;
+  666;GCO_1;354;2;581.8751;595;;;2;406.875;406.875;;
+  667;GCO_1;355;2;608.1251;621.2501;;;2;406.875;406.875;;
+  668;GCO_1;356;2;334.6875;323.75;;;2;148.75;148.75;;
+  669;GCO_2;356;3;334.6875;345.625;345.625;;3;148.75;148.75;144.375;
+  670;GCO_1;357;2;634.375;647.4999;;;2;406.875;406.875;;
+  671;GCO_1;358;2;354.375;367.5;;;2;481.25;481.25;;
+  672;GCO_1;359;2;358.75;345.625;;;2;455;455;;
+  673;GCO_1;360;2;406.875;389.375;;;2;468.125;468.125;;
+  674;GCO_1;361;2;271.25;284.375;;;2;494.375;494.375;;
+  675;GCO_1;362;2;476.8751;463.75;;;2;529.375;529.375;;
+  676;GCO_1;363;2;568.75;555.6251;;;2;529.375;529.375;;
+  677;GCO_1;364;2;568.75;555.6251;;;2;476.875;476.875;;
+  678;GCO_1;365;2;603.7499;595;;;2;520.625;520.625;;
+  679;GCO_1;366;2;564.3751;551.2501;;;2;450.625;450.625;;
+  680;GCO_1;367;3;356.5625;341.25;341.25;;3;140;140;144.375;
+  681;GCO_2;367;3;356.5625;371.875;371.875;;3;140;140;131.25;
+  682;GCO_1;368;2;529.375;529.375;;;2;306.25;293.125;;
+  683;GCO_1;369;2;472.5;472.5;;;2;306.25;293.125;;
+  684;GCO_1;370;3;529.375;529.375;529.375;;3;253.75;253.75;266.875;
+  685;GCO_1;371;2;455;455;;;2;253.75;266.875;;
+  686;GCO_1;372;2;315;328.125;;;2;271.25;271.25;;
+  687;GCO_1;373;3;420;420;420;;3;253.75;253.75;266.875;
+  688;GCO_1;374;2;315;328.125;;;2;266.875;266.875;;
+  689;GCO_1;375;2;319.375;319.375;;;2;245;231.875;;
+  690;GCO_1;376;2;271.25;271.25;;;2;223.125;231.875;;
+  691;GCO_1;377;2;376.25;376.25;;;2;245;231.875;;
+  692;GCO_1;378;2;463.75;463.75;;;2;179.375;166.25;;
+  693;GCO_1;379;2;374.0625;363.13;;;2;144.375;144.375;;
+  694;GCO_2;379;2;374.0625;384.995;;;2;144.375;144.375;;
+  695;GCO_1;380;2;393.75;393.75;;;2;179.375;166.25;;
+  696;GCO_1;381;2;415.625;415.625;;;2;306.25;293.125;;
+  697;GCO_1;382;2;345.625;345.625;;;2;266.875;253.75;;
+  698;GCO_1;383;2;288.75;288.75;;;2;245;253.75;;
+  699;GCO_1;384;2;511.875;511.875;;;2;157.5;144.375;;
+  700;GCO_1;385;2;581.8751;595;;;2;389.375;389.375;;
+  701;GCO_1;386;2;560.0001;568.7501;;;2;389.375;389.375;;
+  702;GCO_1;387;2;612.5001;621.2501;;;2;389.375;389.375;;
+  703;GCO_1;388;2;664.9999;647.4999;;;2;389.375;389.375;;
+  704;GCO_1;389;3;533.7501;533.7501;525.0001;;3;446.25;446.25;446.25;
+  705;GCO_1;390;2;424.375;411.255;;;2;144.375;144.375;;
+  706;GCO_2;390;2;424.375;437.495;;;2;144.375;144.375;;
+  707;GCO_1;391;3;450.625;450.6251;441.875;;3;398.125;398.125;398.125;
+  708;GCO_1;392;2;385.0001;398.125;;;2;393.75;393.75;;
+  709;GCO_1;393;2;529.375;542.5001;;;2;402.5;402.5;;
+  710;GCO_1;394;2;568.75;555.6251;;;2;367.5;367.5;;
+  711;GCO_1;395;2;415.625;428.75;;;2;398.125;398.125;;
+  712;GCO_1;396;2;350;336.875;;;2;406.875;406.875;;
+  713;GCO_1;397;2;568.75;555.6251;;;2;542.5;542.5;;
+  714;GCO_1;398;2;616.875;595;;;2;498.75;498.75;;
+  715;GCO_1;399;2;568.75;555.6251;;;2;494.375;494.375;;
+  716;GCO_1;400;2;476.8751;463.75;;;2;546.875;546.875;;
+  717;GCO_1;401;2;476.875;463.755;;;2;144.375;144.375;;
+  718;GCO_2;401;2;476.875;489.995;;;2;144.375;144.375;;
+  719;GCO_1;402;2;350;336.875;;;2;546.875;546.875;;
+  720;GCO_1;403;2;476.8751;463.75;;;2;490;490;;
+  721;GCO_1;404;2;271.25;284.375;;;2;516.25;516.25;;
+  722;GCO_1;405;2;406.875;389.375;;;2;490;490;;
+  723;GCO_1;406;2;376.25;367.5;;;2;468.125;468.125;;
+  724;GCO_1;407;2;367.5;354.375;;;2;398.125;398.125;;
+  725;GCO_1;408;2;367.5;380.625;;;2;350;350;;
+  726;GCO_1;409;2;503.125;485.625;;;2;371.875;371.875;;
+  727;GCO_1;410;2;428.7501;441.875;;;2;358.75;358.75;;
+  728;GCO_1;411;2;433.125;420;;;2;350;350;;
+  729;GCO_1;412;2;334.6875;323.75;;;2;161.875;161.875;;
+  730;GCO_2;412;3;334.6875;345.625;345.625;;3;161.875;161.875;166.25;
+  731;GCO_1;413;2;275.625;288.75;;;2;371.875;371.875;;
+  732;GCO_1;414;2;284.375;297.5;;;2;428.75;428.75;;
+  733;GCO_1;415;2;358.75;358.75;;;2;179.375;166.25;;
+  734;GCO_1;416;2;358.75;358.75;;;2;157.5;144.375;;
+  735;GCO_1;417;2;402.5;402.5;;;2;157.5;144.375;;
+  736;GCO_1;418;2;389.375;389.375;;;2;118.125;131.25;;
+  737;GCO_1;419;2;441.875;441.875;;;2;157.5;144.375;;
+  738;GCO_1;420;2;358.75;345.625;;;2;463.75;463.75;;
+  739;GCO_1;421;2;503.125;516.2501;;;2;398.125;398.125;;
+  740;GCO_1;422;2;376.25;363.13;;;2;166.25;166.25;;
+  741;GCO_2;422;2;376.25;389.3701;;;2;166.25;166.25;;
+  742;GCO_1;423;3;275.625;275.625;288.75;;3;380.625;380.625;380.625;
+  743;GCO_1;424;2;341.25;354.375;;;2;385;385;;
+  744;GCO_1;425;2;428.7501;441.875;;;2;385;385;;
+  745;GCO_1;426;2;306.25;319.375;;;2;415.625;415.625;;
+  746;GCO_1;427;2;503.125;516.2501;;;2;402.5;402.5;;
+  747;GCO_1;428;2;306.25;319.375;;;2;424.375;424.375;;
+  748;GCO_1;429;3;293.125;293.125;288.75;;3;400.3125;393.75;393.75;
+  749;GCO_2;429;3;293.125;293.125;297.5;;3;400.3125;406.875;406.875;
+  750;GCO_1;430;2;350;350;;;2;131.25;144.375;;
+  751;GCO_1;431;2;301.8751;288.75;;;2;385;385;;
+  752;GCO_1;432;2;520.6251;520.6251;;;2;253.75;266.875;;
+  753;GCO_1;433;2;341.25;328.125;;;2;280;280;;
+  754;GCO_1;434;2;336.875;323.75;;;2;155.3125;155.3125;;
+  755;GCO_1;435;2;441.875;428.7501;;;2;507.5001;507.5001;;
+  756;GCO_1;436;2;428.75;415.63;;;2;166.25;166.25;;
+  757;GCO_2;436;2;428.75;441.87;;;2;166.25;166.25;;
+  758;GCO_1;437;2;450.625;450.625;;;2;131.25;144.375;;
+  759;GCO_1;438;2;455;441.875;;;2;369.6875;369.6875;;
+  760;GCO_1;439;2;608.125;595;;;2;511.875;511.875;;
+  761;GCO_1;440;2;350;336.875;;;2;404.6875;404.6875;;
+  762;GCO_1;441;2;310.625;297.5;;;2;415.625;415.625;;
+  763;GCO_1;442;2;660.6249;647.4999;;;2;395.9376;395.9376;;
+  764;GCO_1;443;2;297.5;284.375;;;2;275.625;275.625;;
+  765;GCO_1;444;2;555.6251;542.5001;;;2;395.9376;395.9376;;
+  766;GCO_1;445;2;380.625;367.5;;;2;280.0001;280.0001;;
+  767;GCO_1;446;2;608.125;595;;;2;395.9376;395.9376;;
+  768;GCO_1;500;2;380.625;380.625;;;2;118.125;131.25;;
+  769;GCO_1;501;2;380.625;367.5;;;2;481.25;481.25;;
+  770;GCO_1;502;2;332.5;319.375;;;2;415.625;415.625;;
+  771;GCO_1;503;2;411.25;411.25;;;2;253.75;266.875;;
+  772;GCO_1;504;2;441.875;428.75;;;2;404.6875;404.6875;;
+  773;GCO_1;505;2;350;336.875;;;2;533.7501;533.7501;;
+  774;GCO_1;506;2;297.5;284.375;;;2;503.125;503.125;;
+  775;GCO_1;507;2;398.125;398.125;;;2;131.25;144.375;;
+  776;GCO_1;508;2;503.125;503.125;;;2;131.25;144.375;;
+  777;GCO_1;509;2;350;350;;;2;153.125;166.25;;
+  778;GCO_1;510;2;402.5;402.5;;;2;153.125;166.25;;
+  779;GCO_1;511;2;455;455;;;2;153.125;166.25;;
+  780;GCO_1;512;2;275.625;275.625;;;2;218.75;231.875;;
+  781;GCO_1;513;2;328.125;328.125;;;2;218.75;231.875;;
+  782;GCO_1;514;2;380.625;380.625;;;2;218.75;231.875;;
+  783;GCO_1;515;2;284.375;284.375;;;2;240.625;253.75;;
+  784;GCO_1;516;2;341.25;341.25;;;2;240.625;253.75;;
+  785;GCO_1;517;2;463.75;463.75;;;2;253.75;266.875;;
+  786;GCO_1;518;2;463.75;463.75;;;2;280;293.125;;
+  787;GCO_1;519;2;520.6251;520.6251;;;2;280;293.125;;
+  788;GCO_1;520;2;393.75;380.625;;;2;347.8125;347.8125;;
+  789;GCO_1;521;2;433.125;420;;;2;352.1876;352.1876;;
+  790;GCO_1;522;2;498.75;485.625;;;2;369.6875;369.6875;;
+  791;GCO_1;523;2;564.3751;551.2501;;;2;444.0625;444.0625;;
+  792;GCO_1;524;2;568.7501;555.6251;;;2;365.3126;365.3126;;
+  793;GCO_1;525;2;581.875;568.7501;;;2;395.9376;395.9376;;
+  794;GCO_1;526;2;634.3751;621.2501;;;2;395.9376;395.9376;;
+  795;GCO_1;527;2;358.75;345.625;;;2;463.75;463.75;;
+  796;GCO_1;528;2;402.5;389.375;;;2;481.25;481.25;;
+  797;GCO_1;529;2;476.875;463.75;;;2;538.1251;538.1251;;
+  798;GCO_1;530;2;568.7501;555.6251;;;2;538.1251;538.1251;;
+  799;GCO_1;531;2;568.7501;555.6251;;;2;485.625;485.625;;
+  800;GCO_1;532;2;266.875;253.75;;;2;332.5;332.5;;
+  801;GCO_1;533;2;231.875;218.75;;;2;301.875;301.875;;
+  802;GCO_1;534;2;529.3749;516.2499;;;2;507.5001;507.5001;;
+  803;GCO_1;535;2;323.7501;310.625;;;2;503.125;503.125;;
+  804;GCO_1;536;2;341.25;328.125;;;2;481.25;481.25;;
+  805;GCO_1;537;2;529.375;516.2501;;;2;395.9376;395.9376;;
+  806;GCO_1;538;2;455;441.875;;;2;395.9375;395.9375;;
+  807;GCO_1;539;2;367.5;354.375;;;2;389.375;389.375;;
+  808;GCO_1;540;2;411.25;398.125;;;2;365.3126;365.3126;;
+  809;GCO_1;541;2;367.5;354.375;;;2;365.3125;365.3125;;
+  810;GCO_1;542;2;336.875;323.75;;;2;385;385;;
+  811;GCO_1;543;2;411.25;398.125;;;2;395.9376;395.9376;;
+  812;GCO_1;544;2;411.25;411.25;;;2;280;293.125;;
+  813;GCO_1;545;2;498.75;485.625;;;2;395.9376;395.9376;;
+  814;GCO_1;546;2;476.875;463.75;;;2;481.25;481.25;;
+  815;GCO_1;547;2;538.125;525.0001;;;2;444.0625;444.0625;;
+  816;GCO_1;548;2;269.0625;253.75;;;2;275.625;275.625;;
+  817;GCO_2;548;2;269.0625;284.375;;;2;275.625;275.625;;
+  818;GCO_1;549;2;306.25;284.375;;;2;275.625;275.625;;
+  819;GCO_2;549;2;306.25;328.125;;;2;275.625;275.625;;
+  820;GCO_1;550;2;210;218.75;;;2;301.875;301.875;;
+  821;GCO_1;551;3;262.5;262.5;284.375;;3;251.5625;271.25;271.25;
+  822;GCO_2;551;2;262.5;262.5;;;2;251.5625;231.875;;
+  823;GCO_1;552;2;284.375;284.375;;;2;260.31;266.87;;
+  824;GCO_2;552;2;284.375;284.375;;;2;260.31;253.75;;
+  825;GCO_1;553;2;312.8126;297.505;;;2;253.75;253.75;;
+  826;GCO_2;553;2;312.8126;328.12;;;2;253.75;253.75;;
+  827;GCO_1;554;2;301.875;288.755;;;2;231.875;231.875;;
+  828;GCO_2;554;2;301.875;314.9951;;;2;231.875;231.875;;
+  829;GCO_1;555;2;354.375;341.255;;;2;231.875;231.875;;
+  830;GCO_2;555;2;354.375;367.4951;;;2;231.875;231.875;;
+  831;GCO_1;556;2;385.0001;367.5;;;2;284.375;284.375;;
+  832;GCO_2;556;3;385.0001;402.5;402.5;;3;284.375;284.375;293.125;
+  833;GCO_1;557;2;437.5;424.3799;;;2;293.125;293.125;;
+  834;GCO_2;557;2;437.5;450.62;;;2;293.125;293.125;;
+  835;GCO_1;558;2;492.1875;476.88;;;2;293.125;293.125;;
+  836;GCO_2;558;2;492.1875;507.495;;;2;293.125;293.125;;
+  837;GCO_1;559;2;387.1875;367.5;;;2;271.25;271.25;;
+  838;GCO_2;559;3;387.1875;406.8751;406.8751;;3;271.25;271.25;266.875;
+  839;GCO_1;562;2;437.5;424.38;;;2;266.875;266.875;;
+  840;GCO_2;562;2;437.5;450.6201;;;2;266.875;266.875;;
+  841;GCO_1;563;2;492.1875;476.88;;;2;266.875;266.875;;
+  842;GCO_2;563;2;492.1875;507.495;;;2;266.875;266.875;;
+  843;GCO_1;564;2;350;328.125;;;2;280;280;;
+  844;GCO_2;564;3;350;350;367.5;;3;280;275.625;275.625;
+  845;GCO_1;565;2;271.25;253.75;;;2;385;385;;
+  846;GCO_2;565;2;271.25;288.75;;;2;385;385;;
+  847;GCO_1;566;2;306.25;288.75;;;2;385;385;;
+  848;GCO_2;566;2;306.25;323.75;;;2;385;385;;
+  849;GCO_1;567;2;231.875;218.75;;;2;301.875;301.875;;
+  850;GCO_2;567;2;240.625;253.75;;;2;301.875;301.875;;
+  851;GCO_1;568;3;332.5;332.5;323.75;;3;363.125;371.875;371.875;
+  852;GCO_2;568;3;332.5;332.5;354.375;;3;363.125;354.375;354.375;
+  853;GCO_1;569;2;376.2499;354.375;;;2;371.875;371.875;;
+  854;GCO_2;569;2;376.2499;398.125;;;2;371.875;371.875;;
+  855;GCO_1;570;3;420.0001;420.0001;398.125;;3;374.0625;371.875;371.875;
+  856;GCO_2;570;3;420.0001;420.0001;441.875;;3;374.0625;376.25;376.25;
+  857;GCO_1;571;2;463.75;441.875;;;2;376.25;376.25;;
+  858;GCO_2;571;2;463.75;485.625;;;2;376.25;376.25;;
+  859;GCO_1;581;2;411.25;398.125;;;2;363.125;363.125;;
+  860;GCO_2;581;3;411.25;411.25;420;;3;363.125;358.75;358.75;
+  861;GCO_1;582;2;367.5;354.375;;;2;358.75;358.75;;
+  862;GCO_2;582;3;367.5;367.5;380.625;;3;358.75;354.375;354.375;
+  863;GCO_1;583;2;339.0625;323.75;;;2;389.375;389.375;;
+  864;GCO_2;583;2;339.0625;354.375;;;2;389.375;389.375;;
+  865;GCO_1;584;2;376.25;354.375;;;2;389.375;389.375;;
+  866;GCO_2;584;2;376.25;398.125;;;2;389.375;389.375;;
+  867;GCO_1;585;2;420;398.125;;;2;389.375;389.375;;
+  868;GCO_2;585;2;420;441.875;;;2;389.375;389.375;;
+  869;GCO_1;586;2;463.75;441.875;;;2;389.375;389.375;;
+  870;GCO_2;586;2;463.75;485.625;;;2;389.375;389.375;;
+  871;GCO_1;587;2;345.625;336.875;;;2;398.125;398.125;;
+  872;GCO_2;587;2;345.625;354.375;;;2;398.125;398.125;;
+  873;GCO_1;588;2;308.4375;297.5;;;2;402.5;402.5;;
+  874;GCO_2;588;2;308.4375;319.375;;;2;402.5;402.5;;
+  875;GCO_1;589;2;435.3125;441.875;;;2;402.5;402.5;;
+  876;GCO_2;589;2;435.3125;428.75;;;2;402.5;402.5;;
+  877;GCO_1;590;2;500.9375;485.625;;;2;389.375;389.375;;
+  878;GCO_2;590;2;500.9375;516.2501;;;2;389.375;389.375;;
+  879;GCO_1;591;2;529.375;516.2501;;;2;393.75;393.75;;
+  880;GCO_2;591;2;529.375;542.5001;;;2;393.75;393.75;;
+  881;GCO_1;592;2;525;525.0001;;;2;468.125;455.0042;;
+  882;GCO_2;592;4;525;525;516.2501;516.2501;4;468.125;455;455;406.8792
+  883;GCO_1;593;2;538.1251;525.0001;;;2;450.625;450.625;;
+  884;GCO_2;593;2;538.1251;551.2501;;;2;450.625;450.625;;
+  885;GCO_1;594;2;555.6251;542.5001;;;2;393.75;393.75;;
+  886;GCO_2;594;2;555.6251;568.7501;;;2;393.75;393.75;;
+  887;GCO_1;595;2;581.8751;568.7501;;;2;393.75;393.75;;
+  888;GCO_2;595;2;581.8751;595;;;2;393.75;393.75;;
+
+
+$$IntGrfnet;ID(a:40);loc_name(a:40);fold_id(p);snap_on(i);grid_on(i);ortho_on(i)
+********************************************************************************
+*  Graphic
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  snap_on: Drawing Tools: Snap
+*  grid_on: Drawing Tools: Grid
+*  ortho_on: Drawing Tools: Ortho Type:
+********************************************************************************
+  889;Bog_simple;;1;1;1
+
+
+$$StaCubic;ID(a:40);loc_name(a:40);fold_id(p);chr_name(a:20);obj_bus(i);obj_id(p)
+********************************************************************************
+*  Cubicle
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  chr_name: Characteristic Name
+*  obj_bus: Bus Index
+*  obj_id: Connected with in Elm*
+********************************************************************************
+  890;Cub_1;235;;1;57
+  891;Cub_2;235;;0;77
+  892;Cub_3;235;;0;183
+  893;Cub_4;235;;0;6
+  894;Cubic_#BAT_PLATOS946296;235;;0;179
+  895;Cub_1;236;;1;58
+  896;Cub_2;236;;0;184
+  897;Cub_3;236;;0;7
+  898;Cub_4;236;;0;
+  899;Cubic_#BAT_PLATOS695470;236;;0;158
+  900;Cub_1;237;;1;99
+  901;Cub_2;237;;0;185
+  902;Cub_3;237;;0;8
+  903;Cub_4;237;;0;
+  904;Cubic_#BAT_PLATOS890655;237;;0;177
+  905;Cub_1;238;;0;104
+  906;Cub_2;238;;0;59
+  907;Cub_3;238;;0;186
+  908;Cub_4;238;;0;9
+  909;Cubic_#BAT_PLATOS727035;238;;0;160
+  910;Cub_1;239;;1;61
+  911;Cub_2;239;;0;60
+  912;Cub_3;239;;0;62
+  913;Cub_4;239;;0;187
+  914;Cub_5;239;;0;10
+  915;Cubic_#BAT_PLATOS444645;239;;0;140
+  916;Cub_1;240;;1;60
+  917;Cub_2;240;;0;188
+  918;Cub_3;240;;0;11
+  919;Cubic_#BAT_PLATOS639829;240;;0;153
+  920;Cub_1;241;;1;62
+  921;Cub_2;241;;0;63
+  922;Cub_3;241;;0;189
+  923;Cub_4;241;;0;12
+  924;Cubic_#BAT_PLATOS835014;241;;0;171
+  925;Cub_1;242;;1;63
+  926;Cub_2;242;;0;64
+  927;Cub_3;242;;0;190
+  928;Cub_4;242;;0;13
+  929;Cubic_#BAT_PLATOS193819;242;;0;126
+  930;Cub_1;243;;1;64
+  931;Cub_2;243;;0;191
+  932;Cub_3;243;;0;14
+  933;Cubic_#BAT_PLATOS389004;243;;0;136
+  934;Cub_1;244;;1;65
+  935;Cub_2;244;;0;66
+  936;Cub_3;244;;0;192
+  937;Cub_4;244;;0;15
+  938;Cubic_#BAT_PLATOS584189;244;;0;148
+  939;Cub_1;245;;1;66
+  940;Cub_2;245;;0;67
+  941;Cub_3;245;;0;193
+  942;Cub_4;245;;0;16
+  943;Cubic_#BAT_PLATOS779373;245;;0;165
+  944;Cub_1;246;;1;67
+  945;Cub_2;246;;0;194
+  946;Cub_3;246;;0;17
+  947;Cubic_#BAT_PLATOS692168;246;;0;156
+  948;Cub_1;247;;1;68
+  949;Cub_2;247;;0;69
+  950;Cub_3;247;;0;195
+  951;Cub_5;247;;0;18
+  952;Cubic_#BAT_PLATOS887353;247;;0;176
+  953;Cub_1;248;;1;69
+  954;Cub_2;248;;0;70
+  955;Cub_3;248;;0;196
+  956;Cub_4;248;;0;19
+  957;Cubic_#BAT_PLATOS723733;248;;0;159
+  958;Cub_1;249;;1;70
+  959;Cub_2;249;;0;197
+  960;Cub_3;249;;0;20
+  961;Cubic_#BAT_PLATOS441343;249;;0;139
+  962;Cub_1;250;;1;71
+  963;Cub_2;250;;0;72
+  964;Cub_3;250;;0;198
+  965;Cub_4;250;;0;21
+  966;Cubic_#BAT_PLATOS636527;250;;0;152
+  967;Cub_1;251;;1;72
+  968;Cub_2;251;;0;199
+  969;Cub_3;251;;0;22
+  970;Cubic_#BAT_PLATOS472907;251;;0;142
+  971;Cub_1;252;;1;73
+  972;Cub_2;252;;0;116
+  973;Cub_3;252;;0;200
+  974;Cub_4;252;;0;23
+  975;Cubic_#BAT_PLATOS190517;252;;0;125
+  976;Cub_1;253;;1;74
+  977;Cub_2;253;;0;75
+  978;Cub_3;253;;0;201
+  979;Cub_4;253;;0;24
+  980;Cubic_#BAT_PLATOS385702;253;;0;135
+  981;Cub_1;254;;1;75
+  982;Cub_2;254;;0;76
+  983;Cub_3;254;;0;202
+  984;Cub_4;254;;0;25
+  985;Cubic_#BAT_PLATOS222082;254;;0;130
+  986;Cub_1;255;;1;76
+  987;Cub_2;255;;0;203
+  988;Cub_3;255;;0;26
+  989;Cubic_#BAT_PLATOS939692;255;;0;178
+  990;Cub_1;256;;1;77
+  991;Cub_2;256;;0;78
+  992;Cub_3;256;;0;204
+  993;Cub_4;256;;0;27
+  994;Cubic_#BAT_PLATOS134876;256;;0;121
+  995;Cub_1;257;;1;78
+  996;Cub_2;257;;0;205
+  997;Cub_3;257;;0;28
+  998;Cubic_#BAT_PLATOS971256;257;;0;182
+  999;Cub_1;258;;1;113
+  1000;Cub_2;258;;0;206
+  1001;Cub_3;258;;0;29
+  1002;Cub_4;258;;0;
+  1003;Cubic_#BAT_PLATOS688866;258;;0;155
+  1004;Cub_1;259;;1;112
+  1005;Cub_2;259;;0;79
+  1006;Cub_3;259;;0;207
+  1007;Cub_4;259;;0;30
+  1008;Cubic_#BAT_PLATOS884051;259;;0;175
+  1009;Cub_1;260;;1;80
+  1010;Cub_2;260;;0;208
+  1011;Cub_3;260;;0;31
+  1012;Cub_4;260;;0;
+  1013;Cubic_#BAT_PLATOS79236;260;;0;166
+  1014;Cub_1;261;;1;79
+  1015;Cub_2;261;;0;209
+  1016;Cub_3;261;;0;32
+  1017;Cub_4;261;;0;
+  1018;Cubic_#BAT_PLATOS438041;261;;0;138
+  1019;Cub_5;262;;0;81
+  1020;Cub_6;262;;0;210
+  1021;Cub_7;262;;0;33
+  1022;Cub_8;262;;1;110
+  1023;Cubic_#BAT_PLATOS633225;262;;0;151
+  1024;Cub_2;263;;1;81
+  1025;Cub_3;263;;0;34
+  1026;Cubic_#BAT_PLATOS828410;263;;0;170
+  1027;Cubicle;263;;0;211
+  1028;Cub_1;264;;1;82
+  1029;Cub_2;264;;0;106
+  1030;Cub_3;264;;0;212
+  1031;Cub_4;264;;0;35
+  1032;Cubic_#BAT_PLATOS218780;264;;0;129
+  1033;Cub_1;265;;0;108
+  1034;Cub_2;265;;0;213
+  1035;Cub_3;265;;0;36
+  1036;Cub_4;265;;0;
+  1037;Cubic_#BAT_PLATOS577585;265;;0;147
+  1038;Cub_1;266;;1;107
+  1039;Cub_2;266;;0;214
+  1040;Cub_3;266;;0;37
+  1041;Cub_4;266;;0;
+  1042;Cubic_#BAT_PLATOS772769;266;;0;164
+  1043;Cub_1;267;;1;83
+  1044;Cub_2;267;;0;105
+  1045;Cub_4;267;;0;
+  1046;Cubic_#BAT_PLATOS967954;267;;0;181
+  1047;Cub_1;268;;1;59
+  1048;Cub_2;268;;0;215
+  1049;Cub_3;268;;0;38
+  1050;Cub_4;268;;0;
+  1051;Cubic_#BAT_PLATOS685564;268;;0;154
+  1052;Cub_1;269;;1;85
+  1053;Cub_2;269;;0;86
+  1054;Cub_3;269;;0;84
+  1055;Cub_4;269;;0;216
+  1056;Cub_5;269;;0;39
+  1057;Cubic_#BAT_PLATOS880749;269;;0;174
+  1058;Cub_1;270;;1;84
+  1059;Cub_2;270;;0;217
+  1060;Cub_3;270;;0;40
+  1061;Cub_4;270;;0;
+  1062;Cubic_#BAT_PLATOS75934;270;;0;161
+  1063;Cub_1;271;;1;86
+  1064;Cub_2;271;;0;87
+  1065;Cub_3;271;;0;218
+  1066;Cub_4;271;;0;41
+  1067;Cubic_#BAT_PLATOS434739;271;;0;137
+  1068;Cub_1;272;;1;87
+  1069;Cub_2;272;;0;88
+  1070;Cub_3;272;;0;219
+  1071;Cub_4;272;;0;42
+  1072;Cubic_#BAT_PLATOS629923;272;;0;150
+  1073;Cub_1;273;;1;88
+  1074;Cub_2;273;;0;89
+  1075;Cub_3;273;;0;220
+  1076;Cub_4;273;;0;43
+  1077;Cubic_#BAT_PLATOS825108;273;;0;169
+  1078;Cub_1;274;;1;89
+  1079;Cub_2;274;;0;221
+  1080;Cub_3;274;;0;44
+  1081;Cub_4;274;;0;
+  1082;Cubic_#BAT_PLATOS183913;274;;0;124
+  1083;Cub_1;275;;1;103
+  1084;Cub_2;275;;0;90
+  1085;Cub_3;275;;0;222
+  1086;Cub_4;275;;0;45
+  1087;Cubic_#BAT_PLATOS379098;275;;0;134
+  1088;Cub_1;276;;1;91
+  1089;Cub_2;276;;0;223
+  1090;Cub_3;276;;0;46
+  1091;Cub_4;276;;0;
+  1092;Cubic_#BAT_PLATOS574283;276;;0;146
+  1093;Cub_1;277;;1;90
+  1094;Cub_2;277;;0;224
+  1095;Cub_3;277;;0;47
+  1096;Cub_4;277;;0;
+  1097;Cubic_#BAT_PLATOS769467;277;;0;163
+  1098;Cub_1;278;;1;95
+  1099;Cub_2;278;;0;92
+  1100;Cub_3;278;;0;225
+  1101;Cub_4;278;;0;48
+  1102;Cubic_#BAT_PLATOS964652;278;;0;180
+  1103;Cub_1;279;;1;101
+  1104;Cub_2;279;;0;226
+  1105;Cub_3;279;;0;49
+  1106;Cub_4;279;;0;
+  1107;Cubic_#BAT_PLATOS323457;279;;0;133
+  1108;Cub_1;280;;1;97
+  1109;Cub_2;280;;0;227
+  1110;Cub_3;280;;0;50
+  1111;Cub_4;280;;0;
+  1112;Cubic_#BAT_PLATOS518642;280;;0;144
+  1113;Cub_1;281;;1;93
+  1114;Cub_2;281;;0;228
+  1115;Cub_3;281;;0;51
+  1116;Cub_4;281;;0;
+  1117;Cubic_#BAT_PLATOS877447;281;;0;173
+  1118;Cub_1;282;;1;94
+  1119;Cub_2;282;;0;229
+  1120;Cub_3;282;;0;52
+  1121;Cubic_#BAT_PLATOS626621;282;;0;149
+  1122;Cub_1;283;;1;299
+  1123;Cub_2;283;;0;118
+  1124;Cub_3;283;;0;117
+  1125;Cub_4;283;;0;96
+  1126;Cub_5;283;;0;95
+  1127;Cubic_#BAT_PLATOS821806;283;;0;168
+  1128;Cub_1;284;;0;300
+  1129;Cub_2;284;;0;299
+  1130;Cubic_#BAT_PLATOS16991;284;;0;123
+  1131;Cub_1;285;;1;98
+  1132;Cub_2;285;;0;97
+  1133;Cub_3;285;;0;93
+  1134;Cub_4;285;;0;94
+  1135;Cubic_#BAT_PLATOS212176;285;;0;128
+  1136;Cub_1;286;;1;92
+  1137;Cub_2;286;;0;99
+  1138;Cub_4;286;;0;102
+  1139;Cub_5;286;;0;100
+  1140;Cubic_#BAT_PLATOS570981;286;;0;145
+  1141;Cub_1;287;;1;102
+  1142;Cub_2;287;;0;101
+  1143;Cub_3;287;;0;58
+  1144;Cub_4;287;;0;98
+  1145;Cubic_#BAT_PLATOS766165;287;;0;162
+  1146;Cub_1;288;;1;
+  1147;Cub_2;288;;0;91
+  1148;Cub_3;288;;0;103
+  1149;Cub_4;288;;1;100
+  1150;Cubic_#BAT_PLATOS124970;288;;0;120
+  1151;Cub_1;289;;1;105
+  1152;Cub_2;289;;0;85
+  1153;Cub_3;289;;1;104
+  1154;Cub_4;289;;0;230
+  1155;Cub_5;289;;0;53
+  1156;Cubic_#BAT_PLATOS320155;289;;0;132
+  1157;Cub_1;290;;1;106
+  1158;Cub_2;290;;0;83
+  1159;Cub_3;290;;0;107
+  1160;Cub_4;290;;0;54
+  1161;Cub_5;290;;0;231
+  1162;Cubic_#BAT_PLATOS515340;290;;0;143
+  1163;Cub_1;291;;1;109
+  1164;Cub_2;291;;0;82
+  1165;Cub_3;291;;1;108
+  1166;Cub_4;291;;0;55
+  1167;Cub_5;291;;0;232
+  1168;Cubic_#BAT_PLATOS874145;291;;0;172
+  1169;Cub_1;292;;0;233
+  1170;Cub_2;292;;0;111
+  1171;Cub_3;292;;0;110
+  1172;Cub_4;292;;0;56
+  1173;Cubic_#BAT_PLATOS69330;292;;0;157
+  1174;Cubicle;292;;1;96
+  1175;Cub_1;293;;1;114
+  1176;Cub_2;293;;0;112
+  1177;Cub_3;293;;0;80
+  1178;Cub_4;293;;0;
+  1179;Cubic_#BAT_PLATOS264514;293;;0;131
+  1180;Cub_1;294;;1;115
+  1181;Cub_2;294;;0;114
+  1182;Cub_3;294;;0;113
+  1183;Cub_4;294;;0;
+  1184;Cubic_#BAT_PLATOS459699;294;;0;141
+  1185;Cub_1;295;;0;115
+  1186;Cub_2;295;;1;111
+  1187;Cub_3;295;;0;109
+  1188;Cub_4;295;;0;
+  1189;Cubic_#BAT_PLATOS818504;295;;0;167
+  1190;Cub_1;296;;0;57
+  1191;Cub_2;296;;0;74
+  1192;Cub_3;296;;1;116
+  1193;Cubic_#BAT_PLATOS13689;296;;0;122
+  1194;Cub_1;297;;1;117
+  1195;Cub_2;297;;0;73
+  1196;Cub_3;297;;0;68
+  1197;Cub_4;297;;0;71
+  1198;Cubic_#BAT_PLATOS208874;297;;0;127
+  1199;Cub_1;298;;1;118
+  1200;Cub_2;298;;0;61
+  1201;Cub_3;298;;0;65
+  1202;Cubic_#BAT_PLATOS121668;298;;0;119
+
+
+$$StaSwitch;ID(a:40);loc_name(a:40);fold_id(p);on_off(i);typ_id(p);iUse(i)
+********************************************************************************
+*  Switch
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: in Cubicle
+*  on_off: Closed
+*  typ_id: Type in TypSwitch
+*  iUse: Type of Usage
+********************************************************************************
+  1203;Switch;890;1;;1
+  1204;Switch;891;1;;1
+  1205;Switch;892;1;;1
+  1206;Switch;893;1;;1
+  1207;Switch;895;1;;1
+  1208;Switch;896;1;;1
+  1209;Switch;897;1;;1
+  1210;Switch;898;1;;1
+  1211;Switch;900;1;;1
+  1212;Switch;901;1;;1
+  1213;Switch;902;1;;1
+  1214;Switch;903;1;;1
+  1215;Switch;905;1;;1
+  1216;Switch;906;1;;1
+  1217;Switch;907;1;;1
+  1218;Switch;908;1;;1
+  1219;Switch;910;1;;1
+  1220;Switch;911;1;;1
+  1221;Switch;912;1;;1
+  1222;Switch;913;1;;1
+  1223;Switch;914;1;;1
+  1224;Switch;916;1;;1
+  1225;Switch;917;1;;1
+  1226;Switch;918;1;;1
+  1227;Switch;920;1;;1
+  1228;Switch;921;1;;1
+  1229;Switch;922;1;;1
+  1230;Switch;923;1;;1
+  1231;Switch;925;1;;1
+  1232;Switch;926;1;;1
+  1233;Switch;927;1;;1
+  1234;Switch;928;1;;1
+  1235;Switch;930;1;;1
+  1236;Switch;931;1;;1
+  1237;Switch;932;1;;1
+  1238;Switch;934;1;;1
+  1239;Switch;935;1;;1
+  1240;Switch;936;1;;1
+  1241;Switch;937;1;;1
+  1242;Switch;939;1;;1
+  1243;Switch;940;1;;1
+  1244;Switch;941;1;;1
+  1245;Switch;942;1;;1
+  1246;Switch;944;1;;1
+  1247;Switch;945;1;;1
+  1248;Switch;946;1;;1
+  1249;Switch;948;1;;1
+  1250;Switch;949;1;;1
+  1251;Switch;950;1;;1
+  1252;Switch;951;1;;1
+  1253;Switch;953;1;;1
+  1254;Switch;954;1;;1
+  1255;Switch;955;1;;1
+  1256;Switch;956;1;;1
+  1257;Switch;958;1;;1
+  1258;Switch;959;1;;1
+  1259;Switch;960;1;;1
+  1260;Switch;962;1;;1
+  1261;Switch;963;1;;1
+  1262;Switch;964;1;;1
+  1263;Switch;965;1;;1
+  1264;Switch;967;1;;1
+  1265;Switch;968;1;;1
+  1266;Switch;969;1;;1
+  1267;Switch;971;1;;1
+  1268;Switch;972;1;;1
+  1269;Switch;973;1;;1
+  1270;Switch;974;1;;1
+  1271;Switch;976;1;;1
+  1272;Switch;977;1;;1
+  1273;Switch;978;1;;1
+  1274;Switch;979;1;;1
+  1275;Switch;981;1;;1
+  1276;Switch;982;1;;1
+  1277;Switch;983;1;;1
+  1278;Switch;984;1;;1
+  1279;Switch;986;1;;1
+  1280;Switch;987;1;;1
+  1281;Switch;988;1;;1
+  1282;Switch;990;1;;1
+  1283;Switch;991;1;;1
+  1284;Switch;992;1;;1
+  1285;Switch;993;1;;1
+  1286;Switch;995;1;;1
+  1287;Switch;996;1;;1
+  1288;Switch;997;1;;1
+  1289;Switch;999;1;;1
+  1290;Switch;1000;1;;1
+  1291;Switch;1001;1;;1
+  1292;Switch;1002;1;;1
+  1293;Switch;1004;1;;1
+  1294;Switch;1005;1;;1
+  1295;Switch;1006;1;;1
+  1296;Switch;1007;1;;1
+  1297;Switch;1009;1;;1
+  1298;Switch;1010;1;;1
+  1299;Switch;1011;1;;1
+  1300;Switch;1012;1;;1
+  1301;Switch;1014;1;;1
+  1302;Switch;1015;1;;1
+  1303;Switch;1016;1;;1
+  1304;Switch;1017;1;;1
+  1305;Switch;1019;1;;1
+  1306;Switch;1020;1;;1
+  1307;Switch;1021;1;;1
+  1308;Switch;1022;1;;1
+  1309;Switch;1024;1;;1
+  1310;Switch;1025;1;;1
+  1311;Switch;1028;1;;1
+  1312;Switch;1029;1;;1
+  1313;Switch;1030;1;;1
+  1314;Switch;1031;1;;1
+  1315;Switch;1033;1;;1
+  1316;Switch;1034;1;;1
+  1317;Switch;1035;1;;1
+  1318;Switch;1036;1;;1
+  1319;Switch;1038;1;;1
+  1320;Switch;1039;1;;1
+  1321;Switch;1040;1;;1
+  1322;Switch;1041;1;;1
+  1323;Switch;1043;1;;1
+  1324;Switch;1044;1;;1
+  1325;Switch;1045;1;;1
+  1326;Switch;1047;1;;1
+  1327;Switch;1048;1;;1
+  1328;Switch;1049;1;;1
+  1329;Switch;1050;1;;1
+  1330;Switch;1052;1;;1
+  1331;Switch;1053;1;;1
+  1332;Switch;1054;1;;1
+  1333;Switch;1055;1;;1
+  1334;Switch;1056;1;;1
+  1335;Switch;1058;1;;1
+  1336;Switch;1059;1;;1
+  1337;Switch;1060;1;;1
+  1338;Switch;1061;1;;1
+  1339;Switch;1063;1;;1
+  1340;Switch;1064;1;;1
+  1341;Switch;1065;1;;1
+  1342;Switch;1066;1;;1
+  1343;Switch;1068;1;;1
+  1344;Switch;1069;1;;1
+  1345;Switch;1070;1;;1
+  1346;Switch;1071;1;;1
+  1347;Switch;1073;1;;1
+  1348;Switch;1074;1;;1
+  1349;Switch;1075;1;;1
+  1350;Switch;1076;1;;1
+  1351;Switch;1078;1;;1
+  1352;Switch;1079;1;;1
+  1353;Switch;1080;1;;1
+  1354;Switch;1081;1;;1
+  1355;Switch;1083;1;;1
+  1356;Switch;1084;1;;1
+  1357;Switch;1085;1;;1
+  1358;Switch;1086;1;;1
+  1359;Switch;1088;1;;1
+  1360;Switch;1089;1;;1
+  1361;Switch;1090;1;;1
+  1362;Switch;1091;1;;1
+  1363;Switch;1093;1;;1
+  1364;Switch;1094;1;;1
+  1365;Switch;1095;1;;1
+  1366;Switch;1096;1;;1
+  1367;Switch;1098;1;;1
+  1368;Switch;1099;1;;1
+  1369;Switch;1100;1;;1
+  1370;Switch;1101;1;;1
+  1371;Switch;1103;1;;1
+  1372;Switch;1104;1;;1
+  1373;Switch;1105;1;;1
+  1374;Switch;1106;1;;1
+  1375;Switch;1108;1;;1
+  1376;Switch;1109;1;;1
+  1377;Switch;1110;1;;1
+  1378;Switch;1111;1;;1
+  1379;Switch;1113;1;;1
+  1380;Switch;1114;1;;1
+  1381;Switch;1115;1;;1
+  1382;Switch;1116;1;;1
+  1383;Switch;1118;1;;1
+  1384;Switch;1119;1;;1
+  1385;Switch;1120;1;;1
+  1386;Switch;1122;1;;1
+  1387;Switch;1123;1;;1
+  1388;Switch;1124;1;;1
+  1389;Switch;1125;1;;1
+  1390;Switch;1126;1;;1
+  1391;Switch;1128;1;;1
+  1392;Switch;1129;1;;1
+  1393;Switch;1131;1;;1
+  1394;Switch;1132;1;;1
+  1395;Switch;1133;1;;1
+  1396;Switch;1134;1;;1
+  1397;Switch;1136;1;;1
+  1398;Switch;1137;1;;1
+  1399;Switch;1138;1;;1
+  1400;Switch;1139;1;;1
+  1401;Switch;1141;1;;1
+  1402;Switch;1142;1;;1
+  1403;Switch;1143;1;;1
+  1404;Switch;1144;1;;1
+  1405;Switch;1146;1;;1
+  1406;Switch;1147;1;;1
+  1407;Switch;1148;1;;1
+  1408;Switch;1149;1;;1
+  1409;Switch;1151;1;;1
+  1410;Switch;1152;1;;1
+  1411;Switch;1153;1;;1
+  1412;Switch;1154;1;;1
+  1413;Switch;1155;1;;1
+  1414;Switch;1157;1;;1
+  1415;Switch;1158;1;;1
+  1416;Switch;1159;1;;1
+  1417;Switch;1160;1;;1
+  1418;Switch;1161;1;;1
+  1419;Switch;1163;1;;1
+  1420;Switch;1164;1;;1
+  1421;Switch;1165;1;;1
+  1422;Switch;1166;1;;1
+  1423;Switch;1167;1;;1
+  1424;Switch;1169;1;;1
+  1425;Switch;1170;1;;1
+  1426;Switch;1171;1;;1
+  1427;Switch;1172;1;;1
+  1428;Switch;1174;1;;1
+  1429;Switch;1175;1;;1
+  1430;Switch;1176;1;;1
+  1431;Switch;1177;1;;1
+  1432;Switch;1178;1;;1
+  1433;Switch;1180;1;;1
+  1434;Switch;1181;1;;1
+  1435;Switch;1182;1;;1
+  1436;Switch;1183;1;;1
+  1437;Switch;1185;1;;1
+  1438;Switch;1186;1;;1
+  1439;Switch;1187;1;;1
+  1440;Switch;1188;1;;1
+  1441;Switch;1190;1;;1
+  1442;Switch;1191;1;;1
+  1443;Switch;1192;1;;1
+  1444;Switch;1194;1;;1
+  1445;Switch;1195;1;;1
+  1446;Switch;1196;1;;1
+  1447;Switch;1197;1;;1
+  1448;Switch;1199;1;;1
+  1449;Switch;1200;1;;1
+  1450;Switch;1201;1;;1
+
+
+$$TypLne;ID(a:40);loc_name(a:40);fold_id(p);uline(r);sline(r);aohl_(a:3);rline(r);xline(r);cline(r);rline0(r);xline0(r);cline0(r);rtemp(r);Ithr(r);chr_name(a:20)
+********************************************************************************
+*  Line Type
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  uline: Rated Voltage in kV
+*  sline: Rated Current in kA
+*  aohl_: Cable / OHL
+*  rline: Parameters per Length 1,2-Sequence: AC-Resistance R'(20°C) in Ohm/km
+*  xline: Parameters per Length 1,2-Sequence: Reactance X' in Ohm/km
+*  cline: Parameters per Length 1,2-Sequence: Capacitance C' in uF/km
+*  rline0: Parameters per Length Zero Sequence: AC-Resistance R0' in Ohm/km
+*  xline0: Parameters per Length Zero Sequence: Reactance X0' in Ohm/km
+*  cline0: Parameters per Length Zero Sequence: Capacitance C0' in uF/km
+*  rtemp: Max. End Temperature in degC
+*  Ithr: Rated Short-Time (1s) Current (Conductor) in kA
+*  chr_name: Characteristic Name
+********************************************************************************
+  1451;NAYY4x050;;0.4;0.141;cab;0.641;0.08482;0.67;0;0;0;80;0;
+  1452;NAYY4x095;;0.4;0.211;cab;0.32;0.082;0.769999;0;0;0;80;0;
+  1453;NAYY4x150;;0.4;0.27;cab;0.206;0.08042;0.83;0;0;0;80;0;
+
+
+$$TypLod;ID(a:40);loc_name(a:40);fold_id(p);kpu(r);kqu(r);systp(i)
+********************************************************************************
+*  General Load Type
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  kpu: Voltage Dependence P: Exponent e_cP
+*  kqu: Voltage Dependence of Q: Exponent e_cQ
+*  systp: System Type:AC:DC
+********************************************************************************
+  1454;Lod-1;;1.6;1.8;0
+
+
+$$TypTr2;ID(a:40);loc_name(a:40);fold_id(p);strn(r);frnom(r);utrn_h(r);utrn_l(r);uktr(r);pcutr(r);uk0tr(r);ur0tr(r);tr2cn_h(a:2);tr2cn_l(a:2);nt2ag(r);curmg(r);pfe(r);zx0hl_n(r);tap_side(i);dutap(r);phitr(r);nntap0(i);ntpmn(i);ntpmx(i);manuf(a:20);chr_name(a:20)
+********************************************************************************
+*  2-Winding Transformer Type
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  strn: Rated Power in MVA
+*  frnom: Nominal Frequency in Hz
+*  utrn_h: Rated Voltage: HV-Side in kV
+*  utrn_l: Rated Voltage: LV-Side in kV
+*  uktr: Positive Sequence Impedance: Short-Circuit Voltage uk in %
+*  pcutr: Positive Sequence Impedance: Copper Losses in kW
+*  uk0tr: Zero Sequence Impedance: Short-Circuit Voltage uk0 in %
+*  ur0tr: Zero Sequence Impedance: SHC-Voltage (Re(uk0)) uk0r in %
+*  tr2cn_h: Vector Group: HV-Side:Y :YN:Z :ZN:D
+*  tr2cn_l: Vector Group: LV-Side:Y :YN:Z :ZN:D
+*  nt2ag: Vector Group: Phase Shift in *30deg
+*  curmg: Magnetising Impedance: No Load Current in %
+*  pfe: Magnetising Impedance: No Load Losses in kW
+*  zx0hl_n: Zero Sequence Magnetising Impedance: Mag. Impedance/uk0
+*  tap_side: Tap Changer 1: at Side:HV:LV
+*  dutap: Tap Changer 1: Additional Voltage per Tap in %
+*  phitr: Tap Changer 1: Phase of du in deg
+*  nntap0: Tap Changer 1: Neutral Position
+*  ntpmn: Tap Changer 1: Minimum Position
+*  ntpmx: Tap Changer 1: Maximum Position
+*  manuf: Manufacturer
+*  chr_name: Characteristic Name
+********************************************************************************
+  1455;t_GEAFOL_250;;0.25;50;20;0.4;6;3.3;6;1.2;D;YN;5;0.00276;0.69;100;0;2.5;0;0;-2;2;;
