@@ -20,7 +20,7 @@ from .newtonpf import newtonpf
 from .iwamoto_nr_pf import IwamotoNR
 from .fdpf import fdpf
 from .gausspf import gausspf
-from .helm import helm
+from .holomorphic_embedding import helm
 from .Zbus import zbus
 from .branch_definitions import *
 from .bus_definitions import *
