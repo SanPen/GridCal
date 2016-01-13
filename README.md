@@ -2,6 +2,8 @@
 
 This software aims to be a complete platform for power systems research and simulation. [Whatch the video](https://youtu.be/O6lv-d8z39k)
 
+![](https://github.com/SanPen/GridCal/blob/master/GridCal.png)
+
 It is based on PyPower (MatPower for python) and it is compatible with Matpower files, and many more to come.
 
 Some of the features you'll find already are:
