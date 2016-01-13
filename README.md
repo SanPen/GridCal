@@ -13,5 +13,7 @@ Some of the features you'll find already are:
   - Newton Raphson Iwamoto (robust Newton Raphson)
   - Holomorphic Embedding Power flow
   - DC approximation
+  
+- The hability to handle island grids
 
 - Time series with load and generation profiles. It includes a nice profile import window
