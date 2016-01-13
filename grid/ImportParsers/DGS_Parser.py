@@ -928,6 +928,6 @@ def read_DGS(filename):
     return BUSES, BRANCHES, GEN, g
 
 
-if __name__ == "__main__":
-    fname = "Bogfinkeveg.dgs"
-    read_DGS(fname)
+# if __name__ == "__main__":
+#     fname = "SOMEGRID.dgs"
+#     read_DGS(fname)
