@@ -1,17 +1,3 @@
-__author__ = 'santi'
-
-# import sys
-# try:
-#     from .GUI.main_gui.main_gui import *
-# except:
-#     from GUI.main_gui.main_gui import *
-#
-#
-# app = QtGui.QApplication(sys.argv)
-# window = MainGUI()
-# window.show()
-# sys.exit(app.exec_())
-
 
 __author__ = 'Santiago Penate Vera'
 """
