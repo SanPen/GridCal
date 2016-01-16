@@ -1,6 +1,6 @@
 # GridCal
 
-This software aims to be a complete platform for power systems research and simulation. [Whatch the video](https://youtu.be/O6lv-d8z39k)
+This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/O6lv-d8z39k)
 
 ![](https://github.com/SanPen/GridCal/blob/master/GridCal.png)
 
