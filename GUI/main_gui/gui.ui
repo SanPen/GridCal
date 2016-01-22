@@ -617,6 +617,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QRadioButton" name="contiuationpf_option_button">
+             <property name="text">
+              <string>Predictor - corrector</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QFrame" name="frame_13">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>

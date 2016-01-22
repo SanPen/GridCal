@@ -273,6 +273,9 @@ class Ui_mainWindow(object):
         self.dc_option_button = QtGui.QRadioButton(self.frame_7)
         self.dc_option_button.setObjectName(_fromUtf8("dc_option_button"))
         self.verticalLayout_7.addWidget(self.dc_option_button)
+        self.contiuationpf_option_button = QtGui.QRadioButton(self.frame_7)
+        self.contiuationpf_option_button.setObjectName(_fromUtf8("contiuationpf_option_button"))
+        self.verticalLayout_7.addWidget(self.contiuationpf_option_button)
         self.frame_13 = QtGui.QFrame(self.frame_7)
         self.frame_13.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame_13.setFrameShadow(QtGui.QFrame.Raised)
@@ -860,6 +863,7 @@ class Ui_mainWindow(object):
         self.gs_option_button.setText(_translate("mainWindow", "Gauss Seidel", None))
         self.zbus_option_button.setText(_translate("mainWindow", "ZBus", None))
         self.dc_option_button.setText(_translate("mainWindow", "DC approximation", None))
+        self.contiuationpf_option_button.setText(_translate("mainWindow", "Predictor - corrector", None))
         self.label_5.setText(_translate("mainWindow", "Tolerance", None))
         self.label_6.setText(_translate("mainWindow", "Max. Iterations", None))
         self.remember_last_solution_checkBox.setText(_translate("mainWindow", "Initialize with the \n"

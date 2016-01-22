@@ -235,5 +235,5 @@ def zbus(admittances, slackIndices, maxIter, powerInjections, voltageSetPoints, 
     # Assign the non-slack voltages
     voltages_vector[non_slack_indices] = Vred
 
-    return voltages_vector, converged
+    return voltages_vector, converged, error
 

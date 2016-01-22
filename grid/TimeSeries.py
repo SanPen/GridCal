@@ -34,6 +34,7 @@ class TimeSeries(QThread):
         self.currents = None
         self.loadings = None
         self.losses = None
+        self.mismatch = None
 
         # run options
         self.auto_repeat = True
@@ -117,6 +118,7 @@ class TimeSeries(QThread):
         self.currents = np.zeros((tT, nbranch), dtype=np.complex128)
         self.loadings = np.zeros((tT, nbranch), dtype=np.complex128)
         self.losses = np.zeros((tT, nbranch), dtype=np.complex128)
+        self.mismatch = np.zeros(tT)
 
     def set_loads_profile(self, profiles):
         """
@@ -235,6 +237,7 @@ class TimeSeries(QThread):
             self.currents[t, :] = self.pf.current
             self.loadings[t, :] = self.pf.loading
             self.losses[t, :] = self.pf.losses
+            self.mismatch[t] = self.pf.mismatch
 
             # Auto-repeating of the profiles
             if setG:

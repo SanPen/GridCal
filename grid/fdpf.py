@@ -131,4 +131,4 @@ def fdpf(Ybus, Sbus, V0, Bp_solver, Bpp_solver, pv, pq, tol=1e-3, max_it=50, ver
             sys.stdout.write('\nFast-decoupled power flow did not converge in '
                              '%d iterations.' % i)
 
-    return V, converged, i
+    return V, converged, max([normP, normQ])

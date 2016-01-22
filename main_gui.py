@@ -1,3 +1,17 @@
+__author__ = 'santi'
+
+# import sys
+# try:
+#     from .GUI.main_gui.main_gui import *
+# except:
+#     from GUI.main_gui.main_gui import *
+#
+#
+# app = QtGui.QApplication(sys.argv)
+# window = MainGUI()
+# window.show()
+# sys.exit(app.exec_())
+
 
 __author__ = 'Santiago Penate Vera'
 """
@@ -594,6 +608,8 @@ class MainGUI(QtGui.QMainWindow):
             solver_type = SolverType.DC
         elif self.ui.NR_Iwamoto_option_button.isChecked():
             solver_type = SolverType.IWAMOTO
+        elif self.ui.contiuationpf_option_button.isChecked():
+            solver_type = SolverType.CONTINUATION_NR
 
         check_freq_blackout = self.ui.freq_assesment_check.isChecked()
 
@@ -841,7 +857,7 @@ class MainGUI(QtGui.QMainWindow):
         df = pd.DataFrame(data=[df_data], columns=labels)
         self.ui.resultsTableView.setModel(PandasModel(df))
 
-    def display_series_bus_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y_limits=None, boxplot=False):
+    def display_series_bus_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y2=None, ylabel2=None, y_limits=None, boxplot=False):
         """
 
         :param ax:
@@ -867,14 +883,23 @@ class MainGUI(QtGui.QMainWindow):
             df.boxplot(ax=ax, return_type='axes')
             ax.set_xticklabels(labels, rotation='vertical')
         else:
-            df.plot(ax=ax)
+            df.plot(yerr=y2, ax=ax)
+            # print('Mismatches:\n', y2)
         ax.set_aspect('auto')
         ax.axes.set_ylabel(ylabel)
         ax.axes.set_xlabel(xlabel)
+
+        # add mismatch on the secondary axis
+        # if y2 is not None:
+        #     ax2 = ax.twinx()
+        #     ax2.plot(y2, 'r.')
+        #     if ylabel2 is not None:
+        #         ax2.set_ylabel(ylabel2)
+
         fig.tight_layout()
         self.ui.resultsPlot.redraw()
 
-    def display_series_branch_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y_limits=None, boxplot=False):
+    def display_series_branch_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y2=None, ylabel2=None, y_limits=None, boxplot=False):
         """
 
         :param ax:
@@ -900,10 +925,18 @@ class MainGUI(QtGui.QMainWindow):
             df.boxplot(ax=ax, return_type='axes')
             ax.set_xticklabels(labels, rotation='vertical')
         else:
-            df.plot(ax=ax)
+            df.plot(yerr=y2, ax=ax)
         ax.set_aspect('auto')
         ax.axes.set_ylabel(ylabel)
         ax.axes.set_xlabel(xlabel)
+
+        # add mismatch on the secondary axis
+        # if y2 is not None:
+        #     ax2 = ax.twinx()
+        #     ax2.plot(y2, 'r.')
+        #     if ylabel2 is not None:
+        #         ax2.set_ylabel(ylabel2)
+
         fig.tight_layout()
         self.ui.resultsPlot.redraw()
 
@@ -979,17 +1012,21 @@ class MainGUI(QtGui.QMainWindow):
                 if type_of_result == ResultTypes.voltage_series:
                     x = self.circuit.time_series.time
                     y = abs(self.circuit.time_series.voltages)
+                    y2 = self.circuit.time_series.mismatch
                     # y = self.circuit.bus[:, [VM, VMIN, VMAX]]
                     ylabel = "Bus Voltages (p.u.)"
                     xlabel = 'Time'
-                    self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel, boxplot=useboxplot)
+                    ylabel2 = 'Error'
+                    self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2, boxplot=useboxplot)
                 elif type_of_result == ResultTypes.loading_series:
                     x = self.circuit.time_series.time
                     y = abs(self.circuit.time_series.loadings)
+                    y2 = self.circuit.time_series.mismatch
                     # y = self.circuit.bus[:, [VM, VMIN, VMAX]]
                     ylabel = "Branch loading (%)"
                     xlabel = 'Time'
-                    self.display_series_branch_magnitude(ax, fig, x, y, ylabel, xlabel, boxplot=useboxplot)
+                    ylabel2 = 'Error'
+                    self.display_series_branch_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2, boxplot=useboxplot)
 
 
 if __name__ == "__main__":

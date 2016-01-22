@@ -205,4 +205,4 @@ def newtonpf(Ybus, Sbus, V0, pv, pq, tol, max_it, verbose=False):
             sys.stdout.write("\nNewton's method power did not converge in %d "
                              "iterations.\n" % i)
 
-    return V, converged, i
+    return V, converged, normF

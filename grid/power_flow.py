@@ -18,9 +18,10 @@ from scipy.optimize import minimize
 from .dcpf import dcpf
 from .newtonpf import newtonpf
 from .iwamoto_nr_pf import IwamotoNR
+from .continuation_power_flow import runcpf2
 from .fdpf import fdpf
 from .gausspf import gausspf
-from .holomorphic_embedding import helm
+from .helm import helm
 from .Zbus import zbus
 from .branch_definitions import *
 from .bus_definitions import *
@@ -37,7 +38,8 @@ class SolverType(Enum):
     DC = 5,
     HELM = 6,
     ZBUS = 7,
-    IWAMOTO = 8
+    IWAMOTO = 8,
+    CONTINUATION_NR = 9
 
 
 class MultiCircuitPowerFlow(QThread):
@@ -62,6 +64,7 @@ class MultiCircuitPowerFlow(QThread):
 
         self.has_results = False
 
+        self.mismatch = 0
 
         # declare results arrays:
         nb = len(self.bus)
@@ -288,7 +291,7 @@ class MultiCircuitPowerFlow(QThread):
             self.current[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_branch_current_flows()
             self.loading[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_branch_loading()
             self.losses[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_losses()
-
+            self.mismatch = self.circuit_power_flow.mismatch
         else:
             # run all the islands
             self.last_power_flow_succeeded = [0] * len(self.island_circuits)
@@ -297,6 +300,9 @@ class MultiCircuitPowerFlow(QThread):
             island_count = len(self.island_circuits)
             if self.isMaster:
                 self.emit(SIGNAL('progress(float)'), 0.0)
+
+            mismatches = list()
+
             for island in self.island_circuits:
 
                 # run island power flow
@@ -323,7 +329,8 @@ class MultiCircuitPowerFlow(QThread):
                 self.current[br_idx] = island.current
                 self.loading[br_idx] = island.loading
                 self.losses[br_idx] = island.losses
-
+                mismatches.append(island.mismatch)
+                print('Mismatch (island): ', island.mismatch)
                 # else:
                 #     busm1 = -1.0 * ones(len(b_idx))
                 #     brm1 = -1.0 * ones(len(br_idx))
@@ -348,7 +355,11 @@ class MultiCircuitPowerFlow(QThread):
                 if self.cancel:
                     break
 
+            self.mismatch = max(mismatches)
+
         self.has_results = True
+
+
 
         if self.isMaster:
             # send the finnish signal
@@ -541,6 +552,12 @@ class CircuitPowerFlow(object):
         self.Pfinj = None
 
         self.EPS = finfo(float).eps
+
+        self.mismatch = 0
+
+        self.continuation_Sbus = None
+
+        self.continuation_V0 = None
         ################################################################################################################
 
         self.solver_type = solver_type
@@ -624,6 +641,9 @@ class CircuitPowerFlow(object):
         # update the power vector from the case data
         self.update_power()
 
+        # Set the continaution initial state
+        self.set_continuation_initial_state(self.Sbus, self.V0)
+
         # update the transformers and lines tap variables
         self.update_taps()
 
@@ -635,6 +655,10 @@ class CircuitPowerFlow(object):
 
         self.V0 = self.bus[:, VM] * exp(1j * pi/180.0 * self.bus[:, VA])
         self.V0[self.active_generators_buses] = self.gen[self.active_generators, VG] / abs(self.V0[self.active_generators_buses]) * self.V0[self.active_generators_buses]
+
+    def set_continuation_initial_state(self, S0, V0):
+        self.continuation_Sbus = S0.copy()
+        self.continuation_V0 = V0.copy()
 
     def update_power(self):
         """
@@ -1045,7 +1069,7 @@ class CircuitPowerFlow(object):
 
                 # run the power flow
                 if self.solver_type == SolverType.NR:
-                    V, success, _ = newtonpf(self.Ybus, self.Sbus, self.V0, pv, pq, tol, max_it, verbose)
+                    V, success, self.mismatch = newtonpf(self.Ybus, self.Sbus, self.V0, pv, pq, tol, max_it, verbose)
                     # success = 1
 
                 elif self.solver_type == SolverType.NRFD_BX or self.solver_type == SolverType.NRFD_XB:
@@ -1060,21 +1084,22 @@ class CircuitPowerFlow(object):
                         self.Bp_solver = splu(self.Bp)
                         self.Bpp_solver = splu(self.Bpp)
 
-                    V, success, _ = fdpf(self.Ybus, self.Sbus, self.V0, self.Bp_solver, self.Bpp_solver,
-                                         pv, pq, tol, max_it, verbose)
+                    V, success, self.mismatch = fdpf(self.Ybus, self.Sbus, self.V0, self.Bp_solver, self.Bpp_solver,
+                                                    pv, pq, tol, max_it, verbose)
 
                 elif self.solver_type == SolverType.GAUSS:
-                    V, success, _ = gausspf(self.Ybus, self.Sbus, self.V0, ref, pv, pq, tol, max_it, verbose)
+                    V, success, self.mismatch = gausspf(self.Ybus, self.Sbus, self.V0, ref, pv, pq, tol, max_it, verbose)
 
                 elif self.solver_type == SolverType.HELM:
                     cmax = 151
                     if len(ref) == 0:
                         ref, pv, pq, btypes = bustypes(self.bus, self.gen, self.Sbus)
-                    V = helm(self.Ybus, ref, cmax, self.Sbus, self.V0, btypes, eps=1e-3)
-                    success = 1
+                    V, success,  self.mismatch = helm(self.Ybus, ref, cmax, self.Sbus, self.V0, btypes, eps=1e-3)
+
+                    print('converged:', success, '  err:', self.mismatch)
                     print(V)
                 elif self.solver_type == SolverType.IWAMOTO:
-                    V, success, _ = IwamotoNR(self.Ybus, self.Sbus, self.V0, pv, pq, tol, max_it, robust=True)
+                    V, success, self.mismatch = IwamotoNR(self.Ybus, self.Sbus, self.V0, pv, pq, tol, max_it, robust=True)
 
                 elif self.solver_type == SolverType.ZBUS:
 
@@ -1085,12 +1110,58 @@ class CircuitPowerFlow(object):
                             Qlim[ii-1] = [self.gen[jj, QMIN]/self.baseMVA, self.gen[jj, QMAX]/self.baseMVA]
                         jj += 1
 
-                    V, success = zbus(self.Ybus, ref, max_it, self.Sbus, self.V0, btypes, Qlim, tol, self.V0)
+                    V, success, self.mismatch = zbus(self.Ybus, ref, max_it, self.Sbus, self.V0, btypes, Qlim, tol, self.V0)
+
+                elif self.solver_type == SolverType.CONTINUATION_NR:
+                    # here we'll use the continuation power flow to solve critical states
+                    approximation_order = 1
+                    step = 0.01
+                    adapt_step = True
+                    step_min = 0.0001
+                    step_max = 0.2
+                    stop_at = 1  # 'NOSE'or 'FULL', with 1 we stop at the given power
+
+                    Voltage_series, Lambda_series, \
+                    self.mismatch, success = runcpf2(self.Ybus, self.continuation_Sbus, self.Sbus,
+                                                     self.continuation_V0, pv, pq, step,
+                                                     approximation_order, adapt_step, step_min,
+                                                     step_max, error_tol=1e-3, tol=tol,
+                                                     max_it=max_it, stop_at=stop_at, verbose=False)
+
+                    nn = len(Voltage_series)
+                    print('nn: ', nn)
+                    if success:
+                        V = Voltage_series[nn-1]
+                        self.set_continuation_initial_state(self.Sbus, V)
+                    else:
+                        print('Reinitializing Predictor-Corrector with IWAMOTO')
+                        V, success, iwa_mismatch = IwamotoNR(self.Ybus, self.Sbus, self.V0, pv, pq, tol, max_it, robust=True)
+
+                        self.set_continuation_initial_state(self.Sbus, V)
+
+                        Voltage_series, Lambda_series, \
+                        self.mismatch, success = runcpf2(self.Ybus, self.continuation_Sbus, self.Sbus,
+                                                         self.continuation_V0, pv, pq, step,
+                                                         approximation_order, adapt_step, step_min,
+                                                         step_max, error_tol=1e-3, tol=tol,
+                                                         max_it=max_it, stop_at=stop_at, verbose=False)
+
+                        nn = len(Voltage_series)
+                        print('nn: ', nn)
+                        if success:
+                            V = Voltage_series[nn-1]
+                            self.set_continuation_initial_state(self.Sbus, V)
+                        else:
+                            # keep the iwamoto voltage
+                            # V = zeros(self.nb, dtype=complex)
+                            self.mismatch = iwa_mismatch
+
 
                 else:
                     raise Exception('Solver not recognised')
 
                 self.V0 = V  # Store he voltage solution as the initial solution for later
+                # print('Mismatch: ', self.mismatch)
 
                 # update data matrices with solution
                 self.update_power_flow_solution(V)  # updates the global variables

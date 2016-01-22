@@ -227,7 +227,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
         # update voltage
         if robust:
             mu_ = mu(Ybus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
-            print('mu:', mu_)
+            # print('mu:', mu_)
         else:
             mu_ = 1.0
 
@@ -248,4 +248,4 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
         if normF < tol:
             converged = 1
 
-    return V, converged, i
+    return V, converged, normF

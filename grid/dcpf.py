@@ -32,4 +32,4 @@ def dcpf(B, Pbus, Va0, ref, pvpq):
     # update angles for non-reference buses
     Va[pvpq] = spsolve(B[pvpq.T, pvpq], (Pbus[pvpq] - B[pvpq.T, ref] * Va0[ref]).T)
 
-    return Va
+    return Va, True, 0

@@ -105,4 +105,4 @@ def gausspf(Ybus, Sbus, V0, ref, pv, pq, tol=1e-3, max_it=50, verbose=False):
             sys.stdout.write('Gauss-Seidel power did not converge in %d '
                              'iterations.' % i)
 
-    return V, converged, i
+    return V, converged, normF
