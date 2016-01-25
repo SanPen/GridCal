@@ -4,6 +4,8 @@ This software aims to be a complete platform for power systems research and simu
 
 ![](https://github.com/SanPen/GridCal/blob/master/GridCal.png)
 
+Since it is pure Python, It works for Windows, Linux and OSX.
+
 It is based on PyPower (MatPower for python) and it is compatible with Matpower files, and many more to come.
 
 Some of the features you'll find already are:
