@@ -21,3 +21,5 @@ Some of the features you'll find already are:
 - Time series with load and generation profiles. It includes a nice profile import window
 
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
+
+Send feedback and requests to santiago.penate.vera@gmail.com.
