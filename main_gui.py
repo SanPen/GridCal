@@ -1020,7 +1020,7 @@ class MainGUI(QtGui.QMainWindow):
                     self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2, boxplot=useboxplot)
                 elif type_of_result == ResultTypes.loading_series:
                     x = self.circuit.time_series.time
-                    y = abs(self.circuit.time_series.loadings)
+                    y = abs(self.circuit.time_series.loadings)*100
                     y2 = self.circuit.time_series.mismatch
                     # y = self.circuit.bus[:, [VM, VMIN, VMAX]]
                     ylabel = "Branch loading (%)"
