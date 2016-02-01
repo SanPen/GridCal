@@ -19,19 +19,15 @@ from scipy.io import loadmat, savemat
 
 from pandas import DataFrame as df
 
-from .power_flow import *
-from .bus_definitions import *
-from .gen_definitions import *
-from .branch_definitions import *
-from .util import run_userfcn
-from .TimeSeries import *
+from grid.power_flow import *
+from grid.bus_definitions import *
+from grid.gen_definitions import *
+from grid.branch_definitions import *
+from grid.util import run_userfcn
+from grid.TimeSeries import *
+from grid.ImportParsers.DGS_Parser import read_DGS
+from grid.ImportParsers.matpower_parser import parse_matpower_file
 
-try:
-    from ImportParsers.DGS_Parser import read_DGS
-    from ImportParsers.matpower_parser import parse_matpower_file
-except:
-    from .ImportParsers.DGS_Parser import read_DGS
-    from .ImportParsers.matpower_parser import parse_matpower_file
 
 PY2 = sys.version_info[0] == 2
 EPS = finfo(float).eps
@@ -210,6 +206,9 @@ class Circuit(object):
         self.power_flow = MultiCircuitPowerFlow(self.baseMVA, self.bus, self.gen, self.branch,
                                                 self.circuit_graph, solver_type=SolverType.NR)
         self.time_series = TimeSeries(self.power_flow)
+
+        self.voltage_stability = MultiCircuitVoltageStability(self.baseMVA, self.bus, self.gen, self.branch,
+                                                              self.circuit_graph, solver_type=SolverType.NR)
 
     def run_time_series(self, solver_type):
         """

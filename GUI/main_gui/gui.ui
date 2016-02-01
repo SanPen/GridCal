@@ -1194,16 +1194,9 @@ last solution</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_11">
                <item>
-                <widget class="QLabel" name="label_2">
+                <widget class="QLabel" name="label_15">
                  <property name="text">
-                  <string>Power flow</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="Line" name="line_4">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <string>Time select</string>
                  </property>
                 </widget>
                </item>
@@ -1211,85 +1204,47 @@ last solution</string>
                 <widget class="QComboBox" name="results_time_selection_comboBox"/>
                </item>
                <item>
-                <widget class="QPushButton" name="per_unit_voltages_Button">
+                <widget class="QLabel" name="label_16">
                  <property name="text">
-                  <string>Voltages p.u.</string>
+                  <string>Elements</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="branches_loading_Button">
+                <widget class="QTreeView" name="results_treeView"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_2">
                  <property name="text">
-                  <string>Branch Loading (%)</string>
+                  <string>Group plotting options</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="Line" name="line_6">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_7">
+                <widget class="QRadioButton" name="values_at_t_radioButton">
                  <property name="text">
-                  <string>Power flow: Time series</string>
+                  <string>All values at the selected time</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="Line" name="line_5">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="per_unit_voltages_series_Button">
+                <widget class="QRadioButton" name="all_values_radioButton">
                  <property name="text">
-                  <string>Voltages p.u.</string>
+                  <string>All time series</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="branches_loading_series_Button">
-                 <property name="text">
-                  <string>Branch Loading (%)</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="boxplot_checkbox">
+                <widget class="QRadioButton" name="box_whiskers_radioButton">
                  <property name="text">
                   <string>Box and whiskers plot</string>
                  </property>
                 </widget>
                </item>
-               <item>
-                <spacer name="verticalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
               </layout>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QFrame" name="frame_11">
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
              </widget>
             </item>
            </layout>
@@ -1434,6 +1389,7 @@ last solution</string>
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionBlackout"/>
+    <addaction name="actionVoltage_stability"/>
    </widget>
    <widget class="QMenu" name="menuResults">
     <property name="title">
@@ -1485,6 +1441,7 @@ last solution</string>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
+   <addaction name="actionVoltage_stability"/>
    <addaction name="actionPower_Flow_Time_series"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="separator"/>
@@ -1799,6 +1756,15 @@ last solution</string>
    </property>
    <property name="text">
     <string>Redraw by result</string>
+   </property>
+  </action>
+  <action name="actionVoltage_stability">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/file/continuation_power_flow.svg</normaloff>:/file/continuation_power_flow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Voltage stability</string>
    </property>
   </action>
  </widget>

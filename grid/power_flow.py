@@ -42,12 +42,14 @@ class SolverType(Enum):
     CONTINUATION_NR = 9
 
 
-class MultiCircuitPowerFlow(QThread):
+class MultiCircuitVoltageStability(QThread):
     """
     This class handles the power flow simulation that allows the simulation of multiple islands
     """
     def __init__(self, baseMVA,  bus, gen, branch, graph, solver_type, is_an_island=False):
         QThread.__init__(self)
+
+        self.run_continuation_pf = False
 
         self.baseMVA = baseMVA
         self.bus = bus.copy()
@@ -66,7 +68,303 @@ class MultiCircuitPowerFlow(QThread):
 
         self.mismatch = 0
 
-        # declare results arrays:
+        # declare power flow results arrays:
+        nb = len(self.bus)
+        nl = len(self.branch)
+        ng = len(gen)
+
+        # declare continuation power flow results
+        self.continuation_voltage = zeros(nb, dtype=object)
+        self.continuation_lambda = zeros(nb, dtype=object)
+        self.continuation_power = zeros(nb, dtype=object)
+
+        if not is_an_island:
+            self.island_circuits, self.original_indices, \
+            self.recalculate_islands = self.get_islands(self.graph, self.baseMVA, self.bus, self.gen, self.branch)
+        else:
+            self.circuit_power_flow = self.get_power_flow_instance(solver_type)
+
+        # run options
+        self.solver_type = solver_type
+        self.tolerance = 1e-3
+        self.max_iterations = 20
+        self.isMaster = True
+        self.cancel = False
+        self.solver_to_retry_with = None
+
+
+    def get_failed_edges(self, branch):
+        """
+        Returns a list of tuples with the failed edges
+        """
+        if branch is not None:
+            nl = len(branch)
+            failed_edges = list()
+
+            for i in range(nl):
+                f = int(branch[i, F_BUS])
+                t = int(branch[i, T_BUS])
+                status = int(branch[i, BR_STATUS])
+
+                if status == 0:
+                    failed_edges.append((f, t))
+
+            return failed_edges
+        else:
+            return None
+
+    def get_islands(self, graph, baseMVA, bus, gen, branch):
+        """
+        Computes the islands of this circuit and composes the respective island's data structures
+
+        Returns:
+            list of Circuit instances with the data of this circuit split by island groups.
+        """
+        from networkx import connected_components
+
+        # get the failed edges
+        failed_edges = self.get_failed_edges(branch)
+
+        # remove the failed edges from the graph
+        G = graph.copy()
+        if failed_edges is not None:
+            for e in failed_edges:
+                G.remove_edge(*e)
+
+        # get he groups of nodes that are connected together
+        groups = connected_components(G)
+        islands = list()
+        for island in groups:
+            islands.append(list(island))
+
+        nl = len(branch)
+        branch[:, O_INDEX] = list(range(nl))
+
+        island_circuits = list()
+        original_indices = list()
+
+        for island in islands:
+            island.sort()
+            original_indices_entry = [None] * 3  # this stores the original indices of bus, gen, branch of the island
+
+            # island is a list of the nodes that form an island
+            print(island)
+
+            # populate the buses structure
+            bus = array(self.bus[island, :].copy())
+            original_indices_entry[0] = island
+
+            # Populate the generators structure
+            bus_gen_idx = self.gen[:, GEN_BUS].astype(np.int)
+
+            # for i in range(len(bus_gen_idx)):
+            #     if bus_gen_idx[i] in island:
+            #         generators.append(self.gen[i, :])
+            gen_original_indices = [i for i in range(len(bus_gen_idx)) if bus_gen_idx[i] in island]
+            gen = self.gen[gen_original_indices, :]
+            original_indices_entry[1] = gen_original_indices
+
+            # Populate the branches structure
+            bus_from_idx = self.branch[:, F_BUS].astype(np.int)
+            bus_to_idx = self.branch[:, T_BUS].astype(np.int)
+            # for i in range(len(bus_from_idx)):
+            #     if bus_from_idx[i] in island and bus_to_idx[i] in island:
+            #         branches.append(self.branch[i, :].copy())
+            branch_original_indices = [i for i in range(len(bus_from_idx)) if bus_from_idx[i] in island and bus_to_idx[i] in island]
+            branch = self.branch[branch_original_indices, :].copy()
+            original_indices_entry[2] = branch_original_indices
+
+            # new circuit hosting the island grid
+            circuit = MultiCircuitVoltageStability(baseMVA, bus, gen, branch, graph, self.solver_type, is_an_island=True)
+
+            # add the circuit to the islands
+            island_circuits.append(circuit)
+
+            original_indices.append(original_indices_entry)
+
+        recalculate_islands = False
+        return island_circuits, original_indices, recalculate_islands
+
+    def get_power_flow_instance(self, solver_type=SolverType.NR):
+        """
+        Initializes an instance of the power flow module from this circuit definition
+        """
+
+        # now it is needed to re number the buses in all the structures
+        if self.is_an_island:
+            bus = self.bus.copy()
+            gen = self.gen.copy()
+            branch = self.branch.copy()
+
+            for i in range(len(bus)):
+                # i is the new bus index, the old bus index has to be replaced in the branches and generation structures
+                old_i = bus[i, BUS_I]
+
+                for k in range(len(gen)):
+                    if gen[k, GEN_BUS] == old_i:
+                        gen[k, GEN_BUS] = i
+
+                for k in range(len(branch)):
+                    if branch[k, F_BUS] == old_i:
+                        branch[k, F_BUS] = i
+                    elif branch[k, T_BUS] == old_i:
+                        branch[k, T_BUS] = i
+
+                bus[i, BUS_I] = int(i)
+        else:
+            bus = self.bus
+            gen = self.gen
+            branch = self.branch
+
+        return CircuitPowerFlow(self.baseMVA, bus, branch, gen, solver_type)
+
+    def set_run_options(self, solver_type=SolverType.NRFD_BX, tol=1e-3, max_it=10, enforce_reactive_power_limits=True,
+                        isMaster=True, set_last_solution=True, solver_to_retry_with=None, continuation_pf=False):
+        self.solver_type = solver_type
+        self.tolerance = tol
+        self.max_iterations = max_it
+        self.enforce_reactive_power_limits = enforce_reactive_power_limits
+        self.isMaster = isMaster
+        self.set_last_solution = set_last_solution
+        self.solver_to_retry_with = solver_to_retry_with
+
+
+    def run(self):
+        """
+        Runs a power flow with the current data and fills the structures
+        """
+        if self.is_an_island:
+
+            voltage_series, power_series, lambda_series = self.circuit_power_flow.run_continuation_voltage_collapse(tol=self.tolerance, max_it=self.max_iterations)
+
+            print('\n\n')
+            print(voltage_series)
+            print(lambda_series)
+
+            self.continuation_voltage = array(voltage_series).transpose()
+            self.continuation_lambda = array(lambda_series).transpose()
+            self.continuation_power = array(power_series).transpose()
+
+
+        else:
+            # run all the islands
+            self.last_power_flow_succeeded = [0] * len(self.island_circuits)
+            i = 0
+            self.cancel = False
+            island_count = len(self.island_circuits)
+
+            if self.isMaster:
+                self.emit(SIGNAL('progress(float)'), 0.0)
+
+            mismatches = list()
+
+            for island in self.island_circuits:
+
+                # run island power flow
+                island.set_run_options(self.solver_type, self.tolerance, self.max_iterations,
+                                       self.enforce_reactive_power_limits,
+                                       solver_to_retry_with=self.solver_to_retry_with)
+                island.run()
+                b_idx = self.original_indices[i][0]
+                br_idx = self.original_indices[i][2]
+
+                if len(island.continuation_voltage) > 0:
+                    k = 0
+                    for idx in b_idx:
+                        self.continuation_voltage[idx] = island.continuation_voltage[k, :]
+                        self.continuation_lambda[idx] = island.continuation_lambda
+                        self.continuation_power[idx] = island.continuation_power[k, :]
+                        k += 1
+                    self.has_results = True
+                else:
+                    print('The island did not had a continuation power flow result.')
+
+                    self.has_results = False
+
+                # emmit the progress signal
+                if self.isMaster:
+                    prog = ((i+1)/island_count)*100
+                    self.emit(SIGNAL('progress(float)'), prog)
+
+                i += 1
+
+                if self.cancel:
+                    break
+
+        # send the finnish signal
+        if self.isMaster:
+            self.emit(SIGNAL('done()'))
+
+    def end_process(self):
+        self.cancel = True
+
+    def run_frequency_simulation(self):
+        # frequency drop simulation
+        max_t_steps = 1000
+        dt = 0.01
+        ld = sum(self.bus[:, PD])
+        ge = sum(self.gen[:, PG])
+        t, Freq = self.frequency_calculation(t0=0,
+                                            max_t_steps=max_t_steps,
+                                            dt=dt,
+                                            fnom=50,
+                                            J=5000,
+                                            PG=ge,
+                                            Droop=16.,
+                                            PG_ctrl=100,
+                                            PD=ld,
+                                            SRL_def=0.01,
+                                            AGC_P_def=0.0,
+                                            AGC_I_def=0.20,
+                                            K=0.10,
+                                            P_failure=0.)
+
+        last_freq = Freq[len(Freq)-1]
+        print("Load:", ld)
+        print("Gen:", ge)
+        print("Frequency (" + str(max_t_steps * dt) + "s) = " + str(last_freq))
+
+        # if converged, check if the solution is valid
+        if self.last_power_flow_succeeded:
+            self.last_power_flow_succeeded = self.circuit_power_flow.is_the_voltage_valid()
+
+        if not self.last_power_flow_succeeded:
+            if 49 <= last_freq <= 51:
+                # is stable
+                self.grid_survives = True
+                print("Survives")
+            else:
+                self.grid_survives = False
+        else:
+            self.grid_survives = True
+
+
+class MultiCircuitPowerFlow(QThread):
+    """
+    This class handles the power flow simulation that allows the simulation of multiple islands
+    """
+    def __init__(self, baseMVA,  bus, gen, branch, graph, solver_type, is_an_island=False):
+        QThread.__init__(self)
+
+
+        self.baseMVA = baseMVA
+        self.bus = bus.copy()
+        self.gen = gen.copy()
+        self.branch = branch.copy()
+        self.graph = graph.copy()
+        self.recalculate_islands = True
+        self.solver_type = solver_type
+
+        self.islands_nodes = None
+        self.is_an_island = is_an_island
+        self.last_power_flow_succeeded = False
+        self.grid_survives = True
+
+        self.has_results = False
+
+        self.mismatch = 0
+
+        # declare power flow results arrays:
         nb = len(self.bus)
         nl = len(self.branch)
         ng = len(gen)
@@ -255,8 +553,10 @@ class MultiCircuitPowerFlow(QThread):
         Runs a power flow with the current data and fills the structures
         """
         if self.is_an_island:
+
             if self.circuit_power_flow is None:
                 self.circuit_power_flow = self.get_power_flow_instance(self.solver_type)
+
             else:
                 self.circuit_power_flow.solver_type = self.solver_type
 
@@ -298,6 +598,7 @@ class MultiCircuitPowerFlow(QThread):
             i = 0
             self.cancel = False
             island_count = len(self.island_circuits)
+
             if self.isMaster:
                 self.emit(SIGNAL('progress(float)'), 0.0)
 
@@ -310,11 +611,10 @@ class MultiCircuitPowerFlow(QThread):
                                        self.enforce_reactive_power_limits,
                                        solver_to_retry_with=self.solver_to_retry_with)
                 island.run()
-
-                self.last_power_flow_succeeded[i] = island.last_power_flow_succeeded
-
                 b_idx = self.original_indices[i][0]
                 br_idx = self.original_indices[i][2]
+
+                self.last_power_flow_succeeded[i] = island.last_power_flow_succeeded
 
                 # if island.last_power_flow_succeeded or self.solver_type == SolverType.HELM:
 
@@ -331,38 +631,23 @@ class MultiCircuitPowerFlow(QThread):
                 self.losses[br_idx] = island.losses
                 mismatches.append(island.mismatch)
                 print('Mismatch (island): ', island.mismatch)
-                # else:
-                #     busm1 = -1.0 * ones(len(b_idx))
-                #     brm1 = -1.0 * ones(len(br_idx))
-                #
-                #     # get the nodal results
-                #     self.voltage[b_idx] = busm1
-                #     self.collapsed_nodes[b_idx] = 1 - int(self.grid_survives)
-                #
-                #     # get the branches results
-                #     self.power_from[br_idx] = brm1
-                #     self.power_to[br_idx] = brm1
-                #     self.current[br_idx] = brm1
-                #     self.loading[br_idx] = brm1
-                #     self.losses[br_idx] = brm1
+
+                self.mismatch = max(mismatches)
+
+                self.has_results = True
 
                 # emmit the progress signal
                 if self.isMaster:
                     prog = ((i+1)/island_count)*100
                     self.emit(SIGNAL('progress(float)'), prog)
+
                 i += 1
 
                 if self.cancel:
                     break
 
-            self.mismatch = max(mismatches)
-
-        self.has_results = True
-
-
-
+        # send the finnish signal
         if self.isMaster:
-            # send the finnish signal
             self.emit(SIGNAL('done()'))
 
     def end_process(self):
@@ -1022,7 +1307,7 @@ class CircuitPowerFlow(object):
             Pbus = self.Sbus.real - self.Pbusinj - self.bus[:, GS] / self.baseMVA
 
             # "run" the power flow
-            Va = dcpf(self.B, Pbus, self.Va0, self.ref_list, self.pvpq_list)
+            Va, success, self.mismatch = dcpf(self.B, Pbus, self.Va0, self.ref_list, self.pvpq_list)
             V = self.bus[:, VM] * exp(1j * Va)
             self.V0 = V  # Store the voltage solution as the initial solution for later
 
@@ -1251,6 +1536,51 @@ class CircuitPowerFlow(object):
                     self.bus[:, VA] = self.bus[:, VA] - self.bus[ref0, VA] + Varef0
 
         return success
+
+
+    def run_continuation_voltage_collapse(self, tol=1e-3, max_it=10, load_parameter=3):
+        """
+        This function performs a continuation power flow
+        @param tol:
+        @param max_it:
+        @return:
+         voltage_series: list of the voltage series
+
+         power_series: List of the power values
+
+         lambda_series: List of the lambda values
+        """
+        # here we'll use the continuation power flow to solve critical states
+        approximation_order = 1
+        step = 0.01
+        adapt_step = True
+        step_min = 0.0001
+        step_max = 0.2
+        stop_at = 'FULL'  # 'NOSE'or 'FULL', with 1 we stop at the given power
+
+        self.Sbus = load_parameter * self.continuation_Sbus
+
+        voltage_series, lambda_series, \
+        self.mismatch, success = runcpf2(self.Ybus, self.continuation_Sbus, self.Sbus,
+                                         self.continuation_V0, self.pv_list, self.pq_list, step,
+                                         approximation_order, adapt_step, step_min,
+                                         step_max, error_tol=1e-3, tol=tol,
+                                         max_it=max_it, stop_at=stop_at, verbose=True)
+
+        # all power values
+        power_series = list()
+        Sfinal = self.continuation_Sbus.copy()
+
+        i = 0
+        for lam in lambda_series:
+            V = voltage_series[i]
+            Spv = V[self.active_generators_buses] * conj(self.Ybus[self.active_generators_buses, :] * V) * self.baseMVA
+            Sfinal[self.pv_list] = Spv
+            power_series.append(lam * Sfinal)
+            i += 0
+
+        return voltage_series, power_series, lambda_series
+
 
     def get_voltage_pu(self):
         """

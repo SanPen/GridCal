@@ -29,22 +29,14 @@ from numpy import take
 from enum import Enum
 from matplotlib import pyplot as plt
 
-try:
-    from GUI.main_gui.gui import *
-    from GUI.main_gui.profiles_input.profile_dialogue import *
-    from grid.circuit_ import Circuit
-    from grid.power_flow import *
-    from grid.bus_definitions import *
-    from grid.gen_definitions import *
-    from grid.branch_definitions import *
-except:
-    from .GUI.main_gui.gui import *
-    from .GUI.main_gui.profiles_input.profile_dialogue import *
-    from .grid.circuit_ import Circuit
-    from .grid.power_flow import *
-    from .grid.bus_definitions import *
-    from .grid.gen_definitions import *
-    from .grid.branch_definitions import *
+
+from GUI.main_gui.gui import *
+from GUI.main_gui.profiles_input.profile_dialogue import *
+from grid.circuit_ import Circuit
+from grid.power_flow import *
+from grid.bus_definitions import *
+from grid.gen_definitions import *
+from grid.branch_definitions import *
 
 
 def list_to_listModel(lst):
@@ -64,19 +56,23 @@ def list_to_listModel(lst):
 
 
 class ResultTypes(Enum):
-    voltage_per_unit = 1,
-    voltage = 2,
-    current_per_unit = 3,
-    current = 4,
-    power_at_buses_per_unit = 5,
-    power_at_buses = 6,
-    power_flow_per_unit = 7,
-    power_flow = 8,
-    branch_losses = 9,
-    branches_loading = 10,
-    voltage_series = 11,
-    loading_series = 12
-    current_series = 13
+    bus_voltage_per_unit = 1,
+    bus_voltage = 2,
+    bus_s_v_curve = 3,
+    bus_QV_curve = 4,
+    bus_active_power = 5,
+    bus_reactive_power = 6,
+    bus_active_and_reactive_power = 7,
+    bus_apparent_power = 8,
+    branch_current_per_unit = 9,
+    branch_current = 10,
+    branch_power_flow_per_unit = 11,
+    branch_power_flow = 12,
+    branch_losses = 13,
+    branches_loading = 14,
+    gen_reactive_power_pu = 15,
+    gen_reactive_power = 16
+
 
 
 class ProfileTypes(Enum):
@@ -123,6 +119,10 @@ class MainGUI(QtGui.QMainWindow):
 
         # list view models
         self.available_data_structures_listModel = list_to_listModel(self.circuit.available_data_structures)
+
+        # tree view models
+        self.results_tree_model = None
+        self.family_results_per_family = dict()
 
         # little difference between UNIX and Windows QT
         actiavate_action = 'activated()'
@@ -179,17 +179,19 @@ class MainGUI(QtGui.QMainWindow):
 
         QtCore.QObject.connect(self.ui.actionPower_flow, QtCore.SIGNAL(actiavate_action), self.run_power_flow)
 
+        QtCore.QObject.connect(self.ui.actionVoltage_stability, QtCore.SIGNAL(actiavate_action), self.run_voltage_stability)
+
         QtCore.QObject.connect(self.ui.actionPower_Flow_Time_series, QtCore.SIGNAL(actiavate_action), self.run_time_series)
 
         QtCore.QObject.connect(self.ui.actionBlackout, QtCore.SIGNAL(actiavate_action), self.actionBlackout_click)
 
 
         # plot
-        QtCore.QObject.connect(self.ui.actionBus_voltages, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.voltage))
+        QtCore.QObject.connect(self.ui.actionBus_voltages, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.bus_voltage))
 
-        QtCore.QObject.connect(self.ui.actionBus_voltages_p_u, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.voltage_per_unit))
+        QtCore.QObject.connect(self.ui.actionBus_voltages_p_u, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.bus_voltage_per_unit))
 
-        QtCore.QObject.connect(self.ui.actionBranches_current, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.current))
+        QtCore.QObject.connect(self.ui.actionBranches_current, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.branch_current))
 
         QtCore.QObject.connect(self.ui.actionBranches_loading, QtCore.SIGNAL(actiavate_action), lambda: self.plot_results(ResultTypes.branches_loading))
 
@@ -197,14 +199,14 @@ class MainGUI(QtGui.QMainWindow):
 
         #plot buttons
 
-        QtCore.QObject.connect(self.ui.per_unit_voltages_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.voltage_per_unit))
+        # QtCore.QObject.connect(self.ui.per_unit_voltages_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.bus_voltage_per_unit))
+        #
+        # QtCore.QObject.connect(self.ui.branches_loading_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.branches_loading))
 
-        QtCore.QObject.connect(self.ui.branches_loading_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.branches_loading))
 
-
-        QtCore.QObject.connect(self.ui.per_unit_voltages_series_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.voltage_series))
-
-        QtCore.QObject.connect(self.ui.branches_loading_series_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.loading_series))
+        # QtCore.QObject.connect(self.ui.per_unit_voltages_series_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.voltage_series, series=True))
+        #
+        # QtCore.QObject.connect(self.ui.branches_loading_series_Button, QtCore.SIGNAL('clicked()'), lambda: self.plot_results(ResultTypes.loading_series, series=True))
 
         # node size
         QtCore.QObject.connect(self.ui.actionBigger_nodes, QtCore.SIGNAL(actiavate_action), self.bigger_nodes)
@@ -227,6 +229,9 @@ class MainGUI(QtGui.QMainWindow):
 
         # spin box
         # QtCore.QObject.connect(self.ui.node_size_spinbox, QtCore.SIGNAL("valueChanged(int)"), self.re_plot)
+
+        # tree view selection
+        self.ui.results_treeView.clicked.connect(self.handle_results_selection)
 
         self.UNLOCK()
 
@@ -481,6 +486,85 @@ class MainGUI(QtGui.QMainWindow):
             if self.circuit.time_series.is_ready():
                 self.set_time_comboboxes()
 
+            # tree view at the results
+            self.set_results_treeview_structure()
+
+    def set_results_treeview_structure(self):
+        """
+        Sets the results treeview data structure
+        @return:
+        """
+        self.ui.results_treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.results_tree_model = QtGui.QStandardItemModel()
+        self.results_tree_model.setHorizontalHeaderLabels(['Elements'])
+        self.ui.results_treeView.setModel(self.results_tree_model)
+        self.ui.results_treeView.setUniformRowHeights(True)
+
+        def pass_to_QStandardItem_list(list_):
+            res = list()
+            for elm in list_:
+                elm1 = QtGui.QStandardItem(elm)
+                elm1.setEditable(False)
+                res.append(elm1)
+            return res
+
+        bus_results = pass_to_QStandardItem_list(['Voltages (p.u.)', 'Voltages (kV)'])
+        per_bus_results = pass_to_QStandardItem_list(['Voltage (p.u.) series', 'Voltage (kV) series',
+                                                      'Active power (MW)', 'Reactive power (MVar)',
+                                                      'Active and reactive power (MW, MVar)', 'Aparent power (MVA)',
+                                                      'S-V curve', 'Q-V curve'])
+
+        branches_results = pass_to_QStandardItem_list(['Loading (%)', 'Current (p.u.)',
+                                                       'Current (kA)', 'Losses (MVA)'])
+        per_branch_results = pass_to_QStandardItem_list(['Loading (%) series', 'Current (p.u.) series',
+                                                         'Current (kA) series', 'Losses (MVA) series'])
+
+        generator_results = pass_to_QStandardItem_list(['Reactive power (p.u.)', 'Reactive power (MVar)'])
+        per_generator_results = pass_to_QStandardItem_list(['Reactive power (p.u.) series',
+                                                            'Reactive power (MVar) series'])
+
+        self.family_results_per_family = dict()
+
+        # nodes
+        buses = QtGui.QStandardItem('Buses')
+        buses.setEditable(False)
+        buses.appendRows(bus_results)
+        self.family_results_per_family[0] = len(bus_results)
+        names = self.circuit.get_bus_labels()
+        for name in names:
+            bus = QtGui.QStandardItem(name)
+            bus.appendRows(per_bus_results)
+            bus.setEditable(False)
+            buses.appendRow(bus)
+
+        # branches
+        branches = QtGui.QStandardItem('Branches')
+        branches.setEditable(False)
+        branches.appendRows(branches_results)
+        self.family_results_per_family[1] = len(branches_results)
+        names = self.circuit.get_branch_labels()
+        for name in names:
+            branch = QtGui.QStandardItem(name)
+            branch.appendRows(per_branch_results)
+            branch.setEditable(False)
+            branches.appendRow(branch)
+
+        # generators
+        generators = QtGui.QStandardItem('Generators')
+        generators.setEditable(False)
+        generators.appendRows(generator_results)
+        self.family_results_per_family[2] = len(generator_results)
+        names = self.circuit.get_gen_labels()
+        for name in names:
+            gen = QtGui.QStandardItem(name)
+            gen.appendRows(per_generator_results)
+            gen.setEditable(False)
+            generators.appendRow(gen)
+
+        self.results_tree_model.appendRow(buses)
+        self.results_tree_model.appendRow(branches)
+        self.results_tree_model.appendRow(generators)
+
 
 
     def save_file(self):
@@ -555,6 +639,154 @@ class MainGUI(QtGui.QMainWindow):
                 # display times
                 self.set_time_comboboxes()
 
+    # @QtCore.pyqtSlot("QItemSelection, QItemSelection")
+    # @QtCore.pyqtSlot(QtCore.QModelIndex)
+    def handle_results_selection(self, index):
+        """
+        Handles the results tree view selection in order to select which plot to display
+        """
+        indexItem = self.results_tree_model.index(index.row(), 0, index.parent())
+
+        '''
+        family
+          + Family_result
+          + element
+              + element_result
+
+        if we are on a family result, there is only one parent, and the row
+        index is less than the number of family results
+
+        if we are on an element_result, there are two parents
+        the element index in the results in the element index - number of family results
+        '''
+
+        def get_depth(elm):
+            depth = 0
+            indices = [elm.row()]
+            while elm.row() > -1:
+                elm = elm.parent()
+                indices.append(elm.row())
+                depth += 1
+
+            return depth, indices
+
+        depth, indices = get_depth(index)
+        print('Depth: ', depth, indices)
+
+        # interpretation
+
+        bus_results = ['Voltages (p.u.)', 'Voltages (kV)']
+        per_bus_results = ['Voltage (p.u.) series', 'Voltage (kV) series',
+                           'Active power (MW)', 'Reactive power (MVar)',
+                           'Active and reactive power (MW, MVar)', 'Apparent power (MVA)',
+                           'S-V curve', 'Q-V curve']
+
+        branches_results = ['Loading (%)', 'Current (p.u.)', 'Current (kA)', 'Losses (MVA)']
+        per_branch_results = ['Loading (%) series', 'Current (p.u.) series',
+                              'Current (kA) series', 'Losses (MVA) series']
+
+        generator_results = ['Reactive power (p.u.)', 'Reactive power (MVar)']
+        per_generator_results = ['Reactive power (p.u.) series', 'Reactive power (MVar) series']
+
+
+        family_index = None
+        if depth == 2:  # we are on a family result
+            element_idx = indices[0]  # this can be either an element or a family result
+            family_index = indices[1]   # needs correction
+
+        elif depth == 3:  # we are on a element result
+            result_idx = indices[0]
+            element_idx = indices[1]    # needs correction
+            family_index = indices[2]
+
+        if family_index is not None:
+
+            if family_index == 0:  # buses
+
+                if depth == 2 and element_idx < self.family_results_per_family[family_index]:
+                    # it is a family result
+                    print('buses:', bus_results[element_idx])
+
+                    # 'Voltages (p.u.)', 'Voltages (kV)'
+                    if element_idx == 0:
+                        self.plot_results(ResultTypes.bus_voltage_per_unit)
+                    elif element_idx == 1:
+                        self.plot_results(ResultTypes.bus_voltage)
+
+                elif depth == 3:
+                    # it is an element result
+                    element_idx -= self.family_results_per_family[family_index]
+                    print('buses:', 'elm ' + str(element_idx), per_bus_results[result_idx])
+
+                    if result_idx == 0:  # Voltage (p.u.) series
+                        self.plot_results(ResultTypes.bus_voltage_per_unit,  element_idx=element_idx)
+                    elif result_idx == 1:  # Voltage (kV) series
+                        self.plot_results(ResultTypes.bus_voltage, element_idx=element_idx)
+                    elif result_idx == 2:  # Active power (MW)
+                        self.plot_results(ResultTypes.bus_active_power, element_idx=element_idx)
+                    elif result_idx == 3:  # Reactive power (MVar)
+                        self.plot_results(ResultTypes.bus_reactive_power, element_idx=element_idx)
+                    elif result_idx == 4:  # Active and reactive power (MW, MVar)
+                        self.plot_results(ResultTypes.bus_active_and_reactive_power, element_idx=element_idx)
+                    elif result_idx == 5:  # Apparent power (MVA)
+                        self.plot_results(ResultTypes.bus_apparent_power,element_idx=element_idx)
+                    elif result_idx == 6:  # Lambda-V curve
+                        self.plot_results(ResultTypes.bus_s_v_curve, element_idx=element_idx)
+                    elif result_idx == 7:  # Q-V curve
+                        self.plot_results(ResultTypes.bus_QV_curve, element_idx=element_idx)
+
+            elif family_index == 1:  # branch
+
+                if depth == 2 and element_idx < self.family_results_per_family[family_index]:
+                    # it is a family result
+                    print('Branches:', branches_results[element_idx])
+
+                    # ['Loading (%)', 'Current (p.u.)', 'Current (kA)', 'Losses (MVA)']
+                    if element_idx == 0:
+                        self.plot_results(ResultTypes.branches_loading)
+                    elif element_idx == 1:
+                        self.plot_results(ResultTypes.branch_current_per_unit)
+                    elif element_idx == 2:
+                        self.plot_results(ResultTypes.branch_current)
+                    elif element_idx == 3:
+                        self.plot_results(ResultTypes.branch_losses)
+
+                elif depth == 3:
+                    # it is an element result
+                    element_idx -= self.family_results_per_family[family_index]
+                    print('Branches:', 'elm ' + str(element_idx), per_branch_results[result_idx])
+
+                    if result_idx == 0:  # Loading (%) series
+                        self.plot_results(ResultTypes.branches_loading, element_idx=element_idx)
+                    elif result_idx == 1:  # Current (p.u.) series
+                        self.plot_results(ResultTypes.branch_current_per_unit, element_idx=element_idx)
+                    elif result_idx == 2:  # Current (kA) series
+                        self.plot_results(ResultTypes.branch_current, element_idx=element_idx)
+                    elif result_idx == 3:  # Losses (MVA) series
+                        self.plot_results(ResultTypes.branch_losses, element_idx=element_idx)
+
+            elif family_index == 2:  # gen
+
+                if depth == 2 and element_idx < self.family_results_per_family[family_index]:
+                    # it is a family result
+                    print('Gen:', generator_results[element_idx])
+
+                    # 'Reactive power (p.u.)', 'Reactive power (MVar)'
+                    if element_idx == 0:
+                        self.plot_results(ResultTypes.gen_reactive_power_pu)
+                    elif element_idx == 1:
+                        self.plot_results(ResultTypes.gen_reactive_power)
+
+                elif depth == 3:
+                    # it is an element result
+                    element_idx -= self.family_results_per_family[family_index]
+                    print('Gen:', 'elm ' + str(element_idx), per_generator_results[result_idx])
+
+                    if result_idx == 0:  # Reactive power (p.u.) series
+                        self.plot_results(ResultTypes.gen_reactive_power_pu, element_idx=element_idx)
+                    elif result_idx == 1:  # Reactive power (MVar) series
+                        self.plot_results(ResultTypes.gen_reactive_power, element_idx=element_idx)
+
     def display_profile(self, profile_type):
         """
         Show the profile in the GUI table
@@ -585,7 +817,7 @@ class MainGUI(QtGui.QMainWindow):
         self.ui.profile_time_selection_comboBox.clear()
         self.ui.results_time_selection_comboBox.clear()
         self.ui.gridPlot.clear()
-
+        self.ui.results_treeView.setModel(None)
 
     def get_selected_power_flow_options(self):
         """
@@ -653,6 +885,28 @@ class MainGUI(QtGui.QMainWindow):
                                                     set_last_solution=set_last_solution,
                                                     solver_to_retry_with=solver_to_retry_with)
             self.circuit.power_flow.start()
+
+    def run_voltage_stability(self):
+
+        self.LOCK()
+
+        # get circuit and solver conditions
+        solver_type, check_freq_blackout, tolerance, \
+        max_iter, set_last_solution, solver_to_retry_with = self.get_selected_power_flow_options()
+        print('Solver: ', solver_to_retry_with)
+        # threading connections
+        self.connect(self.circuit.voltage_stability, SIGNAL("progress(float)"), self.ui.progressBar.setValue)
+        self.connect(self.circuit.voltage_stability, SIGNAL("done()"), self.UNLOCK)
+        # self.connect(self.circuit.voltage_stability, SIGNAL("done()"), self.post_power_flow)
+
+        # solve
+        self.circuit.voltage_stability.set_run_options(solver_type=solver_type, tol=tolerance, max_it=max_iter,
+                                                enforce_reactive_power_limits=True, isMaster=True,
+                                                set_last_solution=set_last_solution,
+                                                solver_to_retry_with=solver_to_retry_with)
+
+        self.circuit.voltage_stability.start()
+
 
     def post_power_flow(self):
         """
@@ -756,13 +1010,11 @@ class MainGUI(QtGui.QMainWindow):
         if self.circuit.time_series.is_ready():
             if profile_type == ProfileTypes.Loads:
                 label = self.circuit.get_bus_labels()
-                # df = pd.DataFrame(data=self.circuit.time_series.load_profiles, columns=label, index=self.circuit.time_series.time)
                 df = self.circuit.time_series.get_loads_dataframe(label)
                 self.ui.tableView.setModel(PandasModel(df))
 
             elif profile_type == ProfileTypes.Generators:
                 label = self.circuit.get_gen_labels()
-                # df = pd.DataFrame(data=self.circuit.time_series.gen_profiles, columns=label, index=self.circuit.time_series.time)
                 df = self.circuit.time_series.get_gen_dataframe(label)
                 self.ui.tableView.setModel(PandasModel(df))
 
@@ -822,7 +1074,7 @@ class MainGUI(QtGui.QMainWindow):
         df = pd.DataFrame(data=[df_data], columns=labels)
         self.ui.resultsTableView.setModel(PandasModel(df))
 
-    def display_bus_magnitude(self, ax, fig, y, ylabel, xlabel=''):
+    def display_bus_magnitude(self, ax, fig, y, ylabel, xlabel='', bar=False):
         """
 
         :param ax:
@@ -834,19 +1086,34 @@ class MainGUI(QtGui.QMainWindow):
         """
         x = self.circuit.bus[:, BUS_I].astype(int)
         labels = self.circuit.get_bus_labels()
-        r, c = np.shape(y)
-
-        if c > 1:
-            df_data = y[:, 0]
-            ax.plot(x, y[:, 0], color='k', marker='o')
-            ax.plot(x, y[:, 1], color='r')
-            ax.plot(x, y[:, 2], color='r')
+        dims = np.ndim(y)
+        print('dims:', dims)
+        if dims == 2:
+            r, c = np.shape(y)
+            if c == 2:
+                df_data = y
+                df = pd.DataFrame(data=df_data, columns=ylabel)
+                df.plot(ax=ax, kind='bar')
+            elif c == 3:
+                df_data = y[:, 0]
+                df = pd.DataFrame(data=[df_data], columns=labels)
+                ax.plot(x, y[:, 0], color='k', marker='o')
+                ax.plot(x, y[:, 1], color='r')
+                ax.plot(x, y[:, 2], color='r')
+                ax.set_xticks(x)
+                ax.set_xticklabels(labels, rotation='vertical')
         else:
             df_data = y
-            ax.plot(x, y, color='k', marker='o')
 
-        ax.set_xticks(x)
-        ax.set_xticklabels(labels, rotation='vertical')
+            if not bar:
+                df = pd.DataFrame(data=[df_data], columns=labels, index=x)
+                ax.plot(x, y, color='k', marker='o')
+                ax.set_xticks(x)
+                ax.set_xticklabels(labels, rotation='vertical')
+            else:
+                df = pd.DataFrame(data=df_data.transpose(), columns=[ylabel], index=labels)
+                df.plot(ax=ax, kind='bar')
+                # ax.redraw()
 
         # plot
         ax.set_aspect('auto')
@@ -854,10 +1121,11 @@ class MainGUI(QtGui.QMainWindow):
         ax.axes.set_xlabel(xlabel)
         fig.tight_layout()
         self.ui.resultsPlot.redraw()
-        df = pd.DataFrame(data=[df_data], columns=labels)
+
         self.ui.resultsTableView.setModel(PandasModel(df))
 
-    def display_series_bus_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y2=None, ylabel2=None, y_limits=None, boxplot=False):
+    def display_series_bus_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y2=None, ylabel2=None, y_limits=None,
+                                     boxplot=False, elm_idx=None):
         """
 
         :param ax:
@@ -868,6 +1136,8 @@ class MainGUI(QtGui.QMainWindow):
         :return:
         """
         labels = self.circuit.get_bus_labels()
+        if elm_idx is not None:
+            labels = [labels[elm_idx]]
 
         # plot limits
         if y_limits is not None:
@@ -899,7 +1169,8 @@ class MainGUI(QtGui.QMainWindow):
         fig.tight_layout()
         self.ui.resultsPlot.redraw()
 
-    def display_series_branch_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y2=None, ylabel2=None, y_limits=None, boxplot=False):
+    def display_series_branch_magnitude(self, ax, fig, x, y, ylabel, xlabel='', y2=None, ylabel2=None, y_limits=None,
+                                        boxplot=False, elm_idx=None):
         """
 
         :param ax:
@@ -910,6 +1181,8 @@ class MainGUI(QtGui.QMainWindow):
         :return:
         """
         labels = self.circuit.get_branch_labels()
+        if elm_idx is not None:
+            labels = [labels[elm_idx]]
 
         # plot limits
         if y_limits is not None:
@@ -940,7 +1213,20 @@ class MainGUI(QtGui.QMainWindow):
         fig.tight_layout()
         self.ui.resultsPlot.redraw()
 
-    def plot_results(self, type_of_result):
+    def display_QV_curve(self, ax, Q, V, xlabel):
+
+        ax.plot(Q, V)
+        df = pd.DataFrame(data=np.vstack((Q, V)).transpose(), columns=['Q', 'V'])
+
+        ax.set_aspect('auto')
+        ax.axes.set_ylabel('V')
+        ax.axes.set_xlabel(xlabel)
+        self.ui.resultsPlot.redraw()
+
+        self.ui.resultsTableView.setModel(PandasModel(df))
+
+
+    def plot_results(self, type_of_result,  element_idx=None):
         """
         Plots the results stored according to the passed type
         @param type_of_result: variable determining the type of results to plot
@@ -954,79 +1240,223 @@ class MainGUI(QtGui.QMainWindow):
             ax = self.ui.resultsPlot.canvas.ax
             fig = self.ui.resultsPlot.canvas.fig
 
-            t = self.ui.results_time_selection_comboBox.currentIndex()
+            # pick the selected time
 
-            if type_of_result == ResultTypes.branch_losses:
-                if t > -1:
-                    y = abs(self.circuit.time_series.losses[t, :])
-                else:
-                    y = self.circuit.branch[:, LOSSES]
-                ylabel = "Branch losses (MVA)"
-                self.display_branch_magnitude(ax, fig, y, ylabel)
+            if self.circuit.time_series.is_ready():
+                use_result_at_t = self.ui.values_at_t_radioButton.isChecked()
+                t = self.ui.results_time_selection_comboBox.currentIndex()
+            else:
+                use_result_at_t = False
 
-            elif type_of_result == ResultTypes.branches_loading:
-                if t > -1:
-                    y = abs(self.circuit.time_series.loadings[t, :])
-                else:
-                    y = self.circuit.branch[:, LOADING]
-                ylabel = "Branch loading (%)"
-                self.display_branch_magnitude(ax, fig, y * 100, ylabel)
+            series = self.ui.all_values_radioButton.isChecked() or self.ui.box_whiskers_radioButton.isChecked()
+            useboxplot = self.ui.box_whiskers_radioButton.isChecked()
 
-            elif type_of_result == ResultTypes.current:
-                if t > -1:
-                    y = abs(self.circuit.time_series.currents[t, :])
-                else:
-                    y = self.circuit.branch[:, BR_CURRENT]
-                ylabel = "Branch Currents (kA)"
-                self.display_branch_magnitude(ax, fig, y, ylabel)
+            if not series:
 
-            elif type_of_result == ResultTypes.voltage_per_unit:
-                if t > -1:
-                    nb = len(self.circuit.bus)
-                    y = zeros((nb, 3))
-                    y[:, 0] = abs(self.circuit.time_series.voltages[t, :])
-                    y[:, [1, 2]] = self.circuit.bus[:, [VMIN, VMAX]]
-                else:
-                    y = self.circuit.bus[:, [VM, VMIN, VMAX]]
+                if type_of_result == ResultTypes.branch_losses:
+                    if use_result_at_t:
+                        y = abs(self.circuit.time_series.losses[t, :])
+                    else:
+                        y = self.circuit.branch[:, LOSSES]
+                    ylabel = "Branch losses (MVA)"
+                    self.display_branch_magnitude(ax, fig, y, ylabel)
 
-                ylabel = "Bus Voltages (p.u.)"
-                self.display_bus_magnitude(ax, fig, y, ylabel)
-
-            elif type_of_result == ResultTypes.voltage:
-                if t > -1:
-                    nb = len(self.circuit.bus)
-                    y = zeros((nb, 3))
-                    y[:, 0] = abs(self.circuit.time_series.voltages[t, :]).copy()
-                    y[:, [1, 2]] = self.circuit.bus[:, [VMIN, VMAX]].copy()
-                else:
-                    y = self.circuit.bus[:, [VM, VMIN, VMAX]].copy()
-                y[:, 0] *= self.circuit.bus[:, BASE_KV]
-                y[:, 1] *= self.circuit.bus[:, BASE_KV]
-                y[:, 2] *= self.circuit.bus[:, BASE_KV]
-                ylabel = "Bus Voltages (kV)"
-                self.display_bus_magnitude(ax, fig, y, ylabel)
-
-            # time series
-            if self.circuit.time_series.has_results():
-                useboxplot = self.ui.boxplot_checkbox.isChecked()
-                if type_of_result == ResultTypes.voltage_series:
-                    x = self.circuit.time_series.time
-                    y = abs(self.circuit.time_series.voltages)
-                    y2 = self.circuit.time_series.mismatch
-                    # y = self.circuit.bus[:, [VM, VMIN, VMAX]]
-                    ylabel = "Bus Voltages (p.u.)"
-                    xlabel = 'Time'
-                    ylabel2 = 'Error'
-                    self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2, boxplot=useboxplot)
-                elif type_of_result == ResultTypes.loading_series:
-                    x = self.circuit.time_series.time
-                    y = abs(self.circuit.time_series.loadings)*100
-                    y2 = self.circuit.time_series.mismatch
-                    # y = self.circuit.bus[:, [VM, VMIN, VMAX]]
+                elif type_of_result == ResultTypes.branches_loading:
+                    if use_result_at_t:
+                        y = abs(self.circuit.time_series.loadings[t, :])
+                    else:
+                        y = self.circuit.branch[:, LOADING]
                     ylabel = "Branch loading (%)"
-                    xlabel = 'Time'
-                    ylabel2 = 'Error'
-                    self.display_series_branch_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2, boxplot=useboxplot)
+                    self.display_branch_magnitude(ax, fig, y * 100, ylabel)
+
+                elif type_of_result == ResultTypes.branch_current:
+                    if use_result_at_t:
+                        y = abs(self.circuit.time_series.currents[t, :])
+                    else:
+                        y = self.circuit.branch[:, BR_CURRENT]
+                    ylabel = "Branch Currents (kA)"
+                    self.display_branch_magnitude(ax, fig, y, ylabel)
+
+                elif type_of_result == ResultTypes.bus_voltage_per_unit:
+                    if use_result_at_t:
+                        nb = len(self.circuit.bus)
+                        y = zeros((nb, 3))
+                        y[:, 0] = abs(self.circuit.time_series.voltages[t, :])
+                        y[:, [1, 2]] = self.circuit.bus[:, [VMIN, VMAX]]
+                    else:
+                        y = self.circuit.bus[:, [VM, VMIN, VMAX]]
+
+                    ylabel = "Bus Voltages (p.u.)"
+                    self.display_bus_magnitude(ax, fig, y, ylabel)
+
+                elif type_of_result == ResultTypes.bus_voltage:
+                    if use_result_at_t:
+                        nb = len(self.circuit.bus)
+                        y = zeros((nb, 3))
+                        y[:, 0] = abs(self.circuit.time_series.voltages[t, :]).copy()
+                        y[:, [1, 2]] = self.circuit.bus[:, [VMIN, VMAX]].copy()
+                    else:
+                        y = self.circuit.bus[:, [VM, VMIN, VMAX]].copy()
+                    y[:, 0] *= self.circuit.bus[:, BASE_KV]
+                    y[:, 1] *= self.circuit.bus[:, BASE_KV]
+                    y[:, 2] *= self.circuit.bus[:, BASE_KV]
+                    ylabel = "Bus Voltages (kV)"
+                    self.display_bus_magnitude(ax, fig, y, ylabel)
+
+                elif type_of_result == ResultTypes.bus_active_power:
+                    if use_result_at_t:
+                        y = self.circuit.time_series.load_profiles[t, :].real
+                    else:
+                        y = self.circuit.bus[:, PD]
+
+                    ylabel = "Bus Active power (MW)"
+                    self.display_bus_magnitude(ax, fig, y, ylabel, bar=True)
+
+                elif type_of_result == ResultTypes.bus_reactive_power:
+                    if use_result_at_t:
+                        y = self.circuit.time_series.load_profiles[t, :].imag
+                    else:
+                        y = self.circuit.bus[:, QD]
+
+                    ylabel = "Bus reactive power (MVar)"
+                    self.display_bus_magnitude(ax, fig, y, ylabel, bar=True)
+
+                elif type_of_result == ResultTypes.bus_apparent_power:
+                    if use_result_at_t:
+                        y = abs(self.circuit.time_series.load_profiles[t, :])
+                    else:
+                        y = abs(self.circuit.bus[:, PD] + 1j * self.circuit.bus[:, QD])
+
+                    ylabel = "Bus apparent power (MVA)"
+                    self.display_bus_magnitude(ax, fig, y, ylabel, bar=True)
+
+                elif type_of_result == ResultTypes.bus_active_and_reactive_power:
+                    if use_result_at_t:
+                        y = np.vstack((self.circuit.time_series.load_profiles[t, :].real, self.circuit.time_series.load_profiles[t, :].imag))
+                    else:
+                        y = np.vstack((self.circuit.bus[:, PD], self.circuit.bus[:, QD]))
+
+                    ylabel = ["Active power (MW)", "Reactive power (MVar)"]
+                    self.display_bus_magnitude(ax, fig, y.transpose(), ylabel, bar=False)
+
+                elif type_of_result == ResultTypes.bus_QV_curve:
+
+                        V = abs(self.circuit.voltage_stability.continuation_voltage[element_idx])
+                        Q = self.circuit.voltage_stability.continuation_power[element_idx].imag
+
+                        self.display_QV_curve(ax, Q, V, 'Q')
+
+                elif type_of_result == ResultTypes.bus_s_v_curve:
+
+                        V = abs(self.circuit.voltage_stability.continuation_voltage[element_idx])
+                        S = abs(self.circuit.voltage_stability.continuation_power[element_idx])
+
+                        self.display_QV_curve(ax, S, V, 'S')
+
+
+                else:
+                    ax.text(2, 2, r'There are no results', fontsize=15)
+                    self.ui.resultsPlot.redraw()
+
+            else:
+                # time series
+                if self.circuit.time_series.has_results():
+
+                    x = self.circuit.time_series.time
+
+                    if type_of_result == ResultTypes.bus_voltage_per_unit:
+                        if element_idx is None:
+                            y = abs(self.circuit.time_series.voltages)
+                        else:
+                            y = abs(self.circuit.time_series.voltages)[:, element_idx]
+                        y2 = self.circuit.time_series.mismatch
+
+                        ylabel = "Bus Voltages (p.u.)"
+                        xlabel = 'Time'
+                        ylabel2 = 'Error'
+                        self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2,
+                                                          boxplot=useboxplot, elm_idx=element_idx)
+
+                    elif type_of_result == ResultTypes.bus_voltage:
+                        if element_idx is None:
+                            y = abs(self.circuit.time_series.voltages)
+                            y *= self.circuit.bus[:, BASE_KV]
+                        else:
+                            y = abs(self.circuit.time_series.voltages)[:, element_idx]
+                            y *= self.circuit.bus[element_idx, BASE_KV]
+
+                        y2 = self.circuit.time_series.mismatch
+
+                        ylabel = "Bus Voltages (kV)"
+                        xlabel = 'Time'
+                        ylabel2 = 'Error'
+                        self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2,
+                                                          boxplot=useboxplot, elm_idx=element_idx)
+
+
+                    elif type_of_result == ResultTypes.bus_active_power:
+                        if element_idx is None:
+                            y = self.circuit.time_series.load_profiles.real
+                        else:
+                            y = self.circuit.time_series.load_profiles[:, element_idx].real
+
+                        ylabel = "Bus active power (MW)"
+                        xlabel = 'Time'
+                        self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel,
+                                                          boxplot=useboxplot, elm_idx=element_idx)
+
+                    elif type_of_result == ResultTypes.bus_reactive_power:
+                        if element_idx is None:
+                            y = self.circuit.time_series.load_profiles.imag
+                        else:
+                            y = self.circuit.time_series.load_profiles[:, element_idx].imag
+
+                        ylabel = "Bus reactive power (MVar)"
+                        xlabel = 'Time'
+                        self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel,
+                                                          boxplot=useboxplot, elm_idx=element_idx)
+
+                    elif type_of_result == ResultTypes.bus_apparent_power:
+                        if element_idx is None:
+                            y = abs(self.circuit.time_series.load_profiles)
+                        else:
+                            y = abs(self.circuit.time_series.load_profiles[:, element_idx])
+
+                        ylabel = "Bus apparent power (MVA)"
+                        xlabel = 'Time'
+                        self.display_series_bus_magnitude(ax, fig, x, y, ylabel, xlabel,
+                                                          boxplot=useboxplot, elm_idx=element_idx)
+
+                    elif type_of_result == ResultTypes.branches_loading:
+                        if element_idx is None:
+                            y = abs(self.circuit.time_series.loadings)*100
+                        else:
+                            y = abs(self.circuit.time_series.loadings)[:, element_idx]*100
+                        y2 = self.circuit.time_series.mismatch
+
+                        ylabel = "Branch loading (%)"
+                        xlabel = 'Time'
+                        ylabel2 = 'Error'
+                        self.display_series_branch_magnitude(ax, fig, x, y, ylabel, xlabel, y2, ylabel2,
+                                                             boxplot=useboxplot, elm_idx=element_idx)
+
+                    elif type_of_result == ResultTypes.bus_QV_curve:
+
+                        V = abs(self.circuit.voltage_stability.continuation_voltage[element_idx])
+                        Q = self.circuit.voltage_stability.continuation_power[element_idx].imag
+
+                        self.display_QV_curve(ax, Q, V, 'Q')
+
+                    elif type_of_result == ResultTypes.bus_s_v_curve:
+
+                        V = abs(self.circuit.voltage_stability.continuation_voltage[element_idx])
+                        S = abs(self.circuit.voltage_stability.continuation_power[element_idx])
+
+                        self.display_QV_curve(ax, S, V, 'S')
+
+                    else:
+                        ax.text(2, 2, r'There are no results', fontsize=15)
+                        self.ui.resultsPlot.redraw()
 
 
 if __name__ == "__main__":

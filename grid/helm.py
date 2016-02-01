@@ -86,7 +86,7 @@ def reduce_arrays(n_bus, Ymat, slack_indices, Vset, S, types):
 
     return Yred, Yrow, I, Sred, Vslack, types_red, non_slack_indices, map_idx, npq, npv
 
-
+@jit(cache=True)
 def RHS(n, nbus, Yrow, I, S, Vset_abs2, C, X, R, H, W, types_red, map_idx):
     """
     Right hand side calculation.
@@ -128,7 +128,7 @@ def RHS(n, nbus, Yrow, I, S, Vset_abs2, C, X, R, H, W, types_red, map_idx):
 
     return rhs
 
-
+@jit(cache=True)
 def RHS_PQ(n, k, Yrow, I, S, W, map_idx):
     """
     Right hand side calculation for a PQ bus.
@@ -210,7 +210,7 @@ def calc_W(n, k, C, W, map_idx):
 
     return res
 
-@jit
+@jit(cache=True)
 def RHS_PV(n, k, Yrow, I, S, Vset_abs2, C, X, R, H, map_idx):
     """
     Right hand side calculation for a PQ bus.
@@ -347,7 +347,7 @@ def calc_H(n, k, X, R, C, Yred, Vset_abs2, map_idx):
     return result
 
 
-# @jit
+@jit(cache=True)
 def epsilon(Sn, n, E):
     """
     Fast recursive Wynn's epsilon algorithm from:
@@ -376,6 +376,8 @@ def epsilon(Sn, n, E):
             if abs(DIFF) <= Tiny:
                 E[j-1] = Huge
             else:
+                if DIFF == 0:
+                    DIFF = Tiny
                 E[j-1] = AUX1 + One/DIFF
 
         if mod(n, 2) == 0:
@@ -393,7 +395,7 @@ def update_bus_power(k, V, Y):
     return V[k] * conj(Y[k, :].dot(V))
 
 
-@jit
+@jit(cache=True)
 def update_all_powers(pv_idx_all, slack_idx_all,  V, Y, Sbus):
     """
     Computes the power for all the PV buses and VD buses
@@ -411,7 +413,7 @@ def update_all_powers(pv_idx_all, slack_idx_all,  V, Y, Sbus):
     return S
 
 
-@jit
+@jit(cache=True)
 def calc_error(admittances, V, powerInjections):
     """
     Calculates the power error for all the buses

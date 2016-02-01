@@ -9,8 +9,10 @@ from .gen_definitions import *
 from .branch_definitions import *
 # from .power_flow import *
 from .newtonpf import *
+from numba import jit
 
 
+# @jit(cache=True)
 def dSbus_dV(Ybus, V):
     """
     Computes partial derivatives of power injection w.r.t. voltage.
@@ -73,7 +75,7 @@ def dSbus_dV(Ybus, V):
 
     return dS_dVm, dS_dVa
 
-
+# @jit(cache=True)
 def jacobian(Ybus, V, pvpq, pq):
     """
     Calculates the system Jacobian matrix
@@ -96,7 +98,7 @@ def jacobian(Ybus, V, pvpq, pq):
             ], format="csr")
     return J
 
-
+# @jit(cache=True)
 def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     """
     #CPF_P Computes the value of the CPF parameterization function.
@@ -163,7 +165,7 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
 
     return P
 
-
+# @jit(cache=True)
 def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     """
     #CPF_P_JAC Computes partial derivatives of CPF parameterization function.
@@ -225,11 +227,11 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     elif parameterization == 3:  # pseudo arc length
         nb = len(V)
         dP_dV = z[r_[pv, pq, nb + pq]]
-        dP_dlam = z[2 * nb + 1]
+        dP_dlam = z[2 * nb + 1][0]
 
     return dP_dV, dP_dlam
 
-
+@jit(cache=True)
 def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose):
     """
     # CPF_CORRECTOR  Solves the corrector step of a continuation power flow using a
@@ -410,7 +412,7 @@ def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, par
 
     return V, converged, i, lam, normF
 
-
+@jit(cache=True)
 def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameterization):
     """
     %CPF_PREDICTOR  Performs the predictor step for the continuation power flow
@@ -760,7 +762,7 @@ def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameteriz
 #
 #     return Voltage_series, Lambda_series
 
-
+# @jit(cache=True)
 def runcpf2(Ybus, Sbus_base, Sbus_target, V, pv, pq, step, approximation_order, adapt_step, step_min, step_max,
             error_tol=1e-3, tol=1e-6, max_it=20, stop_at='NOSE', verbose=False):
     """
@@ -846,8 +848,8 @@ def runcpf2(Ybus, Sbus_base, Sbus_target, V, pv, pq, step, approximation_order, 
             print('step ', cont_steps, ' : lambda = ', lam, ', corrector did not converge in ', i, ' iterations\n')
             break
 
-        # print('Step: ', cont_steps, ' Lambda prev: ', lam_prev, ' Lambda: ', lam)
-        # print(V)
+        print('Step: ', cont_steps, ' Lambda prev: ', lam_prev, ' Lambda: ', lam)
+        print(V)
         Voltage_series.append(V)
         Lambda_series.append(lam)
 
