@@ -145,6 +145,10 @@ class MplCanvas(FigureCanvas):
 
         return zoom
 
+    def rec_zoom(self):
+        self.zoom_x_limits = self.ax.get_xlim()
+        self.zoom_y_limits = self.ax.get_ylim()
+
     def set_last_zoom(self):
         if self.zoom_x_limits is not None:
             self.ax.set_xlim(self.zoom_x_limits )

@@ -21,7 +21,7 @@ from .iwamoto_nr_pf import IwamotoNR
 from .continuation_power_flow import runcpf2
 from .fdpf import fdpf
 from .gausspf import gausspf
-from .helm import helm
+from .helm import helm, helm_bifurcation_point
 from .Zbus import zbus
 from .branch_definitions import *
 from .bus_definitions import *
@@ -235,6 +235,7 @@ class MultiCircuitVoltageStability(QThread):
         """
         if self.is_an_island:
 
+            self.circuit_power_flow.solver_type = self.solver_type
             voltage_series, power_series, lambda_series = self.circuit_power_flow.run_continuation_voltage_collapse(tol=self.tolerance, max_it=self.max_iterations)
 
             print('\n\n')
@@ -554,44 +555,50 @@ class MultiCircuitPowerFlow(QThread):
         """
         if self.is_an_island:
 
+            # if the power flow object is not initialized, then make one, otherwise just set the solver type
             if self.circuit_power_flow is None:
                 self.circuit_power_flow = self.get_power_flow_instance(self.solver_type)
-
             else:
                 self.circuit_power_flow.solver_type = self.solver_type
 
-            # check if converged
-            self.last_power_flow_succeeded = self.circuit_power_flow.run(tol=self.tolerance, max_it=self.max_iterations,
-                                                                         enforce_q_limits=self.enforce_reactive_power_limits,
-                                                                         remember_last_solution=False, verbose=True,
-                                                                         set_last_solution=self.set_last_solution)
-            print('Succeeded: ', self.last_power_flow_succeeded)
-            if not self.last_power_flow_succeeded:
-                if self.solver_to_retry_with is not None:
-                    print('Retrying with ', self.solver_to_retry_with)
-                    self.circuit_power_flow.solver_type = self.solver_to_retry_with
-                    self.last_power_flow_succeeded = self.circuit_power_flow.run(tol=self.tolerance, max_it=self.max_iterations,
-                                                                                 enforce_q_limits=self.enforce_reactive_power_limits,
-                                                                                 remember_last_solution=False, verbose=True,
-                                                                                 set_last_solution=self.set_last_solution)
+            if self.circuit_power_flow.the_grid_is_disabled:
+                warn('There are no results since the grid is imposible to solve')
+                self.last_power_flow_succeeded = False
 
-            self.grid_survives = self.circuit_power_flow.is_the_solution_collapsed()
-            # if self.solver_type == SolverType.HELM and not self.last_power_flow_succeeded:
-            #     self.grid_survives = False
+            else:
+                # Solve and check if converged
+                self.last_power_flow_succeeded = self.circuit_power_flow.run(tol=self.tolerance, max_it=self.max_iterations,
+                                                                             enforce_q_limits=self.enforce_reactive_power_limits,
+                                                                             remember_last_solution=False, verbose=True,
+                                                                             set_last_solution=self.set_last_solution)
+                print('Succeeded: ', self.last_power_flow_succeeded)
+                if not self.last_power_flow_succeeded:
+                    if self.solver_to_retry_with is not None:
+                        print('Retrying with ', self.solver_to_retry_with)
+                        self.circuit_power_flow.solver_type = self.solver_to_retry_with
+                        self.last_power_flow_succeeded = self.circuit_power_flow.run(tol=self.tolerance, max_it=self.max_iterations,
+                                                                                     enforce_q_limits=self.enforce_reactive_power_limits,
+                                                                                     remember_last_solution=False, verbose=True,
+                                                                                     set_last_solution=self.set_last_solution)
 
-            # get the nodal results
-            self.voltage[:] = self.circuit_power_flow.get_voltage_pu()
-            self.collapsed_nodes[:] = 1 - int(self.grid_survives)
+                self.grid_survives = self.circuit_power_flow.is_the_solution_collapsed()
+                # if self.solver_type == SolverType.HELM and not self.last_power_flow_succeeded:
+                #     self.grid_survives = False
 
-            # get the branches results
-            self.circuit_power_flow.update_branches_power_flow()  # calculate the branches flow
-            # only valid branches are used
-            self.power_from[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.Sf
-            self.power_to[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.St
-            self.current[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_branch_current_flows()
-            self.loading[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_branch_loading()
-            self.losses[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_losses()
-            self.mismatch = self.circuit_power_flow.mismatch
+                # get the nodal results
+                self.voltage[:] = self.circuit_power_flow.get_voltage_pu()
+                self.collapsed_nodes[:] = 1 - int(self.grid_survives)
+
+                # get the branches results
+                self.circuit_power_flow.update_branches_power_flow()  # calculate the branches flow
+                # only valid branches are used
+                self.power_from[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.Sf
+                self.power_to[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.St
+                self.current[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_branch_current_flows()
+                self.loading[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_branch_loading()
+                self.losses[self.circuit_power_flow.in_service_branches] = self.circuit_power_flow.get_losses()
+                self.mismatch = self.circuit_power_flow.mismatch
+
         else:
             # run all the islands
             self.last_power_flow_succeeded = [0] * len(self.island_circuits)
@@ -610,6 +617,8 @@ class MultiCircuitPowerFlow(QThread):
                 island.set_run_options(self.solver_type, self.tolerance, self.max_iterations,
                                        self.enforce_reactive_power_limits,
                                        solver_to_retry_with=self.solver_to_retry_with)
+
+
                 island.run()
                 b_idx = self.original_indices[i][0]
                 br_idx = self.original_indices[i][2]
@@ -719,6 +728,9 @@ class CircuitPowerFlow(object):
         ################################################################################################################
         # base power
         self.baseMVA = 100
+
+        # flag to account if the gid is solvable or not
+        self.the_grid_is_disabled = False
 
         # buses structure
         self.bus = None
@@ -872,12 +884,11 @@ class CircuitPowerFlow(object):
         self.e2i = zeros(max(self.i2e) + 1, int)
         self.e2i[self.i2e] = arange(self.nb)
 
-        # get bus index lists of each type of bus
-        self.ref_list, self.pv_list, self.pq_list, self.bus_types = bustypes(self.bus, self.gen, self.Sbus)
-        self.pvpq_list = np.matrix(r_[self.pv_list, self.pq_list])
-
         # update the elements status (who's on and off)
         self.update_elements_status()
+
+        # update the power vector from the case data
+        self.update_power()
 
         # initial state
         self.V0 = self.bus[:, VM] * exp(1j * pi/180 * self.bus[:, VA])
@@ -886,51 +897,58 @@ class CircuitPowerFlow(object):
         # build admittance matrices
         self.Ybus, self.Yf, self.Yt, self.Ysh, self.A = self.makeYbus(self.baseMVA, self.bus, self.branch)
 
-        # check buses nominal voltage
-        self.Vnom = self.bus[:, BASE_KV].astype(np.double)
-        if len(np.where(self.Vnom == 0.0)[0]) > 0:
-            self.are_zero_Vn = True
-            print('Warning: There are buses nominal voltages equal to zero.')
-        else:
-            self.are_zero_Vn = False
+        # get bus index lists of each type of bus
+        self.ref_list, self.pv_list, self.pq_list, self.bus_types, self.the_grid_is_disabled = bustypes(self.bus, self.gen, self.Sbus)
 
-        # from branches nominal voltages
-        self.Vn_from = self.bus[self.branch[:, F_BUS].astype(int), BASE_KV]
+        if not self.the_grid_is_disabled:
+            self.pvpq_list = np.matrix(r_[self.pv_list, self.pq_list])
 
-        # to branches nominal voltages
-        self.Vn_to = self.bus[self.branch[:, T_BUS].astype(int), BASE_KV]
 
-        # DC matrices
-        self.Bp, self.Bpp = self.makeB(self.baseMVA, self.bus, self.branch, solver_type)
 
-        # reduce B matrices
-        pvpq_ = r_[self.pv_list, self.pq_list]
-        self.Bp = self.Bp[array([pvpq_]).T, pvpq_].tocsc()  # splu requires a CSC matrix
-        self.Bpp = self.Bpp[array([self.pq_list]).T, self.pq_list].tocsc()
+            # check buses nominal voltage
+            self.Vnom = self.bus[:, BASE_KV].astype(np.double)
+            if len(np.where(self.Vnom == 0.0)[0]) > 0:
+                self.are_zero_Vn = True
+                warn('Warning: There are buses nominal voltages equal to zero.')
+            else:
+                self.are_zero_Vn = False
 
-        # factor B matrices
-        self.Bp_solver = None
-        self.Bpp_solver = None
-        if initialize_solvers:
-            self.Bp_solver = splu(self.Bp)
-            self.Bpp_solver = splu(self.Bpp)
+            # from branches nominal voltages
+            self.Vn_from = self.bus[self.branch[:, F_BUS].astype(int), BASE_KV]
 
-        # for DC ##############################################################################################
+            # to branches nominal voltages
+            self.Vn_to = self.bus[self.branch[:, T_BUS].astype(int), BASE_KV]
 
-        # voltage angles in radians
-        self.Va0 = self.bus[:, VA] * (pi / 180)
+            # DC matrices
+            self.Bp, self.Bpp = self.makeB(self.baseMVA, self.bus, self.branch, solver_type)
 
-        # build B matrices and phase shift injections
-        self.B, self.Bf, self.Pbusinj, self.Pfinj = self.makeBdc(self.baseMVA, self.bus, self.branch)
+            # reduce B matrices
+            pvpq_ = r_[self.pv_list, self.pq_list]
+            self.Bp = self.Bp[array([pvpq_]).T, pvpq_].tocsc()  # splu requires a CSC matrix
+            self.Bpp = self.Bpp[array([self.pq_list]).T, self.pq_list].tocsc()
 
-        # update the power vector from the case data
-        self.update_power()
+            # factor B matrices
+            self.Bp_solver = None
+            self.Bpp_solver = None
+            if initialize_solvers:
+                self.Bp_solver = splu(self.Bp)
+                self.Bpp_solver = splu(self.Bpp)
 
-        # Set the continaution initial state
-        self.set_continuation_initial_state(self.Sbus, self.V0)
+            # for DC ##############################################################################################
 
-        # update the transformers and lines tap variables
-        self.update_taps()
+            # voltage angles in radians
+            self.Va0 = self.bus[:, VA] * (pi / 180)
+
+            # build B matrices and phase shift injections
+            self.B, self.Bf, self.Pbusinj, self.Pfinj = self.makeBdc(self.baseMVA, self.bus, self.branch)
+
+
+
+            # Set the continaution initial state
+            self.set_continuation_initial_state(self.Sbus, self.V0)
+
+            # update the transformers and lines tap variables
+            self.update_taps()
 
     def set_original_values(self):
         self.gen[:, PG] = self.generator_P.copy()
@@ -1291,6 +1309,9 @@ class CircuitPowerFlow(object):
         @author: Ray Zimmerman (PSERC Cornell)
         """
 
+        if self.the_grid_is_disabled:
+            return False
+
         self.need_to_update_branches_power = True
 
         if not remember_last_solution:
@@ -1378,12 +1399,19 @@ class CircuitPowerFlow(object):
                 elif self.solver_type == SolverType.HELM:
                     cmax = 151
                     if len(ref) == 0:
-                        ref, pv, pq, btypes = bustypes(self.bus, self.gen, self.Sbus)
-                    V, success,  self.mismatch = helm(self.Ybus, ref, cmax, self.Sbus, self.V0, btypes, eps=1e-3)
+                        ref, pv, pq, btypes, self.the_grid_is_disabled = bustypes(self.bus, self.gen, self.Sbus)
 
-                    print('converged:', success, '  err:', self.mismatch)
-                    print(V)
+                    if not self.the_grid_is_disabled:
+                        # (admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types, eps=1e-3, usePade=True, useFFT=False)
+                        V, success, self.mismatch, _ = helm(self.Ybus, ref, cmax, self.Sbus, self.V0, btypes, eps=1e-3)
+                        print('converged:', success, '  err:', self.mismatch)
+                        print(V)
+                    else:
+                        V = self.V0
+                        success = False
+
                 elif self.solver_type == SolverType.IWAMOTO:
+
                     V, success, self.mismatch = IwamotoNR(self.Ybus, self.Sbus, self.V0, pv, pq, tol, max_it, robust=True)
 
                 elif self.solver_type == SolverType.ZBUS:
@@ -1512,7 +1540,7 @@ class CircuitPowerFlow(object):
 
                         # update bus index lists of each type of bus
                         ref_temp = ref
-                        ref, pv, pq, btypes = bustypes(self.bus, self.gen, self.Sbus)
+                        ref, pv, pq, btypes, self.the_grid_is_disabled = bustypes(self.bus, self.gen, self.Sbus)
                         if verbose and ref != ref_temp:
                             print('Bus ', ref, ' is new slack bus\n')
 
@@ -1550,34 +1578,53 @@ class CircuitPowerFlow(object):
 
          lambda_series: List of the lambda values
         """
-        # here we'll use the continuation power flow to solve critical states
-        approximation_order = 1
-        step = 0.01
-        adapt_step = True
-        step_min = 0.0001
-        step_max = 0.2
-        stop_at = 'FULL'  # 'NOSE'or 'FULL', with 1 we stop at the given power
 
-        self.Sbus = load_parameter * self.continuation_Sbus
+        if self.solver_type == SolverType.HELM:
+            cmax = 120
+            ref, pv, pq, btypes, self.the_grid_is_disabled = bustypes(self.bus, self.gen, self.Sbus)
+            V, success, self.mismatch, C = helm(self.Ybus, ref, cmax, self.Sbus, self.V0, btypes, eps=1e-3)
 
-        voltage_series, lambda_series, \
-        self.mismatch, success = runcpf2(self.Ybus, self.continuation_Sbus, self.Sbus,
-                                         self.continuation_V0, self.pv_list, self.pq_list, step,
-                                         approximation_order, adapt_step, step_min,
-                                         step_max, error_tol=1e-3, tol=tol,
-                                         max_it=max_it, stop_at=stop_at, verbose=True)
+            # Compute bifurcation curves by Pade algorithm
+            print('Computing pade approximants...')
+            voltage_series, lambda_series =  helm_bifurcation_point(C, ref)
+            print('Done!')
 
-        # all power values
-        power_series = list()
-        Sfinal = self.continuation_Sbus.copy()
+            power_series = list()
+            i = 0
+            for lam in lambda_series:
+                power_series.append(lam * self.Sbus)
+                i += 1
+            # return voltage_series, power_series, lambda_series
 
-        i = 0
-        for lam in lambda_series:
-            V = voltage_series[i]
-            Spv = V[self.active_generators_buses] * conj(self.Ybus[self.active_generators_buses, :] * V) * self.baseMVA
-            Sfinal[self.pv_list] = Spv
-            power_series.append(lam * Sfinal)
-            i += 0
+        else:
+            # here we'll use the continuation power flow to solve critical states
+            approximation_order = 1
+            step = 0.01
+            adapt_step = True
+            step_min = 0.0001
+            step_max = 0.2
+            stop_at = 'FULL'  # 'NOSE'or 'FULL', with 1 we stop at the given power
+
+            self.Sbus = load_parameter * self.continuation_Sbus
+
+            voltage_series, lambda_series, \
+            self.mismatch, success = runcpf2(self.Ybus, self.continuation_Sbus, self.Sbus,
+                                             self.continuation_V0, self.pv_list, self.pq_list, step,
+                                             approximation_order, adapt_step, step_min,
+                                             step_max, error_tol=1e-3, tol=tol,
+                                             max_it=max_it, stop_at=stop_at, verbose=True)
+
+            # all power values
+            power_series = list()
+            Sfinal = self.continuation_Sbus.copy()
+
+            i = 0
+            for lam in lambda_series:
+                V = voltage_series[i]
+                Spv = V[self.active_generators_buses] * conj(self.Ybus[self.active_generators_buses, :] * V) * self.baseMVA
+                Sfinal[self.pv_list] = Spv
+                power_series.append(lam * Sfinal)
+                i += 0
 
         return voltage_series, power_series, lambda_series
 
@@ -1618,6 +1665,7 @@ class CircuitPowerFlow(object):
         Returns:
             Loading values in complex form for AC solvers
             Loading values in real form for DC solvers
+
         """
 
         L = self.A * (self.Cg * (self.gen[self.active_generators, PG] + 1j * self.gen[self.active_generators, QG]) \
@@ -1655,6 +1703,7 @@ class CircuitPowerFlow(object):
         """
         Returns the branches loading in per unit with respect to the Rate_A
         """
+
         idx = np.where(self.branch[self.in_service_branches, RATE_A] != 0)[0]
         if self.solver_type == SolverType.DC:
             return np.abs(self.get_branches_power_flow()[idx]) / self.branch[idx, RATE_A]
@@ -1671,6 +1720,7 @@ class CircuitPowerFlow(object):
         a voltage =0.92 would give 0.92-0.95 = -0.03
         a voltage = 1.06 would give 1.06 - 1.05 = 0.01
         """
+
         high = self.bus[:, VMAX]
         low = self.bus[:, VMIN]
         violates_high = self.bus[:, VM] > high

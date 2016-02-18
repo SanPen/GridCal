@@ -81,6 +81,12 @@ class Circuit(object):
 
         self.circuit_graph = None
 
+        self.bus_names = None
+
+        self.branch_names = None
+
+        self.gen_names = None
+
         # Solvers
         self.power_flow = None  # Power flow instance
 
@@ -168,7 +174,10 @@ class Circuit(object):
                 # no bus positions are provided, calculate the spectral positions
                 # self.graph_pos = nx.spectral_layout(self.circuit_graph)
                 D = nx.floyd_warshall_numpy(self.circuit_graph, nodelist=None, weight='weight')
-                self.graph_pos = self.cmdscale(D)
+                try:
+                    self.graph_pos = self.cmdscale(D)
+                except:
+                    self.graph_pos = nx.spectral_layout(self.circuit_graph)
                 for i in range(len(self.bus)):
                     x, y = self.graph_pos[i]
                     self.bus[i, BUS_X] = x
@@ -178,6 +187,7 @@ class Circuit(object):
                 # use the bus structure provided positions
                 self.graph_pos = self.get_bus_pos_dictionary()
                 print("Using file positions")
+
 
             # initialize the solvers (at this point the circuit should have loaded the data)
             self.initialize_solvers()
@@ -195,6 +205,23 @@ class Circuit(object):
                     self.time_series.set_master_time(ppc['master_time'])
                 self.time_series.gen_profiles = ppc['Gprof']
 
+
+            # set names
+            if 'bus_names' in ppc.keys():
+                self.bus_names = ppc['bus_names']
+            else:
+                self.bus_names = self.get_bus_labels()
+
+            if 'branch_names' in ppc.keys():
+                self.branch_names = ppc['branch_names']
+            else:
+                self.branch_names = self.get_branch_labels()
+
+            if 'gen_names' in ppc.keys():
+                self.gen_names = ppc['gen_names']
+            else:
+                self.gen_names = self.get_gen_labels()
+
             print('Circuit loaded!')
 
     def initialize_solvers(self):
@@ -202,13 +229,30 @@ class Circuit(object):
         Initializes instances of all the solvers (Power Flow, Time Series, etc...)
         @return: Nothing
         """
-        solver_type = SolverType.NRFD_BX
-        self.power_flow = MultiCircuitPowerFlow(self.baseMVA, self.bus, self.gen, self.branch,
-                                                self.circuit_graph, solver_type=SolverType.NR)
-        self.time_series = TimeSeries(self.power_flow)
 
-        self.voltage_stability = MultiCircuitVoltageStability(self.baseMVA, self.bus, self.gen, self.branch,
+        self.initialize_power_flow_solver()
+
+        if self.power_flow is not None:
+
+            self.time_series = TimeSeries(self.power_flow)
+
+            self.voltage_stability = MultiCircuitVoltageStability(self.baseMVA, self.bus, self.gen, self.branch,
                                                               self.circuit_graph, solver_type=SolverType.NR)
+
+    def initialize_power_flow_solver(self, solver_type=SolverType.IWAMOTO):
+        """
+        Initializes a power flow instance with the current circuit values
+        Args:
+            solver_type:
+
+        Returns:
+
+        """
+        # try:
+        self.power_flow = MultiCircuitPowerFlow(self.baseMVA, self.bus, self.gen, self.branch,
+                                            self.circuit_graph, solver_type=SolverType.NR)
+        # except:
+        #     warn('Power flow solver failed to initialize')
 
     def run_time_series(self, solver_type):
         """
@@ -506,10 +550,6 @@ class Circuit(object):
         """
         if pos is None:
             pos = nx.spectral_layout(self.circuit_graph)
-            # pos = nx.spring_layout(self.circuit_graph)
-            # pos = nx.shell_layout(self.circuit_graph)
-            # pos=nx.graphviz_layout(self.circuit_graph, prog="neato")
-            # pos = nx.pydot_layout(self.circuit_graph, prog='twopi',root=0)
 
         # clear
         ax.cla()
@@ -703,16 +743,16 @@ class Circuit(object):
             df.to_excel(writer, index=False, header=False, sheet_name='Conf')
 
             # write buses
-            df = pd.DataFrame(data=self.bus, columns=bus_headers)
-            df.to_excel(writer, index=False, header=True, sheet_name='Bus')
+            df = pd.DataFrame(data=self.bus, columns=bus_headers, index=self.bus_names)
+            df.to_excel(writer, index=True, header=True, sheet_name='Bus')
 
             # write gen
-            df = pd.DataFrame(data=self.gen, columns=gen_headers)
-            df.to_excel(writer, index=False, header=True, sheet_name='Gen')
+            df = pd.DataFrame(data=self.gen, columns=gen_headers, index=self.gen_names)
+            df.to_excel(writer, index=True, header=True, sheet_name='Gen')
 
             # write branch
-            df = pd.DataFrame(data=self.branch, columns=branch_headers)
-            df.to_excel(writer, index=False, header=True, sheet_name='Branch')
+            df = pd.DataFrame(data=self.branch, columns=branch_headers, index=self.branch_names)
+            df.to_excel(writer, index=True, header=True, sheet_name='Branch')
 
             if self.time_series.is_ready():
                 # write loads profile
@@ -1423,12 +1463,21 @@ def load_from_xls(filename):
         elif name.lower() == "bus":
             df = xl.parse(name)
             ppc["bus"] = np.nan_to_num(df.values)
+            if len(df) > 0:
+                if df.index.values.tolist()[0] != 0:
+                    ppc['bus_names'] = df.index.values.tolist()
         elif name.lower() == "gen":
             df = xl.parse(name)
             ppc["gen"] = np.nan_to_num(df.values)
+            if len(df) > 0:
+                if df.index.values.tolist()[0] != 0:
+                    ppc['gen_names'] = df.index.values.tolist()
         elif name.lower() == "branch":
             df = xl.parse(name)
             ppc["branch"] = np.nan_to_num(df.values)
+            if len(df) > 0:
+                if df.index.values.tolist()[0] != 0:
+                    ppc['branch_names'] = df.index.values.tolist()
         elif name.lower() == "lprof":
             df = xl.parse(name, index_col=0)
             ppc["Lprof"] = np.nan_to_num(df.values)

@@ -49,6 +49,7 @@ additional constants, used to assign/compare values in the C{BUS_TYPE} column
 @author: Richard Lincoln
 """
 
+
 # define bus types
 PQ      = 1
 PV      = 2
@@ -87,6 +88,8 @@ from numpy import ones, flatnonzero as find, intc, double, string_, where, delet
 from scipy.sparse import csr_matrix as sparse
 
 from .gen_definitions import GEN_BUS, GEN_STATUS
+
+from warnings import warn
 
 bus_format_array = [intc,
                     intc,
@@ -145,6 +148,9 @@ def bustypes(bus, gen, Sbus):
 
     @author: Ray Zimmerman (PSERC Cornell)
     """
+    # flag to indicate that it is impossible to solve the grid
+    the_grid_is_disabled = False
+
     # get generator status
     nb = bus.shape[0]
     ng = gen.shape[0]
@@ -166,13 +172,19 @@ def bustypes(bus, gen, Sbus):
             ref = [pv[0]]      # use the first PV bus
             pv = pv[1:]      # take it off PV list
         else:   # look for positive power injections to take the largest as the slack
-            idx = where(Sbus.real == max(Sbus.real[where(Sbus.real > 0)[0]]))[0]
-            if len(idx) == 1:
-                ref = idx
-                i = where(pq == idx[0])[0][0]
-                pq = delete(pq, i)
+            positive_power_injections = Sbus.real[where(Sbus.real > 0)[0]]
+            if len(positive_power_injections) > 0:
+                idx = where(Sbus.real == max(positive_power_injections))[0]
+                if len(idx) == 1:
+                    ref = idx
+                    i = where(pq == idx[0])[0][0]
+                    pq = delete(pq, i)
+                else:
+                    warn('It was not possible to find a slack bus')
+                    the_grid_is_disabled = True
             else:
-                raise Exception('It was not possible to find a slack bus')
+                warn('It was not possible to find a slack bus')
+                the_grid_is_disabled = True
 
     # create the types array
     types = zeros(nb)
@@ -180,4 +192,4 @@ def bustypes(bus, gen, Sbus):
     types[pv] = 2
     types[pq] = 1
 
-    return ref, pv, pq, types
+    return ref, pv, pq, types, the_grid_is_disabled
