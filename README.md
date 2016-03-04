@@ -18,7 +18,7 @@ Some of the features you'll find already are:
   - Holomorphic Embedding Power flow
   - DC approximation
   
-- The hability to handle island grids
+- The hability to handle island grids in all the simulation modes.
 
 - Time series with load and generation profiles. 
   - It includes a nice profile import window
