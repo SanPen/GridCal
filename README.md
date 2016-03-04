@@ -20,7 +20,11 @@ Some of the features you'll find already are:
   
 - The hability to handle island grids
 
-- Time series with load and generation profiles. It includes a nice profile import window
+- Time series with load and generation profiles. 
+  - It includes a nice profile import window
+  - Continuation power flow from step `t-1` to step `t`
+
+- Bifurcation point with predictor-corrector Newton-Raphson and Holomorphic embedding.
 
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
 
