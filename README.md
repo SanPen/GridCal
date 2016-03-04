@@ -10,18 +10,19 @@ It is based on PyPower (MatPower for python) and it is compatible with Matpower 
 
 Some of the features you'll find already are:
 
-- Power flow
-  - Newton Raphson
-  - Gauss-Seidel
+- Power flow:
+  - Newton Raphson.
+  - Gauss-Seidel.
   - Current iteration (or Zbus)
   - Newton Raphson Iwamoto (robust Newton Raphson)
-  - Holomorphic Embedding Power flow
-  - DC approximation
+  - Holomorphic Embedding Power flow.
+  - DC approximation.
+  - predictor-corrector Newton-Raphson from the base solution.
   
 - The hability to handle island grids in all the simulation modes.
 
 - Time series with load and generation profiles. 
-  - It includes a nice profile import window
+  - It includes a nice profile import window.
   - Continuation power flow from step `t-1` to step `t`
 
 - Bifurcation point with predictor-corrector Newton-Raphson and Holomorphic embedding.
