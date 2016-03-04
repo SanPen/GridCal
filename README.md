@@ -17,7 +17,7 @@ Some of the features you'll find already are:
   - Newton Raphson Iwamoto (robust Newton Raphson)
   - Holomorphic Embedding Power flow.
   - DC approximation.
-  - predictor-corrector Newton-Raphson from the base solution.
+  - Predictor-corrector Newton-Raphson from the base solution.
   
 - The hability to handle island grids in all the simulation modes.
 
