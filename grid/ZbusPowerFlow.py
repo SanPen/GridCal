@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 np.set_printoptions(precision=6, suppress=True, linewidth=320)
-from numpy import asscalar, where, zeros, ones, mod, conj, array, dot, complex64, complex128 #, complex256
+from numpy import where, zeros, ones, mod, conj, array, dot, complex128
 
 from scipy.linalg import solve
 
 from scipy.sparse.linalg import factorized, spsolve, inv
-from scipy.sparse import issparse, csr_matrix as sparse
-
-from numba import jit
+from scipy.sparse import issparse
+# from numba import jit
 
 # Set the complex precision to use
 complex_type = complex128
@@ -99,7 +98,7 @@ def update_bus_power(k, V, Y):
     """
     return V[k] * conj(Y[k, :].dot(V))[0]
 
-@jit
+# @jit
 def update_all_powers(pv_idx_all, slack_idx_all,  V, Y, Sbus):
     """
     Computes the power for all the PV buses and VD buses
@@ -117,7 +116,7 @@ def update_all_powers(pv_idx_all, slack_idx_all,  V, Y, Sbus):
     return S
 
 
-@jit
+# @jit
 def calc_error(admittances, V, powerInjections):
     """
     Calculates the power error for all the buses
@@ -159,12 +158,14 @@ def zbus(admittances, slackIndices, maxIter, powerInjections, voltageSetPoints, 
     n_original = np.shape(admittances)[0]
 
     # reduce the admittance matrix to omit the slack buses
-    Zred, Yred, C, Sred, Vset_red, pv_idx_red, npv, Vslack, non_slack_indices, nbus = reduce_arrays(n_bus=n_original,
-                                                                                                    Ymat=admittances,
-                                                                                                    slack_indices=array(slackIndices, dtype=int),
-                                                                                                    Vset=voltageSetPoints,
-                                                                                                    S=powerInjections,
-                                                                                                    types=types)
+    Zred, Yred, C, Sred, Vset_red, pv_idx_red, \
+    npv, Vslack, non_slack_indices, nbus = reduce_arrays(n_bus=n_original,
+                                                         Ymat=admittances,
+                                                         slack_indices=array(slackIndices,
+                                                                             dtype=int),
+                                                         Vset=voltageSetPoints,
+                                                         S=powerInjections,
+                                                         types=types)
 
     # Solve variables
     n = 0
@@ -178,7 +179,6 @@ def zbus(admittances, slackIndices, maxIter, powerInjections, voltageSetPoints, 
             Vred = Vsol[non_slack_indices]  # use the given voltage solution
         else:
             Vred = ones(nbus, dtype=complex_type)  # use the flat start solution
-
 
     Vred_prev = zeros(nbus, dtype=complex_type)
 
@@ -204,8 +204,6 @@ def zbus(admittances, slackIndices, maxIter, powerInjections, voltageSetPoints, 
         # correct the voltage for the PV buses
         if npv > 0:
             Vred[pv_idx_red] *= Vset_red[pv_idx_red] / abs(Vred[pv_idx_red])
-
-
 
 #             for k in pv_idx_red:
 #                 tmp = (Vred[k] * conj(Yred[k, :] * Vred)).imag  # reactive power

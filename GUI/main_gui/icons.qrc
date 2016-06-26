@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="file">
+    <file>tower.svg</file>
+    <file>towertrafo.svg</file>
+    <file>substation.svg</file>
+    <file>powerplant.svg</file>
     <file>stochastic_power_flow.svg</file>
     <file>timeseriesicon.png</file>
     <file>plot_gridA2.svg</file>

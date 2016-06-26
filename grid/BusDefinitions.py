@@ -84,10 +84,13 @@ BUS_Y = 18  # Y position for the graphical representation
 
 COLLAPSED = 19
 
+DISPATCHABLE_BUS = 20
+FIX_POWER_BUS = 21
+
 from numpy import ones, flatnonzero as find, intc, double, string_, where, delete, zeros
 from scipy.sparse import csr_matrix as sparse
 
-from .gen_definitions import GEN_BUS, GEN_STATUS
+from .GenDefinitions import GEN_BUS, GEN_STATUS
 
 from warnings import warn
 
@@ -110,6 +113,8 @@ bus_format_array = [intc,
                     double,
                     double,
                     double,
+                    intc,
+                    intc,
                     intc
                     ]
 
@@ -132,7 +137,9 @@ bus_headers = ["bus_i",
                "Mu_Vmin",
                "Bus_X",
                "Bus_Y",
-               "Collapsed"]
+               "Collapsed",
+               "Dispatchable",
+               "Fix_power"]
 
 def bustypes(bus, gen, Sbus):
     """

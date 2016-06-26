@@ -29,7 +29,9 @@ def dcpf(B, Pbus, Va0, ref, pvpq):
     # initialize result vector
     Va = copy(Va0)
 
+    pvpq_ = matrix(pvpq)
+
     # update angles for non-reference buses
-    Va[pvpq] = spsolve(B[pvpq.T, pvpq], (Pbus[pvpq] - B[pvpq.T, ref] * Va0[ref]).T)
+    Va[pvpq_] = spsolve(B[pvpq_.T, pvpq_], (Pbus[pvpq_] - B[pvpq_.T, ref] * Va0[ref]).T)
 
     return Va, True, 0

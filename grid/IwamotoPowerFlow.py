@@ -7,14 +7,17 @@
 
 import sys
 
-
 from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, where, zeros_like
 
 from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
 
 from scipy.sparse.linalg import spsolve
 
+import scipy
+scipy.ALLOW_THREADS = True
+
 import numpy as np
+
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 def dSbus_dV(Ybus, V):
@@ -78,6 +81,7 @@ def dSbus_dV(Ybus, V):
     dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
 
     return dS_dVm, dS_dVa
+
 
 def mu(Ybus, J, F, dV, dx, pvpq, pq):
     """

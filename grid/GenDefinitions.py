@@ -3,7 +3,8 @@ __author__ = 'spv86_000'
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-""" Defines constants for named column indices to gen matrix.
+"""
+Defines constants for named column indices to gen matrix.
 
 Some examples of usage, after defining the constants using the line above,
 are::
@@ -80,6 +81,10 @@ MU_PMIN     = 22   # Kuhn-Tucker multiplier on lower Pg limit (u/MW)
 MU_QMAX     = 23   # Kuhn-Tucker multiplier on upper Qg limit (u/MVAr)
 MU_QMIN     = 24   # Kuhn-Tucker multiplier on lower Qg limit (u/MVAr)
 
+DISPATCHABLE_GEN = 25
+
+FIX_POWER_GEN = 26
+
 # Note: When a generator's PQ capability curve is not simply a box and the
 # upper Qg limit is binding, the multiplier on this constraint is split into
 # it's P and Q components and combined with the appropriate MU_Pxxx and
@@ -111,7 +116,9 @@ gen_format_array = [intc,
                     double,
                     double,
                     double,
-                    double]
+                    double,
+                    intc,
+                    intc]
 
 gen_headers = ["bus",
                "Pg",
@@ -137,9 +144,12 @@ gen_headers = ["bus",
                "MU_PMAX",
                "MU_PMIN",
                "MU_QMAX",
-               "MU_QMIN"]
+               "MU_QMIN",
+               "Dispatchable",
+               "Fix_power"]
 
-""" Defines constants for named column indices to gencost matrix.
+"""
+Defines constants for named column indices to gencost matrix.
 
 Some examples of usage, after defining the constants using the line above,
 are::

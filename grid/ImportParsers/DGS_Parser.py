@@ -6,146 +6,83 @@ Created on Fri Oct 02 14:45:18 2015
 """
 from numpy import array
 import numpy as np
+# np.set_printoptions(linewidth=320)
 import math
 from pandas import DataFrame as df
+import pandas as pd
+pd.set_option('display.height', 1000)
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
 import networkx as nx
+from warnings import warn
+from grid.BusDefinitions import *
+from grid.BranchDefinitions import *
+from grid.GenDefinitions import *
 
-bus_headers = ["bus_i",
-               "type",
-               "Pd",
-               "Qd",
-               "Gs",
-               "Bs",
-               "area",
-               "Vm",
-               "Va",
-               "baseKV",
-               "zone",
-               "Vmax",
-               "Vmin",
-               "LaM_P",
-               "LaM_Q",
-               "Mu_Vmax",
-               "Mu_Vmin",
-               "Bus_X",
-               "Bus_Y",
-               "BUS_NAME"]
 
-branch_headers = ["fbus",  # 0
-                  "tbus",
-                  "r",
-                  "x",
-                  "b",
-                  "rateA",
-                  "rateB",
-                  "rateC",
-                  "ratio",
-                  "angle",  # 9
-                  "status",
-                  "angmin",
-                  "angmax",
-                  "Pf",
-                  "Qf",
-                  "Pt",
-                  "Qt",
-                  "Mu_Sf",
-                  "Mu_St",
-                  "Mu_AngMin",  # 19
-                  "Mu_AngMax",
-                  "Current",
-                  "Loading",
-                  "Original_index"]
-                  
-gen_headers = ["bus",
-               "Pg",
-               "Qg",
-               "Qmax",
-               "Qmin",
-               "Vg",
-               "mBase",
-               "status",
-               "Pmax",
-               "Pmin",
-               "Pc1",
-               "Pc2",
-               "Qc1min",
-               "Qc1max",
-               "Qc2min",
-               "Qc2max",
-               "ramp_agc",
-               "ramp_10",
-               "ramp_30",
-               "ramp_q",
-               "apf",
-               "MU_PMAX",
-               "MU_PMIN",
-               "MU_QMAX",
-               "MU_QMIN"]
 
-def get_transformer_impedances(HV_nominal_voltage, LV_nominal_voltage, 
-                               Nominal_power, Copper_losses, Iron_losses,
-                               No_load_current, Short_circuit_voltage, 
-                               GR_hv1, GX_hv1):
+def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_hv1=0.5):
+    """
+    Get the transformer series and shunt equivalent impedances from the short circuit values
+    @param Uhv: Nominal voltage at the high side (kV)
+    @param Ulv: Nominal voltage at the low side (kV)
+    @param Sn: Nominal power (MVA)
+    @param Pcu: Copper losses (kW) (Losses due to the Joule effect)
+    @param Pfe: Iron-losses (kW)  (Losses in the magnetic circuit)
+    @param I0: No-load current (%)
+    @param Usc: Short-circuit voltage (%)
+    @param GR_hv1: Resistive short circuit contribution to the HV side. It is a value from 0 to 1.
+    @param GX_hv1: Reactive short circuit contribution to the HV side. It is a value from 0 to 1.
+    @return:
+    """
 
-        Uhv = HV_nominal_voltage
+    # Nominal impedance HV (Ohm)
+    Zn_hv = Uhv * Uhv / Sn
 
-        Ulv = LV_nominal_voltage
+    # Nominal impedance LV (Ohm)
+    Zn_lv = Ulv * Ulv / Sn
 
-        Sn = Nominal_power
+    # Short circuit impedance (p.u.)
+    zsc = Usc / 100.0
 
-        Pcu = Copper_losses
+    # Short circuit resistance (p.u.)
+    rsc = (Pcu / 1000.0) / Sn
 
-        Pfe = Iron_losses
+    # Short circuit reactance (p.u.)
+    xsc = np.sqrt(zsc * zsc - rsc * rsc)
 
-        I0 = No_load_current
+    # HV resistance (p.u.)
+    rcu_hv = rsc * GR_hv1
 
-        Usc = Short_circuit_voltage
+    # LV resistance (p.u.)
+    rcu_lv = rsc * (1.0 - GR_hv1)
 
-        # Nominal impedance HV (Ohm)
-        Zn_hv = Uhv * Uhv / Sn
+    # HV shunt reactance (p.u.)
+    xs_hv = xsc * GX_hv1
 
-        # Nominal impedance LV (Ohm)
-        Zn_lv = Ulv * Ulv / Sn
+    # LV shunt reactance (p.u.)
+    xs_lv = xsc * (1.0 - GX_hv1)
 
-        # Short circuit impedance (p.u.)
-        zsc = Usc / 100
+    # Shunt resistance (p.u.)
+    rfe = Sn / (Pfe / 1000.0)
 
-        # Short circuit resistance (p.u.)
-        rsc = (Pcu / 1000) / Sn
+    # Magnetization impedance (p.u.)
+    zm = 1.0 / (I0 / 100.0)
 
-        # Short circuit reactance (p.u.)
-        xsc = np.sqrt(zsc * zsc - rsc * rsc)
+    # Magnetization reactance (p.u.)
+    xm = 0.0
+    if rfe > zm:
+        xm = 1.0 / sqrt(1.0 / (zm * zm) - 1.0 / (rfe * rfe))
+    else:
+        xm = 0.0  # the square root cannot be computed
 
-        # HV resistance (p.u.)
-        rcu_hv = rsc * GR_hv1
+    # Calculated parameters in per unit
+    leakage_impedance = rsc + 1j * xsc
+    magnetizing_impedance = rfe + 1j * xm
 
-        # LV resistance (p.u.)
-        rcu_lv = rsc * (1 - GR_hv1)
+    return leakage_impedance, magnetizing_impedance
 
-        # HV shunt reactance (p.u.)
-        xs_hv = xsc * GX_hv1
-
-        # LV shunt reactance (p.u.)
-        xs_lv = xsc * (1 - GX_hv1)
-
-        #Shunt resistance (p.u.)
-        rfe = Sn / (Pfe / 1000)
-
-        # Magnetization impedance (p.u.)
-        zm = 1 / (I0 / 100)
-
-        # Magnetization reactance (p.u.)
-        xm = 0.0
-        if rfe > zm:
-            xm = 1 / sqrt(1 / (zm * zm) - 1 / (rfe * rfe))
-        else:
-            xm = 0  # the square root cannot be computed
-
-        # Calculated parameters in per unit
-        leakage_impedance = rsc + 1j * xsc
-        magnetizing_impedance = rfe + 1j * xm
-
-        return leakage_impedance, magnetizing_impedance
 
 def read_DGS(filename):
     ###############################################################################
@@ -231,7 +168,6 @@ def read_DGS(filename):
                 chnks = ["0" if x == "" else x for x in chnks]
                 data[CurrentType].append(array(tuple(chnks)))
 
-
     # format keys
     for key in data.keys():
         print("Converting " + str(key))
@@ -251,7 +187,7 @@ def read_DGS(filename):
     # Refactor data into classes
     ###############################################################################
 
-    # store tables for easy refference
+    # store tables for easy reference
 
     '''
     ###############################################################################
@@ -323,7 +259,7 @@ def read_DGS(filename):
     if "ElmTr2" in data.keys():
         transformers = data["ElmTr2"]
     else:
-        transformers = np.zeros((0,20))
+        transformers = np.zeros((0, 20))
 
 
 
@@ -360,7 +296,7 @@ def read_DGS(filename):
     if "TypTr2" in data.keys():
         transformers_types = data["TypTr2"]
     else:
-        transformers_types = np.zeros((0,20))
+        transformers_types = np.zeros((0, 20))
 
     '''
     ###############################################################################
@@ -379,7 +315,7 @@ def read_DGS(filename):
     if "ElmTerm" in data.keys():
         buses = data["ElmTerm"]
     else:
-        buses = np.zeros((0,20))
+        buses = np.zeros((0, 20))
 
 
     '''
@@ -396,7 +332,7 @@ def read_DGS(filename):
     if "StaCubic" in data.keys():
         cubicles = data["StaCubic"]
     else:
-        cubicles = np.zeros((0,20))
+        cubicles = np.zeros((0, 20))
 
     '''
     ###############################################################################
@@ -415,7 +351,7 @@ def read_DGS(filename):
     if "ElmLod" in data.keys():
         loads = data["ElmLod"]
     else:
-        loads = np.zeros((0,20))
+        loads = np.zeros((0, 20))
 
 
 
@@ -441,7 +377,7 @@ def read_DGS(filename):
     if "ElmXnet" in data.keys():
         external = data["ElmXnet"]
     else:
-        external = np.zeros((0,20))
+        external = np.zeros((0, 20))
 
 
     '''
@@ -456,7 +392,7 @@ def read_DGS(filename):
     if "ElmNet" in data.keys():
         grid = data["ElmNet"]
     else:
-        grid = np.zeros((0,20))
+        grid = np.zeros((0, 20))
 
 
 
@@ -466,7 +402,7 @@ def read_DGS(filename):
     if "ElmGenstat" in data.keys():
         static_generators = data["ElmGenstat"]
     else:
-        static_generators = np.zeros((0,20))
+        static_generators = np.zeros((0, 20))
 
 
     '''
@@ -491,7 +427,7 @@ def read_DGS(filename):
     if "ElmSym" in data.keys():
         synchronous_machine = data["ElmSym"]
     else:
-        synchronous_machine = np.zeros((0,20))
+        synchronous_machine = np.zeros((0, 20))
 
 
     '''
@@ -514,7 +450,7 @@ def read_DGS(filename):
     if "TypSym" in data.keys():
         synchronous_machine_type = data["TypSym"]
     else:
-        synchronous_machine_type = np.zeros((0,20))
+        synchronous_machine_type = np.zeros((0, 20))
 
 
     '''
@@ -534,7 +470,7 @@ def read_DGS(filename):
     if "ElmAsm" in data.keys():
         asynchronous_machine = data["ElmAsm"]
     else:
-        asynchronous_machine = np.zeros((0,20))
+        asynchronous_machine = np.zeros((0, 20))
 
 
 
@@ -563,7 +499,7 @@ def read_DGS(filename):
     if "TypAsmo" in data.keys():
         asynchronous_machine_type = data["TypAsmo"]
     else:
-        asynchronous_machine_type = np.zeros((0,20))
+        asynchronous_machine_type = np.zeros((0, 20))
 
 
     '''
@@ -588,8 +524,7 @@ def read_DGS(filename):
     if "ElmShnt" in data.keys():
         shunts = data["ElmShnt"]
     else:
-        shunts = np.zeros((0,20))
-
+        shunts = np.zeros((0, 20))
 
     '''
     ###############################################################################
@@ -608,14 +543,12 @@ def read_DGS(filename):
     if "ElmCoup" in data.keys():
         switches = data["ElmCoup"]
     else:
-        switches = np.zeros((0,20))
-
-
+        switches = np.zeros((0, 20))
 
     # put the tables that connect to a terminal in a list
     classes = [lines, transformers, loads, external, static_generators, shunts]
 
-    #put the brach classes in a list
+    # put the branch classes in a list
     branch_classes = [lines, transformers]
 
     # generator classes
@@ -639,127 +572,32 @@ def read_DGS(filename):
                 idx = np.where(cubicles == ID)[0]
                 terminals_dict[ID] = cub_term_idx[idx]
 
-
     ###############################################################################
     # Generate GridCal data
     ###############################################################################
 
-    '''
-    ###############################################################################
-    BUSES
-    ###############################################################################
-
-    BUS_I       = 0    # bus number (1 to 29997)
-    BUS_TYPE    = 1    # bus type
-    PD          = 2    # Pd, real power demand (MW)
-    QD          = 3    # Qd, reactive power demand (MVAr)
-    GS          = 4    # Gs, shunt conductance (MW at V = 1.0 p.u.)
-    BS          = 5    # Bs, shunt susceptance (MVAr at V = 1.0 p.u.)
-    BUS_AREA    = 6    # area number, 1-100
-    VM          = 7    # Vm, voltage magnitude (p.u.)
-    VA          = 8    # Va, voltage angle (degrees)
-    BASE_KV     = 9    # baseKV, base voltage (kV)
-    ZONE        = 10   # zone, loss zone (1-999)
-    VMAX        = 11   # maxVm, maximum voltage magnitude (p.u.)
-    VMIN        = 12   # minVm, minimum voltage magnitude (p.u.)
-
-    # included in opf solution, not necessarily in input
-    # assume objective function has units, u
-    LAM_P       = 13   # Lagrange multiplier on real power mismatch (u/MW)
-    LAM_Q       = 14   # Lagrange multiplier on reactive power mismatch (u/MVAr)
-    MU_VMAX     = 15   # Kuhn-Tucker multiplier on upper voltage limit (u/p.u.)
-    MU_VMIN     = 16   # Kuhn-Tucker multiplier on lower voltage limit (u/p.u.)
-
-    # bus location
-    BUS_X = 17  # X position for the graphical representation
-    BUS_Y = 18  # Y position for the graphical representation
-    BUS_NAME = 19
-
-    ###############################################################################
-    BRANCHES
-    ###############################################################################
-
-    F_BUS       = 0    # f, from bus number
-    T_BUS       = 1    # t, to bus number
-    BR_R        = 2    # r, resistance (p.u.)
-    BR_X        = 3    # x, reactance (p.u.)
-    BR_B        = 4    # b, total line charging susceptance (p.u.)
-    RATE_A      = 5    # rateA, MVA rating A (long term rating)
-    RATE_B      = 6    # rateB, MVA rating B (short term rating)
-    RATE_C      = 7    # rateC, MVA rating C (emergency rating)
-    TAP         = 8    # ratio, transformer off nominal turns ratio
-    SHIFT       = 9    # angle, transformer phase shift angle (degrees)
-    BR_STATUS   = 10   # initial branch status, 1 - in service, 0 - out of service
-    ANGMIN      = 11   # minimum angle difference, angle(Vf) - angle(Vt) (degrees)
-    ANGMAX      = 12   # maximum angle difference, angle(Vf) - angle(Vt) (degrees)
-
-    # included in power flow solution, not necessarily in input
-    PF          = 13   # real power injected at "from" bus end (MW)
-    QF          = 14   # reactive power injected at "from" bus end (MVAr)
-    PT          = 15   # real power injected at "to" bus end (MW)
-    QT          = 16   # reactive power injected at "to" bus end (MVAr)
-
-    # included in opf solution, not necessarily in input
-    # assume objective function has units, u
-    MU_SF       = 17   # Kuhn-Tucker multiplier on MVA limit at "from" bus (u/MVA)
-    MU_ST       = 18   # Kuhn-Tucker multiplier on MVA limit at "to" bus (u/MVA)
-    MU_ANGMIN   = 19   # Kuhn-Tucker multiplier lower angle difference limit
-    MU_ANGMAX   = 20   # Kuhn-Tucker multiplier upper angle difference limit
-
-    BR_CURRENT = 21  # Branch current in kA
-    LOADING = 22  # Branch loading factor
-    O_INDEX = 23  # Original index
-
-    ###############################################################################
-    GEN
-    ###############################################################################
-
-    GEN_BUS     = 0    # bus number
-    PG          = 1    # Pg, real power output (MW)
-    QG          = 2    # Qg, reactive power output (MVAr)
-    QMAX        = 3    # Qmax, maximum reactive power output at Pmin (MVAr)
-    QMIN        = 4    # Qmin, minimum reactive power output at Pmin (MVAr)
-    VG          = 5    # Vg, voltage magnitude setpoint (p.u.)
-    MBASE       = 6    # mBase, total MVA base of this machine, defaults to baseMVA
-    GEN_STATUS  = 7    # status, 1 - machine in service, 0 - machine out of service
-    PMAX        = 8    # Pmax, maximum real power output (MW)
-    PMIN        = 9    # Pmin, minimum real power output (MW)
-    PC1         = 10   # Pc1, lower real power output of PQ capability curve (MW)
-    PC2         = 11   # Pc2, upper real power output of PQ capability curve (MW)
-    QC1MIN      = 12   # Qc1min, minimum reactive power output at Pc1 (MVAr)
-    QC1MAX      = 13   # Qc1max, maximum reactive power output at Pc1 (MVAr)
-    QC2MIN      = 14   # Qc2min, minimum reactive power output at Pc2 (MVAr)
-    QC2MAX      = 15   # Qc2max, maximum reactive power output at Pc2 (MVAr)
-    RAMP_AGC    = 16   # ramp rate for load following/AGC (MW/min)
-    RAMP_10     = 17   # ramp rate for 10 minute reserves (MW)
-    RAMP_30     = 18   # ramp rate for 30 minute reserves (MW)
-    RAMP_Q      = 19   # ramp rate for reactive power (2 sec timescale) (MVAr/min)
-    APF         = 20   # area participation factor
-
-    # included in opf solution, not necessarily in input
-    # assume objective function has units, u
-    MU_PMAX     = 21   # Kuhn-Tucker multiplier on upper Pg limit (u/MW)
-    MU_PMIN     = 22   # Kuhn-Tucker multiplier on lower Pg limit (u/MW)
-    MU_QMAX     = 23   # Kuhn-Tucker multiplier on upper Qg limit (u/MVAr)
-    MU_QMIN     = 24   # Kuhn-Tucker multiplier on lower Qg limit (u/MVAr)
-    '''
-
+    # general values
     baseMVA = 100
     frequency = grid['frnom'][0]
     w = 2.0 * math.pi * frequency
 
     BUSES = list()
-    bus_line = np.zeros(20, dtype=np.object)
+    BUS_NAMES = list()
+    bus_line = np.zeros(len(bus_headers), dtype=np.double)
 
     BRANCHES = list()
-    branch_line = np.zeros(24, dtype=np.object)
+    BRANCH_NAMES = list()
+    branch_line = np.zeros(len(branch_headers), dtype=np.double)
 
     GEN = list()
-    gen_line = np.zeros(25, dtype=np.object)
+    GEN_NAMES = list()
+    gen_line = np.zeros(len(gen_headers), dtype=np.double)
 
     g = nx.graph.Graph()
 
-    # terminals
+    ####################################################################################################################
+    # Terminals (nodes)
+    ####################################################################################################################
     print('Parsing terminals')
     buses_dict = dict()
     gpos = dict()
@@ -767,167 +605,372 @@ def read_DGS(filename):
         ID = buses['ID'][i]
         x, y = pos_dict[ID]
         bus_ = bus_line.copy()
-        bus_[0] = BUSES.__len__() +1  # ID
-        bus_[7] = 1.0  # VM
-        bus_[8] = 0.0  # VA
-        bus_[9] = buses['uknom'][i]  # BaseKv
-        bus_[11] = 1.05  # VMax
-        bus_[12] = 0.95  # VMin
-        bus_[17] = x
-        bus_[18] = y
-        bus_[19] = buses['loc_name'][i]  # BUS_Name
+        bus_[BUS_I] = BUSES.__len__()  # ID
+        bus_[BUS_TYPE] = 1  # by default is a PQ node  {1:PQ, 2:PV, 3:VD}
+        bus_[VM] = 1.0  # VM
+        bus_[VA] = 0.0  # VA
+        bus_[BASE_KV] = buses['uknom'][i]  # BaseKv
+        bus_[VMAX] = 1.05  # VMax
+        bus_[VMIN] = 0.95  # VMin
+        bus_[BUS_X] = x
+        bus_[BUS_Y] = y
         BUSES.append(bus_)
+
+        bus_name = buses['loc_name'][i]  # BUS_Name
+        BUS_NAMES.append(bus_name)
 
         buses_dict[ID] = i
         gpos[i] = (x, y)
 
-    BUSES = np.array(BUSES, dtype=np.object)
+    BUSES = np.array(BUSES)
+    BUS_NAMES = np.array(BUS_NAMES)
 
-    # Branches
-    print('Parsing lines')
-    lines_ID = lines['ID']
-    lines_type_id = lines['typ_id']
-    line_types_ID = lines_types['ID']
-    lines_lenght = lines['dline']
+    ####################################################################################################################
+    # External grids (slacks)
+    ####################################################################################################################
+    '''
+    ###############################################################################
+    ********************************************************************************
+    *  External Grid
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  outserv: Out of Service
+    *  snss: Max. Values: Short-Circuit Power Sk''max in MVA
+    *  rntxn: Max. Values: R/X Ratio (max.)
+    *  z2tz1: Max. Values Impedance Ratio: Z2/Z1 max.
+    *  snssmin: Min. Values: Short-Circuit Power Sk''min in MVA
+    *  rntxnmin: Min. Values: R/X Ratio (min.)
+    *  z2tz1min: Min. Values Impedance Ratio: Z2/Z1 min.
+    *  chr_name: Characteristic Name
+    *  bustp: Bus Type:PQ:PV:SL
+    *  pgini: Operation Point: Active Power in MW
+    *  qgini: Operation Point: Reactive Power in Mvar
+    *  phiini: Operation Point: Angle in deg
+    *  usetp: Operation Point: Voltage Setpoint in p.u.
+    ********************************************************************************
+    '''
 
-    if 'outserv' in lines.keys():
-        lines_enables = lines['outserv']
-    else:
-        lines_enables = np.ones(len(lines_ID))
+    for i in range(len(external)):
+        ID = external['ID'][i]
 
-    lines_R = lines_types['rline']
-    lines_L = lines_types['xline']
-    lines_C = lines_types['cline']
-    lines_rate = lines_types['sline']
-    lines_voltage = lines_types['uline']
-    for i in range(len(lines)):
-        line_ = branch_line.copy()
+        if 'phiini' in external.columns.values:
+            va = external['phiini'][i]
+            vm = external['usetp'][i]
+        else:
+            va = 0
+            vm = 1
 
-        ID = lines_ID[i]
-        ID_Type = lines_type_id[i]
-        type_idx = np.where(line_types_ID == ID_Type)[0][0]
-
-        buses = terminals_dict[ID]  # arry with the ID of the connection Buses
+        buses = terminals_dict[ID]  # array with the ID of the connection Buses
         bus1 = buses_dict[buses[0]]
-        bus2 = buses_dict[buses[1]]
 
-        status = lines_enables[i]
+        # apply the slack values to the buses structure if the element is marked as slack
+        if external['bustp'].values[i] == b'SL':
+            # create the slack entry on buses
+            BUSES[bus1, BUS_TYPE] = 3
+            BUSES[bus1, VA] = va
+            BUSES[bus1, VM] = vm
 
-        # impedances
-        lenght = np.double(lines_lenght[i])
-        R = np.double(lines_R[type_idx]) * lenght  # Ohm
-        L = np.double(lines_L[type_idx]) * lenght  # Ohm
-        C = np.double(lines_C[type_idx]) * lenght * w *1e-6 # S
+            # create the slack entry on generators (add the slack generator)
+            gen_ = gen_line.copy()
+            gen_[GEN_BUS] = bus1
+            gen_[MBASE] = baseMVA
+            gen_[VG] = vm
+            gen_[GEN_STATUS] = 1
+            gen_[PG] += external['pgini'].values[i]
 
-        # pass impedance to per unit
-        vbase = np.double(lines_voltage[type_idx])  # kV
-        zbase = vbase**2 / baseMVA  # Ohm
-        ybase = 1.0 / zbase  # S
-        r = R / zbase  # pu
-        l = L / zbase  # pu
-        c = C / ybase  # pu
+            GEN.append(gen_)
+            GEN_NAMES.append(external['loc_name'][i])
 
-        # rated power
-        Irated = np.double(lines_rate[type_idx])  # kA
-        Smax = Irated * vbase  # MVA
+        elif external['bustp'].values[i] == b'PV':
+            # mark the bus as pv
+            BUSES[bus1, BUS_TYPE] = 2
+            BUSES[bus1, VA] = 0.0
+            BUSES[bus1, VM] = vm
+            # add the PV entry on generators
+            gen_ = gen_line.copy()
+            gen_[GEN_BUS] = bus1
+            gen_[MBASE] = baseMVA
+            gen_[VG] = vm
+            gen_[GEN_STATUS] = 1
+            gen_[PG] += external['pgini'].values[i]
 
-        # put all in the correct column
-        line_[0] = bus1
-        line_[1] = bus2
-        line_[2] = r
-        line_[3] = l
-        line_[4] = c
-        line_[5] = Smax
-        line_[10] = status
-        BRANCHES.append(line_)
+            GEN.append(gen_)
+            GEN_NAMES.append(external['loc_name'][i])
 
-        # add edge to graph
-        g.add_edge(bus1, bus2)
+        elif external['bustp'].values[i] == b'PQ':
+            # mark the bus as pv
+            BUSES[bus1, BUS_TYPE] = 1
+            BUSES[bus1, VA] = va
+            BUSES[bus1, VM] = vm
+            BUSES[bus1, PD] += external['pgini'].values[i]
+            BUSES[bus1, QD] += external['qgini'].values[i]
 
+    ####################################################################################################################
+    # Lines (branches)
+    ####################################################################################################################
+    print('Parsing lines')
 
+    if lines_types.__len__() > 0:
+        lines_ID = lines['ID'].values
+        lines_type_id = lines['typ_id'].values
+        line_types_ID = lines_types['ID'].values
+        lines_lenght = lines['dline'].values
 
+        if 'outserv' in lines.keys():
+            lines_enables = lines['outserv']
+        else:
+            lines_enables = np.ones(len(lines_ID))
+
+        lines_R = lines_types['rline'].values
+        lines_L = lines_types['xline'].values
+        lines_C = lines_types['cline'].values
+        lines_rate = lines_types['sline'].values
+        lines_voltage = lines_types['uline'].values
+        for i in range(len(lines)):
+            line_ = branch_line.copy()
+
+            ID = lines_ID[i]
+            ID_Type = lines_type_id[i]
+            type_idx = np.where(line_types_ID == ID_Type)[0][0]
+
+            buses = terminals_dict[ID]  # array with the ID of the connection Buses
+            bus1 = buses_dict[buses[0]]
+            bus2 = buses_dict[buses[1]]
+
+            status = lines_enables[i]
+
+            # impedances
+            lenght = np.double(lines_lenght[i])
+            R = np.double(lines_R[type_idx]) * lenght  # Ohm
+            L = np.double(lines_L[type_idx]) * lenght  # Ohm
+            C = np.double(lines_C[type_idx]) * lenght * w * 1e-6  # S (siemens)
+
+            # pass impedance to per unit
+            vbase = np.double(lines_voltage[type_idx])  # kV
+            zbase = vbase**2 / baseMVA  # Ohm
+            ybase = 1.0 / zbase  # S
+            r = R / zbase  # pu
+            l = L / zbase  # pu
+            c = C / ybase  # pu
+
+            # rated power
+            Irated = np.double(lines_rate[type_idx])  # kA
+            Smax = Irated * vbase  # MVA
+
+            # put all in the correct column
+            line_[F_BUS] = bus1
+            line_[T_BUS] = bus2
+            line_[BR_R] = r
+            line_[BR_X] = l
+            line_[BR_B] = c
+            line_[RATE_A] = Smax
+            line_[BR_STATUS] = status
+            BRANCHES.append(line_)
+
+            name_ = lines['loc_name'][i]  # line_Name
+            BRANCH_NAMES.append(name_)
+
+            # add edge to graph
+            g.add_edge(bus1, bus2)
+    else:
+        warn('Line types are empty')
+
+    ####################################################################################################################
+    # Transformers (Branches)
+    ####################################################################################################################
     print('Parsing transformers')
 
-    type_ID = transformers_types['ID']
-    HV_nominal_voltage = transformers_types['utrn_h']
-    LV_nominal_voltage = transformers_types['utrn_l']
-    Nominal_power = transformers_types['strn']
-    Copper_losses = transformers_types['pcutr']
-    Iron_losses = transformers_types['pfe']
-    No_load_current = transformers_types['curmg']
-    Short_circuit_voltage = transformers_types['uktr']
-    #GR_hv1 = transformers_types['ID']
-    #GX_hv1 = transformers_types['ID']
-    for i in range(len(transformers)):
-        line_ = branch_line.copy()
+    '''
+    ********************************************************************************
+    *  2-Winding Transformer
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  typ_id: Type in TypTr2
+    *  outserv: Out of Service
+    *  nntap: Tap Changer 1: Tap Position
+    *  sernum: Serial Number
+    *  constr: Year of Construction
+    *  chr_name: Characteristic Name
+    ********************************************************************************
+    '''
 
-        ID = transformers['ID'][i]
-        ID_Type = transformers['typ_id'][i]
-        type_idx = np.where(type_ID == ID_Type)[0][0]
+    if len(transformers_types) > 0:
+        type_ID = transformers_types['ID'].values
+        HV_nominal_voltage = transformers_types['utrn_h'].values
+        LV_nominal_voltage = transformers_types['utrn_l'].values
+        Nominal_power = transformers_types['strn'].values
+        Copper_losses = transformers_types['pcutr'].values
+        Iron_losses = transformers_types['pfe'].values
+        No_load_current = transformers_types['curmg'].values
+        Short_circuit_voltage = transformers_types['uktr'].values
+        # GR_hv1 = transformers_types['ID']
+        # GX_hv1 = transformers_types['ID']
+        for i in range(len(transformers)):
 
-        buses = terminals_dict[ID]  # arry with the ID of the connection Buses
-        bus1 = buses_dict[buses[0]]
-        bus2 = buses_dict[buses[1]]
+            line_ = branch_line.copy()
 
-        Smax = Nominal_power[type_idx]
+            ID = transformers['ID'][i]
+            ID_Type = transformers['typ_id'][i]
 
-        Zs, Zsh = get_transformer_impedances(HV_nominal_voltage=HV_nominal_voltage[type_idx],
-                                             LV_nominal_voltage=LV_nominal_voltage[type_idx],
-                                             Nominal_power=Smax,
-                                             Copper_losses=Copper_losses[type_idx],
-                                             Iron_losses=Iron_losses[type_idx],
-                                             No_load_current=No_load_current[type_idx],
-                                             Short_circuit_voltage=Short_circuit_voltage[type_idx],
-                                             GR_hv1=0.5,
-                                             GX_hv1=0.5)
+            if ID_Type in type_ID:
+                type_idx = np.where(type_ID == ID_Type)[0][0]
+                buses = terminals_dict[ID]  # array with the ID of the connection Buses
+                bus1 = buses_dict[buses[0]]
+                bus2 = buses_dict[buses[1]]
 
-        status = 1 - transformers['outserv'][i]
+                Smax = Nominal_power[type_idx]
 
-        # put all in the correct column
-        line_[0] = bus1
-        line_[1] = bus2
-        line_[2] = Zs.real
-        line_[3] = Zs.imag
-        line_[4] = Zsh.imag
-        line_[5] = Smax
-        line_[10] = status
-        BRANCHES.append(line_)
+                # Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc
+                Zs, Zsh = get_transformer_impedances(Uhv=HV_nominal_voltage[type_idx],
+                                                     Ulv=LV_nominal_voltage[type_idx],
+                                                     Sn=Smax,
+                                                     Pcu=Copper_losses[type_idx],
+                                                     Pfe=Iron_losses[type_idx],
+                                                     I0=No_load_current[type_idx],
+                                                     Usc=Short_circuit_voltage[type_idx],
+                                                     GR_hv1=0.5,
+                                                     GX_hv1=0.5)
 
-        # add edge to graph
-        g.add_edge(bus1, bus2)
+                status = 1 - transformers['outserv'][i]
 
+                # put all in the correct column
+                line_[F_BUS] = bus1
+                line_[T_BUS] = bus2
+                line_[BR_R] = Zs.real
+                line_[BR_X] = Zs.imag
+                line_[BR_B] = Zsh.imag
+                line_[RATE_A] = Smax
+                line_[BR_STATUS] = status
+                BRANCHES.append(line_)
 
+                name_ = transformers['loc_name'][i]  # line_Name
+                BRANCH_NAMES.append(name_)
 
+                # add edge to graph
+                g.add_edge(bus1, bus2)
+            else:
+                warn('Transformer type not found!')
+        else:
+            warn('Transformer types are empty')
+
+    ####################################################################################################################
+    # Loads (nodes)
+    ####################################################################################################################
     print('Parsing Loads')
-    loads_ID = loads['ID']
-    loads_P = loads['plini']
-    loads_Q = loads['qlini']
-    for i in range(len(loads)):
-        ID = loads_ID[i]
-        bus_idx = buses_dict[(terminals_dict[ID][0])]
+    if len(loads) > 0:
+        loads_ID = loads['ID']
+        loads_P = loads['plini']
+        loads_Q = loads['qlini']
+        for i in range(len(loads)):
+            ID = loads_ID[i]
+            bus_idx = buses_dict[(terminals_dict[ID][0])]
 
-        p = loads_P[i]  # in MW
-        q = loads_Q[i]  # in MVA
+            p = -loads_P[i]  # in MW
+            q = -loads_Q[i]  # in MVA
 
-        BUSES[bus_idx, 2] += p
-        BUSES[bus_idx, 3] += q
+            BUSES[bus_idx, 2] += p
+            BUSES[bus_idx, 3] += q
+    else:
+        warn('There are no loads')
 
+    ####################################################################################################################
+    # Static generators (Gen)
+    ####################################################################################################################
+    '''
+    ********************************************************************************
+    *  Static Generator
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  bus1: Terminal in StaCubic
+    *  outserv: Out of Service
+    *  sgn: Ratings: Nominal Apparent Power in MVA
+    *  cosn: Ratings: Power Factor
+    *  ngnum: Number of: parallel Machines
+    *  pgini: Dispatch: Active Power in MW
+    *  qgini: Dispatch: Reactive Power in Mvar
+    *  av_mode: Local Controller
+    *  ip_ctrl: Reference Machine
+    ********************************************************************************
+    '''
+    for i in range(len(static_generators)):
+        ID = static_generators['ID'][i]
+        buses = terminals_dict[ID]  # array with the ID of the connection Buses
+        bus1 = buses_dict[buses[0]]
+        mode = static_generators['av_mode'][i]
+        # declare the generator array
+        gen_ = gen_line.copy()
+        gen_[GEN_BUS] = bus1
+        gen_[GEN_STATUS] = not static_generators['outserv'][i]
+
+        num_machines = static_generators['ngnum'][i]
+
+        gen_[PG] = static_generators['pgini'][i] * num_machines
+        gen_[QG] = static_generators['qgini'][i] * num_machines
+        gen_[VG] = 1.0  # static_generators['outserv'][i]
+        gen_[MBASE] = static_generators['sgn'][i]
+
+        GEN.append(gen_)
+
+        name_ = static_generators['loc_name'][i]
+        GEN_NAMES.append(name_)
+
+    ####################################################################################################################
     # make data-frames out of data
-    BRANCHES = df(data=np.array(BRANCHES, dtype=np.object), columns=branch_headers)
-    BUSES = df(data=np.array(BUSES, dtype=np.object), columns=bus_headers)
-    GEN = df(data=np.array(GEN, dtype=np.object), columns=gen_headers)
+    ####################################################################################################################
 
+    BRANCH_NAMES = array(BRANCH_NAMES, dtype=np.str)
+    BUS_NAMES = array(BUS_NAMES, dtype=np.str)
+    GEN_NAMES = array(GEN_NAMES, dtype=np.str)
+
+    if len(BRANCHES) > 0:
+        BRANCHES = df(data=np.array(BRANCHES, dtype=np.object), columns=branch_headers, index=BRANCH_NAMES)
+    else:
+        BRANCHES = df(data=np.zeros((0, len(branch_headers))), columns=branch_headers)
+
+    if len(BUSES) > 0:
+        BUSES = df(data=np.array(BUSES, dtype=np.object), columns=bus_headers, index=BUS_NAMES)
+    else:
+        BUSES = df(data=np.zeros((0, len(bus_headers))), columns=bus_headers)
+
+    if len(GEN) > 0:
+        GEN = df(data=np.array(GEN, dtype=np.object), columns=gen_headers, index=GEN_NAMES)
+    else:
+        GEN = df(data=np.zeros((0, len(gen_headers))), columns=gen_headers)
+
+    print('Done!')
+
+    return baseMVA, BUSES, BRANCHES, GEN, g, gpos, BUS_NAMES, BRANCH_NAMES, GEN_NAMES
+
+
+if __name__ == "__main__":
+
+    fname = 'Bogfinkeveg.dgs'
+    # fname = 'PLATOS grid 3.dgs'
+    # fname = 'Example4.dgs'
+    baseMVA, BUSES, BRANCHES, GEN, graph, gpos, BUS_NAMES, BRANCH_NAMES, GEN_NAMES = read_DGS(fname)
+
+    print(BUS_NAMES, '\n')
+    print(BUSES)
+
+    print(BRANCH_NAMES, '\n')
+    print(BRANCHES)
+
+    print(GEN_NAMES, '\n')
+    print(GEN)
+
+    print(graph)
     print('Plotting grid...')
-    nx.draw(g, pos=gpos)
+    nx.draw(graph, pos=gpos)
 
     from matplotlib import pyplot as plt
     plt.show()
 
-    print('Done!')
-
-    return BUSES, BRANCHES, GEN, g
+    print('done')
 
 
-if __name__ == "__main__":
-    fname = "Bogfinkeveg.dgs"
-    read_DGS(fname)

@@ -11,7 +11,7 @@ from scipy.sparse.linalg import factorized, spsolve
 from scipy.sparse import issparse, csr_matrix as sparse
 
 # just in time compiler
-from numba import jit
+# from numba import jit
 
 # Set the complex precision to use
 complex_type = complex128
@@ -127,7 +127,7 @@ def pre_process(n_bus, Ymat, slack_indices, Vset, S, types):
 
     return Ysys, Ypv, F, types, Vset2, S2, non_slack_indices, map_idx, map_w, npq, npv, pv, pq
 
-@jit(cache=True)
+# @jit(cache=True)
 def RHS(n, nbus, pv, F, Ypv, S, Vset, Vset_abs2, C, W, Q, types, map_idx, map_w, useFFT):
     """
     Right hand side calculation.
@@ -195,7 +195,7 @@ def delta(n, k):
     return n == k # is 1 for n==k, 0 otherwise
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def RHS_VD(n, k, Vset):
     """
     Right hand side calculation for a PQ bus.
@@ -215,7 +215,7 @@ def RHS_VD(n, k, Vset):
         return (Vset[k] - complex_type(1)) * delta(n, 1)
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def RHS_PQ(n, k, F, C, S, W, map_w):
     """
     Right hand side calculation for a PQ bus.
@@ -243,7 +243,7 @@ def RHS_PQ(n, k, F, C, S, W, map_w):
         return conj(S[k]) * conj(W[n-1, kw]) - F[k] * C[n-1, k]  # ASU version
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def calc_W(n, k, kw, C, W, map_idx, useFFT):
     """
     Calculation of the inverse coefficients W. (only applicable for PQ buses)
@@ -295,7 +295,7 @@ def calc_W(n, k, kw, C, W, map_idx, useFFT):
     return res
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def RHS_PV(n, k, F, S, C, Q, W, map_idx, map_w, useFFT):
     """
     Right hand side calculation for a PQ bus.
@@ -344,7 +344,7 @@ def RHS_PV(n, k, F, S, C, Q, W, map_idx, map_w, useFFT):
     return rhs
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def calc_Vre(n, k, C, Vset_abs2, useFFT):
     """
     Compute the real part of the voltage for PV ndes
@@ -364,7 +364,7 @@ def calc_Vre(n, k, C, Vset_abs2, useFFT):
     return vre
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def calc_R(n, k, C, useFFT):
     """
     Convolution coefficient
@@ -393,7 +393,7 @@ def calc_R(n, k, C, useFFT):
     return result
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def calc_QW(n, k, kk, kw,  Q, W, useFFT):
     """
     Convolution coefficient
@@ -422,7 +422,7 @@ def calc_QW(n, k, kk, kw,  Q, W, useFFT):
     return result
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def epsilon(Sn, n, E):
     """
     Fast recursive Wynn's epsilon algorithm from:
@@ -463,7 +463,7 @@ def epsilon(Sn, n, E):
     return estim, E
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def pade_approximation(n, an, s=1):
     """
     Computes the n/2 pade approximant of the series an at the approximation
@@ -513,7 +513,7 @@ def pade_approximation(n, an, s=1):
     return p/q, a, b
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def update_bus_power(k, V, Y):
     """
     Computes the power for a PV or VD bus
@@ -521,7 +521,7 @@ def update_bus_power(k, V, Y):
     return V[k] * conj(Y[k, :].dot(V))
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def update_all_powers(pv_idx_all, slack_idx_all, V, Y, Sbus):
     """
     Computes the power for all the PV buses and VD buses
@@ -539,7 +539,7 @@ def update_all_powers(pv_idx_all, slack_idx_all, V, Y, Sbus):
     return S
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def calc_error(admittances, V, powerInjections):
     """
     Calculates the power error for all the buses
@@ -549,7 +549,7 @@ def calc_error(admittances, V, powerInjections):
     return powerInjections - dot(v_mat, vy_mat)
 
 
-@jit(cache=True)
+# @jit(cache=True)
 def interprete_solution(nbus, npv, types, x_sol, Vre, map_idx):
     """
     Assign the solution vector individual values to the correct places

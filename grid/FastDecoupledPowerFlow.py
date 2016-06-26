@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-"""Solves the power flow using a fast decoupled method.
+"""
+Solves the power flow using a fast decoupled method.
 """
 
 import sys
 
 from numpy import array, angle, exp, linalg, conj, r_, Inf
-#from scipy.sparse.linalg import splu
+
 
 def fdpf(Ybus, Sbus, V0, Bp_solver, Bpp_solver, pv, pq, tol=1e-3, max_it=50, verbose=False):
     """
@@ -52,25 +53,9 @@ def fdpf(Ybus, Sbus, V0, Bp_solver, Bpp_solver, pv, pq, tol=1e-3, max_it=50, ver
     normP = linalg.norm(P, Inf)
     normQ = linalg.norm(Q, Inf)
 
-    if verbose > 1:
-        sys.stdout.write('\niteration     max mismatch (p.u.)  ')
-        sys.stdout.write('\ntype   #        P            Q     ')
-        sys.stdout.write('\n---- ----  -----------  -----------')
-        sys.stdout.write('\n  -  %3d   %10.3e   %10.3e' % (i, normP, normQ))
-
     # mismatch
     if normP < tol and normQ < tol:
         converged = 1
-        if verbose > 1:
-            sys.stdout.write('\nConverged!\n')
-
-    # reduce B matrices
-    #Bp = Bp[array([pvpq]).T, pvpq].tocsc() # splu requires a CSC matrix
-    #Bpp = Bpp[array([pq]).T, pq].tocsc()
-
-    # factor B matrices
-    #Bp_solver = splu(Bp)
-    #Bpp_solver = splu(Bpp)
 
     # do P and Q iterations
     while not converged and i < max_it:
@@ -92,15 +77,9 @@ def fdpf(Ybus, Sbus, V0, Bp_solver, Bpp_solver, pv, pq, tol=1e-3, max_it=50, ver
         # check tolerance
         normP = linalg.norm(P, Inf)
         normQ = linalg.norm(Q, Inf)
-        if verbose > 1:
-            sys.stdout.write("\n  %s  %3d   %10.3e   %10.3e" %
-                             (type, i, normP, normQ))
+
         if normP < tol and normQ < tol:
             converged = 1
-            if verbose:
-                sys.stdout.write('\nFast-decoupled power flow converged in %d '
-                    'P-iterations and %d Q-iterations.\n' % (i, i - 1))
-            break
 
         # ----  do Q iteration, update Vm  -----
         dVm = -Bpp_solver.solve(Q)
@@ -117,18 +96,8 @@ def fdpf(Ybus, Sbus, V0, Bp_solver, Bpp_solver, pv, pq, tol=1e-3, max_it=50, ver
         # check tolerance
         normP = linalg.norm(P, Inf)
         normQ = linalg.norm(Q, Inf)
-        if verbose > 1:
-            sys.stdout.write('\n  Q  %3d   %10.3e   %10.3e' % (i, normP, normQ))
+
         if normP < tol and normQ < tol:
             converged = 1
-            if verbose:
-                sys.stdout.write('\nFast-decoupled power flow converged in %d '
-                    'P-iterations and %d Q-iterations.\n' % (i, i))
-            break
-
-    if verbose:
-        if not converged:
-            sys.stdout.write('\nFast-decoupled power flow did not converge in '
-                             '%d iterations.' % i)
 
     return V, converged, max([normP, normQ])

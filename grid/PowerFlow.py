@@ -9,25 +9,32 @@ This file contains the classes to run power flow simulations recursively
 from scipy.sparse.linalg import splu
 from PyQt4.QtCore import QThread, SIGNAL
 from warnings import warn
-
+import time
+import pandas as pd
 import numpy as np
 from numpy import asarray, argmax, arange, array, zeros, pi, exp, r_, c_, conj, \
                   angle, ix_, complex_, nonzero, copy, finfo
+
+from scipy.sparse.linalg import inv as sparse_inv
 from scipy.sparse import csr_matrix
-from scipy.optimize import minimize
-from .dcpf import dcpf
-from .newtonpf import newtonpf
-from .iwamoto_nr_pf import IwamotoNR
-from .continuation_power_flow import runcpf2
-from .fdpf import fdpf
-from .gausspf import gausspf
-from .helm import helm, helm_bifurcation_point
-from .Zbus import zbus
-from .branch_definitions import *
-from .bus_definitions import *
-from .gen_definitions import *
+from scipy.optimize import minimize, linprog
+from .DCPowerFlow import dcpf
+from .NewtonRaphsonPowerFlow import newtonpf
+from .IwamotoPowerFlow import IwamotoNR
+from .ContinuationPowerFlow import runcpf2
+from .FastDecoupledPowerFlow import fdpf
+from .GaussSeidelPowerFlow import gausspf
+from .HELMPowerFlow import helm, helm_bifurcation_point
+from .HELMZPowerFlow import helmz
+from .ZbusPowerFlow import zbus
+from .BranchDefinitions import *
+from .BusDefinitions import *
+from .GenDefinitions import *
 
 from enum import Enum
+
+import scipy
+scipy.ALLOW_THREADS = True
 
 
 class SolverType(Enum):
@@ -39,7 +46,8 @@ class SolverType(Enum):
     HELM = 6,
     ZBUS = 7,
     IWAMOTO = 8,
-    CONTINUATION_NR = 9
+    CONTINUATION_NR = 9,
+    HELMZ = 10
 
 
 class MultiCircuitVoltageStability(QThread):
@@ -80,7 +88,7 @@ class MultiCircuitVoltageStability(QThread):
 
         if not is_an_island:
             self.island_circuits, self.original_indices, \
-            self.recalculate_islands = self.get_islands(self.graph, self.baseMVA, self.bus, self.gen, self.branch)
+                self.recalculate_islands = self.get_islands(self.graph, self.baseMVA, self.bus, self.gen, self.branch)
         else:
             self.circuit_power_flow = self.get_power_flow_instance(solver_type)
 
@@ -91,7 +99,6 @@ class MultiCircuitVoltageStability(QThread):
         self.isMaster = True
         self.cancel = False
         self.solver_to_retry_with = None
-
 
     def get_failed_edges(self, branch):
         """
@@ -148,7 +155,7 @@ class MultiCircuitVoltageStability(QThread):
             original_indices_entry = [None] * 3  # this stores the original indices of bus, gen, branch of the island
 
             # island is a list of the nodes that form an island
-            print(island)
+            # print(island)
 
             # populate the buses structure
             bus = array(self.bus[island, :].copy())
@@ -220,6 +227,18 @@ class MultiCircuitVoltageStability(QThread):
 
     def set_run_options(self, solver_type=SolverType.NRFD_BX, tol=1e-3, max_it=10, enforce_reactive_power_limits=True,
                         isMaster=True, set_last_solution=True, solver_to_retry_with=None, continuation_pf=False):
+        """
+        Set the power flow module run options
+        @param solver_type: Type of solver
+        @param tol: Solver error tolerance
+        @param max_it: Maximum number of iterations
+        @param enforce_reactive_power_limits: Flag to enforce the generators reactive power limits or not
+        @param isMaster: Is this power flow a mster instance?
+        @param set_last_solution: Use the last solution? (or use the flat start)
+        @param solver_to_retry_with: Solver to retry to solve if the chosen solver fails
+        @param continuation_pf: Use continuation power flow?
+        @return: Nothing
+        """
         self.solver_type = solver_type
         self.tolerance = tol
         self.max_iterations = max_it
@@ -238,9 +257,9 @@ class MultiCircuitVoltageStability(QThread):
             self.circuit_power_flow.solver_type = self.solver_type
             voltage_series, power_series, lambda_series = self.circuit_power_flow.run_continuation_voltage_collapse(tol=self.tolerance, max_it=self.max_iterations)
 
-            print('\n\n')
-            print(voltage_series)
-            print(lambda_series)
+            # print('\n\n')
+            # print(voltage_series)
+            # print(lambda_series)
 
             self.continuation_voltage = array(voltage_series).transpose()
             self.continuation_lambda = array(lambda_series).transpose()
@@ -321,9 +340,9 @@ class MultiCircuitVoltageStability(QThread):
                                             P_failure=0.)
 
         last_freq = Freq[len(Freq)-1]
-        print("Load:", ld)
-        print("Gen:", ge)
-        print("Frequency (" + str(max_t_steps * dt) + "s) = " + str(last_freq))
+        # print("Load:", ld)
+        # print("Gen:", ge)
+        # print("Frequency (" + str(max_t_steps * dt) + "s) = " + str(last_freq))
 
         # if converged, check if the solution is valid
         if self.last_power_flow_succeeded:
@@ -346,7 +365,6 @@ class MultiCircuitPowerFlow(QThread):
     """
     def __init__(self, baseMVA,  bus, gen, branch, graph, solver_type, is_an_island=False):
         QThread.__init__(self)
-
 
         self.baseMVA = baseMVA
         self.bus = bus.copy()
@@ -378,9 +396,30 @@ class MultiCircuitPowerFlow(QThread):
         self.loading = zeros(nl, dtype=complex)
         self.current = zeros(nl, dtype=complex)
 
+        # self.island_circuits = None
+        # self.original_indices = None
+        # self.recalculate_islands, = None
+        # self.fixed_power_idx = None
+        # self.rossetta = None
+
         if not is_an_island:
             self.island_circuits, self.original_indices, \
-            self.recalculate_islands = self.get_islands(self.graph, self.baseMVA, self.bus, self.gen, self.branch)
+            self.recalculate_islands, self.fixed_power_idx, \
+            self.bus_rosetta, self.gen_rosetta = self.get_islands(self.graph, self.baseMVA, self.bus, self.gen, self.branch)
+            # print(self.bus_rosetta)
+            # print(self.gen_rosetta)
+
+            self.list_bus_enabled_indices = list()
+            self.list_gen_enabled_indices = list()
+            for i in range(len(self.island_circuits)):
+                # ['Original_idx', 'at_island_idx', 'island_idx', 'Fixed']
+                val = self.bus_rosetta[(self.bus_rosetta.Fixed == 0) & (self.bus_rosetta.island_idx==i)].values
+                self.list_bus_enabled_indices.append([val[:, 0], val[:, 1]])
+
+                val = self.gen_rosetta[(self.gen_rosetta.Fixed == 0) & (self.gen_rosetta.island_idx == i)].values
+                self.list_gen_enabled_indices.append([val[:, 0], val[:, 1]])
+
+            print('This is not an island :)')
         else:
             self.circuit_power_flow = self.get_power_flow_instance(solver_type)
 
@@ -393,15 +432,16 @@ class MultiCircuitPowerFlow(QThread):
         self.cancel = False
         self.solver_to_retry_with = None
 
-    def set_loads(self, P, Q):
+    def set_loads(self, P, Q, indices_list=None):
         """
         Set the loads powers in all the islands power flows
-        @param P:
-        @param Q:
+        @param P: Array of active power. This array goes for the whole grid, regardless of the islands
+        @param Q: Array of reactive power. This array goes for the whole grid, regardless of the islands
+        @param indices_list: list of indices to set. This array goes for the whole grid, regardless of the islands
         @return:
         """
         for i in range(len(self.island_circuits)):
-            idx = self.original_indices[i][0]
+            idx = self.original_indices[i][0]  # pick the island indices
             self.island_circuits[i].circuit_power_flow.set_loads(P[idx], Q[idx], in_pu=False)
 
     def set_generators(self, P):
@@ -411,7 +451,7 @@ class MultiCircuitPowerFlow(QThread):
         @return:
         """
         for i in range(len(self.island_circuits)):
-            idx = self.original_indices[i][1]
+            idx = self.original_indices[i][1]  # pick the island indices
             self.island_circuits[i].circuit_power_flow.set_generators(P[idx], in_pu=False)
 
     def get_failed_edges(self, branch):
@@ -434,7 +474,7 @@ class MultiCircuitPowerFlow(QThread):
         else:
             return None
 
-    def get_islands(self, graph, baseMVA, bus, gen, branch):
+    def get_islands(self, graph, baseMVA, bus_original, gen_original, branch_original):
         """
         Computes the islands of this circuit and composes the respective island's data structures
 
@@ -444,7 +484,7 @@ class MultiCircuitPowerFlow(QThread):
         from networkx import connected_components
 
         # get the failed edges
-        failed_edges = self.get_failed_edges(branch)
+        failed_edges = self.get_failed_edges(branch_original)
 
         # remove the failed edges from the graph
         G = graph.copy()
@@ -455,25 +495,48 @@ class MultiCircuitPowerFlow(QThread):
         # get he groups of nodes that are connected together
         groups = connected_components(G)
         islands = list()
+        bus_island = dict()
+        island_idx = 0
         for island in groups:
-            islands.append(list(island))
+            isl = list(island)
+            isl.sort()
+            islands.append(array(isl))
+            for bus in isl:
+                bus_island[bus] = island_idx
+            island_idx += 1
 
-        nl = len(branch)
-        branch[:, O_INDEX] = list(range(nl))
+        nl = len(branch_original)
+        nb = len(bus_original)
+        ng = len(gen_original)
+        branch_original[:, O_INDEX] = list(range(nl))
 
         island_circuits = list()
         original_indices = list()
+        fixed_power_indices = list()
 
+        bus_rosetta_vals = zeros((nb, 4), dtype=int)
+        gen_rosetta_vals = zeros((ng, 4), dtype=int)
+
+        island_idx = 0
         for island in islands:
-            island.sort()
+
             original_indices_entry = [None] * 3  # this stores the original indices of bus, gen, branch of the island
+            fixed_power = [None] * 3
 
             # island is a list of the nodes that form an island
-            print(island)
+            # print('island ', island)
+
+            # fill rosetta
+            bus_rosetta_vals[island, 0] = island  # original indices
+            bus_rosetta_vals[island, 1] = np.arange(0, len(island))  # indices in the current island
+            bus_rosetta_vals[island, 2] = np.ones(len(island)) * island_idx  # index of the island itself
+            bus_rosetta_vals[island, 3] = bus_original[island, FIX_POWER_BUS]  # index of the island itself
 
             # populate the buses structure
-            bus = array(self.bus[island, :].copy())
-            original_indices_entry[0] = island
+            bus_island = array(self.bus[island, :].copy())
+            fix_idx = np.where(bus_original[:, FIX_POWER_BUS] == 0)[0]
+            original_indices_entry[0] = array(island)
+            fixed_power[0] = fix_idx
 
             # Populate the generators structure
             bus_gen_idx = self.gen[:, GEN_BUS].astype(np.int)
@@ -481,9 +544,16 @@ class MultiCircuitPowerFlow(QThread):
             # for i in range(len(bus_gen_idx)):
             #     if bus_gen_idx[i] in island:
             #         generators.append(self.gen[i, :])
-            gen_original_indices = [i for i in range(len(bus_gen_idx)) if bus_gen_idx[i] in island]
-            gen = self.gen[gen_original_indices, :]
+            gen_original_indices = array([i for i in range(len(bus_gen_idx)) if bus_gen_idx[i] in island], dtype=int)
+            gen_island = self.gen[gen_original_indices, :]
+            fix_idx = np.where(gen_original[:, FIX_POWER_GEN] == 0)[0]
             original_indices_entry[1] = gen_original_indices
+            fixed_power[1] = fix_idx
+
+            gen_rosetta_vals[gen_original_indices, 0] = gen_original_indices
+            gen_rosetta_vals[gen_original_indices, 1] = np.arange(0, len(gen_original_indices))
+            gen_rosetta_vals[gen_original_indices, 2] = np.ones(len(gen_original_indices)) * island_idx
+            gen_rosetta_vals[gen_original_indices, 3] = gen_original[gen_original_indices, FIX_POWER_GEN]
 
             # Populate the branches structure
             bus_from_idx = self.branch[:, F_BUS].astype(np.int)
@@ -491,20 +561,28 @@ class MultiCircuitPowerFlow(QThread):
             # for i in range(len(bus_from_idx)):
             #     if bus_from_idx[i] in island and bus_to_idx[i] in island:
             #         branches.append(self.branch[i, :].copy())
-            branch_original_indices = [i for i in range(len(bus_from_idx)) if bus_from_idx[i] in island and bus_to_idx[i] in island]
-            branch = self.branch[branch_original_indices, :].copy()
+            branch_original_indices = array([i for i in range(len(bus_from_idx)) if bus_from_idx[i] in island and bus_to_idx[i] in island], dtype=int)
+            branch_island = self.branch[branch_original_indices, :].copy()
             original_indices_entry[2] = branch_original_indices
 
             # new circuit hosting the island grid
-            circuit = MultiCircuitPowerFlow(baseMVA, bus, gen, branch, graph, self.solver_type, is_an_island=True)
+            circuit = MultiCircuitPowerFlow(baseMVA, bus_island, gen_island, branch_island, graph, self.solver_type, is_an_island=True)
 
             # add the circuit to the islands
             island_circuits.append(circuit)
-
             original_indices.append(original_indices_entry)
+            fixed_power_indices.append(fixed_power)
+
+            island_idx += 1
 
         recalculate_islands = False
-        return island_circuits, original_indices, recalculate_islands
+
+        # turn rosetta into a pandas dataframe, it will allow easy querying later)
+        cols = ['Original_idx', 'at_island_idx', 'island_idx', 'Fixed']
+        bus_rosetta = pd.DataFrame(data=bus_rosetta_vals, columns=cols, dtype=int)
+        gen_rosetta = pd.DataFrame(data=gen_rosetta_vals, columns=cols, dtype=int)
+
+        return island_circuits, original_indices, recalculate_islands, fixed_power_indices, bus_rosetta, gen_rosetta
 
     def get_power_flow_instance(self, solver_type=SolverType.NR):
         """
@@ -587,6 +665,7 @@ class MultiCircuitPowerFlow(QThread):
 
                 # get the nodal results
                 self.voltage[:] = self.circuit_power_flow.get_voltage_pu()
+                self.power[:] = self.circuit_power_flow.get_power_pu()
                 self.collapsed_nodes[:] = 1 - int(self.grid_survives)
 
                 # get the branches results
@@ -618,7 +697,6 @@ class MultiCircuitPowerFlow(QThread):
                                        self.enforce_reactive_power_limits,
                                        solver_to_retry_with=self.solver_to_retry_with)
 
-
                 island.run()
                 b_idx = self.original_indices[i][0]
                 br_idx = self.original_indices[i][2]
@@ -630,6 +708,7 @@ class MultiCircuitPowerFlow(QThread):
                 # get the nodal results
                 self.voltage[b_idx] = island.voltage
                 self.collapsed_nodes[b_idx] = island.collapsed_nodes
+                self.power[b_idx] = island.power
 
                 # get the branches results
                 # only valid branches are used
@@ -662,6 +741,24 @@ class MultiCircuitPowerFlow(QThread):
     def end_process(self):
         self.cancel = True
 
+    def get_power(self):
+        """
+        Get the power flow objects power vector
+        """
+        if self.is_an_island:
+            self.circuit_power_flow.update_power()
+            self.power[:] = self.circuit_power_flow.get_power_pu()
+
+        else:
+            i = 0
+            for island in self.island_circuits:
+                island.circuit_power_flow.update_power()
+                b_idx = self.original_indices[i][0]
+                self.power[b_idx] = island.circuit_power_flow.get_power_pu()
+                i += 1
+
+        return self.power
+
     def run_frequency_simulation(self):
         # frequency drop simulation
         max_t_steps = 1000
@@ -684,9 +781,9 @@ class MultiCircuitPowerFlow(QThread):
                                             P_failure=0.)
 
         last_freq = Freq[len(Freq)-1]
-        print("Load:", ld)
-        print("Gen:", ge)
-        print("Frequency (" + str(max_t_steps * dt) + "s) = " + str(last_freq))
+        # print("Load:", ld)
+        # print("Gen:", ge)
+        # print("Frequency (" + str(max_t_steps * dt) + "s) = " + str(last_freq))
 
         # if converged, check if the solution is valid
         if self.last_power_flow_succeeded:
@@ -899,11 +996,12 @@ class CircuitPowerFlow(object):
 
         # get bus index lists of each type of bus
         self.ref_list, self.pv_list, self.pq_list, self.bus_types, self.the_grid_is_disabled = bustypes(self.bus, self.gen, self.Sbus)
+        self.pvpq_list = r_[self.pv_list, self.pq_list]
+
+        # make reduced magnitudes
+        self.Yred, self.Zred, self.Iind = self.makeReduced(self.Ybus, self.V0, self.Sbus, self.ref_list, self.pvpq_list)
 
         if not self.the_grid_is_disabled:
-            self.pvpq_list = np.matrix(r_[self.pv_list, self.pq_list])
-
-
 
             # check buses nominal voltage
             self.Vnom = self.bus[:, BASE_KV].astype(np.double)
@@ -940,11 +1038,9 @@ class CircuitPowerFlow(object):
             self.Va0 = self.bus[:, VA] * (pi / 180)
 
             # build B matrices and phase shift injections
-            self.B, self.Bf, self.Pbusinj, self.Pfinj = self.makeBdc(self.baseMVA, self.bus, self.branch)
+            self.B, self.Bf, self.Pbusinj, self.Pfinj = self.makeBdc(self.bus, self.branch)
 
-
-
-            # Set the continaution initial state
+            # Set the continuation initial state
             self.set_continuation_initial_state(self.Sbus, self.V0)
 
             # update the transformers and lines tap variables
@@ -957,6 +1053,10 @@ class CircuitPowerFlow(object):
         self.bus[:, VA] = self.bus_Va.copy()
 
         self.V0 = self.bus[:, VM] * exp(1j * pi/180.0 * self.bus[:, VA])
+
+        if np.isnan(np.sum(self.V0)) or np.count_nonzero(self.V0):
+            self.V0 = ones(self.nb, dtype=complex)
+
         self.V0[self.active_generators_buses] = self.gen[self.active_generators, VG] / abs(self.V0[self.active_generators_buses]) * self.V0[self.active_generators_buses]
 
     def set_continuation_initial_state(self, S0, V0):
@@ -1177,9 +1277,44 @@ class CircuitPowerFlow(object):
         A = Cf + Ct
     
         return Ybus, Yf, Yt, Ysh, A
+
+    def makeReduced(self, Ybus, V0, Sbus, ref, pvpq):
+        """
+        Produce the reduced system matrices
+        @param Ybus: Complete admittance matrix
+        @param V0: Complete (set) voltages vector
+        @param Sbus: Complete power injectuons vector
+        @param ref: List of Slack nodes
+        @param pvpq: list of non-slack nodes
+        @return:
+        - Reduced admittance matrix
+        - Reduced impedance matrix
+        - Reduced current injections (only valid for the given voltage)
+        """
+
+        # Compose a reduced admittance matrix without the rows and columns that correspond to the slack buses
+        Yred = Ybus[pvpq, :][:, pvpq]
+
+        # matrix of the columns of the admittance matrix that correspond to the slack buses
+        Yslack = Ybus[pvpq, :][:, ref]
+
+        # vector of slack voltages (Complex)
+        Vslack = V0[ref]
+
+        # vector of currents being injected by the slack nodes (Matrix vector product)
+        Iind = -1 * np.ndarray.flatten(array(Yslack.dot(Vslack)))
+
+        # Invert Yred
+        Zred = sparse_inv(Yred)
+
+        # Vector of reduced power values (Non slack power injections)
+        Sred = Sbus[pvpq]
+
+        return Yred, Zred, Iind
     
-    def makeBdc(self, baseMVA, bus, branch):
-        """Builds the B matrices and phase shift injections for DC power flow.
+    def makeBdc(self, bus, branch):
+        """
+        Builds the B matrices and phase shift injections for DC power flow.
     
         Returns the B matrices and phase shift injection vectors needed for a
         DC power flow.
@@ -1214,7 +1349,7 @@ class CircuitPowerFlow(object):
         stat = branch[:, BR_STATUS]               # ones at in-service branches
         b = stat / branch[:, BR_X]                # series susceptance
         tap = ones(nl)                            # default tap ratio = 1
-        i = find(branch[:, TAP])               # indices of non-zero tap ratios
+        i = find(branch[:, TAP])                  # indices of non-zero tap ratios
         tap[i] = branch[i, TAP]                   # assign non-zero tap ratios
         b = b / tap
     
@@ -1222,6 +1357,7 @@ class CircuitPowerFlow(object):
         f = branch[:, F_BUS]                           # list of "from" buses
         t = branch[:, T_BUS]                           # list of "to" buses
         i = r_[range(nl), range(nl)]                   # double set of row indices
+
         # connection matrix
         Cft = sparse((r_[ones(nl), -ones(nl)], (i, r_[f, t])), (nl, nb))
     
@@ -1235,7 +1371,8 @@ class CircuitPowerFlow(object):
         # build phase shift injection vectors
         Pfinj = b * (-branch[:, SHIFT] * pi / 180)  # injected at the from bus ...
         # Ptinj = -Pfinj                            # and extracted at the to bus
-        Pbusinj = Cft.T * Pfinj                # Pbusinj = Cf * Pfinj + Ct * Ptinj
+
+        Pbusinj = Cft.T * Pfinj                     # Pbusinj = Cf * Pfinj + Ct * Ptinj
     
         return Bbus, Bf, Pbusinj, Pfinj
     
@@ -1308,6 +1445,7 @@ class CircuitPowerFlow(object):
 
         @author: Ray Zimmerman (PSERC Cornell)
         """
+        start = time.time()
 
         if self.the_grid_is_disabled:
             return False
@@ -1356,19 +1494,18 @@ class CircuitPowerFlow(object):
             if not set_last_solution:
                 self.V0 = ones(self.nb, dtype=np.complex)
 
+            # if enforce_q_limits:
+            ref0 = self.ref_list                    # save index and angle of
+            Varef0 = self.bus[ref0, VA]             # original reference bus(es)
 
-            if enforce_q_limits:
-                ref0 = self.ref_list                    # save index and angle of
-                Varef0 = self.bus[ref0, VA]             # original reference bus(es)
+            # remember the types because they might change during the iteration
+            ref = self.ref_list
+            pq = self.pq_list
+            pv = self.pv_list
+            btypes = self.bus_types
 
-                # remember the types because they might change during the iteration
-                ref = self.ref_list
-                pq = self.pq_list
-                pv = self.pv_list
-                btypes = self.bus_types
-
-                limited = []                            # list of indices of gens @ Q lims
-                fixedQg = zeros(self.gen.shape[0])      # Qg of gens at Q limits
+            limited = []                            # list of indices of gens @ Q lims
+            fixedQg = zeros(self.gen.shape[0])      # Qg of gens at Q limits
 
             repeat = True
             while repeat:
@@ -1402,9 +1539,13 @@ class CircuitPowerFlow(object):
                         ref, pv, pq, btypes, self.the_grid_is_disabled = bustypes(self.bus, self.gen, self.Sbus)
 
                     if not self.the_grid_is_disabled:
-                        # (admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types, eps=1e-3, usePade=True, useFFT=False)
                         V, success, self.mismatch, _ = helm(self.Ybus, ref, cmax, self.Sbus, self.V0, btypes, eps=1e-3)
-                        print('converged:', success, '  err:', self.mismatch)
+                        print('HELM converged:', success, '  err:', self.mismatch)
+
+                        # Re-do with Iwamoto: Sure shot
+                        V, success, self.mismatch = IwamotoNR(self.Ybus, self.Sbus, V, pv, pq, tol, max_it,
+                                                              robust=True)
+                        print('Iwamoto converged:', success, '  err:', self.mismatch)
                         print(V)
                     else:
                         V = self.V0
@@ -1469,6 +1610,30 @@ class CircuitPowerFlow(object):
                             # V = zeros(self.nb, dtype=complex)
                             self.mismatch = iwa_mismatch
 
+                elif self.solver_type == SolverType.HELMZ:
+
+                    print('HELM-Z')
+
+                    # #  Perform DC approximation of the angles
+
+                    # compute complex bus power injections [generation - load]
+                    # adjusted for phase shifters and real shunts
+                    Pbus = self.Sbus.real - self.Pbusinj - self.bus[:, GS] / self.baseMVA
+                    # Get the DC approximated voltage angles
+                    Va, success, self.mismatch = dcpf(self.B, Pbus, self.Va0, self.ref_list, self.pvpq_list)
+                    Va[self.pv_list] *= -1  # flip the angles sign at the PV nodes
+                    Vin = self.bus[:, VM] * exp(1j * Va)
+
+                    # pass PV to VD
+                    btypes2 = btypes.copy()
+                    btypes2[pv] = 3
+                    ref_ = r_[ref, self.pv_list]
+
+                    # perform normal HELM (Only with PQ and VD nodes)
+                    cmax = 50
+                    V, success, self.mismatch = helmz(self.Ybus, ref_, cmax, self.Sbus, Vin, btypes2, eps=tol, usePade=False)
+                    print('converged:', success, '  err:', self.mismatch)
+                    print(V)
 
                 else:
                     raise Exception('Solver not recognised')
@@ -1563,8 +1728,10 @@ class CircuitPowerFlow(object):
                     # adjust voltage angles to make original ref bus correct
                     self.bus[:, VA] = self.bus[:, VA] - self.bus[ref0, VA] + Varef0
 
-        return success
+        end = time.time()
+        print('\nElapsed:', end - start)
 
+        return success
 
     def run_continuation_voltage_collapse(self, tol=1e-3, max_it=10, load_parameter=3):
         """
@@ -1640,6 +1807,12 @@ class CircuitPowerFlow(object):
         Returns the voltage solution in kV
         """
         return self.V0 * self.Vnom
+
+    def get_power_pu(self):
+        """
+        Returns the complex power vector
+        """
+        return self.Sbus
 
     def get_branch_current_flows(self):
         """
@@ -1825,12 +1998,55 @@ class CircuitPowerFlow(object):
         Returns if the voltage solution is the so called low voltage solution which is mathematically valid, but not
         realistic.
         """
-        return not np.any(self.bus[:, VM]<0.0)
+        return not np.any(self.bus[:, VM] < 0.0)
 
     def is_the_solution_collapsed(self):
-        return not np.any(self.bus[:, VM]<0.8)
+        return not np.any(self.bus[:, VM] < 0.8)
 
     def re_dispatch_power(self):
+        """
+        This function re-dispatches the 'dispatchable' devices active power
+        in order to make the gen-load mismatch minimal
+        @return:
+        """
+
+        # c = [-1, 4]
+        # A = [[-3, 1], [1, 2]]
+        # b = [6, 4]
+        # x0_bounds = (None, None)
+        # x1_bounds = (-3, None)
+        #
+        # res = linprog(c, A_ub=A, b_ub=b, bounds=(x0_bounds, x1_bounds), options={"disp": True})
+
+        # function coefficients
+        # f = Gen - loads
+        c = r_[ones(self.ng, dtype=int), -1*ones(self.nb, dtype=int)]
+
+        # generator bounds
+        bounds = [None] * self.ng
+
+        for i in range(self.ng):
+            if self.gen[i, DISPATCHABLE_GEN] == 0:
+                bounds[i] = (self.gen[i, PG], self.gen[i, PG])
+            else:
+                bounds[i] = (self.gen[i, PMIN], self.gen[i, PMAX])
+
+        # load bounds
+        for i in range(self.nb):
+            bounds[i] = (0, self.bus[i, PD])
+
+        bounds = tuple(bounds)
+
+        # solve the linear program
+        res = linprog(c, bounds=bounds, options={"disp": True})
+
+        # Assign the solution
+        self.gen[:, PG] = res.x[0:self.ng]
+        self.bus[:, PD] = res.x[self.ng:self.ng+self.nb]
+
+
+
+    def re_dispatch_power_2(self):
         """
         This function re-dispatches the power in order to obtain a stable voltage solution by changing the load in the
         grid.

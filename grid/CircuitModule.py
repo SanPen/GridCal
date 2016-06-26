@@ -19,15 +19,16 @@ from scipy.io import loadmat, savemat
 
 from pandas import DataFrame as df
 
-from grid.power_flow import *
-from grid.bus_definitions import *
-from grid.gen_definitions import *
-from grid.branch_definitions import *
+from grid.PowerFlow import *
+from grid.BusDefinitions import *
+from grid.GenDefinitions import *
+from grid.BranchDefinitions import *
 from grid.util import run_userfcn
 from grid.TimeSeries import *
+from grid.MonteCarlo import *
 from grid.ImportParsers.DGS_Parser import read_DGS
 from grid.ImportParsers.matpower_parser import parse_matpower_file
-
+# from typing import TypeVar
 
 PY2 = sys.version_info[0] == 2
 EPS = finfo(float).eps
@@ -88,9 +89,15 @@ class Circuit(object):
         self.gen_names = None
 
         # Solvers
-        self.power_flow = None  # Power flow instance
+        self.power_flow = None # Power flow instance
 
-        self.time_series = None
+        self.time_series = None  # time series instance
+
+        self.monte_carlo = None  # MonteCarlo instance
+
+        self.stochastic_collocation = None  # MonteCarlo instance
+
+        self.voltage_stability = None  # voltage stability instance
 
         # default arguments
         if filename is not None:
@@ -102,7 +109,7 @@ class Circuit(object):
                     ppc = load_from_xls(filename)
                     data_in_zero_base = True
                 elif file_extension == '.dgs':
-                    ppc = read_DGS(filename)
+                    ppc = load_from_dgs(filename)
                 elif file_extension == '.m':
                     ppc = parse_matpower_file(filename)
                     data_in_zero_base = True
@@ -115,7 +122,7 @@ class Circuit(object):
                 if ppc["branch"].shape[1] < QT:
                     ppc["branch"] = c_[ppc["branch"],
                                        zeros((ppc["branch"].shape[0],
-                                          QT - ppc["branch"].shape[1] + 1))]
+                                              QT - ppc["branch"].shape[1] + 1))]
 
             if not data_in_zero_base:
                 # convert the 1-indexing to internal indexing
@@ -188,7 +195,6 @@ class Circuit(object):
                 self.graph_pos = self.get_bus_pos_dictionary()
                 print("Using file positions")
 
-
             # initialize the solvers (at this point the circuit should have loaded the data)
             self.initialize_solvers()
 
@@ -204,7 +210,6 @@ class Circuit(object):
                 if not self.time_series.is_ready():
                     self.time_series.set_master_time(ppc['master_time'])
                 self.time_series.gen_profiles = ppc['Gprof']
-
 
             # set names
             if 'bus_names' in ppc.keys():
@@ -237,7 +242,7 @@ class Circuit(object):
             self.time_series = TimeSeries(self.power_flow)
 
             self.voltage_stability = MultiCircuitVoltageStability(self.baseMVA, self.bus, self.gen, self.branch,
-                                                              self.circuit_graph, solver_type=SolverType.NR)
+                                                                  self.circuit_graph, solver_type=SolverType.NR)
 
     def initialize_power_flow_solver(self, solver_type=SolverType.IWAMOTO):
         """
@@ -248,13 +253,35 @@ class Circuit(object):
         Returns:
 
         """
-        # try:
         self.power_flow = MultiCircuitPowerFlow(self.baseMVA, self.bus, self.gen, self.branch,
-                                            self.circuit_graph, solver_type=SolverType.NR)
-        # except:
-        #     warn('Power flow solver failed to initialize')
+                                                self.circuit_graph, solver_type=solver_type)
 
-    def run_time_series(self, solver_type):
+    def initialize_TimeSeries(self):
+        """
+
+        @return:
+        """
+        if self.time_series is None:
+            self.initialize_power_flow_solver()
+            self.time_series = TimeSeries(self.power_flow)
+        else:
+            self.initialize_power_flow_solver()
+            self.time_series.pf = self.power_flow
+
+    def initialize_MonteCarlo(self, mode: TimeGroups):
+        """
+        Initializes a monte carlo solver instance
+        @return:
+        """
+        if self.time_series is not None:
+            self.initialize_TimeSeries()
+            self.monte_carlo = MonteCarlo(self.time_series, mode)
+            # self.monte_carlo = MonteCarloMultiThread(self.time_series, mode)
+            self.stochastic_collocation = StochasticCollocation(self.time_series, level=2)
+        else:
+            print('No time series object ready')
+
+    def run_time_series(self):
         """
 
         @param solver_type:
@@ -651,7 +678,7 @@ class Circuit(object):
             too_low_color = '#00A6FF'  # nice blue
             collapsed_color = '#494949'  # white
 
-            node_color = zeros(nb, dtype=np.object)
+            node_color = array([collapsed_color] * nb)
             too_high_idx = np.where((v >= v_high) == 1)[0]
             too_low_idx = np.where((v <= v_low) == 1)[0]
             ok_idx = np.where((v > v_low).astype(np.bool) + (v < v_high).astype(np.bool) == 1)[0]
@@ -776,10 +803,54 @@ class Circuit(object):
             writer.save()
         elif file_extension == '.npz':
 
-            # Save different numpy arrays for research purposes
-            pf = CircuitPowerFlow(self.baseMVA, self.bus, self.branch, self.gen, initialize_solvers=False)
+            mcpf = MultiCircuitPowerFlow(self.baseMVA, self.bus, self.gen, self.branch, self.circuit_graph, solver_type=SolverType.NR)
 
-            np.savez(filename, Y=pf.Ybus.todense(), S=pf.Sbus, Type=pf.bus_types, V0=pf.V0)
+            i = 1
+            for pf in mcpf.island_circuits:
+                # Save different numpy arrays for research purposes
+                filename = name + '_' + str(i) + '.npz'
+
+                pfs = pf.get_power_flow_instance()
+
+                np.savez(filename, Y=pfs.Ybus.todense(), S=pfs.Sbus, Type=pfs.bus_types, V0=pfs.V0, Bdc=pfs.B)
+                i += 1
+
+        elif file_extension == '.json':
+            import json
+
+            # make dictionary of data
+            json_dict = dict()
+
+            # write conf
+            json_dict["baseMVA"] = self.baseMVA
+
+            # write buses
+            json_dict["bus"] = self.bus.tolist()
+            json_dict["bus_names"] = list(self.bus_names)
+
+            # write gen
+            json_dict["gen"] = self.gen.tolist()
+            json_dict["gen_names"] = list(self.gen_names)
+
+            # write branch
+            json_dict["branch"] = self.branch.tolist()
+            json_dict["branch_names"] = list(self.branch_names)
+
+            if self.time_series.is_ready():
+                # write loads profile
+                if self.time_series.load_profiles is not None:
+                    json_dict["time_profile"] = list(self.time_series.time.astype(np.str))
+                    json_dict["load_profiles_P"] = np.real(self.time_series.load_profiles).tolist()
+                    json_dict["load_profiles_Q"] = np.imag(self.time_series.load_profiles).tolist()
+
+                # write generators profile
+                if self.time_series.gen_profiles is not None:
+                    json_dict["gen_profiles_P"] = self.time_series.gen_profiles.tolist()
+
+            # json.dumps(json_dict, ensure_ascii=False)
+
+            with open(filename, 'w') as outfile:
+                json.dump(json_dict, outfile, ensure_ascii=False)
 
     def set_time_profile_state_to_the_circuit(self, t, Copy_Results_also):
         """
@@ -793,9 +864,9 @@ class Circuit(object):
         """
         # set the input state
         if self.time_series.load_profiles is not None:
-            sload = self.time_series.load_profiles[t, :]
-            self.bus[:, PD] = np.real(sload)
-            self.bus[:, QD] = np.imag(sload)
+            load_s = self.time_series.load_profiles[t, :]
+            self.bus[:, PD] = np.real(load_s)
+            self.bus[:, QD] = np.imag(load_s)
         else:
             raise Warning('There are no load profiles')
 
@@ -819,7 +890,6 @@ class Circuit(object):
             self.branch[:, BR_CURRENT] = abs(c)
             self.branch[:, LOADING] = abs(ld)
             self.branch[:, LOSSES] = abs(ls)
-
 
     def frequency_calculation(self,
                               t0,
@@ -886,9 +956,12 @@ class Circuit(object):
             accumulated_dFreq += dFreq[i+1]
 
         return t, Freq
+
 ########################################################################################################################
 # Functions outside the class
 ########################################################################################################################
+
+
 def format_structure(arr, format_arr):
     """
     Formats numpy array by column using an array of format per column
@@ -906,6 +979,7 @@ def format_structure(arr, format_arr):
         struct[:, col] = arr[:, col].astype(format_arr[col])
 
     return struct
+
 
 def ext2int(ppc, val_or_field=None, ordering=None, dim=0):
     """
@@ -1300,10 +1374,10 @@ def loadcase(casefile, return_as_obj=True, expect_gencost=True, expect_areas=Tru
 
         # attempt to read file
         if info == 0:
-            if extension == '.mat':       ## from MAT file
+            if extension == '.mat':       # from MAT file
                 try:
                     d = loadmat(rootname + extension, struct_as_record=True)
-                    if 'ppc' in d or 'mpc' in d:    ## it's a MAT/PYPOWER dict
+                    if 'ppc' in d or 'mpc' in d:    # it's a MAT/PYPOWER dict
                         if 'ppc' in d:
                             struct = d['ppc']
                         else:
@@ -1313,7 +1387,7 @@ def loadcase(casefile, return_as_obj=True, expect_gencost=True, expect_areas=Tru
                         s = {}
                         for a in val.dtype.names:
                             s[a] = val[a]
-                    else:                 ## individual data matrices
+                    else:                 # individual data matrices
                         d['version'] = '1'
 
                         s = {}
@@ -1325,7 +1399,7 @@ def loadcase(casefile, return_as_obj=True, expect_gencost=True, expect_areas=Tru
                 except IOError as e:
                     info = 3
                     lasterr = str(e)
-            elif extension == '.py':      ## from Python file
+            elif extension == '.py':      # from Python file
                 try:
                     if PY2:
                         execfile(rootname + extension)
@@ -1399,8 +1473,8 @@ def loadcase(casefile, return_as_obj=True, expect_gencost=True, expect_areas=Tru
 
             # all fields present, copy to ppc
             ppc = deepcopy(s)
-            if not hasattr(ppc, 'version'):  ## hmm, struct with no 'version' field
-                if ppc['gen'].shape[1] < 21:    ## version 2 has 21 or 25 cols
+            if not hasattr(ppc, 'version'):  # hmm, struct with no 'version' field
+                if ppc['gen'].shape[1] < 21: # version 2 has 21 or 25 cols
                     ppc['version'] = '1'
                 else:
                     ppc['version'] = '2'
@@ -1481,7 +1555,7 @@ def load_from_xls(filename):
         elif name.lower() == "lprof":
             df = xl.parse(name, index_col=0)
             ppc["Lprof"] = np.nan_to_num(df.values)
-            ppc["master_time"] = df.index.values
+            ppc["master_time"] = df.index
         elif name.lower() == "lprofq":
             df = xl.parse(name, index_col=0)
             ppc["LprofQ"] = np.nan_to_num(df.values)
@@ -1489,7 +1563,27 @@ def load_from_xls(filename):
         elif name.lower() == "gprof":
             df = xl.parse(name, index_col=0)
             ppc["Gprof"] = np.nan_to_num(df.values)
-            ppc["master_time"] = df.index.values  # it is the same
+            ppc["master_time"] = df.index  # it is the same
+
+    return ppc
+
+
+def load_from_dgs(filename):
+    """
+    Use the DGS parset to get a circuit structure dictionary
+    @param filename:
+    @return: Circuit dictionary
+    """
+    baseMVA, BUSES, BRANCHES, GEN, graph, gpos, BUS_NAMES, BRANCH_NAMES, GEN_NAMES = read_DGS(filename)
+
+    ppc = dict()
+    ppc["baseMVA"] = baseMVA
+    ppc["bus"] = BUSES.values
+    ppc['bus_names'] = BUS_NAMES
+    ppc["gen"] = GEN.values
+    ppc['gen_names'] = GEN_NAMES
+    ppc["branch"] = BRANCHES.values
+    ppc['branch_names'] = BRANCH_NAMES
 
     return ppc
 
@@ -1611,7 +1705,7 @@ def savecase(fname, ppc, comment=None, version='2'):
     indent = '    '  # four spaces
     indent2 = indent + indent
 
-    ## open and write the file
+    # open and write the file
     if extension == ".mat":     ## MAT-file
         savemat(fname, ppc)
     else:                       ## Python file
@@ -1621,7 +1715,7 @@ def savecase(fname, ppc, comment=None, version='2'):
             stderr.write("savecase: %s.\n" % detail)
             return fname
 
-        ## function header, etc.
+        # function header, etc.
         if ppc_ver == "1":
             raise NotImplementedError
 #            if (areas != None) and (gencost != None) and (len(gencost) > 0):

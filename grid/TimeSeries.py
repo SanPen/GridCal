@@ -1,18 +1,23 @@
 import numpy as np
 import pandas as pd
+from enum import Enum
+from multiprocessing import Pool, cpu_count
+from warnings import warn
+from matplotlib import pyplot as plt
 from PyQt4.QtCore import QThread, SIGNAL
+from numpy import zeros, r_
+import time
 
-# try:
-#     from power_flow import *
-# except:
-#     from .power_flow import *
+from grid.PowerFlow import MultiCircuitPowerFlow
+from grid.BusDefinitions import *
+from grid.GenDefinitions import *
 
 
 class TimeSeries(QThread):
     """
     This class includes the necessary routines to run a time series power flow simulation
     """
-    def __init__(self, power_flow_object):
+    def __init__(self, power_flow_object: MultiCircuitPowerFlow):
         """
         Constructor
         @param power_flow_object:
@@ -42,9 +47,13 @@ class TimeSeries(QThread):
         self.max_iterations = 20
         self.enforce_reactive_power_limits = True
 
+        self.load_p_0 = self.pf.bus[:, PD]
+        self.load_q_0 = self.pf.bus[:, QD]
+        self.gen_p_0 = self.pf.gen[:, PG]
+
         self.cancel = False
 
-    def set_master_time(self, time_profile):
+    def set_master_time(self, time_profile: pd.DatetimeIndex):
         """
         Sets the master time profile
         @param time_profile: Array of time stamps
@@ -65,6 +74,8 @@ class TimeSeries(QThread):
         Set the profiles into the destination array based on some contour conditions
         @param profiles: Input profiles
         @param destination: Array where to set the profiles
+        @param device_type:
+        @param master_structure:
         @return: the modified destination
         """
         profile_len, profile_dev = np.shape(profiles)  # number of time steps, number of devices
@@ -94,7 +105,6 @@ class TimeSeries(QThread):
         else:
             raise Exception('The profile has a different number of ' + device_type + ' than the actual ' + device_type + ' list.')
 
-
         if self.voltages is None:
             self.format_profiles()
 
@@ -108,9 +118,17 @@ class TimeSeries(QThread):
         return not (self.time is None)
 
     def has_results(self):
-        return not (self.voltages  is None)
+        """
+        Returns whether if there are results stored or not
+        @return:
+        """
+        return not (self.voltages is None)
 
     def format_profiles(self):
+        """
+        Formats the profile variables to have a consistent simulation
+        @return:
+        """
         tT = len(self.time)
         nbus = len(self.pf.bus)
         nbranch = len(self.pf.branch)
@@ -170,6 +188,14 @@ class TimeSeries(QThread):
         self.cancel = True
 
     def set_run_options(self, auto_repeat=True, tol=1e-3, max_it=10, enforce_reactive_power_limits=True):
+        """
+        Set the execution parameters in the power flow object
+        @param auto_repeat:
+        @param tol:
+        @param max_it:
+        @param enforce_reactive_power_limits:
+        @return:
+        """
         self.auto_repeat = auto_repeat
         self.tolerance = tol
         self.max_iterations = max_it
@@ -178,9 +204,9 @@ class TimeSeries(QThread):
     def run(self):
         """
         Perform a time series run
-        @param auto_repeat: Parameter that controls whether a profile is automatically repeated or not
         @return:
         """
+        start = time.clock()
         print('Time series: run')
 
         if self.time is None:
@@ -196,6 +222,16 @@ class TimeSeries(QThread):
 
         # format output profiles
         self.format_profiles()
+
+        # get the enables for modification:
+        # since the power flow object is sent already with user modifications it should be up to date on every run
+        loads_enabled_for_change = np.where(self.pf.bus[:, FIX_POWER_BUS] == 0)[0]
+        gens_enabled_for_change = np.where(self.pf.gen[:, FIX_POWER_GEN] == 0)[0]
+
+        # this is the base load values, only those enabled for change will be replaced in the loop
+        S = self.load_p_0 + 1j * self.load_q_0
+        # this is the base generation values, only those enabled for change will be replaced in the loop
+        Pgen = self.gen_p_0
 
         # determine if to set every time a profile type on the condition that the profile exists
         if self.gen_profiles is None:
@@ -220,12 +256,14 @@ class TimeSeries(QThread):
         for t in range(tT):
 
             # Setting the states
-            if setG:
-                Pgen = self.gen_profiles[t_g, :]  # this is a simple double value
+            if setG:  # set the generators
+                # this is a simple double value
+                Pgen[gens_enabled_for_change] = self.gen_profiles[t_g, gens_enabled_for_change]
                 self.pf.set_generators(Pgen)
 
-            if setL:
-                S = self.load_profiles[t_l, :]  # this is a complex number
+            if setL:  # set the loads
+                #  this is a complex number
+                S[loads_enabled_for_change] = self.load_profiles[t_l, loads_enabled_for_change]
                 self.pf.set_loads(np.real(S), np.imag(S))
 
             # run the power flow
@@ -265,20 +303,7 @@ class TimeSeries(QThread):
 
         # send the finnish signal
         self.emit(SIGNAL('done()'))
+        elapsed = (time.clock() - start)
+        print('Elapsed time: ', elapsed)
 
 
-class MonteCarlo(QThread):
-
-    def __init__(self, time_series_object):
-        """
-        Class constructor
-        Args:
-            time_series_object: TimeSeries object from which to take the data
-
-        Returns:
-
-        """
-        self.time_series = time_series_object
-
-    def group_data(self):
-        print()

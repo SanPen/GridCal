@@ -13,6 +13,9 @@ from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
 
 from scipy.sparse.linalg import spsolve
 
+import scipy
+scipy.ALLOW_THREADS = True
+
 
 def dSbus_dV(Ybus, V):
     """
@@ -75,6 +78,7 @@ def dSbus_dV(Ybus, V):
     dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
 
     return dS_dVm, dS_dVa
+
 
 def newtonpf(Ybus, Sbus, V0, pv, pq, tol, max_it, verbose=False):
     """
