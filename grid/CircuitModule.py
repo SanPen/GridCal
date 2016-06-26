@@ -614,7 +614,7 @@ class Circuit(object):
 
             # set node colors
             nb = len(self.bus)
-            color = [None] * nb
+            color = [none_color] * nb
             for i in range(nb):
                 if i in gen_idx_list:
                     color[i] = gen_vctrl_color
@@ -625,6 +625,8 @@ class Circuit(object):
                         color[i] = load_color
                     elif self.bus[i, PD] < 0:  # non controlled gen
                         color[i] = gen_color
+                    else:
+                        color[i] = none_color
 
             v = self.bus[:, VM]
 
@@ -642,7 +644,7 @@ class Circuit(object):
 
             node_labels = self.get_node_dict(Sbus.real)
             node_artist = nx.draw_networkx_nodes(self.circuit_graph, pos=pos, node_color=color, with_labels=False,
-                                                 node_size=node_size, ax=ax)
+                                                  node_size=node_size, ax=ax)
 
             nx.draw_networkx_labels(self.circuit_graph, pos=pos, labels=node_labels, font_size=font_size, ax=ax)
 
