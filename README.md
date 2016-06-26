@@ -31,4 +31,6 @@ Some of the features you'll find already are:
 
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
 
+Consider viewing the [Zero tutorial](https://youtu.be/59W_rqimB6w) that explains how to clone the repository and run the software.
+
 Send feedback and requests to santiago.penate.vera@gmail.com.
