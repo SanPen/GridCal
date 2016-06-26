@@ -1695,7 +1695,7 @@ class CircuitPowerFlow(object):
                         self.gen[mx, QG] = fixedQg[mx]  # set Qg to binding
                         for i in mx:   # [one at a time, since they may be at same bus]
                             self.gen[i, GEN_STATUS] = 0  # temporarily turn off gen,
-                            bi = self.gen[i, GEN_BUS]   # adjust load accordingly,
+                            bi = self.gen[i, GEN_BUS].astype(int)    # adjust load accordingly,
                             self.bus[bi, [PD, QD]] = (self.bus[bi, [PD, QD]] - self.gen[i, [PG, QG]])
 
                         if len(ref) > 1 and any(self.bus[self.gen[mx, GEN_BUS], BUS_TYPE] == REF):
@@ -1720,7 +1720,7 @@ class CircuitPowerFlow(object):
                 self.gen[limited, QG] = fixedQg[limited]    # restore Qg value,
 
                 for i in limited:  # [one at a time, since they may be at same bus]
-                    bi = self.gen[i, GEN_BUS]  # re-adjust load,
+                    bi = self.gen[i, GEN_BUS].astype(int)  # re-adjust load,
                     self.bus[bi, [PD, QD]] = self.bus[bi, [PD, QD]] + self.gen[i, [PG, QG]]
                     self.gen[i, GEN_STATUS] = 1  # and turn gen back on
 
