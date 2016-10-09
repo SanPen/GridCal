@@ -1,0 +1,524 @@
+********************************************************************************
+*
+* DIgSILENT (R) DGS Export V1.5.4
+* Copyright (C) DIgSILENT GmbH 2015. All rights reserved.
+*
+* DIgSILENT (C) PowerFactory V15.2.4
+*
+* Date:     10/06/2015 09:21
+* Project:  PLATOS_example3 (Study Case: Study Case)
+*
+********************************************************************************
+
+
+$$General;ID(a:40);Descr(a:40);Val(a:40)
+********************************************************************************
+*  General Information
+*
+*  ID: Unique identifier for DGS file
+*  Descr: Setting
+*  Val: Value
+********************************************************************************
+  1;Version;5.0
+
+
+$$ElmLne;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);dline(r);chr_name(a:20)
+********************************************************************************
+*  Line
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypLne,TypTow,TypGeo,TypCabsys
+*  dline: Parameters: Length of Line in km
+*  chr_name: Characteristic Name
+********************************************************************************
+  2;Line_0_1;32;267;10;
+  3;Line_0_2;32;267;1;
+  4;Line_1_4;32;267;1;
+  5;Line_1_5;32;268;1;
+  6;Line_2_3;32;267;1;
+  7;Line_2_9;32;268;1;
+  8;Line_3_8;32;268;1;
+  9;Line_4_6;32;267;1;
+  10;Line_4_7;32;268;1;
+
+
+$$ElmLod;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);chr_name(a:20);plini(r);qlini(r);scale0(r)
+********************************************************************************
+*  General Load
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypLod,TypLodind
+*  chr_name: Characteristic Name
+*  plini: Operating Point: Active Power in MW
+*  qlini: Operating Point: Reactive Power in Mvar
+*  scale0: Operating Point: Scaling Factor
+********************************************************************************
+  11;#BAT_at_HV_T(1);32;;;0;0;1
+  12;#BAT_at_T0(1);32;;;0;0;1
+  13;#BAT_at_T1(1);32;;;0;0;1
+  14;#BAT_at_T2(1);32;;;-0;-0;1
+  15;#BAT_at_T3(1);32;;;0;0;1
+  16;#BAT_at_T4(1);32;;;0;0;1
+  17;#BAT_at_T5(1);32;;;0;0;1
+  18;#BAT_at_T6(1);32;;;0;0;1
+  19;#BAT_at_T7(1);32;;;0;0;1
+  20;#BAT_at_T8(1);32;;;0;0;1
+  21;#BAT_at_T9(1);32;;;0;0;1
+  22;L1;32;;;0;0;1
+  23;L2;32;;;0;0;1
+  24;L3;32;;;0;0;1
+  25;L4;32;;;0;0;1
+  26;L5;32;;;0;0;1
+  27;L6;32;;;0;0;1
+  28;L7;32;;;0;0;1
+  29;L8;32;;;0;0;1
+  30;L9;32;;;0;0;1
+
+
+$$ElmLodlv;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);ulini(r);for_name(a:40);chr_name(a:20)
+********************************************************************************
+*  Low-Voltage Load
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypLodlv,TypLodlvcons
+*  ulini: Fixed Load: Voltage, U(L-L) in kV
+*  for_name: Foreign Key
+*  chr_name: Characteristic Name
+********************************************************************************
+  31;Low-Voltage Load;32;;0.4;;
+
+
+$$ElmNet;ID(a:40);loc_name(a:40);fold_id(p);frnom(r)
+********************************************************************************
+*  Grid
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  frnom: Nominal Frequency in Hz
+********************************************************************************
+  32;Grid;;50
+
+
+$$ElmTerm;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);iUsage(i);uknom(r);chr_name(a:20);outserv(i)
+********************************************************************************
+*  Terminal
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypBar
+*  iUsage: Usage:Busbar:Junction Node:Internal Node
+*  uknom: Nominal Voltage: Line-Line in kV
+*  chr_name: Characteristic Name
+*  outserv: Out of Service
+********************************************************************************
+  33;HV_T;32;;0;139;;0
+  34;T0;32;;0;10;;0
+  35;T1;32;;0;10;;0
+  36;T2;32;;0;10;;0
+  37;T3;32;;0;10;;0
+  38;T4;32;;0;10;;0
+  39;T5;32;;0;10;;0
+  40;T6;32;;0;10;;0
+  41;T7;32;;0;10;;0
+  42;T8;32;;0;10;;0
+  43;T9;32;;0;10;;0
+
+
+$$ElmTr2;ID(a:40);loc_name(a:40);fold_id(p);typ_id(p);outserv(i);nntap(i);sernum(a:20);constr(i);chr_name(a:20)
+********************************************************************************
+*  2-Winding Transformer
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  typ_id: Type in TypTr2
+*  outserv: Out of Service
+*  nntap: Tap Changer 1: Tap Position
+*  sernum: Serial Number
+*  constr: Year of Construction
+*  chr_name: Characteristic Name
+********************************************************************************
+  44;TR0;32;;0;2;;0;
+
+
+$$ElmXnet;ID(a:40);loc_name(a:40);fold_id(p);outserv(i);snss(r);rntxn(r);z2tz1(r);snssmin(r);rntxnmin(r);z2tz1min(r);chr_name(a:20);bustp(a:2);pgini(r);qgini(r);phiini(r);usetp(r)
+********************************************************************************
+*  External Grid
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  outserv: Out of Service
+*  snss: Max. Values: Short-Circuit Power Sk''max in MVA
+*  rntxn: Max. Values: R/X Ratio (max.)
+*  z2tz1: Max. Values Impedance Ratio: Z2/Z1 max.
+*  snssmin: Min. Values: Short-Circuit Power Sk''min in MVA
+*  rntxnmin: Min. Values: R/X Ratio (min.)
+*  z2tz1min: Min. Values Impedance Ratio: Z2/Z1 min.
+*  chr_name: Characteristic Name
+*  bustp: Bus Type:PQ:PV:SL
+*  pgini: Operation Point: Active Power in MW
+*  qgini: Operation Point: Reactive Power in Mvar
+*  phiini: Operation Point: Angle in deg
+*  usetp: Operation Point: Voltage Setpoint in p.u.
+********************************************************************************
+  45;External Grid;32;0;10000;0.1;1;8000;0.1;1;;PV;0;0;0;1
+
+
+$$IntGrf;ID(a:40);loc_name(a:40);fold_id(p);iCol(i);iVis(i);iLevel(i);rCenterX(r);rCenterY(r);sSymNam(a:40);pDataObj(p);iRot(i);rSizeX(r);rSizeY(r)
+********************************************************************************
+*  Graphical Net Object
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  iCol: Colour
+*  iVis: Visible
+*  iLevel: Layer
+*  rCenterX: X-Position
+*  rCenterY: Y-Position
+*  sSymNam: Symbol Name
+*  pDataObj: Net Data Object in Elm*,Sta*,Blk*,RelFuse,IntGrfnet
+*  iRot: Rotation
+*  rSizeX: X-Size
+*  rSizeY: Y-Size
+********************************************************************************
+  46;ColLeg;162;1;0;1;14.20443;48.88722;__COLGRAF__;;0;0.6;0.6
+  47;Graphical Net Object10;162;1;1;1;188.125;258.125;d_net;45;180;1;1
+  48;Graphical Net Object11;162;1;1;1;170.625;192.5;d_lin;3;270;1;1
+  49;Graphical Net Object12;162;1;1;1;220.9375;188.125;d_lin;2;90;1;1
+  50;Graphical Net Object13;162;1;1;1;150.9375;144.375;d_lin;6;270;1;1
+  51;Graphical Net Object14;162;1;1;1;251.5625;153.125;d_lin;4;90;1;1
+  52;Graphical Net Object15;162;1;1;1;266.875;157.5;d_load;22;0;1;1
+  53;Graphical Net Object16;162;1;1;1;275.625;113.75;d_load;25;0;1;1
+  54;Graphical Net Object17;162;1;1;1;170.625;157.5;d_load;23;0;1;1
+  55;Graphical Net Object18;162;1;1;1;170.625;113.75;d_load;24;0;1;1
+  56;Graphical Net Object19;162;1;1;1;301.875;83.125;TermStrip;41;0;1;1
+  57;Graphical Net Object20;162;1;1;1;214.375;83.125;TermStrip;40;0;1;1
+  58;Graphical Net Object21;162;1;1;1;122.5;83.125;TermStrip;42;0;1;1
+  59;Graphical Net Object22;162;1;1;1;323.75;131.25;TermStrip;39;0;1;1
+  60;Graphical Net Object23;162;1;1;1;91.87499;131.25;TermStrip;43;0;1;1
+  61;Graphical Net Object24;162;1;1;1;111.5625;157.5;d_lin;7;270;1;1
+  62;Graphical Net Object25;162;1;1;1;133.4375;109.375;d_lin;8;270;1;1
+  63;Graphical Net Object26;162;1;1;1;236.25;105;d_lin;9;270;1;1
+  64;Graphical Net Object27;162;1;1;1;288.75;105;d_lin;10;90;1;1
+  65;Graphical Net Object28;162;1;1;1;308.4376;161.875;d_lin;5;90;1;1
+  66;Graphical Net Object29;162;1;1;1;310.625;65.62502;d_load;28;0;1;1
+  67;Graphical Net Object3;162;1;1;1;199.0625;205.625;TermStrip;34;0;1.833333;1
+  68;Graphical Net Object30;162;1;1;1;223.125;65.62502;d_load;27;0;1;1
+  69;Graphical Net Object31;162;1;1;1;332.5;118.125;d_load;26;0;1;1
+  70;Graphical Net Object32;162;1;1;1;131.25;65.62499;d_load;29;0;1;1
+  71;Graphical Net Object33;162;1;1;1;100.625;113.75;d_load;30;0;1;1
+  72;Graphical Net Object4;162;1;1;1;262.5;175;TermStrip;35;0;2.666666;1
+  73;Graphical Net Object40;162;1;1;1;179.375;223.125;d_genstat3;;0;1;1
+  74;Graphical Net Object41;162;1;1;1;216.5625;223.125;d_genstat3;;180;1;1
+  75;Graphical Net Object42;162;1;1;1;258.125;188.125;d_genstat3;;180;1;1
+  76;Graphical Net Object43;162;1;1;1;146.5625;161.875;d_genstat3;;0;1;1
+  77;Graphical Net Object44;162;1;1;1;155.3125;113.75;d_genstat3;;0;1;1
+  78;Graphical Net Object45;162;1;1;1;264.6876;113.75;d_genstat3;;0;1;1
+  79;Graphical Net Object46(1);162;1;1;1;275.625;157.5;d_pvsys;;0;1;1
+  80;Graphical Net Object46(2);162;1;1;1;323.75;113.75;d_genstat3;;0;1;1
+  81;Graphical Net Object46;162;1;1;1;284.375;192.5;d_genstat;;180;1;1
+  82;Graphical Net Object47(1);162;1;1;1;214.375;65.625;d_genstat3;;0;1;1
+  83;Graphical Net Object47;162;1;1;1;179.375;105;d_genstat;;0;1;1
+  84;Graphical Net Object48(1);162;1;1;1;301.875;65.625;d_genstat3;;0;1;1
+  85;Graphical Net Object48;162;1;1;1;293.125;148.75;d_loadlv;31;0;1;1
+  86;Graphical Net Object49(1);162;1;1;1;122.5;65.625;d_genstat3;;0;1;1
+  87;Graphical Net Object49;162;1;1;1;275.625;144.375;d_loadmv;;0;1;1
+  88;Graphical Net Object5;162;1;1;1;146.5625;175;TermStrip;36;0;2.5;1
+  89;Graphical Net Object50;162;1;1;1;91.87501;113.75;d_genstat3;;0;1;1
+  90;Graphical Net Object51;162;1;1;1;183.75;223.125;d_load;11;0;1;1
+  91;Graphical Net Object52;162;1;1;1;199.0625;188.125;d_load;12;0;1;1
+  92;Graphical Net Object53;162;1;1;1;262.5;157.5;d_load;13;0;1;1
+  93;Graphical Net Object54;162;1;1;1;146.5625;157.5;d_load;14;0;1;1
+  94;Graphical Net Object55;162;1;1;1;155.3125;113.75;d_load;15;0;1;1
+  95;Graphical Net Object56;162;1;1;1;264.6876;113.75;d_load;16;0;1;1
+  96;Graphical Net Object57;162;1;1;1;323.75;113.75;d_load;17;0;1;1
+  97;Graphical Net Object58;162;1;1;1;214.375;65.625;d_load;18;0;1;1
+  98;Graphical Net Object59;162;1;1;1;301.875;65.625;d_load;19;0;1;1
+  99;Graphical Net Object6;162;1;1;1;155.3125;131.25;TermStrip;37;0;2.166667;1
+  100;Graphical Net Object60;162;1;1;1;122.5;65.625;d_load;20;0;1;1
+  101;Graphical Net Object61;162;1;1;1;91.87501;113.75;d_load;21;0;1;1
+  102;Graphical Net Object7;162;1;1;1;264.6876;131.25;TermStrip;38;0;1.833333;1
+  103;Graphical Net Object8;162;1;1;1;183.75;240.625;TermStrip;33;0;1.333333;1
+  104;Graphical Net Object9;162;1;1;1;196.875;223.125;d_tr2;44;0;1;1
+
+
+$$IntGrfcon;ID(a:40);loc_name(a:40);fold_id(p);rX:SIZEROW(i);rX:0(r);rX:1(r);rX:2(r);rY:SIZEROW(i);rY:0(r);rY:1(r);rY:2(r)
+********************************************************************************
+*  GCO
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  rX:SIZEROW: Number of rows for attribute 'rX'
+*  rX: X in mm
+*  rY:SIZEROW: Number of rows for attribute 'rY'
+*  rY: Y in mm
+********************************************************************************
+  105;GCO_1;47;2;188.125;188.125;;2;253.75;240.625;
+  106;GCO_1;48;3;170.625;188.125;188.125;3;192.5;192.5;205.625
+  107;GCO_2;48;3;170.625;153.125;153.125;3;192.5;192.5;175
+  108;GCO_1;49;3;220.9375;196.875;196.875;3;188.125;188.125;205.625
+  109;GCO_2;49;3;220.9375;245;245;3;188.125;188.125;175
+  110;GCO_1;50;3;150.9375;157.5;157.5;3;144.375;144.375;175
+  111;GCO_2;50;3;150.9375;144.375;144.375;3;144.375;144.375;131.25
+  112;GCO_1;51;3;251.5625;245;245;3;153.125;153.125;175
+  113;GCO_2;51;3;251.5625;258.125;258.125;3;153.125;153.125;131.25
+  114;GCO_1;52;2;266.875;266.875;;2;161.875;175;
+  115;GCO_1;53;2;275.625;275.625;;2;118.125;131.25;
+  116;GCO_1;54;2;170.625;170.625;;2;161.875;175;
+  117;GCO_1;55;2;170.625;170.625;;2;118.125;131.25;
+  118;GCO_1;61;3;111.5625;131.25;131.25;3;157.5;157.5;175
+  119;GCO_2;61;3;111.5625;91.87501;91.87501;3;157.5;157.5;131.25
+  120;GCO_1;62;3;133.4375;144.375;144.375;3;109.375;109.375;131.25
+  121;GCO_2;62;3;133.4375;122.5;122.5;3;109.375;109.375;83.125
+  122;GCO_1;63;3;236.25;253.75;253.75;3;105;105;131.25
+  123;GCO_2;63;3;236.25;218.75;218.75;3;105;105;83.125
+  124;GCO_1;64;3;288.75;284.375;284.375;3;105;105;131.25
+  125;GCO_2;64;3;288.75;293.125;293.125;3;105;105;83.125
+  126;GCO_1;65;3;308.4376;293.125;293.125;3;161.875;161.875;175
+  127;GCO_2;65;3;308.4376;323.75;323.75;3;161.875;161.875;131.25
+  128;GCO_1;66;2;310.625;310.625;;2;70.00002;83.125;
+  129;GCO_1;68;2;223.125;223.125;;2;70.00002;83.125;
+  130;GCO_1;69;2;332.5;332.5;;2;122.5;131.25;
+  131;GCO_1;70;2;131.25;131.25;;2;69.99999;83.125;
+  132;GCO_1;71;2;100.625;100.625;;2;118.125;131.25;
+  133;GCO_1;73;2;179.375;179.375;;2;227.5;240.625;
+  134;GCO_1;74;2;216.5625;216.5625;;2;218.75;205.625;
+  135;GCO_1;75;2;258.125;258.125;;2;183.75;175;
+  136;GCO_1;76;2;146.5625;146.5625;;2;166.25;175;
+  137;GCO_1;77;2;155.3125;155.3125;;2;118.125;131.25;
+  138;GCO_1;78;2;264.6876;264.6876;;2;118.125;131.25;
+  139;GCO_1;79;2;275.625;275.625;;2;161.875;175;
+  140;GCO_1;80;2;323.75;323.75;;2;118.125;131.25;
+  141;GCO_1;81;2;284.375;284.375;;2;188.125;175;
+  142;GCO_1;82;2;214.375;214.375;;2;70;83.125;
+  143;GCO_1;83;2;179.375;179.375;;2;109.375;131.25;
+  144;GCO_1;84;2;301.875;301.875;;2;70;83.125;
+  145;GCO_1;85;3;293.125;288.75;288.75;3;153.125;153.125;131.25
+  146;GCO_1;86;2;122.5;122.5;;2;70;83.125;
+  147;GCO_1;87;3;275.625;271.25;271.25;3;148.75;148.75;131.25
+  148;GCO_1;89;2;91.87501;91.87501;;2;118.125;131.25;
+  149;GCO_1;90;2;183.75;183.75;;2;227.5;240.625;
+  150;GCO_1;91;2;199.0625;199.0625;;2;192.5;205.625;
+  151;GCO_1;92;2;262.5;262.5;;2;161.875;175;
+  152;GCO_1;93;2;146.5625;146.5625;;2;161.875;175;
+  153;GCO_1;94;2;155.3125;155.3125;;2;118.125;131.25;
+  154;GCO_1;95;2;264.6876;264.6876;;2;118.125;131.25;
+  155;GCO_1;96;2;323.75;323.75;;2;118.125;131.25;
+  156;GCO_1;97;2;214.375;214.375;;2;70;83.125;
+  157;GCO_1;98;2;301.875;301.875;;2;70;83.125;
+  158;GCO_1;100;2;122.5;122.5;;2;70;83.125;
+  159;GCO_1;101;2;91.87501;91.87501;;2;118.125;131.25;
+  160;GCO_1;104;2;196.875;196.875;;2;227.5;240.625;
+  161;GCO_2;104;2;196.875;196.875;;2;218.75;205.625;
+
+
+$$IntGrfnet;ID(a:40);loc_name(a:40);fold_id(p);snap_on(i);grid_on(i);ortho_on(i)
+********************************************************************************
+*  Graphic
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  snap_on: Drawing Tools: Snap
+*  grid_on: Drawing Tools: Grid
+*  ortho_on: Drawing Tools: Ortho Type:
+********************************************************************************
+  162;Grid;;1;1;1
+
+
+$$StaCubic;ID(a:40);loc_name(a:40);fold_id(p);chr_name(a:20);obj_bus(i);obj_id(p)
+********************************************************************************
+*  Cubicle
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  chr_name: Characteristic Name
+*  obj_bus: Bus Index
+*  obj_id: Connected with in Elm*
+********************************************************************************
+  163;Cub_1;33;;0;44
+  164;Cub_2;33;;0;45
+  165;Cubic_#BAT_at_HV_T(1);33;;0;11
+  166;Cubic_#BAT_at_HV_T;33;;0;
+  167;Cub_1;34;;1;44
+  168;Cub_2;34;;0;3
+  169;Cub_3;34;;0;2
+  170;Cubic_#BAT_at_T0(1);34;;0;12
+  171;Cubic_#BAT_at_T0;34;;0;
+  172;Cub_1;35;;1;2
+  173;Cub_2;35;;0;4
+  174;Cub_3;35;;0;22
+  175;Cub_4;35;;0;5
+  176;Cub_5;35;;0;
+  177;Cub_6;35;;0;
+  178;Cubic_#BAT279392;35;;0;
+  179;Cubic_#BAT_at_T1(1);35;;0;13
+  180;Cubic_#BAT_at_T1;35;;0;
+  181;Cub_1;36;;1;3
+  182;Cub_2;36;;0;6
+  183;Cub_3;36;;0;23
+  184;Cub_4;36;;0;7
+  185;Cubic_#BAT582556;36;;0;
+  186;Cubic_#BAT_at_T2(1);36;;0;14
+  187;Cubic_#BAT_at_T2;36;;0;
+  188;Cub_1;37;;1;6
+  189;Cub_2;37;;0;24
+  190;Cub_3;37;;0;8
+  191;Cub_5;37;;0;
+  192;Cubic_#BAT_at_T3(1);37;;0;15
+  193;Cubic_#BAT_at_T3;37;;0;
+  194;Cub_1;38;;1;4
+  195;Cub_2;38;;0;25
+  196;Cub_3;38;;0;9
+  197;Cub_4;38;;0;10
+  198;Cub_5;38;;0;31
+  199;Cub_6;38;;0;
+  200;Cubic_#BAT_at_T4(1);38;;0;16
+  201;Cubic_#BAT_at_T4;38;;0;
+  202;Cub_1;39;;1;5
+  203;Cub_2;39;;0;26
+  204;Cubic_#BAT526915;39;;0;
+  205;Cubic_#BAT_at_T5(1);39;;0;17
+  206;Cubic_#BAT_at_T5;39;;0;
+  207;Cub_1;40;;1;9
+  208;Cub_2;40;;0;27
+  209;Cubic_#BAT_at_T6(1);40;;0;18
+  210;Cubic_#BAT_at_T6;40;;0;
+  211;Cub_1;41;;1;10
+  212;Cub_2;41;;0;28
+  213;Cubic_#BAT7;41;;0;
+  214;Cubic_#BAT774439;41;;0;
+  215;Cubic_#BAT_at_T7(1);41;;0;19
+  216;Cubic_#BAT_at_T7;41;;0;
+  217;Cub_1;42;;1;8
+  218;Cub_2;42;;0;29
+  219;Cubic_#BAT436408;42;;0;
+  220;Cubic_#BAT8;42;;0;
+  221;Cubic_#BAT_at_T8(1);42;;0;20
+  222;Cubic_#BAT_at_T8;42;;0;
+  223;Cub_1;43;;1;7
+  224;Cub_2;43;;0;30
+  225;Cubic_#BAT575952;43;;0;
+  226;Cubic_#BAT9(1);43;;0;
+  227;Cubic_#BAT9(2);43;;0;
+  228;Cubic_#BAT9(3);43;;0;
+  229;Cubic_#BAT9;43;;0;
+  230;Cubic_#BAT_at_T9(1);43;;0;21
+  231;Cubic_#BAT_at_T9;43;;0;
+
+
+$$StaSwitch;ID(a:40);loc_name(a:40);fold_id(p);on_off(i);typ_id(p);iUse(i)
+********************************************************************************
+*  Switch
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: in Cubicle
+*  on_off: Closed
+*  typ_id: Type in TypSwitch
+*  iUse: Type of Usage
+********************************************************************************
+  232;Switch;163;1;;1
+  233;Switch;164;1;;1
+  234;Switch;167;1;;1
+  235;Switch;168;1;;1
+  236;Switch;169;1;;1
+  237;Switch;172;1;;1
+  238;Switch;173;1;;1
+  239;Switch;174;1;;1
+  240;Switch;175;1;;1
+  241;Switch;176;1;;1
+  242;Switch;177;1;;1
+  243;Switch;181;1;;1
+  244;Switch;182;1;;1
+  245;Switch;183;1;;1
+  246;Switch;184;1;;1
+  247;Switch;188;1;;1
+  248;Switch;189;1;;1
+  249;Switch;190;1;;1
+  250;Switch;191;1;;1
+  251;Switch;194;1;;1
+  252;Switch;195;1;;1
+  253;Switch;196;1;;1
+  254;Switch;197;1;;1
+  255;Switch;198;1;;1
+  256;Switch;199;1;;1
+  257;Switch;202;1;;1
+  258;Switch;203;1;;1
+  259;Switch;207;1;;1
+  260;Switch;208;1;;1
+  261;Switch;211;1;;1
+  262;Switch;212;1;;1
+  263;Switch;217;1;;1
+  264;Switch;218;1;;1
+  265;Switch;223;1;;1
+  266;Switch;224;1;;1
+
+
+$$TypLne;ID(a:40);loc_name(a:40);fold_id(p);uline(r);sline(r);aohl_(a:3);rline(r);xline(r);cline(r);rline0(r);xline0(r);cline0(r);rtemp(r);Ithr(r);chr_name(a:20)
+********************************************************************************
+*  Line Type
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  uline: Rated Voltage in kV
+*  sline: Rated Current in kA
+*  aohl_: Cable / OHL
+*  rline: Parameters per Length 1,2-Sequence: AC-Resistance R'(20°C) in Ohm/km
+*  xline: Parameters per Length 1,2-Sequence: Reactance X' in Ohm/km
+*  cline: Parameters per Length 1,2-Sequence: Capacitance C' in uF/km
+*  rline0: Parameters per Length Zero Sequence: AC-Resistance R0' in Ohm/km
+*  xline0: Parameters per Length Zero Sequence: Reactance X0' in Ohm/km
+*  cline0: Parameters per Length Zero Sequence: Capacitance C0' in uF/km
+*  rtemp: Max. End Temperature in degC
+*  Ithr: Rated Short-Time (1s) Current (Conductor) in kA
+*  chr_name: Characteristic Name
+********************************************************************************
+  267;NA2YSY 1x400rm 6/10kV it;;10;0.495;cab;0.0833;0.097389;0.56;0.3333;0.389557;0.5881;150;28.8;
+  268;NAYSEY 3x120rm/16 6/10kV;;10;0.243;cab;0.253;0.098991;0.4;1.012;0.395966;0.5881;160;9.12;
+
+
+$$TypTr2;ID(a:40);loc_name(a:40);fold_id(p);strn(r);frnom(r);utrn_h(r);utrn_l(r);uktr(r);pcutr(r);uk0tr(r);ur0tr(r);tr2cn_h(a:2);tr2cn_l(a:2);nt2ag(r);curmg(r);pfe(r);zx0hl_n(r);tap_side(i);dutap(r);phitr(r);nntap0(i);ntpmn(i);ntpmx(i);manuf(a:20);chr_name(a:20)
+********************************************************************************
+*  2-Winding Transformer Type
+*
+*  ID: Unique identifier for DGS file
+*  loc_name: Name
+*  fold_id: In Folder
+*  strn: Rated Power in MVA
+*  frnom: Nominal Frequency in Hz
+*  utrn_h: Rated Voltage: HV-Side in kV
+*  utrn_l: Rated Voltage: LV-Side in kV
+*  uktr: Positive Sequence Impedance: Short-Circuit Voltage uk in %
+*  pcutr: Positive Sequence Impedance: Copper Losses in kW
+*  uk0tr: Zero Sequence Impedance: Short-Circuit Voltage uk0 in %
+*  ur0tr: Zero Sequence Impedance: SHC-Voltage (Re(uk0)) uk0r in %
+*  tr2cn_h: Vector Group: HV-Side:Y :YN:Z :ZN:D
+*  tr2cn_l: Vector Group: LV-Side:Y :YN:Z :ZN:D
+*  nt2ag: Vector Group: Phase Shift in *30deg
+*  curmg: Magnetising Impedance: No Load Current in %
+*  pfe: Magnetising Impedance: No Load Losses in kW
+*  zx0hl_n: Zero Sequence Magnetising Impedance: Mag. Impedance/uk0
+*  tap_side: Tap Changer 1: at Side:HV:LV
+*  dutap: Tap Changer 1: Additional Voltage per Tap in %
+*  phitr: Tap Changer 1: Phase of du in deg
+*  nntap0: Tap Changer 1: Neutral Position
+*  ntpmn: Tap Changer 1: Minimum Position
+*  ntpmx: Tap Changer 1: Maximum Position
+*  manuf: Manufacturer
+*  chr_name: Characteristic Name
+********************************************************************************
+  269;50 MVA 139/10.5 kV;;50;50;139.3;10.5;10.08;188.098;9;0;YN;D;5;0.085;32.745;100;0;2.5;0;0;-2;2;;

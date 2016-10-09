@@ -1,0 +1,123 @@
+********************************************************************************
+*
+* DIgSILENT (R) DGS Export V1.00
+* Copyright (C) DIgSILENT GmbH 2008. All rights reserved.
+*
+* DIgSILENT (C) PowerFactory V14.0.508
+*
+* Date:     11/06/2008 12:01
+* Project:  Example1 (Study Case: Study Case)
+*
+********************************************************************************
+
+
+$$General;ID(a:40);Descr(a:40);Val(a:40)
+********************************************************************************
+*  General Information
+*
+*  ID: Unique identifier for DGS file
+*  Descr: Setting
+*  Val: Value
+********************************************************************************
+  1;Version;5.0
+
+
+$$ElmCoup;ID(a:40);on_off(i)
+********************************************************************************
+*  Breaker/Switch
+*
+*  ID: Unique identifier for DGS file
+*  on_off: Closed
+********************************************************************************
+  ##BRKFKEY1;1
+
+
+$$ElmLod;ID(a:40);plini(r);qlini(r)
+********************************************************************************
+*  General Load
+*
+*  ID: Unique identifier for DGS file
+*  plini: Operating Point: Active Power in MW
+*  qlini: Operating Point: Reactive Power in Mvar
+********************************************************************************
+  ##LOADFKEY1;5;3
+  ##LOADFKEY2;5;3
+  ##LOADFKEY3;11;8
+  ##LOADFKEY4;2;3.06061
+  ##LOADFKEY5;0.1;0.0375
+  ##LOADFKEY6;0.1;0.05
+  ##LOADFKEY7;0.4;0.35
+  ##LOADFKEY8;0.05;0.0375
+  ##LOADFKEY9;0.1;0.05
+  ##LOADFKEY10;0.4;0.193729
+
+
+$$StaSwitch;ID(a:40);on_off(i)
+********************************************************************************
+*  Switch
+*
+*  ID: Unique identifier for DGS file
+*  on_off: Closed
+********************************************************************************
+  ##SWTFKEY1;1
+  ##SWTFKEY16;1
+  ##SWTFKEY33;1
+  ##SWTFKEY49;1
+  ##SWTFKEY61;1
+  ##SWTFKEY15;1
+  ##SWTFKEY32;1
+  ##SWTFKEY48;1
+  ##SWTFKEY7;1
+  ##SWTFKEY22;1
+  ##SWTFKEY39;1
+  ##SWTFKEY6;1
+  ##SWTFKEY21;1
+  ##SWTFKEY38;1
+  ##SWTFKEY54;1
+  ##SWTFKEY4;0
+  ##SWTFKEY19;1
+  ##SWTFKEY36;1
+  ##SWTFKEY52;1
+  ##SWTFKEY5;1
+  ##SWTFKEY20;1
+  ##SWTFKEY37;1
+  ##SWTFKEY53;1
+  ##SWTFKEY3;1
+  ##SWTFKEY18;1
+  ##SWTFKEY35;1
+  ##SWTFKEY51;1
+  ##SWTFKEY11;1
+  ##SWTFKEY26;1
+  ##SWTFKEY43;1
+  ##SWTFKEY58;1
+  ##SWTFKEY14;1
+  ##SWTFKEY31;0
+  ##SWTFKEY47;1
+  ##SWTFKEY60;1
+  ##SWTFKEY28;1
+  ##SWTFKEY44;1
+  ##SWTFKEY59;1
+  ##SWTFKEY62;1
+  ##SWTFKEY29;0
+  ##SWTFKEY45;1
+  ##SWTFKEY13;1
+  ##SWTFKEY30;1
+  ##SWTFKEY46;1
+  ##SWTFKEY10;1
+  ##SWTFKEY25;1
+  ##SWTFKEY42;1
+  ##SWTFKEY57;1
+  ##SWTFKEY9;1
+  ##SWTFKEY24;1
+  ##SWTFKEY41;0
+  ##SWTFKEY56;1
+  ##SWTFKEY8;1
+  ##SWTFKEY23;1
+  ##SWTFKEY40;1
+  ##SWTFKEY55;1
+  ##SWTFKEY12;1
+  ##SWTFKEY27;1
+  ##SWTFKEY2;1
+  ##SWTFKEY17;1
+  ##SWTFKEY34;1
+  ##SWTFKEY50;1
