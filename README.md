@@ -2,7 +2,7 @@
 
 This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/O6lv-d8z39k)
 
-![](https://github.com/SanPen/GridCal/blob/master/Gridcal.3-2016.png)
+![](https://github.com/SanPen/GridCal/blob/master/Gridcal.png)
 
 Since it is pure Python, It works for Windows, Linux and OSX.
 
