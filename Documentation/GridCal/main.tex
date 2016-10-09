@@ -1,0 +1,191 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  My documentation report
+%  Objetive: Explain what I did and how, so someone can continue with the investigation
+%
+% Important note:
+% Chapter heading images should have a 2:1 width:height ratio,
+% e.g. 920px width and 460px height.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[11pt,fleqn]{book} % Default font size and left-justified equations
+
+\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry} % Page margins
+
+\usepackage{xcolor,lipsum} % Required for specifying colors by name
+\definecolor{ocre}{RGB}{73,73,73} 
+\definecolor{lightgray}{RGB}{229,229,229} 
+% Font Settings
+\usepackage{avant} % Use the Avantgarde font for headings
+%\usepackage{times} % Use the Times font for headings
+\usepackage{mathptmx} % Use the Adobe Times Roman as the default text font together with math symbols from the Sym­bol, Chancery and Com­puter Modern fonts
+
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+
+
+% MATHS PACKAGE
+\usepackage{amsmath,tikz}
+\usetikzlibrary{matrix}
+\usetikzlibrary{calc}
+\usetikzlibrary{shapes}
+\usetikzlibrary{backgrounds,fit,shapes}
+\usetikzlibrary{positioning}
+
+\newcommand*{\horzbar}{\rule[0.05ex]{2.5ex}{0.5pt}}
+\usepackage{calc}
+
+% VERBATIM PACKAGE
+\usepackage{verbatim}
+
+% Bibliography
+%\usepackage[style=alphabetic,sorting=nyt,sortcites=true,autopunct=true,babel=hyphen,hyperref=true,abbreviate=false,backref=true,backend=biber]{biblatex}
+%\addbibresource{bibliography.bib} % BibTeX bibliography file
+%\defbibheading{bibempty}{}
+
+\input{structure} % Insert the commands.tex file which contains the majority of the structure behind the template
+
+\begin{document}
+
+\let\cleardoublepage\clearpage
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\begingroup
+\thispagestyle{empty}
+
+\AddToShipoutPicture*{\put(0,0){\includegraphics[scale=4.2]{frontpage}}} % Image background
+
+\begin{tikzpicture}[remember picture, overlay]
+\node[fill=white, fill opacity=0.6, anchor=north,minimum height=6cm, minimum width=\paperwidth] (names) at ([yshift=19cm]current page.south){};
+\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont] at ([yshift=17cm]current page.south) {GridCal};
+\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont \Huge] at ([yshift=15cm]current page.south) {Santiago Peñate Vera};
+\end{tikzpicture}
+
+
+
+%\centering
+%%\vspace{5cm}
+%\par\normalfont\fontsize{35}{35}\sffamily\selectfont
+%\textbf{GridCal Manual }\\
+%{\LARGE }\par % Book title
+%\vspace*{1cm}
+%{\Huge Santiago Peñate Vera}\par % Author name
+%\endgroup
+
+%----------------------------------------------------------------------------------------
+%	COPYRIGHT PAGE
+%----------------------------------------------------------------------------------------
+
+\newpage
+~\vfill
+\thispagestyle{empty}
+
+%\noindent Copyright \copyright\ 2014 Andrea Hidalgo\\ % Copyright notice
+
+\noindent \textsc{GridCal}\\
+
+\noindent Research oriented power systems software.\\ % License information
+
+\noindent \textit{Started writing this document in Madrid the 9th of October of 2016} % Printing/edition date
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % heading image
+
+\pagestyle{empty} % No headers
+
+\renewcommand\contentsname{Table of content}
+\renewcommand{\bibname}{Bibliography}
+\tableofcontents% Print the table of contents itself
+
+%\cleardoublepage % Forces the first chapter to start on an odd page so it's on the right
+
+\pagestyle{fancy} % Print headers again
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 1
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+
+\chapter{Introduction}
+
+\section{Motivation}\index{Motivation}
+
+  \vspace{1em}
+
+
+
+  \vspace{2em}
+
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 2
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+\chapter{Structure}
+
+\section{title}
+
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 3
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+\chapter{Power flow methods}
+
+\section{Newton-Raphson-Iwamoto}
+
+
+\newpage
+\section{Holomorphic Embedding (ASU)}
+
+First introduced by Antonio Trias in 2012 \cite{TriasHELM}, promises to be a non-divergent power flow method. Trias originally developed a version with no voltage controlled nodes (PV), in which the convergence properties are excellent (With this software try to solve any grid without PV nodes to check this affirmation). 
+
+The version programmed in the file \verb|HelmVect.py| has been adapted from the master thesis of Muthu Kumar Subramanian at the Arizona State University \cite{subramanian2014application}. This version includes a formulation of the voltage controlled nodes. My experience indicates that the introduction of the PV control deteriorates the convergence properties of the holomorphic embedding method. However, in many cases, it is the best approximation to a solution. especially when Newton-Raphson does not provide one.
+
+The \verb|HelmVect.py|  file contains a vectorized version of the algorithm. This means that the execution in python is much faster than a previous version that uses loops.
+
+\subsection{Concepts}
+
+All the power flow algorithms until the HELM method was introduced were iterative and recursive. The helm method is iterative but not recursive. A simple way to think of this is that traditional power flow methods are exploratory, while the HELM method is a planned journey. In theory the HELM method is superior, but in practice the numerical degeneration makes it less ideal.
+
+The fundamental idea of the recursive algorithms is that given a voltage initial point (1 p.u. at every node, usually) the algorithm explores the surroundings of the initial point until a suitable voltage solution is reached or no solution at all is found because the initial point is supposed to be "far" from the solution.
+
+On the HELM methods, we form a "curve" that departures from a known mathematically exact solution that is obtained from solving the grid with no power injections. This is possible because with no power injections, the grid equations become linear and straight forward to solve. The arriving point of the "curve" is the solution that we want to achieve. That "curve" is best approximated by a Padè approximation. To compute the Padè approximation we need to compute coefficient of the unknown variables, in our case the voltage (and possibly the reactive power).
+
+The HELM formulation consists in the derivation of formulas that enable the calculation of the coefficients of the series that describes the "curve" from the mathematically know solution to the unknown solution. Once the coefficients are obtained, the Padè approximation computes the voltage solution at the "end of the curve", providing the desired voltage solution. The more coefficients we compute the more exact the solution is (this is true until the numerical precision limit is reached).\newline 
+
+
+All this sounds very strange, but it works ;)\newline 
+
+
+If you want to get familiar with this concept, you should read about the homotopy concept. In practice the continuation power flow does the same as the HELM algorithm, it takes a known solution and changes the loading factors until a solution for another state is reached.
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 4
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+\chapter{Graphical User Interface}
+
+% ----------------------------------------------------------------------------------------
+% 	BIBLIOGRAPHY
+% ----------------------------------------------------------------------------------------
+\chapter*{Bibliography}
+\bibliographystyle{ieeetran}
+\bibliography{bibliography}
+
+\end{document}
