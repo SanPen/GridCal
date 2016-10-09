@@ -13,24 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, inf, ndarray, vstack, power, delete, \
-    where, c_, r_, Inf, linalg, maximum, minimum, array, random, nan, shape, arange, sort, interp, iscomplexobj
-
-from scipy.sparse import csc_matrix as sparse
-from enum import Enum
-import networkx as nx
-from networkx import connected_components
-import pandas as pd
 import os
+from enum import Enum
 from warnings import warn
 
+import networkx as nx
+import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal
-
-from matplotlib.pyplot import plot, bar, show, figure
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import plot
+from networkx import connected_components
+from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, \
+    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj
+from scipy.sparse import csc_matrix as sparse
+
 plt.style.use('fivethirtyeight')
 
-from Stable.grid.ImportParsers.DGS_Parser import read_DGS
+from grid.ImportParsers.DGS_Parser import read_DGS
 from grid.ImportParsers.matpower_parser import parse_matpower_file
 from grid.IwamotoNR import IwamotoNR
 from grid.ContinuationPowerFlow import continuation_nr

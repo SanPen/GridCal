@@ -22,23 +22,16 @@ This class is the handler of the main gui of GridCal.
 import os.path
 import platform
 import sys
-from enum import Enum
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
 from collections import OrderedDict
-import sys
+from enum import Enum
 
-
-from gui.main.gui import *
-from gui.GuiFunctions import *
+from PyQt5.QtCore import *
 from grid.CircuitOO import *
-
-# http://www.windel.nl/?section=pyqtdiagrameditor
-import matplotlib
-from matplotlib import pyplot as plt
+from gui.main.gui import *
 from matplotlib.colors import LinearSegmentedColormap
+
+from gui.GuiFunctions import *
+
 
 class GeneralItem(object):
 

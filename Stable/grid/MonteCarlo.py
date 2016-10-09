@@ -1,18 +1,14 @@
-import numpy as np
-import pandas as pd
+import time
 from enum import Enum
 from multiprocessing import Pool, cpu_count
-from warnings import warn
-from matplotlib import pyplot as plt
-from PyQt4.QtCore import QThread, SIGNAL
-from numpy import zeros, r_
-import time
 
-from grid.PowerFlow import MultiCircuitPowerFlow
-from grid.BusDefinitions import *
-from grid.GenDefinitions import *
-from grid.TimeSeries import TimeSeries
-import grid.InterpolationNDim as interp_nd
+import numpy as np
+import pandas as pd
+from PyQt4.QtCore import QThread, SIGNAL
+from matplotlib import pyplot as plt
+from numpy import zeros
+
+from GridCal.grid import TimeSeries
 
 
 class TimeGroups(Enum):

@@ -6,7 +6,7 @@ This class is the handler of the main gui of the ETF.
 import sys
 
 try:
-    from gui.main.gui import *
+    from GridCal.gui.main.gui import *
 except:
     from GridCal_project.GridCal.GUI.MainGui.gui import *
 

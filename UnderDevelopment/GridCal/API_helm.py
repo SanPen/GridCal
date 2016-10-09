@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from grid.CircuitOO import *
 import numpy as np
+
+from GridCal.grid.CircuitOO import *
+
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
 

@@ -4,28 +4,22 @@ __author__ = 'Santiago Peñate Vera'
 This class is the handler of the main GUI of GridCal.
 """
 
-import sys
 import os.path
-from matplotlib.backend_bases import PickEvent, MouseEvent
 import platform
+import sys
 import time
+from enum import Enum
+
+import matplotlib
 import pandas as pd
 from PyQt4 import QtCore, QtGui
-from numpy import take
-from enum import Enum
-import matplotlib
+
 matplotlib.use("Qt4Agg")
 from matplotlib import pyplot as plt
 
 from GUI.main_gui.gui import *
 from GUI.main_gui.profiles_input.profile_dialogue import *
-from grid.CircuitModule import Circuit
-from grid.PowerFlow import *
-from grid.TimeSeries import *
-from grid.MonteCarlo import *
-from grid.BusDefinitions import *
-from grid.GenDefinitions import *
-from grid.BranchDefinitions import *
+from GridCal.grid import Circuit
 
 # define the IPython console
 print(platform.system())

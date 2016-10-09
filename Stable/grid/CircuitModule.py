@@ -2,32 +2,23 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import sys
 import os
-from sys import stderr
-import networkx as nx
-from warnings import warn
-from os.path import basename, splitext, exists
+import sys
 from copy import deepcopy
+from os.path import basename, splitext, exists
+from sys import stderr
+from warnings import warn
 
-from numpy import argsort, arange, concatenate, finfo, array, zeros, c_, ndim, any
-
+import networkx as nx
 from matplotlib import pyplot as plt
-
-from scipy.sparse import issparse, vstack, hstack, spdiags, coo_matrix
+from numpy import argsort, arange, concatenate, finfo, array, zeros, c_, ndim, any
 from scipy.io import loadmat, savemat
+from scipy.sparse import issparse, vstack, hstack
 
-from pandas import DataFrame as df
-
-from grid.PowerFlow import *
-from grid.BusDefinitions import *
-from grid.GenDefinitions import *
-from grid.BranchDefinitions import *
-from grid.util import run_userfcn
-from grid.TimeSeries import *
-from grid.MonteCarlo import *
+from GridCal.grid import parse_matpower_file
+from GridCal.grid import run_userfcn
 from Stable.grid.ImportParsers.DGS_Parser import read_DGS
-from grid.ImportParsers.matpower_parser import parse_matpower_file
+
 # from typing import TypeVar
 
 PY2 = sys.version_info[0] == 2
@@ -317,7 +308,7 @@ class Circuit(object):
 
     def get_reliability_structure(self):
         from ..reliability.reliability import ElementTypes
-        from ..reliability.graphs import Graph, nx
+        from ..reliability.graphs import nx
 
         nb = self.bus.shape[0]
         ng = self.gen.shape[0]

@@ -1,13 +1,14 @@
-import time
 import os
+import string
 import sys
+from enum import Enum
+
 import numpy as np
 import pandas as pd
-import string
-from enum import Enum
 from PyQt4 import QtCore, QtGui
+
 try:
-    from gui import *
+    from GridCal.gui import *
     from excel_dialog import *
 except:
     from .gui import *

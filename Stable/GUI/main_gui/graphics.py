@@ -1,13 +1,5 @@
-from numpy import ones, array
 import pandas as pd
-
-from GridCalMain.GUI.main_gui.grid.circuit_ import Circuit
-from grid.PowerFlow import *
-from grid.BusDefinitions import *
-from grid.GenDefinitions import *
-from grid.BranchDefinitions import *
-
-
+from numpy import ones
 
 
 def display_branch_magnitude(self, ax, fig, y, ylabel, xlabel=''):

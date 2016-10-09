@@ -15,20 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
-from numpy import array
-import numpy as np
-# np.set_printoptions(linewidth=320)
 import math
-from pandas import DataFrame as df
+
+import numpy as np
 import pandas as pd
+from numpy import array
+from pandas import DataFrame as df
+
 pd.set_option('display.height', 1000)
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 import networkx as nx
-from warnings import warn
 from grid.ImportParsers.BusDefinitions import *
-from grid.ImportParsers.BranchDefinitions import *
 from grid.ImportParsers.GenDefinitions import *
 
 
