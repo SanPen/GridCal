@@ -46,7 +46,19 @@ from PyQt5 import QtCore
 pool = QtCore.QThreadPool.globalInstance()
 pool.setMaxThreadCount(4)
 
-for i in range(10):
+batch_size = 1000
+
+workers = [None] * batch_size
+
+for i in range(batch_size):
     worker = PowerFlow(grid.copy(), options)
+    worker.grid.name = 'grid ' + str(i)
+    workers[i] = worker
     pool.start(worker)
+
+print('All cued')
 pool.waitForDone()
+
+# processing the results back
+for i in range(batch_size):
+    print(workers[i].grid.name, ' - done.')

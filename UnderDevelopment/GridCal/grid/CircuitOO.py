@@ -2334,6 +2334,7 @@ class PowerFlow(QRunnable):
         Run a power flow for every circuit
         @return:
         """
+        print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         self.grid.power_flow_results.initialize(n, m)
@@ -2368,7 +2369,7 @@ class PowerFlow(QRunnable):
         m = len(self.grid.branches)
         self.grid.power_flow_results.initialize(n, m)
         i = 1
-        self.progress_signal.emit(0.0)
+        # self.progress_signal.emit(0.0)
         for circuit in self.grid.circuits:
             if self.options.verbose:
                 print('Solving ' + circuit.name)
@@ -2381,15 +2382,15 @@ class PowerFlow(QRunnable):
                                                            circuit.bus_original_idx,
                                                            circuit.branch_original_idx)
 
-            prog = (i / len(self.grid.circuits)) * 100
-            self.progress_signal.emit(prog)
+            # prog = (i / len(self.grid.circuits)) * 100
+            # self.progress_signal.emit(prog)
             i += 1
 
         # check the limits
         sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
 
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
+        # self.progress_signal.emit(0.0)
+        # self.done_signal.emit()
 
         return self.grid.power_flow_results
 
