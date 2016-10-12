@@ -711,8 +711,6 @@ class Branch:
         @param i: index of the branch in the circuit
         @return: Nothing, the inputs are implicitly modified
         """
-        # f = self.bus_from
-        # t = self.bus_to
         tap = self.get_tap()
         Ysh = self.y_shunt / 2
         if abs(self.z_series) > 0:

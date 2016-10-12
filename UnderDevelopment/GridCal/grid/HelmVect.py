@@ -19,7 +19,7 @@ np.set_printoptions(linewidth=320)
 from numpy import zeros, ones, mod, conj, array, r_, linalg, Inf, complex128
 from enum import Enum
 from itertools import product
-from scipy.linalg import solve
+from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
 from scipy.sparse import issparse, csc_matrix as sparse
 
@@ -282,6 +282,13 @@ def epsilon(Sn, n, E):
         AND THE SUMMATION OF DIVERGENT SERIES
 
         by Ernst Joachim Weniger
+    Args:
+        Sn: sum of coefficients
+        n: order
+        E: Coefficients structure copy that is modified in this algorithm
+
+    Returns:
+
     """
     Zero = complex_type(0)
     One = complex_type(1)
@@ -315,20 +322,70 @@ def epsilon(Sn, n, E):
     return estim, E
 
 
+def epsilonV(nbus, Sn, n, E):
+    """
+    Fast recursive Wynn's epsilon algorithm from:
+        NONLINEAR SEQUENCE TRANSFORMATIONS FOR THE ACCELERATION OF CONVERGENCE
+        AND THE SUMMATION OF DIVERGENT SERIES
+
+        by Ernst Joachim Weniger
+    Args:
+        Sn: sum of coefficients (Vector)
+        n: order
+        E: Coefficients structure copy that is modified in this algorithm (Matrix)
+
+    Returns:
+
+    """
+    Zero = zeros(nbus, dtype=complex_type)
+    One = ones(nbus, dtype=complex_type)
+    Tiny = np.finfo(complex_type).min
+    Huge = np.finfo(complex_type).max
+
+    E[n, :] = Sn
+
+    if n == 0:
+        estim = Sn
+    else:
+        AUX2 = Zero
+
+        for j in range(n, 0, -1):  # range from n to 1 (both included)
+            AUX1 = AUX2
+            AUX2 = E[j-1, :]
+            DIFF = E[j, :] - AUX2
+
+            where_tiny = np.where(DIFF <= Tiny)[0]
+            where_zero = np.where(DIFF == Zero)[0]
+
+            if len(where_tiny) > 0:
+                E[j-1, where_tiny] = Huge
+            else:
+                if len(where_zero) > 0:
+                    DIFF[where_zero] = Tiny
+                E[j-1, :] = AUX1 + One / DIFF
+
+        if mod(n, 2) == 0:
+            estim = E[0, :]
+        else:
+            estim = E[1, :]
+
+    return estim, E
+
+
 def pade_approximation(n, an, s=1):
     """
     Computes the n/2 pade approximant of the series an at the approximation
     point s
 
     Arguments:
-        an: coefficient series
+        an: coefficient matrix, (number of coeficients, number of series)
         n:  order of the series
         s: point of approximation
 
     Returns:
         pade approximation at s
     """
-    nn = int(n/2)
+    nn = int(n / 2)
     if mod(nn, 2) == 0:
         nn -= 1
 
@@ -336,34 +393,35 @@ def pade_approximation(n, an, s=1):
     M = nn
 
     an = np.ndarray.flatten(an)
-    rhs = an[L+1:L+M+1]
+    rhs = an[L + 1:L + M + 1]
 
     C = zeros((L, M), dtype=complex_type)
     for i in range(L):
         k = i + 1
-        C[i, :] = an[L-M+k:L+k]
+        C[i, :] = an[L - M + k:L + k]
+
     try:
         b = solve(C, -rhs)  # bn to b1
     except:
-        return 0, zeros(L+1, dtype=complex_type), zeros(L+1, dtype=complex_type)
+        return 0, zeros(L + 1, dtype=complex_type), zeros(L + 1, dtype=complex_type)
     b = r_[1, b[::-1]]  # b0 = 1
 
-    a = zeros(L+1, dtype=complex_type)
+    a = zeros(L + 1, dtype=complex_type)
     a[0] = an[0]
     for i in range(L):
         val = complex_type(0)
         k = i + 1
-        for j in range(k+1):
-            val += an[k-j] * b[j]
-        a[i+1] = val
+        for j in range(k + 1):
+            val += an[k - j] * b[j]
+        a[i + 1] = val
 
     p = complex_type(0)
     q = complex_type(0)
-    for i in range(L+1):
-        p += a[i] * s**i
-        q += b[i] * s**i
+    for i in range(L + 1):
+        p += a[i] * s ** i
+        q += b[i] * s ** i
 
-    return p/q, a, b
+    return p / q, a, b
 
 
 def interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_pv):
@@ -392,7 +450,7 @@ def interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_pv):
     return C, Q
 
 
-def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, eps=1e-3, use_pade=True):
+def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, eps=1e-3, use_pade=False):
     """
     Run the holomorphic embedding power flow
     @param Y: Circuit complete admittance matrix
@@ -515,6 +573,7 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
                     v, _, _ = pade_approximation(n, C[:, k])
                     voltages_vector[k] = v
             else:
+                # pass
                 voltages_vector[k], E_v[:, k] = epsilon(Sn_v[k], n, E_v[:, k])
 
             if np.isnan(voltages_vector[k]):
@@ -522,6 +581,8 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
                 voltages_vector = Vred_last
                 inside_precision = False
                 break
+
+        # voltages_vector, E_v = epsilonV(nbus, Sn_v, n, E_v)
 
         # copy the voltages array to keep the last solution in case we encounter NaN's due to loss of precision
         Vred_last = voltages_vector.copy()

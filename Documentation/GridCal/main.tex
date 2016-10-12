@@ -105,7 +105,7 @@
 \pagestyle{empty} % No headers
 
 \renewcommand\contentsname{Table of content}
-\renewcommand{\bibname}{Bibliography}
+%\renewcommand{\bibname}{Bibliography}
 \tableofcontents% Print the table of contents itself
 
 %\cleardoublepage % Forces the first chapter to start on an odd page so it's on the right
@@ -136,11 +136,277 @@
 \chapterimage{chapterhdr1.jpg} % Chapter heading image
 \chapter{Structure}
 
-\section{title}
+GridCal uses an object oriented approach for all the data and simulation management. However the object orientation is very inefficient when used in numerical computation, that is why there are \verb|compile()| functions that extract the information out of the objects and turn this information into vectors, matrices and DataFrames in order to have efficient numerical computations. I have found this approach to be the best compromise between efficientcy and code escalability and maintainability after having been involved in quite some number-crunching software developments.
 
+The whole idea can be summarized as:
+
+\begin{verbatim}
+Object oriented structures -> intermediate objects holding arrays -> Numerical modules
+\end{verbatim}
+
+
+
+
+\section{Circuit and MultiCircuit}
+
+The concept of circuit should be easy enough to understand. It represents a set of nodes (buses) and branches (lines, transformers or other impedances)
+
+
+The \verb|MultiCircuit| class is the main object in GridCal. It represents a circuit that may contain islands. It is important to understand that a circuit split in two or more islands cannot be simulated as is, because the admittance matrix would be singular. The solution to this is to split the circuit in island-circuits. Therefore \verb|MultiCircuit| identifies the islands and creates individual \verb|Circuit| objects for each of them.
+
+As I said before GridCal uses an object oriented approach for the data management. This allows to group the data in a smart way. In GridCal I have decided to have only two types of object directly declared in a \verb|Circuit| or \verb|MultiCircuit| object. These are the \verb|Bus| and the \verb|Branch|. The branches connect the buses and the buses contain all the other possible devices like loads, generators, batteries, etc. This simplifies enormously the management of element when adding, associating and deleting.
+
+\section{The Bus object}
+
+The Bus object is the container of all the possible devices that can be attached to a bus bar or substation. Such objects can be loads, voltage controlled generators, static generators, batteries, shunt elements, etc.
+
+\section{The branch object}
+
+
+\section{Class diagram}
+
+Here the API class diagram is sketched. All the classes are included but only the most fundamental properties and functions od each class are included to keep the diagram simple.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\linewidth]{ClassDiagram.eps}
+	\caption{Simplified class diagram of GridCal's API}
+	\label{fig:ClassDiagram}
+\end{figure}
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 3
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+\chapter{Models}
+
+
+
+\section{Building the admittance matrices}
+
+This operation occurs in the \verb|Compile()| function of the \verb|Circuit| object. This function compiles many other magnitudes and among them \verb|Ybus|, \verb|Yseries| and \verb|Yshunt|.
+
+\begin{itemize}
+	\item \verb|Ybus|: Complete admittance matrix.
+	
+	It is a sparse matrix of size $n \times n$
+	
+	\item \verb|Yseries|: Admittance matrix of the series elements. It contains no value comming from shunt elements or the shunt parts of the branch model.
+	
+	It is a sparse matrix of size $n \times n$
+	
+	\item \verb|Yshunt|: Admittance vector of the shunt elements and the shunt parts of the branch model. 
+	
+	It is a vector of size $n$
+	
+	\item \verb|Yf|: Admittance matrix of the banches with their \textit{from} bus.
+	
+	It is a sparse matrix of size $m \times n$
+	 
+	\item \verb|Yt|: Admittance matrix of the banches with their \textit{to} bus.
+	
+	It is a sparse matrix of size $m \times n$\newline
+\end{itemize}
+
+Where $n$ is the number of buses and $m$ is the number of branches.
+
+The relation between the admittance matrix and the series and shunt admittance matrices is the following:
+\begin{equation}
+Y_{bus} = Y_{series} + Y_{shunt}
+\end{equation}
+
+The algorithmic logic to build the matrices in pseudo code is the following:
+
+\begin{verbatim}
+n = number of buses in the circuit
+m = number of branches in the circuit
+For i=0 to n:
+   bus_shunt_admittance, bus_current, bus_power, bus_voltage = buses[i].get_YISV()
+   
+   Yshunt[i] = bus_shunt_admittance
+end
+
+For i=0 to m:
+   f = get_bus_inde(branches[i].bus_from)
+   t = get_bus_inde(branches[i].bus_to)
+   
+   // the matrices are modified by the branch object itself
+   branches[i].apply_to(Ybus,Yseries,Yshunt,Yf,Yt,i,f,t)
+end
+	
+\end{verbatim}
+
+\section{The universal branch model}
+
+The following describes the model that is applied to each type of admittance matrix in the \verb|apply_to()| function inside the \verb|Branch| object seen before.
+
+The model implemented to describe the behavior of the transformers and lines is the $\pi$ (pi) model.
+\begin{figure}[h]
+	\centering\includegraphics[width=0.8\linewidth]{pi-trafo.eps}
+	\caption{$\pi$ model of a branch}
+	\label{trafo pi model}
+\end{figure}
+
+To define the $\pi$ branch model we need to specify the following magnitudes:
+
+\begin{itemize}
+	\item $z_{series}$: Magnetizing impedance or simply series impedance. It is given in p.u.
+	\item $y_{shunt}$: Leakage impedance or simply shunt impedance. It is given in p.u.
+	\item $tap\_module$: Module of the tap changer. It is a magnitude around 1.
+	\item $tap\_angle$: Angle of the tap changer. Angle in radians.\newline
+\end{itemize}
+
+
+%tap = self.tap_module * exp(-1j * self.angle)
+
+In order to apply the effect of a branch to the admittance matrices, first we compute the complex tap value.
+$$tap = tap\_module \cdot e^{-j \cdot tap\_angle}$$  
+
+Then we compose the equivalent series and shunt admittance values of the branch. Both values are complex.
+%Ys = 1 / self.z_series
+$$Y_s = \frac{1}{z_{series}}$$
+%Ysh = self.y_shunt / 2
+$$Y_{sh} = \frac{y_{shunt}}{2}$$
+
+\begin{itemize}
+	\item $z_{series}$: Series impedance of the branch composed by the line resistance and its inductance. $z_{series}=r + jl$
+	
+	\item $y_{shunt}$: Shunt admittance of the line composed by the conductance and the susceptance. $y_{shunt}=c+jb$\newline
+\end{itemize}
+
+
+
+The general branch model is represented by a $2 \times 2$ matrix.
+$
+Y_{branch}=\left( \begin{array}{ccc}
+Y_{ff} & Y_{ft} \\
+Y_{tf} & Y_{tt} \end{array} \right)
+$
+
+In this matrix, the elements are the following:
+
+%Yff = Ytt / (tap * conj(tap))
+%Yft = - Ys / conj(tap)
+%Ytf = - Ys / tap
+%Ytt = Ys + Ysh
+
+$$Y_{ff} = \frac{Y_s + Y_{sh}}{tap \cdot conj(tap)}  $$
+$$Y_{ft} = - Y_s / conj(tap)$$
+$$Y_{tf} = - Y_s / tap$$
+$$Y_{tt} = Y_s + Y_{sh}$$
+
+\subsubsection{Ybus}
+
+The branch admittance values are applied to the complete admittance matrix as follows:
+
+%Ybus[f, f] += Yff
+%Ybus[f, t] += Yft
+%Ybus[t, f] += Ytf
+%Ybus[t, t] += Ytt
+$${Y_{bus}}_{f, f} = {Y_{bus}}_{f, f}  + Y_{ff}$$
+$${Y_{bus}}_{f, t} = {Y_{bus}}_{f, t} + Y_{ft}$$
+$${Y_{bus}}_{t, f} = {Y_{bus}}_{t, f} + Y_{tf}$$
+$${Y_{bus}}_{t, t} = {Y_{bus}}_{t, t} + Y_{tt}$$
+
+
+These formulas assume that there might be something already in $Y_{bus}$, therefore the right way to modify these values is to add the own branch values.
+
+
+\subsection{Yshunt}
+%Yff_sh = Ysh
+%Ytt_sh = Yff_sh / (tap * conj(tap))
+%Yshunt[f] += Yff_sh
+%Yshunt[t] += Ytt_sh
+$${Y_{shunt}}_f = {Y_{shunt}}_f  + Y_{sh}$$
+$${Y_{shunt}}_t = {Y_{shunt}}_t  + \frac{Y_{sh}}{tap \cdot conj(tap)}$$
+
+\subsection{Yseries}
+%Yseries[f, f] += Ys / (tap * conj(tap))
+%Yseries[f, t] += Yft
+%Yseries[t, f] += Ytf
+%Yseries[t, t] += Ys
+
+$${Y_{series}}_{f, f} = {Y_{series}}_{f, f}  + \frac{Y_{s}}{tap \cdot conj(tap)}$$
+$${Y_{series}}_{f, t} = {Y_{series}}_{f, t} + Y_{ft}$$
+$${Y_{series}}_{t, f} = {Y_{series}}_{t, f} + Y_{tf}$$
+$${Y_{series}}_{t, t} = {Y_{series}}_{t, t} + Y_{s}$$
+
+\subsection{Yf and Yt}
+%# Yf = csr_matrix((r_[Yff, Yft], (i, r_[f, t])), (nl, nb))
+%# Yt = csr_matrix((r_[Ytf, Ytt], (i, r_[f, t])), (nl, nb))
+
+%Yf[i, f] += Yff  # Ybus[f, f]
+%Yf[i, t] += Yft  # Ybus[f, t]
+$${Y_f}_{i, f} = {Y_f}_{i, f} + Y_{ff}$$
+$${Y_f}_{i, t} = {Y_f}_{i, t} + Y_{ft}$$
+
+%Yt[i, f] += Ytf  # Ybus[t, f]
+%Yt[i, t] += Ytt  # Ybus[t, t]
+$${Y_t}_{i, f} = {Y_t}_{i, f} + Y_{tf}$$
+$${Y_t}_{i, t} = {Y_t}_{i, t} + Y_{tt}$$
+
+
+\section{The transformer definition from the short circuit test values}
+
+The transformers are modeled as $\pi$ branches too. In order to get the series impedance and shunt admittance of the transformer to match the branch model, it is advised to transform the specification sheet values of the device into the desired values. The values to take from the specs sheet are:
+\begin{itemize}
+	\item $S_n$: Nominal power in MVA.
+	\item $U_{hv}$: Voltage at the high-voltage side in kV.
+	\item $U_{lv}$: Voltage at the low-voltage side in kV.
+	\item $U_{sc}$: Short circuit voltage in \%.
+	\item $P_{cu}$: Copper losses in kW.
+	\item $I_0$: No load current in \%.
+	\item $GX_{hv1}$: Reactance contribution to the HV side. Value from 0 to 1.
+	\item $GR_{hv1}$: Resistance contribution to the HV side Value from 0 to 1.\newline
+\end{itemize}
+
+Then, the series and shunt impedances are computed as follows:
+
+Nominal impedance HV (Ohm): $Zn_{hv} = U_{hv}^2 / S_n$ \newline
+
+
+Nominal impedance LV (Ohm): $Zn_{lv} = U_{lv}^2 / S_n$ \newline
+
+
+Short circuit impedance (p.u.): $z_{sc} = U_{sc} / 100$\newline
+
+Short circuit resistance (p.u.): $r_{sc} = \frac{P_{cu} / 1000}{S_n}$\newline
+
+Short circuit reactance (p.u.): $x_{sc} = \sqrt{z_{sc}^2 - r_{sc} ^2}$\newline
+
+
+HV resistance (p.u.): $r_{cu,hv} = r_{sc} \cdot GR_{hv1}$\newline
+
+
+LV resistance (p.u.): $r_{cu,lv} = r_{sc} \cdot (1 - GR_{hv1})$\newline
+
+
+HV shunt reactance (p.u.): $xs_{hv} = x_{sc} \cdot GX_{hv1}$\newline
+
+
+LV shunt reactance (p.u.): $xs_{lv} = x_{sc} \cdot (1 - GX_{hv1})$\newline
+
+Shunt resistance (p.u.): $r_{fe} = \frac{Sn}{P_{fe} / 1000}$\newline
+
+
+Magnetization impedance (p.u.): $z_m = \frac{1}{I_0 / 100}$\newline
+
+Magnetization reactance (p.u.): $x_m = \frac{1}{\sqrt{\frac{1}{z_m^2} - \frac{1}{r_{fe}^2}}}$ \newline
+
+If the content of the square root is negative, set the magnetization impedance to zero.\\
+
+
+The final complex calculated parameters in per unit are:
+
+Magnetizing impedance (or series impedance): $z_{series} = Z_m = r_{fe} +j \cdot x_m$
+
+Leakage impedance (or shunt impedance): $Z_l = r_{sc} + j \cdot x_{sc}$
+
+Shunt admittance: $y_{shunt} = 1 / Z_l$
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 4
 %----------------------------------------------------------------------------------------
 
 \chapterimage{chapterhdr1.jpg} % Chapter heading image

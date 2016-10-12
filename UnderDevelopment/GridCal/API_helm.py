@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from GridCal.grid.CircuitOO import *
+from grid.CircuitOO import *
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
