@@ -29,6 +29,7 @@ from PyQt5.QtCore import *
 from grid.CircuitOO import *
 from gui.main.gui import *
 from matplotlib.colors import LinearSegmentedColormap
+from multiprocessing import cpu_count
 
 from gui.GuiFunctions import *
 
@@ -1012,6 +1013,8 @@ class MainGUI(QMainWindow):
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
+        self.threadpool = QThreadPool()
+        self.threadpool.setMaxThreadCount(cpu_count())
 
         ################################################################################################################
         # Console
@@ -1057,7 +1060,7 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-        fname = '..//GridCal/IEEE_30BUS_profiles.xls'
+        fname = 'IEEE_30BUS_profiles.xls'
         self.circuit.load_file(fname)
         self.create_schematic_from_api(explode_factor=50)
 
@@ -1408,11 +1411,15 @@ class MainGUI(QMainWindow):
         options = self.get_selected_power_flow_options()
         self.power_flow = PowerFlow(self.circuit, options)
 
-        self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-        self.power_flow.done_signal.connect(self.UNLOCK)
-        self.power_flow.done_signal.connect(self.post_power_flow)
+        # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+        # self.power_flow.done_signal.connect(self.UNLOCK)
+        # self.power_flow.done_signal.connect(self.post_power_flow)
 
-        self.power_flow.start()
+        # self.power_flow.start()
+        self.threadpool.start(self.power_flow)
+
+        self.threadpool.waitForDone()
+        self.post_power_flow()
 
     def post_power_flow(self):
         """
@@ -1422,6 +1429,7 @@ class MainGUI(QMainWindow):
         """
         # update the results in the circuit structures
         print('Post power flow')
+        self.UNLOCK()
         print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
         print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
         print('ld:\n', abs(self.circuit.power_flow_results.loading))

@@ -19,13 +19,14 @@ from warnings import warn
 
 import networkx as nx
 import pandas as pd
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, \
     where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj
 from scipy.sparse import csc_matrix as sparse
+from copy import deepcopy
 
 plt.style.use('fivethirtyeight')
 
@@ -1600,6 +1601,23 @@ class MultiCircuit(Circuit):
 
         nx.draw_spring(self.graph, ax=ax)
 
+    def copy(self):
+
+        # unlink the buses graphical objects
+        n = len(self.buses)
+        grpcs = [None] * n
+        for i in range(n):
+            grpcs[i] = self.buses[i].graphic_obj
+            self.buses[i].graphic_obj = None
+
+        cpy = deepcopy(self)
+
+        # restore the graphic objects
+        for i in range(n):
+            self.buses[i].graphic_obj = grpcs[i]
+
+        return cpy
+
 
 class PowerFlowOptions:
 
@@ -1968,17 +1986,14 @@ class PowerFlowResults:
         return abs(wo * sum(self.overloads) + wv1 * sum(self.overvoltage) + wv2 * sum(self.undervoltage))
 
 
-class PowerFlow(QThread):
-
-    progress_signal = pyqtSignal(float)
-    done_signal = pyqtSignal()
+class PowerFlow(QRunnable):
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
         """
-        QThread.__init__(self)
+        QRunnable.__init__(self)
 
         # Grid to run a power flow in
         self.grid = grid
@@ -2323,7 +2338,6 @@ class PowerFlow(QThread):
         m = len(self.grid.branches)
         self.grid.power_flow_results.initialize(n, m)
 
-        self.progress_signal.emit(0.0)
         k = 0
         for circuit in self.grid.circuits:
             if self.options.verbose:
@@ -2334,16 +2348,13 @@ class PowerFlow(QThread):
                                                            circuit.bus_original_idx,
                                                            circuit.branch_original_idx)
 
-            self.progress_signal.emit((k+1) / len(self.grid.circuits))
+            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
         # remember the solution for later
         self.last_V = self.grid.power_flow_results.voltage
 
         # check the limits
         sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
-
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
 
         # return self.grid.power_flow_results
 
