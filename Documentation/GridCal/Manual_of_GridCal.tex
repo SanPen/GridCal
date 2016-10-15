@@ -44,7 +44,8 @@
 \usepackage{verbatim}
 
 % Bibliography
-%\usepackage[style=alphabetic,sorting=nyt,sortcites=true,autopunct=true,babel=hyphen,hyperref=true,abbreviate=false,backref=true,backend=biber]{biblatex}
+%\usepackage[style=alphabetic,sorting=nyt,sortcites=true,autopunct=true,babel=hyphen,hyperref=true,abbreviate=false,backref=true,backend=biber]{ieeetran}
+
 %\addbibresource{bibliography.bib} % BibTeX bibliography file
 %\defbibheading{bibempty}{}
 
@@ -120,9 +121,19 @@
 
 \chapter{Introduction}
 
-\section{Motivation}\index{Motivation}
+GridCal is a research oriented power systems software.  \newline
 
+Research oriented? How? Well, it is a fruit of research. It is designed to be modular. As a researcher I found that the available software (not even talking about commercial options) are hard to expand or adapt to achieve complex simulations. GridCal is designed to allow you to build and reuse modules, which eventually will boost your productivity and the possibilities that are at hand. \newline
 
+I have made other projects (even another open source one: fPotencia in C++). I believe that this project encapsulates my half life of programming experience and the curiosity I have developed for power systems. \newline
+
+So, I do really hope you enjoy it, and if you have comments, suggestions or just want to collaborate, do not hesitate to contact.\newline
+
+\begin{flushright}
+	Cheers, 
+
+Santiago
+\end{flushright}
 
 
 %----------------------------------------------------------------------------------------
@@ -436,6 +447,75 @@ All this sounds very strange, but it works ;)\newline
 
 If you want to get familiar with this concept, you should read about the homotopy concept. In practice the continuation power flow does the same as the HELM algorithm, it takes a known solution and changes the loading factors until a solution for another state is reached.
 
+\subsection{Fundamentals}
+
+The fundamental equation that defines the power flow problem is:
+\begin{equation}
+S = V \times (Y \times V + I)^*
+\end{equation}
+
+Most usefully represented like this:
+
+
+\begin{equation}
+{\textbf{Y} \times \textbf{V}} = \left(\frac{\textbf{S}}{\textbf{V}}\right)^* 
+\label{base_eq}
+\end{equation}
+
+
+The holomorphic embedding is to insert a "travelling" parameter $\alpha$, such that for $\alpha=0$ we have an mathematically exact solution of the problem (but not the solution we're looking for...), and for $\alpha=1$ we have the solution we're looking for. The other thing to do is to represent the variables to be computes as McLaurin series. We'll go step by step.\newline
+
+For $\alpha=0$ we say that $S=0$, in this way the equation \ref{base_eq} becomes linear, and its solution is mathematically exact. But for that to be useful in our case we need to split the admittance matrix $Y$ into $Y_{series}$ and $Y_{shunt}$
+
+\begin{equation}
+\textbf{Y}_{series} \times \textbf{V} = \left(\frac{\textbf{S}}{\textbf{V}}\right)^* - \textbf{Y}_{shunt} \times \textbf{V}
+\label{base_eq_alpha_0}
+\end{equation}
+
+This is what will allow us to find the zero "state" in the holomorphic series calculation. For $\alpha=1$ we say that $S=S$, so we don't know the voltage solution, however we can determine a path to get there:
+
+\begin{equation}
+{\textbf{Y }\times \textbf{V}( \alpha )} = \left(\frac{ \alpha\textbf{S}}{\textbf{V}( \alpha )}\right)^* - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha ) = \frac{ \alpha\textbf{S}^*}{\textbf{V}( \alpha )^*} - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha )
+\label{base_eq_embedded}
+\end{equation}
+
+Wait, what?? did you just made this stuff up??, well so far my reasoning is:
+\begin{itemize}
+	\item The voltage ($V$) is what I have to convert into a series, and the series depend of $\alpha$, so it makes sense to say that $V$ is now $V(\alpha)$.
+	
+	\item Regarding the $\alpha$ that multiplies the $S$, the power ($S$) is what I vary during the \textit{travel} from $\alpha=0$ to $\alpha=1$, so that is why it has to be accompanied by the \textit{traveling} parameter $\alpha.$
+	
+	\item In my opinion the $\alpha$ $\textbf{Y}_{shunt}$ is to provoke the first voltage coefficients to be one.  $\textbf{Y}_{series} \times \textbf{V}[0] = 0$, makes $V[0]=1$, and this is essential for later steps (to be able to use Padè). \newline
+\end{itemize}
+
+The series are expressed as McLaurin equations::
+
+\begin{equation}
+V(\alpha) = \sum_{n}^{\infty} V_n \alpha ^n
+\end{equation}
+
+There's still something to do. The magnitude $\left(\textbf{V}( \alpha )\right)^*$ has to be converted into $\left(\textbf{V}( \alpha^* )\right)^*$. This is done in order to make the function be actually holomorphic. The holomorphicity condition is tested by the Cauchy-Riemann condition, this is $\partial V / \partial \alpha^* = 0$, let's check that:
+
+
+
+\begin{equation}
+\partial \left(\textbf{V}( \alpha )^*\right) / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} V_n^* (\alpha ^n)^*\right) / \partial \alpha^*  = \sum_{n}^{\infty} \alpha ^n V_n^* (\alpha ^{n-1})^*
+\end{equation} 
+Which is not zero, obviously. Now with the proposed change:
+
+\begin{equation}
+\partial \left( \textbf{V}( \alpha^* )\right)^* / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} V_n^* (\alpha ^n)\right) / \partial \alpha^*  = 0
+\end{equation} 
+
+Yay!, now we're mathematically happy, since this stuff has no effect in practice because our $\alpha$ is not going to be a complex parameter, but for sake of being correct the equation is now:
+
+\begin{equation}
+{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \frac{ \alpha\textbf{S}^*}{\textbf{V}^*( \alpha^* )} - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha )
+\label{base_eq_embedded2}
+\end{equation}
+
+
+
 %----------------------------------------------------------------------------------------
 %	CHAPTER 4
 %----------------------------------------------------------------------------------------
@@ -446,8 +526,8 @@ If you want to get familiar with this concept, you should read about the homotop
 % ----------------------------------------------------------------------------------------
 % 	BIBLIOGRAPHY
 % ----------------------------------------------------------------------------------------
-\chapter*{Bibliography}
-\bibliographystyle{ieeetran}
+%\chapter*{Bibliography}
+\bibliographystyle{abbrv}
 \bibliography{bibliography}
 
 \end{document}
