@@ -36,6 +36,7 @@
 \usetikzlibrary{shapes}
 \usetikzlibrary{backgrounds,fit,shapes}
 \usetikzlibrary{positioning}
+\usepackage{relsize}
 
 \newcommand*{\horzbar}{\rule[0.05ex]{2.5ex}{0.5pt}}
 \usepackage{calc}
@@ -465,17 +466,17 @@ Most usefully represented like this:
 
 The holomorphic embedding is to insert a "travelling" parameter $\alpha$, such that for $\alpha=0$ we have an mathematically exact solution of the problem (but not the solution we're looking for...), and for $\alpha=1$ we have the solution we're looking for. The other thing to do is to represent the variables to be computes as McLaurin series. We'll go step by step.\newline
 
-For $\alpha=0$ we say that $S=0$, in this way the equation \ref{base_eq} becomes linear, and its solution is mathematically exact. But for that to be useful in our case we need to split the admittance matrix $Y$ into $Y_{series}$ and $Y_{shunt}$
+For $\alpha=0$ we say that $S=0$, in this way the equation \ref{base_eq} becomes linear, and its solution is mathematically exact. But for that to be useful in our case we need to split the admittance matrix $Y$ into $Y_{series}$ and $Y_{shunt}$. $Y_{shunt}$ is a diagonal matrix, so it can be expressed as a vector instead (no need for matrix-vector product).
 
 \begin{equation}
-\textbf{Y}_{series} \times \textbf{V} = \left(\frac{\textbf{S}}{\textbf{V}}\right)^* - \textbf{Y}_{shunt} \times \textbf{V}
+\textbf{Y}_{series} \times \textbf{V} = \left(\frac{\textbf{S}}{\textbf{V}}\right)^* - \textbf{Y}_{shunt} \textbf{V}
 \label{base_eq_alpha_0}
 \end{equation}
 
 This is what will allow us to find the zero "state" in the holomorphic series calculation. For $\alpha=1$ we say that $S=S$, so we don't know the voltage solution, however we can determine a path to get there:
 
 \begin{equation}
-{\textbf{Y }\times \textbf{V}( \alpha )} = \left(\frac{ \alpha\textbf{S}}{\textbf{V}( \alpha )}\right)^* - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha ) = \frac{ \alpha\textbf{S}^*}{\textbf{V}( \alpha )^*} - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha )
+{\textbf{Y }\times \textbf{V}( \alpha )} = \left(\frac{ \alpha\textbf{S}}{\textbf{V}( \alpha )}\right)^* - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha ) = \frac{ \alpha\textbf{S}^*}{\textbf{V}( \alpha )^*} - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
 \label{base_eq_embedded}
 \end{equation}
 
@@ -504,15 +505,73 @@ There's still something to do. The magnitude $\left(\textbf{V}( \alpha )\right)^
 Which is not zero, obviously. Now with the proposed change:
 
 \begin{equation}
-\partial \left( \textbf{V}( \alpha^* )\right)^* / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} V_n^* (\alpha ^n)\right) / \partial \alpha^*  = 0
+\partial \left( \textbf{V}( \alpha^* )\right)^* / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} \textbf{V}_n^* \alpha ^n \right) / \partial \alpha^*  = 0
 \end{equation} 
 
 Yay!, now we're mathematically happy, since this stuff has no effect in practice because our $\alpha$ is not going to be a complex parameter, but for sake of being correct the equation is now:
 
 \begin{equation}
-{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \frac{ \alpha\textbf{S}^*}{\textbf{V}^*( \alpha^* )} - \alpha \textbf{Y}_{shunt} \times \textbf{V}( \alpha )
+{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \frac{ \alpha\textbf{S}^*}{\textbf{V}^*( \alpha^* )} - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
 \label{base_eq_embedded2}
 \end{equation}
+
+The fact that $\textbf{V}^*( \alpha^* )$ is dividing is problematic. We need to express it as its inverse so it multiplies instead of divide.
+
+\begin{equation} 
+\frac{1}{\textbf{V}( \alpha)} = \textbf{W}( \alpha ) \longrightarrow \textbf{W}( \alpha ) \textbf{V}( \alpha) = 1 \longrightarrow \sum_{n=0}^{\infty}{\textbf{W}_n \alpha^n}  \sum_{n=0}^{\infty}{\textbf{V}_n \alpha^n} = 1
+\end{equation}
+
+Expanding the series and identifying terms of $\alpha$ we obtain the expression to compute the inverse voltage series coefficients:
+
+\begin{equation}
+\textbf{W}_n =
+\left\{
+	\begin{array}{ll}
+		\mathlarger{\frac{1}{\textbf{V}_0}}, \quad n=0\\
+		\mathlarger{\frac{\mathlarger{\sum_{k=0}^{n-1}\textbf{W}_k \textbf{V}_{n-k}}}{\textbf{V}_0}}, \quad n>0
+	\end{array}
+\right.
+\end{equation}
+
+
+Now, the equation \ref{base_eq_embedded2} is:
+
+\begin{equation}
+{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \alpha\textbf{S}^* \textbf{W}( \alpha)^*  - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
+\label{base_eq_embedded3}
+\end{equation}
+
+Substituting the series by their McLaurin expressions:
+
+\begin{equation}
+{\textbf{Y}_{series}\times \sum_{n=0}^{\infty}{\textbf{V}_n \alpha^n}} = \alpha\textbf{S}^* \left(\sum_{n=0}^{\infty}{\textbf{W}_n \alpha^n}\right)^*  - \alpha \textbf{Y}_{shunt} \sum_{n=0}^{\infty}{\textbf{V}_n \alpha^n}
+\label{base_eq_embedded4}
+\end{equation}
+
+Expanding the series an identifying terms of $\alpha$ we obtain the expression for the voltage coefficients:
+
+\begin{equation}
+\textbf{V}_n =
+\left\{
+	\begin{array}{ll}
+		\mathlarger{0}, \quad n=0\\
+		\mathlarger{\textbf{S}^* \textbf{W}^*_{n-1} - Y_{shunt} \textbf{V}_{n-1} }, \quad n>0
+	\end{array}
+\right.
+\end{equation}
+
+This is the HELM fundamental formula derivation for a grid with no voltage controlled nodes (no PV nodes). Once a sufficient number of coefficients are obtained, we still need to use the Padè approximation to get voltage values out of the series.
+
+
+In the previous formulas, the number of the bus has not been explicitly detailed. All the $\textbf{V}$ and the $\textbf{W}$ are matrices of dimension $n \times nbus$ (number of coefficients by number of buses in the grid) This structures are depicted in the figure \ref{fig:CoefficientsStructure}.
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.4\linewidth]{CoefficientsStructure.eps}
+	\caption{Structure of the coefficients}
+	\label{fig:CoefficientsStructure}
+\end{figure}
 
 
 
