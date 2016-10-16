@@ -27,14 +27,6 @@ from scipy.sparse import issparse, csc_matrix as sparse
 complex_type = complex128
 
 
-class NodeType(Enum):
-    PQ = 1,
-    PV = 2,
-    REF = 3,
-    NONE = 4,
-    STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
-
-
 # @jit(cache=True)
 def pre_process(n_bus, Yseries, Vset, pq, pv, vd):
     """
@@ -199,9 +191,12 @@ def calc_W(n, npqpv, pqpv, kw, C, W):
     if n == 0:
         res = ones(npqpv, dtype=complex_type)
     else:
-        res = zeros(npqpv, dtype=complex_type)
-        for l in range(n):
-            res -= W[l, kw] * C[n - l, pqpv]
+        # res = zeros(npqpv, dtype=complex_type)
+        # for l in range(n):
+        #     res -= W[l, kw] * C[n - l, pqpv]
+
+        l = array(range(n))
+        res = -(W[:, kw][l, :] * C[:, pqpv][n - l, :]).sum(axis=0)
 
     res /= conj(C[0, pqpv])
 
@@ -210,7 +205,7 @@ def calc_W(n, npqpv, pqpv, kw, C, W):
 
 def RHS_PV(n, npv, pv, Ysh, S, C, Q, W, map_pv, map_w):
     """
-
+    Right hand side for the PV nodes
     @param n: Order of the coefficients
     @param npv:
     @param pv: array of PV indices
@@ -230,9 +225,16 @@ def RHS_PV(n, npv, pv, Ysh, S, C, Q, W, map_pv, map_w):
     else:
         kk = map_pv[pv]
         kw = map_w[pv]
-        val = zeros(npv, dtype=complex_type)
-        for l in range(1, n):   # this includes the n-1
-            val += Q[l, kk] * W[n-l, kw].conjugate()
+
+        # val = zeros(npv, dtype=complex_type)
+        # for l in range(1, n):   # this includes the n-1
+        #     val += Q[l, kk] * W[n-l, kw].conjugate()
+
+        if n > 1:
+            l = array(range(1, n))
+            val = (Q[:, kk][l, :] * W[:, kw][n-l, :].conjugate()).sum(axis=0)
+        else:
+            val = zeros(npv, dtype=complex_type)
 
         n1 = n-1
         rhs = S[pv].real * W[n1, kw].conjugate() - (1j * val) - Ysh[pv] * C[n1, pv]
@@ -268,9 +270,12 @@ def calc_R(n, npv, pv, C):
     @return: Convolution coefficient of order n for the bus k
     """
 
-    result = zeros(npv, dtype=complex_type)
-    for l in range(n+1):
-        result += C[l, pv] * C[n - l, pv].conjugate()
+    # result = zeros(npv, dtype=complex_type)
+    # for l in range(n+1):
+    #     result += C[l, pv] * C[n - l, pv].conjugate()
+
+    l = array(range(n+1))
+    result = (C[:, pv][l, :] * C[:, pv][n - l, :].conjugate()).sum(axis=0)
 
     return result
 

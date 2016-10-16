@@ -29,7 +29,7 @@ grid.compile()
 
 # print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())
 
-options = PowerFlowOptions(SolverType.HELM, verbose=False, robust=False)
+options = PowerFlowOptions(SolverType.HELM, verbose=False, robust=False, tolerance=1e-9)
 power_flow = PowerFlow(grid, options)
 power_flow.run()
 
