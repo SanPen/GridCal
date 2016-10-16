@@ -86,17 +86,26 @@ class PandasModel(QtCore.QAbstractTableModel):
         self.data[:, col] = self.data[row, col]
 
 
-def get_list_model(lst):
+def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
     """
     list_model = QStandardItemModel()
     i = 0
     if lst is not None:
-        for val in lst:
-            # for the list model
-            item = QStandardItem(val)
-            item.setEditable(False)
-            list_model.appendRow(item)
+        if not checks:
+            for val in lst:
+                # for the list model
+                item = QStandardItem(val)
+                item.setEditable(False)
+                list_model.appendRow(item)
+        else:
+            for val in lst:
+                # for the list model
+                item = QStandardItem(val)
+                item.setEditable(False)
+                item.setCheckable(True)
+                item.setCheckState(QtCore.Qt.Checked)
+                list_model.appendRow(item)
 
     return list_model

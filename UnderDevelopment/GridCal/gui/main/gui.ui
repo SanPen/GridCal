@@ -1259,119 +1259,87 @@ last solution</string>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
            </property>
-           <layout class="QGridLayout" name="gridLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
             <property name="margin">
-             <number>1</number>
+             <number>0</number>
             </property>
-            <item row="0" column="0">
-             <widget class="QTabWidget" name="tabWidget_5">
-              <property name="tabPosition">
-               <enum>QTabWidget::South</enum>
+            <item>
+             <widget class="QSplitter" name="splitter_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
-              <property name="currentIndex">
-               <number>0</number>
-              </property>
-              <widget class="QWidget" name="tab_13">
-               <attribute name="title">
-                <string>Power flow</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_19">
-                <item>
-                 <widget class="QLabel" name="label_15">
-                  <property name="text">
-                   <string>Time select</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="results_time_selection_comboBox"/>
-                </item>
+              <widget class="QFrame" name="frame_8">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <property name="margin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QLabel" name="label_16">
                   <property name="text">
-                   <string>Elements</string>
+                   <string>Studies with results</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTreeView" name="pf_results_treeView"/>
+                 <widget class="QListView" name="result_listView"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
+                   <string>Types of results available in the study</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListView" name="result_type_listView"/>
                 </item>
                </layout>
               </widget>
-              <widget class="QWidget" name="tab_14">
-               <attribute name="title">
-                <string>Stability</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_11">
-                <item>
-                 <widget class="QLabel" name="label_56">
+              <widget class="QFrame" name="frame_9">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item row="1" column="0" colspan="3">
+                 <widget class="QListView" name="result_element_selection_listView"/>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QPushButton" name="plot_pushButton">
                   <property name="text">
-                   <string>Nodes</string>
+                   <string>Plot</string>
                   </property>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QTreeView" name="sta_results_treeView"/>
-                </item>
-               </layout>
-              </widget>
-              <widget class="QWidget" name="tab_15">
-               <attribute name="title">
-                <string>Time series</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_20">
-                <item>
-                 <widget class="QLabel" name="label_57">
+                <item row="2" column="1">
+                 <widget class="QPushButton" name="select_all_pushButton">
                   <property name="text">
-                   <string>Elements</string>
+                   <string>All</string>
                   </property>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QTreeView" name="ts_results_treeView"/>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="legend_ts_checkBox">
+                <item row="2" column="0">
+                 <widget class="QPushButton" name="select_none_pushButton">
                   <property name="text">
-                   <string>Legend</string>
+                   <string>None</string>
                   </property>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QCheckBox" name="box_whiskers_ts_checkBox">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_15">
                   <property name="text">
-                   <string>Box and whiskers view</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-              <widget class="QWidget" name="tab_16">
-               <attribute name="title">
-                <string>Stochastic</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_21">
-                <item>
-                 <widget class="QLabel" name="label_58">
-                  <property name="text">
-                   <string>Elements</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QTreeView" name="sto_results_treeView"/>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="legend_sto_checkBox">
-                  <property name="text">
-                   <string>Legend</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="box_whiskers_sto_checkBox">
-                  <property name="text">
-                   <string>Box and whiskers view</string>
+                   <string>Devices</string>
                   </property>
                  </widget>
                 </item>

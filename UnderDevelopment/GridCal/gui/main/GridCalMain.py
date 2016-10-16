@@ -1013,6 +1013,8 @@ class MainGUI(QMainWindow):
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
+
+        self.available_results_dict = None
         self.threadpool = QThreadPool()
         self.threadpool.setMaxThreadCount(cpu_count())
 
@@ -1056,6 +1058,10 @@ class MainGUI(QMainWindow):
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
 
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
+
+        # list clicks
+        self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
+        self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         ################################################################################################################
         # Other actions
@@ -1434,9 +1440,13 @@ class MainGUI(QMainWindow):
         print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
         print('ld:\n', abs(self.circuit.power_flow_results.loading))
         self.color_based_of_pf(self.circuit.power_flow_results.voltage, self.circuit.power_flow_results.loading)
+        self.update_available_results()
 
     def run_voltage_stability(self):
         print('run_voltage_stability')
+
+    def post_voltage_stability(self):
+        self.update_available_results()
 
     def run_time_series(self):
         """
@@ -1484,6 +1494,7 @@ class MainGUI(QMainWindow):
             voltage = self.circuit.time_series_results.voltage.max(axis=1)
             loading = self.circuit.time_series_results.loading.max(axis=1)
             self.color_based_of_pf(voltage, loading)
+            self.update_available_results()
         else:
             print('No results for the time series simulation.')
 
@@ -1518,6 +1529,7 @@ class MainGUI(QMainWindow):
         print('Ibr:\n', abs(self.monte_carlo.results.current))
         print('ld:\n', abs(self.monte_carlo.results.loading))
         self.color_based_of_pf(self.monte_carlo.results.voltage, self.monte_carlo.results.loading)
+        self.update_available_results()
 
     def set_cancel_state(self):
         """
@@ -1535,6 +1547,71 @@ class MainGUI(QMainWindow):
 
         if self.voltage_stability is not None:
             self.voltage_stability.cancel()
+
+    def update_available_results(self):
+        """
+
+        Returns:
+
+        """
+        lst = list()
+        self.available_results_dict = dict()
+        if self.power_flow is not None:
+            lst.append("Power Flow")
+            self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
+
+        if self.voltage_stability is not None:
+            lst.append("Voltage Stability")
+            self.available_results_dict["Power Flow"] = self.voltage_stability.results.available_results
+
+        if self.time_series is not None:
+            lst.append("Time Series")
+            self.available_results_dict["Time Series"] = self.time_series.results.available_results
+
+        if self.monte_carlo is not None:
+            lst.append("Monte Carlo")
+            self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
+
+        mdl = get_list_model(lst)
+        self.ui.result_listView.setModel(mdl)
+
+    def update_available_results_in_the_study(self):
+        """
+
+        Returns:
+
+        """
+
+        elm = self.ui.result_listView.selectedIndexes()[0].data()
+        lst = self.available_results_dict[elm]
+        mdl = get_list_model(lst)
+        self.ui.result_type_listView.setModel(mdl)
+
+    def result_type_click(self):
+        print()
+        study = self.ui.result_listView.selectedIndexes()[0].data()
+        study_type = self.ui.result_type_listView.selectedIndexes()[0].data()
+
+        if 'Bus' in study_type:
+            names = self.circuit.bus_names
+        elif 'Branch' in study_type:
+            names = self.circuit.branch_names
+
+        mdl = get_list_model(names, checks=True)
+        self.ui.result_element_selection_listView.setModel(mdl)
+
+        self.ui.resultsPlot.clear()
+
+        if study == 'Power Flow':
+            self.power_flow.results.plot(type=study_type, ax=self.ui.resultsPlot.get_axis(), indices=None, names=names)
+        elif study == 'Time Series':
+            pass
+        elif study == 'Voltage Stability':
+            pass
+        elif study == 'Monte Carlo':
+            pass
+
+        self.ui.resultsPlot.redraw()
 
 
 def run():

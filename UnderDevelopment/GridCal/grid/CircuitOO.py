@@ -1309,6 +1309,10 @@ class MultiCircuit(Circuit):
 
         self.has_time_series = False
 
+        self.bus_names = None
+
+        self.branch_names = None
+
     def load_file(self, filename):
         """
         Load GridCal compatible file
@@ -1473,13 +1477,17 @@ class MultiCircuit(Circuit):
 
         self.has_time_series = True
 
+        self.bus_names = zeros(n, dtype=object)
+        self.branch_names = zeros(m, dtype=object)
+
         # create bus dictionary
         for i in range(n):
             self.bus_dictionary[self.buses[i]] = i
+            self.bus_names[i] = self.buses[i].name
 
         # Compile the branches
         for i in range(m):
-
+            self.branch_names[i] = self.branches[i].name
             if self.branches[i].is_enabled:
                 if self.branches[i].bus_from.is_enabled and self.branches[i].bus_to.is_enabled:
                     f = self.bus_dictionary[self.branches[i].bus_from]
@@ -1885,6 +1893,8 @@ class PowerFlowResults:
 
         self.buses_useful_for_storage = None
 
+        self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses']
+
     def copy(self):
         """
         Return a copy of this
@@ -1985,6 +1995,56 @@ class PowerFlowResults:
 
         return abs(wo * sum(self.overloads) + wv1 * sum(self.overvoltage) + wv2 * sum(self.undervoltage))
 
+    def plot(self, type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        Args:
+            type:
+            indices:
+            names:
+
+        Returns:
+
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        labels = names[indices]
+        ylabel = ''
+        if type == 'Bus voltage':
+            y = self.voltage[indices]
+            ylabel = 'Bus voltage (p.u.)'
+
+        elif type == 'Branch power':
+            y = self.Sbranch[indices]
+            ylabel = 'Branch power (MVA)'
+
+        elif type == 'Branch current':
+            y = self.Ibranch[indices]
+            ylabel = 'Branch current (kA)'
+
+        elif type == 'Branch_loading':
+            y = self.loading[indices] * 100
+            ylabel = 'Branch loading (%)'
+
+        elif type == 'Branch losses':
+            y = self.losses[indices]
+            ylabel = 'Branch losses (MVA)'
+
+        else:
+            pass
+
+        # ax.set_xticklabels(names)
+        # ax.plot(indices, y)
+        # ax.set_xlabel('Element')
+        # ax.set_ylabel(ylabel)
+        df = pd.DataFrame(data=y, index=labels, columns=['V'])
+        df.plot(ax=ax, kind='bar')
 
 class PowerFlow(QRunnable):
 
@@ -2000,6 +2060,8 @@ class PowerFlow(QRunnable):
 
         # Options to use
         self.options = options
+
+        self.results = None
 
         self.last_V = None
 
@@ -2357,7 +2419,7 @@ class PowerFlow(QRunnable):
         # check the limits
         sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
 
-        # return self.grid.power_flow_results
+        self.results = self.grid.power_flow_results
 
     def run_at(self, t, mc=False):
         """
@@ -2573,6 +2635,9 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.buses_useful_for_storage = None
 
+            self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading',
+                                      'Branch losses']
+
     def set_at(self, t, results: PowerFlowResults, b_idx, br_idx):
         """
         Set the results at the step t
@@ -2759,6 +2824,8 @@ class TimeSeries(QThread):
 
         self.options = options
 
+        self.results = None
+
         self.__cancel__ = False
 
     def run(self):
@@ -2803,6 +2870,8 @@ class TimeSeries(QThread):
                                                                 c.time_series_input.time_array, c.name)
             else:
                 print('There are no profiles')
+
+        self.results = self.grid.time_series_results
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -2882,6 +2951,8 @@ class VoltageCollapseResults:
 
         self.converged = converged
 
+        self.available_results = ['Bus voltage']
+
     def plot(self):
         plot(self.lambdas, abs(array(self.voltages)))
 
@@ -2946,6 +3017,7 @@ class VoltageCollapse(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+
 
 class MonteCarloInput:
 
@@ -3013,7 +3085,6 @@ class MonteCarlo(QThread):
         self.results = None
 
         self.__cancel__ = False
-
 
     def run(self):
         """
@@ -3126,6 +3197,8 @@ class MonteCarloResults:
         self.voltage = None
         self.current = None
         self.loading = None
+
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch_loading']
 
     def append_batch(self, mcres):
         """
