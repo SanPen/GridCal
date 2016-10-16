@@ -17,7 +17,6 @@
 import numpy as np
 np.set_printoptions(linewidth=320)
 from numpy import zeros, ones, mod, conj, array, r_, linalg, Inf, complex128
-from enum import Enum
 from itertools import product
 from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
@@ -34,7 +33,6 @@ def pre_process(n_bus, Yseries, Vset, pq, pv, vd):
     @param n_bus: Number of buses of the circuit
     @param Yseries: Circuit admittance matrix of the series elements
     @param Vset: Vector of voltages of those nodes where the voltage is controlled (AKA Slack and PV buses)
-    @param S: Vector of power injections at all the nodes
     @param pq: list of PQ node indices
     @param pv: list of PV node indices
     @param vd: list of Slack node indices
@@ -93,6 +91,9 @@ def RHS(n, nbus, npq, npv, nvd, Ysh, Ysys_pv, S, Vset, Vset_abs2, C, W, Q, pq, p
     factorization of Ysys
     @param n: Order of the coefficients
     @param nbus: Number of buses (not counting the slack buses)
+    @param npq: number of PQ nodes
+    @param npv: number of PV nodes
+    @param nvd: number of slack nodes
     @param Ysh: Vector of the shunt admittance matrix elements
     @param Ysys_pv: System matrix of the PV nodes: Needed to compute the real voltages vector
     @param S: Vector of power injections (nbus elements)
@@ -255,16 +256,15 @@ def calc_Vre(n, npv, pv, C, Vset_abs2):
     if n == 0:
         return ones(npv, dtype=complex_type)
     elif n == 1:
-        return 0.5 * (Vset_abs2[pv] - 1) - 0.5 * calc_R(n, npv, pv, C)
+        return 0.5 * (Vset_abs2[pv] - 1) - 0.5 * calc_R(n, pv, C)
     else:
         return zeros(npv, dtype=complex_type)
 
 
-def calc_R(n, npv, pv, C):
+def calc_R(n, pv, C):
     """
     Voltage convolution coefficients for the PV nodes
     @param n: Order of the coefficients
-    @param npv: number of PV nodes
     @param pv: array of PV indices
     @param C: Voltage coefficients (Ncoeff x nbus elements)
     @return: Convolution coefficient of order n for the bus k
