@@ -657,8 +657,6 @@ class Bus:
 
         bus.is_enabled = self.is_enabled
 
-        bus.selected_as_blackout_instigator = self.selected_as_blackout_instigator
-
         # List of load s attached to this bus
         for elm in self.loads:
             bus.loads.append(elm.copy())
@@ -694,8 +692,6 @@ class Bus:
         bus.y = self.y
 
         # self.graphic_obj = None
-
-        bus.F = self.F
 
         return bus
 
@@ -1481,7 +1477,6 @@ class MultiCircuit(Circuit):
         Multi Circuit Constructor
         """
         Circuit.__init__(self)
-        print()
 
         # List of circuits contained within this circuit
         self.circuits = list()

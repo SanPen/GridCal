@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from grid.CircuitOO import *
+from multiprocessing import Pool
 
 grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
@@ -42,23 +43,34 @@ print('\terr:', grid.power_flow_results.error)
 print('\tConv:', grid.power_flow_results.converged)
 
 
-from PyQt5 import QtCore
-pool = QtCore.QThreadPool.globalInstance()
-pool.setMaxThreadCount(4)
+def caller0(i):  # function to create a copy of the grid and a power flow associated
+    grd = grid.copy()
+    grd.name = 'grid ' + str(i)
+    grd.compile()
+    return PowerFlow(grd, options)
 
-batch_size = 1000
 
-workers = [None] * batch_size
+def caller1(worker):  # function to run the instance
+    worker.run()
+    return worker.grid
 
-for i in range(batch_size):
-    worker = PowerFlow(grid.copy(), options)
-    worker.grid.name = 'grid ' + str(i)
-    workers[i] = worker
-    pool.start(worker)
 
-print('All cued')
-pool.waitForDone()
+def run():
+    pool = Pool()
+    batch_size = 1000
 
-# processing the results back
-for i in range(batch_size):
-    print(workers[i].grid.name, ' - done.')
+    # create copies of the grid to run asynchronously
+    print('cloning...')
+    workers = pool.map(caller0, range(batch_size))
+
+    # run asynchronous power flows on the created copies
+    print('running...')
+    grids = pool.map(caller1, workers)
+
+    # display the collected results
+    for grid_item in grids:
+        print('\n\n' + grid_item.name)
+        print('\t|V|:', abs(grid_item.power_flow_results.voltage))
+
+if __name__ == '__main__':
+    run()
