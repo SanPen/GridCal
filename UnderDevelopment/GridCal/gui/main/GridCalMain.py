@@ -441,6 +441,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Update size:
         self.changeSize(self.w, self.h)
 
+
     def changeSize(self, w, h):
         """
         Resize block function
@@ -1270,7 +1271,8 @@ class MainGUI(QMainWindow):
         vmin = 0
         vmax = 1.2
         vrng = vmax - vmin
-        vnorm = (abs(voltage) - vmin) / vrng
+        vabs = abs(voltage)
+        vnorm = (vabs - vmin) / vrng
         # print(vnorm)
         i = 0
         for bus in self.circuit.buses:
@@ -1279,6 +1281,7 @@ class MainGUI(QMainWindow):
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
                 bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
+                bus.graphic_obj.setToolTip('V=' + str(vabs[i]))
             i += 1
 
         # color branches

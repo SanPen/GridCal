@@ -766,8 +766,6 @@ class Branch:
                    mttf=self.mttf,
                    mttr=self.mttr)
 
-        b.F = self.F
-
         return b
 
     def get_tap(self):
@@ -2438,6 +2436,7 @@ class PowerFlow(QRunnable):
                                                           pv=circuit.power_flow_input.pv,
                                                           vd=circuit.power_flow_input.ref,
                                                           eps=self.options.tolerance)
+                        Vhelm = V.copy()
 
                         # Retry using the HELM solution
                         if not converged:
@@ -2449,6 +2448,8 @@ class PowerFlow(QRunnable):
                                                                    tol=self.options.tolerance,
                                                                    max_it=self.options.max_iter,
                                                                    robust=self.options.robust)
+                            if not converged:
+                                V = Vhelm
 
                 # Check controls
                 Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
