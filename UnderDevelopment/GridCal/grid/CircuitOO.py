@@ -636,6 +636,69 @@ class Bus:
         if show_fig:
             plt.show()
 
+    def copy(self):
+        """
+
+        :return:
+        """
+        bus = Bus()
+        bus.name = self.name
+
+        # Nominal voltage (kV)
+        bus.Vnom = self.Vnom
+
+        bus.vmin = self.Vmin
+
+        bus.Vmax = self.Vmax
+
+        bus.Qmin_sum = self.Qmin_sum
+
+        bus.Qmax_sum = self.Qmax_sum
+
+        bus.is_enabled = self.is_enabled
+
+        bus.selected_as_blackout_instigator = self.selected_as_blackout_instigator
+
+        # List of load s attached to this bus
+        for elm in self.loads:
+            bus.loads.append(elm.copy())
+
+        # List of Controlled generators attached to this bus
+        for elm in self.controlled_generators:
+            bus.controlled_generators.append(elm.copy())
+
+        # List of shunt s attached to this bus
+        for elm in self.shunts:
+            bus.shunts.append(elm.copy())
+
+        # List of batteries attached to this bus
+        for elm in self.batteries:
+            bus.batteries.append(elm.copy())
+
+        # List of static generators attached tot this bus
+        for g in self.static_generators:
+            bus.static_generators.append(g.copy())
+
+        # Bus type
+        bus.type = self.type
+
+        # Flag to determine if the bus is a slack bus or not
+        bus.is_slack = self.is_slack
+
+        # if true, the presence of storage devices turn the bus into a Reference bus in practice
+        # So that P +jQ are computed
+        bus.dispatch_storage = self.dispatch_storage
+
+        bus.x = self.x
+
+        bus.y = self.y
+
+        # self.graphic_obj = None
+
+        bus.F = self.F
+
+        return bus
+
 
 class Branch:
 
@@ -678,20 +741,34 @@ class Branch:
 
         self.mttr = mttr
 
-    def copy(self):
+    def copy(self, bus_dict=None):
         """
         Returns a copy of the branch
         @return: A new  with the same content as this
         """
-        return Branch(bus_from=self.bus_from,
-                      bus_to=self.bus_to,
-                      name=self.name,
-                      zserie=self.z_series,
-                      yshunt=self.y_shunt,
-                      rate=self.rate,
-                      tap=self.tap_module,
-                      shift_angle=self.angle,
-                      active=self.is_enabled)
+
+        if bus_dict is None:
+            f = self.bus_from
+            t = self.bus_to
+        else:
+            f = bus_dict[self.bus_from]
+            t = bus_dict[self.bus_to]
+
+        b = Branch(bus_from=f,
+                   bus_to=t,
+                   name=self.name,
+                   zserie=self.z_series,
+                   yshunt=self.y_shunt,
+                   rate=self.rate,
+                   tap=self.tap_module,
+                   shift_angle=self.angle,
+                   active=self.is_enabled,
+                   mttf=self.mttf,
+                   mttr=self.mttr)
+
+        b.F = self.F
+
+        return b
 
     def get_tap(self):
         """
@@ -919,6 +996,34 @@ class Load:
         # power profile for this load
         self.Sprof = power_prof
 
+    def copy(self):
+
+        load = Load()
+
+        load.name = self.name
+
+        # Impedance (Ohm)
+        # Z * I = V -> Ohm * kA = kV
+        load.Z = self.Z
+
+        # Current (kA)
+        load.I = self.I
+
+        # Power (MVA)
+        # MVA = kV * kA
+        load.S = self.S
+
+        # impedances profile for this load
+        load.Zprof = self.Zprof
+
+        # Current profiles for this load
+        load.Iprof = self.Iprof
+
+        # power profile for this load
+        load.Sprof = self.Sprof
+
+        return load
+
 
 class StaticGenerator:
 
@@ -936,6 +1041,10 @@ class StaticGenerator:
 
         # power profile for this load
         self.Sprof = power_prof
+
+    def copy(self):
+
+        return StaticGenerator(name=self.name, power=self.S, power_prof=self.Sprof)
 
 
 class Battery:
@@ -982,6 +1091,39 @@ class Battery:
         # Nominal energy MWh
         self.Enom = Enom
 
+    def copy(self):
+
+        batt = Battery()
+
+        batt.name = self.name
+
+        # Power (MVA)
+        # MVA = kV * kA
+        batt.P = self.P
+
+        # power profile for this load
+        batt.Pprof = self.Pprof
+
+        # Voltage module set point (p.u.)
+        batt.Vset = self.Vset
+
+        # voltage set profile for this load
+        batt.Vset_prof = self.Vset_prof
+
+        # minimum reactive power in per unit
+        batt.Qmin = self.Qmin
+
+        # Maximum reactive power in per unit
+        batt.Qmax = self.Qmax
+
+        # Nominal power MVA
+        batt.Snom = self.Snom
+
+        # Nominal energy MWh
+        batt.Enom = self.Enom
+
+        return batt
+
 
 class ControlledGenerator:
 
@@ -1022,6 +1164,36 @@ class ControlledGenerator:
         # Nominal power
         self.Snom = Snom
 
+    def copy(self):
+
+        gen = ControlledGenerator()
+
+        gen.name = self.name
+
+        # Power (MVA)
+        # MVA = kV * kA
+        gen.P = self.P
+
+        # power profile for this load
+        gen.Pprof = self.Pprof
+
+        # Voltage module set point (p.u.)
+        gen.Vset = self.Vset
+
+        # voltage set profile for this load
+        gen.Vset_prof = self.Vset_prof
+
+        # minimum reactive power in per unit
+        gen.Qmin = self.Qmin
+
+        # Maximum reactive power in per unit
+        gen.Qmax = self.Qmax
+
+        # Nominal power
+        gen.Snom = self.Snom
+
+        return gen
+
 
 class Shunt:
 
@@ -1038,6 +1210,21 @@ class Shunt:
 
         # admittance profile
         self.Yprof = admittance_prof
+
+    def copy(self):
+
+        shu = Shunt()
+
+        shu.name = self.name
+
+        # Impedance (Ohm)
+        # Z * I = V -> Ohm * kA = kV
+        shu.Y = self.Y
+
+        # admittance profile
+        shu.Yprof = self.Yprof
+
+        return shu
 
 
 class Circuit:
@@ -1610,21 +1797,74 @@ class MultiCircuit(Circuit):
         nx.draw_spring(self.graph, ax=ax)
 
     def copy(self):
+        """
+        Returns a deep (true) copy of this circuit
+        @return:
+        """
 
-        # unlink the buses graphical objects
-        n = len(self.buses)
-        grpcs = [None] * n
-        for i in range(n):
-            grpcs[i] = self.buses[i].graphic_obj
-            self.buses[i].graphic_obj = None
+        cpy = MultiCircuit()
 
-        cpy = deepcopy(self)
+        cpy.name = self.name
 
-        # restore the graphic objects
-        for i in range(n):
-            self.buses[i].graphic_obj = grpcs[i]
+        bus_dict = dict()
+        for bus in self.buses:
+            bus_cpy = bus.copy()
+            bus_dict[bus] = bus_cpy
+            cpy.add_bus(bus_cpy)
+
+        for branch in self.branches:
+            cpy.add_branch(branch.copy(bus_dict))
 
         return cpy
+
+    def dispatch(self):
+        """
+        Dispatch either load or generation using a simple equalised share rule of the shedding to be done
+        @return: Nothing
+        """
+        if self.power_flow_input is not None:
+
+            # get the total power balance
+            balance = abs(self.power_flow_input.Sbus.sum())
+
+            if balance > 0:  # more generation than load, dispatch generation
+                Gmax = 0
+                Lt = 0
+                for bus in self.buses:
+                    for load in bus.loads:
+                        Lt += abs(load.S)
+                    for gen in bus.controlled_generators:
+                        Gmax += abs(gen.Snom)
+
+                # reassign load
+                factor = Lt / Gmax
+                print('Decreasing generation by ', factor * 100, '%')
+                for bus in self.buses:
+                    for gen in bus.controlled_generators:
+                        gen.P *= factor
+
+            elif balance < 0:  # more load than generation, dispatch load
+
+                Gmax = 0
+                Lt = 0
+                for bus in self.buses:
+                    for load in bus.loads:
+                        Lt += abs(load.S)
+                    for gen in bus.controlled_generators:
+                        Gmax += abs(gen.P + 1j * gen.Qmax)
+
+                # reassign load
+                factor = Gmax / Lt
+                print('Decreasing load by ', factor * 100, '%')
+                for bus in self.buses:
+                    for load in bus.loads:
+                        load.S *= factor
+
+            else:  # nothing to do
+                pass
+
+        else:
+            warn('The grid must be compiled before dispatching it')
 
 
 class PowerFlowOptions:
@@ -2046,6 +2286,7 @@ class PowerFlowResults:
         df = pd.DataFrame(data=y, index=labels, columns=['V'])
         df.plot(ax=ax, kind='bar')
 
+
 class PowerFlow(QRunnable):
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
@@ -2184,6 +2425,30 @@ class PowerFlow(QRunnable):
                                                            tol=self.options.tolerance,
                                                            max_it=self.options.max_iter,
                                                            robust=self.options.robust)
+
+                    if not converged:
+                        # Try with HELM
+                        V, converged, normF, Scalc = helm(Y=circuit.power_flow_input.Ybus,
+                                                          Ys=circuit.power_flow_input.Yseries,
+                                                          Ysh=circuit.power_flow_input.Yshunt,
+                                                          max_coefficient_count=30,
+                                                          S=circuit.power_flow_input.Sbus,
+                                                          voltage_set_points=circuit.power_flow_input.Vbus,
+                                                          pq=circuit.power_flow_input.pq,
+                                                          pv=circuit.power_flow_input.pv,
+                                                          vd=circuit.power_flow_input.ref,
+                                                          eps=self.options.tolerance)
+
+                        # Retry using the HELM solution
+                        if not converged:
+                            V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                   Sbus=Sbus,
+                                                                   V0=V,
+                                                                   pv=circuit.power_flow_input.pv,
+                                                                   pq=circuit.power_flow_input.pq,
+                                                                   tol=self.options.tolerance,
+                                                                   max_it=self.options.max_iter,
+                                                                   robust=self.options.robust)
 
                 # Check controls
                 Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
