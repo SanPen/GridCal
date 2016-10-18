@@ -441,7 +441,6 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Update size:
         self.changeSize(self.w, self.h)
 
-
     def changeSize(self, w, h):
         """
         Resize block function
@@ -1281,7 +1280,7 @@ class MainGUI(QMainWindow):
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
                 bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
-                bus.graphic_obj.setToolTip('V=' + str(vabs[i]))
+                bus.graphic_obj.setToolTip(bus.name + '\n' + 'V=' + str(vabs[i]))
             i += 1
 
         # color branches
@@ -1300,6 +1299,7 @@ class MainGUI(QMainWindow):
                 style = Qt.DashLine
                 color = Qt.gray
 
+            branch.graphic_obj.setToolTip(branch.name + '\n' + 'loading=' + str(lnorm[i]))
             branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
             i += 1
 
