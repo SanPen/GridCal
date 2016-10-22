@@ -383,7 +383,7 @@ def pade_approximation(n, an, s=1):
     point s
 
     Arguments:
-        an: coefficient matrix, (number of coeficients, number of series)
+        an: coefficient matrix, (number of coefficients, number of series)
         n:  order of the series
         s: point of approximation
 
@@ -409,6 +409,7 @@ def pade_approximation(n, an, s=1):
         b = solve(C, -rhs)  # bn to b1
     except:
         return 0, zeros(L + 1, dtype=complex_type), zeros(L + 1, dtype=complex_type)
+
     b = r_[1, b[::-1]]  # b0 = 1
 
     a = zeros(L + 1, dtype=complex_type)

@@ -422,6 +422,53 @@ Shunt admittance: $y_{shunt} = 1 / Z_l$
 
 \section{Newton-Raphson-Iwamoto}
 
+The Newton-Raphson method is the standard power flow method tough at schools. GridCal implements a slight but important modification of this method that turns it into a more robust, industry-standard algorithm. The Newton Raphson method is the first order Taylor approximation of the power flow equation. The method implemented in GridCal is the second order approximation, let's see how.
+
+The expression to update the voltage solution in the Newton-Raphson algorithm is the following:
+\begin{equation}
+V_{i+1} = V_i + J^{-1}(S_0 - S_{calc})
+\end{equation}
+
+Where:
+\begin{itemize}
+	\item $V_i$: Voltage vector at the iteration $i$  (current voltage) 
+	\item $V_{i+1}$: Voltage vector at the iteration $i+1$  (new voltage)
+	\item $J$: Jacobian matrix.
+	\item $S_0$: Specified power vector.
+	\item $S_{calc}$: Calculated power vector using $V_i$.
+\end{itemize}
+
+The version implemented in GridCal is the following:
+
+\begin{equation}
+V_{i+1} = V_i + \mu J^{-1}(S_0 - S_{calc})
+\end{equation}
+
+Where $\mu$ is the Iwamoto acceleration parameter. In 1982 S.Iwamoto and Y.Tamura present a method \cite{iwamoto1981load} where the Jacobian matrix $J$ is only computed at first, and an iteration control parameter $\mu$ is computed on every iteration. In GridCal I compute $J$ and $\mu$ on every iteration getting a more robust method on the expense of a greater computational effort.
+
+To compute the parameter $\mu$ we must do the following:
+
+\begin{theorem}[Computation of $\mu$]
+$$dx = J^{-1}(S_0 - S_{calc})$$
+$$a = S_0 - S_{calc}$$
+$$b = J \times dx$$
+$$c = \frac{1}{2} dx \cdot (J' \times dx)$$
+
+$$g_0 = -a \cdot b$$
+$$g_1 = b \cdot b + 2  a \cdot c$$
+$$g_2 = -3  b \cdot c$$
+$$g_3 = 2  c \cdot c$$
+
+$$G(x) = g_0 + g_1x + g_2x^2 + g_3x^3$$
+
+$\mu = solve(G(x), 1)$
+\end{theorem}
+
+
+There will be three solutions to the polynomial $G(x)$. Only the last solution will be real, and therefor it is the only valid value for $\mu$.
+The polynomial can be solved numerically using $1$ as the seed.
+
+The matrix $J'$ is the Jacobian matrix computed using the voltage derivative (or voltage increment $dV= V_{i} - V_{i-1}$).  $J' = Jacobian(Y, dV)$
 
 \newpage
 \section{Holomorphic Embedding (ASU)}
@@ -452,7 +499,7 @@ If you want to get familiar with this concept, you should read about the homotop
 
 The fundamental equation that defines the power flow problem is:
 \begin{equation}
-S = V \times (Y \times V + I)^*
+S = V \times (Y \times V)^*
 \end{equation}
 
 Most usefully represented like this:
@@ -493,11 +540,12 @@ The series are expressed as McLaurin equations::
 
 \begin{equation}
 V(\alpha) = \sum_{n}^{\infty} V_n \alpha ^n
+\label{eq:McLaurinV}
 \end{equation}
 
+\begin{theorem}[Holomorphicity check]
+
 There's still something to do. The magnitude $\left(\textbf{V}( \alpha )\right)^*$ has to be converted into $\left(\textbf{V}( \alpha^* )\right)^*$. This is done in order to make the function be actually holomorphic. The holomorphicity condition is tested by the Cauchy-Riemann condition, this is $\partial V / \partial \alpha^* = 0$, let's check that:
-
-
 
 \begin{equation}
 \partial \left(\textbf{V}( \alpha )^*\right) / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} V_n^* (\alpha ^n)^*\right) / \partial \alpha^*  = \sum_{n}^{\infty} \alpha ^n V_n^* (\alpha ^{n-1})^*
@@ -514,6 +562,9 @@ Yay!, now we're mathematically happy, since this stuff has no effect in practice
 {\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \frac{ \alpha\textbf{S}^*}{\textbf{V}^*( \alpha^* )} - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
 \label{base_eq_embedded2}
 \end{equation}
+
+\end{theorem}
+
 
 The fact that $\textbf{V}^*( \alpha^* )$ is dividing is problematic. We need to express it as its inverse so it multiplies instead of divide.
 
@@ -573,7 +624,65 @@ In the previous formulas, the number of the bus has not been explicitly detailed
 	\label{fig:CoefficientsStructure}
 \end{figure}
 
+\subsection{Padè approximation}
 
+The equation \ref{eq:McLaurinV} provides us an expression to obtain the voltage out of the coefficients, knowing that $\alpha$ should be $1$ to get the final voltage results. So, why do we need any further operation?, and what is this Padè thing?
+
+Well, it is true that the equation \ref{eq:McLaurinV} provides an approximation of the voltage by means of a series (this is similar to a Taylor approximation), but in practice, the approximation might provide a wrong value for a given number of coefficients. The Padè approximation accelerates the convergence of any given series, so that you get a more accurate result with less coefficients. This means that for the same series of voltage coefficients, using the equation \ref{eq:McLaurinV} could give a completely wrong result, whereas by applying Padè you could obtain a fairly accurate result.
+
+The Padè approximation is a rational approximation of a function (the voltage series in our case). The approximation is valid over a small domain of the function, in our case the domain is $\alpha=[0,1]$. The method requires the function to be continuous and differentiable for $\alpha=0$. Hence the Cauchy-Riemann condition (So, yes our function meets this condition).
+
+GridCal implements two algorithms that perform the Padè approximation; The Padè canonical algorithm, and Wynn's Padè approximation.
+
+\subsubsection{Padè approximation algorithm}
+
+The canonical Padè algorithm for our problem is described by:
+
+\begin{equation}
+Voltage\_value\_approximation = \frac{P_N(\alpha)}{Q_M(\alpha)} \quad \forall \quad 0 \leq \alpha \leq 1
+\label{eq:pade_apprx}
+\end{equation}
+
+Here $N=M=n/2$, where $n$ is the number of available voltage coefficients, which has to be an even number to be exactly divisible by $2$.
+
+\begin{equation}
+P_N(\alpha) = p_0 + p_1\alpha + p_2\alpha^2 + ... + p_N\alpha^N
+\end{equation}
+
+\begin{equation}
+Q_M(\alpha) = 1 + q_1\alpha + q_2\alpha^2 + ... + q_M\alpha^M
+\end{equation}
+
+It turns out that if we make the first term of $Q_M(\alpha)$ be $q_0=1$, the function to be approximated is given by the McLaurin expression (What a happy coincidence!)
+
+The problem now boils down to find the $q_i$ and $p_i$ coefficients by solving two systems of equations. The first one to find $q_i$ which does not depend on $p_i$, and the second one to get $p_i$ which does depend on $q_i$.
+
+First system:
+
+\begin{equation}
+\begin{matrix}
+q_M V_{N-M+1} + q_{M-1}V_{N-M+2}+...+q_1V_N = 0\\
+q_M V_{N-M+2} + q_{M-1}V_{N-M+3}+...+q_1V_{N+1} = 0\\
+...\\
+q_M V_{N} + q_{M-1}V_{N+1}+...+q_1V_{N+M+1} + V_{N+M} = 0\\
+\end{matrix}
+\end{equation}
+
+Second System:
+\begin{equation}
+\begin{matrix}
+V_0 - p_0=0\\
+q_1V_0 + V_1  p_1=0\\
+q_2V_0 + q_1V_1+V_2-p_2\\
+q_3V_0 + q_2V_1 + q_1V_2 + V_3 - p_3 = 0\\
+...\\
+q_MV_{N-M} + q_{M-1}V_{N-M+1} + ... + +V_N - p_N=0
+\end{matrix}
+\end{equation}
+
+Once the coefficients are there, it is only a matter of evaluating the equation \ref{eq:pade_apprx} for $\alpha=1$.
+
+\subsubsection{Wynn's Padè approximation algorithm}
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 4

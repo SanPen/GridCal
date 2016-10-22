@@ -57,7 +57,7 @@ def caller1(worker):  # function to run the instance
 
 def run():
     pool = Pool()
-    batch_size = 1000
+    batch_size = 10000
 
     # create copies of the grid to run asynchronously
     print('cloning...')

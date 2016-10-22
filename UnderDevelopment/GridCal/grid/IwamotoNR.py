@@ -82,16 +82,16 @@ def dSbus_dV(Ybus, V):
     return dS_dVm, dS_dVa
 
 
-def mu(Ybus, J, F, dV, dx, pvpq, pq):
+def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
     Args:
         Ybus: Admittance matrix
         J: Jacobian matrix
-        F: mismatch vector
+        incS: mismatch vector
         dV: voltage increment (in complex form)
-        dx: solution vector as calculated dx = solve(J, F)
+        dx: solution vector as calculated dx = solve(J, incS)
         pvpq: array of the pq and pv indices
         pq: array of the pq indices
 
@@ -111,7 +111,7 @@ def mu(Ybus, J, F, dV, dx, pvpq, pq):
     J2 = vstack([hstack([J11, J12]),
                  hstack([J21, J22])], format="csr")
 
-    a = F
+    a = incS
     b = J * dx
     c = 0.5 * dx * J2 * dx
 
