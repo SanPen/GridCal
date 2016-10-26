@@ -1481,7 +1481,7 @@ class MultiCircuit(Circuit):
         # List of circuits contained within this circuit
         self.circuits = list()
 
-        self.power_flow_results = PowerFlowResults()
+        # self.power_flow_results = PowerFlowResults()
 
         self.bus_dictionary = dict()
 

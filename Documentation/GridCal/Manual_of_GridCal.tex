@@ -164,11 +164,189 @@ The \verb|MultiCircuit| class is the main object in GridCal. It represents a cir
 
 As I said before GridCal uses an object oriented approach for the data management. This allows to group the data in a smart way. In GridCal I have decided to have only two types of object directly declared in a \verb|Circuit| or \verb|MultiCircuit| object. These are the \verb|Bus| and the \verb|Branch|. The branches connect the buses and the buses contain all the other possible devices like loads, generators, batteries, etc. This simplifies enormously the management of element when adding, associating and deleting.
 
-\section{The Bus object}
+\subsection{Circuit}
+
+\begin{itemize}
+	\item $Ibase$: Base current to compute the per unit current values (kA)
+	\item $Sbase$: Base power to compute the per unit power values (MVA)
+	\item $branch\_original\_idx$: Array that keeps the index of the branches in the parent MultiCircuit object.
+	\item $branches$: List of Branch objects.
+	\item $bus\_original\_idx$: Array that keeps the index of the buses in the parent MultiCircuit object.
+	\item $buses$: List of Bus objects.
+	\item $graph$: Graph object from the \verb|networkx| package.
+	\item $mc\_time\_series$
+	\item $monte\_carlo\_input$
+	\item $name$: Name of the circuit.
+	\item $power\_flow\_input$
+	\item $power\_flow\_results$
+	\item $time\_series\_input$
+	\item $time\_series\_results$
+\end{itemize}
+
+
+\subsection{MultiCircuit (inherits Circuit)}
+
+Since the MultiCircuit inherits the Circuit object, it means that it has by default all the properties of the Circuit plus the ones that are below.
+
+\begin{itemize}
+	\item $branch\_dictionary$
+	\item $branch\_names$: Array with the name of the branch objects all together.
+	\item $bus\_dictionary$
+	\item $bus\_names$: Array with the name of the bus objects all together.
+	\item $circuits$: List of the Circuit objects. Each Circuit represents an island.
+	\item $has\_time\_series$: Are there time series available? (True/False)
+\end{itemize}
+
+
+\section{Bus object}
 
 The Bus object is the container of all the possible devices that can be attached to a bus bar or substation. Such objects can be loads, voltage controlled generators, static generators, batteries, shunt elements, etc.
 
-\section{The branch object}
+\begin{itemize}
+	\item $Qmax\_sum$: Maximum reactive power of this bus (inferred from the devices).
+	\item $Qmin\_sum$: Minimum reactive power of this bus (inferred from the devices).
+	\item $Vmax$: Maximum voltage of this bus (p.u.)
+	\item $Vmin$: Minimum voltage of this bus (p.u.)
+	\item $Vnom$: Nominal voltage of the bus (kV)
+	\item $batteries$: List of Battery objects.
+	\item $controlled\_generators$: List of ControlledGenerator objects.
+	\item $dispatch\_storage$: Shall this bus dispatch its storage devices?  (True / False)
+	\item $graphic\_object$: Qt graphic object associated to this bus.
+	\item $is\_enabled$: Is this bus enabled for calculation? (True / False)
+	\item $is\_slack$: Is this bus a slack bus? (True / False)
+	\item $loads$: List of Load objects.
+	\item $name$: Name of the element.
+	\item $shunts$: List of Shunt objects.
+	\item $static\_generators$: List of StaticGenerator objects.
+	\item $type$: Type of the bus.
+	\item $x$: x coordinate of the bus for representation.
+	\item $y$: y coordinate of the bus for representation.
+\end{itemize}
+
+
+\subsection{Load object}
+
+The load object implements the so-called ZIP model, in which the load can be represented by a combination of power (P), current(I), and impedance (Z).
+
+\begin{itemize}
+	\item $I$: Current (complex, in kA)
+	\item $Iprof$: Pandas DataFrame with the current profile (complex, in kA)
+	\item $S$: Power (complex in MVA)
+	\item $Sprof$: Pandas DataFrame with the power profile (complex, in MVA)
+	\item $Z$: Impedance (complex, in Ohm)
+	\item $Zprof$: Pandas DataFrame with the impedance profile (complex, in Ohm)
+	\item $name$: Name of the load.
+\end{itemize}
+
+The sign convention is: Positive to act as a load, negative to act as a generator.
+
+\subsection{StaticGenerator object}
+
+\begin{itemize}
+	\item $S$
+	\item $Sprof$
+	\item $name$
+\end{itemize}
+
+
+
+
+\subsection{Battery object}
+
+\begin{itemize}
+	\item $Enom$
+	\item $P$
+	\item $Pprof$
+	\item $Qmax$
+	\item $Qmin$
+	\item $Snom$
+	\item $Vset$
+	\item $Vset\_prof$
+	\item $name$
+\end{itemize}
+
+
+
+\subsection{ControlledGenerator object}
+
+\begin{itemize}
+	\item $P$
+	\item $Pprof$
+	\item $Qmax$
+	\item $Qmin$
+	\item $Snom$
+	\item $Vset$
+	\item $Vset\_prof$
+	\item $name$
+\end{itemize}
+
+
+
+\subsection{Shunt object}
+
+\begin{itemize}
+	\item $Y$
+	\item $Yprof$
+	\item $name$
+\end{itemize}
+
+
+
+\section{Branch object}
+
+
+\begin{itemize}
+	\item $angle$
+	\item $bus_from$
+	\item $is\_enabled$
+	\item $mttf$
+	\item $mttr$
+	\item $name$
+	\item $rate$
+	\item $tap\_module$
+	\item $y\_shunt$
+	\item $z\_series$
+\end{itemize}
+
+
+
+\section{Line object (Inherits Branch)}
+
+\begin{itemize}
+	\item 
+	\item 
+	\item 
+	\item 
+	\item 
+\end{itemize}
+
+
+\section{Transformer object (Inherits Branch)}
+
+\begin{itemize}
+	\item $z\_series$
+	\item $z\_shunt$
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+\section{element}
+
+\begin{itemize}
+	\item 
+	\item 
+	\item 
+	\item 
+	\item 
+\end{itemize}
 
 
 \section{Class diagram}
@@ -193,7 +371,7 @@ Here the API class diagram is sketched. All the classes are included but only th
 
 \section{Building the admittance matrices}
 
-This operation occurs in the \verb|Compile()| function of the \verb|Circuit| object. This function compiles many other magnitudes and among them \verb|Ybus|, \verb|Yseries| and \verb|Yshunt|.
+This operation occurs in the \verb|Compile()| function of the \verb|Circuit| object. This function compiles many other magnitudes and among them, the following matrices:
 
 \begin{itemize}
 	\item \verb|Ybus|: Complete admittance matrix.
@@ -426,56 +604,57 @@ The Newton-Raphson method is the standard power flow method tough at schools. Gr
 
 The expression to update the voltage solution in the Newton-Raphson algorithm is the following:
 \begin{equation}
-V_{i+1} = V_i + J^{-1}(S_0 - S_{calc})
+\textbf{V}_{i+1} = \textbf{V}_i + \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
 \end{equation}
 
 Where:
 \begin{itemize}
-	\item $V_i$: Voltage vector at the iteration $i$  (current voltage) 
-	\item $V_{i+1}$: Voltage vector at the iteration $i+1$  (new voltage)
-	\item $J$: Jacobian matrix.
-	\item $S_0$: Specified power vector.
-	\item $S_{calc}$: Calculated power vector using $V_i$.
+	\item $\textbf{V}_i$: Voltage vector at the iteration $i$  (current voltage) 
+	\item $\textbf{V}_{i+1}$: Voltage vector at the iteration $i+1$  (new voltage)
+	\item $\textbf{J}$: Jacobian matrix.
+	\item $\textbf{S}_0$: Specified power vector.
+	\item $\textbf{S}_{calc}$: Calculated power vector using $V_i$.
 \end{itemize}
 
 The version implemented in GridCal is the following:
 
 \begin{equation}
-V_{i+1} = V_i + \mu J^{-1}(S_0 - S_{calc})
+\textbf{V}_{i+1} = \textbf{V}_i + \mu \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
 \end{equation}
 
-Where $\mu$ is the Iwamoto acceleration parameter. In 1982 S.Iwamoto and Y.Tamura present a method \cite{iwamoto1981load} where the Jacobian matrix $J$ is only computed at first, and an iteration control parameter $\mu$ is computed on every iteration. In GridCal I compute $J$ and $\mu$ on every iteration getting a more robust method on the expense of a greater computational effort.
+Here $\mu$ is the Iwamoto optimal step size parameter. In 1982 S.Iwamoto and Y.Tamura present a method \cite{iwamoto1981load} where the Jacobian matrix $J$ is only computed at the beginning, and the iteration control parameter $\mu$ is computed on every iteration. In GridCal I compute $J$ and $\mu$ on every iteration getting a more robust method on the expense of a greater computational effort.
 
 To compute the parameter $\mu$ we must do the following:
 
 \begin{theorem}[Computation of $\mu$]
-$$dx = J^{-1}(S_0 - S_{calc})$$
-$$a = S_0 - S_{calc}$$
-$$b = J \times dx$$
-$$c = \frac{1}{2} dx \cdot (J' \times dx)$$
+$$\textbf{J'} = Jacobian(\textbf{Y}, \textbf{dV})$$
+$$\textbf{dx} = \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})$$
+$$\textbf{a} = \textbf{S}_0 - \textbf{S}_{calc}$$
+$$\textbf{b} = \textbf{J} \times \textbf{dx}$$
+$$\textbf{c} = \frac{1}{2} \textbf{dx} \cdot (\textbf{J'} \times \textbf{dx})$$
 
-$$g_0 = -a \cdot b$$
-$$g_1 = b \cdot b + 2  a \cdot c$$
-$$g_2 = -3  b \cdot c$$
-$$g_3 = 2  c \cdot c$$
+$$g_0 = -\textbf{a} \cdot \textbf{b}$$
+$$g_1 = \textbf{b} \cdot \textbf{b} + 2  \textbf{a} \cdot \textbf{c}$$
+$$g_2 = -3  \textbf{b} \cdot \textbf{c}$$
+$$g_3 = 2  \textbf{c} \cdot \textbf{c}$$
 
 $$G(x) = g_0 + g_1x + g_2x^2 + g_3x^3$$
 
-$\mu = solve(G(x), 1)$
+$$\mu = solve(G(x), x_0=1)$$
 \end{theorem}
 
 
-There will be three solutions to the polynomial $G(x)$. Only the last solution will be real, and therefor it is the only valid value for $\mu$.
+There will be three solutions to the polynomial $G(x)$. Only the last solution will be real, and therefore it is the only valid value for $\mu$.
 The polynomial can be solved numerically using $1$ as the seed.
 
-The matrix $J'$ is the Jacobian matrix computed using the voltage derivative (or voltage increment $dV= V_{i} - V_{i-1}$).  $J' = Jacobian(Y, dV)$
+The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment $\textbf{dV}= \textbf{V}_{i} - \textbf{V}_{i-1}$.  
 
 \newpage
 \section{Holomorphic Embedding (ASU)}
 
 First introduced by Antonio Trias in 2012 \cite{TriasHELM}, promises to be a non-divergent power flow method. Trias originally developed a version with no voltage controlled nodes (PV), in which the convergence properties are excellent (With this software try to solve any grid without PV nodes to check this affirmation). 
 
-The version programmed in the file \verb|HelmVect.py| has been adapted from the master thesis of Muthu Kumar Subramanian at the Arizona State University \cite{subramanian2014application}. This version includes a formulation of the voltage controlled nodes. My experience indicates that the introduction of the PV control deteriorates the convergence properties of the holomorphic embedding method. However, in many cases, it is the best approximation to a solution. especially when Newton-Raphson does not provide one.
+The version programmed in the file \verb|HelmVect.py| has been adapted from the master thesis of Muthu Kumar Subramanian at the Arizona State University (ASU) \cite{subramanian2014application}. This version includes a formulation of the voltage controlled nodes. My experience indicates that the introduction of the PV control deteriorates the convergence properties of the holomorphic embedding method. However, in many cases, it is the best approximation to a solution. especially when Newton-Raphson does not provide one.
 
 The \verb|HelmVect.py|  file contains a vectorized version of the algorithm. This means that the execution in python is much faster than a previous version that uses loops.
 
@@ -626,11 +805,11 @@ In the previous formulas, the number of the bus has not been explicitly detailed
 
 \subsection{Padè approximation}
 
-The equation \ref{eq:McLaurinV} provides us an expression to obtain the voltage out of the coefficients, knowing that $\alpha$ should be $1$ to get the final voltage results. So, why do we need any further operation?, and what is this Padè thing?
+The equation \ref{eq:McLaurinV} provides us an expression to obtain the voltage from the coefficients, knowing that $\alpha$ should be $1$ to get the final voltage results. So, why do we need any further operation?, and what is this Padè thing?
 
 Well, it is true that the equation \ref{eq:McLaurinV} provides an approximation of the voltage by means of a series (this is similar to a Taylor approximation), but in practice, the approximation might provide a wrong value for a given number of coefficients. The Padè approximation accelerates the convergence of any given series, so that you get a more accurate result with less coefficients. This means that for the same series of voltage coefficients, using the equation \ref{eq:McLaurinV} could give a completely wrong result, whereas by applying Padè you could obtain a fairly accurate result.
 
-The Padè approximation is a rational approximation of a function (the voltage series in our case). The approximation is valid over a small domain of the function, in our case the domain is $\alpha=[0,1]$. The method requires the function to be continuous and differentiable for $\alpha=0$. Hence the Cauchy-Riemann condition (So, yes our function meets this condition).
+The Padè approximation is a rational approximation of a function (the voltage series in our case). The approximation is valid over a small domain of the function, in our case the domain is $\alpha=[0,1]$. The method requires the function to be continuous and differentiable for $\alpha=0$. Hence the Cauchy-Riemann condition (yes, our function meets this condition, we tested it before).
 
 GridCal implements two algorithms that perform the Padè approximation; The Padè canonical algorithm, and Wynn's Padè approximation.
 
@@ -639,7 +818,7 @@ GridCal implements two algorithms that perform the Padè approximation; The Pad�
 The canonical Padè algorithm for our problem is described by:
 
 \begin{equation}
-Voltage\_value\_approximation = \frac{P_N(\alpha)}{Q_M(\alpha)} \quad \forall \quad 0 \leq \alpha \leq 1
+Voltage\_value\_approximation = \frac{P_N(\alpha)}{Q_M(\alpha)} \quad \forall \alpha \in [0,1]
 \label{eq:pade_apprx}
 \end{equation}
 
@@ -655,9 +834,9 @@ Q_M(\alpha) = 1 + q_1\alpha + q_2\alpha^2 + ... + q_M\alpha^M
 
 It turns out that if we make the first term of $Q_M(\alpha)$ be $q_0=1$, the function to be approximated is given by the McLaurin expression (What a happy coincidence!)
 
-The problem now boils down to find the $q_i$ and $p_i$ coefficients by solving two systems of equations. The first one to find $q_i$ which does not depend on $p_i$, and the second one to get $p_i$ which does depend on $q_i$.
+The problem now boils down to find the $q_i$ and $p_i$ coefficients. This is done by solving two systems of equations. The first one to find $q_i$ which does not depend on $p_i$, and the second one to get $p_i$ which does depend on $q_i$.
 
-First system:
+First system: The only unknowns are the $q_i$.
 
 \begin{equation}
 \begin{matrix}
@@ -668,21 +847,37 @@ q_M V_{N} + q_{M-1}V_{N+1}+...+q_1V_{N+M+1} + V_{N+M} = 0\\
 \end{matrix}
 \end{equation}
 
-Second System:
+Second System: The only unknowns are the $p_i$.
 \begin{equation}
 \begin{matrix}
 V_0 - p_0=0\\
 q_1V_0 + V_1  p_1=0\\
-q_2V_0 + q_1V_1+V_2-p_2\\
+q_2V_0 + q_1V_1+V_2-p_2=0\\
 q_3V_0 + q_2V_1 + q_1V_2 + V_3 - p_3 = 0\\
 ...\\
 q_MV_{N-M} + q_{M-1}V_{N-M+1} + ... + +V_N - p_N=0
 \end{matrix}
 \end{equation}
 
-Once the coefficients are there, it is only a matter of evaluating the equation \ref{eq:pade_apprx} for $\alpha=1$.
+Once the coefficients are there, you would have defined completely the polynomials $P_N(\alpha)$ and $Q_M(\alpha)$, and it is only a matter of evaluating the equation \ref{eq:pade_apprx} for $\alpha=1$.\newline
+
+
+This process is done for every column of coefficients $\textbf{V}=\{V_0, V_1,V_2,V_3, ...,V_n\}$ of the structure depicted in the figure \ref{fig:CoefficientsStructure}, obtaining the voltage value for every bus.
 
 \subsubsection{Wynn's Padè approximation algorithm}
+
+Wynn published a paper in 1969 where he proposed a simple calculation method to obtain the Padè approximation. This method is based on a table. Weniger in 1989 publishes his thesis where a faster version of Wynn's algorithm is provided in Fortran code. 
+
+That very Fortran piece of code has been translated into Python and included in GridCal.
+
+One of the advantages of this method over the canonical Padè approximation implementation is that it can be used for every iteration. In the beginning I thought it would be faster but it turns out that it is not faster since the amount of computation increases with the number of coefficients, whereas with the canonical implementation the order of the matrices does not grow dramatically and it is executed the half of the times.
+
+On top of that my experience shows that the canonical implementation provides a more consistent convergence.
+
+Anyway, both implementations are there to be used in the code.
+
+
+\subsection{PV nodes formulation}
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 4
