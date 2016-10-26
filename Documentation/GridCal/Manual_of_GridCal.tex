@@ -243,9 +243,9 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 \subsection{StaticGenerator object}
 
 \begin{itemize}
-	\item $S$
-	\item $Sprof$
-	\item $name$
+	\item $S$: Power (complex in MVA)
+	\item $Sprof$ Pandas DataFrame with the power profile (complex, in MVA)
+	\item $name$: Name of the StaticGenerator.
 \end{itemize}
 
 
@@ -254,15 +254,15 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 \subsection{Battery object}
 
 \begin{itemize}
-	\item $Enom$
-	\item $P$
-	\item $Pprof$
-	\item $Qmax$
-	\item $Qmin$
-	\item $Snom$
-	\item $Vset$
-	\item $Vset\_prof$
-	\item $name$
+	\item $Enom$: Nominal energy capacity (MWh)
+	\item $P$: Active power being dispatched (MW)
+	\item $Pprof$: Pandas DataFrame with the active power profile (real, in MW)
+	\item $Qmax$: reactive power upper limit (p.u.)
+	\item $Qmin$: reactive power lower limit (p.u.)
+	\item $Snom$: Nominal power (MVA)
+	\item $Vset$: Voltage set point (p.u.)
+	\item $Vset\_prof$ Pandas DataFrame with the voltage set point profile (p.u.)
+	\item $name$: Name of the battery.
 \end{itemize}
 
 
@@ -270,14 +270,14 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 \subsection{ControlledGenerator object}
 
 \begin{itemize}
-	\item $P$
-	\item $Pprof$
-	\item $Qmax$
-	\item $Qmin$
-	\item $Snom$
-	\item $Vset$
-	\item $Vset\_prof$
-	\item $name$
+	\item $P$: Active power being dispatched (MW)
+	\item $Pprof$: Pandas DataFrame with the active power profile (real, in MW)
+	\item $Qmax$: reactive power upper limit (p.u.)
+	\item $Qmin$: reactive power lower limit (p.u.)
+	\item $Snom$: Nominal power (MVA)
+	\item $Vset$: Voltage set point (p.u.)
+	\item $Vset\_prof$ Pandas DataFrame with the voltage set point profile (p.u.)
+	\item $name$: Name of the ControlledGenerator.
 \end{itemize}
 
 
@@ -285,9 +285,9 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 \subsection{Shunt object}
 
 \begin{itemize}
-	\item $Y$
-	\item $Yprof$
-	\item $name$
+	\item $Y$: Admittance of the shunt object (in p.u.)
+	\item $Yprof$: Pandas DataFrame with the admittance profile (p.u.)
+	\item $name$: Name of the shunt object.
 \end{itemize}
 
 
@@ -296,43 +296,34 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 
 
 \begin{itemize}
-	\item $angle$
-	\item $bus_from$
-	\item $is\_enabled$
-	\item $mttf$
-	\item $mttr$
-	\item $name$
-	\item $rate$
-	\item $tap\_module$
-	\item $y\_shunt$
-	\item $z\_series$
+	\item $angle$: Tap angle in radians.
+	\item $bus_from$: Bus object to which the branch is connected at the "from" end.
+	\item $bus_to$: Bus object to which the branch is connected at the "to" end.
+	\item $is\_enabled$: Is this branch enabled for calculation?
+	\item $mttf$: Mean time to failure (h)
+	\item $mttr$: Mean time to repair (h)
+	\item $name$: Name of the branch
+	\item $rate$: Power rating (MVA)
+	\item $tap\_module$: tap changer module (around 1)
+	\item $y\_shunt$: Total shunt admittance.
+	\item $z\_series$: Total series impedance.
 \end{itemize}
 
 
 
-\section{Line object (Inherits Branch)}
+\section{TransformerType object}
 
 \begin{itemize}
-	\item 
-	\item 
-	\item 
-	\item 
-	\item 
+	\item $HV\_nominal\_voltage$: High voltage side nominal voltage (kV)
+	\item $LV\_nominal\_voltage$: Low voltage side nominal voltage (kV)
+	\item $Nominal\_power$: Transformer nominal power (MVA)
+	\item $Copper\_losses$: Copper losses (kW)
+	\item $Iron\_losses$: Iron Losses (kW)
+	\item $No\_load\_current$: No load current (\%)
+	\item $Short\_circuit\_voltage$: Short circuit voltage (\%)
+	\item $GR\_hv1$:
+	\item $GX\_hv1$:
 \end{itemize}
-
-
-\section{Transformer object (Inherits Branch)}
-
-\begin{itemize}
-	\item $z\_series$
-	\item $z\_shunt$
-\end{itemize}
-
-
-
-
-
-
 
 
 

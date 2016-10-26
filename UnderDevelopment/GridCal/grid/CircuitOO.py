@@ -821,15 +821,6 @@ class Branch:
         return f, t
 
 
-class Line(Branch):
-
-    def __init__(self, bus_from: Bus, bus_to: Bus, name='Line'):
-        """
-        Line model constructor
-        """
-        Branch.__init__(self, bus_from, bus_to, name)
-
-
 class TransformerType:
 
     def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
@@ -932,26 +923,6 @@ class TransformerType:
         magnetizing_impedance = rfe + 1j * xm
 
         return leakage_impedance, magnetizing_impedance
-
-
-class Transformer(Branch):
-
-    def __init__(self, bus_from: Bus, bus_to: Bus, typ: TransformerType = None, name='Transformer'):
-        """
-        Transformer model constructor
-        """
-        Branch.__init__(self, bus_from, bus_to, name)
-
-        if typ is not None:
-            self.apply_type(typ)
-
-    def apply_type(self, typ: TransformerType):
-        """
-        Apply transformer type
-        @param typ: Transformer type
-        @return: Nothing
-        """
-        self.z_series, self.z_shunt = typ.get_impedances()
 
 
 class Load:
