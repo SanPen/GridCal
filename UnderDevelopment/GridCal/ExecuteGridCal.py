@@ -15,4 +15,8 @@
 from gui.main.GridCalMain import run
 
 if __name__ == "__main__":
+    print("GridCal  Copyright (C) 2016 Santiago Peñate Vera\n" +
+          "This program comes with ABSOLUTELY NO WARRANTY.\n" +
+          "This is free software, and you are welcome to redistribute it\n" +
+          "under certain conditions;\nSee the license file for more details.")
     run()
