@@ -1,6 +1,6 @@
 __author__ = 'Santiago Penate Vera'
 """
-This class is the handler of the main GUI of the ETF.
+This class is the handler of the main gui of the ETF.
 """
 
 import sys

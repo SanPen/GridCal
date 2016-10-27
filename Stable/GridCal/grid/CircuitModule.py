@@ -15,9 +15,11 @@ from numpy import argsort, arange, concatenate, finfo, array, zeros, c_, ndim, a
 from scipy.io import loadmat, savemat
 from scipy.sparse import issparse, vstack, hstack
 
-from GridCal.grid import parse_matpower_file
-from GridCal.grid import run_userfcn
-from Stable.grid.ImportParsers.DGS_Parser import read_DGS
+from grid.ImportParsers.matpower_parser import parse_matpower_file
+# from grid import run_userfcn
+from grid.ImportParsers.DGS_Parser import read_DGS
+
+from grid.MonteCarlo import *
 
 # from typing import TypeVar
 
@@ -305,66 +307,6 @@ class Circuit(object):
             self.branch[:, LOSSES] = abs(self.power_flow.losses)
         else:
             warn('No results in the power flow object to update the circuit.')
-
-    def get_reliability_structure(self):
-        from ..reliability.reliability import ElementTypes
-        from ..reliability.graphs import nx
-
-        nb = self.bus.shape[0]
-        ng = self.gen.shape[0]
-        nl = self.branch.shape[0]
-
-        g = nx.Graph()
-
-        # structure: name, type, MTTF, MTTR, sigma_R
-        reliability_struct = dict()
-
-        sources = list()
-        drains = list()
-
-        # parse buses
-        for i in range(nb):
-            b_idx = self.bus[i, BUS_I].astype(int)
-            bname = 'bus_' + str(b_idx)
-            reliability_struct[bname] = [ElementTypes.Bus, 0, 0, 0]
-            g.add_node(bname)
-
-            if self.bus[i, PD] != 0.0 and self.bus[i, QD] != 0.0:
-                name = 'load_' + str(b_idx)
-                reliability_struct[name] = [ElementTypes.Load, 0, 0, 0]
-                g.add_node(name)
-                g.add_edge(name, bname)
-                drains.append(name)
-
-            if self.bus[i, BUS_TYPE] == 3:
-                name = 'slack_' + str(b_idx)
-                reliability_struct[name] = [ElementTypes.SlackGen, 0, 0, 0]
-                g.add_node(name)
-                g.add_edge(name, bname)
-                sources.append(name)
-
-        # include generators
-        for i in range(ng):
-            name = 'gen_' + str(i)
-            bname = 'bus_' + str(self.gen[i, GEN_BUS].astype(int))
-            reliability_struct[name] = [ElementTypes.Gen, 0, 0, 0]
-            g.add_node(name)
-            g.add_edge(name, bname)
-            sources.append(name)
-
-        # include branches
-        for i in range(nl):
-            f = self.branch[i, F_BUS].astype(int)
-            t = self.branch[i, T_BUS].astype(int)
-            name = 'branch_' + str(f) + '_' + str(t)
-            bfname = 'bus_' + str(f)
-            btname = 'bus_' + str(t)
-            reliability_struct[name] = [ElementTypes.Branch, 0, 0, 0]
-            g.add_node(name)
-            g.add_edge(name, bfname)
-            g.add_edge(name, btname)
-
-        return g, reliability_struct, sources, drains
 
     def set_branch_status(self, lits_of_edges, status=1):
         """

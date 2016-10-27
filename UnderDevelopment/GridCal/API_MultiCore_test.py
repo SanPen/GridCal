@@ -50,7 +50,7 @@ def caller0(i):  # function to create a copy of the grid and a power flow associ
     return PowerFlow(grd, options)
 
 
-def caller1(worker):  # function to run the instance
+def caller1(worker: PowerFlow):  # function to run the instance
     worker.run()
     return worker.grid
 

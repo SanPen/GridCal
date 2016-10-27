@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 __author__ = 'Santiago Peñate Vera'
 """
-This class is the handler of the main GUI of GridCal.
+This class is the handler of the main gui of GridCal.
 """
 
 import os.path
@@ -17,9 +17,15 @@ from PyQt4 import QtCore, QtGui
 matplotlib.use("Qt4Agg")
 from matplotlib import pyplot as plt
 
-from GUI.main_gui.gui import *
-from GUI.main_gui.profiles_input.profile_dialogue import *
-from GridCal.grid import Circuit
+from gui.main.gui import *
+from gui.main.profiles_input.profile_dialogue import *
+from grid.CircuitModule import Circuit
+from grid.BusDefinitions import *
+from grid.BranchDefinitions import *
+from grid.GenDefinitions import *
+from grid.PowerFlow import *
+from grid.TimeSeries import *
+from grid.MonteCarlo import *
 
 # define the IPython console
 print(platform.system())
@@ -1112,7 +1118,7 @@ class MainGUI(QtGui.QMainWindow):
 
     def display_profile(self, profile_type):
         """
-        Show the profile in the GUI table
+        Show the profile in the gui table
         @param profile_type:
         @return:
         """

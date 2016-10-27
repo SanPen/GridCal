@@ -737,6 +737,8 @@ class Branch:
 
         self.mttr = mttr
 
+        self.type_obj = None
+
     def copy(self, bus_dict=None):
         """
         Returns a copy of the branch
@@ -819,6 +821,22 @@ class Branch:
         Yseries[t, t] += Ys
 
         return f, t
+
+    def apply_transformer_type(self, obj: TransformerType):
+        """
+        Apply a transformer type definition to this object
+        Args:
+            obj:
+
+        Returns:
+
+        """
+        leakage_impedance, magnetizing_impedance = obj.get_impedances()
+
+        self.z_series = magnetizing_impedance
+        self.y_shunt = 1 / leakage_impedance
+
+        self.type_obj = obj
 
 
 class TransformerType:
@@ -912,7 +930,6 @@ class TransformerType:
         zm = 1 / (I0 / 100)
 
         # Magnetization reactance (p.u.)
-        xm = 0.0
         if rfe > zm:
             xm = 1 / sqrt(1 / (zm * zm) - 1 / (rfe * rfe))
         else:

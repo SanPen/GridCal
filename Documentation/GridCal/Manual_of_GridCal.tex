@@ -304,10 +304,13 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 	\item $mttr$: Mean time to repair (h)
 	\item $name$: Name of the branch
 	\item $rate$: Power rating (MVA)
-	\item $tap\_module$: tap changer module (around 1)
+	\item $tap\_module$: tap changer module (value around 1)
 	\item $y\_shunt$: Total shunt admittance.
 	\item $z\_series$: Total series impedance.
+	\item $type\_obj$: Object of type TransformerType or LineType used to set the current impedance values. \newline
 \end{itemize}
+
+Implements the model at \ref{Universal_branch_model}.
 
 
 
@@ -322,8 +325,10 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 	\item $No\_load\_current$: No load current (\%)
 	\item $Short\_circuit\_voltage$: Short circuit voltage (\%)
 	\item $GR\_hv1$:
-	\item $GX\_hv1$:
+	\item $GX\_hv1$:  \newline
 \end{itemize}
+
+Implements the model at \ref{Transformer_definition}.
 
 
 
@@ -414,7 +419,7 @@ end
 	
 \end{verbatim}
 
-\section{The universal branch model}
+\section{The universal branch model}\label{Universal_branch_model}
 
 The following describes the model that is applied to each type of admittance matrix in the \verb|apply_to()| function inside the \verb|Branch| object seen before.
 
@@ -525,6 +530,7 @@ $${Y_t}_{i, t} = {Y_t}_{i, t} + Y_{tt}$$
 
 
 \section{The transformer definition from the short circuit test values}
+\label{Transformer_definition}
 
 The transformers are modeled as $\pi$ branches too. In order to get the series impedance and shunt admittance of the transformer to match the branch model, it is advised to transform the specification sheet values of the device into the desired values. The values to take from the specs sheet are:
 \begin{itemize}

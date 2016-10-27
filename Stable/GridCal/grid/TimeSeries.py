@@ -1,10 +1,4 @@
-import time
-
-import numpy as np
-import pandas as pd
-from PyQt4.QtCore import QThread, SIGNAL
-
-from GridCal.grid import MultiCircuitPowerFlow
+from grid.PowerFlow import *
 
 
 class TimeSeries(QThread):

@@ -1,14 +1,6 @@
-import time
-from enum import Enum
 from multiprocessing import Pool, cpu_count
-
-import numpy as np
-import pandas as pd
-from PyQt4.QtCore import QThread, SIGNAL
 from matplotlib import pyplot as plt
-from numpy import zeros
-
-from GridCal.grid import TimeSeries
+from grid.TimeSeries import *
 
 
 class TimeGroups(Enum):
