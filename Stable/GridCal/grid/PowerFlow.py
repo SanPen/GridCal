@@ -17,7 +17,7 @@ from numpy import asarray, argmax, arange, array, zeros, pi, exp, r_, c_, conj, 
 
 from scipy.sparse.linalg import inv as sparse_inv
 from scipy.sparse import csr_matrix
-from scipy.optimize import minimize, linprog
+from scipy.optimize import minimize
 from .DCPowerFlow import dcpf
 from .NewtonRaphsonPowerFlow import newtonpf
 from .IwamotoPowerFlow import IwamotoNR

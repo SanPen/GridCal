@@ -129,7 +129,7 @@ class Ui_mainWindow(object):
         mainWindow.setIconSize(QtCore.QSize(24, 24))
         mainWindow.setDocumentMode(False)
         mainWindow.setTabShape(QtWidgets.QTabWidget.Rounded)
-        mainWindow.setUnifiedTitleAndToolBarOnMac(False)
+        # mainWindow.setUnifiedTitleAndToolBarOnMac(False)
         self.centralwidget = QtWidgets.QWidget(mainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)

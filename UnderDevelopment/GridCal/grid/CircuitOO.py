@@ -696,6 +696,109 @@ class Bus:
         return bus
 
 
+
+class TransformerType:
+
+    def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
+                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1):
+        """
+        Constructor
+        @param HV_nominal_voltage: High voltage side nominal voltage (kV)
+        @param LV_nominal_voltage: Low voltage side nominal voltage (kV)
+        @param Nominal_power: Transformer nominal power (MVA)
+        @param Copper_losses: Copper losses (kW)
+        @param Iron_losses: Iron Losses (kW)
+        @param No_load_current: No load current (%)
+        @param Short_circuit_voltage: Short circuit voltage (%)
+        @param GR_hv1:
+        @param GX_hv1:
+        """
+
+        self.HV_nominal_voltage = HV_nominal_voltage
+
+        self.LV_nominal_voltage = LV_nominal_voltage
+
+        self.Nominal_power = Nominal_power
+
+        self.Copper_losses = Copper_losses
+
+        self.Iron_losses = Iron_losses
+
+        self.No_load_current = No_load_current
+
+        self.Short_circuit_voltage = Short_circuit_voltage
+
+        self.GR_hv1 = GR_hv1
+
+        self.GX_hv1 = GX_hv1
+
+    def get_impedances(self):
+        """
+        Compute the branch parameters of a transformer from the short circuit
+        test values
+        @return:
+            leakage_impedance: Series impedance
+            magnetizing_impedance: Shunt impedance
+        """
+        Uhv = self.HV_nominal_voltage
+
+        Ulv = self.LV_nominal_voltage
+
+        Sn = self.Nominal_power
+
+        Pcu = self.Copper_losses
+
+        Pfe = self.Iron_losses
+
+        I0 = self.No_load_current
+
+        Usc = self.Short_circuit_voltage
+
+        # Nominal impedance HV (Ohm)
+        Zn_hv = Uhv * Uhv / Sn
+
+        # Nominal impedance LV (Ohm)
+        Zn_lv = Ulv * Ulv / Sn
+
+        # Short circuit impedance (p.u.)
+        zsc = Usc / 100
+
+        # Short circuit resistance (p.u.)
+        rsc = (Pcu / 1000) / Sn
+
+        # Short circuit reactance (p.u.)
+        xsc = sqrt(zsc * zsc - rsc * rsc)
+
+        # HV resistance (p.u.)
+        rcu_hv = rsc * self.GR_hv1
+
+        # LV resistance (p.u.)
+        rcu_lv = rsc * (1 - self.GR_hv1)
+
+        # HV shunt reactance (p.u.)
+        xs_hv = xsc * self.GX_hv1
+
+        # LV shunt reactance (p.u.)
+        xs_lv = xsc * (1 - self.GX_hv1)
+
+        # Shunt resistance (p.u.)
+        rfe = Sn / (Pfe / 1000)
+
+        # Magnetization impedance (p.u.)
+        zm = 1 / (I0 / 100)
+
+        # Magnetization reactance (p.u.)
+        if rfe > zm:
+            xm = 1 / sqrt(1 / (zm * zm) - 1 / (rfe * rfe))
+        else:
+            xm = 0  # the square root cannot be computed
+
+        # Calculated parameters in per unit
+        leakage_impedance = rsc + 1j * xsc
+        magnetizing_impedance = rfe + 1j * xm
+
+        return leakage_impedance, magnetizing_impedance
+
 class Branch:
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', zserie=complex(1e-20, 0), yshunt=complex(0, 0),
@@ -839,107 +942,6 @@ class Branch:
         self.type_obj = obj
 
 
-class TransformerType:
-
-    def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
-                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1):
-        """
-        Constructor
-        @param HV_nominal_voltage: High voltage side nominal voltage (kV)
-        @param LV_nominal_voltage: Low voltage side nominal voltage (kV)
-        @param Nominal_power: Transformer nominal power (MVA)
-        @param Copper_losses: Copper losses (kW)
-        @param Iron_losses: Iron Losses (kW)
-        @param No_load_current: No load current (%)
-        @param Short_circuit_voltage: Short circuit voltage (%)
-        @param GR_hv1:
-        @param GX_hv1:
-        """
-
-        self.HV_nominal_voltage = HV_nominal_voltage
-
-        self.LV_nominal_voltage = LV_nominal_voltage
-
-        self.Nominal_power = Nominal_power
-
-        self.Copper_losses = Copper_losses
-
-        self.Iron_losses = Iron_losses
-
-        self.No_load_current = No_load_current
-
-        self.Short_circuit_voltage = Short_circuit_voltage
-
-        self.GR_hv1 = GR_hv1
-
-        self.GX_hv1 = GX_hv1
-
-    def get_impedances(self):
-        """
-        Compute the branch parameters of a transformer from the short circuit
-        test values
-        @return:
-            leakage_impedance: Series impedance
-            magnetizing_impedance: Shunt impedance
-        """
-        Uhv = self.HV_nominal_voltage
-
-        Ulv = self.LV_nominal_voltage
-
-        Sn = self.Nominal_power
-
-        Pcu = self.Copper_losses
-
-        Pfe = self.Iron_losses
-
-        I0 = self.No_load_current
-
-        Usc = self.Short_circuit_voltage
-
-        # Nominal impedance HV (Ohm)
-        Zn_hv = Uhv * Uhv / Sn
-
-        # Nominal impedance LV (Ohm)
-        Zn_lv = Ulv * Ulv / Sn
-
-        # Short circuit impedance (p.u.)
-        zsc = Usc / 100
-
-        # Short circuit resistance (p.u.)
-        rsc = (Pcu / 1000) / Sn
-
-        # Short circuit reactance (p.u.)
-        xsc = sqrt(zsc * zsc - rsc * rsc)
-
-        # HV resistance (p.u.)
-        rcu_hv = rsc * self.GR_hv1
-
-        # LV resistance (p.u.)
-        rcu_lv = rsc * (1 - self.GR_hv1)
-
-        # HV shunt reactance (p.u.)
-        xs_hv = xsc * self.GX_hv1
-
-        # LV shunt reactance (p.u.)
-        xs_lv = xsc * (1 - self.GX_hv1)
-
-        # Shunt resistance (p.u.)
-        rfe = Sn / (Pfe / 1000)
-
-        # Magnetization impedance (p.u.)
-        zm = 1 / (I0 / 100)
-
-        # Magnetization reactance (p.u.)
-        if rfe > zm:
-            xm = 1 / sqrt(1 / (zm * zm) - 1 / (rfe * rfe))
-        else:
-            xm = 0  # the square root cannot be computed
-
-        # Calculated parameters in per unit
-        leakage_impedance = rsc + 1j * xsc
-        magnetizing_impedance = rfe + 1j * xm
-
-        return leakage_impedance, magnetizing_impedance
 
 
 class Load:
@@ -2268,14 +2270,16 @@ class PowerFlowResults:
         df.plot(ax=ax, kind='bar')
 
 
-class PowerFlow(QRunnable):
+class PowerFlow(QThread):
+    progress_signal = pyqtSignal(float)
+    done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
         """
-        QRunnable.__init__(self)
+        QThread.__init__(self)
 
         # Grid to run a power flow in
         self.grid = grid
@@ -2648,27 +2652,30 @@ class PowerFlow(QRunnable):
         print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
         m = len(self.grid.branches)
-        self.grid.power_flow_results.initialize(n, m)
-
+        results = PowerFlowResults()
+        results.initialize(n, m)
+        self.progress_signal.emit(0.0)
         k = 0
         for circuit in self.grid.circuits:
             if self.options.verbose:
                 print('Solving ' + circuit.name)
 
             circuit.power_flow_results = self.single_power_flow(circuit)
-            self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
-                                                           circuit.bus_original_idx,
-                                                           circuit.branch_original_idx)
+            results.apply_from_island(circuit.power_flow_results, circuit.bus_original_idx, circuit.branch_original_idx)
 
-            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
+            self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
         # remember the solution for later
-        self.last_V = self.grid.power_flow_results.voltage
+        self.last_V = results.voltage
 
         # check the limits
-        sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
+        sum_dev = results.check_limits(self.grid.power_flow_input)
 
-        self.results = self.grid.power_flow_results
+        self.results = results
+        self.grid.power_flow_results = results
+
+        self.progress_signal.emit(0.0)
+        self.done_signal.emit()
 
     def run_at(self, t, mc=False):
         """
@@ -2680,7 +2687,7 @@ class PowerFlow(QRunnable):
         m = len(self.grid.branches)
         self.grid.power_flow_results.initialize(n, m)
         i = 1
-        # self.progress_signal.emit(0.0)
+        self.progress_signal.emit(0.0)
         for circuit in self.grid.circuits:
             if self.options.verbose:
                 print('Solving ' + circuit.name)
@@ -2693,15 +2700,15 @@ class PowerFlow(QRunnable):
                                                            circuit.bus_original_idx,
                                                            circuit.branch_original_idx)
 
-            # prog = (i / len(self.grid.circuits)) * 100
-            # self.progress_signal.emit(prog)
+            prog = (i / len(self.grid.circuits)) * 100
+            self.progress_signal.emit(prog)
             i += 1
 
         # check the limits
         sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
 
-        # self.progress_signal.emit(0.0)
-        # self.done_signal.emit()
+        self.progress_signal.emit(0.0)
+        self.done_signal.emit()
 
         return self.grid.power_flow_results
 

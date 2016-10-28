@@ -1420,15 +1420,15 @@ class MainGUI(QMainWindow):
         options = self.get_selected_power_flow_options()
         self.power_flow = PowerFlow(self.circuit, options)
 
-        # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-        # self.power_flow.done_signal.connect(self.UNLOCK)
-        # self.power_flow.done_signal.connect(self.post_power_flow)
+        self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+        self.power_flow.done_signal.connect(self.UNLOCK)
+        self.power_flow.done_signal.connect(self.post_power_flow)
 
-        # self.power_flow.start()
-        self.threadpool.start(self.power_flow)
-
-        self.threadpool.waitForDone()
-        self.post_power_flow()
+        self.power_flow.start()
+        # self.threadpool.start(self.power_flow)
+        #
+        # self.threadpool.waitForDone()
+        # self.post_power_flow()
 
     def post_power_flow(self):
         """
