@@ -696,7 +696,6 @@ class Bus:
         return bus
 
 
-
 class TransformerType:
 
     def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
@@ -798,6 +797,7 @@ class TransformerType:
         magnetizing_impedance = rfe + 1j * xm
 
         return leakage_impedance, magnetizing_impedance
+
 
 class Branch:
 
@@ -953,8 +953,6 @@ class Branch:
         self.type_obj = obj
 
 
-
-
 class Load:
 
     def __init__(self, name='Load', impedance=complex(0, 0), current=complex(0, 0), power=complex(0, 0),
@@ -970,6 +968,9 @@ class Load:
         """
 
         self.name = name
+
+        # The bus this element is attached to: Not necessary for calculations
+        self.bus = None
 
         # Impedance (Ohm)
         # Z * I = V -> Ohm * kA = kV
@@ -1030,6 +1031,9 @@ class StaticGenerator:
 
         self.name = name
 
+        # The bus this element is attached to: Not necessary for calculations
+        self.bus = None
+
         # Power (MVA)
         # MVA = kV * kA
         self.S = power
@@ -1060,6 +1064,9 @@ class Battery:
         """
 
         self.name = name
+
+        # The bus this element is attached to: Not necessary for calculations
+        self.bus = None
 
         # Power (MVA)
         # MVA = kV * kA
@@ -1137,6 +1144,9 @@ class ControlledGenerator:
 
         self.name = name
 
+        # The bus this element is attached to: Not necessary for calculations
+        self.bus = None
+
         # Power (MVA)
         # MVA = kV * kA
         self.P = active_power
@@ -1198,6 +1208,9 @@ class Shunt:
         @param admittance:
         """
         self.name = name
+
+        # The bus this element is attached to: Not necessary for calculations
+        self.bus = None
 
         # Impedance (Ohm)
         # Z * I = V -> Ohm * kA = kV
@@ -1469,6 +1482,46 @@ class Circuit:
         @return:
         """
         self.mc_time_series = self.monte_carlo_input(batch_size)
+
+    def get_loads(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.loads:
+                elm.bus = bus
+            lst = lst + bus.loads
+        return lst
+
+    def get_static_generators(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.static_generators:
+                elm.bus = bus
+            lst = lst + bus.static_generators
+        return lst
+
+    def get_shunts(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.shunts:
+                elm.bus = bus
+            lst = lst + bus.shunts
+        return lst
+
+    def get_controlled_generators(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.controlled_generators:
+                elm.bus = bus
+            lst = lst + bus.controlled_generators
+        return lst
+
+    def get_batteries(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.batteries:
+                elm.bus = bus
+            lst = lst + bus.batteries
+        return lst
 
 
 class MultiCircuit(Circuit):

@@ -988,7 +988,8 @@ class MainGUI(QMainWindow):
             self.libraryModel.appendRow(i)
 
         # set the objects list
-        self.object_types = ['Buses', 'Branches']
+        self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
+                             'Controlled Generators', 'Batteries', 'Shunts']
         self.ui.dataStructuresListView.setModel(get_list_model(self.object_types))
 
         # Actual libraryView object
@@ -1381,6 +1382,8 @@ class MainGUI(QMainWindow):
 
         elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
 
+        # ['Buses', 'Branches', 'Loads', 'Static Generators', 'Controlled Generators', 'Batteries']
+
         if elm_type == 'Buses':
             attr = ['name', 'is_enabled', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
             typs = [str, bool, float, float, float, float, float]
@@ -1390,6 +1393,31 @@ class MainGUI(QMainWindow):
             attr = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
             typs = [str,    None,        None,     bool,         float, float,   float, float, float, float, float, float, float]
             mdl = ObjectsModel(self.circuit.branches, attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1, 2])
+
+        elif elm_type == 'Loads':
+            attr = ['name', 'bus', 'Z', 'I', 'S']
+            typs = [str, None, complex, complex, complex]
+            mdl = ObjectsModel(self.circuit.get_loads(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+
+        elif elm_type == 'Static Generators':
+            attr = ['name', 'bus', 'S']
+            typs = [str,  None,  complex]
+            mdl = ObjectsModel(self.circuit.get_static_generators(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+
+        elif elm_type == 'Controlled Generators':
+            attr = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
+            typs = [str,  None,  float, float, float, float, float]
+            mdl = ObjectsModel(self.circuit.get_controlled_generators(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+
+        elif elm_type == 'Batteries':
+            attr = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+            typs = [str,  None,  float, float, float,  float, float, float]
+            mdl = ObjectsModel(self.circuit.get_batteries(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+
+        elif elm_type == 'Shunts':
+            attr = ['name', 'bus', 'Y']
+            typs = [str,   None, complex]
+            mdl = ObjectsModel(self.circuit.get_shunts(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
 
         self.ui.dataStructureTableView.setModel(mdl)

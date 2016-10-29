@@ -64,7 +64,7 @@ class ComboDelegate(QItemDelegate):
 class TextDelegate(QItemDelegate):
     commitData = QtCore.pyqtSignal(object)
     """
-    A delegate that places a fully functioning QComboBox in every
+    A delegate that places a fully functioning QLineEdit in every
     cell of the column to which it's applied
     """
     def __init__(self, parent):
@@ -96,7 +96,7 @@ class TextDelegate(QItemDelegate):
 class FloatDelegate(QItemDelegate):
     commitData = QtCore.pyqtSignal(object)
     """
-    A delegate that places a fully functioning QComboBox in every
+    A delegate that places a fully functioning QDoubleSpinBox in every
     cell of the column to which it's applied
     """
     def __init__(self, parent, min_=-9999, max_=9999):
@@ -132,7 +132,7 @@ class FloatDelegate(QItemDelegate):
 class ComplexDelegate(QItemDelegate):
     commitData = QtCore.pyqtSignal(object)
     """
-    A delegate that places a fully functioning QComboBox in every
+    A delegate that places a fully functioning Complex Editor in every
     cell of the column to which it's applied
     """
     def __init__(self, parent):
@@ -300,17 +300,23 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         self.set_delegates()
 
     def set_delegates(self):
-
+        """
+        Set the cell editor type depending on the attribute_types array
+        :return:
+        """
         for i in range(self.c):
             if self.attribute_types[i] is bool:
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
                 self.parent.setItemDelegateForColumn(i, delegate)
+
             elif self.attribute_types[i] is float:
                 delegate = FloatDelegate(self.parent)
                 self.parent.setItemDelegateForColumn(i, delegate)
+
             elif self.attribute_types[i] is str:
                 delegate = TextDelegate(self.parent)
                 self.parent.setItemDelegateForColumn(i, delegate)
+
             elif self.attribute_types[i] is complex:
                 delegate = ComplexDelegate(self.parent)
                 self.parent.setItemDelegateForColumn(i, delegate)
