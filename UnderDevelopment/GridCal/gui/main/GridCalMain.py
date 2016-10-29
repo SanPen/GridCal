@@ -987,6 +987,10 @@ class MainGUI(QMainWindow):
         for i in self.libItems:
             self.libraryModel.appendRow(i)
 
+        # set the objects list
+        self.object_types = ['Buses', 'Branches']
+        self.ui.dataStructuresListView.setModel(get_list_model(self.object_types))
+
         # Actual libraryView object
         self.libraryBrowserView.setModel(self.libraryModel)
         self.libraryBrowserView.setViewMode(self.libraryBrowserView.ListMode)
@@ -1062,6 +1066,8 @@ class MainGUI(QMainWindow):
         # list clicks
         self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
         self.ui.result_type_listView.clicked.connect(self.result_type_click)
+
+        self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
 
         ################################################################################################################
         # Other actions
@@ -1370,6 +1376,18 @@ class MainGUI(QMainWindow):
 
         # self.diagramView.repaint()
         # self.startedConnection.remove_()
+
+    def view_objects_data(self):
+
+        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
+
+        if elm_type == 'Buses':
+            attr = ['name', 'is_enabled', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
+            mdl = ObjectsModel(self.circuit.buses, attr, editable=True)
+        elif elm_type == 'Branches':
+            attr = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
+            mdl = ObjectsModel(self.circuit.branches, attr, editable=True, non_editable_indices=[1, 2])
+        self.ui.dataStructureTableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
         """

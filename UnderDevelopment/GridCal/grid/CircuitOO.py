@@ -824,8 +824,13 @@ class Branch:
 
         self.is_enabled = active
 
-        self.z_series = zserie  # R + jX
-        self.y_shunt = yshunt  # G + jB
+        # self.z_series = zserie  # R + jX
+        # self.y_shunt = yshunt  # G + jB
+
+        self.R = zserie.real
+        self.X = zserie.imag
+        self.G = yshunt.real
+        self.B = yshunt.imag
 
         if tap != 0:
             self.tap_module = tap
@@ -855,11 +860,13 @@ class Branch:
             f = bus_dict[self.bus_from]
             t = bus_dict[self.bus_to]
 
+        z_series = complex(self.R, self.X)
+        y_shunt = complex(self.G, self.B)
         b = Branch(bus_from=f,
                    bus_to=t,
                    name=self.name,
-                   zserie=self.z_series,
-                   yshunt=self.y_shunt,
+                   zserie=z_series,
+                   yshunt=y_shunt,
                    rate=self.rate,
                    tap=self.tap_module,
                    shift_angle=self.angle,
@@ -888,10 +895,12 @@ class Branch:
         @param i: index of the branch in the circuit
         @return: Nothing, the inputs are implicitly modified
         """
+        z_series = complex(self.R, self.X)
+        y_shunt = complex(self.G, self.B)
         tap = self.get_tap()
-        Ysh = self.y_shunt / 2
-        if abs(self.z_series) > 0:
-            Ys = 1 / self.z_series
+        Ysh = y_shunt / 2
+        if abs(z_series) > 0:
+            Ys = 1 / z_series
         else:
             raise ValueError("The impedance at " + self.name + " is zero")
 

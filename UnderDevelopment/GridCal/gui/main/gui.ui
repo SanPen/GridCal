@@ -525,17 +525,6 @@
                         </property>
                        </spacer>
                       </item>
-                      <item>
-                       <widget class="QPushButton" name="ApplyDataChangesButton">
-                        <property name="text">
-                         <string>Apply changes</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="icons.qrc">
-                          <normaloff>:/file/ic_mode_edit_black_48dp.png</normaloff>:/file/ic_mode_edit_black_48dp.png</iconset>
-                        </property>
-                       </widget>
-                      </item>
                      </layout>
                     </widget>
                    </item>
@@ -1440,7 +1429,7 @@ last solution</string>
      <x>0</x>
      <y>0</y>
      <width>1153</width>
-     <height>28</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
