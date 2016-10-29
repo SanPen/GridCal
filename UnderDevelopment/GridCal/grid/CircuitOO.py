@@ -801,7 +801,7 @@ class TransformerType:
 
 class Branch:
 
-    def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', zserie=complex(1e-20, 0), yshunt=complex(0, 0),
+    def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1, tap=1, shift_angle=0, active=True, mttf=0, mttr=0):
         """
         Branch model constructor
@@ -827,10 +827,10 @@ class Branch:
         # self.z_series = zserie  # R + jX
         # self.y_shunt = yshunt  # G + jB
 
-        self.R = zserie.real
-        self.X = zserie.imag
-        self.G = yshunt.real
-        self.B = yshunt.imag
+        self.R = r
+        self.X = x
+        self.G = g
+        self.B = b
 
         if tap != 0:
             self.tap_module = tap
@@ -860,13 +860,15 @@ class Branch:
             f = bus_dict[self.bus_from]
             t = bus_dict[self.bus_to]
 
-        z_series = complex(self.R, self.X)
-        y_shunt = complex(self.G, self.B)
+        # z_series = complex(self.R, self.X)
+        # y_shunt = complex(self.G, self.B)
         b = Branch(bus_from=f,
                    bus_to=t,
                    name=self.name,
-                   zserie=z_series,
-                   yshunt=y_shunt,
+                   r=self.R,
+                   x=self.X,
+                   g=self.G,
+                   b=self.B,
                    rate=self.rate,
                    tap=self.tap_module,
                    shift_angle=self.angle,
@@ -1630,8 +1632,10 @@ class MultiCircuit(Circuit):
             branch = Branch(bus_from=f,
                             bus_to=t,
                             name=names[i],
-                            zserie=table[i, e.BR_R] + 1j * table[i, e.BR_X],
-                            yshunt=1j * table[i, e.BR_B],
+                            r=table[i, e.BR_R],
+                            x=table[i, e.BR_X],
+                            g=0,
+                            b=table[i, e.BR_B],
                             rate=table[i, e.RATE_A],
                             tap=table[i, e.TAP],
                             shift_angle=table[i, e.SHIFT],

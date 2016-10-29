@@ -93,27 +93,23 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     def __init__(self, objects, attributes, parent=None, editable=False, non_editable_indices=list()):
         QtCore.QAbstractTableModel.__init__(self, parent)
 
-        # pass the attributes to a index: attribute dictionary
         self.attributes = attributes
 
         self.objects = objects
 
         self.editable = editable
-        self.non_editable_indices = non_editable_indices
-        self.r = len(self.objects)
-        self.c = len(self.attributes)
-        # self.isDate = False
 
-        # if self.r > 0 and self.c > 0:
-        #     if isinstance(self.index[0], np.datetime64):
-        #         self.index = pd.to_datetime(self.index)
-        #         self.isDate = True
+        self.non_editable_indices = non_editable_indices
+
+        self.r = len(self.objects)
+
+        self.c = len(self.attributes)
 
         self.formatter = lambda x: "%.2f" % x
 
     def flags(self, index):
         """
-
+        Get the display mode
         :param index:
         :return:
         """
@@ -124,7 +120,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, parent=None):
         """
-
+        Get number of rows
         :param parent:
         :return:
         """
@@ -132,7 +128,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, parent=None):
         """
-
+        Get number of columns
         :param parent:
         :return:
         """
@@ -140,7 +136,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         """
-
+        Get the data to display
         :param index:
         :param role:
         :return:
@@ -156,7 +152,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
         """
-
+        Set data by simple editor (whatever text)
         :param index:
         :param value:
         :param role:
@@ -167,10 +163,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             pass  # the column cannot be edited
 
-
     def headerData(self, p_int, orientation, role):
         """
-
+        Get the headers to display
         :param p_int:
         :param orientation:
         :param role:
@@ -180,10 +175,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Horizontal:
                 return self.attributes[p_int]
             elif orientation == QtCore.Qt.Vertical:
-                # if hasattr(self.objects[p_int], 'name'):
-                #     return getattr(self.objects[p_int], 'name')
-                # else:
-                #     return str(p_int)
                 return str(p_int)
 
         return None
@@ -198,12 +189,119 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     #     self.data[:, col] = self.data[row, col]
 
 
+class ComboDelegate(QItemDelegate):
+    commitData = QtCore.pyqtSignal(object)
+    """
+    A delegate that places a fully functioning QComboBox in every
+    cell of the column to which it's applied
+    """
+    def __init__(self, parent, objects, object_names):
+        """
+        Constructoe
+        :param parent: QTableView parent object
+        :param objects: List of objects to set. i.e. [True, False]
+        :param object_names: List of Object names to display. i.e. ['True', 'False']
+        """
+        QItemDelegate.__init__(self, parent)
+
+        # objects to sent to the model associated to the combobox. i.e. [True, False]
+        self.objects = objects
+
+        # object description to display in the combobox. i.e. ['True', 'False']
+        self.object_names = object_names
+
+    @QtCore.pyqtSlot()
+    def currentIndexChanged(self):
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        combo = QComboBox(parent)
+        combo.addItems(self.object_names)
+        combo.currentIndexChanged.connect(self.currentIndexChanged)
+        return combo
+
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        val = index.model().data(index)
+        idx = self.object_names.index(val)
+        editor.setCurrentIndex(idx)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, self.object_names[editor.currentIndex()])
+
+
+class TextDelegate(QItemDelegate):
+    commitData = QtCore.pyqtSignal(object)
+    """
+    A delegate that places a fully functioning QComboBox in every
+    cell of the column to which it's applied
+    """
+    def __init__(self, parent):
+        """
+        Constructoe
+        :param parent: QTableView parent object
+        """
+        QItemDelegate.__init__(self, parent)
+
+    @QtCore.pyqtSlot()
+    def returnPressed(self):
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        editor = QLineEdit(parent)
+        editor.returnPressed.connect(self.returnPressed)
+        return editor
+
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        val = index.model().data(index)
+        editor.setText(val)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.text())
+
+
+class FloatDelegate(QItemDelegate):
+    commitData = QtCore.pyqtSignal(object)
+    """
+    A delegate that places a fully functioning QComboBox in every
+    cell of the column to which it's applied
+    """
+    def __init__(self, parent):
+        """
+        Constructoe
+        :param parent: QTableView parent object
+        """
+        QItemDelegate.__init__(self, parent)
+
+    @QtCore.pyqtSlot()
+    def returnPressed(self):
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        editor = QDoubleSpinBox(parent)
+        editor.setMaximum(9999)
+        editor.setMinimum(-9999)
+        editor.editingFinished.connect(self.returnPressed)
+        return editor
+
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        val = float(index.model().data(index))
+        editor.setValue(val)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.value())
+
+
 def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
     """
     list_model = QStandardItemModel()
-    i = 0
     if lst is not None:
         if not checks:
             for val in lst:

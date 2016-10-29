@@ -1384,9 +1384,23 @@ class MainGUI(QMainWindow):
         if elm_type == 'Buses':
             attr = ['name', 'is_enabled', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
             mdl = ObjectsModel(self.circuit.buses, attr, editable=True)
+
+            del1 = ComboDelegate(self.ui.dataStructureTableView, [True, False], ['True', 'False'])
+            self.ui.dataStructureTableView.setItemDelegateForColumn(1, del1)
+
+            del2 = TextDelegate(self.ui.dataStructureTableView)
+            self.ui.dataStructureTableView.setItemDelegateForColumn(0, del2)
+
+            del3 = FloatDelegate(self.ui.dataStructureTableView)
+            self.ui.dataStructureTableView.setItemDelegateForColumn(2, del3)
+
         elif elm_type == 'Branches':
             attr = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
             mdl = ObjectsModel(self.circuit.branches, attr, editable=True, non_editable_indices=[1, 2])
+
+            del1 = ComboDelegate(self.ui.dataStructureTableView, [True, False], ['True', 'False'])
+            self.ui.dataStructureTableView.setItemDelegateForColumn(3, del1)
+
         self.ui.dataStructureTableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
