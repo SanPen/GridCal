@@ -1394,6 +1394,9 @@ class MainGUI(QMainWindow):
             del3 = FloatDelegate(self.ui.dataStructureTableView)
             self.ui.dataStructureTableView.setItemDelegateForColumn(2, del3)
 
+            # del4 = ComplexDelegate(self.ui.dataStructureTableView)
+            # self.ui.dataStructureTableView.setItemDelegateForColumn(3, del4)
+
         elif elm_type == 'Branches':
             attr = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
             mdl = ObjectsModel(self.circuit.branches, attr, editable=True, non_editable_indices=[1, 2])

@@ -297,6 +297,82 @@ class FloatDelegate(QItemDelegate):
         model.setData(index, editor.value())
 
 
+class ComplexDelegate(QItemDelegate):
+    commitData = QtCore.pyqtSignal(object)
+    """
+    A delegate that places a fully functioning QComboBox in every
+    cell of the column to which it's applied
+    """
+    def __init__(self, parent):
+        """
+        Constructoe
+        :param parent: QTableView parent object
+        """
+        QItemDelegate.__init__(self, parent)
+
+    @QtCore.pyqtSlot()
+    def returnPressed(self):
+        """
+
+        :return:
+        """
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        editor = QFrame(parent)
+        main_layout = QHBoxLayout(editor)
+        main_layout.layout().setContentsMargins(0, 0, 0, 0)
+
+        real = QDoubleSpinBox()
+        real.setMaximum(9999)
+        real.setMinimum(-9999)
+
+        imag = QDoubleSpinBox()
+        imag.setMaximum(9999)
+        imag.setMinimum(-9999)
+
+        # button = QPushButton()
+
+        main_layout.addWidget(real)
+        main_layout.addWidget(imag)
+        # main_layout.addWidget(button)
+
+        # button.clicked.connect(self.returnPressed)
+
+        return editor
+
+    def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        :return:
+        """
+        editor.blockSignals(True)
+        val = complex(index.model().data(index))
+        editor.children()[1].setValue(val.real)
+        editor.children()[2].setValue(val.imag)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        :return:
+        """
+        val = complex(editor.children()[1].value(), editor.children()[2].value())
+        model.setData(index, val)
+
+
 def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
