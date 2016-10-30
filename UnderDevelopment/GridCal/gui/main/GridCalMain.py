@@ -1334,7 +1334,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "Excel 97 (*.xls);;Excel (*.xlsx);;Numpy Case (*.npz);;JSON (*.json)"
+        files_types = "Excel (*.xlsx)"
         # call dialog to select the file
         filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  self.project_directory, files_types)
 
@@ -1343,15 +1343,14 @@ class MainGUI(QMainWindow):
             name, file_extension = os.path.splitext(filename)
 
             extension = dict()
-            extension['Excel 97 (*.xls)'] = '.xls'
             extension['Excel (*.xlsx)'] = '.xlsx'
-            extension['Numpy Case (*.npz)'] = '.npz'
+            # extension['Numpy Case (*.npz)'] = '.npz'
 
             if file_extension == '':
                 filename = name + extension[type_selected]
 
             # call to save the file in the circuit
-            # self.circuit.save_circuit(filename)
+            self.circuit.save_file(filename)
 
     def create_schematic_from_api(self, explode_factor=1):
         """
@@ -1385,40 +1384,39 @@ class MainGUI(QMainWindow):
         # ['Buses', 'Branches', 'Loads', 'Static Generators', 'Controlled Generators', 'Batteries']
 
         if elm_type == 'Buses':
-            attr = ['name', 'is_enabled', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
-            typs = [str, bool, float, float, float, float, float]
-            mdl = ObjectsModel(self.circuit.buses, attr, typs, parent=self.ui.dataStructureTableView, editable=True)
+            elm = Bus()
+            mdl = ObjectsModel(self.circuit.buses, elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True)
 
         elif elm_type == 'Branches':
-            attr = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
-            typs = [str,    None,        None,     bool,         float, float,   float, float, float, float, float, float, float]
-            mdl = ObjectsModel(self.circuit.branches, attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1, 2])
+            elm = Branch(None, None)
+            mdl = ObjectsModel(self.circuit.branches, elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1, 2])
 
         elif elm_type == 'Loads':
-            attr = ['name', 'bus', 'Z', 'I', 'S']
-            typs = [str, None, complex, complex, complex]
-            mdl = ObjectsModel(self.circuit.get_loads(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elm = Load()
+            mdl = ObjectsModel(self.circuit.get_loads(), elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Static Generators':
-            attr = ['name', 'bus', 'S']
-            typs = [str,  None,  complex]
-            mdl = ObjectsModel(self.circuit.get_static_generators(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elm = StaticGenerator()
+            mdl = ObjectsModel(self.circuit.get_static_generators(), elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Controlled Generators':
-            attr = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
-            typs = [str,  None,  float, float, float, float, float]
-            mdl = ObjectsModel(self.circuit.get_controlled_generators(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elm = ControlledGenerator()
+            mdl = ObjectsModel(self.circuit.get_controlled_generators(), elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Batteries':
-            attr = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
-            typs = [str,  None,  float, float, float,  float, float, float]
-            mdl = ObjectsModel(self.circuit.get_batteries(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elm = Battery()
+            mdl = ObjectsModel(self.circuit.get_batteries(), elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Shunts':
-            attr = ['name', 'bus', 'Y']
-            typs = [str,   None, complex]
-            mdl = ObjectsModel(self.circuit.get_shunts(), attr, typs, parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
-
+            elm = Shunt()
+            mdl = ObjectsModel(self.circuit.get_shunts(), elm.edit_headers, elm.edit_types,
+                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
 

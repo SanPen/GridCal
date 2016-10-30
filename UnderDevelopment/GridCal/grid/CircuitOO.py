@@ -454,6 +454,10 @@ class Bus:
 
         self.graphic_obj = None
 
+        self.edit_headers = ['name', 'is_enabled', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
+
+        self.edit_types = [str, bool, float, float, float, float, float]
+
     def determine_bus_type(self):
         """
         Infer the bus type from the devices attached to it
@@ -695,6 +699,13 @@ class Bus:
 
         return bus
 
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.is_enabled, self.Vnom, self.Vmin, self.Vmax, self.x, self.y]
+
 
 class TransformerType:
 
@@ -847,6 +858,10 @@ class Branch:
 
         self.type_obj = None
 
+        self.edit_headers = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
+
+        self.edit_types = [str,    None,        None,     bool,         float, float,   float, float, float, float, float, float, float]
+
     def copy(self, bus_dict=None):
         """
         Returns a copy of the branch
@@ -952,6 +967,14 @@ class Branch:
 
         self.type_obj = obj
 
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus_from.name, self.bus_to.name, self.is_enabled, self.rate, self.mttf, self.mttr,
+                self.R, self.X, self.G, self.B, self.tap_module, self.angle]
+
 
 class Load:
 
@@ -992,6 +1015,10 @@ class Load:
         # power profile for this load
         self.Sprof = power_prof
 
+        self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
+
+        self.edit_types = [str, None, complex, complex, complex]
+
     def copy(self):
 
         load = Load()
@@ -1020,6 +1047,13 @@ class Load:
 
         return load
 
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, str(self.Z), str(self.I), str(self.S)]
+
 
 class StaticGenerator:
 
@@ -1041,9 +1075,23 @@ class StaticGenerator:
         # power profile for this load
         self.Sprof = power_prof
 
-    def copy(self):
+        self.edit_headers = ['name', 'bus', 'S']
 
+        self.edit_types = [str,  None,  complex]
+
+    def copy(self):
+        """
+
+        :return:
+        """
         return StaticGenerator(name=self.name, power=self.S, power_prof=self.Sprof)
+
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, str(self.S)]
 
 
 class Battery:
@@ -1093,6 +1141,10 @@ class Battery:
         # Nominal energy MWh
         self.Enom = Enom
 
+        self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+
+        self.edit_types = [str,  None,  float, float, float,  float, float, float]
+
     def copy(self):
 
         batt = Battery()
@@ -1125,6 +1177,13 @@ class Battery:
         batt.Enom = self.Enom
 
         return batt
+
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
 
 
 class ControlledGenerator:
@@ -1169,6 +1228,10 @@ class ControlledGenerator:
         # Nominal power
         self.Snom = Snom
 
+        self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
+
+        self.edit_types = [str,  None,  float, float, float, float, float]
+
     def copy(self):
 
         gen = ControlledGenerator()
@@ -1199,6 +1262,13 @@ class ControlledGenerator:
 
         return gen
 
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
+
 
 class Shunt:
 
@@ -1219,6 +1289,10 @@ class Shunt:
         # admittance profile
         self.Yprof = admittance_prof
 
+        self.edit_headers = ['name', 'bus', 'Y']
+
+        self.edit_types = [str,   None, complex]
+
     def copy(self):
 
         shu = Shunt()
@@ -1233,6 +1307,13 @@ class Shunt:
         shu.Yprof = self.Yprof
 
         return shu
+
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, str(self.Y)]
 
 
 class Circuit:
@@ -1696,6 +1777,69 @@ class MultiCircuit(Circuit):
 
             self.add_branch(branch)
         print('Interpreted.')
+
+    def save_file(self, filepath):
+        """
+        Save the circuit information
+        :param filepath:
+        :return:
+        """
+        dfs = dict()
+
+        # configuration
+        obj = list()
+        obj.append(['BaseMVA', self.Sbase])
+        obj.append(['BasekA', self.Ibase])
+        obj.append(['Version', 2])
+        dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
+
+        # buses
+        obj = list()
+        for elm in self.buses:
+            obj.append(elm.get_save_data())
+        dfs['bus'] = pd.DataFrame(data=obj, columns=Bus().edit_headers)
+
+        # branches
+        obj = list()
+        for elm in self.branches:
+            obj.append(elm.get_save_data())
+        dfs['branch'] = pd.DataFrame(data=obj, columns=Branch(None, None).edit_headers)
+
+        # loads
+        obj = list()
+        for elm in self.get_loads():
+            obj.append(elm.get_save_data())
+        dfs['load'] = pd.DataFrame(data=obj, columns=Load().edit_headers)
+
+        # static generators
+        obj = list()
+        for elm in self.get_static_generators():
+            obj.append(elm.get_save_data())
+        dfs['static_generator'] = pd.DataFrame(data=obj, columns=StaticGenerator().edit_headers)
+
+        # battery
+        obj = list()
+        for elm in self.get_batteries():
+            obj.append(elm.get_save_data())
+        dfs['battery'] = pd.DataFrame(data=obj, columns=Battery().edit_headers)
+
+        # controlled generator
+        obj = list()
+        for elm in self.get_controlled_generators():
+            obj.append(elm.get_save_data())
+        dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=ControlledGenerator().edit_headers)
+
+        # shunt
+        obj = list()
+        for elm in self.get_shunts():
+            obj.append(elm.get_save_data())
+        dfs['shunt'] = pd.DataFrame(data=obj, columns=Shunt().edit_headers)
+
+        # save
+        writer = pd.ExcelWriter(filepath)
+        for key in dfs.keys():
+            dfs[key].to_excel(writer, key)
+        writer.save()
 
     def compile(self):
         """
