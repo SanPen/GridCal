@@ -276,7 +276,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with a pandas data frame
     """
-    def __init__(self, objects, attributes, attr_types, parent=None, editable=False, non_editable_indices=list()):
+    def __init__(self, objects, attributes, attr_types, parent=None, editable=False, non_editable_indices=list(), transposed=False):
         QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.parent = parent
@@ -297,6 +297,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.formatter = lambda x: "%.2f" % x
 
+        self.transposed = transposed
+
         self.set_delegates()
 
     def set_delegates(self):
@@ -304,22 +306,28 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         Set the cell editor type depending on the attribute_types array
         :return:
         """
+
+        if self.transposed:
+            F = self.parent.setItemDelegateForRow
+        else:
+            F = self.parent.setItemDelegateForColumn
+
         for i in range(self.c):
             if self.attribute_types[i] is bool:
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
-                self.parent.setItemDelegateForColumn(i, delegate)
+                F(i, delegate)
 
             elif self.attribute_types[i] is float:
                 delegate = FloatDelegate(self.parent)
-                self.parent.setItemDelegateForColumn(i, delegate)
+                F(i, delegate)
 
             elif self.attribute_types[i] is str:
                 delegate = TextDelegate(self.parent)
-                self.parent.setItemDelegateForColumn(i, delegate)
+                F(i, delegate)
 
             elif self.attribute_types[i] is complex:
                 delegate = ComplexDelegate(self.parent)
-                self.parent.setItemDelegateForColumn(i, delegate)
+                F(i, delegate)
 
     def flags(self, index):
         """
@@ -327,7 +335,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param index:
         :return:
         """
-        if self.editable and index.column() not in self.non_editable_indices:
+        if self.transposed:
+            attr_idx = index.row()
+        else:
+            attr_idx = index.column()
+
+        if self.editable and attr_idx not in self.non_editable_indices:
             return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         else:
             return QtCore.Qt.ItemIsEnabled
@@ -338,7 +351,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return self.r
+        if self.transposed:
+            return self.c
+        else:
+            return self.r
 
     def columnCount(self, parent=None):
         """
@@ -346,7 +362,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return self.c
+        if self.transposed:
+            return self.r
+        else:
+            return self.c
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         """
@@ -357,11 +376,19 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                attr = self.attributes[index.column()]
-                if 'bus' in attr:
-                    return str(getattr(self.objects[index.row()], attr).name)
+
+                if self.transposed:
+                    obj_idx = index.column()
+                    attr_idx = index.row()
                 else:
-                    return str(getattr(self.objects[index.row()], attr))
+                    obj_idx = index.row()
+                    attr_idx = index.column()
+
+                attr = self.attributes[attr_idx]
+                if 'bus' in attr:
+                    return str(getattr(self.objects[obj_idx], attr).name)
+                else:
+                    return str(getattr(self.objects[obj_idx], attr))
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
@@ -372,8 +399,16 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if index.column() not in self.non_editable_indices:
-            setattr(self.objects[index.row()], self.attributes[index.column()], value)
+
+        if self.transposed:
+            obj_idx = index.column()
+            attr_idx = index.row()
+        else:
+            obj_idx = index.row()
+            attr_idx = index.column()
+
+        if attr_idx not in self.non_editable_indices:
+            setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
         else:
             pass  # the column cannot be edited
 
@@ -386,10 +421,17 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :return:
         """
         if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.attributes[p_int]
-            elif orientation == QtCore.Qt.Vertical:
-                return str(p_int)
+
+            if self.transposed:
+                if orientation == QtCore.Qt.Horizontal:
+                    return 'Value'
+                elif orientation == QtCore.Qt.Vertical:
+                    return self.attributes[p_int]
+            else:
+                if orientation == QtCore.Qt.Horizontal:
+                    return self.attributes[p_int]
+                elif orientation == QtCore.Qt.Vertical:
+                    return str(p_int)
 
         return None
 

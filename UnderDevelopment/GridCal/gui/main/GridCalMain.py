@@ -137,7 +137,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         menu = QMenu()
 
         ra1 = menu.addAction('Properties')
-        ra1.triggered.connect(self.properties)
+        ra1.triggered.connect(self.editParameters)
 
         pe = menu.addAction('Enable/Disable')
         pe.triggered.connect(self.enable_disable_toggle)
@@ -149,8 +149,23 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         menu.exec_(event.screenPos())
 
-    def properties(self):
-        print()
+    def editParameters(self):
+        """
+        Display parameters editor for the Bus
+        :return:
+        """
+        dialogue = QDialog(parent=self.diagramScene.parent())
+        dialogue.setWindowTitle(self.api_object.name)
+        layout = QVBoxLayout()
+        grid = QTableView()
+        layout.addWidget(grid)
+        dialogue.setLayout(layout)
+
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=grid, editable=True, transposed=True, non_editable_indices=[1, 2])
+
+        grid.setModel(mdl)
+        dialogue.show()
 
     def remove(self):
         """
@@ -575,6 +590,24 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # t = self.diagramScene.circuit.master_time_array
         # self.api_object.plot_profiles(time_idx=t)
         self.api_object.plot_profiles()
+
+    def editParameters(self):
+        """
+        Display parameters editor for the Bus
+        :return:
+        """
+        dialogue = QDialog(parent=self.diagramScene.parent())
+        dialogue.setWindowTitle(self.api_object.name)
+        layout = QVBoxLayout()
+        grid = QTableView()
+        layout.addWidget(grid)
+        dialogue.setLayout(layout)
+
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=grid, editable=True, transposed=True)
+
+        grid.setModel(mdl)
+        dialogue.show()
 
 
 class EditorGraphicsView(QGraphicsView):

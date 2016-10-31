@@ -454,9 +454,9 @@ class Bus:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'is_enabled', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
+        self.edit_headers = ['name', 'is_enabled', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
 
-        self.edit_types = [str, bool, float, float, float, float, float]
+        self.edit_types = [str, bool, bool, float, float, float, float, float]
 
     def determine_bus_type(self):
         """
