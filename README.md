@@ -1,4 +1,4 @@
-![](https://github.com/SanPen/GridCal/blob/master/GridCal_banner.png=800x)
+![](https://github.com/SanPen/GridCal/blob/master/GridCal_banner.png)
 
 
 This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/O6lv-d8z39k)
