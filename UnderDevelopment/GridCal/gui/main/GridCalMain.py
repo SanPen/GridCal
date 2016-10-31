@@ -645,7 +645,7 @@ class EditorGraphicsView(QGraphicsView):
             if elm is not None:
                 elm.setPos(self.mapToScene(event.pos()))
                 self.scene_.addItem(elm)
-                # self.scene_.AddBus(elm)
+                # self.scene_.circuit.add_bus(obj) # weird but only way to have graphical-API communication
                 print('Block created')
 
     def wheelEvent(self, event):
@@ -1040,6 +1040,7 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Connections
         ################################################################################################################
+        self.ui.actionNew_project.triggered.connect(self.new_project)
 
         self.ui.actionOpen_file.triggered.connect(self.open_file)
 
@@ -1309,6 +1310,25 @@ class MainGUI(QMainWindow):
             branch.graphic_obj.setToolTip(branch.name + '\n' + 'loading=' + str(lnorm[i]))
             branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
             i += 1
+
+    def new_project(self):
+        """
+        Create new grid
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            quit_msg = "Are you sure you want to quit the current grid and create a new one?"
+            reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                self.circuit = MultiCircuit()
+                self.diagramScene.circuit = self.circuit
+                self.create_schematic_from_api(explode_factor=500)
+
+            else:
+                pass
+        else:
+            pass
 
     def open_file(self):
         """
