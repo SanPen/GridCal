@@ -2480,16 +2480,16 @@ class PowerFlowResults:
         df.plot(ax=ax, kind='bar')
 
 
-class PowerFlow(QThread):
-    progress_signal = pyqtSignal(float)
-    done_signal = pyqtSignal()
+class PowerFlow(QRunnable):
+    # progress_signal = pyqtSignal(float)
+    # done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
         """
-        QThread.__init__(self)
+        QRunnable.__init__(self)
 
         # Grid to run a power flow in
         self.grid = grid
@@ -2864,7 +2864,7 @@ class PowerFlow(QThread):
         m = len(self.grid.branches)
         results = PowerFlowResults()
         results.initialize(n, m)
-        self.progress_signal.emit(0.0)
+        # self.progress_signal.emit(0.0)
         k = 0
         for circuit in self.grid.circuits:
             if self.options.verbose:
@@ -2873,7 +2873,7 @@ class PowerFlow(QThread):
             circuit.power_flow_results = self.single_power_flow(circuit)
             results.apply_from_island(circuit.power_flow_results, circuit.bus_original_idx, circuit.branch_original_idx)
 
-            self.progress_signal.emit((k+1) / len(self.grid.circuits))
+            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
         # remember the solution for later
         self.last_V = results.voltage
@@ -2884,8 +2884,8 @@ class PowerFlow(QThread):
         self.results = results
         self.grid.power_flow_results = results
 
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
+        # self.progress_signal.emit(0.0)
+        # self.done_signal.emit()
 
     def run_at(self, t, mc=False):
         """
@@ -2897,7 +2897,7 @@ class PowerFlow(QThread):
         m = len(self.grid.branches)
         self.grid.power_flow_results.initialize(n, m)
         i = 1
-        self.progress_signal.emit(0.0)
+        # self.progress_signal.emit(0.0)
         for circuit in self.grid.circuits:
             if self.options.verbose:
                 print('Solving ' + circuit.name)
@@ -2910,15 +2910,15 @@ class PowerFlow(QThread):
                                                            circuit.bus_original_idx,
                                                            circuit.branch_original_idx)
 
-            prog = (i / len(self.grid.circuits)) * 100
-            self.progress_signal.emit(prog)
+            # prog = (i / len(self.grid.circuits)) * 100
+            # self.progress_signal.emit(prog)
             i += 1
 
         # check the limits
         sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
 
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
+        # self.progress_signal.emit(0.0)
+        # self.done_signal.emit()
 
         return self.grid.power_flow_results
 

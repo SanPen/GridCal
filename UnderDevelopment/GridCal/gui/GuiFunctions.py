@@ -276,7 +276,18 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with a pandas data frame
     """
-    def __init__(self, objects, attributes, attr_types, parent=None, editable=False, non_editable_indices=list(), transposed=False):
+    def __init__(self, objects, attributes, attr_types, parent=None, editable=False, non_editable_indices=list(),
+                 transposed=False):
+        """
+
+        :param objects: list of objects associated to the editor
+        :param attributes: Attribute list of the object
+        :param attr_types: Types of the attributes. This is used to assign the appropriate editor (float, str, complex, bool)
+        :param parent: Parent object: the QTableView object
+        :param editable: Is the table editable?
+        :param non_editable_indices: List of attributes that are not enabled for editing
+        :param transposed: Display the table transposed?
+        """
         QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.parent = parent
@@ -303,7 +314,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
     def set_delegates(self):
         """
-        Set the cell editor type depending on the attribute_types array
+        Set the cell editor types depending on the attribute_types array
         :return:
         """
 

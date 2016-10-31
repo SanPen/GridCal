@@ -167,6 +167,18 @@ class BranchGraphicItem(QGraphicsLineItem):
         grid.setModel(mdl)
         dialogue.show()
 
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
+                           non_editable_indices=[1, 2])
+
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
+
     def remove(self):
         """
         Remove this object in the diagram and the API
@@ -528,8 +540,8 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @return:
         """
         menu = QMenu()
-        pa = menu.addAction('Parameters')
-        pa.triggered.connect(self.editParameters)
+        # pa = menu.addAction('Parameters')
+        # pa.triggered.connect(self.editParameters)
 
         pe = menu.addAction('Enable/Disable')
         pe.triggered.connect(self.enable_disable_toggle)
@@ -608,6 +620,16 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         grid.setModel(mdl)
         dialogue.show()
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
 
 
 class EditorGraphicsView(QGraphicsView):
@@ -1001,7 +1023,9 @@ class MainGUI(QMainWindow):
 
         # Widget layout and child widgets:
         self.horizontalLayout = QHBoxLayout(self)
-        self.splitter = QSplitter(self)
+        splitter = QSplitter(self)
+        splitter2 = QSplitter(self)
+        self.object_editor_table = QTableView(self)
         self.libraryBrowserView = QListView(self)
         self.libraryModel = LibraryModel(self)
         self.libraryModel.setColumnCount(1)
@@ -1034,11 +1058,14 @@ class MainGUI(QMainWindow):
         self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
 
         # Add the two objects into a layout
-        self.splitter.addWidget(self.libraryBrowserView)
-        self.splitter.addWidget(self.diagramView)
+        splitter2.addWidget(self.libraryBrowserView)
+        splitter2.addWidget(self.object_editor_table)
+        splitter2.setOrientation(Qt.Vertical)
+        splitter.addWidget(splitter2)
+        splitter.addWidget(self.diagramView)
 
-        self.ui.schematic_layout.addWidget(self.splitter)
-        self.splitter.setSizes([10, 180])
+        self.ui.schematic_layout.addWidget(splitter)
+        splitter.setSizes([10, 180])
 
         self.startedConnection = None
         self.branch_editor_count = 1
@@ -1522,15 +1549,15 @@ class MainGUI(QMainWindow):
         options = self.get_selected_power_flow_options()
         self.power_flow = PowerFlow(self.circuit, options)
 
-        self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-        self.power_flow.done_signal.connect(self.UNLOCK)
-        self.power_flow.done_signal.connect(self.post_power_flow)
-
-        self.power_flow.start()
-        # self.threadpool.start(self.power_flow)
+        # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+        # self.power_flow.done_signal.connect(self.UNLOCK)
+        # self.power_flow.done_signal.connect(self.post_power_flow)
         #
-        # self.threadpool.waitForDone()
-        # self.post_power_flow()
+        # self.power_flow.start()
+        self.threadpool.start(self.power_flow)
+
+        self.threadpool.waitForDone()
+        self.post_power_flow()
 
     def post_power_flow(self):
         """
@@ -1540,12 +1567,12 @@ class MainGUI(QMainWindow):
         """
         # update the results in the circuit structures
         print('Post power flow')
-        self.UNLOCK()
         print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
         print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
         print('ld:\n', abs(self.circuit.power_flow_results.loading))
         self.color_based_of_pf(self.circuit.power_flow_results.voltage, self.circuit.power_flow_results.loading)
         self.update_available_results()
+        self.UNLOCK()
 
     def run_voltage_stability(self):
         print('run_voltage_stability')
