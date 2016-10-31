@@ -1509,8 +1509,6 @@ class MainGUI(QMainWindow):
 
         enforce_Q_limits = self.ui.control_Q_checkBox.isChecked()
 
-        check_freq_blackout = self.ui.freq_assesment_check.isChecked()
-
         exponent = self.ui.tolerance_spinBox.value()
         tolerance = 1.0 / (10.0**exponent)
 
