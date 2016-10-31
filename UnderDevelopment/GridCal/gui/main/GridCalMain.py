@@ -30,7 +30,6 @@ from grid.CircuitOO import *
 from gui.main.gui import *
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
-
 from gui.GuiFunctions import *
 
 
@@ -273,10 +272,6 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.setLine(QLineF(self.pos1, self.pos2))
         self.setZValue(0)
 
-    # def delete(self):
-    #     self.diagramScene.removeItem(self.line_object)
-    #     # Remove position update callbacks:
-
 
 class ParameterDialog(QDialog):
 
@@ -358,7 +353,6 @@ class TerminalItem(QGraphicsEllipseItem):
             self.hosting_connections.pop(i)
 
 
-# Block part:
 class HandleItem(QGraphicsEllipseItem):
     """
     A handle that can be moved by the mouse: Element to resize the boxes
@@ -837,9 +831,6 @@ class ObjectFactory(object):
 ########################################################################################################################
 
 
-
-
-
 # define the IPython console
 print(platform.system())
 # if platform.system() == 'Linux':
@@ -1036,7 +1027,7 @@ class MainGUI(QMainWindow):
         # initialize library of items
         self.libItems = []
         self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
-        # self.libItems.append( QtGui.QStandardItem(object_factory.get_generator(), 'Generator') )
+        self.libItems.append(QtGui.QStandardItem(object_factory.get_circle(), 'Generator'))
         # self.libItems.append( QtGui.QStandardItem(object_factory.get_transformer(), 'Transformer') )
         # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'Line'))
         # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'Battery'))
@@ -1065,7 +1056,8 @@ class MainGUI(QMainWindow):
         splitter.addWidget(self.diagramView)
 
         self.ui.schematic_layout.addWidget(splitter)
-        splitter.setSizes([10, 180])
+        splitter.setStretchFactor(1, 10)
+        self.ui.splitter_8.setStretchFactor(1, 15)
 
         self.startedConnection = None
         self.branch_editor_count = 1
