@@ -686,6 +686,11 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
+    # def mouseReleaseEvent(self, QGraphicsSceneMouseEvent):
+    #     """"""
+    #     self.api_object.x = QGraphicsSceneMouseEvent.pos().x()
+    #     self.api_object.y = QGraphicsSceneMouseEvent.pos().y()
+
     def add_load(self):
 
         load_obj = Load()
