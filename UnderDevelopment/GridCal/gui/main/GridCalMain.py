@@ -418,13 +418,26 @@ class LoadGraphicItem(QGraphicsPolygonItem):
         pts = [QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]
         self.setPolygon(QtGui.QPolygonF(pts))
 
+    def contextMenuEvent(self, event):
+        """
+        Display context menu
+        @param event:
+        @return:
+        """
+        menu = QMenu()
+
+        da = menu.addAction('Delete')
+        da.triggered.connect(self.remove)
+
+        menu.exec_(event.screenPos())
+
     def remove(self):
         """
         Remove this element
         @return:
         """
         self.diagramScene.removeItem(self)
-        self.api_object.loads.remove(self.api_object)
+        self.api_object.bus.loads.remove(self.api_object)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
