@@ -1015,6 +1015,8 @@ class Load:
         # power profile for this load
         self.Sprof = power_prof
 
+        self.graphic_obj = None
+
         self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
 
         self.edit_types = [str, None, complex, complex, complex]

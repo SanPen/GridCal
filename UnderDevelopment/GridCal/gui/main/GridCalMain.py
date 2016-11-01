@@ -392,6 +392,51 @@ class HandleItem(QGraphicsEllipseItem):
         return super(HandleItem, self).itemChange(change, value)
 
 
+class LoadGraphicItem(QGraphicsPolygonItem):
+
+    def __init__(self, parent, api_obj, diagramScene):
+        """
+
+        :param parent:
+        :param api_obj:
+        """
+        QGraphicsPolygonItem.__init__(self, parent=parent)
+
+        self.w = 60.0
+        self.h = 60.0
+
+        self.api_object = api_obj
+
+        self.diagramScene = diagramScene
+
+        # Properties of the rectangle:
+        self.setPen(QtGui.QPen(QtCore.Qt.red, 2))
+        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+
+        pts = [QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]
+        self.setPolygon(QtGui.QPolygonF(pts))
+
+    def remove(self):
+        """
+        Remove this element
+        @return:
+        """
+        self.diagramScene.removeItem(self)
+        self.api_object.loads.remove(self.api_object)
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+
 class BusGraphicItem(QGraphicsRectItem, GeneralItem):
     """
       Represents a block in the diagram
@@ -556,6 +601,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        al = menu.addAction('Add load')
+        al.triggered.connect(self.add_load)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -624,6 +672,14 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def add_load(self):
+
+        load_obj = Load()
+        load_obj.bus = self.api_object
+        load_grph = LoadGraphicItem(self, load_obj, self.diagramScene)
+        load_obj.graphic_obj = load_grph
+        self.api_object.loads.append(load_obj)
 
 
 class EditorGraphicsView(QGraphicsView):
@@ -1027,7 +1083,7 @@ class MainGUI(QMainWindow):
         # initialize library of items
         self.libItems = []
         self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
-        self.libItems.append(QtGui.QStandardItem(object_factory.get_circle(), 'Generator'))
+        # self.libItems.append(QtGui.QStandardItem(object_factory.get_circle(), 'Generator'))
         # self.libItems.append( QtGui.QStandardItem(object_factory.get_transformer(), 'Transformer') )
         # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'Line'))
         # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'Battery'))
