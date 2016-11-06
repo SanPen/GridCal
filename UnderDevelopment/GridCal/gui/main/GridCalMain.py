@@ -107,6 +107,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.pen_width = width
         self.setPen(QtGui.QPen(QtCore.Qt.black, self.width, self.style))
         self.setFlag(self.ItemIsSelectable, True)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
         self.pos1 = None
         self.pos2 = None

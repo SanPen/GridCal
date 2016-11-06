@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from GridCal.grid.CircuitOO import *
+from grid.CircuitOO import *
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
@@ -46,19 +46,19 @@ grid.add_bus(bus5)
 
 
 # add branches (Lines in this case)
-grid.add_branch(Branch(bus1, bus2, 'line 1-2', zserie=complex(0.05, 0.11), yshunt=complex(0, 0.02)))
+grid.add_branch(Branch(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
 
-grid.add_branch(Branch(bus1, bus3, 'line 1-3', zserie=complex(0.05, 0.11), yshunt=complex(0, 0.02)))
+grid.add_branch(Branch(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
 
-grid.add_branch(Branch(bus1, bus5, 'line 1-5', zserie=complex(0.03, 0.08), yshunt=complex(0, 0.02)))
+grid.add_branch(Branch(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
 
-grid.add_branch(Branch(bus2, bus3, 'line 2-3', zserie=complex(0.04, 0.09), yshunt=complex(0, 0.02)))
+grid.add_branch(Branch(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
 
-grid.add_branch(Branch(bus2, bus5, 'line 2-5', zserie=complex(0.04, 0.09), yshunt=complex(0, 0.02)))
+grid.add_branch(Branch(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
 
-grid.add_branch(Branch(bus3, bus4, 'line 3-4', zserie=complex(0.06, 0.13), yshunt=complex(0, 0.03)))
+grid.add_branch(Branch(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
 
-grid.add_branch(Branch(bus4, bus5, 'line 4-5', zserie=complex(0.04, 0.09), yshunt=complex(0, 0.02)))
+grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
 
 
 grid.compile()
