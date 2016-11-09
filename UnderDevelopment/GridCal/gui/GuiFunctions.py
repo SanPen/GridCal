@@ -165,10 +165,12 @@ class ComplexDelegate(QItemDelegate):
         real = QDoubleSpinBox()
         real.setMaximum(9999)
         real.setMinimum(-9999)
+        real.setDecimals(8)
 
         imag = QDoubleSpinBox()
         imag.setMaximum(9999)
         imag.setMinimum(-9999)
+        imag.setDecimals(8)
 
         # button = QPushButton()
 
@@ -455,6 +457,154 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     #     """
     #     self.data[:, col] = self.data[row, col]
 
+
+class ProfilesModel(QtCore.QAbstractTableModel):
+    """
+    Class to populate a Qt table view with a pandas data frame
+    """
+    def __init__(self, multi_circuit, device, magnitude, format, parent):
+        """
+
+        Args:
+            multi_circuit: MultiCircuit instance
+            device: string with Load, StaticGenerator, etc...
+            magnitude: magnitude to display 'S', 'P', etc...
+            parent: Parent object: the QTableView object
+        """
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.parent = parent
+
+        self.format = format
+
+        self.circuit = multi_circuit
+
+        self.device = device
+
+        self.magnitude = magnitude
+
+        self.non_editable_indices = list()
+
+        self.editable = True
+
+        self.r = len(self.circuit.time_profile)
+
+        self.elements, self.buses = self.circuit.get_elements_by_type(device)
+
+        self.c = len(self.elements)
+
+        self.formatter = lambda x: "%.2f" % x
+
+        self.set_delegates()
+
+    def set_delegates(self):
+        """
+        Set the cell editor types depending on the attribute_types array
+        :return:
+        """
+
+        if self.format is bool:
+            delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+            self.parent.setItemDelegate(delegate)
+
+        elif self.format is float:
+            delegate = FloatDelegate(self.parent)
+            self.parent.setItemDelegate(delegate)
+
+        elif self.format is str:
+            delegate = TextDelegate(self.parent)
+            self.parent.setItemDelegate(delegate)
+
+        elif self.format is complex:
+            delegate = ComplexDelegate(self.parent)
+            self.parent.setItemDelegate(delegate)
+
+    def flags(self, index):
+        """
+        Get the display mode
+        :param index:
+        :return:
+        """
+
+        if self.editable and index.column() not in self.non_editable_indices:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=None):
+        """
+        Get number of rows
+        :param parent:
+        :return:
+        """
+        return self.r
+
+    def columnCount(self, parent=None):
+        """
+        Get number of columns
+        :param parent:
+        :return:
+        """
+        return self.c
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+        Get the data to display
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+
+                df = getattr(self.elements[index.column()], self.magnitude + 'prof')
+                return str(df.values[index.row(), 0])
+
+        return None
+
+    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+
+        if index.column() not in self.non_editable_indices:
+            getattr(self.elements[index.column()], self.magnitude + 'prof').values[index.row(), 0] = value
+        else:
+            pass  # the column cannot be edited
+
+    def headerData(self, p_int, orientation, role):
+        """
+        Get the headers to display
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == QtCore.Qt.DisplayRole:
+
+            if role == QtCore.Qt.DisplayRole:
+                if orientation == QtCore.Qt.Horizontal:
+                    return str(self.elements[p_int].name)
+                elif orientation == QtCore.Qt.Vertical:
+                    if self.circuit.time_profile is None:
+                        return str(p_int)
+                    else:
+                        return str(self.circuit.time_profile[p_int])
+
+        return None
+
+    # def copy_to_column(self, row, col):
+    #     """
+    #     Copies one value to all the column
+    #     @param row: Row of the value
+    #     @param col: Column of the value
+    #     @return: Nothing
+    #     """
+    #     self.data[:, col] = self.data[row, col]
 
 
 def get_list_model(lst, checks=False):

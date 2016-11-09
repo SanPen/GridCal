@@ -19,6 +19,7 @@ from warnings import warn
 
 import networkx as nx
 import pandas as pd
+from datetime import datetime, timedelta
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
@@ -410,6 +411,10 @@ class Bus:
 
         self.name = name
 
+        self.type_name = 'Bus'
+
+        self.properties_with_profile = None
+
         # Nominal voltage (kV)
         self.Vnom = vnom
 
@@ -710,7 +715,7 @@ class Bus:
 class TransformerType:
 
     def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
-                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1):
+                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1, name='TransformerType'):
         """
         Constructor
         @param HV_nominal_voltage: High voltage side nominal voltage (kV)
@@ -723,6 +728,12 @@ class TransformerType:
         @param GR_hv1:
         @param GX_hv1:
         """
+
+        self.name = name
+
+        self.type_name = 'TransformerType'
+
+        self.properties_with_profile = None
 
         self.HV_nominal_voltage = HV_nominal_voltage
 
@@ -829,6 +840,10 @@ class Branch:
         """
 
         self.name = name
+
+        self.type_name = 'Branch'
+
+        self.properties_with_profile = None
 
         self.bus_from = bus_from
         self.bus_to = bus_to
@@ -984,13 +999,16 @@ class Load:
         Load model constructor
         This model implements the so-called ZIP model
         composed of an impedance value, a current value and a power value
-        @param bus_idx: Index of the bus, the load is attached to
         @param impedance: Impedance complex (Ohm)
         @param current: Current complex (kA)
         @param power: Power complex (MVA)
         """
 
         self.name = name
+
+        self.type_name = 'Load'
+
+        self.properties_with_profile = (['S', 'I', 'Z'], [complex, complex, complex])
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
@@ -1020,6 +1038,22 @@ class Load:
         self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
 
         self.edit_types = [str, None, complex, complex, complex]
+
+    def create_profiles(self, index, steps):
+        """
+        Create the load object default profiles
+        Args:
+            index:
+            steps:
+
+        Returns:
+
+        """
+        self.Sprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.S
+
+        self.Iprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.I
+
+        self.Zprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Z
 
     def copy(self):
 
@@ -1067,6 +1101,10 @@ class StaticGenerator:
 
         self.name = name
 
+        self.type_name = 'StaticGenerator'
+
+        self.properties_with_profile = (['S'], [complex])
+
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
@@ -1095,6 +1133,18 @@ class StaticGenerator:
         """
         return [self.name, self.bus.name, str(self.S)]
 
+    def create_profiles(self, index, steps):
+        """
+        Create the load object default profiles
+        Args:
+            index:
+            steps:
+
+        Returns:
+
+        """
+        self.Sprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.S
+
 
 class Battery:
 
@@ -1115,6 +1165,10 @@ class Battery:
 
         self.name = name
 
+        self.type_name = 'Battery'
+
+        self.properties_with_profile = (['P', 'Vset'], [float, float])
+
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
@@ -1129,7 +1183,7 @@ class Battery:
         self.Vset = voltage_module
 
         # voltage set profile for this load
-        self.Vset_prof = vset_prof
+        self.Vsetprof = vset_prof
 
         # minimum reactive power in per unit
         self.Qmin = Qmin
@@ -1164,7 +1218,7 @@ class Battery:
         batt.Vset = self.Vset
 
         # voltage set profile for this load
-        batt.Vset_prof = self.Vset_prof
+        batt.Vsetprof = self.Vsetprof
 
         # minimum reactive power in per unit
         batt.Qmin = self.Qmin
@@ -1187,6 +1241,20 @@ class Battery:
         """
         return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
 
+    def create_profiles(self, index, steps):
+        """
+        Create the load object default profiles
+        Args:
+            index:
+            steps:
+
+        Returns:
+
+        """
+        self.Pprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.P
+
+        self.Vsetprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Vset
+
 
 class ControlledGenerator:
 
@@ -1205,6 +1273,10 @@ class ControlledGenerator:
 
         self.name = name
 
+        self.type_name = 'ControlledGenerator'
+
+        self.properties_with_profile = (['P', 'Vset'], [float, float])
+
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
@@ -1219,7 +1291,7 @@ class ControlledGenerator:
         self.Vset = voltage_module
 
         # voltage set profile for this load
-        self.Vset_prof = vset_prof
+        self.Vsetprof = vset_prof
 
         # minimum reactive power in per unit
         self.Qmin = Qmin
@@ -1251,7 +1323,7 @@ class ControlledGenerator:
         gen.Vset = self.Vset
 
         # voltage set profile for this load
-        gen.Vset_prof = self.Vset_prof
+        gen.Vsetprof = self.Vsetprof
 
         # minimum reactive power in per unit
         gen.Qmin = self.Qmin
@@ -1271,6 +1343,20 @@ class ControlledGenerator:
         """
         return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
 
+    def create_profiles(self, index, steps):
+        """
+        Create the load object default profiles
+        Args:
+            index:
+            steps:
+
+        Returns:
+
+        """
+        self.Pprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.P
+
+        self.Vsetprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Vset
+
 
 class Shunt:
 
@@ -1280,6 +1366,10 @@ class Shunt:
         @param admittance:
         """
         self.name = name
+
+        self.type_name = 'Shunt'
+
+        self.properties_with_profile = (['Y'], [complex])
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
@@ -1316,6 +1406,18 @@ class Shunt:
         :return:
         """
         return [self.name, self.bus.name, str(self.Y)]
+
+    def create_profiles(self, index, steps):
+        """
+        Create the load object default profiles
+        Args:
+            index:
+            steps:
+
+        Returns:
+
+        """
+        self.Yprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Y
 
 
 class Circuit:
@@ -1630,6 +1732,21 @@ class MultiCircuit(Circuit):
 
         self.branch_names = None
 
+        self.objects_with_profiles = [Load(), StaticGenerator(), ControlledGenerator(), Battery(), Shunt()]
+
+        self.time_profile = None
+
+        self.profile_magnitudes = dict()
+
+        '''
+        self.type_name = 'Shunt'
+
+        self.properties_with_profile = ['Y']
+        '''
+        for dev in self.objects_with_profiles:
+            if dev.properties_with_profile is not None:
+                self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
+
     def load_file(self, filename):
         """
         Load GridCal compatible file
@@ -1778,6 +1895,9 @@ class MultiCircuit(Circuit):
                             active=bool(table[i, e.BR_STATUS]))
 
             self.add_branch(branch)
+
+        self.time_profile = master_time_array
+
         print('Interpreted.')
 
     def save_file(self, filepath):
@@ -1921,6 +2041,84 @@ class MultiCircuit(Circuit):
             isl_idx += 1
 
             # print(islands)
+
+    def create_profiles(self, steps, step_length, step_unit, time_base: datetime=datetime.now()):
+        """
+        Set the default profiles in all the objects enabled to have profiles
+        Args:
+            steps: Number of time steps
+            step_length: time length (1, 2, 15, ...)
+            step_unit: unit of the time step
+            time_base: Date to start from
+
+        Returns:
+            Nothing
+        """
+
+        index = [None] * steps
+        for i in range(steps):
+            if step_unit == 'h':
+                index[i] = time_base + timedelta(hours=i*step_length)
+            elif step_unit == 'm':
+                index[i] = time_base + timedelta(minutes=i*step_length)
+            elif step_unit == 's':
+                index[i] = time_base + timedelta(seconds=i*step_length)
+
+        self.time_profile = array(index)
+
+        for bus in self.buses:
+
+            for elm in bus.loads:
+                elm.create_profiles(index, steps)
+
+            for elm in bus.static_generators:
+                elm.create_profiles(index, steps)
+
+            for elm in bus.controlled_generators:
+                elm.create_profiles(index, steps)
+
+            for elm in bus.batteries:
+                elm.create_profiles(index, steps)
+
+            for elm in bus.shunts:
+                elm.create_profiles(index, steps)
+
+    def get_elements_by_type(self, type):
+
+        elements = list()
+        parent_buses = list()
+
+        if type == 'Load':
+            for bus in self.buses:
+                for elm in bus.loads:
+                    elements.append(elm)
+                    parent_buses.append(bus)
+
+        elif type == 'StaticGenerator':
+            for bus in self.buses:
+                for elm in bus.static_generators:
+                    elements.append(elm)
+                    parent_buses.append(bus)
+
+        elif type == 'ControlledGenerator':
+            for bus in self.buses:
+                for elm in bus.controlled_generators:
+                    elements.append(elm)
+                    parent_buses.append(bus)
+
+        elif type == 'Battery':
+            for bus in self.buses:
+                for elm in bus.batteries:
+                    elements.append(elm)
+                    parent_buses.append(bus)
+
+        elif type == 'Shunt':
+            for bus in self.buses:
+                for elm in bus.shunts:
+                    elements.append(elm)
+                    parent_buses.append(bus)
+
+        return elements, parent_buses
 
     def set_power(self, S):
         """

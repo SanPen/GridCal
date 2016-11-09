@@ -1044,6 +1044,66 @@ class ProfileTypes(Enum):
     Generators = 2
 
 
+class NewProfilesStructureDialogue(QDialog):
+    def __init__(self):
+        super(NewProfilesStructureDialogue, self).__init__()
+        self.setObjectName("self")
+        # self.resize(200, 71)
+        # self.setMinimumSize(QtCore.QSize(200, 71))
+        # self.setMaximumSize(QtCore.QSize(200, 71))
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        # icon = QtGui.QIcon()
+        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.setWindowIcon(icon)
+        self.layout = QVBoxLayout(self)
+
+        self.calendar = QDateTimeEdit()
+        self.calendar.setDateTime(QDateTime(2011, 4, 22, 00, 00, 00))
+
+        self.steps_spinner = QSpinBox()
+        self.steps_spinner.setMinimum(1)
+        self.steps_spinner.setMaximum(9999999)
+        self.steps_spinner.setValue(1)
+
+        self.step_length = QDoubleSpinBox()
+        self.step_length.setMinimum(1)
+        self.step_length.setMaximum(60)
+        self.step_length.setValue(1)
+
+        self.units = QComboBox()
+        self.units.setModel(get_list_model(['h', 'm', 's']))
+
+        self.accept_btn = QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        self.layout.addWidget(self.calendar)
+        self.layout.addWidget(self.steps_spinner)
+        self.layout.addWidget(self.step_length)
+        self.layout.addWidget(self.units)
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle('New profiles structure')
+
+    def accept_click(self):
+        self.accept()
+
+    def get_values(self):
+        steps = self.steps_spinner.value()
+
+        step_length = self.step_length.value()
+
+        step_unit = self.units.currentText()
+
+        time_base = self.calendar.dateTime()
+
+        # a = QDateTime(2011, 4, 22, 00, 00, 00)
+        # a
+        return steps, step_length, step_unit, time_base.toPyDateTime()
+
+
 class MainGUI(QMainWindow):
 
     def __init__(self, parent=None):
@@ -1082,6 +1142,10 @@ class MainGUI(QMainWindow):
 
         self.ui.solver_comboBox.setCurrentIndex(0)
         self.ui.retry_solver_comboBox.setCurrentIndex(3)
+
+        mdl = get_list_model(self.circuit.profile_magnitudes.keys())
+        self.ui.profile_device_type_comboBox.setModel(mdl)
+        self.profile_device_type_changed()
 
         ################################################################################################################
         # Declare the schematic editor
@@ -1183,7 +1247,19 @@ class MainGUI(QMainWindow):
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
+        # Buttons
+
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
+
+        self.ui.new_profiles_structure_pushButton.clicked.connect(self.new_profiles_structure)
+
+        self.ui.delete_profiles_structure_pushButton.clicked.connect(self.delete_profiles_structure)
+
+        self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
+
+        self.ui.profile_import_pushButton.clicked.connect(self.import_profiles)
+
+        self.ui.profile_display_pushButton.clicked.connect(self.display_profiles)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1197,6 +1273,9 @@ class MainGUI(QMainWindow):
         self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
+
+        # combobox
+        self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
         ################################################################################################################
         # Other actions
@@ -1248,7 +1327,7 @@ class MainGUI(QMainWindow):
 
         msg += "The source of Gridcal can be found at:\n" + url + "\n"
 
-        QtGui.QMessageBox.about(self, "About GridCal", msg)
+        QMessageBox.about(self, "About GridCal", msg)
 
     def print_console_help(self):
         """
@@ -1475,6 +1554,10 @@ class MainGUI(QMainWindow):
             self.circuit = MultiCircuit()
             self.circuit.load_file(filename=filename)
             self.create_schematic_from_api(explode_factor=500)
+            self.circuit.compile()
+
+            if self.circuit.time_series_input is not None:
+                print('Profiles available')
 
     def save_file(self):
         """
@@ -1525,7 +1608,11 @@ class MainGUI(QMainWindow):
         # self.startedConnection.remove_()
 
     def view_objects_data(self):
+        """
 
+        Returns:
+
+        """
         elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
 
         # ['Buses', 'Branches', 'Loads', 'Static Generators', 'Controlled Generators', 'Batteries']
@@ -1566,6 +1653,50 @@ class MainGUI(QMainWindow):
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
+
+    def profile_device_type_changed(self):
+        """
+
+        Returns:
+
+        """
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+
+        mdl = get_list_model(self.circuit.profile_magnitudes[dev_type][0])
+        self.ui.device_type_magnitude_comboBox.setModel(mdl)
+
+    def new_profiles_structure(self):
+        print('new_profiles_structure')
+
+        dlg = NewProfilesStructureDialogue()
+        if dlg.exec_():
+            steps, step_length, step_unit, time_base = dlg.get_values()
+            print(steps, step_length, step_unit, time_base)
+            self.circuit.create_profiles(steps, step_length, step_unit, time_base)
+            self.circuit.compile()
+
+    def delete_profiles_structure(self):
+        print('delete_profiles_structure')
+
+    def set_profiles_state_to_grid(self):
+        print('set_profiles_state_to_grid')
+
+    def import_profiles(self):
+        print('import_profiles')
+
+    def display_profiles(self):
+        print('display_profiles')
+
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+
+        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude = magnitudes[idx]
+        mtype = mag_types[idx]
+
+        mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype, parent=self.ui.tableView)
+        self.ui.tableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
         """
