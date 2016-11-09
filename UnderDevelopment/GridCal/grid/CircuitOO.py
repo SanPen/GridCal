@@ -1807,6 +1807,8 @@ class MultiCircuit(Circuit):
             names = data['bus_names']
         else:
             names = ['bus ' + str(i) for i in range(n)]
+
+        #   Buses
         for i in range(n):
             # Create bus
             bus = Bus(name=names[i],
@@ -1896,8 +1898,26 @@ class MultiCircuit(Circuit):
 
             self.add_branch(branch)
 
-        self.time_profile = master_time_array
+        # add the profiles
 
+        if master_time_array is not None:
+
+            self.format_profiles(master_time_array, len(master_time_array))
+
+            table = data['bus']
+            for i in range(len(table)):
+                if are_load_prfiles and len(self.buses[i].loads) > 0:  # set the profile
+                    self.buses[i].loads[0].Sprof = pd.DataFrame(data=Sprof[:, i],
+                                                                index=master_time_array,
+                                                                columns=['Load@' + names[i]])
+            import grid.ImportParsers.GenDefinitions as e
+            table = data['gen']
+            for i in range(len(table)):
+                bus_idx = int(table[i, e.GEN_BUS])
+                if are_gen_prfiles:
+                    self.buses[bus_idx].controlled_generators[0].Pprof = pd.DataFrame(data=Gprof[:, i],
+                                                                                      index=master_time_array,
+                                                                                      columns=['Gen@' + names[i]])
         print('Interpreted.')
 
     def save_file(self, filepath):
@@ -2063,6 +2083,19 @@ class MultiCircuit(Circuit):
                 index[i] = time_base + timedelta(minutes=i*step_length)
             elif step_unit == 's':
                 index[i] = time_base + timedelta(seconds=i*step_length)
+
+        self.format_profiles(index, steps)
+
+    def format_profiles(self, index, steps):
+        """
+
+        Args:
+            index:
+            steps:
+
+        Returns:
+
+        """
 
         self.time_profile = array(index)
 
@@ -3095,6 +3128,8 @@ class PowerFlow(QRunnable):
         """
         n = len(self.grid.buses)
         m = len(self.grid.branches)
+        if self.grid.power_flow_results is None:
+            self.grid.power_flow_results = PowerFlowResults()
         self.grid.power_flow_results.initialize(n, m)
         i = 1
         # self.progress_signal.emit(0.0)
