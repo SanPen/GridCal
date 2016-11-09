@@ -1556,8 +1556,14 @@ class MainGUI(QMainWindow):
             self.create_schematic_from_api(explode_factor=500)
             self.circuit.compile()
 
-            if self.circuit.time_series_input is not None:
+            if self.circuit.time_profile is not None:
                 print('Profiles available')
+                mdl = get_list_model(self.circuit.time_profile)
+            else:
+                mdl = QStandardItemModel()
+            self.ui.profile_time_selection_comboBox.setModel(mdl)
+            self.ui.vs_departure_comboBox.setModel(mdl)
+            self.ui.vs_target_comboBox.setModel(mdl)
 
     def save_file(self):
         """

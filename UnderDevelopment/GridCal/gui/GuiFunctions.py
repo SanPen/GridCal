@@ -116,6 +116,7 @@ class FloatDelegate(QItemDelegate):
         editor = QDoubleSpinBox(parent)
         editor.setMaximum(self.max)
         editor.setMinimum(self.min)
+        editor.setDecimals(8)
         editor.editingFinished.connect(self.returnPressed)
         return editor
 
@@ -616,13 +617,13 @@ def get_list_model(lst, checks=False):
         if not checks:
             for val in lst:
                 # for the list model
-                item = QStandardItem(val)
+                item = QStandardItem(str(val))
                 item.setEditable(False)
                 list_model.appendRow(item)
         else:
             for val in lst:
                 # for the list model
-                item = QStandardItem(val)
+                item = QStandardItem(str(val))
                 item.setEditable(False)
                 item.setCheckable(True)
                 item.setCheckState(QtCore.Qt.Checked)
