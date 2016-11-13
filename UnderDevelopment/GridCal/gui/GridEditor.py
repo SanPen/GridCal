@@ -364,7 +364,8 @@ class HandleItem(QGraphicsEllipseItem):
         return super(HandleItem, self).itemChange(change, value)
 
 
-class LoadGraphicItem(QGraphicsPolygonItem):
+class LoadGraphicItem(QGraphicsItemGroup):
+    moved = pyqtSignal(QPointF)
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -372,23 +373,41 @@ class LoadGraphicItem(QGraphicsPolygonItem):
         :param parent:
         :param api_obj:
         """
-        QGraphicsPolygonItem.__init__(self, parent=parent)
+        # QGraphicsPolygonItem.__init__(self, parent=parent)
+        QGraphicsItemGroup.__init__(self, parent=parent)
 
-        self.w = 60.0
-        self.h = 60.0
+        # self.w = 60.0
+        # self.h = 60.0
+
+        self.parent = parent
 
         self.api_object = api_obj
 
         self.diagramScene = diagramScene
 
-        # Properties of the rectangle:
-        self.setPen(QPen(QtCore.Qt.red, 2))
+        # Properties of the container:
         # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        # self.installSceneEventFilter(self)
 
-        pts = [QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]
-        self.setPolygon(QPolygonF(pts))
+        triangle = QGraphicsPolygonItem()
+        triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]))
+        triangle.setPen(QPen(Qt.red, 2))
+
+        line = QGraphicsLineItem(QLineF(QPointF(10, -10), QPointF(10, 0)))
+        line .setPen(QPen(Qt.red, 2))
+        # triangle.setPos(10, 30)
+        # self.
+        self.addToGroup(triangle)
+        self.addToGroup(line)
+        self.setPos(0, 0)
+
+        # line to tie this object with the original bus (the parent)
+        self.nexus = self.parent.diagramScene.addLine(10, -10,
+                                                      self.parent.x() + self.parent.w / 2,
+                                                      self.parent.y() + self.parent.h)
+
 
     def contextMenuEvent(self, event):
         """
@@ -420,6 +439,20 @@ class LoadGraphicItem(QGraphicsPolygonItem):
         mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseMoveEvent(self, QGraphicsSceneMouseEvent):
+        p = QGraphicsSceneMouseEvent.pos()
+        self.moved.emit(p)
+
+    # def eventFilter(self, source, event):
+    #     if event.type() == QtCore.QEvent.MouseMove and source is self:
+    #         pos = event.pos()
+    #
+    #         self.nexus.setLine(pos.x() + 5, pos.y(),
+    #                            self.parent.x() + self.parent.w / 2,
+    #                            self.parent.y() + self.parent.h)
+    #
+    #     return QWidget.eventFilter(self, source, event)
 
 
 class BusGraphicItem(QGraphicsRectItem, GeneralItem):
