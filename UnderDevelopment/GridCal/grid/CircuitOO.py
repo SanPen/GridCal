@@ -1148,7 +1148,7 @@ class StaticGenerator:
 
 class Battery:
 
-    def __init__(self, name='gen', active_power=0.0, voltage_module=0.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
+    def __init__(self, name='batt', active_power=0.0, voltage_module=0.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
                  power_prof=None, vset_prof=None):
         """
         Batery (Voltage controlled and dispatchable)

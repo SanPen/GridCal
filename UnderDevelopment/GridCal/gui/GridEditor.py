@@ -365,7 +365,6 @@ class HandleItem(QGraphicsEllipseItem):
 
 
 class LoadGraphicItem(QGraphicsItemGroup):
-    moved = pyqtSignal(QPointF)
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -401,13 +400,12 @@ class LoadGraphicItem(QGraphicsItemGroup):
         # self.
         self.addToGroup(triangle)
         self.addToGroup(line)
-        self.setPos(0, 0)
 
         # line to tie this object with the original bus (the parent)
-        self.nexus = self.parent.diagramScene.addLine(10, -10,
-                                                      self.parent.x() + self.parent.w / 2,
-                                                      self.parent.y() + self.parent.h)
-
+        # self.nexus = self.parent.diagramScene.addLine(10, -10,
+        #                                               self.parent.x() + self.parent.w / 2,
+        #                                               self.parent.y() + self.parent.h)
+        self.setPos(self.parent.x(), self.parent.y() + 100)
 
     def contextMenuEvent(self, event):
         """
@@ -440,9 +438,20 @@ class LoadGraphicItem(QGraphicsItemGroup):
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
-    def mouseMoveEvent(self, QGraphicsSceneMouseEvent):
-        p = QGraphicsSceneMouseEvent.pos()
-        self.moved.emit(p)
+    # def mouseMoveEvent(self, QGraphicsSceneMouseEvent):
+    #     p = QGraphicsSceneMouseEvent.pos()
+    #     print(p.x(), p.y())
+    #     # self.setPos(self.parent.x() + p.x(), self.parent.y() + p.y())
+    #     QGraphicsItemGroup.mouseMoveEvent(QGraphicsSceneMouseEvent)
+
+    # def mousePressEvent(self, event):
+    #     self.position = event.globalPos()
+    #
+    # def mouseMoveEvent(self, event):
+    #     # will only by called if the mouse is also pressed
+    #     position_now = event.globalPos()
+    #     self.setPos(position_now - self.position)
+    #     self.position = position_now
 
     # def eventFilter(self, source, event):
     #     if event.type() == QtCore.QEvent.MouseMove and source is self:
@@ -453,6 +462,333 @@ class LoadGraphicItem(QGraphicsItemGroup):
     #                            self.parent.y() + self.parent.h)
     #
     #     return QWidget.eventFilter(self, source, event)
+
+
+class ShuntGraphicItem(QGraphicsItemGroup):
+
+    def __init__(self, parent, api_obj, diagramScene):
+        """
+
+        :param parent:
+        :param api_obj:
+        """
+        # QGraphicsPolygonItem.__init__(self, parent=parent)
+        QGraphicsItemGroup.__init__(self, parent=parent)
+
+        # self.w = 60.0
+        # self.h = 60.0
+
+        self.parent = parent
+
+        self.api_object = api_obj
+
+        self.diagramScene = diagramScene
+
+        pen = QPen(Qt.red, 2)
+
+        # Properties of the container:
+        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        # self.installSceneEventFilter(self)
+
+        lines = list()
+        lines.append(QLineF(QPointF(5, 0), QPointF(5, 8)))
+        lines.append(QLineF(QPointF(0, 8), QPointF(10, 8)))
+        lines.append(QLineF(QPointF(0, 12), QPointF(10, 12)))
+        lines.append(QLineF(QPointF(5, 12), QPointF(5, 20)))
+
+        for l in lines:
+            l1 = QGraphicsLineItem(l)
+            l1.setPen(pen)
+            self.addToGroup(l1)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
+
+        # line to tie this object with the original bus (the parent)
+        # self.nexus = self.parent.diagramScene.addLine(10, -10,
+        #                                               self.parent.x() + self.parent.w / 2,
+        #                                               self.parent.y() + self.parent.h)
+
+    def contextMenuEvent(self, event):
+        """
+        Display context menu
+        @param event:
+        @return:
+        """
+        menu = QMenu()
+
+        da = menu.addAction('Delete')
+        da.triggered.connect(self.remove)
+
+        menu.exec_(event.screenPos())
+
+    def remove(self):
+        """
+        Remove this element
+        @return:
+        """
+        self.diagramScene.removeItem(self)
+        self.api_object.bus.shunts.remove(self.api_object)
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+
+class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
+
+    def __init__(self, parent, api_obj, diagramScene):
+        """
+
+        :param parent:
+        :param api_obj:
+        """
+        # QGraphicsPolygonItem.__init__(self, parent=parent)
+        QGraphicsItemGroup.__init__(self, parent=parent)
+
+        # self.w = 60.0
+        # self.h = 60.0
+
+        self.parent = parent
+
+        self.api_object = api_obj
+
+        self.diagramScene = diagramScene
+
+        color = Qt.red
+        pen = QPen(color, 2)
+
+        self.w = 40
+        self.h = 40
+
+        # Properties of the container:
+        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        # self.installSceneEventFilter(self)
+
+        l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
+        l1.setPen(pen)
+        self.addToGroup(l1)
+
+        circle = QGraphicsEllipseItem(0, 0, self.h, self.w)
+        circle.setPen(pen)
+        self.addToGroup(circle)
+
+        label = QGraphicsTextItem('G', parent=circle)
+        label.setDefaultTextColor(color)
+        label.setPos(self.h/4, self.w/4)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
+
+        # line to tie this object with the original bus (the parent)
+        # self.nexus = self.parent.diagramScene.addLine(10, -10,
+        #                                               self.parent.x() + self.parent.w / 2,
+        #                                               self.parent.y() + self.parent.h)
+
+    def contextMenuEvent(self, event):
+        """
+        Display context menu
+        @param event:
+        @return:
+        """
+        menu = QMenu()
+
+        da = menu.addAction('Delete')
+        da.triggered.connect(self.remove)
+
+        menu.exec_(event.screenPos())
+
+    def remove(self):
+        """
+        Remove this element
+        @return:
+        """
+        self.diagramScene.removeItem(self)
+        self.api_object.bus.controlled_generators.remove(self.api_object)
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+
+class StaticGeneratorGraphicItem(QGraphicsItemGroup):
+
+    def __init__(self, parent, api_obj, diagramScene):
+        """
+
+        :param parent:
+        :param api_obj:
+        """
+        # QGraphicsPolygonItem.__init__(self, parent=parent)
+        QGraphicsItemGroup.__init__(self, parent=parent)
+
+        # self.w = 60.0
+        # self.h = 60.0
+
+        self.parent = parent
+
+        self.api_object = api_obj
+
+        self.diagramScene = diagramScene
+
+        color = Qt.red
+        pen = QPen(color, 2)
+
+        self.w = 40
+        self.h = 40
+
+        # Properties of the container:
+        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        # self.installSceneEventFilter(self)
+
+        l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
+        l1.setPen(pen)
+        self.addToGroup(l1)
+
+        square = QGraphicsRectItem(0, 0, self.h, self.w)
+        square.setPen(pen)
+        self.addToGroup(square)
+
+        label = QGraphicsTextItem('S', parent=square)
+        label.setDefaultTextColor(color)
+        label.setPos(self.h/4, self.w/4)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
+
+        # line to tie this object with the original bus (the parent)
+        # self.nexus = self.parent.diagramScene.addLine(10, -10,
+        #                                               self.parent.x() + self.parent.w / 2,
+        #                                               self.parent.y() + self.parent.h)
+
+    def contextMenuEvent(self, event):
+        """
+        Display context menu
+        @param event:
+        @return:
+        """
+        menu = QMenu()
+
+        da = menu.addAction('Delete')
+        da.triggered.connect(self.remove)
+
+        menu.exec_(event.screenPos())
+
+    def remove(self):
+        """
+        Remove this element
+        @return:
+        """
+        self.diagramScene.removeItem(self)
+        self.api_object.bus.static_generators.remove(self.api_object)
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+
+class BatteryGraphicItem(QGraphicsItemGroup):
+
+    def __init__(self, parent, api_obj, diagramScene):
+        """
+
+        :param parent:
+        :param api_obj:
+        """
+        # QGraphicsPolygonItem.__init__(self, parent=parent)
+        QGraphicsItemGroup.__init__(self, parent=parent)
+
+        # self.w = 60.0
+        # self.h = 60.0
+
+        self.parent = parent
+
+        self.api_object = api_obj
+
+        self.diagramScene = diagramScene
+
+        color = Qt.red
+        pen = QPen(color, 2)
+
+        self.w = 40
+        self.h = 40
+
+        # Properties of the container:
+        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        # self.installSceneEventFilter(self)
+
+        l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
+        l1.setPen(pen)
+        self.addToGroup(l1)
+
+        square = QGraphicsRectItem(0, 0, self.h, self.w)
+        square.setPen(pen)
+        self.addToGroup(square)
+
+        label = QGraphicsTextItem('B', parent=square)
+        label.setDefaultTextColor(color)
+        label.setPos(self.h/4, self.w/4)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
+
+        # line to tie this object with the original bus (the parent)
+        # self.nexus = self.parent.diagramScene.addLine(10, -10,
+        #                                               self.parent.x() + self.parent.w / 2,
+        #                                               self.parent.y() + self.parent.h)
+
+    def contextMenuEvent(self, event):
+        """
+        Display context menu
+        @param event:
+        @return:
+        """
+        menu = QMenu()
+
+        da = menu.addAction('Delete')
+        da.triggered.connect(self.remove)
+
+        menu.exec_(event.screenPos())
+
+    def remove(self):
+        """
+        Remove this element
+        @return:
+        """
+        self.diagramScene.removeItem(self)
+        self.api_object.bus.batteries.remove(self.api_object)
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
 
 
 class BusGraphicItem(QGraphicsRectItem, GeneralItem):
@@ -619,8 +955,22 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        menu.addSeparator()
+
         al = menu.addAction('Add load')
         al.triggered.connect(self.add_load)
+
+        ash = menu.addAction('Add shunt')
+        ash.triggered.connect(self.add_shunt)
+
+        acg = menu.addAction('Add controlled generator')
+        acg.triggered.connect(self.add_controlled_generator)
+
+        asg = menu.addAction('Add static generator')
+        asg.triggered.connect(self.add_static_generator)
+
+        ab = menu.addAction('Add battery')
+        ab.triggered.connect(self.add_battery)
 
         menu.exec_(event.screenPos())
 
@@ -697,12 +1047,64 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
     #     self.api_object.y = QGraphicsSceneMouseEvent.pos().y()
 
     def add_load(self):
+        """
 
+        Returns:
+
+        """
         load_obj = Load()
         load_obj.bus = self.api_object
         load_grph = LoadGraphicItem(self, load_obj, self.diagramScene)
         load_obj.graphic_obj = load_grph
         self.api_object.loads.append(load_obj)
+
+    def add_shunt(self):
+        """
+
+        Returns:
+
+        """
+        _obj = Shunt()
+        _obj.bus = self.api_object
+        _grph = ShuntGraphicItem(self, _obj, self.diagramScene)
+        _obj.graphic_obj = _grph
+        self.api_object.shunts.append(_obj)
+
+    def add_controlled_generator(self):
+        """
+
+        Returns:
+
+        """
+        _obj = ControlledGenerator()
+        _obj.bus = self.api_object
+        _grph = ControlledGeneratorGraphicItem(self, _obj, self.diagramScene)
+        _obj.graphic_obj = _grph
+        self.api_object.controlled_generators.append(_obj)
+
+    def add_static_generator(self):
+        """
+
+        Returns:
+
+        """
+        _obj = StaticGenerator()
+        _obj.bus = self.api_object
+        _grph = StaticGeneratorGraphicItem(self, _obj, self.diagramScene)
+        _obj.graphic_obj = _grph
+        self.api_object.static_generators.append(_obj)
+
+    def add_battery(self):
+        """
+
+        Returns:
+
+        """
+        _obj = Battery()
+        _obj.bus = self.api_object
+        _grph = BatteryGraphicItem(self, _obj, self.diagramScene)
+        _obj.graphic_obj = _grph
+        self.api_object.batteries.append(_obj)
 
 
 class EditorGraphicsView(QGraphicsView):
@@ -722,6 +1124,7 @@ class EditorGraphicsView(QGraphicsView):
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
         self.setMouseTracking(True)
+        self.setInteractive(True)
         self.scene_ = scene
         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.editor = editor
