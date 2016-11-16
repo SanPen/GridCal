@@ -898,7 +898,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Create corner for resize:
         self.sizer = HandleItem(self)
         self.sizer.setPos(self.w, self.h)
-        self.sizer.posChangeCallbacks.append(self.changeSize)  # Connect the callback
+        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
 
         self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
 
@@ -915,9 +915,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.terminals = self.upper_terminals + self.lower_terminals + self.right_terminals + self.left_terminals
 
         # Update size:
-        self.changeSize(self.w, self.h)
+        self.change_size(self.w, self.h)
 
-    def changeSize(self, w, h):
+    def change_size(self, w, h):
         """
         Resize block function
         @param w:
@@ -988,12 +988,15 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Returns:
 
         """
+        print('Arranging ', self.api_object.name)
         x0 = 0
-        y0 = self.h + self.y() + 40
-        x = x0 + self.x()
+        y0 = self.h + 40
+        x = x0 #+ self.x()
+        print(x, y0)
         for elm in self.graphic_children:
             elm.setPos(x, y0)
-            x += elm.x() + 10
+            print('\t', x, y0)
+            x += elm.w + 10
 
     def create_children_icons(self):
 
