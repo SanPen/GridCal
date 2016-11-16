@@ -4,6 +4,34 @@ from PyQt5.QtWidgets import *
 from grid.CircuitOO import *
 from gui.GuiFunctions import *
 
+
+class LineUpdateMixin(object):
+    def __init__(self, parent):
+        super(LineUpdateMixin, self).__init__(parent)
+        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemScenePositionHasChanged:
+            self.parentItem().update_line(value)
+        return super(LineUpdateMixin, self).itemChange(change, value)
+
+
+class Polygon(LineUpdateMixin, QGraphicsPolygonItem):
+    pass
+
+
+class Square(LineUpdateMixin, QGraphicsRectItem):
+    pass
+
+
+class Circle(LineUpdateMixin, QGraphicsEllipseItem):
+    pass
+
+
+class LineF(LineUpdateMixin, QLineF):
+    pass
+
+
 class GeneralItem(object):
 
     def editParameters(self):
@@ -373,10 +401,11 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :param api_obj:
         """
         # QGraphicsPolygonItem.__init__(self, parent=parent)
-        QGraphicsItemGroup.__init__(self, parent=parent)
+        # QGraphicsItemGroup.__init__(self, parent=parent)
+        super(LoadGraphicItem, self).__init__(parent)
 
-        # self.w = 60.0
-        # self.h = 60.0
+        self.w = 20.0
+        self.h = 20.0
 
         self.parent = parent
 
@@ -390,22 +419,30 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        triangle = QGraphicsPolygonItem()
-        triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]))
+        triangle = Polygon(self)
+        triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w/2, self.h)]))
         triangle.setPen(QPen(Qt.red, 2))
 
-        line = QGraphicsLineItem(QLineF(QPointF(10, -10), QPointF(10, 0)))
-        line .setPen(QPen(Qt.red, 2))
+        # line = QGraphicsLineItem(QLineF(QPointF(self.w/2, -10), QPointF(self.w/2, 0)))
+        # line .setPen(QPen(Qt.red, 2))
         # triangle.setPos(10, 30)
         # self.
         self.addToGroup(triangle)
-        self.addToGroup(line)
+        # self.addToGroup(line)
 
         # line to tie this object with the original bus (the parent)
-        # self.nexus = self.parent.diagramScene.addLine(10, -10,
-        #                                               self.parent.x() + self.parent.w / 2,
-        #                                               self.parent.y() + self.parent.h)
-        self.setPos(self.parent.x(), self.parent.y() + 100)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+        self.update_line(self.pos())
+
+    def update_line(self, pos):
+        parent = self.parentItem()
+        rect = parent.rect()
+        self.nexus.setLine(
+            pos.x() + 10, pos.y() + 0,
+            parent.x() + rect.width() / 2,
+            parent.y() + rect.height(),
+        )
 
     def contextMenuEvent(self, event):
         """
@@ -438,31 +475,6 @@ class LoadGraphicItem(QGraphicsItemGroup):
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
-    # def mouseMoveEvent(self, QGraphicsSceneMouseEvent):
-    #     p = QGraphicsSceneMouseEvent.pos()
-    #     print(p.x(), p.y())
-    #     # self.setPos(self.parent.x() + p.x(), self.parent.y() + p.y())
-    #     QGraphicsItemGroup.mouseMoveEvent(QGraphicsSceneMouseEvent)
-
-    # def mousePressEvent(self, event):
-    #     self.position = event.globalPos()
-    #
-    # def mouseMoveEvent(self, event):
-    #     # will only by called if the mouse is also pressed
-    #     position_now = event.globalPos()
-    #     self.setPos(position_now - self.position)
-    #     self.position = position_now
-
-    # def eventFilter(self, source, event):
-    #     if event.type() == QtCore.QEvent.MouseMove and source is self:
-    #         pos = event.pos()
-    #
-    #         self.nexus.setLine(pos.x() + 5, pos.y(),
-    #                            self.parent.x() + self.parent.w / 2,
-    #                            self.parent.y() + self.parent.h)
-    #
-    #     return QWidget.eventFilter(self, source, event)
-
 
 class ShuntGraphicItem(QGraphicsItemGroup):
 
@@ -473,10 +485,11 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         :param api_obj:
         """
         # QGraphicsPolygonItem.__init__(self, parent=parent)
-        QGraphicsItemGroup.__init__(self, parent=parent)
+        # QGraphicsItemGroup.__init__(self, parent=parent)
+        super(ShuntGraphicItem, self).__init__(parent)
 
-        # self.w = 60.0
-        # self.h = 60.0
+        self.w = 10.0
+        self.h = 30.0
 
         self.parent = parent
 
@@ -493,10 +506,13 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         # self.installSceneEventFilter(self)
 
         lines = list()
-        lines.append(QLineF(QPointF(5, 0), QPointF(5, 8)))
-        lines.append(QLineF(QPointF(0, 8), QPointF(10, 8)))
-        lines.append(QLineF(QPointF(0, 12), QPointF(10, 12)))
-        lines.append(QLineF(QPointF(5, 12), QPointF(5, 20)))
+        lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
+        lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
+        lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
+
+        line = LineF(parent)
+        line.setLine(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h))
+        lines.append(line)
 
         for l in lines:
             l1 = QGraphicsLineItem(l)
@@ -506,9 +522,18 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.setPos(self.parent.x(), self.parent.y() + 100)
 
         # line to tie this object with the original bus (the parent)
-        # self.nexus = self.parent.diagramScene.addLine(10, -10,
-        #                                               self.parent.x() + self.parent.w / 2,
-        #                                               self.parent.y() + self.parent.h)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+        self.update_line(self.pos())
+
+    def update_line(self, pos):
+        parent = self.parentItem()
+        rect = parent.rect()
+        self.nexus.setLine(
+            pos.x() + 10, pos.y() + 0,
+            parent.x() + rect.width() / 2,
+            parent.y() + rect.height(),
+        )
 
     def contextMenuEvent(self, event):
         """
@@ -551,7 +576,9 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         :param api_obj:
         """
         # QGraphicsPolygonItem.__init__(self, parent=parent)
-        QGraphicsItemGroup.__init__(self, parent=parent)
+        # QGraphicsItemGroup.__init__(self, parent=parent)
+
+        super(ControlledGeneratorGraphicItem, self).__init__(parent)
 
         # self.w = 60.0
         # self.h = 60.0
@@ -574,11 +601,12 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
-        l1.setPen(pen)
-        self.addToGroup(l1)
+        # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
+        # l1.setPen(pen)
+        # self.addToGroup(l1)
 
-        circle = QGraphicsEllipseItem(0, 0, self.h, self.w)
+        circle = Circle(parent)
+        circle.setRect(0, 0, self.h, self.w)
         circle.setPen(pen)
         self.addToGroup(circle)
 
@@ -589,9 +617,18 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.setPos(self.parent.x(), self.parent.y() + 100)
 
         # line to tie this object with the original bus (the parent)
-        # self.nexus = self.parent.diagramScene.addLine(10, -10,
-        #                                               self.parent.x() + self.parent.w / 2,
-        #                                               self.parent.y() + self.parent.h)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+        self.update_line(self.pos())
+
+    def update_line(self, pos):
+        parent = self.parentItem()
+        rect = parent.rect()
+        self.nexus.setLine(
+            pos.x() + 10, pos.y() + 0,
+            parent.x() + rect.width() / 2,
+            parent.y() + rect.height(),
+        )
 
     def contextMenuEvent(self, event):
         """
@@ -634,10 +671,8 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         :param api_obj:
         """
         # QGraphicsPolygonItem.__init__(self, parent=parent)
-        QGraphicsItemGroup.__init__(self, parent=parent)
-
-        # self.w = 60.0
-        # self.h = 60.0
+        # QGraphicsItemGroup.__init__(self, parent=parent)
+        super(StaticGeneratorGraphicItem, self).__init__(parent)
 
         self.parent = parent
 
@@ -657,11 +692,12 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
-        l1.setPen(pen)
-        self.addToGroup(l1)
+        # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
+        # l1.setPen(pen)
+        # self.addToGroup(l1)
 
-        square = QGraphicsRectItem(0, 0, self.h, self.w)
+        square = Square(parent)
+        square.setRect(0, 0, self.h, self.w)
         square.setPen(pen)
         self.addToGroup(square)
 
@@ -672,9 +708,18 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.setPos(self.parent.x(), self.parent.y() + 100)
 
         # line to tie this object with the original bus (the parent)
-        # self.nexus = self.parent.diagramScene.addLine(10, -10,
-        #                                               self.parent.x() + self.parent.w / 2,
-        #                                               self.parent.y() + self.parent.h)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+        self.update_line(self.pos())
+
+    def update_line(self, pos):
+        parent = self.parentItem()
+        rect = parent.rect()
+        self.nexus.setLine(
+            pos.x() + 10, pos.y() + 0,
+            parent.x() + rect.width() / 2,
+            parent.y() + rect.height(),
+        )
 
     def contextMenuEvent(self, event):
         """
@@ -717,10 +762,8 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         :param api_obj:
         """
         # QGraphicsPolygonItem.__init__(self, parent=parent)
-        QGraphicsItemGroup.__init__(self, parent=parent)
-
-        # self.w = 60.0
-        # self.h = 60.0
+        # QGraphicsItemGroup.__init__(self, parent=parent)
+        super(BatteryGraphicItem, self).__init__(parent)
 
         self.parent = parent
 
@@ -740,11 +783,12 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
-        l1.setPen(pen)
-        self.addToGroup(l1)
+        # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
+        # l1.setPen(pen)
+        # self.addToGroup(l1)
 
-        square = QGraphicsRectItem(0, 0, self.h, self.w)
+        square = Square(self)
+        square.setRect(0, 0, self.h, self.w)
         square.setPen(pen)
         self.addToGroup(square)
 
@@ -755,9 +799,18 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.setPos(self.parent.x(), self.parent.y() + 100)
 
         # line to tie this object with the original bus (the parent)
-        # self.nexus = self.parent.diagramScene.addLine(10, -10,
-        #                                               self.parent.x() + self.parent.w / 2,
-        #                                               self.parent.y() + self.parent.h)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+        self.update_line(self.pos())
+
+    def update_line(self, pos):
+        parent = self.parentItem()
+        rect = parent.rect()
+        self.nexus.setLine(
+            pos.x() + 10, pos.y() + 0,
+            parent.x() + rect.width() / 2,
+            parent.y() + rect.height(),
+        )
 
     def contextMenuEvent(self, event):
         """
@@ -811,8 +864,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @param index:
         @param editor:
         """
-        QGraphicsRectItem.__init__(self, parent=parent)
-        GeneralItem.__init__(self)
+        # QGraphicsRectItem.__init__(self, parent=parent)
+        # GeneralItem.__init__(self)
+        super(BusGraphicItem, self).__init__(parent)
 
         self.w = 60.0
         self.h = 60.0
@@ -822,6 +876,8 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.diagramScene = diagramScene
 
         self.editor = editor
+
+        self.graphic_children = list()
 
         # Properties of the rectangle:
         self.setPen(QPen(QtCore.Qt.black, 2))
@@ -926,6 +982,38 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         return w, h
 
+    def arrange_children(self):
+        """
+        This function sorts the load and generators icons
+        Returns:
+
+        """
+        x0 = 0
+        y0 = self.h + self.y() + 40
+        x = x0 + self.x()
+        for elm in self.graphic_children:
+            elm.setPos(x, y0)
+            x += elm.x() + 10
+
+    def create_children_icons(self):
+
+        for elm in self.api_object.loads:
+            self.add_load(elm)
+
+        for elm in self.api_object.static_generators:
+            self.add_static_generator(elm)
+
+        for elm in self.api_object.controlled_generators:
+            self.add_controlled_generator(elm)
+
+        for elm in self.api_object.shunts:
+            self.add_shunt(elm)
+
+        for elm in self.api_object.batteries:
+            self.add_battery(elm)
+
+        self.arrange_children()
+
     def contextMenuEvent(self, event):
         """
         Display context menu
@@ -971,6 +1059,11 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         ab = menu.addAction('Add battery')
         ab.triggered.connect(self.add_battery)
+
+        menu.addSeparator()
+
+        arr = menu.addAction('Arrange')
+        arr.triggered.connect(self.arrange_children)
 
         menu.exec_(event.screenPos())
 
@@ -1041,70 +1134,80 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
-    # def mouseReleaseEvent(self, QGraphicsSceneMouseEvent):
-    #     """"""
-    #     self.api_object.x = QGraphicsSceneMouseEvent.pos().x()
-    #     self.api_object.y = QGraphicsSceneMouseEvent.pos().y()
-
-    def add_load(self):
+    def add_load(self, api_obj=None):
         """
 
         Returns:
 
         """
-        load_obj = Load()
-        load_obj.bus = self.api_object
-        load_grph = LoadGraphicItem(self, load_obj, self.diagramScene)
-        load_obj.graphic_obj = load_grph
-        self.api_object.loads.append(load_obj)
+        if api_obj is None:
+            api_obj = Load()
+            api_obj.bus = self.api_object
+            self.api_object.loads.append(api_obj)
 
-    def add_shunt(self):
+        _grph = LoadGraphicItem(self, api_obj, self.diagramScene)
+        api_obj.graphic_obj = _grph
+        self.graphic_children.append(_grph)
+
+    def add_shunt(self, api_obj=None):
         """
 
         Returns:
 
         """
-        _obj = Shunt()
-        _obj.bus = self.api_object
-        _grph = ShuntGraphicItem(self, _obj, self.diagramScene)
-        _obj.graphic_obj = _grph
-        self.api_object.shunts.append(_obj)
+        if api_obj is None:
+            api_obj = Shunt()
+            api_obj.bus = self.api_object
+            self.api_object.shunts.append(api_obj)
 
-    def add_controlled_generator(self):
+        _grph = ShuntGraphicItem(self, api_obj, self.diagramScene)
+        api_obj.graphic_obj = _grph
+        self.graphic_children.append(_grph)
+
+    def add_controlled_generator(self, api_obj=None):
         """
 
         Returns:
 
         """
-        _obj = ControlledGenerator()
-        _obj.bus = self.api_object
-        _grph = ControlledGeneratorGraphicItem(self, _obj, self.diagramScene)
-        _obj.graphic_obj = _grph
-        self.api_object.controlled_generators.append(_obj)
+        if api_obj is None:
+            api_obj = ControlledGenerator()
+            api_obj.bus = self.api_object
+            self.api_object.controlled_generators.append(api_obj)
 
-    def add_static_generator(self):
+        _grph = ControlledGeneratorGraphicItem(self, api_obj, self.diagramScene)
+        api_obj.graphic_obj = _grph
+        self.graphic_children.append(_grph)
+
+    def add_static_generator(self, api_obj=None):
         """
 
         Returns:
 
         """
-        _obj = StaticGenerator()
-        _obj.bus = self.api_object
-        _grph = StaticGeneratorGraphicItem(self, _obj, self.diagramScene)
-        _obj.graphic_obj = _grph
-        self.api_object.static_generators.append(_obj)
+        if api_obj is None:
+            api_obj = StaticGenerator()
+            api_obj.bus = self.api_object
+            self.api_object.static_generators.append(api_obj)
 
-    def add_battery(self):
+        _grph = StaticGeneratorGraphicItem(self, api_obj, self.diagramScene)
+        api_obj.graphic_obj = _grph
+        self.graphic_children.append(_grph)
+
+    def add_battery(self, api_obj=None):
         """
 
         Returns:
 
         """
-        _obj = Battery()
-        _obj.bus = self.api_object
-        _grph = BatteryGraphicItem(self, _obj, self.diagramScene)
-        _obj.graphic_obj = _grph
-        self.api_object.batteries.append(_obj)
+        if api_obj is None:
+            api_obj = Battery()
+            api_obj.bus = self.api_object
+            self.api_object.batteries.append(api_obj)
+
+        _grph = BatteryGraphicItem(self, api_obj, self.diagramScene)
+        api_obj.graphic_obj = _grph
+        self.graphic_children.append(_grph)
 
 
 class EditorGraphicsView(QGraphicsView):

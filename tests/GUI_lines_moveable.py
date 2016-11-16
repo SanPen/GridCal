@@ -3,57 +3,59 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import sys
 
+class LineUpdateMixin(object):
+    def __init__(self, parent):
+        super(LineUpdateMixin, self).__init__(parent)
+        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemScenePositionHasChanged:
+            self.parentItem().update_line(value)
+        return super(LineUpdateMixin, self).itemChange(change, value)
+
+
+class Triangle(LineUpdateMixin, QGraphicsPolygonItem):
+    pass
+
 
 class ParentNode(QGraphicsRectItem):
-
     def __init__(self, diagramScene, parent=None, h=60, w=60):
-        QGraphicsItemGroup.__init__(self, parent)
-
-        self.scene = diagramScene
-        self.h = h
-        self.w = w
-
+        super(ParentNode, self).__init__(parent)
         self.setPen(QPen(Qt.black, 2))
         self.setBrush(QBrush(Qt.black))
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         square = QGraphicsPolygonItem()
         square.setPolygon(QPolygonF([QPointF(0, 0), QPointF(20, 0), QPointF(20, 20), QPointF(0, 20)]))
 
-        self.setRect(0.0, 0.0, self.w, self.h)
+        self.setRect(0.0, 0.0, w, h)
 
 
 class ChildNode(QGraphicsItemGroup):
-
     def __init__(self, parent):
-        QGraphicsItemGroup.__init__(self, parent)
+        super(ChildNode, self).__init__(parent)
+        self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
 
-        self.parent = parent
+        self.line = QGraphicsLineItem()
+        parent.scene().addItem(self.line)
+        self.update_line(self.pos())
 
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
-
-        triangle = QGraphicsPolygonItem()
+        triangle = Triangle(self)
         triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]))
         triangle.setPen(QPen(Qt.red, 2))
 
         self.addToGroup(triangle)
         self.setPos(180, 180)
 
-        #  define line at first
-        self.line = self.parent.scene.addLine(self.x() + 10,
-                                              self.y() + 0,
-                                              self.parent.x() + self.parent.w / 2,
-                                              self.parent.y() + self.parent.h)
-
-        # self.ungrabMouse.connect(self.move)
-
-    def move(self):
-        #  define line at first
-        self.line.setLine(self.x() + 10,
-                          self.y() + 0,
-                          self.parent.x() + self.parent.w / 2,
-                          self.parent.y() + self.parent.h)
+    def update_line(self, pos):
+        parent = self.parentItem()
+        rect = parent.rect()
+        self.line.setLine(
+            pos.x() + 10, pos.y() + 0,
+            parent.x() + rect.width() / 2,
+            parent.y() + rect.height(),
+            )
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

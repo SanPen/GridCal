@@ -733,6 +733,7 @@ class MainGUI(QMainWindow):
         for bus in self.circuit.buses:
             # print(bus.x, bus.y)
             bus.graphic_obj = self.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+            bus.graphic_obj.create_children_icons()
 
         for branch in self.circuit.branches:
             terminal_from = branch.bus_from.graphic_obj.lower_terminals[0]

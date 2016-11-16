@@ -1010,6 +1010,8 @@ class Load:
 
         self.properties_with_profile = (['S', 'I', 'Z'], [complex, complex, complex])
 
+        self.graphic_obj = None
+
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
@@ -1105,6 +1107,8 @@ class StaticGenerator:
 
         self.properties_with_profile = (['S'], [complex])
 
+        self.graphic_obj = None
+
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
@@ -1168,6 +1172,8 @@ class Battery:
         self.type_name = 'Battery'
 
         self.properties_with_profile = (['P', 'Vset'], [float, float])
+
+        self.graphic_obj = None
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
@@ -1258,7 +1264,7 @@ class Battery:
 
 class ControlledGenerator:
 
-    def __init__(self, name='gen', active_power=0.0, voltage_module=0.0, Qmin=-9999, Qmax=9999, Snom=9999,
+    def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
                  power_prof=None, vset_prof=None):
         """
         Voltage controlled generator
@@ -1274,6 +1280,8 @@ class ControlledGenerator:
         self.name = name
 
         self.type_name = 'ControlledGenerator'
+
+        self.graphic_obj = None
 
         self.properties_with_profile = (['P', 'Vset'], [float, float])
 
@@ -1370,6 +1378,8 @@ class Shunt:
         self.type_name = 'Shunt'
 
         self.properties_with_profile = (['Y'], [complex])
+
+        self.graphic_obj = None
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
