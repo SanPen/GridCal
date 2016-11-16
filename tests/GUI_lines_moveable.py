@@ -45,6 +45,10 @@ class ChildNode(QGraphicsItemGroup):
         triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(20, 0), QPointF(10, 20)]))
         triangle.setPen(QPen(Qt.red, 2))
 
+        ln = QGraphicsLineItem(self)
+        ln.setLine(10, 0, 10, -10)
+        self.addToGroup(ln)
+
         self.addToGroup(triangle)
         self.setPos(180, 180)
 
@@ -52,7 +56,7 @@ class ChildNode(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.line.setLine(
-            pos.x() + 10, pos.y() + 0,
+            pos.x() + 10, pos.y() - 10,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
             )
