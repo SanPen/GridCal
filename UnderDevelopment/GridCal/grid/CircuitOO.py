@@ -2529,7 +2529,7 @@ class PowerFlowInput:
 
 class PowerFlowResults:
 
-    def __init__(self, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None, converged=None,
+    def __init__(self, Sbus = None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None, converged=None,
                  Qpv=None):
         """
 
@@ -2542,6 +2542,8 @@ class PowerFlowResults:
         @param converged:
         @param Qpv:
         """
+        self.Sbus = Sbus
+
         self.voltage = voltage
 
         self.Sbranch = Sbranch
@@ -2579,7 +2581,7 @@ class PowerFlowResults:
         Return a copy of this
         @return:
         """
-        return PowerFlowResults(voltage=self.voltage, Sbranch=self.Sbranch,
+        return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
                                 Ibranch=self.Ibranch, loading=self.loading,
                                 losses=self.losses, error=self.error,
                                 converged=self.converged, Qpv=self.Qpv)
@@ -2591,6 +2593,8 @@ class PowerFlowResults:
         @param m: number of branches
         @return:
         """
+        self.Sbus = zeros(n, dtype=complex)
+
         self.voltage = zeros(n, dtype=complex)
 
         self.overvoltage = zeros(n, dtype=complex)
@@ -2621,6 +2625,7 @@ class PowerFlowResults:
         @param br_idx: branch original indices
         @return:
         """
+        self.Sbus[b_idx] = results.Sbus
 
         self.voltage[b_idx] = results.voltage
 
@@ -2934,7 +2939,8 @@ class PowerFlow(QRunnable):
         Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
-        results = PowerFlowResults(voltage=V,
+        results = PowerFlowResults(Sbus=Sbus,
+                                   voltage=V,
                                    Sbranch=Sbranch,
                                    Ibranch=Ibranch,
                                    loading=loading,

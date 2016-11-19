@@ -606,18 +606,19 @@ class MainGUI(QMainWindow):
         self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.KeepAspectRatio)
         self.diagramView.scale(1.0, 1.0)
 
-    def color_based_of_pf(self, voltage, loading):
+    def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch):
         """
         Color the grid based on the results passed
-        @param voltage: Nodal Voltages array
-        @param loading: Branch loading array
+        @param Vbus: Nodal Voltages array
+        @param LoadBranch: Branch loading array
         @return: Nothing
         """
         # color nodes
         vmin = 0
         vmax = 1.2
         vrng = vmax - vmin
-        vabs = abs(voltage)
+        vabs = abs(Vbus)
+        vang = np.angle(Vbus, deg=True)
         vnorm = (vabs - vmin) / vrng
         # print(vnorm)
         i = 0
@@ -627,11 +628,16 @@ class MainGUI(QMainWindow):
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
                 bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
-                bus.graphic_obj.setToolTip(bus.name + '\n' + 'V=' + str(vabs[i]))
+
+                tooltip = bus.name + '\n' \
+                          + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º'
+                if Sbus is not None:
+                    tooltip += '\nS:' + "{:10.4f}".format(Sbus[i])
+                bus.graphic_obj.setToolTip(tooltip)
             i += 1
 
         # color branches
-        lnorm = abs(loading)
+        lnorm = abs(LoadBranch)
         lnorm[lnorm == np.inf] = 0
         # print(lnorm)
         i = 0
@@ -646,7 +652,10 @@ class MainGUI(QMainWindow):
                 style = Qt.DashLine
                 color = Qt.gray
 
-            branch.graphic_obj.setToolTip(branch.name + '\n' + 'loading=' + str(lnorm[i]))
+            tooltip = branch.name
+            tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i])
+            tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i])
+            branch.graphic_obj.setToolTip(tooltip)
             branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
             i += 1
 
@@ -907,7 +916,10 @@ class MainGUI(QMainWindow):
             print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
             print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
             print('ld:\n', abs(self.circuit.power_flow_results.loading))
-            self.color_based_of_pf(self.circuit.power_flow_results.voltage, self.circuit.power_flow_results.loading)
+            self.color_based_of_pf(Sbus=self.circuit.power_flow_results.Sbus,
+                                   Sbranch=self.circuit.power_flow_results.Sbranch,
+                                   Vbus=self.circuit.power_flow_results.voltage,
+                                   LoadBranch=self.circuit.power_flow_results.loading)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
@@ -964,7 +976,8 @@ class MainGUI(QMainWindow):
             ts_analysis = TimeSeriesResultsAnalysis(self.circuit.circuits[0].time_series_results)
             voltage = self.circuit.time_series_results.voltage.max(axis=1)
             loading = self.circuit.time_series_results.loading.max(axis=1)
-            self.color_based_of_pf(voltage, loading)
+            Sbranch = self.circuit.time_series_results.Sbranch.max(axis=1)
+            self.color_based_of_pf(Sbus=None, Sbranch=Sbranch, Vbus=voltage, LoadBranch=loading)
             self.update_available_results()
         else:
             print('No results for the time series simulation.')
@@ -999,7 +1012,8 @@ class MainGUI(QMainWindow):
         print('Vbus:\n', abs(self.monte_carlo.results.voltage))
         print('Ibr:\n', abs(self.monte_carlo.results.current))
         print('ld:\n', abs(self.monte_carlo.results.loading))
-        self.color_based_of_pf(self.monte_carlo.results.voltage, self.monte_carlo.results.loading)
+        self.color_based_of_pf(Vbus=self.monte_carlo.results.voltage,
+                               LoadBranch=self.monte_carlo.results.loading)
         self.update_available_results()
 
     def set_cancel_state(self):
