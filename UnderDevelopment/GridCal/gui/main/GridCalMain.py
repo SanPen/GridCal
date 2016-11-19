@@ -903,11 +903,14 @@ class MainGUI(QMainWindow):
         """
         # update the results in the circuit structures
         print('Post power flow')
-        print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
-        print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
-        print('ld:\n', abs(self.circuit.power_flow_results.loading))
-        self.color_based_of_pf(self.circuit.power_flow_results.voltage, self.circuit.power_flow_results.loading)
-        self.update_available_results()
+        if self.circuit.power_flow_results is not None:
+            print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
+            print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
+            print('ld:\n', abs(self.circuit.power_flow_results.loading))
+            self.color_based_of_pf(self.circuit.power_flow_results.voltage, self.circuit.power_flow_results.loading)
+            self.update_available_results()
+        else:
+            warn('Something went wrong, There are no power flow results.')
         self.UNLOCK()
 
     def run_voltage_stability(self):

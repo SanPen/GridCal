@@ -28,7 +28,7 @@ class Circle(LineUpdateMixin, QGraphicsEllipseItem):
     pass
 
 
-class LineF(LineUpdateMixin, QLineF):
+class QLine(LineUpdateMixin, QGraphicsLineItem):
     pass
 
 
@@ -462,6 +462,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
+        self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.loads.remove(self.api_object)
 
@@ -505,25 +506,26 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+
         lines = list()
-        lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
+        # lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
         lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
         lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
-
-        line = LineF(parent)
-        line.setLine(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h))
-        lines.append(line)
-
+        lines.append(QLineF(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h)))
         for l in lines:
             l1 = QGraphicsLineItem(l)
             l1.setPen(pen)
             self.addToGroup(l1)
 
-        self.setPos(self.parent.x(), self.parent.y() + 100)
+        line = QLine(self)
+        line.setLine(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
+        line.setPen(pen)
+        self.addToGroup(line)
 
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
+        self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
 
     def update_line(self, pos):
@@ -553,6 +555,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
+        self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.shunts.remove(self.api_object)
 
@@ -601,6 +604,10 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
+
         # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
         # l1.setPen(pen)
         # self.addToGroup(l1)
@@ -615,10 +622,6 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
         self.update_line(self.pos())
 
     def update_line(self, pos):
@@ -648,6 +651,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
+        self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.controlled_generators.remove(self.api_object)
 
@@ -690,7 +694,10 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        # self.installSceneEventFilter(self)
+
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
 
         # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
         # l1.setPen(pen)
@@ -706,10 +713,6 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
         self.update_line(self.pos())
 
     def update_line(self, pos):
@@ -739,6 +742,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
+        self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.static_generators.remove(self.api_object)
 
@@ -781,7 +785,10 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        # self.installSceneEventFilter(self)
+
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        parent.scene().addItem(self.nexus)
 
         # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
         # l1.setPen(pen)
@@ -797,10 +804,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
         self.update_line(self.pos())
 
     def update_line(self, pos):
@@ -830,6 +833,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
+        self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.batteries.remove(self.api_object)
 
@@ -1143,7 +1147,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Returns:
 
         """
-        if api_obj is None:
+        if api_obj is None or type(api_obj) is bool:
             api_obj = Load()
             api_obj.bus = self.api_object
             self.api_object.loads.append(api_obj)
@@ -1151,6 +1155,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         _grph = LoadGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.graphic_children.append(_grph)
+        self.arrange_children()
 
     def add_shunt(self, api_obj=None):
         """
@@ -1158,7 +1163,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Returns:
 
         """
-        if api_obj is None:
+        if api_obj is None or type(api_obj) is bool:
             api_obj = Shunt()
             api_obj.bus = self.api_object
             self.api_object.shunts.append(api_obj)
@@ -1166,6 +1171,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         _grph = ShuntGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.graphic_children.append(_grph)
+        self.arrange_children()
 
     def add_controlled_generator(self, api_obj=None):
         """
@@ -1173,7 +1179,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Returns:
 
         """
-        if api_obj is None:
+        if api_obj is None or type(api_obj) is bool:
             api_obj = ControlledGenerator()
             api_obj.bus = self.api_object
             self.api_object.controlled_generators.append(api_obj)
@@ -1181,6 +1187,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         _grph = ControlledGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.graphic_children.append(_grph)
+        self.arrange_children()
 
     def add_static_generator(self, api_obj=None):
         """
@@ -1188,7 +1195,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Returns:
 
         """
-        if api_obj is None:
+        if api_obj is None or type(api_obj) is bool:
             api_obj = StaticGenerator()
             api_obj.bus = self.api_object
             self.api_object.static_generators.append(api_obj)
@@ -1196,6 +1203,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         _grph = StaticGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.graphic_children.append(_grph)
+        self.arrange_children()
 
     def add_battery(self, api_obj=None):
         """
@@ -1203,7 +1211,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Returns:
 
         """
-        if api_obj is None:
+        if api_obj is None or type(api_obj) is bool:
             api_obj = Battery()
             api_obj.bus = self.api_object
             self.api_object.batteries.append(api_obj)
@@ -1211,6 +1219,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         _grph = BatteryGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.graphic_children.append(_grph)
+        self.arrange_children()
 
 
 class EditorGraphicsView(QGraphicsView):

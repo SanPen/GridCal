@@ -1152,7 +1152,7 @@ class StaticGenerator:
 
 class Battery:
 
-    def __init__(self, name='batt', active_power=0.0, voltage_module=0.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
+    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
                  power_prof=None, vset_prof=None):
         """
         Batery (Voltage controlled and dispatchable)
@@ -1838,6 +1838,7 @@ class MultiCircuit(Circuit):
             # Add the load
             if table[i, e.PD] != 0 or table[i, e.QD] != 0:
                 load = Load(power=table[i, e.PD] + 1j * table[i, e.QD])
+                load.bus = bus
                 if are_load_prfiles:  # set the profile
                     load.Sprof = pd.DataFrame(data=Sprof[:, i],
                                               index=master_time_array,
@@ -1847,6 +1848,7 @@ class MultiCircuit(Circuit):
             # Add the shunt
             if table[i, e.GS] != 0 or table[i, e.BS] != 0:
                 shunt = Shunt(admittance=table[i, e.GS] + 1j * table[i, e.BS])
+                shunt.bus = bus
                 bus.shunts.append(shunt)
 
             # Add the bus to the circuit buses
@@ -1881,6 +1883,7 @@ class MultiCircuit(Circuit):
                                          columns=['Gen@' + names[i]])
 
             # Add the generator to the bus
+            gen.bus = self.buses[bus_idx]
             self.buses[bus_idx].controlled_generators.append(gen)
 
         import grid.ImportParsers.BranchDefinitions as e
