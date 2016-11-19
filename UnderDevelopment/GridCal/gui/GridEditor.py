@@ -439,7 +439,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + 10, pos.y() + 0,
+            pos.x() + self.w/2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -511,19 +511,20 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         parent.scene().addItem(self.nexus)
 
         lines = list()
-        # lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
+        lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
         lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
         lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
         lines.append(QLineF(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h)))
         for l in lines:
-            l1 = QGraphicsLineItem(l)
+            l1 = QLine(self)
+            l1.setLine(l)
             l1.setPen(pen)
             self.addToGroup(l1)
 
-        line = QLine(self)
-        line.setLine(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
-        line.setPen(pen)
-        self.addToGroup(line)
+        # line = QLine(self)
+        # line.setLine(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
+        # line.setPen(pen)
+        # self.addToGroup(line)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -532,7 +533,8 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + 10, pos.y() + 0,
+            pos.x() + self.w/2,
+            pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -628,7 +630,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + 10, pos.y() + 0,
+            pos.x() + self.w/2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -719,7 +721,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + 10, pos.y() + 0,
+            pos.x() + self.w/2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -810,7 +812,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + 10, pos.y() + 0,
+            pos.x() + self.w/2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
