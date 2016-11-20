@@ -834,6 +834,11 @@ class MainGUI(QMainWindow):
         print('import_profiles')
 
     def display_profiles(self):
+        """
+
+        Returns:
+
+        """
         print('display_profiles')
 
         dev_type = self.ui.profile_device_type_comboBox.currentText()
@@ -1013,7 +1018,9 @@ class MainGUI(QMainWindow):
         print('Ibr:\n', abs(self.monte_carlo.results.current))
         print('ld:\n', abs(self.monte_carlo.results.loading))
         self.color_based_of_pf(Vbus=self.monte_carlo.results.voltage,
-                               LoadBranch=self.monte_carlo.results.loading)
+                               LoadBranch=self.monte_carlo.results.loading,
+                               Sbranch=None,
+                               Sbus=None)
         self.update_available_results()
 
     def set_cancel_state(self):

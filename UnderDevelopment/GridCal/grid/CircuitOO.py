@@ -25,11 +25,12 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, \
-    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj
+    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_
 from scipy.sparse import csc_matrix as sparse
 from copy import deepcopy
 
-plt.style.use('fivethirtyeight')
+if 'fivethirtyeight' in plt.style.available:
+    plt.style.use('fivethirtyeight')
 
 from grid.ImportParsers.DGS_Parser import read_DGS
 from grid.ImportParsers.matpower_parser import parse_matpower_file
@@ -709,7 +710,7 @@ class Bus:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.is_enabled, self.Vnom, self.Vmin, self.Vmax, self.x, self.y]
+        return [self.name, self.is_enabled, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.x, self.y]
 
 
 class TransformerType:
@@ -1936,53 +1937,114 @@ class MultiCircuit(Circuit):
     def save_file(self, filepath):
         """
         Save the circuit information
-        :param filepath:
+        :param filepath: file path to save
         :return:
         """
         dfs = dict()
 
-        # configuration
+        # configuration ################################################################################################
         obj = list()
         obj.append(['BaseMVA', self.Sbase])
         obj.append(['BasekA', self.Ibase])
         obj.append(['Version', 2])
         dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
 
-        # buses
+        # get the master time profile
+        T = self.time_profile
+
+        # buses ########################################################################################################
         obj = list()
         for elm in self.buses:
             obj.append(elm.get_save_data())
         dfs['bus'] = pd.DataFrame(data=obj, columns=Bus().edit_headers)
 
-        # branches
+        # branches #####################################################################################################
         obj = list()
         for elm in self.branches:
             obj.append(elm.get_save_data())
         dfs['branch'] = pd.DataFrame(data=obj, columns=Branch(None, None).edit_headers)
 
-        # loads
+        # loads ########################################################################################################
         obj = list()
+        S_profiles = None
+        I_profiles = None
+        Z_profiles = None
+        hdr = list()
         for elm in self.get_loads():
             obj.append(elm.get_save_data())
-        dfs['load'] = pd.DataFrame(data=obj, columns=Load().edit_headers)
+            hdr.append(elm.name)
+            if T is not None:
+                if S_profiles is None:
+                    S_profiles = elm.Sprof.values
+                    I_profiles = elm.Iprof.values
+                    Z_profiles = elm.Zprof.values
+                else:
+                    S_profiles = c_[S_profiles, elm.Sprof.values]
+                    I_profiles = c_[I_profiles, elm.Iprof.values]
+                    Z_profiles = c_[Z_profiles, elm.Zprof.values]
 
-        # static generators
+        dfs['load'] = pd.DataFrame(data=obj, columns=Load().edit_headers)
+        if S_profiles is not None:
+            dfs['load_Sprof'] = pd.DataFrame(data=S_profiles.astype('str'), columns=hdr, index=T)
+            dfs['load_Iprof'] = pd.DataFrame(data=I_profiles.astype('str'), columns=hdr, index=T)
+            dfs['load_Zprof'] = pd.DataFrame(data=Z_profiles.astype('str'), columns=hdr, index=T)
+
+        # static generators ############################################################################################
         obj = list()
+        hdr = list()
+        S_profiles = None
         for elm in self.get_static_generators():
             obj.append(elm.get_save_data())
-        dfs['static_generator'] = pd.DataFrame(data=obj, columns=StaticGenerator().edit_headers)
+            hdr.append(elm.name)
+            if T is not None:
+                if S_profiles is None:
+                    S_profiles = elm.Sprof.values
+                else:
+                    S_profiles = c_[S_profiles, elm.Sprof.values]
 
-        # battery
+        dfs['static_generator'] = pd.DataFrame(data=obj, columns=StaticGenerator().edit_headers)
+        if S_profiles is not None:
+            dfs['static_generator_Sprof'] = pd.DataFrame(data=S_profiles.astype('str'), columns=hdr, index=T)
+
+        # battery ######################################################################################################
         obj = list()
+        hdr = list()
+        Vset_profiles = None
+        P_profiles = None
         for elm in self.get_batteries():
             obj.append(elm.get_save_data())
+            hdr.append(elm.name)
+            if T is not None:
+                if P_profiles is None:
+                    P_profiles = elm.Pprof.values
+                    Vset_profiles = elm.Vsetprof.values
+                else:
+                    P_profiles = c_[P_profiles, elm.Pprof.values]
+                    Vset_profiles = c_[Vset_profiles, elm.Vsetprof.values]
         dfs['battery'] = pd.DataFrame(data=obj, columns=Battery().edit_headers)
+        if P_profiles is not None:
+            dfs['battery_Vset_profiles'] = pd.DataFrame(data=Vset_profiles, columns=hdr, index=T)
+            dfs['battery_P_profiles'] = pd.DataFrame(data=P_profiles, columns=hdr, index=T)
 
         # controlled generator
         obj = list()
+        hdr = list()
+        Vset_profiles = None
+        P_profiles = None
         for elm in self.get_controlled_generators():
             obj.append(elm.get_save_data())
+            hdr.append(elm.name)
+            if T is not None:
+                if P_profiles is None:
+                    P_profiles = elm.Pprof.values
+                    Vset_profiles = elm.Vsetprof.values
+                else:
+                    P_profiles = c_[P_profiles, elm.Pprof.values]
+                    Vset_profiles = c_[Vset_profiles, elm.Vsetprof.values]
         dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=ControlledGenerator().edit_headers)
+        if P_profiles is not None:
+            dfs['controlled_generator_Vset_profiles'] = pd.DataFrame(data=Vset_profiles, columns=hdr, index=T)
+            dfs['controlled_generator_P_profiles'] = pd.DataFrame(data=P_profiles, columns=hdr, index=T)
 
         # shunt
         obj = list()
@@ -1990,7 +2052,7 @@ class MultiCircuit(Circuit):
             obj.append(elm.get_save_data())
         dfs['shunt'] = pd.DataFrame(data=obj, columns=Shunt().edit_headers)
 
-        # save
+        # flush-save
         writer = pd.ExcelWriter(filepath)
         for key in dfs.keys():
             dfs[key].to_excel(writer, key)

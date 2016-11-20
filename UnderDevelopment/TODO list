@@ -1,0 +1,12 @@
+
+- Create a consistent saving file format
+- Implement the saving routine for the new format
+- Implement the open routine for the new format
+
+- Finnish the results display (including table display)
+
+- When creating a new object that can host profiles and the grid already has profiles, create profiles in the object too
+- Create synthetic profiles editor
+
+- Implement the embedded python console
+- Implement scripting capability (Scripting editor)
