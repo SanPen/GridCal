@@ -21,9 +21,9 @@ np.set_printoptions(precision=4)
 grid = MultiCircuit()
 
 
-grid.load_file('Muthu4Bus.xls')
+# grid.load_file('Muthu4Bus.xls')
 # grid.load_file('IEEE_30BUS.xls')
-# grid.load_file('IEEE_39Bus.xls')
+grid.load_file('IEEE_39Bus.xls')
 # grid.load_file('case9target.xls')
 grid.compile()
 

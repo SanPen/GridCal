@@ -86,7 +86,11 @@ class CDF(object):
         self.iscomplex = iscomplexobj(self.arr)
 
         # calculate the proportional values of samples
-        self.prob = 1. * arange(len(data)) / (len(data) - 1)
+        l = len(data)
+        if l > 1:
+            self.prob = 1. * arange(l) / (l - 1)
+        else:
+            self.prob = 1. * arange(l)
 
         # iterator index
         self.idx = 0
@@ -491,7 +495,7 @@ class Bus:
                 # Nothing special; set it as PQ
                 self.type = NodeType.PQ
 
-    def get_YISV(self):
+    def get_YISV(self, index=None):
         """
         Compose the
             - Z: Impedance attached to the bus
@@ -526,30 +530,31 @@ class Bus:
             S -= elm.S  # Reverse sign convention in the load
 
             # Add the profiles
-            if elm.Zprof is not None:
+            elm_Sprof, elm_Iprof, elm_Zprof = elm.get_profiles(index)
+            if elm_Zprof is not None:
                 if Yprof is None:
-                    Yprof = 1 / elm.Zprof
+                    Yprof = 1 / elm_Zprof
                     Ycdf = CDF(Yprof)
                 else:
-                    pr = 1 / elm.Zprof
+                    pr = 1 / elm_Zprof
                     Yprof = Yprof.add(pr, fill_value=0)
                     Ycdf = Ycdf + CDF(pr)
 
-            if elm.Iprof is not None:
+            if elm_Iprof is not None:
                 if Iprof is None:
-                    Iprof = -elm.Iprof  # Reverse sign convention in the load
+                    Iprof = -elm_Iprof  # Reverse sign convention in the load
                     Icdf = CDF(Iprof)
                 else:
-                    pr = -elm.Iprof
+                    pr = -elm_Iprof
                     Iprof = Iprof.add(pr, fill_value=0)  # Reverse sign convention in the load
                     Icdf = Icdf + CDF(pr)
 
-            if elm.Sprof is not None:
+            if elm_Sprof is not None:
                 if Sprof is None:
-                    Sprof = -elm.Sprof  # Reverse sign convention in the load
+                    Sprof = -elm_Sprof  # Reverse sign convention in the load
                     Scdf = CDF(Sprof)
                 else:
-                    pr = -elm.Sprof
+                    pr = -elm_Sprof
                     Sprof = Sprof.add(pr, fill_value=0)  # Reverse sign convention in the load
                     Scdf = Scdf + CDF(pr)
 
@@ -574,13 +579,14 @@ class Bus:
                     pass
 
             # add the power profile
-            if elm.Pprof is not None:
+            elm_Pprof, elm_Vsetprof = elm.get_profiles(index)
+            if elm_Pprof is not None:
                 if Sprof is None:
-                    Sprof = elm.Pprof  # Reverse sign convention in the load
+                    Sprof = elm_Pprof  # Reverse sign convention in the load
                     Scdf = CDF(Sprof)
                 else:
-                    Sprof = Sprof.add(elm.Pprof, fill_value=0)
-                    Scdf = Scdf + CDF(elm.Pprof)
+                    Sprof = Sprof.add(elm_Pprof, fill_value=0)
+                    Scdf = Scdf + CDF(elm_Pprof)
 
         # set maximum reactive power limits
         if self.Qmin_sum == 0:
@@ -1042,7 +1048,7 @@ class Load:
 
         self.edit_types = [str, None, complex, complex, complex]
 
-    def create_profiles(self, index, steps):
+    def create_profiles(self, index):
         """
         Create the load object default profiles
         Args:
@@ -1052,11 +1058,64 @@ class Load:
         Returns:
 
         """
+
+        self.create_S_profile(index)
+        self.create_I_profile(index)
+        self.create_Z_profile(index)
+
+    def create_S_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Sprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.S
 
+    def create_I_profile(self, index):
+        """
+        Create current profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Iprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.I
 
+    def create_Z_profile(self, index):
+        """
+        Create impedance profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Zprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Z
+
+    def get_profiles(self, index=None):
+        """
+        Get profiles and if the index is passed, create the profiles if needed
+        Args:
+            index: index of the Pandas DataFrame
+
+        Returns:
+            Power, Current and Impedance profiles
+        """
+        if index is not None:
+            if self.Sprof is None:
+                self.create_S_profile(index)
+            if self.Iprof is None:
+                self.create_I_profile(index)
+            if self.Zprof is None:
+                self.create_Z_profile(index)
+        return self.Sprof, self.Iprof, self.Zprof
 
     def copy(self):
 
@@ -1138,7 +1197,7 @@ class StaticGenerator:
         """
         return [self.name, self.bus.name, str(self.S)]
 
-    def create_profiles(self, index, steps):
+    def create_profiles(self, index):
         """
         Create the load object default profiles
         Args:
@@ -1148,7 +1207,33 @@ class StaticGenerator:
         Returns:
 
         """
+        self.create_S_profile(index)
+
+    def create_S_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Sprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.S
+
+    def get_profiles(self, index=None):
+        """
+        Get profiles and if the index is passed, create the profiles if needed
+        Args:
+            index: index of the Pandas DataFrame
+
+        Returns:
+            Power, Current and Impedance profiles
+        """
+        if index is not None:
+            if self.Sprof is None:
+                self.create_S_profile(index)
+        return self.Sprof
 
 
 class Battery:
@@ -1248,7 +1333,7 @@ class Battery:
         """
         return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
 
-    def create_profiles(self, index, steps):
+    def create_profiles(self, index):
         """
         Create the load object default profiles
         Args:
@@ -1258,9 +1343,49 @@ class Battery:
         Returns:
 
         """
+        self.create_P_profile(index)
+
+        self.create_Vset_profile(index)
+
+    def create_P_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Pprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.P
 
+    def create_Vset_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Vsetprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Vset
+
+    def get_profiles(self, index=None):
+        """
+        Get profiles and if the index is passed, create the profiles if needed
+        Args:
+            index: index of the Pandas DataFrame
+
+        Returns:
+            Power, Current and Impedance profiles
+        """
+        if index is not None:
+            if self.Pprof is None:
+                self.create_P_profile(index)
+            if self.Vsetprof is None:
+                self.create_vset_profile(index)
+        return self.Pprof, self.Vsetprof
 
 
 class ControlledGenerator:
@@ -1352,7 +1477,7 @@ class ControlledGenerator:
         """
         return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
 
-    def create_profiles(self, index, steps):
+    def create_profiles(self, index):
         """
         Create the load object default profiles
         Args:
@@ -1362,9 +1487,49 @@ class ControlledGenerator:
         Returns:
 
         """
+        self.create_P_profile(index)
+
+        self.create_Vset_profile(index)
+
+    def create_P_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Pprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.P
 
+    def create_Vset_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Vsetprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Vset
+
+    def get_profiles(self, index=None):
+        """
+        Get profiles and if the index is passed, create the profiles if needed
+        Args:
+            index: index of the Pandas DataFrame
+
+        Returns:
+            Power, Current and Impedance profiles
+        """
+        if index is not None:
+            if self.Pprof is None:
+                self.create_P_profile(index)
+            if self.Vsetprof is None:
+                self.create_vset_profile(index)
+        return self.Pprof, self.Vsetprof
 
 
 class Shunt:
@@ -1418,7 +1583,7 @@ class Shunt:
         """
         return [self.name, self.bus.name, str(self.Y)]
 
-    def create_profiles(self, index, steps):
+    def create_profiles(self, index):
         """
         Create the load object default profiles
         Args:
@@ -1428,7 +1593,33 @@ class Shunt:
         Returns:
 
         """
+        self.create_Y_profile(index)
+
+    def create_Y_profile(self, index):
+        """
+        Create power profile based on index
+        Args:
+            index:
+
+        Returns:
+
+        """
+        steps = len(index)
         self.Yprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Y
+
+    def get_profiles(self, index=None):
+        """
+        Get profiles and if the index is passed, create the profiles if needed
+        Args:
+            index: index of the Pandas DataFrame
+
+        Returns:
+            Power, Current and Impedance profiles
+        """
+        if index is not None:
+            if self.Yprof is None:
+                self.create_Y_profile(index)
+        return self.Yprof
 
 
 class Circuit:
@@ -1509,10 +1700,6 @@ class Circuit:
         power_flow_input = PowerFlowInput(n, m)
 
         # time series inputs
-        # if self.master_time_array is not None:
-        #     time_series_input = TimeSeriesInput(n, self.master_time_array)
-        # else:
-        #     time_series_input = None
         Sprofile = pd.DataFrame()
         Iprofile = pd.DataFrame()
         Yprofile = pd.DataFrame()
@@ -1776,16 +1963,22 @@ class MultiCircuit(Circuit):
                 ppc = parse_matpower_file(filename)
                 data_in_zero_base = False
 
-            # Pass the table-like data to the circuit s
-            self.interpret_data(ppc)
+            # Pass the table-like data dictionary to objects in this circuit
+            if 'version' not in ppc.keys():
+                self.interpret_data_v1(ppc)
+                return True
+            elif ppc['version'] == 2.0:
+                self.interpret_data_v2(ppc)
+                return True
+            else:
+                warn('The file could not be processed')
+                return False
 
-            print(filename, ' loaded.')
-            return True
         else:
             warn('The file does not exist.')
             return False
 
-    def interpret_data(self, data):
+    def interpret_data_v1(self, data):
         """
         Pass the loaded table-like data to the  structures
         @param data: Data dictionary
@@ -1916,7 +2109,7 @@ class MultiCircuit(Circuit):
 
         if master_time_array is not None:
 
-            self.format_profiles(master_time_array, len(master_time_array))
+            self.format_profiles(master_time_array)
 
             table = data['bus']
             for i in range(len(table)):
@@ -1933,6 +2126,9 @@ class MultiCircuit(Circuit):
                                                                                       index=master_time_array,
                                                                                       columns=['Gen@' + names[i]])
         print('Interpreted.')
+
+    def interpret_data_v2(self, data):
+        print()
 
     def save_file(self, filepath):
         """
@@ -2089,7 +2285,6 @@ class MultiCircuit(Circuit):
                 if self.branches[i].bus_from.is_enabled and self.branches[i].bus_to.is_enabled:
                     f = self.bus_dictionary[self.branches[i].bus_from]
                     t = self.bus_dictionary[self.branches[i].bus_to]
-                    # print('f:', f, 't:', t)
                     # Add graph edge (automatically adds the vertices)
                     self.graph.add_edge(f, t)
                     self.branch_dictionary[self.branches[i]] = i
@@ -2159,9 +2354,9 @@ class MultiCircuit(Circuit):
             elif step_unit == 's':
                 index[i] = time_base + timedelta(seconds=i*step_length)
 
-        self.format_profiles(index, steps)
+        self.format_profiles(index)
 
-    def format_profiles(self, index, steps):
+    def format_profiles(self, index):
         """
 
         Args:
@@ -2177,19 +2372,19 @@ class MultiCircuit(Circuit):
         for bus in self.buses:
 
             for elm in bus.loads:
-                elm.create_profiles(index, steps)
+                elm.create_profiles(index)
 
             for elm in bus.static_generators:
-                elm.create_profiles(index, steps)
+                elm.create_profiles(index)
 
             for elm in bus.controlled_generators:
-                elm.create_profiles(index, steps)
+                elm.create_profiles(index)
 
             for elm in bus.batteries:
-                elm.create_profiles(index, steps)
+                elm.create_profiles(index)
 
             for elm in bus.shunts:
-                elm.create_profiles(index, steps)
+                elm.create_profiles(index)
 
     def get_elements_by_type(self, type):
 

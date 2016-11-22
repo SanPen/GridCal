@@ -654,7 +654,8 @@ class MainGUI(QMainWindow):
 
             tooltip = branch.name
             tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i])
-            tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i])
+            if Sbranch is not None:
+                tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i])
             branch.graphic_obj.setToolTip(tooltip)
             branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
             i += 1
