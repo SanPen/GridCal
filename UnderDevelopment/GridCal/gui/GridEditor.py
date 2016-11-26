@@ -419,20 +419,16 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        triangle = Polygon(self)
-        triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w/2, self.h)]))
-        triangle.setPen(QPen(Qt.red, 2))
-
-        # line = QGraphicsLineItem(QLineF(QPointF(self.w/2, -10), QPointF(self.w/2, 0)))
-        # line .setPen(QPen(Qt.red, 2))
-        # triangle.setPos(10, 30)
-        # self.
-        self.addToGroup(triangle)
-        # self.addToGroup(line)
-
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         parent.scene().addItem(self.nexus)
+
+        triangle = Polygon(self)
+        triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w/2, self.h)]))
+        triangle.setPen(QPen(Qt.red, 2))
+        self.addToGroup(triangle)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
 
     def update_line(self, pos):
@@ -614,7 +610,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         # l1.setPen(pen)
         # self.addToGroup(l1)
 
-        circle = Circle(parent)
+        circle = Circle(self)
         circle.setRect(0, 0, self.h, self.w)
         circle.setPen(pen)
         self.addToGroup(circle)
