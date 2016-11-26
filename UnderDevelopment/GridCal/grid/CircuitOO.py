@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, \
-    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_
+    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere
 from scipy.sparse import csc_matrix as sparse
 from copy import deepcopy
 
@@ -334,56 +334,70 @@ def load_from_xls(filename):
     xl = pd.ExcelFile(filename)
     names = xl.sheet_names
 
-    for name in names:
+    if 'Conf' in names:
+        for name in names:
 
-        # df.head()
+            if name.lower() == "conf":
+                df = xl.parse(name)
+                data["baseMVA"] = double(df.values[0, 1])
 
-        if name.lower() == "conf":
-            df = xl.parse(name)
-            data["baseMVA"] = double(df.values[0, 1])
+            elif name.lower() == "bus":
+                df = xl.parse(name)
+                data["bus"] = nan_to_num(df.values)
+                if len(df) > 0:
+                    if df.index.values.tolist()[0] != 0:
+                        data['bus_names'] = df.index.values.tolist()
 
-        elif name.lower() == "bus":
-            df = xl.parse(name)
-            data["bus"] = nan_to_num(df.values)
-            if len(df) > 0:
-                if df.index.values.tolist()[0] != 0:
-                    data['bus_names'] = df.index.values.tolist()
+            elif name.lower() == "gen":
+                df = xl.parse(name)
+                data["gen"] = nan_to_num(df.values)
+                if len(df) > 0:
+                    if df.index.values.tolist()[0] != 0:
+                        data['gen_names'] = df.index.values.tolist()
 
-        elif name.lower() == "gen":
-            df = xl.parse(name)
-            data["gen"] = nan_to_num(df.values)
-            if len(df) > 0:
-                if df.index.values.tolist()[0] != 0:
-                    data['gen_names'] = df.index.values.tolist()
+            elif name.lower() == "branch":
+                df = xl.parse(name)
+                data["branch"] = nan_to_num(df.values)
+                if len(df) > 0:
+                    if df.index.values.tolist()[0] != 0:
+                        data['branch_names'] = df.index.values.tolist()
 
-        elif name.lower() == "branch":
-            df = xl.parse(name)
-            data["branch"] = nan_to_num(df.values)
-            if len(df) > 0:
-                if df.index.values.tolist()[0] != 0:
-                    data['branch_names'] = df.index.values.tolist()
+            elif name.lower() == "storage":
+                df = xl.parse(name)
+                data["storage"] = nan_to_num(df.values)
+                if len(df) > 0:
+                    if df.index.values.tolist()[0] != 0:
+                        data['storage_names'] = df.index.values.tolist()
 
-        elif name.lower() == "storage":
-            df = xl.parse(name)
-            data["storage"] = nan_to_num(df.values)
-            if len(df) > 0:
-                if df.index.values.tolist()[0] != 0:
-                    data['storage_names'] = df.index.values.tolist()
+            elif name.lower() == "lprof":
+                df = xl.parse(name, index_col=0)
+                data["Lprof"] = nan_to_num(df.values)
+                data["master_time"] = df.index
 
-        elif name.lower() == "lprof":
-            df = xl.parse(name, index_col=0)
-            data["Lprof"] = nan_to_num(df.values)
-            data["master_time"] = df.index
+            elif name.lower() == "lprofq":
+                df = xl.parse(name, index_col=0)
+                data["LprofQ"] = nan_to_num(df.values)
+                # ppc["master_time"] = df.index.values
 
-        elif name.lower() == "lprofq":
-            df = xl.parse(name, index_col=0)
-            data["LprofQ"] = nan_to_num(df.values)
-            # ppc["master_time"] = df.index.values
+            elif name.lower() == "gprof":
+                df = xl.parse(name, index_col=0)
+                data["Gprof"] = nan_to_num(df.values)
+                data["master_time"] = df.index  # it is the same
 
-        elif name.lower() == "gprof":
-            df = xl.parse(name, index_col=0)
-            data["Gprof"] = nan_to_num(df.values)
-            data["master_time"] = df.index  # it is the same
+    elif 'config' in names:  # version 2
+
+        for name in names:
+
+            if name.lower() == "config":
+                df = xl.parse('config')
+                data["baseMVA"] = double(df.values[0, 1])
+                data["basekA"] = double(df.values[1, 1])
+                data["version"] = double(df.values[2, 1])
+
+            else:
+                # just pick the DataFrame
+                df = xl.parse(name, index_col=0)
+                data[name] = df
 
     return data
 
@@ -2128,7 +2142,64 @@ class MultiCircuit(Circuit):
         print('Interpreted.')
 
     def interpret_data_v2(self, data):
-        print()
+        print('Interpreting V2 data...')
+
+        self.clear()
+
+        self.Sbase = data['baseMVA']
+        self.Ibase = data['basekA']
+
+        # common function
+        def set_object_attributes(obj_, attr_list, values):
+            for a, attr in enumerate(attr_list):
+                setattr(obj_, attr, values[a])
+
+        # Add the buses
+        lst = data['bus']
+        hdr = lst.columns.values
+        vals = lst.values
+        bus_dict = dict()
+        for i in range(len(lst)):
+            obj = Bus()
+            set_object_attributes(obj, hdr, vals[i, :])
+            bus_dict[obj.name] = obj
+            self.add_bus(obj)
+
+        # Add the branches
+        lst = data['branch']
+        bus_from = lst['bus_from'].values
+        bus_to = lst['bus_to'].values
+        hdr = lst.columns.values
+        hdr = delete(hdr, argwhere(hdr == 'bus_from'))
+        hdr = delete(hdr, argwhere(hdr == 'bus_to'))
+        vals = lst[hdr].values
+        for i in range(len(lst)):
+            obj = Branch(bus_from=bus_dict[bus_from[i]], bus_to=bus_dict[bus_to[i]])
+            set_object_attributes(obj, hdr, vals[i, :])
+            self.add_branch(obj)
+
+        # add the loads
+        lst = data['load']
+        bus_from = lst['bus'].values
+        hdr = lst.columns.values
+        hdr = delete(hdr, argwhere(hdr == 'bus'))
+        vals = lst[hdr].values
+        for i in range(len(lst)):
+            obj = Load()
+            set_object_attributes(obj, hdr, vals[i, :])
+
+            # if 'load_Sprof' in data.keys():
+            #     obj.Sprof = data['load_Sprof'][]
+
+            bus = bus_dict[bus_from[i]]
+            bus.loads.append(obj)
+
+        print('Done!')
+
+        # ['branch', 'load_Zprof', 'version', 'CtrlGen_Vset_profiles', 'CtrlGen_P_profiles', 'basekA',
+        #                   'baseMVA', 'load_Iprof', 'battery', 'load', 'bus', 'shunt', 'controlled_generator',
+        #                   'load_Sprof', 'static_generator']
+
 
     def save_file(self, filepath):
         """
@@ -2239,8 +2310,8 @@ class MultiCircuit(Circuit):
                     Vset_profiles = c_[Vset_profiles, elm.Vsetprof.values]
         dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=ControlledGenerator().edit_headers)
         if P_profiles is not None:
-            dfs['controlled_generator_Vset_profiles'] = pd.DataFrame(data=Vset_profiles, columns=hdr, index=T)
-            dfs['controlled_generator_P_profiles'] = pd.DataFrame(data=P_profiles, columns=hdr, index=T)
+            dfs['CtrlGen_Vset_profiles'] = pd.DataFrame(data=Vset_profiles, columns=hdr, index=T)
+            dfs['CtrlGen_P_profiles'] = pd.DataFrame(data=P_profiles, columns=hdr, index=T)
 
         # shunt
         obj = list()
