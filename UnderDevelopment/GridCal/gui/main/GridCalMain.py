@@ -30,127 +30,12 @@ from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 from gui.GuiFunctions import *
 from gui.GridEditor import *
-
-
+from gui.ConsoleWidget import ConsoleWidget
 
 
 ########################################################################################################################
 # Main Window
 ########################################################################################################################
-
-
-# define the IPython console
-print(platform.system())
-# if platform.system() == 'Linux':
-#     from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-#     from IPython.qt.inprocess import QtInProcessKernelManager
-#     from IPython.lib import guisupport
-#
-#     class QIPythonWidget(RichIPythonWidget):
-#         """
-#         Convenience class for a live IPython console widget.
-#         We can replace the standard banner using the customBanner argument
-#         """
-#
-#         def __init__(self, customBanner=None, *args, **kwargs):
-#             if customBanner is not None:
-#                 self.banner = customBanner
-#             super(QIPythonWidget, self).__init__(*args, **kwargs)
-#             self.kernel_manager = kernel_manager = QtInProcessKernelManager()
-#             kernel_manager.start_kernel(show_banner=False)
-#             kernel_manager.kernel.gui = 'qt4'
-#             self.kernel_client = kernel_client = self._kernel_manager.client()
-#             kernel_client.start_channels()
-#
-#             def stop():
-#                 kernel_client.stop_channels()
-#                 kernel_manager.shutdown_kernel()
-#                 guisupport.get_app_qt4().exit()
-#
-#             self.exit_requested.connect(stop)
-#
-#         def pushVariables(self, variableDict):
-#             """
-#             Given a dictionary containing name / value pairs, push those variables
-#             to the IPython console widget
-#             """
-#             self.kernel_manager.kernel.shell.push(variableDict)
-#
-#         def clearTerminal(self):
-#             """
-#             Clears the terminal
-#             """
-#             self._control.clear()
-#
-#             # self.kernel_manager
-#
-#         def printText(self, text):
-#             """
-#             Prints some plain text to the console
-#             """
-#             self._append_plain_text(text)
-#
-#         def executeCommand(self, command):
-#             """
-#             Execute a command in the frame of the console widget
-#             """
-#             self._execute(command, False)
-#
-#
-# elif platform.system() == 'Windows':
-#     from qtconsole.qt import QtGui
-#     from qtconsole.rich_jupyter_widget import RichJupyterWidget
-#     from qtconsole.inprocess import QtInProcessKernelManager
-#
-#     class QIPythonWidget(RichJupyterWidget):
-#         """
-#         Convenience class for a live IPython console widget.
-#         We can replace the standard banner using the customBanner argument
-#         """
-#         def __init__(self, customBanner=None, *args, **kwargs):
-#             super(QIPythonWidget, self).__init__(*args, **kwargs)
-#
-#             if customBanner is not None:
-#                 self.banner = customBanner
-#
-#             self.kernel_manager = kernel_manager = QtInProcessKernelManager()
-#             kernel_manager.start_kernel(show_banner=False)
-#             kernel_manager.kernel.gui = 'qt4'
-#             self.kernel_client = kernel_client = self._kernel_manager.client()
-#             kernel_client.start_channels()
-#
-#             def stop():
-#                 kernel_client.stop_channels()
-#                 kernel_manager.shutdown_kernel()
-#                 guisupport.get_app_qt4().exit()
-#             self.exit_requested.connect(stop)
-#
-#         def pushVariables(self, variableDict):
-#             """
-#             Given a dictionary containing name / value pairs, push those variables
-#             to the IPython console widget
-#             """
-#             self.kernel_manager.kernel.shell.push(variableDict)
-#
-#         def clearTerminal(self):
-#             """
-#             Clears the terminal
-#             """
-#             self._control.clear()
-#
-#             # self.kernel_manager
-#
-#         def printText(self, text):
-#             """
-#             Prints some plain text to the console
-#             """
-#             self._append_plain_text(text)
-#
-#         def executeCommand(self, command):
-#             """
-#             Execute a command in the frame of the console widget
-#             """
-#             self._execute(command, False)
 
 
 class ResultTypes(Enum):
@@ -299,11 +184,6 @@ class MainGUI(QMainWindow):
         # initialize library of items
         self.libItems = []
         self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
-        # self.libItems.append(QtGui.QStandardItem(object_factory.get_circle(), 'Generator'))
-        # self.libItems.append( QtGui.QStandardItem(object_factory.get_transformer(), 'Transformer') )
-        # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'Line'))
-        # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'Battery'))
-        # self.libItems.append(QtGui.QStandardItem(object_factory.get_box(), 'External Connection'))
         for i in self.libItems:
             self.libraryModel.appendRow(i)
 
@@ -351,15 +231,19 @@ class MainGUI(QMainWindow):
         # Console
         ################################################################################################################
 
-        # self.ipyConsole = QIPythonWidget(customBanner="GridCal console.\n\n"
-        #                                               "type gridcalhelp() to see the available specific commands.\n\n"
-        #                                               "the following libraries are already loaded:\n"
-        #                                               "np: numpy\n"
-        #                                               "pd: pandas\n"
-        #                                               "plt: matplotlib\n\n")
-        # self.ui.console_tab.layout().addWidget(self.ipyConsole)
-        # self.ipyConsole.pushVariables({"gridcalhelp": self.print_console_help,
-        #                                "np": np, "pd": pd, "plt": plt, "clc": self.clc})
+        self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
+                                                  "type hlp() to see the available specific commands.\n\n"
+                                                  "the following libraries are already loaded:\n"
+                                                  "np: numpy\n"
+                                                  "pd: pandas\n"
+                                                  "plt: matplotlib\n"
+                                                  "app: This instance of GridCal\n\n")
+        # add the console widget to the user interface
+        self.ui.console_tab.layout().addWidget(self.console)
+
+        # push some variables to the console
+        self.console.push_vars({"hlp": self.print_console_help,
+                                "np": np, "pd": pd, "plt": plt, "clc": self.clc, 'app': self})
 
         ################################################################################################################
         # Connections
@@ -515,7 +399,7 @@ class MainGUI(QMainWindow):
         Clear the console
         @return:
         """
-        self.ipyConsole.clearTerminal()
+        self.console.clear()
 
     def startConnection(self, port):
         """
