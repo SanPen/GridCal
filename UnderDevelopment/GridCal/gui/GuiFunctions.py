@@ -327,23 +327,23 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             F = self.parent.setItemDelegateForColumn
 
         for i in range(self.c):
-            tpe = self.attribute_types[i]
-            if self.attribute_types[i] is bool:
+            tpe = self.attribute_types[self.attributes[i]]
+            if tpe is bool:
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
                 F(i, delegate)
 
-            elif self.attribute_types[i] is float:
+            elif tpe is float:
                 delegate = FloatDelegate(self.parent)
                 F(i, delegate)
 
-            elif self.attribute_types[i] is str:
+            elif tpe is str:
                 delegate = TextDelegate(self.parent)
                 F(i, delegate)
 
-            elif self.attribute_types[i] is complex:
+            elif tpe is complex:
                 delegate = ComplexDelegate(self.parent)
                 F(i, delegate)
-            elif self.attribute_types[i] is None:
+            elif tpe is None:
                 F(i, None)
                 if len(self.non_editable_indices) == 0:
                     self.non_editable_indices.append(i)

@@ -27,7 +27,12 @@ setup(
     # long_description=open("README.txt").read(),
 
     # Dependent packages (distributions)
-    install_requires=[
-        "numpy", "scipy", "networkx", "pandas", "PyQt5", "matplotlib"
-    ],
+    install_requires=["numpy",
+                      "scipy",
+                      "networkx",
+                      "pandas",
+                      "PyQt5",
+                      "matplotlib",
+                      "qtconsole"
+                      ],
 )

@@ -480,7 +480,14 @@ class Bus:
 
         self.edit_headers = ['name', 'is_enabled', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
 
-        self.edit_types = [str, bool, bool, float, float, float, float, float]
+        self.edit_types = {'name': str,
+                           'is_enabled': bool,
+                           'is_slack': bool,
+                           'Vnom': float,
+                           'Vmin': float,
+                           'Vmax': float,
+                           'x': float,
+                           'y': float}
 
     def determine_bus_type(self):
         """
@@ -546,31 +553,34 @@ class Bus:
             # Add the profiles
             elm_Sprof, elm_Iprof, elm_Zprof = elm.get_profiles(index)
             if elm_Zprof is not None:
-                if Yprof is None:
-                    Yprof = 1 / elm_Zprof
-                    Ycdf = CDF(Yprof)
-                else:
-                    pr = 1 / elm_Zprof
-                    Yprof = Yprof.add(pr, fill_value=0)
-                    Ycdf = Ycdf + CDF(pr)
+                if elm_Zprof.values.sum(axis=0) != complex(0):
+                    if Yprof is None:
+                        Yprof = 1 / elm_Zprof
+                        Ycdf = CDF(Yprof)
+                    else:
+                        pr = 1 / elm_Zprof
+                        Yprof = Yprof.add(pr, fill_value=0)
+                        Ycdf = Ycdf + CDF(pr)
 
             if elm_Iprof is not None:
-                if Iprof is None:
-                    Iprof = -elm_Iprof  # Reverse sign convention in the load
-                    Icdf = CDF(Iprof)
-                else:
-                    pr = -elm_Iprof
-                    Iprof = Iprof.add(pr, fill_value=0)  # Reverse sign convention in the load
-                    Icdf = Icdf + CDF(pr)
+                if elm_Iprof.values.sum(axis=0) != complex(0):
+                    if Iprof is None:
+                        Iprof = -elm_Iprof  # Reverse sign convention in the load
+                        Icdf = CDF(Iprof)
+                    else:
+                        pr = -elm_Iprof
+                        Iprof = Iprof.add(pr, fill_value=0)  # Reverse sign convention in the load
+                        Icdf = Icdf + CDF(pr)
 
             if elm_Sprof is not None:
-                if Sprof is None:
-                    Sprof = -elm_Sprof  # Reverse sign convention in the load
-                    Scdf = CDF(Sprof)
-                else:
-                    pr = -elm_Sprof
-                    Sprof = Sprof.add(pr, fill_value=0)  # Reverse sign convention in the load
-                    Scdf = Scdf + CDF(pr)
+                if elm_Sprof.values.sum(axis=0) != complex(0):
+                    if Sprof is None:
+                        Sprof = -elm_Sprof  # Reverse sign convention in the load
+                        Scdf = CDF(Sprof)
+                    else:
+                        pr = -elm_Sprof
+                        Sprof = Sprof.add(pr, fill_value=0)  # Reverse sign convention in the load
+                        Scdf = Scdf + CDF(pr)
 
         # controlled gen and batteries
         for elm in self.controlled_generators + self.batteries:
@@ -896,7 +906,19 @@ class Branch:
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
 
-        self.edit_types = [str,    None,        None,     bool,         float, float,   float, float, float, float, float, float, float]
+        self.edit_types = {'name': str,
+                           'bus_from': None,
+                           'bus_to': None,
+                           'is_enabled': bool,
+                           'rate': float,
+                           'mttf': float,
+                           'mttr': float,
+                           'R': float,
+                           'X': float,
+                           'G': float,
+                           'B': float,
+                           'tap_module': float,
+                           'angle': float}
 
     def copy(self, bus_dict=None):
         """
@@ -1060,7 +1082,7 @@ class Load:
 
         self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
 
-        self.edit_types = [str, None, complex, complex, complex]
+        self.edit_types = {'name': str, 'bus': None, 'Z': complex, 'I': complex, 'S': complex}
 
     def create_profiles(self, index):
         """
@@ -1195,7 +1217,7 @@ class StaticGenerator:
 
         self.edit_headers = ['name', 'bus', 'S']
 
-        self.edit_types = [str,  None,  complex]
+        self.edit_types = {'name': str,  'bus': None,  'S': complex}
 
     def copy(self):
         """
@@ -1305,7 +1327,14 @@ class Battery:
 
         self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
 
-        self.edit_types = [str,  None,  float, float, float,  float, float, float]
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'P': float,
+                           'Vset': float,
+                           'Snom': float,
+                           'Enom': float,
+                           'Qmin': float,
+                           'Qmax': float}
 
     def copy(self):
 
@@ -1452,7 +1481,13 @@ class ControlledGenerator:
 
         self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
 
-        self.edit_types = [str,  None,  float, float, float, float, float]
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'P': float,
+                           'Vset': float,
+                           'Snom': float,
+                           'Qmin': float,
+                           'Qmax': float}
 
     def copy(self):
 
@@ -1573,7 +1608,7 @@ class Shunt:
 
         self.edit_headers = ['name', 'bus', 'Y']
 
-        self.edit_types = [str,   None, complex]
+        self.edit_types = {'name': str,   'bus': None, 'Y': complex}
 
     def copy(self):
 
@@ -2142,17 +2177,33 @@ class MultiCircuit(Circuit):
         print('Interpreted.')
 
     def interpret_data_v2(self, data):
+        """
+        Interpret the new file version
+        Args:
+            data: Dictionary with the excel file sheet labels and the corresponding DataFrame
+
+        Returns: Nothing, just applies the loaded data to this MultiCircuit instance
+
+        """
         print('Interpreting V2 data...')
 
+        # clear all the data
         self.clear()
 
+        # set the base magnitudes
         self.Sbase = data['baseMVA']
         self.Ibase = data['basekA']
+
+        self.time_profile = None
 
         # common function
         def set_object_attributes(obj_, attr_list, values):
             for a, attr in enumerate(attr_list):
-                setattr(obj_, attr, values[a])
+                conv = obj.edit_types[attr]  # get the type converter
+                if conv is None:
+                    setattr(obj_, attr, values[a])
+                else:
+                    setattr(obj_, attr, conv(values[a]))
 
         # Add the buses
         lst = data['bus']
@@ -2188,18 +2239,125 @@ class MultiCircuit(Circuit):
             obj = Load()
             set_object_attributes(obj, hdr, vals[i, :])
 
-            # if 'load_Sprof' in data.keys():
-            #     obj.Sprof = data['load_Sprof'][]
+            if 'load_Sprof' in data.keys():
+                val = [complex(v) for v in data['load_Sprof'].values[:, i]]
+                idx = data['load_Sprof'].index
+                obj.Sprof = pd.DataFrame(data=val, index=idx)
+
+                if self.time_profile is None:
+                    self.time_profile = idx
+
+            if 'load_Iprof' in data.keys():
+                val = [complex(v) for v in data['load_Iprof'].values[:, i]]
+                idx = data['load_Iprof'].index
+                obj.Iprof = pd.DataFrame(data=val, index=idx)
+
+                if self.time_profile is None:
+                    self.time_profile = idx
+
+            if 'load_Zprof' in data.keys():
+                val = [complex(v) for v in data['load_Zprof'].values[:, i]]
+                idx = data['load_Zprof'].index
+                obj.Zprof = pd.DataFrame(data=val, index=idx)
+
+                if self.time_profile is None:
+                    self.time_profile = idx
 
             bus = bus_dict[bus_from[i]]
+            obj.bus = bus
             bus.loads.append(obj)
+
+        # add the controlled generators
+        lst = data['controlled_generator']
+        bus_from = lst['bus'].values
+        hdr = lst.columns.values
+        hdr = delete(hdr, argwhere(hdr == 'bus'))
+        vals = lst[hdr].values
+        for i in range(len(lst)):
+            obj = ControlledGenerator()
+            set_object_attributes(obj, hdr, vals[i, :])
+
+            if 'CtrlGen_P_profiles' in data.keys():
+                val = data['CtrlGen_P_profiles'].values[:, i]
+                idx = data['CtrlGen_P_profiles'].index
+                obj.Pprof = pd.DataFrame(data=val, index=idx)
+
+            if 'CtrlGen_Vset_profiles' in data.keys():
+                val = data['CtrlGen_Vset_profiles'].values[:, i]
+                idx = data['CtrlGen_Vset_profiles'].index
+                obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+
+            bus = bus_dict[bus_from[i]]
+            obj.bus = bus
+            bus.controlled_generators.append(obj)
+
+        # add the batteries
+        lst = data['battery']
+        bus_from = lst['bus'].values
+        hdr = lst.columns.values
+        hdr = delete(hdr, argwhere(hdr == 'bus'))
+        vals = lst[hdr].values
+        for i in range(len(lst)):
+            obj = Battery()
+            set_object_attributes(obj, hdr, vals[i, :])
+
+            # if 'CtrlGen_P_profiles' in data.keys():
+            #     val = data['CtrlGen_P_profiles'].values[:, i]
+            #     idx = data['CtrlGen_P_profiles'].index
+            #     obj.Pprof = pd.DataFrame(data=val, index=idx)
+            #
+            # if 'CtrlGen_Vset_profiles' in data.keys():
+            #     val = data['CtrlGen_Vset_profiles'].values[:, i]
+            #     idx = data['CtrlGen_Vset_profiles'].index
+            #     obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+
+            bus = bus_dict[bus_from[i]]
+            obj.bus = bus
+            bus.batteries.append(obj)
+
+        # add the static generators
+        lst = data['static_generator']
+        bus_from = lst['bus'].values
+        hdr = lst.columns.values
+        hdr = delete(hdr, argwhere(hdr == 'bus'))
+        vals = lst[hdr].values
+        for i in range(len(lst)):
+            obj = StaticGenerator()
+            set_object_attributes(obj, hdr, vals[i, :])
+
+            # if 'CtrlGen_P_profiles' in data.keys():
+            #     val = data['CtrlGen_P_profiles'].values[:, i]
+            #     idx = data['CtrlGen_P_profiles'].index
+            #     obj.Sprof = pd.DataFrame(data=val, index=idx)
+
+            bus = bus_dict[bus_from[i]]
+            obj.bus = bus
+            bus.static_generators.append(obj)
+
+        # add the shunts
+        lst = data['shunt']
+        bus_from = lst['bus'].values
+        hdr = lst.columns.values
+        hdr = delete(hdr, argwhere(hdr == 'bus'))
+        vals = lst[hdr].values
+        for i in range(len(lst)):
+            obj = Shunt()
+            set_object_attributes(obj, hdr, vals[i, :])
+
+            # if 'CtrlGen_P_profiles' in data.keys():
+            #     val = data['CtrlGen_P_profiles'].values[:, i]
+            #     idx = data['CtrlGen_P_profiles'].index
+            #     obj.Sprof = pd.DataFrame(data=val, index=idx)
+
+            bus = bus_dict[bus_from[i]]
+            obj.bus = bus
+            bus.shunts.append(obj)
 
         print('Done!')
 
         # ['branch', 'load_Zprof', 'version', 'CtrlGen_Vset_profiles', 'CtrlGen_P_profiles', 'basekA',
         #                   'baseMVA', 'load_Iprof', 'battery', 'load', 'bus', 'shunt', 'controlled_generator',
         #                   'load_Sprof', 'static_generator']
-
 
     def save_file(self, filepath):
         """

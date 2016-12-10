@@ -1643,7 +1643,10 @@ last solution</string>
      <normaloff>:/file/ic_add_circle_black_48dp.png</normaloff>:/file/ic_add_circle_black_48dp.png</iconset>
    </property>
    <property name="text">
-    <string>Bigger nodes</string>
+    <string>Expand</string>
+   </property>
+   <property name="toolTip">
+    <string>Expand distances</string>
    </property>
   </action>
   <action name="actionSmaller_nodes">
@@ -1652,7 +1655,10 @@ last solution</string>
      <normaloff>:/file/ic_remove_circle_black_48dp.png</normaloff>:/file/ic_remove_circle_black_48dp.png</iconset>
    </property>
    <property name="text">
-    <string>Smaller nodes</string>
+    <string>Shrink</string>
+   </property>
+   <property name="toolTip">
+    <string>Shrink distances</string>
    </property>
   </action>
   <action name="actionPower_flow_Stochastic">

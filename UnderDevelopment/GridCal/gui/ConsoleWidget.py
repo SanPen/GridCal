@@ -15,6 +15,8 @@ class ConsoleWidget(RichJupyterWidget):
         if customBanner is not None:
             self.banner = customBanner
 
+        self.font_size = 6
+        self.gui_completion = 'droplist'
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
         kernel_manager.kernel.gui = 'qt'
