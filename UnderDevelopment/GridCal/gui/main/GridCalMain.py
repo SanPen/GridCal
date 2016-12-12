@@ -75,30 +75,47 @@ class NewProfilesStructureDialogue(QDialog):
         # self.setWindowIcon(icon)
         self.layout = QVBoxLayout(self)
 
+        # calendar
         self.calendar = QDateTimeEdit()
-        self.calendar.setDateTime(QDateTime(2011, 4, 22, 00, 00, 00))
+        d = datetime.today()
+        self.calendar.setDateTime(QDateTime(d.year, 1, 1, 00, 00, 00))
 
+        # number of time steps
         self.steps_spinner = QSpinBox()
         self.steps_spinner.setMinimum(1)
         self.steps_spinner.setMaximum(9999999)
         self.steps_spinner.setValue(1)
 
+        # time step length
         self.step_length = QDoubleSpinBox()
         self.step_length.setMinimum(1)
         self.step_length.setMaximum(60)
         self.step_length.setValue(1)
 
+        # units combo box
         self.units = QComboBox()
         self.units.setModel(get_list_model(['h', 'm', 's']))
 
+        # accept button
         self.accept_btn = QPushButton()
         self.accept_btn.setText('Accept')
         self.accept_btn.clicked.connect(self.accept_click)
 
+        # labels
+
+        # add all to the GUI
+        self.layout.addWidget(QLabel("Start date"))
         self.layout.addWidget(self.calendar)
+
+        self.layout.addWidget(QLabel("Number of time steps"))
         self.layout.addWidget(self.steps_spinner)
+
+        self.layout.addWidget(QLabel("Time step length"))
         self.layout.addWidget(self.step_length)
+
+        self.layout.addWidget(QLabel("Time units"))
         self.layout.addWidget(self.units)
+
         self.layout.addWidget(self.accept_btn)
 
         self.setLayout(self.layout)
@@ -142,15 +159,15 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
-        self.solvers_dict['Newton-Raphson [NR]'] = SolverType.NR
-        self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
-        self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
+        # self.solvers_dict['Newton-Raphson [NR]'] = SolverType.NR
+        # self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
+        # self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
         self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
-        self.solvers_dict['Gauss-Seidel'] = SolverType.GAUSS
-        self.solvers_dict['Z-Matrix Gauss-Seidel'] = SolverType.ZBUS
+        # self.solvers_dict['Gauss-Seidel'] = SolverType.GAUSS
+        # self.solvers_dict['Z-Matrix Gauss-Seidel'] = SolverType.ZBUS
         self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
-        self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
-        self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
+        # self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
+        # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
         self.solvers_dict['DC approximation'] = SolverType.DC
 
         lst = list(self.solvers_dict.keys())
@@ -159,7 +176,7 @@ class MainGUI(QMainWindow):
         self.ui.retry_solver_comboBox.setModel(mdl)
 
         self.ui.solver_comboBox.setCurrentIndex(0)
-        self.ui.retry_solver_comboBox.setCurrentIndex(3)
+        self.ui.retry_solver_comboBox.setCurrentIndex(2)
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)
@@ -223,6 +240,8 @@ class MainGUI(QMainWindow):
         self.time_series = None
         self.voltage_stability = None
 
+        self.results_df = None
+
         self.available_results_dict = None
         self.threadpool = QThreadPool()
         self.threadpool.setMaxThreadCount(cpu_count())
@@ -278,6 +297,14 @@ class MainGUI(QMainWindow):
 
         self.ui.profile_display_pushButton.clicked.connect(self.display_profiles)
 
+        self.ui.plot_pushButton.clicked.connect(self.item_results_plot)
+
+        self.ui.select_all_pushButton.clicked.connect(self.ckeck_all_result_objects)
+
+        self.ui.select_none_pushButton.clicked.connect(self.ckeck_none_result_objects)
+
+        self.ui.saveResultsButton.clicked.connect(self.save_results_df)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -295,13 +322,6 @@ class MainGUI(QMainWindow):
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
         ################################################################################################################
-        # Other actions
-        ################################################################################################################
-        fname = 'IEEE_30BUS_profiles.xls'
-        self.circuit.load_file(fname)
-        self.create_schematic_from_api(explode_factor=50)
-
-        ################################################################################################################
         # Colormaps
         ################################################################################################################
         vmax = 1.2
@@ -315,6 +335,13 @@ class MainGUI(QMainWindow):
                (0.8, 'orange'),
                (1.0, 'red')]
         self.loading_cmap = LinearSegmentedColormap.from_list('lcolors', seq)
+
+        ################################################################################################################
+        # Other actions
+        ################################################################################################################
+        fname = 'IEEE_30BUS_profiles.xls'
+        self.circuit.load_file(fname)
+        self.create_schematic_from_api(explode_factor=50)
 
     def LOCK(self, val=True):
         """
@@ -436,7 +463,8 @@ class MainGUI(QMainWindow):
                 if type(item) is TerminalItem:  # connect only to terminals
                     if item.parent is not self.startedConnection.fromPort.parent:  # forbid connecting to itself
 
-                        # if type(item.parent) is not type(self.startedConnection.fromPort.parent): # forbid same type connections
+                        # if type(item.parent) is not type(self.startedConnection.fromPort.parent):
+                        #  forbid same type connections
 
                         self.startedConnection.setToPort(item)
                         item.hosting_connections.append(self.startedConnection)
@@ -543,6 +571,21 @@ class MainGUI(QMainWindow):
             branch.graphic_obj.setToolTip(tooltip)
             branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
             i += 1
+
+    def msg(self, text):
+        """
+        Message box
+        :param text:
+        :return:
+        """
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(text)
+        # msg.setInformativeText("This is additional information")
+        msg.setWindowTitle("Aviso")
+        # msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        retval = msg.exec_()
 
     def new_project(self):
         """
@@ -815,11 +858,78 @@ class MainGUI(QMainWindow):
             warn('Something went wrong, There are no power flow results.')
         self.UNLOCK()
 
+    def get_selected_voltage_stability(self):
+        """
+        Gather the voltage stability options
+        :return:
+        """
+        use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
+
+        alpha = self.ui.alpha_doubleSpinBox.value()
+
+        use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
+
+        start_idx = self.ui.vs_departure_comboBox.currentIndex()
+
+        end_idx = self.ui.vs_target_comboBox.currentIndex()
+
+        return use_alpha, alpha, use_profiles, start_idx, end_idx
+
     def run_voltage_stability(self):
+        """
+
+        :return:
+        """
         print('run_voltage_stability')
 
+        # get the selected UI options
+        use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
+
+        # declare voltage collapse options
+        vc_options = VoltageCollapseOptions()
+
+        if use_alpha:
+            '''
+            use the current power situation as start
+            and a linear combination of the current situation as target
+            '''
+            if self.power_flow is not None:
+                # lock the UI
+                self.LOCK()
+
+                n = len(self.circuit.buses)
+                #  compose the base power
+                Sbase = zeros(n, dtype=complex)
+                for c in self.circuit.circuits:
+                    Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
+
+                vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                                 Vbase=self.power_flow.results.voltage,
+                                                 Starget=Sbase * alpha)
+
+                # create object
+                self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
+
+                # make connections
+                self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                self.voltage_stability.done_signal.connect(self.UNLOCK)
+                self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+
+                # thread start
+                self.voltage_stability.start()
+            else:
+                self.msg('Run a power flow simulation first.\n the results are needed to initialize this simulation.')
+
+        elif use_profiles:
+            pass
+
     def post_voltage_stability(self):
+        """
+
+        :return:
+        """
         self.update_available_results()
+        self.UNLOCK()
 
     def run_time_series(self):
         """
@@ -910,7 +1020,7 @@ class MainGUI(QMainWindow):
 
     def set_cancel_state(self):
         """
-        Cancell whatever's going on
+        Cancel whatever's going on that can be cancelled
         @return:
         """
         if self.power_flow is not None:
@@ -939,7 +1049,7 @@ class MainGUI(QMainWindow):
 
         if self.voltage_stability is not None:
             lst.append("Voltage Stability")
-            self.available_results_dict["Power Flow"] = self.voltage_stability.results.available_results
+            self.available_results_dict["Voltage Stability"] = self.voltage_stability.results.available_results
 
         if self.time_series is not None:
             lst.append("Time Series")
@@ -958,14 +1068,19 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-
         elm = self.ui.result_listView.selectedIndexes()[0].data()
         lst = self.available_results_dict[elm]
         mdl = get_list_model(lst)
         self.ui.result_type_listView.setModel(mdl)
 
-    def result_type_click(self):
-        print()
+    def result_type_click(self, qt_val=None, indices=None):
+        """
+        plot all the values for the selected result type
+        :param qt_val: trash variable to store what the QT object sends
+        :param indices: element indices selected for plotting
+        :return:
+        """
+
         study = self.ui.result_listView.selectedIndexes()[0].data()
         study_type = self.ui.result_type_listView.selectedIndexes()[0].data()
 
@@ -974,21 +1089,73 @@ class MainGUI(QMainWindow):
         elif 'Branch' in study_type:
             names = self.circuit.branch_names
 
-        mdl = get_list_model(names, checks=True)
-        self.ui.result_element_selection_listView.setModel(mdl)
+        if indices is None:
+            mdl = get_list_model(names, checks=True)
+            self.ui.result_element_selection_listView.setModel(mdl)
 
+        # clear the plot display
         self.ui.resultsPlot.clear()
 
-        if study == 'Power Flow':
-            self.power_flow.results.plot(type=study_type, ax=self.ui.resultsPlot.get_axis(), indices=None, names=names)
-        elif study == 'Time Series':
-            pass
-        elif study == 'Voltage Stability':
-            pass
-        elif study == 'Monte Carlo':
-            pass
+        # get the plot axis
+        ax = self.ui.resultsPlot.get_axis()
 
+        self.results_df = None
+        res_mdl = None
+        if study == 'Power Flow':
+            self.results_df = self.power_flow.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+            res_mdl = PandasModel(self.results_df)
+        elif study == 'Time Series':
+            self.results_df = self.time_series.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+            res_mdl = PandasModel(self.results_df)
+        elif study == 'Voltage Stability':
+            self.results_df = self.voltage_stability.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+            res_mdl = PandasModel(self.results_df)
+        elif study == 'Monte Carlo':
+            self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+            res_mdl = PandasModel(self.results_df)
+
+        # set hte table model
+        self.ui.resultsTableView.setModel(res_mdl)
+
+        # refresh the plot display
         self.ui.resultsPlot.redraw()
+
+    def save_results_df(self):
+        """
+        Save the data displayed at the results as excel
+        :return:
+        """
+        if self.results_df is not None:
+            file = QFileDialog.getSaveFileName(self, "Save to Excel", '', filter="Excel files (*.xlsx)")
+            if file[0] != '':
+                self.results_df.to_excel(file[0])
+
+    def item_results_plot(self):
+        """
+        Same as result_type_click but for the selected items
+        :return:
+        """
+        mdl = self.ui.result_element_selection_listView.model()
+        indices = get_checked_indices(mdl)
+        self.result_type_click(qt_val=None, indices=indices)
+
+    def ckeck_all_result_objects(self):
+        """
+        Check all the result objects
+        :return:
+        """
+        mdl = self.ui.result_element_selection_listView.model()
+        for row in range(mdl.rowCount()):
+            mdl.item(row).setCheckState(QtCore.Qt.Checked)
+
+    def ckeck_none_result_objects(self):
+        """
+        Check all the result objects
+        :return:
+        """
+        mdl = self.ui.result_element_selection_listView.model()
+        for row in range(mdl.rowCount()):
+            mdl.item(row).setCheckState(QtCore.Qt.Unchecked)
 
 
 def run():

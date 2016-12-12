@@ -637,3 +637,18 @@ def get_list_model(lst, checks=False):
                 list_model.appendRow(item)
 
     return list_model
+
+
+def get_checked_indices(mdl: QStandardItemModel()):
+    """
+    Get a list of the selected indices in a QStandardItemModel
+    :param mdl:
+    :return:
+    """
+    idx = list()
+    for row in range(mdl.rowCount()):
+        item = mdl.item(row)
+        if item.checkState() == QtCore.Qt.Checked:
+            idx.append(row)
+
+    return np.array(idx)

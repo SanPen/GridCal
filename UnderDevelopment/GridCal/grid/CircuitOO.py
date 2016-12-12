@@ -24,7 +24,7 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
 from networkx import connected_components
-from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, \
+from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
     where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere
 from scipy.sparse import csc_matrix as sparse
 from copy import deepcopy
@@ -37,6 +37,7 @@ from grid.ImportParsers.matpower_parser import parse_matpower_file
 from grid.IwamotoNR import IwamotoNR
 from grid.ContinuationPowerFlow import continuation_nr
 from grid.HelmVect import helm
+from grid.DCPF import dcpf
 
 
 class NodeType(Enum):
@@ -2849,6 +2850,8 @@ class PowerFlowInput:
 
         self.sto = None
 
+        self.pqpv = None
+
         # Branch admittance matrix with the from buses
         self.Yf = zeros((m, n), dtype=complex)
 
@@ -2935,6 +2938,7 @@ class PowerFlowInput:
         self.pv = where(self.types == NodeType.PV.value[0])[0]
         self.ref = where(self.types == NodeType.REF.value[0])[0]
         self.sto = where(self.types == NodeType.STO_DISPATCH.value)[0]
+        self.pqpv = r_[self.pq, self.pv]
 
         if len(self.ref) == 0:
             if len(self.pv) == 0:
@@ -3216,6 +3220,8 @@ class PowerFlowResults:
         df = pd.DataFrame(data=y, index=labels, columns=['V'])
         df.plot(ax=ax, kind='bar')
 
+        return df
+
 
 class PowerFlow(QRunnable):
     # progress_signal = pyqtSignal(float)
@@ -3348,7 +3354,17 @@ class PowerFlow(QRunnable):
                                                       pv=circuit.power_flow_input.pv,
                                                       vd=circuit.power_flow_input.ref,
                                                       eps=self.options.tolerance)
-                else:
+                elif self.options.solver_type == SolverType.DC:
+
+                    V, converged, normF, Scalc = dcpf(Ybus=circuit.power_flow_input.Ybus,
+                                                      Sbus=Sbus,
+                                                      V0=V,
+                                                      ref=circuit.power_flow_input.ref,
+                                                      pvpq=circuit.power_flow_input.pqpv,
+                                                      pq=circuit.power_flow_input.pq,
+                                                      pv=circuit.power_flow_input.pv)
+
+                else:  # for any other method, for now, do a NR Iwamoto
                     V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                            Sbus=Sbus,
                                                            V0=V,
@@ -3971,6 +3987,58 @@ class TimeSeriesResults(PowerFlowResults):
 
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, buses_selected_for_storage_frequency
 
+    def plot(self, type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        :param type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        labels = names[indices]
+        ylabel = ''
+        if type == 'Bus voltage':
+            df = self.voltage[indices]
+            ylabel = 'Bus voltage (p.u.)'
+
+        elif type == 'Branch power':
+            df = self.Sbranch[indices]
+            ylabel = 'Branch power (MVA)'
+
+        elif type == 'Branch current':
+            df = self.Ibranch[indices]
+            ylabel = 'Branch current (kA)'
+
+        elif type == 'Branch_loading':
+            df = self.loading[indices] * 100
+            ylabel = 'Branch loading (%)'
+
+        elif type == 'Branch losses':
+            df = self.losses[indices]
+            ylabel = 'Branch losses (MVA)'
+
+        else:
+            pass
+
+        # df = pd.DataFrame(data=y, index=time_index, columns=labels)
+        df.columns = labels
+        df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+        ax.set_title(ylabel)
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel('Time')
+
+        return df
+
 
 class TimeSeriesResultsAnalysis:
 
@@ -4142,25 +4210,77 @@ class VoltageCollapseInput:
 
 
 class VoltageCollapseResults:
-    def __init__(self, voltages, lambdas, error, converged):
+    def __init__(self, nbus):
         """
         VoltageCollapseResults instance
         @param voltages: Resulting voltages
         @param lambdas: Continuation factor
         """
 
-        self.voltages = voltages
+        self.voltages = None
 
-        self.lambdas = lambdas
+        self.lambdas = None
 
-        self.error = error
+        self.error = None
 
-        self.converged = converged
+        self.converged = False
 
         self.available_results = ['Bus voltage']
 
-    def plot(self):
-        plot(self.lambdas, abs(array(self.voltages)))
+    def add(self, res, idx, nbus_full):
+        """
+
+        :param res:
+        :param idx:
+        :param nbus_full:
+        :return:
+        """
+
+        l, n = res.voltages.shape
+
+        if self.voltages is None:
+            self.voltages = zeros((l, nbus_full))
+            self.voltages[:, idx] = res.voltages
+            self.lambdas = res.lambdas
+
+        else:
+            self.voltages[:, idx] = res.voltages
+
+    def plot(self, type='Bus voltage', ax=None, indices=None, names=None):
+        """
+        Plot the results
+        :param type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        labels = names[indices]
+        ylabel = ''
+        if type == 'Bus voltage':
+            y = abs(array(self.voltages)[:, indices])
+            x = self.lambdas
+            ylabel = 'Bus voltage (p.u.)'
+        else:
+            pass
+
+        df = pd.DataFrame(data=y, index=x, columns=indices)
+        df.columns = labels
+        df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+        ax.set_title(ylabel)
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel('Loading from the base situation ($\Lambda$)')
+
+        return df
 
 
 class VoltageCollapse(QThread):
@@ -4194,7 +4314,9 @@ class VoltageCollapse(QThread):
         @return:
         """
         print('Running voltage collapse...')
-        self.results = list()
+        nbus = len(self.grid.buses)
+        self.results = VoltageCollapseResults(nbus=nbus)
+
         for c in self.grid.circuits:
             Voltage_series, Lambda_series, \
             normF, success = continuation_nr(Ybus=c.power_flow_input.Ybus,
@@ -4214,12 +4336,15 @@ class VoltageCollapse(QThread):
                                              stop_at='NOSE',
                                              verbose=False)
 
-            res = VoltageCollapseResults(voltages=Voltage_series,
-                                         lambdas=Lambda_series,
-                                         error=normF,
-                                         converged=bool(success))
-            self.results.append(res)
+            res = VoltageCollapseResults(nbus=0)  # nbus can be zero, because all the arrays are going to be overwritten
+            res.voltages = array(Voltage_series)
+            res.lambdas = array(Lambda_series)
+            res.error = normF
+            res.converged = bool(success)
+
+            self.results.add(res, c.bus_original_idx, nbus)
         print('done!')
+        self.done_signal.emit()
 
     def cancel(self):
         self.__cancel__ = True
@@ -4433,5 +4558,46 @@ class MonteCarloResults:
         self.current = self.I_points.mean(axis=0)
         self.loading = self.loading_points.mean(axis=0)
 
+    def plot(self, type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        :param type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
 
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
+        if indices is None:
+            indices = array(range(len(names)))
+
+        labels = names[indices]
+        ylabel = ''
+        if type == 'Bus voltage':
+            y = self.V_points[indices, :]
+            ylabel = 'Bus voltage (p.u.)'
+
+        elif type == 'Bus power':
+            y = self.S_points[indices, :]
+            ylabel = 'Branch power (MVA)'
+
+        elif type == 'Branch_loading':
+            y = self.loading_points[indices, :]
+            ylabel = 'Branch loading (%)'
+
+        else:
+            pass
+
+        df = pd.DataFrame(data=y, columns=indices)
+        df.columns = labels
+        df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+        ax.set_title(ylabel)
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel('MC points')
+
+        return df
