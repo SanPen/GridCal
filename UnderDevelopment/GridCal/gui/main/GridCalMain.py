@@ -186,56 +186,15 @@ class MainGUI(QMainWindow):
         # Declare the schematic editor
         ################################################################################################################
 
-        # Widget layout and child widgets:
-        self.horizontalLayout = QHBoxLayout(self)
-        splitter = QSplitter(self)
-        splitter2 = QSplitter(self)
-        self.object_editor_table = QTableView(self)
-        self.libraryBrowserView = QListView(self)
-        self.libraryModel = LibraryModel(self)
-        self.libraryModel.setColumnCount(1)
+        # create diagram editor object
+        self.grid_editor = GridEditor(self.circuit)
 
-        # Create an icon with an icon:
-        object_factory = ObjectFactory()
-
-        # initialize library of items
-        self.libItems = []
-        self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
-        for i in self.libItems:
-            self.libraryModel.appendRow(i)
-
-        # set the objects list
-        self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
-                             'Controlled Generators', 'Batteries', 'Shunts']
-        self.ui.dataStructuresListView.setModel(get_list_model(self.object_types))
-
-        # Actual libraryView object
-        self.libraryBrowserView.setModel(self.libraryModel)
-        self.libraryBrowserView.setViewMode(self.libraryBrowserView.ListMode)
-        self.libraryBrowserView.setDragDropMode(self.libraryBrowserView.DragOnly)
-
-        self.diagramScene = DiagramScene(self, self.circuit)  # scene to add to the QGraphicsView
-        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
-
-        # Add the two objects into a layout
-        splitter2.addWidget(self.libraryBrowserView)
-        splitter2.addWidget(self.object_editor_table)
-        splitter2.setOrientation(Qt.Vertical)
-        splitter.addWidget(splitter2)
-        splitter.addWidget(self.diagramView)
-
-        # delete all widgets
-        for i in reversed(range(self.ui.schematic_layout.count())):
-            self.ui.schematic_layout.itemAt(i).widget().deleteLater()
+        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
         # add the widgets
-        self.ui.schematic_layout.addWidget(splitter)
-        splitter.setStretchFactor(1, 10)
+        self.ui.schematic_layout.addWidget(self.grid_editor)
+        self.grid_editor.setStretchFactor(1, 10)
         self.ui.splitter_8.setStretchFactor(1, 15)
-
-        self.startedConnection = None
-        self.branch_editor_count = 1
-        self.expand_factor = 1.5
 
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
@@ -315,11 +274,11 @@ class MainGUI(QMainWindow):
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
 
         # node size
-        self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
+        self.ui.actionBigger_nodes.triggered.connect(self.grid_editor.bigger_nodes)
 
-        self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
+        self.ui.actionSmaller_nodes.triggered.connect(self.grid_editor.smaller_nodes)
 
-        self.ui.actionCenter_view.triggered.connect(self.center_nodes)
+        self.ui.actionCenter_view.triggered.connect(self.grid_editor.center_nodes)
 
         # list clicks
         self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
@@ -369,7 +328,10 @@ class MainGUI(QMainWindow):
         self.LOCK(False)
 
     def about_box(self):
-
+        """
+        Display about box
+        :return:
+        """
         url = 'https://github.com/SanPen/GridCal'
 
         msg = "GridCal is a research oriented electrical grid calculation software.\n"
@@ -437,96 +399,6 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def startConnection(self, port):
-        """
-        Start the branch creation
-        @param port:
-        @return:
-        """
-        self.startedConnection = BranchGraphicItem(port, None, self.diagramScene)
-        self.startedConnection.bus_from = port.parent
-        port.setZValue(0)
-
-    def sceneMouseMoveEvent(self, event):
-        """
-
-        @param event:
-        @return:
-        """
-        if self.startedConnection:
-            pos = event.scenePos()
-            self.startedConnection.setEndPos(pos)
-
-    def sceneMouseReleaseEvent(self, event):
-        """
-        Finalize the branch creation if its drawing ends in a terminal
-        @param event:
-        @return:
-        """
-        # Clear or finnish the started connection:
-        if self.startedConnection:
-            pos = event.scenePos()
-            items = self.diagramScene.items(pos)  # get the item (the terminal) at the mouse position
-
-            for item in items:
-                if type(item) is TerminalItem:  # connect only to terminals
-                    if item.parent is not self.startedConnection.fromPort.parent:  # forbid connecting to itself
-
-                        # if type(item.parent) is not type(self.startedConnection.fromPort.parent):
-                        #  forbid same type connections
-
-                        self.startedConnection.setToPort(item)
-                        item.hosting_connections.append(self.startedConnection)
-                        self.startedConnection.setZValue(1000)
-                        self.startedConnection.bus_to = item.parent
-                        name = 'Branch ' + str(self.branch_editor_count)
-                        obj = Branch(bus_from=self.startedConnection.bus_from.api_object,
-                                     bus_to=self.startedConnection.bus_to.api_object,
-                                     name=name)
-                        obj.graphic_obj = self.startedConnection
-                        self.startedConnection.api_object = obj
-                        self.circuit.add_branch(obj)
-
-            if self.startedConnection.toPort is None:
-                self.startedConnection.remove_()
-
-        self.startedConnection = None
-
-        print('Buses:', len(self.circuit.buses))
-        print('Branches:', len(self.circuit.branches))
-
-    def bigger_nodes(self):
-        """
-        Expand the grid
-        @return:
-        """
-        print('bigger')
-        for item in self.diagramScene.items():
-            if type(item) is BusGraphicItem:
-                x = item.pos().x()
-                y = item.pos().y()
-                item.setPos(QPointF(x*self.expand_factor, y*self.expand_factor))
-
-    def smaller_nodes(self):
-        """
-        Contract the grid
-        @return:
-        """
-        print('smaller')
-        for item in self.diagramScene.items():
-            if type(item) is BusGraphicItem:
-                x = item.pos().x()
-                y = item.pos().y()
-                item.setPos(QPointF(x/self.expand_factor, y/self.expand_factor))
-
-    def center_nodes(self):
-        """
-        Center the view in the nodes
-        @return: Nothing
-        """
-        self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.KeepAspectRatio)
-        self.diagramView.scale(1.0, 1.0)
-
     def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch):
         """
         Color the grid based on the results passed
@@ -541,9 +413,8 @@ class MainGUI(QMainWindow):
         vabs = abs(Vbus)
         vang = np.angle(Vbus, deg=True)
         vnorm = (vabs - vmin) / vrng
-        # print(vnorm)
-        i = 0
-        for bus in self.circuit.buses:
+
+        for i, bus in enumerate(self.circuit.buses):
             if bus.is_enabled:
                 r, g, b, a = self.voltage_cmap(vnorm[i])
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
@@ -555,31 +426,29 @@ class MainGUI(QMainWindow):
                 if Sbus is not None:
                     tooltip += '\nS:' + "{:10.4f}".format(Sbus[i])
                 bus.graphic_obj.setToolTip(tooltip)
-            i += 1
 
         # color branches
-        lnorm = abs(LoadBranch)
-        lnorm[lnorm == np.inf] = 0
-        # print(lnorm)
-        i = 0
-        for branch in self.circuit.branches:
+        if Sbranch is not None:
+            lnorm = abs(LoadBranch)
+            lnorm[lnorm == np.inf] = 0
 
-            w = branch.graphic_obj.pen_width
-            if branch.is_enabled:
-                style = Qt.SolidLine
-                r, g, b, a = self.loading_cmap(lnorm[i])
-                color = QColor(r*255, g*255, b*255, a*255)
-            else:
-                style = Qt.DashLine
-                color = Qt.gray
+            for i, branch in enumerate(self.circuit.branches):
 
-            tooltip = branch.name
-            tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i])
-            if Sbranch is not None:
-                tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i])
-            branch.graphic_obj.setToolTip(tooltip)
-            branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
-            i += 1
+                w = branch.graphic_obj.pen_width
+                if branch.is_enabled:
+                    style = Qt.SolidLine
+                    r, g, b, a = self.loading_cmap(lnorm[i])
+                    color = QColor(r*255, g*255, b*255, a*255)
+                else:
+                    style = Qt.DashLine
+                    color = Qt.gray
+
+                tooltip = branch.name
+                tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i])
+                if Sbranch is not None:
+                    tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i])
+                branch.graphic_obj.setToolTip(tooltip)
+                branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
 
     def msg(self, text):
         """
@@ -622,26 +491,15 @@ class MainGUI(QMainWindow):
                 print('New')
                 self.circuit = MultiCircuit()
 
-                # create all the schematic objects and replace the existing ones
-                self.diagramScene = DiagramScene(self, self.circuit)  # scene to add to the QGraphicsView
-                self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
-
-                # Add the two objects into a layout
-                splitter = QSplitter(self)
-                splitter2 = QSplitter(self)
-                splitter2.addWidget(self.libraryBrowserView)
-                splitter2.addWidget(self.object_editor_table)
-                splitter2.setOrientation(Qt.Vertical)
-                splitter.addWidget(splitter2)
-                splitter.addWidget(self.diagramView)
+                self.grid_editor = GridEditor(self.circuit)
+                self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
                 for i in reversed(range(self.ui.schematic_layout.count())):
                     self.ui.schematic_layout.itemAt(i).widget().deleteLater()
 
                 # add the widgets
-                self.ui.schematic_layout.addWidget(splitter)
-                splitter.setStretchFactor(1, 10)
+                self.ui.schematic_layout.addWidget(self.grid_editor)
                 self.ui.splitter_8.setStretchFactor(1, 15)
 
                 self.power_flow = None
@@ -713,25 +571,22 @@ class MainGUI(QMainWindow):
         @return:
         """
         # clear all
-        self.diagramView.scene_.clear()
+        self.grid_editor.diagramView.scene_.clear()
 
         # first create the buses
         for bus in self.circuit.buses:
             # print(bus.x, bus.y)
-            bus.graphic_obj = self.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+            bus.graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
             bus.graphic_obj.create_children_icons()
 
         for branch in self.circuit.branches:
             terminal_from = branch.bus_from.graphic_obj.lower_terminals[0]
             terminal_to = branch.bus_to.graphic_obj.lower_terminals[0]
-            connection = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+            connection = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
             terminal_from.hosting_connections.append(connection)
             terminal_to.hosting_connections.append(connection)
             connection.redraw()
             branch.graphic_obj = connection
-
-        # self.diagramView.repaint()
-        # self.startedConnection.remove_()
 
     def view_objects_data(self):
         """
@@ -783,8 +638,6 @@ class MainGUI(QMainWindow):
     def profile_device_type_changed(self):
         """
 
-        Returns:
-
         """
         dev_type = self.ui.profile_device_type_comboBox.currentText()
 
@@ -792,6 +645,10 @@ class MainGUI(QMainWindow):
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
 
     def new_profiles_structure(self):
+        """
+        Create new profiles structure
+        :return:
+        """
         print('new_profiles_structure')
 
         dlg = NewProfilesStructureDialogue()
@@ -982,12 +839,12 @@ class MainGUI(QMainWindow):
 
                 self.compile()
 
-                Sbase = self.circuit.time_series_input.Sprof.values[start_idx, :]
-                Starget = self.circuit.time_series_input.Sprof.values[end_idx, :]
+                self.power_flow.run_at(start_idx)
 
-                vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
                                                  Vbase=self.power_flow.results.voltage,
-                                                 Starget=Starget)
+                                                 Starget=self.circuit.time_series_input.Sprof.values[end_idx, :]
+                                                 )
 
                 # create object
                 self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
@@ -1007,7 +864,21 @@ class MainGUI(QMainWindow):
 
         :return:
         """
-        self.update_available_results()
+        if self.voltage_stability.results is not None:
+
+            V = self.voltage_stability.results.voltages[-1, :]
+            Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
+            Sbranch, Ibranch, loading, losses = self.power_flow.compute_branch_results(self.circuit, V)
+
+            self.color_based_of_pf(Sbus=Sbus,
+                                   Sbranch=Sbranch,
+                                   Vbus=V,
+                                   LoadBranch=loading)
+            self.update_available_results()
+        else:
+            warn('Something went wrong, There are no power flow results.')
+        self.UNLOCK()
+
         self.UNLOCK()
 
     def run_time_series(self):

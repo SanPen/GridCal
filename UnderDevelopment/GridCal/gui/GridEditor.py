@@ -4,8 +4,27 @@ from PyQt5.QtWidgets import *
 from grid.CircuitOO import *
 from gui.GuiFunctions import *
 
+'''
+Dependencies:
+
+GridEditor
+ |
+  - EditorGraphicsView (Handles the drag and drop)
+ |   |
+  ---- DiagramScene
+        |
+         - MultiCircuit (Calculation engine)
+        |
+         - Graphic Objects: (BusGraphicItem, BranchGraphicItem, LoadGraphicItem, ...)
+
+
+The graphic objects need to call the API objects and functions inside the MultiCircuit instance.
+To do this the graphic objects call "parent.circuit.<function or object>"
+'''
+
 
 class LineUpdateMixin(object):
+
     def __init__(self, parent):
         super(LineUpdateMixin, self).__init__(parent)
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
@@ -65,13 +84,10 @@ class GeneralItem(object):
     def delete_all_connections(self):
         for term in self.terminals:
             term.remove_all_connections()
-        # for term in self.lower_terminals:
-        #     term.remove_all_connections()
 
-    def remove_(self, delete_in_API=True):
+    def remove_(self):
         """
 
-        @param delete_in_API:
         @return:
         """
         self.delete_all_connections()
@@ -1535,3 +1551,150 @@ class ObjectFactory(object):
         painter.end()
 
         return QIcon(pixmap)
+
+
+class GridEditor(QSplitter):
+
+    def __init__(self, circuit: MultiCircuit):
+        QSplitter.__init__(self)
+
+        # store a reference to the multi circuit instance
+        self.circuit = circuit
+
+        # nodes distance "explosion" factor
+        self.expand_factor = 1.5
+
+        self.branch_editor_count = 1
+
+        # Widget layout and child widgets:
+        self.horizontalLayout = QHBoxLayout(self)
+        self.object_editor_table = QTableView(self)
+        self.libraryBrowserView = QListView(self)
+        self.libraryModel = LibraryModel(self)
+        self.libraryModel.setColumnCount(1)
+
+        # Create an icon with an icon:
+        object_factory = ObjectFactory()
+
+        # initialize library of items
+        self.libItems = []
+        self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
+        for i in self.libItems:
+            self.libraryModel.appendRow(i)
+
+        # set the objects list
+        self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
+                             'Controlled Generators', 'Batteries', 'Shunts']
+
+
+        # Actual libraryView object
+        self.libraryBrowserView.setModel(self.libraryModel)
+        self.libraryBrowserView.setViewMode(self.libraryBrowserView.ListMode)
+        self.libraryBrowserView.setDragDropMode(self.libraryBrowserView.DragOnly)
+
+        # create all the schematic objects and replace the existing ones
+        self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView
+        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
+
+        # Add the two objects into a layout
+        splitter2 = QSplitter(self)
+        splitter2.addWidget(self.libraryBrowserView)
+        splitter2.addWidget(self.object_editor_table)
+        splitter2.setOrientation(Qt.Vertical)
+        self.addWidget(splitter2)
+        self.addWidget(self.diagramView)
+
+        self.startedConnection = None
+
+        self.setStretchFactor(1, 10)
+
+    def startConnection(self, port):
+        """
+        Start the branch creation
+        @param port:
+        @return:
+        """
+        self.startedConnection = BranchGraphicItem(port, None, self.diagramScene)
+        self.startedConnection.bus_from = port.parent
+        port.setZValue(0)
+
+    def sceneMouseMoveEvent(self, event):
+        """
+
+        @param event:
+        @return:
+        """
+        if self.startedConnection:
+            pos = event.scenePos()
+            self.startedConnection.setEndPos(pos)
+
+    def sceneMouseReleaseEvent(self, event):
+        """
+        Finalize the branch creation if its drawing ends in a terminal
+        @param event:
+        @return:
+        """
+        # Clear or finnish the started connection:
+        if self.startedConnection:
+            pos = event.scenePos()
+            items = self.diagramScene.items(pos)  # get the item (the terminal) at the mouse position
+
+            for item in items:
+                if type(item) is TerminalItem:  # connect only to terminals
+                    if item.parent is not self.startedConnection.fromPort.parent:  # forbid connecting to itself
+
+                        # if type(item.parent) is not type(self.startedConnection.fromPort.parent):
+                        #  forbid same type connections
+
+                        self.startedConnection.setToPort(item)
+                        item.hosting_connections.append(self.startedConnection)
+                        self.startedConnection.setZValue(1000)
+                        self.startedConnection.bus_to = item.parent
+                        name = 'Branch ' + str(self.branch_editor_count)
+                        obj = Branch(bus_from=self.startedConnection.bus_from.api_object,
+                                     bus_to=self.startedConnection.bus_to.api_object,
+                                     name=name)
+                        obj.graphic_obj = self.startedConnection
+                        self.startedConnection.api_object = obj
+                        self.circuit.add_branch(obj)
+
+            if self.startedConnection.toPort is None:
+                self.startedConnection.remove_()
+
+        self.startedConnection = None
+
+        # print('Buses:', len(self.circuit.buses))
+        # print('Branches:', len(self.circuit.branches))
+
+    def bigger_nodes(self):
+        """
+        Expand the grid
+        @return:
+        """
+        print('bigger')
+        for item in self.diagramScene.items():
+            if type(item) is BusGraphicItem:
+                x = item.pos().x()
+                y = item.pos().y()
+                item.setPos(QPointF(x * self.expand_factor, y * self.expand_factor))
+
+    def smaller_nodes(self):
+        """
+        Contract the grid
+        @return:
+        """
+        print('smaller')
+        for item in self.diagramScene.items():
+            if type(item) is BusGraphicItem:
+                x = item.pos().x()
+                y = item.pos().y()
+                item.setPos(QPointF(x / self.expand_factor, y / self.expand_factor))
+
+    def center_nodes(self):
+        """
+        Center the view in the nodes
+        @return: Nothing
+        """
+        self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.KeepAspectRatio)
+        self.diagramView.scale(1.0, 1.0)
+
