@@ -418,7 +418,7 @@
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="GridSectionTab">
            <attribute name="icon">
@@ -1355,13 +1355,10 @@ last solution</string>
                 <property name="bottomMargin">
                  <number>0</number>
                 </property>
-                <item row="1" column="0" colspan="3">
-                 <widget class="QListView" name="result_element_selection_listView"/>
-                </item>
-                <item row="2" column="2">
-                 <widget class="QPushButton" name="plot_pushButton">
+                <item row="2" column="0">
+                 <widget class="QPushButton" name="select_none_pushButton">
                   <property name="text">
-                   <string>Plot</string>
+                   <string>None</string>
                   </property>
                  </widget>
                 </item>
@@ -1372,19 +1369,22 @@ last solution</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QPushButton" name="select_none_pushButton">
-                  <property name="text">
-                   <string>None</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_15">
                   <property name="text">
                    <string>Devices</string>
                   </property>
                  </widget>
+                </item>
+                <item row="3" column="0" colspan="2">
+                 <widget class="QPushButton" name="plot_pushButton">
+                  <property name="text">
+                   <string>Plot</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QListView" name="result_element_selection_listView"/>
                 </item>
                </layout>
               </widget>

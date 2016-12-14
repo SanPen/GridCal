@@ -19,14 +19,23 @@ import numpy as np
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
-def dSbus_dV(Ybus, V):
+def dSbus_dV(Ybus, V, I):
     """
+    Computes partial derivatives of power injection w.r.t. voltage.
+    :param Ybus: Admittance matrix
+    :param V: Bus voltages array
+    :param I: Bus current injections array
+    :return:
+    """
+    '''
     Computes partial derivatives of power injection w.r.t. voltage.
 
     Returns two matrices containing partial derivatives of the complex bus
     power injections w.r.t voltage magnitude and voltage angle respectively
     (for all buses). If C{Ybus} is a sparse matrix, the return values will be
     also. The following explains the expressions used to form the matrices::
+
+        Ibus = Ybus * V - I
 
         S = diag(V) * conj(Ibus) = diag(conj(Ibus)) * V
 
@@ -60,17 +69,18 @@ def dSbus_dV(Ybus, V):
     U{http://www.pserc.cornell.edu/matpower/TN2-OPF-Derivatives.pdf}
 
     @author: Ray Zimmerman (PSERC Cornell)
-    """
+    '''
+
     ib = range(len(V))
 
     if issparse(Ybus):
-        Ibus = Ybus * V
+        Ibus = Ybus * V - I
 
         diagV = sparse((V, (ib, ib)))
         diagIbus = sparse((Ibus, (ib, ib)))
         diagVnorm = sparse((V / abs(V), (ib, ib)))
     else:
-        Ibus = Ybus * asmatrix(V).T
+        Ibus = Ybus * asmatrix(V).T + I
 
         diagV = asmatrix(diag(V))
         diagIbus = asmatrix(diag(asarray(Ibus).flatten()))
@@ -82,7 +92,7 @@ def dSbus_dV(Ybus, V):
     return dS_dVm, dS_dVa
 
 
-def mu(Ybus, J, incS, dV, dx, pvpq, pq):
+def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
@@ -99,7 +109,7 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq):
         the Iwamoto's optimal multiplier for ill conditioned systems
     """
     # evaluate the Jacobian of the voltage derivative
-    dS_dVm, dS_dVa = dSbus_dV(Ybus, dV)  # compute the derivatives
+    dS_dVm, dS_dVa = dSbus_dV(Ybus, dV, Ibus)  # compute the derivatives
 
     J11 = dS_dVa[array([pvpq]).T, pvpq].real
     J12 = dS_dVm[array([pvpq]).T, pq].real
@@ -125,7 +135,7 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     return roots[2].real
 
 
-def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
+def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
     """
     Solves the power flow using a full Newton's method.
 
@@ -147,6 +157,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
         Ybus: Admittance matrix
         Sbus: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
+        Ibus: Array of nodal current injections
         ref: Array with the indices of the slack buses
         pv: Array with the indices of the PV buses
         pq: Array with the indices of the PQ buses
@@ -185,7 +196,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Scalc = V * conj(Ybus * V)
+    Scalc = V * conj(Ybus * V - Ibus)
     mis = Scalc - Sbus  # compute the mismatch
     F = r_[mis[pv].real,
            mis[pq].real,
@@ -203,7 +214,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
         i += 1
 
         # evaluate Jacobian
-        dS_dVm, dS_dVa = dSbus_dV(Ybus, V)  # compute the derivatives
+        dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
 
         J11 = dS_dVa[array([pvpq]).T, pvpq].real
         J12 = dS_dVm[array([pvpq]).T, pq].real
@@ -218,7 +229,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
         # compute update step
         dx = spsolve(J, F)
 
-        # reassign the solution vecor
+        # reassign the solution vector
         if npv:
             dVa[pv] = dx[j1:j2]
         if npq:
@@ -228,7 +239,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
 
         # update voltage
         if robust:
-            mu_ = mu(Ybus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
+            mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
             # print('mu:', mu_)
         else:
             mu_ = 1.0
@@ -241,7 +252,7 @@ def IwamotoNR(Ybus, Sbus, V0, pv, pq, tol, max_it, robust=False):
         Va = angle(V)  # we wrapped around with a negative Vm
 
         # evaluate F(x)
-        Scalc = V * conj(Ybus * V)
+        Scalc = V * conj(Ybus * V - Ibus)
         mis = Scalc - Sbus  # complex power mismatch
         F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
 

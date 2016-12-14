@@ -451,6 +451,9 @@ class LoadGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pa = menu.addAction('Plot profiles')
+        pa.triggered.connect(self.plot)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -461,6 +464,29 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.loads.remove(self.api_object)
+
+    def plot(self):
+
+        fig = plt.figure(figsize=(10, 8))
+        ax1 = fig.add_subplot(311)
+        ax2 = fig.add_subplot(312)
+        ax3 = fig.add_subplot(313)
+
+        self.api_object.Sprof.plot(ax=ax1, linewidth=1)
+        self.api_object.Iprof.plot(ax=ax2, linewidth=1)
+        self.api_object.Zprof.plot(ax=ax3, linewidth=1)
+
+        ax1.set_title('Power profile')
+        ax2.set_title('Current profile')
+        ax3.set_title('Impedance profile')
+
+        ax1.set_ylabel('MVA')
+        ax2.set_ylabel('kA')
+        ax3.set_ylabel('Ohm (p.u.)')
+
+        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
+
+        plt.show()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -546,6 +572,9 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pa = menu.addAction('Plot profile')
+        pa.triggered.connect(self.plot)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -556,6 +585,23 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.shunts.remove(self.api_object)
+
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        fig = plt.figure(figsize=(10, 6))
+        ax1 = fig.add_subplot(111)
+
+        self.api_object.Yprof.plot(ax=ax1, linewidth=1)
+
+        ax1.set_title('Admittance profile')
+
+        ax1.set_ylabel('S (p.u.)')
+
+        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
+
+        plt.show()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -642,6 +688,9 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pa = menu.addAction('Plot profiles')
+        pa.triggered.connect(self.plot)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -652,6 +701,27 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.controlled_generators.remove(self.api_object)
+
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        fig = plt.figure(figsize=(10, 8))
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+
+        self.api_object.Pprof.plot(ax=ax1, linewidth=1)
+        self.api_object.Vsetprof.plot(ax=ax2, linewidth=1)
+
+        ax1.set_title('Active power profile')
+        ax2.set_title('Set voltage profile')
+
+        ax1.set_ylabel('MW')
+        ax2.set_ylabel('V (p.u.)')
+
+        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
+
+        plt.show()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -733,6 +803,9 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pa = menu.addAction('Plot profile')
+        pa.triggered.connect(self.plot)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -743,6 +816,23 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.static_generators.remove(self.api_object)
+
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        fig = plt.figure(figsize=(10, 6))
+        ax1 = fig.add_subplot(111)
+
+        self.api_object.Sprof.plot(ax=ax1, linewidth=1)
+
+        ax1.set_title('Active power profile')
+
+        ax1.set_ylabel('MW')
+
+        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
+
+        plt.show()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -824,6 +914,9 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pa = menu.addAction('Plot profiles')
+        pa.triggered.connect(self.plot)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -834,6 +927,27 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.batteries.remove(self.api_object)
+
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        fig = plt.figure(figsize=(10, 8))
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+
+        self.api_object.Pprof.plot(ax=ax1, linewidth=1)
+        self.api_object.Vsetprof.plot(ax=ax2, linewidth=1)
+
+        ax1.set_title('Active power profile')
+        ax2.set_title('Set voltage profile')
+
+        ax1.set_ylabel('MW')
+        ax2.set_ylabel('V (p.u.)')
+
+        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
+
+        plt.show()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """

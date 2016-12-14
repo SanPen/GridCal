@@ -5,7 +5,16 @@
 
 - (Done) Finnish the results display (including table display)
 
-- Implement voltage stability from the GUI
+- (Done) Implement the "apply to column" functionality in the data tab
+- Make the "Set State" button effective
+
+- Implement the current in the power flow formulations (NR and DC, done but need review)
+
+- (Done) Add profiles plotting option in the GUI objects
+
+- Give functionality to the profiles import button
+
+- (Done) Implement voltage stability from the GUI
 
 - When creating a new object that can host profiles and the grid already has profiles, create profiles in the object too
 - Create synthetic profiles editor

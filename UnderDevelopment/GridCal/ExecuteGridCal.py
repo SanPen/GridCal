@@ -12,11 +12,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import os
+import sys
 from gui.main.GridCalMain import run
+
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 if __name__ == "__main__":
     print("GridCal  Copyright (C) 2016 Santiago Peñate Vera\n" +
           "This program comes with ABSOLUTELY NO WARRANTY.\n" +
           "This is free software, and you are welcome to redistribute it\n" +
-          "under certain conditions;\nSee the license file for more details.")
+          "under certain conditions;\nSee the license file for more details.\n\n")
     run()

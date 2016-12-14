@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
-    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere
+    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import csc_matrix as sparse
 from copy import deepcopy
 
@@ -742,6 +742,32 @@ class Bus:
         :return:
         """
         return [self.name, self.is_enabled, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.x, self.y]
+
+    def set_state(self, t):
+        """
+        Set the profiles state of the objects in this bus to the value given in the profiles at the index t
+        :param t: index of the profile
+        :return:
+        """
+        for elm in self.loads:
+            elm.S = elm.Sprof.values[t, 0]
+            elm.I = elm.Iprof.values[t, 0]
+            elm.Z = elm.Zprof.values[t, 0]
+
+        for elm in self.static_generators:
+            elm.S = elm.Sprof.values[t, 0]
+
+        for elm in self.batteries:
+            elm.P = elm.Pprof.values[t, 0]
+            elm.Vset = elm.Vsetprof.values[t, 0]
+
+        for elm in self.controlled_generators:
+            elm.P = elm.Pprof.values[t, 0]
+            elm.Vset = elm.Vsetprof.values[t, 0]
+
+        for elm in self.shunts:
+            elm.Y = elm.Yprof.values[t, 0]
+
 
 
 class TransformerType:
@@ -1810,7 +1836,6 @@ class Circuit:
             else:
                 Yprofile['Iprof@Bus' + str(i)] = pd.Series(ones(len(Yprofile)) * Y, index=Yprofile.index)
 
-
             # Store the CDF's form Monte Carlo ##############################################
 
             if Scdf is None and S != complex(0, 0):
@@ -2302,15 +2327,15 @@ class MultiCircuit(Circuit):
             obj = Battery()
             set_object_attributes(obj, hdr, vals[i, :])
 
-            # if 'CtrlGen_P_profiles' in data.keys():
-            #     val = data['CtrlGen_P_profiles'].values[:, i]
-            #     idx = data['CtrlGen_P_profiles'].index
-            #     obj.Pprof = pd.DataFrame(data=val, index=idx)
-            #
-            # if 'CtrlGen_Vset_profiles' in data.keys():
-            #     val = data['CtrlGen_Vset_profiles'].values[:, i]
-            #     idx = data['CtrlGen_Vset_profiles'].index
-            #     obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+            if 'battery_P_profiles' in data.keys():
+                val = data['battery_P_profiles'].values[:, i]
+                idx = data['battery_P_profiles'].index
+                obj.Pprof = pd.DataFrame(data=val, index=idx)
+
+            if 'battery_Vset_profiles' in data.keys():
+                val = data['battery_Vset_profiles'].values[:, i]
+                idx = data['battery_Vset_profiles'].index
+                obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
             obj.bus = bus
@@ -2326,10 +2351,10 @@ class MultiCircuit(Circuit):
             obj = StaticGenerator()
             set_object_attributes(obj, hdr, vals[i, :])
 
-            # if 'CtrlGen_P_profiles' in data.keys():
-            #     val = data['CtrlGen_P_profiles'].values[:, i]
-            #     idx = data['CtrlGen_P_profiles'].index
-            #     obj.Sprof = pd.DataFrame(data=val, index=idx)
+            if 'static_generator_Sprof' in data.keys():
+                val = data['static_generator_Sprof'].values[:, i]
+                idx = data['static_generator_Sprof'].index
+                obj.Sprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
             obj.bus = bus
@@ -2345,10 +2370,10 @@ class MultiCircuit(Circuit):
             obj = Shunt()
             set_object_attributes(obj, hdr, vals[i, :])
 
-            # if 'CtrlGen_P_profiles' in data.keys():
-            #     val = data['CtrlGen_P_profiles'].values[:, i]
-            #     idx = data['CtrlGen_P_profiles'].index
-            #     obj.Sprof = pd.DataFrame(data=val, index=idx)
+            if 'shunt_Y_profiles' in data.keys():
+                val = data['shunt_Y_profiles'].values[:, i]
+                idx = data['shunt_Y_profiles'].index
+                obj.Yprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
             obj.bus = bus
@@ -2474,9 +2499,20 @@ class MultiCircuit(Circuit):
 
         # shunt
         obj = list()
+        hdr = list()
+        Yprofiles = None
         for elm in self.get_shunts():
             obj.append(elm.get_save_data())
+            hdr.append(elm.name)
+            if T is not None:
+                if Yprofiles is None:
+                    Yprofiles = elm.Yprof.values
+                else:
+                    Yprofiles = c_[Yprofiles, elm.Yprof.values]
+
         dfs['shunt'] = pd.DataFrame(data=obj, columns=Shunt().edit_headers)
+        if Yprofiles is not None:
+            dfs['shunt_Y_profiles'] = pd.DataFrame(data=Yprofiles, columns=hdr, index=T)
 
         # flush-save
         writer = pd.ExcelWriter(filepath)
@@ -2493,6 +2529,8 @@ class MultiCircuit(Circuit):
         n = len(self.buses)
         m = len(self.branches)
         self.power_flow_input = PowerFlowInput(n, m)
+
+        self.time_series_input = TimeSeriesInput()
 
         self.graph = nx.Graph()
 
@@ -2554,6 +2592,12 @@ class MultiCircuit(Circuit):
             circuit.compile()
             self.power_flow_input.set_from(circuit.power_flow_input, circuit.bus_original_idx,
                                            circuit.branch_original_idx)
+
+            self.time_series_input.apply_from_island(circuit.time_series_input,
+                                                     circuit.bus_original_idx,
+                                                     circuit.branch_original_idx,
+                                                     n, m)
+
             self.circuits.append(circuit)
 
             self.has_time_series = self.has_time_series and circuit.time_series_input.valid
@@ -2792,6 +2836,15 @@ class MultiCircuit(Circuit):
         else:
             warn('The grid must be compiled before dispatching it')
 
+    def set_state(self, t):
+        """
+        Set the profiles state at the index t as the default values
+        :param t:
+        :return:
+        """
+        for bus in self.buses:
+            bus.set_state(t)
+
 
 class PowerFlowOptions:
 
@@ -3019,8 +3072,8 @@ class PowerFlowInput:
 
 class PowerFlowResults:
 
-    def __init__(self, Sbus = None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None, converged=None,
-                 Qpv=None):
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
+                 converged=None, Qpv=None):
         """
 
         @param voltage:
@@ -3358,6 +3411,7 @@ class PowerFlow(QRunnable):
 
                     V, converged, normF, Scalc = dcpf(Ybus=circuit.power_flow_input.Ybus,
                                                       Sbus=Sbus,
+                                                      Ibus=circuit.power_flow_input.Ibus,
                                                       V0=V,
                                                       ref=circuit.power_flow_input.ref,
                                                       pvpq=circuit.power_flow_input.pqpv,
@@ -3368,6 +3422,7 @@ class PowerFlow(QRunnable):
                     V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                            Sbus=Sbus,
                                                            V0=V,
+                                                           Ibus=circuit.power_flow_input.Ibus,
                                                            pv=circuit.power_flow_input.pv,
                                                            pq=circuit.power_flow_input.pq,
                                                            tol=self.options.tolerance,
@@ -3393,6 +3448,7 @@ class PowerFlow(QRunnable):
                             V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                    Sbus=Sbus,
                                                                    V0=V,
+                                                                   Ibus=circuit.power_flow_input.Ibus,
                                                                    pv=circuit.power_flow_input.pv,
                                                                    pq=circuit.power_flow_input.pq,
                                                                    tol=self.options.tolerance,
@@ -3778,6 +3834,28 @@ class TimeSeriesInput:
         ts.Y = self.Y[:, bus_idx]
         ts.valid = True
         return ts
+
+    def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):
+        """
+
+        :param res:
+        :param bus_original_idx:
+        :param branch_original_idx:
+        :param nbus_full:
+        :param nbranch_full:
+        :return:
+        """
+
+        if self.Sprof is None:
+            self.time_array = res.time_array
+            t = len(self.time_array)
+            self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+            self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
+            self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+
+        self.Sprof[res.Sprof.columns.values] = res.Sprof
+        self.Iprof[res.Iprof.columns.values] = res.Iprof
+        self.Yprof[res.Yprof.columns.values] = res.Yprof
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -4227,24 +4305,23 @@ class VoltageCollapseResults:
 
         self.available_results = ['Bus voltage']
 
-    def add(self, res, idx, nbus_full):
+    def apply_from_island(self, res, bus_original_idx, nbus_full):
         """
-
-        :param res:
-        :param idx:
-        :param nbus_full:
+        Apply the results of an island to this VoltageCollapseResults instance
+        :param res: VoltageCollapseResults instance of the island
+        :param bus_original_idx: indices of the buses in the complete grid
+        :param nbus_full: total number of buses in the complete grid
         :return:
         """
 
         l, n = res.voltages.shape
 
         if self.voltages is None:
-            self.voltages = zeros((l, nbus_full))
-            self.voltages[:, idx] = res.voltages
+            self.voltages = zeros((l, nbus_full), dtype=complex)
+            self.voltages[:, bus_original_idx] = res.voltages
             self.lambdas = res.lambdas
-
         else:
-            self.voltages[:, idx] = res.voltages
+            self.voltages[:, bus_original_idx] = res.voltages
 
     def plot(self, type='Bus voltage', ax=None, indices=None, names=None):
         """
@@ -4342,7 +4419,7 @@ class VoltageCollapse(QThread):
             res.error = normF
             res.converged = bool(success)
 
-            self.results.add(res, c.bus_original_idx, nbus)
+            self.results.apply_from_island(res, c.bus_original_idx, nbus)
         print('done!')
         self.done_signal.emit()
 
@@ -4529,7 +4606,11 @@ class MonteCarloResults:
         self.current = None
         self.loading = None
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch_loading']
+        self.v_convergence = None
+        self.c_convergence = None
+        self.l_convergence = None
+
+        self.available_results = ['Bus voltage std', 'Bus current std', 'Branch loading std']
 
     def append_batch(self, mcres):
         """
@@ -4558,6 +4639,20 @@ class MonteCarloResults:
         self.current = self.I_points.mean(axis=0)
         self.loading = self.loading_points.mean(axis=0)
 
+        p, n = self.V_points.shape
+        p, m = self.I_points.shape
+        step = 100
+        nn = int(floor(p / step) + 1)
+        self.v_convergence = zeros((nn, n))
+        self.c_convergence = zeros((nn, m))
+        self.l_convergence = zeros((nn, m))
+        k = 0
+        for i in range(1, p, 100):
+            self.v_convergence[k, :] = abs(self.V_points[0:i, :].std(axis=0))
+            self.c_convergence[k, :] = abs(self.I_points[0:i, :].std(axis=0))
+            self.l_convergence[k, :] = abs(self.loading_points[0:i, :].std(axis=0))
+            k += 1
+
     def plot(self, type, ax=None, indices=None, names=None):
         """
         Plot the results
@@ -4577,23 +4672,22 @@ class MonteCarloResults:
 
         labels = names[indices]
         ylabel = ''
-        if type == 'Bus voltage':
-            y = self.V_points[indices, :]
+        if type == 'Bus voltage std':
+            y = self.v_convergence[1:-1, indices]
             ylabel = 'Bus voltage (p.u.)'
 
-        elif type == 'Bus power':
-            y = self.S_points[indices, :]
-            ylabel = 'Branch power (MVA)'
+        elif type == 'Bus current std':
+            y = self.c_convergence[1:-1, indices]
+            ylabel = 'Branch current (kA)'
 
-        elif type == 'Branch_loading':
-            y = self.loading_points[indices, :]
+        elif type == 'Branch loading std':
+            y = self.l_convergence[1:-1, indices]
             ylabel = 'Branch loading (%)'
 
         else:
             pass
 
-        df = pd.DataFrame(data=y, columns=indices)
-        df.columns = labels
+        df = pd.DataFrame(data=y, columns=labels)
         df.plot(ax=ax, linewidth=1)  # , kind='bar')
 
         ax.set_title(ylabel)

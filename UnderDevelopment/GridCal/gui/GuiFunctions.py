@@ -388,6 +388,27 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             return self.c
 
+    def data_with_type(self, index):
+        """
+        Get the data to display
+        :param index:
+        :param role:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = index.column()
+            attr_idx = index.row()
+        else:
+            obj_idx = index.row()
+            attr_idx = index.column()
+
+        attr = self.attributes[attr_idx]
+        if 'bus' in attr:
+            return getattr(self.objects[obj_idx], attr).name
+        else:
+            return getattr(self.objects[obj_idx], attr)
+
     def data(self, index, role=QtCore.Qt.DisplayRole):
         """
         Get the data to display
@@ -397,19 +418,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-
-                if self.transposed:
-                    obj_idx = index.column()
-                    attr_idx = index.row()
-                else:
-                    obj_idx = index.row()
-                    attr_idx = index.column()
-
-                attr = self.attributes[attr_idx]
-                if 'bus' in attr:
-                    return str(getattr(self.objects[obj_idx], attr).name)
-                else:
-                    return str(getattr(self.objects[obj_idx], attr))
+                return str(self.data_with_type(index))
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
@@ -456,14 +465,28 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    # def copy_to_column(self, row, col):
-    #     """
-    #     Copies one value to all the column
-    #     @param row: Row of the value
-    #     @param col: Column of the value
-    #     @return: Nothing
-    #     """
-    #     self.data[:, col] = self.data[row, col]
+    def copy_to_column(self, index):
+        """
+        Copy the value pointed by the index to all the other cells in the column
+        :param index: QModelIndex instance
+        :return:
+        """
+        value = self.data_with_type(index=index)
+        col = index.column()
+
+        for row in range(self.rowCount()):
+
+            if self.transposed:
+                obj_idx = col
+                attr_idx = row
+            else:
+                obj_idx = row
+                attr_idx = col
+
+            if attr_idx not in self.non_editable_indices:
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            else:
+                pass  # the column cannot be edited
 
 
 class ProfilesModel(QtCore.QAbstractTableModel):

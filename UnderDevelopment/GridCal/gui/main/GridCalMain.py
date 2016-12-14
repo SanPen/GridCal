@@ -224,6 +224,11 @@ class MainGUI(QMainWindow):
         splitter.addWidget(splitter2)
         splitter.addWidget(self.diagramView)
 
+        # delete all widgets
+        for i in reversed(range(self.ui.schematic_layout.count())):
+            self.ui.schematic_layout.itemAt(i).widget().deleteLater()
+
+        # add the widgets
         self.ui.schematic_layout.addWidget(splitter)
         splitter.setStretchFactor(1, 10)
         self.ui.splitter_8.setStretchFactor(1, 15)
@@ -304,6 +309,10 @@ class MainGUI(QMainWindow):
         self.ui.select_none_pushButton.clicked.connect(self.ckeck_none_result_objects)
 
         self.ui.saveResultsButton.clicked.connect(self.save_results_df)
+
+        self.ui.set_profile_state_button.clicked.connect(self.set_state)
+
+        self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -587,6 +596,19 @@ class MainGUI(QMainWindow):
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
 
+    def compile(self):
+        """
+        This function compiles the circuit and updates the UI accordingly
+        :return:
+        """
+        self.circuit.compile()
+
+        if self.circuit.time_profile is not None:
+            mdl = get_list_model(self.circuit.time_profile)
+            self.ui.vs_departure_comboBox.setModel(mdl)
+            self.ui.vs_target_comboBox.setModel(mdl)
+            self.ui.profile_time_selection_comboBox.setModel(mdl)
+
     def new_project(self):
         """
         Create new grid
@@ -597,9 +619,36 @@ class MainGUI(QMainWindow):
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
+                print('New')
                 self.circuit = MultiCircuit()
-                self.diagramScene.circuit = self.circuit
-                self.create_schematic_from_api(explode_factor=500)
+
+                # create all the schematic objects and replace the existing ones
+                self.diagramScene = DiagramScene(self, self.circuit)  # scene to add to the QGraphicsView
+                self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
+
+                # Add the two objects into a layout
+                splitter = QSplitter(self)
+                splitter2 = QSplitter(self)
+                splitter2.addWidget(self.libraryBrowserView)
+                splitter2.addWidget(self.object_editor_table)
+                splitter2.setOrientation(Qt.Vertical)
+                splitter.addWidget(splitter2)
+                splitter.addWidget(self.diagramView)
+
+                # delete all widgets
+                for i in reversed(range(self.ui.schematic_layout.count())):
+                    self.ui.schematic_layout.itemAt(i).widget().deleteLater()
+
+                # add the widgets
+                self.ui.schematic_layout.addWidget(splitter)
+                splitter.setStretchFactor(1, 10)
+                self.ui.splitter_8.setStretchFactor(1, 15)
+
+                self.power_flow = None
+                self.monte_carlo = None
+                self.time_series = None
+                self.voltage_stability = None
+                self.results_df = None
 
             else:
                 pass
@@ -624,7 +673,7 @@ class MainGUI(QMainWindow):
             self.circuit = MultiCircuit()
             self.circuit.load_file(filename=filename)
             self.create_schematic_from_api(explode_factor=500)
-            self.circuit.compile()
+            self.compile()
 
             if self.circuit.time_profile is not None:
                 print('Profiles available')
@@ -750,7 +799,7 @@ class MainGUI(QMainWindow):
             steps, step_length, step_unit, time_base = dlg.get_values()
             print(steps, step_length, step_unit, time_base)
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
-            self.circuit.compile()
+            self.compile()
 
     def delete_profiles_structure(self):
         print('delete_profiles_structure')
@@ -822,7 +871,7 @@ class MainGUI(QMainWindow):
         """
 
         self.LOCK()
-        self.circuit.compile()
+        self.compile()
 
         options = self.get_selected_power_flow_options()
         self.power_flow = PowerFlow(self.circuit, options)
@@ -897,6 +946,8 @@ class MainGUI(QMainWindow):
                 # lock the UI
                 self.LOCK()
 
+                self.compile()
+
                 n = len(self.circuit.buses)
                 #  compose the base power
                 Sbase = zeros(n, dtype=complex)
@@ -918,10 +969,38 @@ class MainGUI(QMainWindow):
                 # thread start
                 self.voltage_stability.start()
             else:
-                self.msg('Run a power flow simulation first.\n the results are needed to initialize this simulation.')
+                self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
 
         elif use_profiles:
-            pass
+            '''
+            Here the start and finish power states are taken from the profiles
+            '''
+            if start_idx > -1 and end_idx > -1:
+
+                # lock the UI
+                self.LOCK()
+
+                self.compile()
+
+                Sbase = self.circuit.time_series_input.Sprof.values[start_idx, :]
+                Starget = self.circuit.time_series_input.Sprof.values[end_idx, :]
+
+                vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                                 Vbase=self.power_flow.results.voltage,
+                                                 Starget=Starget)
+
+                # create object
+                self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
+
+                # make connections
+                self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                self.voltage_stability.done_signal.connect(self.UNLOCK)
+                self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+
+                # thread start
+                self.voltage_stability.start()
+            else:
+                self.msg('Check the selected start and finnish time series indices.')
 
     def post_voltage_stability(self):
         """
@@ -937,7 +1016,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         self.LOCK()
-        self.circuit.compile()
+        self.compile()
 
         if self.circuit.has_time_series:
 
@@ -990,7 +1069,7 @@ class MainGUI(QMainWindow):
         print('run_stochastic')
 
         self.LOCK()
-        self.circuit.compile()
+        self.compile()
 
         options = self.get_selected_power_flow_options()
 
@@ -1078,47 +1157,51 @@ class MainGUI(QMainWindow):
         plot all the values for the selected result type
         :param qt_val: trash variable to store what the QT object sends
         :param indices: element indices selected for plotting
-        :return:
+        :return: Nothing
         """
 
-        study = self.ui.result_listView.selectedIndexes()[0].data()
-        study_type = self.ui.result_type_listView.selectedIndexes()[0].data()
+        if len(self.ui.result_listView.selectedIndexes()) > 0:
 
-        if 'Bus' in study_type:
-            names = self.circuit.bus_names
-        elif 'Branch' in study_type:
-            names = self.circuit.branch_names
+            study = self.ui.result_listView.selectedIndexes()[0].data()
+            study_type = self.ui.result_type_listView.selectedIndexes()[0].data()
 
-        if indices is None:
-            mdl = get_list_model(names, checks=True)
-            self.ui.result_element_selection_listView.setModel(mdl)
+            if 'Bus' in study_type:
+                names = self.circuit.bus_names
+            elif 'Branch' in study_type:
+                names = self.circuit.branch_names
+            else:
+                names = None
 
-        # clear the plot display
-        self.ui.resultsPlot.clear()
+            if indices is None:
+                mdl = get_list_model(names, checks=True)
+                self.ui.result_element_selection_listView.setModel(mdl)
 
-        # get the plot axis
-        ax = self.ui.resultsPlot.get_axis()
+            # clear the plot display
+            self.ui.resultsPlot.clear()
 
-        self.results_df = None
-        res_mdl = None
-        if study == 'Power Flow':
-            self.results_df = self.power_flow.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-            res_mdl = PandasModel(self.results_df)
-        elif study == 'Time Series':
-            self.results_df = self.time_series.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-            res_mdl = PandasModel(self.results_df)
-        elif study == 'Voltage Stability':
-            self.results_df = self.voltage_stability.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-            res_mdl = PandasModel(self.results_df)
-        elif study == 'Monte Carlo':
-            self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-            res_mdl = PandasModel(self.results_df)
+            # get the plot axis
+            ax = self.ui.resultsPlot.get_axis()
 
-        # set hte table model
-        self.ui.resultsTableView.setModel(res_mdl)
+            self.results_df = None
+            res_mdl = None
+            if study == 'Power Flow':
+                self.results_df = self.power_flow.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                res_mdl = PandasModel(self.results_df)
+            elif study == 'Time Series':
+                self.results_df = self.time_series.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                res_mdl = PandasModel(self.results_df)
+            elif study == 'Voltage Stability':
+                self.results_df = self.voltage_stability.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                res_mdl = PandasModel(self.results_df)
+            elif study == 'Monte Carlo':
+                self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                res_mdl = PandasModel(self.results_df)
 
-        # refresh the plot display
-        self.ui.resultsPlot.redraw()
+            # set hte table model
+            self.ui.resultsTableView.setModel(res_mdl)
+
+            # refresh the plot display
+            self.ui.resultsPlot.redraw()
 
     def save_results_df(self):
         """
@@ -1136,8 +1219,9 @@ class MainGUI(QMainWindow):
         :return:
         """
         mdl = self.ui.result_element_selection_listView.model()
-        indices = get_checked_indices(mdl)
-        self.result_type_click(qt_val=None, indices=indices)
+        if mdl is not None:
+            indices = get_checked_indices(mdl)
+            self.result_type_click(qt_val=None, indices=indices)
 
     def ckeck_all_result_objects(self):
         """
@@ -1145,8 +1229,9 @@ class MainGUI(QMainWindow):
         :return:
         """
         mdl = self.ui.result_element_selection_listView.model()
-        for row in range(mdl.rowCount()):
-            mdl.item(row).setCheckState(QtCore.Qt.Checked)
+        if mdl is not None:
+            for row in range(mdl.rowCount()):
+                mdl.item(row).setCheckState(QtCore.Qt.Checked)
 
     def ckeck_none_result_objects(self):
         """
@@ -1154,8 +1239,29 @@ class MainGUI(QMainWindow):
         :return:
         """
         mdl = self.ui.result_element_selection_listView.model()
-        for row in range(mdl.rowCount()):
-            mdl.item(row).setCheckState(QtCore.Qt.Unchecked)
+        if mdl is not None:
+            for row in range(mdl.rowCount()):
+                mdl.item(row).setCheckState(QtCore.Qt.Unchecked)
+
+    def set_state(self):
+        """
+        Set the selected profiles state in the grid
+        :return:
+        """
+        idx = self.ui.profile_time_selection_comboBox.currentIndex()
+
+        if idx > -1:
+            self.circuit.set_state(t=idx)
+
+    def set_value_to_column(self):
+
+        idx = self.ui.dataStructureTableView.currentIndex()
+        mdl = self.ui.dataStructureTableView.model()  # is of type ObjectsModel
+        col = idx.column()
+        if mdl is not None:
+            if col > -1:
+                print(idx.row(), idx.column())
+                mdl.copy_to_column(idx)
 
 
 def run():
