@@ -2754,6 +2754,62 @@ class MultiCircuit(Circuit):
         # del self.branch_dictionary[obj]
         self.branches.remove(obj)
 
+    def add_load(self, bus: Bus):
+        print('')
+        api_obj = Load()
+        api_obj.bus = bus
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        bus.loads.append(api_obj)
+
+        return api_obj
+
+    def add_controlled_generator(self, bus: Bus):
+        api_obj = ControlledGenerator()
+        api_obj.bus = bus
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        bus.controlled_generators.append(api_obj)
+
+        return api_obj
+
+    def add_static_generator(self, bus: Bus):
+        api_obj = StaticGenerator()
+        api_obj.bus = bus
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        bus.static_generators.append(api_obj)
+
+        return api_obj
+
+    def add_battery(self, bus: Bus):
+        api_obj = Battery()
+        api_obj.bus = bus
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        bus.batteries.append(api_obj)
+
+        return api_obj
+
+    def add_shunt(self, bus: Bus):
+        api_obj = Shunt()
+        api_obj.bus = bus
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        bus.shunts.append(api_obj)
+
+        return api_obj
+
     def plot_graph(self, ax=None):
         """
         Plot the grid

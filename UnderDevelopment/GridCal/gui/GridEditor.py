@@ -996,8 +996,6 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @param index:
         @param editor:
         """
-        # QGraphicsRectItem.__init__(self, parent=parent)
-        # GeneralItem.__init__(self)
         super(BusGraphicItem, self).__init__(parent)
 
         self.w = 60.0
@@ -1005,7 +1003,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         self.api_object = bus
 
-        self.diagramScene = diagramScene
+        self.diagramScene = diagramScene  # this is the parent that hosts the pointer to the circuit
 
         self.editor = editor
 
@@ -1277,9 +1275,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = Load()
-            api_obj.bus = self.api_object
-            self.api_object.loads.append(api_obj)
+            api_obj = self.diagramScene.circuit.add_load(self.api_object)
 
         _grph = LoadGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -1293,9 +1289,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = Shunt()
-            api_obj.bus = self.api_object
-            self.api_object.shunts.append(api_obj)
+            api_obj = self.diagramScene.circuit.add_shunt(self.api_object)
 
         _grph = ShuntGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -1309,9 +1303,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = ControlledGenerator()
-            api_obj.bus = self.api_object
-            self.api_object.controlled_generators.append(api_obj)
+            api_obj = self.diagramScene.circuit.add_controlled_generator(self.api_object)
 
         _grph = ControlledGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -1325,9 +1317,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = StaticGenerator()
-            api_obj.bus = self.api_object
-            self.api_object.static_generators.append(api_obj)
+            api_obj = self.diagramScene.circuit.add_static_generator(self.api_object)
 
         _grph = StaticGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -1341,9 +1331,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = Battery()
-            api_obj.bus = self.api_object
-            self.api_object.batteries.append(api_obj)
+            api_obj = self.diagramScene.circuit.add_battery(self.api_object)
 
         _grph = BatteryGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph

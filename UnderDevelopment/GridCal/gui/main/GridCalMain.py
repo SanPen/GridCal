@@ -923,7 +923,7 @@ class MainGUI(QMainWindow):
 
             # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
             # show()
-            ts_analysis = TimeSeriesResultsAnalysis(self.circuit.circuits[0].time_series_results)
+            # ts_analysis = TimeSeriesResultsAnalysis(self.circuit.circuits[0].time_series_results)
             voltage = self.circuit.time_series_results.voltage.max(axis=1)
             loading = self.circuit.time_series_results.loading.max(axis=1)
             Sbranch = self.circuit.time_series_results.Sbranch.max(axis=1)
