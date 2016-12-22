@@ -1120,7 +1120,6 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         y0 = self.h + 40
         x = 0
-        # print(x, y0)
         for elm in self.graphic_children:
             elm.setPos(x, y0)
             x += elm.w + 10

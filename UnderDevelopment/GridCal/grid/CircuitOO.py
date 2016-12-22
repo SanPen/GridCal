@@ -3297,39 +3297,43 @@ class PowerFlowResults:
         if indices is None:
             indices = array(range(len(names)))
 
-        labels = names[indices]
-        ylabel = ''
-        if type == 'Bus voltage':
-            y = self.voltage[indices]
-            ylabel = 'Bus voltage (p.u.)'
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            if type == 'Bus voltage':
+                y = self.voltage[indices]
+                ylabel = 'Bus voltage (p.u.)'
 
-        elif type == 'Branch power':
-            y = self.Sbranch[indices]
-            ylabel = 'Branch power (MVA)'
+            elif type == 'Branch power':
+                y = self.Sbranch[indices]
+                ylabel = 'Branch power (MVA)'
 
-        elif type == 'Branch current':
-            y = self.Ibranch[indices]
-            ylabel = 'Branch current (kA)'
+            elif type == 'Branch current':
+                y = self.Ibranch[indices]
+                ylabel = 'Branch current (kA)'
 
-        elif type == 'Branch_loading':
-            y = self.loading[indices] * 100
-            ylabel = 'Branch loading (%)'
+            elif type == 'Branch_loading':
+                y = self.loading[indices] * 100
+                ylabel = 'Branch loading (%)'
 
-        elif type == 'Branch losses':
-            y = self.losses[indices]
-            ylabel = 'Branch losses (MVA)'
+            elif type == 'Branch losses':
+                y = self.losses[indices]
+                ylabel = 'Branch losses (MVA)'
+
+            else:
+                pass
+
+            # ax.set_xticklabels(names)
+            # ax.plot(indices, y)
+            # ax.set_xlabel('Element')
+            # ax.set_ylabel(ylabel)
+            df = pd.DataFrame(data=y, index=labels, columns=['V'])
+            df.plot(ax=ax, kind='bar')
+
+            return df
 
         else:
-            pass
-
-        # ax.set_xticklabels(names)
-        # ax.plot(indices, y)
-        # ax.set_xlabel('Element')
-        # ax.set_ylabel(ylabel)
-        df = pd.DataFrame(data=y, index=labels, columns=['V'])
-        df.plot(ax=ax, kind='bar')
-
-        return df
+            return None
 
 
 class PowerFlow(QRunnable):
@@ -4138,41 +4142,44 @@ class TimeSeriesResults(PowerFlowResults):
         if indices is None:
             indices = array(range(len(names)))
 
-        labels = names[indices]
-        ylabel = ''
-        if type == 'Bus voltage':
-            df = self.voltage[indices]
-            ylabel = 'Bus voltage (p.u.)'
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            if type == 'Bus voltage':
+                df = self.voltage[indices]
+                ylabel = 'Bus voltage (p.u.)'
 
-        elif type == 'Branch power':
-            df = self.Sbranch[indices]
-            ylabel = 'Branch power (MVA)'
+            elif type == 'Branch power':
+                df = self.Sbranch[indices]
+                ylabel = 'Branch power (MVA)'
 
-        elif type == 'Branch current':
-            df = self.Ibranch[indices]
-            ylabel = 'Branch current (kA)'
+            elif type == 'Branch current':
+                df = self.Ibranch[indices]
+                ylabel = 'Branch current (kA)'
 
-        elif type == 'Branch_loading':
-            df = self.loading[indices] * 100
-            ylabel = 'Branch loading (%)'
+            elif type == 'Branch_loading':
+                df = self.loading[indices] * 100
+                ylabel = 'Branch loading (%)'
 
-        elif type == 'Branch losses':
-            df = self.losses[indices]
-            ylabel = 'Branch losses (MVA)'
+            elif type == 'Branch losses':
+                df = self.losses[indices]
+                ylabel = 'Branch losses (MVA)'
+
+            else:
+                pass
+
+            # df = pd.DataFrame(data=y, index=time_index, columns=labels)
+            df.columns = labels
+            df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+            ax.set_title(ylabel)
+            ax.set_ylabel(ylabel)
+            ax.set_xlabel('Time')
+
+            return df
 
         else:
-            pass
-
-        # df = pd.DataFrame(data=y, index=time_index, columns=labels)
-        df.columns = labels
-        df.plot(ax=ax, linewidth=1)  # , kind='bar')
-
-        ax.set_title(ylabel)
-        ax.set_ylabel(ylabel)
-        ax.set_xlabel('Time')
-
-        return df
-
+            return None
 
 class TimeSeriesResultsAnalysis:
 
@@ -4396,24 +4403,25 @@ class VoltageCollapseResults:
         if indices is None:
             indices = array(range(len(names)))
 
-        labels = names[indices]
-        ylabel = ''
-        if type == 'Bus voltage':
-            y = abs(array(self.voltages)[:, indices])
-            x = self.lambdas
-            ylabel = 'Bus voltage (p.u.)'
-        else:
-            pass
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            if type == 'Bus voltage':
+                y = abs(array(self.voltages)[:, indices])
+                x = self.lambdas
+                ylabel = 'Bus voltage (p.u.)'
+            else:
+                pass
 
-        df = pd.DataFrame(data=y, index=x, columns=indices)
-        df.columns = labels
-        df.plot(ax=ax, linewidth=1)  # , kind='bar')
+            df = pd.DataFrame(data=y, index=x, columns=indices)
+            df.columns = labels
+            df.plot(ax=ax, linewidth=1)  # , kind='bar')
 
-        ax.set_title(ylabel)
-        ax.set_ylabel(ylabel)
-        ax.set_xlabel('Loading from the base situation ($\Lambda$)')
+            ax.set_title(ylabel)
+            ax.set_ylabel(ylabel)
+            ax.set_xlabel('Loading from the base situation ($\Lambda$)')
 
-        return df
+            return df
 
 
 class VoltageCollapse(QThread):
@@ -4726,28 +4734,32 @@ class MonteCarloResults:
         if indices is None:
             indices = array(range(len(names)))
 
-        labels = names[indices]
-        ylabel = ''
-        if type == 'Bus voltage std':
-            y = self.v_convergence[1:-1, indices]
-            ylabel = 'Bus voltage (p.u.)'
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            if type == 'Bus voltage std':
+                y = self.v_convergence[1:-1, indices]
+                ylabel = 'Bus voltage (p.u.)'
 
-        elif type == 'Bus current std':
-            y = self.c_convergence[1:-1, indices]
-            ylabel = 'Branch current (kA)'
+            elif type == 'Bus current std':
+                y = self.c_convergence[1:-1, indices]
+                ylabel = 'Branch current (kA)'
 
-        elif type == 'Branch loading std':
-            y = self.l_convergence[1:-1, indices]
-            ylabel = 'Branch loading (%)'
+            elif type == 'Branch loading std':
+                y = self.l_convergence[1:-1, indices]
+                ylabel = 'Branch loading (%)'
+
+            else:
+                pass
+
+            df = pd.DataFrame(data=y, columns=labels)
+            df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+            ax.set_title(ylabel)
+            ax.set_ylabel(ylabel)
+            ax.set_xlabel('MC points')
+
+            return df
 
         else:
-            pass
-
-        df = pd.DataFrame(data=y, columns=labels)
-        df.plot(ax=ax, linewidth=1)  # , kind='bar')
-
-        ax.set_title(ylabel)
-        ax.set_ylabel(ylabel)
-        ax.set_xlabel('MC points')
-
-        return df
+            return None

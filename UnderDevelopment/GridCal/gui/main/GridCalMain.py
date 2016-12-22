@@ -1031,7 +1031,8 @@ class MainGUI(QMainWindow):
         :return: Nothing
         """
 
-        if len(self.ui.result_listView.selectedIndexes()) > 0:
+        if len(self.ui.result_listView.selectedIndexes()) > 0 and \
+                        len(self.ui.result_type_listView.selectedIndexes()) > 0:
 
             study = self.ui.result_listView.selectedIndexes()[0].data()
             study_type = self.ui.result_type_listView.selectedIndexes()[0].data()
@@ -1057,22 +1058,27 @@ class MainGUI(QMainWindow):
             res_mdl = None
             if study == 'Power Flow':
                 self.results_df = self.power_flow.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-                res_mdl = PandasModel(self.results_df)
+
             elif study == 'Time Series':
                 self.results_df = self.time_series.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-                res_mdl = PandasModel(self.results_df)
+
             elif study == 'Voltage Stability':
                 self.results_df = self.voltage_stability.results.plot(type=study_type, ax=ax, indices=indices, names=names)
-                res_mdl = PandasModel(self.results_df)
+
             elif study == 'Monte Carlo':
                 self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+
+            if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)
 
-            # set hte table model
-            self.ui.resultsTableView.setModel(res_mdl)
+                # set hte table model
+                self.ui.resultsTableView.setModel(res_mdl)
 
             # refresh the plot display
             self.ui.resultsPlot.redraw()
+
+        else:
+            pass
 
     def save_results_df(self):
         """
