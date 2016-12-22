@@ -32,12 +32,12 @@ from copy import deepcopy
 if 'fivethirtyeight' in plt.style.available:
     plt.style.use('fivethirtyeight')
 
-from grid.ImportParsers.DGS_Parser import read_DGS
-from grid.ImportParsers.matpower_parser import parse_matpower_file
-from grid.IwamotoNR import IwamotoNR
-from grid.ContinuationPowerFlow import continuation_nr
-from grid.HelmVect import helm
-from grid.DCPF import dcpf
+from GridCal.grid.ImportParsers.DGS_Parser import read_DGS
+from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
+from GridCal.grid.IwamotoNR import IwamotoNR
+from GridCal.grid.ContinuationPowerFlow import continuation_nr
+from GridCal.grid.HelmVect import helm
+from GridCal.grid.DCPF import dcpf
 
 
 class NodeType(Enum):

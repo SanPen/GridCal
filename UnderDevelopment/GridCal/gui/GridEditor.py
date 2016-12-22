@@ -1,8 +1,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from grid.CircuitOO import *
-from gui.GuiFunctions import *
+from GridCal.grid.CircuitOO import *
+from GridCal.gui.GuiFunctions import *
 
 '''
 Dependencies:

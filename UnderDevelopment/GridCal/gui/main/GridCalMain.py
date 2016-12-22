@@ -24,13 +24,13 @@ import platform
 import sys
 from collections import OrderedDict
 from enum import Enum
-
-from gui.main.gui import *
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
-from gui.GuiFunctions import *
-from gui.GridEditor import *
-from gui.ConsoleWidget import ConsoleWidget
+
+from GridCal.gui.main.gui import *
+from GridCal.gui.GuiFunctions import *
+from GridCal.gui.GridEditor import *
+from GridCal.gui.ConsoleWidget import ConsoleWidget
 
 
 ########################################################################################################################
