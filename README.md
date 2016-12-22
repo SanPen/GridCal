@@ -5,20 +5,29 @@ This software aims to be a complete platform for power systems research and simu
 
 ![](https://github.com/SanPen/GridCal/blob/master/GridCal.png)
 
-Since it is pure Python, It works for Windows, Linux and OSX.
+# Installation
+
+Open a console and type:
+
+`pip install GridCal` (windows)
+
+`pip3 install GridCal` (Linux)
+
+Easy enough right?
+
+*You must have Python3 installed
+
+#Features overview
+It is pure Python, It works for Windows, Linux and OSX.
 
 It is based on PyPower (MatPower for python) and it is compatible with Matpower files, and many more to come.
 
 Some of the features you'll find already are:
 
 - Power flow:
-  - Newton Raphson.
-  - Gauss-Seidel.
-  - Current iteration (or Zbus)
   - Newton Raphson Iwamoto (robust Newton Raphson)
   - Holomorphic Embedding Power flow.
   - DC approximation.
-  - Predictor-corrector Newton-Raphson from the base solution.
   
 - The ability to handle island grids in all the simulation modes.
 
@@ -26,7 +35,7 @@ Some of the features you'll find already are:
   - It includes a nice profile import window.
   - Continuation power flow from step `t-1` to step `t`
 
-- Bifurcation point with predictor-corrector Newton-Raphson and Holomorphic embedding.
+- Bifurcation point with predictor-corrector Newton-Raphson.
 
 - Monte Carlo simulation based on the input profiles. (Stochastic power flow)
 
