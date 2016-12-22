@@ -5,14 +5,14 @@ setup(
     name="GridCal",
 
     # Version number (initial):
-    version="1.0",
+    version="1.011",
 
     # Application author details:
     author="Santiago Peñate Vera",
     author_email="santiago.penate.vera@gmail.com",
 
     # Packages
-    packages=["grid", "gui"],
+    packages=["GridCal"],
 
     # Include additional files into the package
     include_package_data=True,
