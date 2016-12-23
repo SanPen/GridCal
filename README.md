@@ -43,15 +43,15 @@ It is based on PyPower (MatPower for python) and it is compatible with Matpower 
 Some of the features you'll find already are:
 
 - Power flow:
-  - Newton Raphson Iwamoto (robust Newton Raphson)
+  - Newton Raphson Iwamoto (robust Newton Raphson).
   - Holomorphic Embedding Power flow.
   - DC approximation.
   
+- Includes the Z-I-P load model, this means that the power flows can handle both power and current.  
+
 - The ability to handle island grids in all the simulation modes.
 
-- Time series with load and generation profiles. 
-  - It includes a nice profile import window.
-  - Continuation power flow from step `t-1` to step `t`
+- Time series with profiles in all the objects physical magnitudes.
 
 - Bifurcation point with predictor-corrector Newton-Raphson.
 
