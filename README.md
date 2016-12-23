@@ -17,6 +17,16 @@ Easy enough right?
 
 *You must have Python3 installed
 
+# first run
+
+From a Python console:
+
+`from GridCal.ExecuteGridCal import run`
+
+`run()`
+
+The GUI should pop up.
+
 #Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
