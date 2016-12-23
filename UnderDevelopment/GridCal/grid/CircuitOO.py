@@ -13,6 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from GridCal.grid.ImportParsers.DGS_Parser import read_DGS
+from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
+from GridCal.grid.IwamotoNR import IwamotoNR
+from GridCal.grid.ContinuationPowerFlow import continuation_nr
+from GridCal.grid.HelmVect import helm
+from GridCal.grid.DCPF import dcpf
+
 import os
 from enum import Enum
 from warnings import warn
@@ -22,22 +29,13 @@ import pandas as pd
 from datetime import datetime, timedelta
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
-from matplotlib.pyplot import plot
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
     where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import csc_matrix as sparse
-from copy import deepcopy
 
 if 'fivethirtyeight' in plt.style.available:
     plt.style.use('fivethirtyeight')
-
-from GridCal.grid.ImportParsers.DGS_Parser import read_DGS
-from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
-from GridCal.grid.IwamotoNR import IwamotoNR
-from GridCal.grid.ContinuationPowerFlow import continuation_nr
-from GridCal.grid.HelmVect import helm
-from GridCal.grid.DCPF import dcpf
 
 
 class NodeType(Enum):

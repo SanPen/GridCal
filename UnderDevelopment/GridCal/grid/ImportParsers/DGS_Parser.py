@@ -15,21 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
-import math
 
+import networkx as nx
+from GridCal.grid.ImportParsers import BusDefinitions as bd
+from GridCal.grid.ImportParsers import BranchDefinitions as brd
+from GridCal.grid.ImportParsers import GenDefinitions as gd
+import math
 import numpy as np
 import pandas as pd
 from numpy import array
 from pandas import DataFrame as df
+from warnings import warn
 
 pd.set_option('display.height', 1000)
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
-import networkx as nx
-from GridCal.grid.ImportParsers.BusDefinitions import *
-from GridCal.grid.ImportParsers.GenDefinitions import *
-
 
 
 def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_hv1=0.5):
@@ -83,7 +84,7 @@ def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_h
     # Magnetization reactance (p.u.)
     xm = 0.0
     if rfe > zm:
-        xm = 1.0 / sqrt(1.0 / (zm * zm) - 1.0 / (rfe * rfe))
+        xm = 1.0 / np.sqrt(1.0 / (zm * zm) - 1.0 / (rfe * rfe))
     else:
         xm = 0.0  # the square root cannot be computed
 
@@ -593,15 +594,15 @@ def read_DGS(filename):
 
     BUSES = list()
     BUS_NAMES = list()
-    bus_line = np.zeros(len(bus_headers), dtype=np.double)
+    bus_line = np.zeros(len(bd.bus_headers), dtype=np.double)
 
     BRANCHES = list()
     BRANCH_NAMES = list()
-    branch_line = np.zeros(len(branch_headers), dtype=np.double)
+    branch_line = np.zeros(len(brd.branch_headers), dtype=np.double)
 
     GEN = list()
     GEN_NAMES = list()
-    gen_line = np.zeros(len(gen_headers), dtype=np.double)
+    gen_line = np.zeros(len(gd.gen_headers), dtype=np.double)
 
     g = nx.graph.Graph()
 
@@ -615,15 +616,15 @@ def read_DGS(filename):
         ID = buses['ID'][i]
         x, y = pos_dict[ID]
         bus_ = bus_line.copy()
-        bus_[BUS_I] = BUSES.__len__()  # ID
-        bus_[BUS_TYPE] = 1  # by default is a PQ node  {1:PQ, 2:PV, 3:VD}
-        bus_[VM] = 1.0  # VM
-        bus_[VA] = 0.0  # VA
-        bus_[BASE_KV] = buses['uknom'][i]  # BaseKv
-        bus_[VMAX] = 1.05  # VMax
-        bus_[VMIN] = 0.95  # VMin
-        bus_[BUS_X] = x
-        bus_[BUS_Y] = y
+        bus_[bd.BUS_I] = BUSES.__len__()  # ID
+        bus_[bd.BUS_TYPE] = 1  # by default is a PQ node  {1:PQ, 2:PV, 3:VD}
+        bus_[bd.VM] = 1.0  # VM
+        bus_[bd.VA] = 0.0  # VA
+        bus_[bd.BASE_KV] = buses['uknom'][i]  # BaseKv
+        bus_[bd.VMAX] = 1.05  # VMax
+        bus_[bd.VMIN] = 0.95  # VMin
+        bus_[bd.BUS_X] = x
+        bus_[bd.BUS_Y] = y
         BUSES.append(bus_)
 
         bus_name = buses['loc_name'][i]  # BUS_Name
@@ -678,44 +679,44 @@ def read_DGS(filename):
         # apply the slack values to the buses structure if the element is marked as slack
         if external['bustp'].values[i] == b'SL':
             # create the slack entry on buses
-            BUSES[bus1, BUS_TYPE] = 3
-            BUSES[bus1, VA] = va
-            BUSES[bus1, VM] = vm
+            BUSES[bus1, bd.BUS_TYPE] = 3
+            BUSES[bus1, bd.VA] = va
+            BUSES[bus1, bd.VM] = vm
 
             # create the slack entry on generators (add the slack generator)
             gen_ = gen_line.copy()
-            gen_[GEN_BUS] = bus1
-            gen_[MBASE] = baseMVA
-            gen_[VG] = vm
-            gen_[GEN_STATUS] = 1
-            gen_[PG] += external['pgini'].values[i]
+            gen_[gd.GEN_BUS] = bus1
+            gen_[gd.MBASE] = baseMVA
+            gen_[gd.VG] = vm
+            gen_[gd.GEN_STATUS] = 1
+            gen_[gd.PG] += external['pgini'].values[i]
 
             GEN.append(gen_)
             GEN_NAMES.append(external['loc_name'][i])
 
         elif external['bustp'].values[i] == b'PV':
             # mark the bus as pv
-            BUSES[bus1, BUS_TYPE] = 2
-            BUSES[bus1, VA] = 0.0
-            BUSES[bus1, VM] = vm
+            BUSES[bus1, bd.BUS_TYPE] = 2
+            BUSES[bus1, bd.VA] = 0.0
+            BUSES[bus1, bd.VM] = vm
             # add the PV entry on generators
             gen_ = gen_line.copy()
-            gen_[GEN_BUS] = bus1
-            gen_[MBASE] = baseMVA
-            gen_[VG] = vm
-            gen_[GEN_STATUS] = 1
-            gen_[PG] += external['pgini'].values[i]
+            gen_[gd.GEN_BUS] = bus1
+            gen_[gd.MBASE] = baseMVA
+            gen_[gd.VG] = vm
+            gen_[gd.GEN_STATUS] = 1
+            gen_[gd.PG] += external['pgini'].values[i]
 
             GEN.append(gen_)
             GEN_NAMES.append(external['loc_name'][i])
 
         elif external['bustp'].values[i] == b'PQ':
             # mark the bus as pv
-            BUSES[bus1, BUS_TYPE] = 1
-            BUSES[bus1, VA] = va
-            BUSES[bus1, VM] = vm
-            BUSES[bus1, PD] += external['pgini'].values[i]
-            BUSES[bus1, QD] += external['qgini'].values[i]
+            BUSES[bus1, bd.BUS_TYPE] = 1
+            BUSES[bus1, bd.VA] = va
+            BUSES[bus1, bd.VM] = vm
+            BUSES[bus1, bd.PD] += external['pgini'].values[i]
+            BUSES[bus1, bd.QD] += external['qgini'].values[i]
 
     ####################################################################################################################
     # Lines (branches)
@@ -770,13 +771,13 @@ def read_DGS(filename):
             Smax = Irated * vbase  # MVA
 
             # put all in the correct column
-            line_[F_BUS] = bus1
-            line_[T_BUS] = bus2
-            line_[BR_R] = r
-            line_[BR_X] = l
-            line_[BR_B] = c
-            line_[RATE_A] = Smax
-            line_[BR_STATUS] = status
+            line_[brd.F_BUS] = bus1
+            line_[brd.T_BUS] = bus2
+            line_[brd.BR_R] = r
+            line_[brd.BR_X] = l
+            line_[brd.BR_B] = c
+            line_[brd.RATE_A] = Smax
+            line_[brd.BR_STATUS] = status
             BRANCHES.append(line_)
 
             name_ = lines['loc_name'][i]  # line_Name
@@ -848,13 +849,13 @@ def read_DGS(filename):
                 status = 1 - transformers['outserv'][i]
 
                 # put all in the correct column
-                line_[F_BUS] = bus1
-                line_[T_BUS] = bus2
-                line_[BR_R] = Zs.real
-                line_[BR_X] = Zs.imag
-                line_[BR_B] = Zsh.imag
-                line_[RATE_A] = Smax
-                line_[BR_STATUS] = status
+                line_[brd.F_BUS] = bus1
+                line_[brd.T_BUS] = bus2
+                line_[brd.BR_R] = Zs.real
+                line_[brd.BR_X] = Zs.imag
+                line_[brd.BR_B] = Zsh.imag
+                line_[brd.RATE_A] = Smax
+                line_[brd.BR_STATUS] = status
                 BRANCHES.append(line_)
 
                 name_ = transformers['loc_name'][i]  # line_Name
@@ -915,15 +916,15 @@ def read_DGS(filename):
         mode = static_generators['av_mode'][i]
         # declare the generator array
         gen_ = gen_line.copy()
-        gen_[GEN_BUS] = bus1
-        gen_[GEN_STATUS] = not static_generators['outserv'][i]
+        gen_[gd.GEN_BUS] = bus1
+        gen_[gd.GEN_STATUS] = not static_generators['outserv'][i]
 
         num_machines = static_generators['ngnum'][i]
 
-        gen_[PG] = static_generators['pgini'][i] * num_machines
-        gen_[QG] = static_generators['qgini'][i] * num_machines
-        gen_[VG] = 1.0  # static_generators['outserv'][i]
-        gen_[MBASE] = static_generators['sgn'][i]
+        gen_[gd.PG] = static_generators['pgini'][i] * num_machines
+        gen_[gd.QG] = static_generators['qgini'][i] * num_machines
+        gen_[gd.VG] = 1.0  # static_generators['outserv'][i]
+        gen_[gd.MBASE] = static_generators['sgn'][i]
 
         GEN.append(gen_)
 
@@ -939,19 +940,19 @@ def read_DGS(filename):
     GEN_NAMES = array(GEN_NAMES, dtype=np.str)
 
     if len(BRANCHES) > 0:
-        BRANCHES = df(data=np.array(BRANCHES, dtype=np.object), columns=branch_headers, index=BRANCH_NAMES)
+        BRANCHES = df(data=np.array(BRANCHES, dtype=np.object), columns=brd.branch_headers, index=BRANCH_NAMES)
     else:
-        BRANCHES = df(data=np.zeros((0, len(branch_headers))), columns=branch_headers)
+        BRANCHES = df(data=np.zeros((0, len(brd.branch_headers))), columns=brd.branch_headers)
 
     if len(BUSES) > 0:
-        BUSES = df(data=np.array(BUSES, dtype=np.object), columns=bus_headers, index=BUS_NAMES)
+        BUSES = df(data=np.array(BUSES, dtype=np.object), columns=bd.bus_headers, index=BUS_NAMES)
     else:
-        BUSES = df(data=np.zeros((0, len(bus_headers))), columns=bus_headers)
+        BUSES = df(data=np.zeros((0, len(bd.bus_headers))), columns=bd.bus_headers)
 
     if len(GEN) > 0:
-        GEN = df(data=np.array(GEN, dtype=np.object), columns=gen_headers, index=GEN_NAMES)
+        GEN = df(data=np.array(GEN, dtype=np.object), columns=gd.gen_headers, index=GEN_NAMES)
     else:
-        GEN = df(data=np.zeros((0, len(gen_headers))), columns=gen_headers)
+        GEN = df(data=np.zeros((0, len(gd.gen_headers))), columns=gd.gen_headers)
 
     print('Done!')
 

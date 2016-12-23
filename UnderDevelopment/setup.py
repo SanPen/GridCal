@@ -60,6 +60,8 @@ setup(
                       "scipy",
                       "networkx",
                       "pandas",
+                      "xlwt",
+                      "xlrd",
                       "PyQt5",
                       "matplotlib",
                       "qtconsole"

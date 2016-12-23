@@ -142,6 +142,7 @@ bus_headers = ["bus_i",
                "Dispatchable",
                "Fix_power"]
 
+
 def bustypes(bus, gen, storage, Sbus, storage_dispatch_mode=StorageDispatchMode.no_dispatch):
     """
     Builds index lists of each type of bus (C{REF}, C{PV}, C{PQ}).

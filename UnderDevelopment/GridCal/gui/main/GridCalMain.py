@@ -13,26 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__author__ = 'Santiago Peñate Vera'
-
-"""
-This class is the handler of the main gui of GridCal.
-"""
+from GridCal.gui.main.gui import *
+from GridCal.gui.GridEditor import *
+from GridCal.gui.ConsoleWidget import ConsoleWidget
 
 import os.path
-import platform
 import sys
 from collections import OrderedDict
 from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 
+__author__ = 'Santiago Peñate Vera'
 
-from GridCal.gui.main.gui import *
-from GridCal.gui.GuiFunctions import *
-from GridCal.gui.GridEditor import *
-from GridCal.gui.ConsoleWidget import ConsoleWidget
-
+"""
+This class is the handler of the main gui of GridCal.
+"""
 
 ########################################################################################################################
 # Main Window
@@ -1089,7 +1085,11 @@ class MainGUI(QMainWindow):
         if self.results_df is not None:
             file = QFileDialog.getSaveFileName(self, "Save to Excel", '', filter="Excel files (*.xlsx)")
             if file[0] != '':
-                self.results_df.to_excel(file[0])
+                if not file[0].endswith('.xlsx'):
+                    f = file[0] + '.xlsx'
+                else:
+                    f = file[0]
+                self.results_df.to_excel(f)
 
     def item_results_plot(self):
         """
