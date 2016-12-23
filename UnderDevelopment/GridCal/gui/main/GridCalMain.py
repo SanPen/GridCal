@@ -27,6 +27,7 @@ from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 
+
 from GridCal.gui.main.gui import *
 from GridCal.gui.GuiFunctions import *
 from GridCal.gui.GridEditor import *

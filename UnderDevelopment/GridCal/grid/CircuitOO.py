@@ -2068,7 +2068,7 @@ class MultiCircuit(Circuit):
         else:
             master_time_array = None
 
-        import grid.ImportParsers.BusDefinitions as e
+        import GridCal.grid.ImportParsers.BusDefinitions as e
         # Buses
         table = data['bus']
         buses_dict = dict()
@@ -2123,7 +2123,7 @@ class MultiCircuit(Circuit):
             # Add the bus to the circuit buses
             self.add_bus(bus)
 
-        import grid.ImportParsers.GenDefinitions as e
+        import GridCal.grid.ImportParsers.GenDefinitions as e
         # Generators
         table = data['gen']
         n = len(table)
@@ -2155,7 +2155,7 @@ class MultiCircuit(Circuit):
             gen.bus = self.buses[bus_idx]
             self.buses[bus_idx].controlled_generators.append(gen)
 
-        import grid.ImportParsers.BranchDefinitions as e
+        import GridCal.grid.ImportParsers.BranchDefinitions as e
         # Branches
         table = data['branch']
         n = len(table)
@@ -2192,7 +2192,7 @@ class MultiCircuit(Circuit):
                     self.buses[i].loads[0].Sprof = pd.DataFrame(data=Sprof[:, i],
                                                                 index=master_time_array,
                                                                 columns=['Load@' + names[i]])
-            import grid.ImportParsers.GenDefinitions as e
+            import GridCal.grid.ImportParsers.GenDefinitions as e
             table = data['gen']
             for i in range(len(table)):
                 bus_idx = int(table[i, e.GEN_BUS])

@@ -27,8 +27,8 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 import networkx as nx
-from grid.ImportParsers.BusDefinitions import *
-from grid.ImportParsers.GenDefinitions import *
+from GridCal.grid.ImportParsers.BusDefinitions import *
+from GridCal.grid.ImportParsers.GenDefinitions import *
 
 
 
