@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from grid.CircuitOO import *
+from GridCal.grid.CircuitOO import *
+from matplotlib import pyplot as plt
 
 grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
@@ -59,37 +60,36 @@ print('\tConv:', grid.power_flow_results.converged)
 ####################################################################################################################
 # Time Series
 ####################################################################################################################
-# ts = TimeSeries(grid=grid, options=options)
-# ts.run()
-#
-# if grid.time_series_results is not None:
-#     print('\n\nVoltages:\n')
-#     print(grid.time_series_results.voltage)
-#     print(grid.time_series_results.converged)
-#     print(grid.time_series_results.error)
-#
-#     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-#     # show()
-# ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+ts = TimeSeries(grid=grid, options=options)
+ts.run()
+
+if grid.time_series_results is not None:
+    print('\n\nVoltages:\n')
+    print(grid.time_series_results.voltage)
+    print(grid.time_series_results.converged)
+    print(grid.time_series_results.error)
+
+    # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
+    # show()
+ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
 
 ####################################################################################################################
 # Voltage collapse
 ####################################################################################################################
-# vc_options = VoltageCollapseOptions()
-# Sbase = zeros(len(grid.buses), dtype=complex)
-# for c in grid.circuits:
-#     Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
-# unitary_vector = -1 + 2 * random.random(len(grid.buses))
-# # unitary_vector = random.random(len(grid.buses))
-# vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-#                                  Vbase=grid.power_flow_results.voltage,
-#                                  Starget=Sbase * (1+unitary_vector))
-# vc = VoltageCollapse(grid=grid, options=vc_options, inputs=vc_inputs)
-# vc.run()
-#
-# for res in vc.results:
-#     res.plot()
-# show()
+vc_options = VoltageCollapseOptions()
+Sbase = zeros(len(grid.buses), dtype=complex)
+for c in grid.circuits:
+    Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
+unitary_vector = -1 + 2 * random.random(len(grid.buses))
+# unitary_vector = random.random(len(grid.buses))
+vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                 Vbase=grid.power_flow_results.voltage,
+                                 Starget=Sbase * (1+unitary_vector))
+vc = VoltageCollapse(grid=grid, options=vc_options, inputs=vc_inputs)
+vc.run()
+
+vc.results.plot()
+plt.show()
 
 ####################################################################################################################
 # Monte Carlo

@@ -4398,6 +4398,9 @@ class VoltageCollapseResults:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
+        if names is None:
+            names = array(['bus ' + str(i + 1) for i in range(self.voltages.shape[1])])
+
         if indices is None:
             indices = array(range(len(names)))
 

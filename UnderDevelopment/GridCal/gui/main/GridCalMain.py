@@ -723,22 +723,24 @@ class MainGUI(QMainWindow):
         Run a power flow simulation
         :return:
         """
+        if len(self.circuit.buses) > 0:
+            self.LOCK()
+            self.compile()
 
-        self.LOCK()
-        self.compile()
+            options = self.get_selected_power_flow_options()
+            self.power_flow = PowerFlow(self.circuit, options)
 
-        options = self.get_selected_power_flow_options()
-        self.power_flow = PowerFlow(self.circuit, options)
+            # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+            # self.power_flow.done_signal.connect(self.UNLOCK)
+            # self.power_flow.done_signal.connect(self.post_power_flow)
+            #
+            # self.power_flow.start()
+            self.threadpool.start(self.power_flow)
 
-        # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-        # self.power_flow.done_signal.connect(self.UNLOCK)
-        # self.power_flow.done_signal.connect(self.post_power_flow)
-        #
-        # self.power_flow.start()
-        self.threadpool.start(self.power_flow)
-
-        self.threadpool.waitForDone()
-        self.post_power_flow()
+            self.threadpool.waitForDone()
+            self.post_power_flow()
+        else:
+            pass
 
     def post_power_flow(self):
         """
@@ -784,77 +786,79 @@ class MainGUI(QMainWindow):
         :return:
         """
         print('run_voltage_stability')
+        if len(self.circuit.buses) > 0:
+            # get the selected UI options
+            use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
 
-        # get the selected UI options
-        use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
+            # declare voltage collapse options
+            vc_options = VoltageCollapseOptions()
 
-        # declare voltage collapse options
-        vc_options = VoltageCollapseOptions()
+            if use_alpha:
+                '''
+                use the current power situation as start
+                and a linear combination of the current situation as target
+                '''
+                if self.power_flow is not None:
+                    # lock the UI
+                    self.LOCK()
 
-        if use_alpha:
-            '''
-            use the current power situation as start
-            and a linear combination of the current situation as target
-            '''
-            if self.power_flow is not None:
-                # lock the UI
-                self.LOCK()
+                    self.compile()
 
-                self.compile()
+                    n = len(self.circuit.buses)
+                    #  compose the base power
+                    Sbase = zeros(n, dtype=complex)
+                    for c in self.circuit.circuits:
+                        Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
 
-                n = len(self.circuit.buses)
-                #  compose the base power
-                Sbase = zeros(n, dtype=complex)
-                for c in self.circuit.circuits:
-                    Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
+                    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                                     Vbase=self.power_flow.results.voltage,
+                                                     Starget=Sbase * alpha)
 
-                vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                                 Vbase=self.power_flow.results.voltage,
-                                                 Starget=Sbase * alpha)
+                    # create object
+                    self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
 
-                # create object
-                self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
+                    # make connections
+                    self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.voltage_stability.done_signal.connect(self.UNLOCK)
+                    self.voltage_stability.done_signal.connect(self.post_voltage_stability)
 
-                # make connections
-                self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                self.voltage_stability.done_signal.connect(self.UNLOCK)
-                self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+                    # thread start
+                    self.voltage_stability.start()
+                else:
+                    self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
 
-                # thread start
-                self.voltage_stability.start()
-            else:
-                self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+            elif use_profiles:
+                '''
+                Here the start and finish power states are taken from the profiles
+                '''
+                if start_idx > -1 and end_idx > -1:
 
-        elif use_profiles:
-            '''
-            Here the start and finish power states are taken from the profiles
-            '''
-            if start_idx > -1 and end_idx > -1:
+                    # lock the UI
+                    self.LOCK()
 
-                # lock the UI
-                self.LOCK()
+                    self.compile()
 
-                self.compile()
+                    self.power_flow.run_at(start_idx)
 
-                self.power_flow.run_at(start_idx)
+                    vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
+                                                     Vbase=self.power_flow.results.voltage,
+                                                     Starget=self.circuit.time_series_input.Sprof.values[end_idx, :]
+                                                     )
 
-                vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
-                                                 Vbase=self.power_flow.results.voltage,
-                                                 Starget=self.circuit.time_series_input.Sprof.values[end_idx, :]
-                                                 )
+                    # create object
+                    self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
 
-                # create object
-                self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
+                    # make connections
+                    self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.voltage_stability.done_signal.connect(self.UNLOCK)
+                    self.voltage_stability.done_signal.connect(self.post_voltage_stability)
 
-                # make connections
-                self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                self.voltage_stability.done_signal.connect(self.UNLOCK)
-                self.voltage_stability.done_signal.connect(self.post_voltage_stability)
-
-                # thread start
-                self.voltage_stability.start()
-            else:
-                self.msg('Check the selected start and finnish time series indices.')
+                    # thread start
+                    self.voltage_stability.start()
+                else:
+                    self.msg('Check the selected start and finnish time series indices.')
+        else:
+            pass
 
     def post_voltage_stability(self):
         """
@@ -883,35 +887,33 @@ class MainGUI(QMainWindow):
         Run a time series power flow simulation in a separated thread from the gui
         @return:
         """
-        self.LOCK()
-        self.compile()
+        if len(self.circuit.buses) > 0:
+            self.LOCK()
+            self.compile()
 
-        if self.circuit.has_time_series:
+            if self.circuit.has_time_series:
 
-            options = self.get_selected_power_flow_options()
-            self.time_series = TimeSeries(grid=self.circuit, options=options)
+                options = self.get_selected_power_flow_options()
+                self.time_series = TimeSeries(grid=self.circuit, options=options)
 
-            # Set the time series run options
-            self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
-            self.time_series.done_signal.connect(self.UNLOCK)
-            self.time_series.done_signal.connect(self.post_time_series)
+                # Set the time series run options
+                self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                self.time_series.done_signal.connect(self.UNLOCK)
+                self.time_series.done_signal.connect(self.post_time_series)
 
-            self.time_series.start()
+                self.time_series.start()
 
+            else:
+                self.msg('There are no time series.')
         else:
-            msg = 'No time series loaded'
-            q = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'GridCal', msg)
-            q.setStandardButtons(QtGui.QMessageBox.Ok)
-            i = QtGui.QIcon()
-            i.addPixmap(QtGui.QPixmap("..."), QtGui.QIcon.Normal)
-            q.setWindowIcon(i)
-            q.exec_()
+            pass
 
     def post_time_series(self):
         """
         Events to do when the time series simulation has finished
         @return:
         """
+
         if self.circuit.time_series_results is not None:
             print('\n\nVoltages:\n')
             print(self.circuit.time_series_results.voltage)
@@ -936,18 +938,27 @@ class MainGUI(QMainWindow):
         """
         print('run_stochastic')
 
-        self.LOCK()
-        self.compile()
+        if len(self.circuit.buses) > 0:
+            self.LOCK()
+            self.compile()
 
-        options = self.get_selected_power_flow_options()
+            if self.circuit.has_time_series:
 
-        self.monte_carlo = MonteCarlo(self.circuit, options)
+                options = self.get_selected_power_flow_options()
 
-        self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
-        self.monte_carlo.done_signal.connect(self.UNLOCK)
-        self.monte_carlo.done_signal.connect(self.post_stochastic)
+                self.monte_carlo = MonteCarlo(self.circuit, options)
 
-        self.monte_carlo.start()
+                self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
+                self.monte_carlo.done_signal.connect(self.UNLOCK)
+                self.monte_carlo.done_signal.connect(self.post_stochastic)
+
+                self.monte_carlo.start()
+            else:
+                self.msg('There are no time series.')
+
+        else:
+            # self.msg('There are no time series.')
+            pass
 
     def post_stochastic(self):
         """
