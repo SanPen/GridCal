@@ -33,6 +33,8 @@ You can use the calculation engine directly or from other applications:
 
 Then you can create the grid objects and access the simulation objects as demonstrated in the test scripts in the test folder.
 
+`GridCal/UnderDevelopment/GridCal/tests/`
+
 #Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
