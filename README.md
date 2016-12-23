@@ -27,6 +27,12 @@ From a Python console:
 
 The GUI should pop up.
 
+You can use the calculation engine directly or from other applications:
+
+`from GridCal.grid.CircuitOO import *`
+
+The you can create the objects and access the simulation objects as demonstrated in the test scripts in the test folder.
+
 #Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
