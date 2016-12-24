@@ -5,8 +5,8 @@ import os
 name = "GridCal"
 
 # Python 2.4 or later needed
-if sys.version_info < (2, 4, 0, 'final', 0):
-    raise (SystemExit, 'Python 2.4 or later is required!')
+if sys.version_info < (3, 5, 0, 'final', 0):
+    raise (SystemExit, 'Python 3.5 or later is required!')
 
 # Build a list of all project modules
 packages = []
