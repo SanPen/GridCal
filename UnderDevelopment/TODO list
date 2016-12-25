@@ -16,7 +16,7 @@
 
 - (Done) Implement voltage stability from the GUI
 
-- When creating a new object that can host profiles and the grid already has profiles, create profiles in the object too
+- (Done) When creating a new object that can host profiles and the grid already has profiles, create profiles in the object too
 - Create synthetic profiles editor
 
 - (DONE) Implement the embedded python console

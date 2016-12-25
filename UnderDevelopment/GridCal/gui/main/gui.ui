@@ -374,16 +374,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -400,16 +391,7 @@
         <string>Grid data</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_9">
-        <property name="leftMargin">
-         <number>2</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
-        </property>
-        <property name="rightMargin">
-         <number>2</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>2</number>
         </property>
         <item>
@@ -418,7 +400,7 @@
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="GridSectionTab">
            <attribute name="icon">
@@ -429,16 +411,7 @@
             <string>Grid</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>0</number>
             </property>
             <item>
@@ -455,16 +428,7 @@
             <string>Data</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_8">
-            <property name="leftMargin">
-             <number>4</number>
-            </property>
-            <property name="topMargin">
-             <number>4</number>
-            </property>
-            <property name="rightMargin">
-             <number>4</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>4</number>
             </property>
             <item>
@@ -476,16 +440,7 @@
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_25">
-               <property name="leftMargin">
-                <number>4</number>
-               </property>
-               <property name="topMargin">
-                <number>4</number>
-               </property>
-               <property name="rightMargin">
-                <number>4</number>
-               </property>
-               <property name="bottomMargin">
+               <property name="margin">
                 <number>4</number>
                </property>
                <item>
@@ -543,16 +498,7 @@
                       <property name="spacing">
                        <number>1</number>
                       </property>
-                      <property name="leftMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="bottomMargin">
+                      <property name="margin">
                        <number>1</number>
                       </property>
                       <item>
@@ -1051,16 +997,7 @@ last solution</string>
             <string>Data</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_14">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>0</number>
             </property>
             <item>
@@ -1181,16 +1118,7 @@ last solution</string>
             <string>Statistical characterization</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_16">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>0</number>
             </property>
             <item>
@@ -1276,16 +1204,7 @@ last solution</string>
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
+            <property name="margin">
              <number>0</number>
             </property>
             <item>
@@ -1301,16 +1220,7 @@ last solution</string>
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
+                <property name="margin">
                  <number>0</number>
                 </property>
                 <item>
@@ -1343,16 +1253,7 @@ last solution</string>
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
+                <property name="margin">
                  <number>0</number>
                 </property>
                 <item row="2" column="0">
@@ -1405,16 +1306,7 @@ last solution</string>
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_2">
-             <property name="leftMargin">
-              <number>1</number>
-             </property>
-             <property name="topMargin">
-              <number>1</number>
-             </property>
-             <property name="rightMargin">
-              <number>1</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>1</number>
              </property>
              <item row="0" column="0" colspan="3">
@@ -1492,7 +1384,7 @@ last solution</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -1534,8 +1426,6 @@ last solution</string>
    <addaction name="actionPower_Flow_Time_series"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="separator"/>
-   <addaction name="actionRedrawByType"/>
-   <addaction name="actionRedrawByResult"/>
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionCenter_view"/>
@@ -1791,24 +1681,6 @@ last solution</string>
   <action name="actionLosses">
    <property name="text">
     <string>Losses</string>
-   </property>
-  </action>
-  <action name="actionRedrawByType">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/file/plot_gridA2.svg</normaloff>:/file/plot_gridA2.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Redraw by type</string>
-   </property>
-  </action>
-  <action name="actionRedrawByResult">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/file/plot_gridB2.svg</normaloff>:/file/plot_gridB2.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Redraw by result</string>
    </property>
   </action>
   <action name="actionVoltage_stability">
