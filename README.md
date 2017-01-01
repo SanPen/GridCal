@@ -17,7 +17,7 @@ Easy enough right?
 
 *You must have Python 3.5 or higher installed to work with the GUI
 
-# first run
+# Run with user interface
 
 From a Python console:
 
@@ -25,7 +25,13 @@ From a Python console:
 
 `run()`
 
+Or directly from the shell:
+
+`python3 -c "from GridCal.ExecuteGridCal import run; run()"`
+
 The GUI should pop up.
+
+# Using GridCal as a library
 
 You can use the calculation engine directly or from other applications:
 
