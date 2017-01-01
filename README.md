@@ -27,7 +27,10 @@ From a Python console:
 
 Or directly from the shell:
 
-`python3 -c "from GridCal.ExecuteGridCal import run; run()"`
+
+`python -c "from GridCal.ExecuteGridCal import run; run()"`(Windows, with python 3.5 or higher)
+
+`python3 -c "from GridCal.ExecuteGridCal import run; run()"` (Linux/OSX)
 
 The GUI should pop up.
 
