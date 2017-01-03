@@ -1,7 +1,7 @@
 ![](https://github.com/SanPen/GridCal/blob/master/GridCal_banner.png)
 
 
-This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/O6lv-d8z39k)
+This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/7BbO7KKWwEY)
 
 ![](https://github.com/SanPen/GridCal/blob/master/GridCal.png)
 
@@ -17,7 +17,7 @@ Easy enough right?
 
 *You must have Python 3.5 or higher installed to work with the GUI
 
-# first run
+# Run with user interface
 
 From a Python console:
 
@@ -25,7 +25,16 @@ From a Python console:
 
 `run()`
 
+Or directly from the shell:
+
+
+`python -c "from GridCal.ExecuteGridCal import run; run()"`(Windows, with python 3.5 or higher)
+
+`python3 -c "from GridCal.ExecuteGridCal import run; run()"` (Linux/OSX)
+
 The GUI should pop up.
+
+# Using GridCal as a library
 
 You can use the calculation engine directly or from other applications:
 
