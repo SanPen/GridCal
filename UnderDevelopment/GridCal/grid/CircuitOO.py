@@ -3018,7 +3018,7 @@ class PowerFlowInput:
 
     def mismatch(self, V, Sbus):
         """
-        Compute the powerflow mismatch
+        Compute the power flow mismatch
         @param V: Voltage array (calculated)
         @param Sbus: Power array (especified)
         @return: mismatch of the computed solution
@@ -3062,10 +3062,10 @@ class PowerFlowInput:
 
     def set_from(self, obj, bus_idx, br_idx):
         """
-
-        @param obj:
-        @param bus_idx:
-        @param br_idx:
+        Copy data from other PowerFlowInput object
+        @param obj: PowerFlowInput instance
+        @param bus_idx: original bus indices
+        @param br_idx: original branch indices
         @return:
         """
         self.types[bus_idx] = obj.types
@@ -3357,7 +3357,6 @@ class PowerFlow(QRunnable):
 
         self.__cancel__ = False
 
-
     @staticmethod
     def optimization(pv, circuit, Sbus, V, tol, maxiter, robust, verbose):
         """
@@ -3454,6 +3453,7 @@ class PowerFlow(QRunnable):
                 any_control_issue = False
                 converged = True
             else:
+                # type HELM
                 if self.options.solver_type == SolverType.HELM:
                     V, converged, normF, Scalc = helm(Y=circuit.power_flow_input.Ybus,
                                                       Ys=circuit.power_flow_input.Yseries,
@@ -3465,6 +3465,7 @@ class PowerFlow(QRunnable):
                                                       pv=circuit.power_flow_input.pv,
                                                       vd=circuit.power_flow_input.ref,
                                                       eps=self.options.tolerance)
+                # type DC
                 elif self.options.solver_type == SolverType.DC:
 
                     V, converged, normF, Scalc = dcpf(Ybus=circuit.power_flow_input.Ybus,
@@ -3476,7 +3477,8 @@ class PowerFlow(QRunnable):
                                                       pq=circuit.power_flow_input.pq,
                                                       pv=circuit.power_flow_input.pv)
 
-                else:  # for any other method, for now, do a NR Iwamoto
+                # for any other method, for now, do a NR Iwamoto
+                else:
                     V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                            Sbus=Sbus,
                                                            V0=V,
@@ -3501,7 +3503,7 @@ class PowerFlow(QRunnable):
                                                           eps=self.options.tolerance)
                         Vhelm = V.copy()
 
-                        # Retry using the HELM solution
+                        # Retry NR using the HELM solution as starting point
                         if not converged:
                             V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                    Sbus=Sbus,
@@ -3512,6 +3514,8 @@ class PowerFlow(QRunnable):
                                                                    tol=self.options.tolerance,
                                                                    max_it=self.options.max_iter,
                                                                    robust=self.options.robust)
+
+                            # if it still did not converge, just use the helm voltage approximation
                             if not converged:
                                 V = Vhelm
 
@@ -3540,7 +3544,7 @@ class PowerFlow(QRunnable):
         # if optimize:
         #     print('Controls out of bounds: optimizing...')
         #
-        #     # The voltage solution V is mofified by reference, therefore after the optimization
+        #     # The voltage solution V is modified by reference, therefore after the optimization
         #     # V in this function is the voltage solution
         #     fev, normF = self.optimization(pv=circuit.power_flow_input.pv,
         #                                    circuit=circuit, Sbus=Sbus, V=V,

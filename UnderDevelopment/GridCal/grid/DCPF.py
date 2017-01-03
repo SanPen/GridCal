@@ -51,7 +51,7 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
 
     # compose the reduced power injections
     # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
-    Pinj = Sbus[pvpq].real - Bref * Va_ref + Ibus.real
+    Pinj = Sbus[pvpq].real - Bref * Va_ref + Ibus[pvpq].real
 
     # update angles for non-reference buses
     Va[pvpq] = spsolve(Bpqpv, Pinj)

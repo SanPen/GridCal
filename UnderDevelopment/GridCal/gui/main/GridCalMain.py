@@ -244,6 +244,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
+        self.ui.actionExport.triggered.connect(self.export_diagram)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -561,6 +563,28 @@ class MainGUI(QMainWindow):
 
             # call to save the file in the circuit
             self.circuit.save_file(filename)
+
+    def export_diagram(self):
+        """
+        Save the schematic
+        :return:
+        """
+        if self.grid_editor is not None:
+            # declare the allowed file types
+            files_types = "Png (*.png)"
+            # call dialog to select the file
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', self.project_directory, files_types)
+
+            name, file_extension = os.path.splitext(filename)
+
+            extension = dict()
+            extension['Png (*.png)'] = '.png'
+            # extension['Numpy Case (*.npz)'] = '.npz'
+
+            if file_extension == '':
+                filename = name + extension[type_selected]
+
+            self.grid_editor.export(filename)
 
     def create_schematic_from_api(self, explode_factor=1):
         """

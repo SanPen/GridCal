@@ -3,6 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from GridCal.grid.CircuitOO import *
 from GridCal.gui.GuiFunctions import *
+import sys
 
 '''
 Dependencies:
@@ -1345,7 +1346,7 @@ class EditorGraphicsView(QGraphicsView):
     def __init__(self, scene, parent=None, editor=None):
         """
 
-        @param scene:
+        @param scene: DiagramScene object
         @param parent:
         @param editor:
         """
@@ -1361,6 +1362,11 @@ class EditorGraphicsView(QGraphicsView):
         self.editor = editor
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu()
+        pa = menu.addAction('Save as picture')
+        pa.triggered.connect(self.scene_.export)
 
     def dragEnterEvent(self, event):
         """
@@ -1658,24 +1664,66 @@ class GridEditor(QSplitter):
         Expand the grid
         @return:
         """
-        print('bigger')
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
         for item in self.diagramScene.items():
             if type(item) is BusGraphicItem:
-                x = item.pos().x()
-                y = item.pos().y()
-                item.setPos(QPointF(x * self.expand_factor, y * self.expand_factor))
+                x = item.pos().x() * self.expand_factor
+                y = item.pos().y() * self.expand_factor
+                item.setPos(QPointF(x, y))
+
+                max_x = max(max_x, x)
+                min_x = min(min_x, x)
+                max_y = max(max_y, y)
+                min_y = min(min_y, y)
+
+        print('(', min_x, min_y, ')(', max_x, max_y, ')')
+
+        for item in self.diagramScene.items():
+            if type(item) is BusGraphicItem:
+                x = item.pos().x() - min_x
+                y = item.pos().y() - min_y
+                item.setPos(QPointF(x, y))
+
+
+
+        h = max_y - min_y
+        w = max_x - min_x
+        self.diagramScene.setSceneRect(0, 0, h, w)
 
     def smaller_nodes(self):
         """
         Contract the grid
         @return:
         """
-        print('smaller')
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
         for item in self.diagramScene.items():
             if type(item) is BusGraphicItem:
-                x = item.pos().x()
-                y = item.pos().y()
-                item.setPos(QPointF(x / self.expand_factor, y / self.expand_factor))
+                x = item.pos().x() / self.expand_factor
+                y = item.pos().y() / self.expand_factor
+                item.setPos(QPointF(x, y))
+
+                max_x = max(max_x, x)
+                min_x = min(min_x, x)
+                max_y = max(max_y, y)
+                min_y = min(min_y, y)
+
+        print('(', min_x, min_y, ')(', max_x, max_y, ')')
+
+        for item in self.diagramScene.items():
+            if type(item) is BusGraphicItem:
+                x = item.pos().x() - min_x
+                y = item.pos().y() - min_y
+                item.setPos(QPointF(x, y))
+
+        h = max_y - min_y
+        w = max_x - min_x
+        self.diagramScene.setSceneRect(0, 0, h, w)
 
     def center_nodes(self):
         """
@@ -1685,3 +1733,17 @@ class GridEditor(QSplitter):
         self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.KeepAspectRatio)
         self.diagramView.scale(1.0, 1.0)
 
+    def export(self, filename):
+        """
+        Save the grid to a png file
+        :return:
+        """
+
+        if filename is not "":
+
+            image = QImage(1024, 768, QImage.Format_ARGB32_Premultiplied)
+            image.fill(Qt.transparent)
+            painter = QPainter(image)
+            painter.setRenderHint(QPainter.Antialiasing)
+            self.diagramScene.render(painter)
+            image.save(filename)
