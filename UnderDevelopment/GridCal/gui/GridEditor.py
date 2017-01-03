@@ -1677,15 +1677,9 @@ class GridEditor(QSplitter):
 
         print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
-        for item in self.diagramScene.items():
-            if type(item) is BusGraphicItem:
-                x = item.pos().x() - min_x
-                y = item.pos().y() - min_y
-                item.setPos(QPointF(x, y))
-
-        h = max_y  # - min_y
-        w = max_x  #- min_x
-        self.diagramScene.setSceneRect(0, 0, w, h)
+        h = max_y - min_y + 100
+        w = max_x - min_x + 100
+        self.diagramScene.setSceneRect(min_x, min_y, w, h)
 
     def smaller_nodes(self):
         """
@@ -1709,15 +1703,9 @@ class GridEditor(QSplitter):
 
         print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
-        for item in self.diagramScene.items():
-            if type(item) is BusGraphicItem:
-                x = item.pos().x() - min_x
-                y = item.pos().y() - min_y
-                item.setPos(QPointF(x, y))
-
-        h = max_y #- min_y
-        w = max_x #- min_x
-        self.diagramScene.setSceneRect(0, 0, w, h)
+        h = max_y - min_y + 100
+        w = max_x - min_x + 100
+        self.diagramScene.setSceneRect(min_x, min_y, w, h)
 
     def center_nodes(self):
         """
