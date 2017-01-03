@@ -1363,11 +1363,6 @@ class EditorGraphicsView(QGraphicsView):
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
 
-    def contextMenuEvent(self, event):
-        menu = QMenu()
-        pa = menu.addAction('Save as picture')
-        pa.triggered.connect(self.scene_.export)
-
     def dragEnterEvent(self, event):
         """
 
@@ -1489,6 +1484,7 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
         self.circuit = circuit
+        # self.setBackgroundBrush(QtCore.Qt.red)
 
     def mouseMoveEvent(self, mouseEvent):
         """
@@ -1687,11 +1683,9 @@ class GridEditor(QSplitter):
                 y = item.pos().y() - min_y
                 item.setPos(QPointF(x, y))
 
-
-
-        h = max_y - min_y
-        w = max_x - min_x
-        self.diagramScene.setSceneRect(0, 0, h, w)
+        h = max_y  # - min_y
+        w = max_x  #- min_x
+        self.diagramScene.setSceneRect(0, 0, w, h)
 
     def smaller_nodes(self):
         """
@@ -1721,9 +1715,9 @@ class GridEditor(QSplitter):
                 y = item.pos().y() - min_y
                 item.setPos(QPointF(x, y))
 
-        h = max_y - min_y
-        w = max_x - min_x
-        self.diagramScene.setSceneRect(0, 0, h, w)
+        h = max_y #- min_y
+        w = max_x #- min_x
+        self.diagramScene.setSceneRect(0, 0, w, h)
 
     def center_nodes(self):
         """
@@ -1747,3 +1741,4 @@ class GridEditor(QSplitter):
             painter.setRenderHint(QPainter.Antialiasing)
             self.diagramScene.render(painter)
             image.save(filename)
+            painter.end()
