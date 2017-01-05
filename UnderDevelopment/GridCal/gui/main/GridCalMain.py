@@ -529,7 +529,7 @@ class MainGUI(QMainWindow):
             print(filename)
             self.circuit = MultiCircuit()
             self.circuit.load_file(filename=filename)
-            self.create_schematic_from_api(explode_factor=500)
+            self.create_schematic_from_api(explode_factor=1)
             self.compile()
 
             if self.circuit.time_profile is not None:
@@ -609,6 +609,8 @@ class MainGUI(QMainWindow):
             terminal_to.hosting_connections.append(connection)
             connection.redraw()
             branch.graphic_obj = connection
+
+        self.grid_editor.center_nodes()
 
     def view_objects_data(self):
         """
@@ -753,8 +755,10 @@ class MainGUI(QMainWindow):
             self.LOCK()
             self.compile()
 
+            # get the power flow options from the GUI
             options = self.get_selected_power_flow_options()
 
+            # compute the automatic precision
             if self.ui.auto_precision_checkBox.isChecked():
                 lg = np.log10(abs(self.circuit.power_flow_input.Sbus.real))
                 lg[lg == -np.inf] = 0
@@ -763,15 +767,15 @@ class MainGUI(QMainWindow):
                 options.tolerance = tolerance
                 self.ui.tolerance_spinBox.setValue(tol_idx)
 
+            # set power flow object instance
             self.power_flow = PowerFlow(self.circuit, options)
 
             # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
             # self.power_flow.done_signal.connect(self.UNLOCK)
             # self.power_flow.done_signal.connect(self.post_power_flow)
-            #
+
             # self.power_flow.start()
             self.threadpool.start(self.power_flow)
-
             self.threadpool.waitForDone()
             self.post_power_flow()
         else:
@@ -779,7 +783,7 @@ class MainGUI(QMainWindow):
 
     def post_power_flow(self):
         """
-        Run a power flow simulation in a separated thread from the gui
+        Action performed after the power flow.
         Returns:
 
         """
@@ -817,7 +821,7 @@ class MainGUI(QMainWindow):
 
     def run_voltage_stability(self):
         """
-
+        Run voltage stability (voltage collapse) in a separated thread
         :return:
         """
         print('run_voltage_stability')
@@ -897,7 +901,7 @@ class MainGUI(QMainWindow):
 
     def post_voltage_stability(self):
         """
-
+        Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
         """
         if self.voltage_stability.results is not None:
@@ -1005,9 +1009,10 @@ class MainGUI(QMainWindow):
         print('Vbus:\n', abs(self.monte_carlo.results.voltage))
         print('Ibr:\n', abs(self.monte_carlo.results.current))
         print('ld:\n', abs(self.monte_carlo.results.loading))
+
         self.color_based_of_pf(Vbus=self.monte_carlo.results.voltage,
                                LoadBranch=self.monte_carlo.results.loading,
-                               Sbranch=None,
+                               Sbranch=self.monte_carlo.results.sbranch,
                                Sbus=None)
         self.update_available_results()
 

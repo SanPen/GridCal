@@ -739,6 +739,7 @@ class Bus:
         Return the data that matches the edit_headers
         :return:
         """
+        self.retrieve_graphic_position()
         return [self.name, self.is_enabled, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.x, self.y]
 
     def set_state(self, t):
@@ -766,6 +767,14 @@ class Bus:
         for elm in self.shunts:
             elm.Y = elm.Yprof.values[t, 0]
 
+    def retrieve_graphic_position(self):
+        """
+        Get the position set by the graphic object
+        :return:
+        """
+        if self.graphic_obj is not None:
+            self.x = self.graphic_obj.pos().x()
+            self.y = self.graphic_obj.pos().y()
 
 
 class TransformerType:
@@ -4623,7 +4632,7 @@ class MonteCarlo(QThread):
             Vavg = Vsum / iter
             Vvariance = abs((power(mc_results.V_points - Vavg, 2.0) / (iter - 1)).min())
 
-            ##### progress ######
+            # progress
             variance_sum += Vvariance
             err = variance_sum / iter
             if err == 0:
@@ -4641,6 +4650,9 @@ class MonteCarlo(QThread):
             print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
 
         mc_results.compile()
+        # compute the averaged branch magnitudes
+        mc_results.sbranch, Ibranch, loading, mc_results.losses = powerflow.compute_branch_results(self.grid, mc_results.voltage)
+
         self.results = mc_results
 
         # send the finnish signal
@@ -4675,6 +4687,8 @@ class MonteCarloResults:
         self.voltage = None
         self.current = None
         self.loading = None
+        self.sbranch = None
+        self.losses = None
 
         self.v_convergence = None
         self.c_convergence = None

@@ -1,7 +1,7 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from GridCal.grid.CircuitOO import *
+from GridCal.grid.CalculationEngine import *
 from GridCal.gui.GuiFunctions import *
 import sys
 

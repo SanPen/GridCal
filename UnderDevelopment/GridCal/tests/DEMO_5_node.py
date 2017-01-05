@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from GridCal.grid.CircuitOO import *
+from GridCal.grid.CalculationEngine import *
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
@@ -34,7 +34,6 @@ grid.add_bus(bus2)
 bus3 = Bus('Bus 3', vnom=20)
 bus3.loads.append(Load('load 3', power=complex(25, 15)))
 grid.add_bus(bus3)
-
 
 bus4 = Bus('Bus 4', vnom=20)
 bus4.loads.append(Load('load 4', power=complex(40, 20)))
