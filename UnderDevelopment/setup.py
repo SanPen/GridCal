@@ -30,7 +30,7 @@ setup(
     name=name,
 
     # Version number (initial):
-    version="1.024",
+    version="1.025",
 
     # Application author details:
     author="Santiago Peñate Vera",

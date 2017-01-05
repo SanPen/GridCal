@@ -4379,14 +4379,15 @@ class VoltageCollapseResults:
         :return:
         """
 
-        l, n = res.voltages.shape
+        if len(res.voltages) > 0:
+            l, n = res.voltages.shape
 
-        if self.voltages is None:
-            self.voltages = zeros((l, nbus_full), dtype=complex)
-            self.voltages[:, bus_original_idx] = res.voltages
-            self.lambdas = res.lambdas
-        else:
-            self.voltages[:, bus_original_idx] = res.voltages
+            if self.voltages is None:
+                self.voltages = zeros((l, nbus_full), dtype=complex)
+                self.voltages[:, bus_original_idx] = res.voltages
+                self.lambdas = res.lambdas
+            else:
+                self.voltages[:, bus_original_idx] = res.voltages
 
     def plot(self, type='Bus voltage', ax=None, indices=None, names=None):
         """

@@ -575,16 +575,17 @@ class MainGUI(QMainWindow):
             # call dialog to select the file
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', self.project_directory, files_types)
 
-            name, file_extension = os.path.splitext(filename)
+            if filename is not "":
+                name, file_extension = os.path.splitext(filename)
 
-            extension = dict()
-            extension['Png (*.png)'] = '.png'
-            # extension['Numpy Case (*.npz)'] = '.npz'
+                extension = dict()
+                extension['Png (*.png)'] = '.png'
 
-            if file_extension == '':
-                filename = name + extension[type_selected]
+                # add the file extension if needed
+                if file_extension == '':
+                    filename = name + extension[type_selected]
 
-            self.grid_editor.export(filename)
+                self.grid_editor.export(filename)
 
     def create_schematic_from_api(self, explode_factor=1):
         """
@@ -694,18 +695,19 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        print('display_profiles')
+        if self.circuit.time_profile is not None:
+            print('display_profiles')
 
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
+            dev_type = self.ui.profile_device_type_comboBox.currentText()
 
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
 
-        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-        magnitude = magnitudes[idx]
-        mtype = mag_types[idx]
+            idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+            magnitude = magnitudes[idx]
+            mtype = mag_types[idx]
 
-        mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype, parent=self.ui.tableView)
-        self.ui.tableView.setModel(mdl)
+            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype, parent=self.ui.tableView)
+            self.ui.tableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
         """
@@ -752,6 +754,15 @@ class MainGUI(QMainWindow):
             self.compile()
 
             options = self.get_selected_power_flow_options()
+
+            if self.ui.auto_precision_checkBox.isChecked():
+                lg = np.log10(abs(self.circuit.power_flow_input.Sbus.real))
+                lg[lg == -np.inf] = 0
+                tol_idx = int(min(abs(lg))) + 3
+                tolerance = 1.0 / (10.0 ** tol_idx)
+                options.tolerance = tolerance
+                self.ui.tolerance_spinBox.setValue(tol_idx)
+
             self.power_flow = PowerFlow(self.circuit, options)
 
             # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
@@ -915,7 +926,7 @@ class MainGUI(QMainWindow):
             self.LOCK()
             self.compile()
 
-            if self.circuit.has_time_series:
+            if self.circuit.time_profile is not None:
 
                 options = self.get_selected_power_flow_options()
                 self.time_series = TimeSeries(grid=self.circuit, options=options)
@@ -966,7 +977,7 @@ class MainGUI(QMainWindow):
             self.LOCK()
             self.compile()
 
-            if self.circuit.has_time_series:
+            if self.circuit.time_profile is not None:
 
                 options = self.get_selected_power_flow_options()
 

@@ -286,8 +286,9 @@ class BranchGraphicItem(QGraphicsLineItem):
         Redraw the line with the given positions
         @return:
         """
-        self.setLine(QLineF(self.pos1, self.pos2))
-        self.setZValue(0)
+        if self.pos1 is not None and self.pos2 is not None:
+            self.setLine(QLineF(self.pos1, self.pos2))
+            self.setZValue(0)
 
 
 class ParameterDialog(QDialog):
@@ -442,7 +443,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
 
         triangle = Polygon(self)
         triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w/2, self.h)]))
-        triangle.setPen(QPen(Qt.red, 2))
+        triangle.setPen(QPen(Qt.black, 2))
         self.addToGroup(triangle)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
@@ -537,7 +538,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        pen = QPen(Qt.red, 2)
+        pen = QPen(Qt.black, 2)
 
         # Properties of the container:
         # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
@@ -554,6 +555,9 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
         lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
         lines.append(QLineF(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h)))
+        lines.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
+        lines.append(QLineF(QPointF(self.w*0.15, self.h * 1.1), QPointF(self.w*0.85, self.h * 1.1)))
+        lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
         for l in lines:
             l1 = QLine(self)
             l1.setLine(l)
@@ -653,7 +657,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        color = Qt.red
+        color = Qt.black
         pen = QPen(color, 2)
 
         self.w = 40
@@ -769,7 +773,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        color = Qt.red
+        color = Qt.black
         pen = QPen(color, 2)
 
         self.w = 40
@@ -880,7 +884,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        color = Qt.red
+        color = Qt.black
         pen = QPen(color, 2)
 
         self.w = 40
@@ -1391,7 +1395,7 @@ class EditorGraphicsView(QGraphicsView):
             objtype = event.mimeData().data('component/name')
             # name = str(objtype)
 
-            print(str(event.mimeData().data('component/name')))
+            # print(str(event.mimeData().data('component/name')))
 
             elm = None
             data = QByteArray()
@@ -1409,7 +1413,7 @@ class EditorGraphicsView(QGraphicsView):
                 elm.setPos(self.mapToScene(event.pos()))
                 self.scene_.addItem(elm)
                 # self.scene_.circuit.add_bus(obj) # weird but only way to have graphical-API communication
-                print('Block created')
+                # print('Block created')
 
     def wheelEvent(self, event):
         """
@@ -1721,12 +1725,10 @@ class GridEditor(QSplitter):
         :return:
         """
 
-        if filename is not "":
-
-            image = QImage(1024, 768, QImage.Format_ARGB32_Premultiplied)
-            image.fill(Qt.transparent)
-            painter = QPainter(image)
-            painter.setRenderHint(QPainter.Antialiasing)
-            self.diagramScene.render(painter)
-            image.save(filename)
-            painter.end()
+        image = QImage(1024, 768, QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.diagramScene.render(painter)
+        image.save(filename)
+        painter.end()
