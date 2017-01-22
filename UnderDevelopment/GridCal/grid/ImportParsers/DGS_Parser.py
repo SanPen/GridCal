@@ -16,10 +16,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import networkx as nx
-from GridCal.grid.ImportParsers import BusDefinitions as bd
-from GridCal.grid.ImportParsers import BranchDefinitions as brd
-from GridCal.grid.ImportParsers import GenDefinitions as gd
+from GridCal.grid.CalculationEngine import *
 import math
 import numpy as np
 import pandas as pd
@@ -76,10 +73,16 @@ def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_h
     xs_lv = xsc * (1.0 - GX_hv1)
 
     # Shunt resistance (p.u.)
-    rfe = Sn / (Pfe / 1000.0)
+    if Pfe > 0:
+        rfe = Sn / (Pfe / 1000.0)
+    else:
+        rfe = 1e-20
 
     # Magnetization impedance (p.u.)
-    zm = 1.0 / (I0 / 100.0)
+    if I0 > 0:
+        zm = 1.0 / (I0 / 100.0)
+    else:
+        zm = 1e-20
 
     # Magnetization reactance (p.u.)
     xm = 0.0
@@ -96,6 +99,14 @@ def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_h
 
 
 def read_DGS(filename):
+    """
+    Read a DigSilent Power Factory .dgs file and return a dictionary with the data
+    Args:
+        filename: File name or path
+
+    Returns: Dictionary of data where the keys are the object types and the values
+             are the data of the objects of the key object type
+    """
     ###############################################################################
     # Read the file
     ###############################################################################
@@ -140,9 +151,9 @@ def read_DGS(filename):
 
     types_dict2 = dict()
 
-    CurrentType = None
-    DataTypes = None
-    Header = None
+    current_type = None
+    data_types = None
+    header = None
 
     Headers = dict()
     # parse the file lines
@@ -151,33 +162,33 @@ def read_DGS(filename):
         if line.startswith("$$"):
             line = line[2:]
             chnks = line.split(";")
-            CurrentType = chnks[0]
-            data[CurrentType] = list()
+            current_type = chnks[0]
+            data[current_type] = list()
+            print(current_type)
 
             # analyze types
-            DataTypes = list()
-            DataTypes2 = list()
-            Header = list()
+            data_types = list()
+            header = list()
             for i in range(1, len(chnks)):
                 token = chnks[i].split("(")
                 name = token[0]
                 tpe = token[1][:-1]
-                DataTypes.append((name, types_dict[tpe[0]]))
-                Header.append(name)
+                data_types.append((name, types_dict[tpe[0]]))
+                header.append(name)
 
-            types_dict2[CurrentType] = DataTypes
+            types_dict2[current_type] = data_types
 
-            Headers[CurrentType] = Header
+            Headers[current_type] = header
 
         elif line.startswith("*"):
             pass
 
         elif line.startswith("  "):
-            if CurrentType is not None:
+            if current_type is not None:
                 line = line.strip()
                 chnks = line.split(";")
                 chnks = ["0" if x == "" else x for x in chnks]
-                data[CurrentType].append(array(tuple(chnks)))
+                data[current_type].append(array(tuple(chnks)))
 
     # format keys
     for key in data.keys():
@@ -194,6 +205,18 @@ def read_DGS(filename):
     pos_dict = dict()
     for i in range(len(obj_id)):
         pos_dict[obj_id[i]] = (x_vec[i], y_vec[i])
+
+    return data, pos_dict
+
+
+def data_to_grid_object(data, pos_dict, codification="utf-8"):
+    """
+    Turns the read data dictionary into a GridCal MultiCircuit object
+    Args:
+        data: Dictionary of data read from a DGS file
+        pos_dict: Dictionary of objects and their positions read from a DGS file
+    Returns: GridCal MultiCircuit object
+    """
     ###############################################################################
     # Refactor data into classes
     ###############################################################################
@@ -217,9 +240,7 @@ def read_DGS(filename):
     if "ElmLne" in data.keys():
         lines = data["ElmLne"]
     else:
-        lines = np.zeros((0,20))
-
-
+        lines = np.zeros((0, 20))
 
     '''
     ###############################################################################
@@ -246,7 +267,7 @@ def read_DGS(filename):
     if "TypLne" in data.keys():
         lines_types = data["TypLne"]
     else:
-        lines_types = np.zeros((0,20))
+        lines_types = np.zeros((0, 20))
 
     '''
     ###############################################################################
@@ -271,8 +292,6 @@ def read_DGS(filename):
         transformers = data["ElmTr2"]
     else:
         transformers = np.zeros((0, 20))
-
-
 
     '''
     ###############################################################################
@@ -328,7 +347,6 @@ def read_DGS(filename):
     else:
         buses = np.zeros((0, 20))
 
-
     '''
     ###############################################################################
     *  Cubicle
@@ -364,8 +382,6 @@ def read_DGS(filename):
     else:
         loads = np.zeros((0, 20))
 
-
-
     '''
     ###############################################################################
     *  External Grid
@@ -390,7 +406,6 @@ def read_DGS(filename):
     else:
         external = np.zeros((0, 20))
 
-
     '''
     ###############################################################################
     *  Grid
@@ -405,8 +420,6 @@ def read_DGS(filename):
     else:
         grid = np.zeros((0, 20))
 
-
-
     '''
     ###############################################################################
     '''
@@ -414,7 +427,6 @@ def read_DGS(filename):
         static_generators = data["ElmGenstat"]
     else:
         static_generators = np.zeros((0, 20))
-
 
     '''
     ###############################################################################
@@ -440,7 +452,6 @@ def read_DGS(filename):
     else:
         synchronous_machine = np.zeros((0, 20))
 
-
     '''
     ###############################################################################
     *  Synchronous Machine Type
@@ -463,7 +474,6 @@ def read_DGS(filename):
     else:
         synchronous_machine_type = np.zeros((0, 20))
 
-
     '''
     ###############################################################################
     *  Asynchronous Machine
@@ -482,8 +492,6 @@ def read_DGS(filename):
         asynchronous_machine = data["ElmAsm"]
     else:
         asynchronous_machine = np.zeros((0, 20))
-
-
 
     '''
     ###############################################################################
@@ -511,7 +519,6 @@ def read_DGS(filename):
         asynchronous_machine_type = data["TypAsmo"]
     else:
         asynchronous_machine_type = np.zeros((0, 20))
-
 
     '''
     ###############################################################################
@@ -556,26 +563,39 @@ def read_DGS(filename):
     else:
         switches = np.zeros((0, 20))
 
+        ###############################################################################
+        # Post process the data
+        ###############################################################################
+
     # put the tables that connect to a terminal in a list
-    classes = [lines, transformers, loads, external, static_generators, shunts]
+    classes = [lines, transformers, loads, external, static_generators, shunts,
+               synchronous_machine, asynchronous_machine]
 
-    # put the branch classes in a list
-    branch_classes = [lines, transformers]
 
-    # generator classes
-    generator_classes = [static_generators, synchronous_machine,
-                         asynchronous_machine]
 
-    ###############################################################################
-    # Post process the data
-    ###############################################################################
-
-    # dictionary to store the terminals ID associated with an object ID
-    terminals_dict = dict()
 
     # construct the terminals dictionary
+    '''
+    $$StaCubic;ID(a:40);loc_name(a:40);fold_id(p);chr_name(a:20);obj_bus(i);obj_id(p)
+    ********************************************************************************
+    *  Cubicle
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  chr_name: Characteristic Name
+    *  obj_bus: Bus Index
+    *  obj_id: Connected with in Elm*
+    ********************************************************************************
+    '''
+    terminals_dict = dict()  # dictionary to store the terminals ID associated with an object ID
     cub_obj_idx = cubicles['obj_id'].values
     cub_term_idx = cubicles['fold_id'].values
+
+    # for i, elm_id in enumerate(cub_obj_idx):
+    #     bus_idx = cub_term_idx[i]
+    #     terminals_dict[elm_id] = bus_idx
+
     ID_idx = 0
     for cla in classes:
         if cla.__len__() > 0:
@@ -592,49 +612,36 @@ def read_DGS(filename):
     frequency = grid['frnom'][0]
     w = 2.0 * math.pi * frequency
 
-    BUSES = list()
-    BUS_NAMES = list()
-    bus_line = np.zeros(len(bd.bus_headers), dtype=np.double)
-
-    BRANCHES = list()
-    BRANCH_NAMES = list()
-    branch_line = np.zeros(len(brd.branch_headers), dtype=np.double)
-
-    GEN = list()
-    GEN_NAMES = list()
-    gen_line = np.zeros(len(gd.gen_headers), dtype=np.double)
-
-    g = nx.graph.Graph()
+    circuit = MultiCircuit()
 
     ####################################################################################################################
     # Terminals (nodes)
     ####################################################################################################################
+    '''
+    ********************************************************************************
+    *  Terminal
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  typ_id: Type in TypBar
+    *  iUsage: Usage:Busbar:Junction Node:Internal Node
+    *  uknom: Nominal Voltage: Line-Line in kV
+    *  chr_name: Characteristic Name
+    *  outserv: Out of Service
+    ********************************************************************************
+    '''
     print('Parsing terminals')
     buses_dict = dict()
-    gpos = dict()
+    buses_list = list()
     for i in range(len(buses)):
         ID = buses['ID'][i]
         x, y = pos_dict[ID]
-        bus_ = bus_line.copy()
-        bus_[bd.BUS_I] = BUSES.__len__()  # ID
-        bus_[bd.BUS_TYPE] = 1  # by default is a PQ node  {1:PQ, 2:PV, 3:VD}
-        bus_[bd.VM] = 1.0  # VM
-        bus_[bd.VA] = 0.0  # VA
-        bus_[bd.BASE_KV] = buses['uknom'][i]  # BaseKv
-        bus_[bd.VMAX] = 1.05  # VMax
-        bus_[bd.VMIN] = 0.95  # VMin
-        bus_[bd.BUS_X] = x
-        bus_[bd.BUS_Y] = y
-        BUSES.append(bus_)
-
-        bus_name = buses['loc_name'][i]  # BUS_Name
-        BUS_NAMES.append(bus_name)
-
         buses_dict[ID] = i
-        gpos[i] = (x, y)
-
-    BUSES = np.array(BUSES)
-    BUS_NAMES = np.array(BUS_NAMES)
+        bus_name = buses['loc_name'][i].decode(codification)   # BUS_Name
+        vnom = buses['uknom'][i]
+        bus = Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=y, is_enabled=True)
+        circuit.add_bus(bus)
 
     ####################################################################################################################
     # External grids (slacks)
@@ -674,49 +681,73 @@ def read_DGS(filename):
             vm = 1
 
         buses = terminals_dict[ID]  # array with the ID of the connection Buses
-        bus1 = buses_dict[buses[0]]
+        bus1 = buses_dict[buses[0]]  # index of the bus
+
+        bus_obj = circuit.buses[bus1]
 
         # apply the slack values to the buses structure if the element is marked as slack
         if external['bustp'].values[i] == b'SL':
             # create the slack entry on buses
-            BUSES[bus1, bd.BUS_TYPE] = 3
-            BUSES[bus1, bd.VA] = va
-            BUSES[bus1, bd.VM] = vm
+            bus_obj.is_slack = True
 
-            # create the slack entry on generators (add the slack generator)
-            gen_ = gen_line.copy()
-            gen_[gd.GEN_BUS] = bus1
-            gen_[gd.MBASE] = baseMVA
-            gen_[gd.VG] = vm
-            gen_[gd.GEN_STATUS] = 1
-            gen_[gd.PG] += external['pgini'].values[i]
-
-            GEN.append(gen_)
-            GEN_NAMES.append(external['loc_name'][i])
+            # BUSES[bus1, bd.BUS_TYPE] = 3
+            # BUSES[bus1, bd.VA] = va
+            # BUSES[bus1, bd.VM] = vm
+            #
+            # # create the slack entry on generators (add the slack generator)
+            # gen_ = gen_line.copy()
+            # gen_[gd.GEN_BUS] = bus1
+            # gen_[gd.MBASE] = baseMVA
+            # gen_[gd.VG] = vm
+            # gen_[gd.GEN_STATUS] = 1
+            # gen_[gd.PG] += external['pgini'].values[i]
+            #
+            # GEN.append(gen_)
+            # GEN_NAMES.append(external['loc_name'][i])
 
         elif external['bustp'].values[i] == b'PV':
-            # mark the bus as pv
-            BUSES[bus1, bd.BUS_TYPE] = 2
-            BUSES[bus1, bd.VA] = 0.0
-            BUSES[bus1, bd.VM] = vm
-            # add the PV entry on generators
-            gen_ = gen_line.copy()
-            gen_[gd.GEN_BUS] = bus1
-            gen_[gd.MBASE] = baseMVA
-            gen_[gd.VG] = vm
-            gen_[gd.GEN_STATUS] = 1
-            gen_[gd.PG] += external['pgini'].values[i]
 
-            GEN.append(gen_)
-            GEN_NAMES.append(external['loc_name'][i])
+            if 'pgini' in external.columns.values:
+                p = external['pgini'].values[i]
+            else:
+                p = 0
+
+            # add a generator to the bus
+            gen = ControlledGenerator(name=external['loc_name'][i].decode(codification),
+                                      active_power=p,
+                                      voltage_module=vm, Qmin=-9999, Qmax=9999, Snom=9999,
+                                      power_prof=None, vset_prof=None)
+            circuit.add_controlled_generator(bus_obj, gen)
+
+            # # mark the bus as pv
+            # BUSES[bus1, bd.BUS_TYPE] = 2
+            # BUSES[bus1, bd.VA] = 0.0
+            # BUSES[bus1, bd.VM] = vm
+            # # add the PV entry on generators
+            # gen_ = gen_line.copy()
+            # gen_[gd.GEN_BUS] = bus1
+            # gen_[gd.MBASE] = baseMVA
+            # gen_[gd.VG] = vm
+            # gen_[gd.GEN_STATUS] = 1
+            # gen_[gd.PG] += external['pgini'].values[i]
+            #
+            # GEN.append(gen_)
+            # GEN_NAMES.append(external['loc_name'][i])
 
         elif external['bustp'].values[i] == b'PQ':
-            # mark the bus as pv
-            BUSES[bus1, bd.BUS_TYPE] = 1
-            BUSES[bus1, bd.VA] = va
-            BUSES[bus1, bd.VM] = vm
-            BUSES[bus1, bd.PD] += external['pgini'].values[i]
-            BUSES[bus1, bd.QD] += external['qgini'].values[i]
+            # Add a load to the bus
+            load = Load(name=external['loc_name'][i].decode(codification),
+                        impedance=complex(0, 0),
+                        current=complex(0, 0),
+                        power=complex(external['pgini'].values[i], external['qgini'].values[i]),
+                        impedance_prof=None, current_prof=None, power_prof=None)
+            circuit.add_load(bus_obj, load)
+
+            # BUSES[bus1, bd.BUS_TYPE] = 1
+            # BUSES[bus1, bd.VA] = va
+            # BUSES[bus1, bd.VM] = vm
+            # BUSES[bus1, bd.PD] += external['pgini'].values[i]
+            # BUSES[bus1, bd.QD] += external['qgini'].values[i]
 
     ####################################################################################################################
     # Lines (branches)
@@ -740,7 +771,7 @@ def read_DGS(filename):
         lines_rate = lines_types['sline'].values
         lines_voltage = lines_types['uline'].values
         for i in range(len(lines)):
-            line_ = branch_line.copy()
+            # line_ = branch_line.copy()
 
             ID = lines_ID[i]
             ID_Type = lines_type_id[i]
@@ -749,6 +780,9 @@ def read_DGS(filename):
             buses = terminals_dict[ID]  # array with the ID of the connection Buses
             bus1 = buses_dict[buses[0]]
             bus2 = buses_dict[buses[1]]
+
+            bus_from = circuit.buses[bus1]
+            bus_to = circuit.buses[bus2]
 
             status = lines_enables[i]
 
@@ -770,21 +804,34 @@ def read_DGS(filename):
             Irated = np.double(lines_rate[type_idx])  # kA
             Smax = Irated * vbase  # MVA
 
-            # put all in the correct column
-            line_[brd.F_BUS] = bus1
-            line_[brd.T_BUS] = bus2
-            line_[brd.BR_R] = r
-            line_[brd.BR_X] = l
-            line_[brd.BR_B] = c
-            line_[brd.RATE_A] = Smax
-            line_[brd.BR_STATUS] = status
-            BRANCHES.append(line_)
+            line = Branch(bus_from=bus_from, bus_to=bus_to,
+                          name=lines['loc_name'][i].decode(codification),
+                          r=r,
+                          x=l,
+                          g=1e-20,
+                          b=c,
+                          rate=Smax,
+                          tap=1,
+                          shift_angle=0,
+                          active=status, mttf=0, mttr=0)
 
-            name_ = lines['loc_name'][i]  # line_Name
-            BRANCH_NAMES.append(name_)
+            circuit.add_branch(line)
 
-            # add edge to graph
-            g.add_edge(bus1, bus2)
+            # # put all in the correct column
+            # line_[brd.F_BUS] = bus1
+            # line_[brd.T_BUS] = bus2
+            # line_[brd.BR_R] = r
+            # line_[brd.BR_X] = l
+            # line_[brd.BR_B] = c
+            # line_[brd.RATE_A] = Smax
+            # line_[brd.BR_STATUS] = status
+            # BRANCHES.append(line_)
+            #
+            # name_ = lines['loc_name'][i]  # line_Name
+            # BRANCH_NAMES.append(name_)
+            #
+            # # add edge to graph
+            # g.add_edge(bus1, bus2)
     else:
         warn('Line types are empty')
 
@@ -822,7 +869,7 @@ def read_DGS(filename):
         # GX_hv1 = transformers_types['ID']
         for i in range(len(transformers)):
 
-            line_ = branch_line.copy()
+            # line_ = branch_line.copy()
 
             ID = transformers['ID'][i]
             ID_Type = transformers['typ_id'][i]
@@ -832,6 +879,9 @@ def read_DGS(filename):
                 buses = terminals_dict[ID]  # array with the ID of the connection Buses
                 bus1 = buses_dict[buses[0]]
                 bus2 = buses_dict[buses[1]]
+
+                bus_from = circuit.buses[bus1]
+                bus_to = circuit.buses[bus2]
 
                 Smax = Nominal_power[type_idx]
 
@@ -848,21 +898,19 @@ def read_DGS(filename):
 
                 status = 1 - transformers['outserv'][i]
 
-                # put all in the correct column
-                line_[brd.F_BUS] = bus1
-                line_[brd.T_BUS] = bus2
-                line_[brd.BR_R] = Zs.real
-                line_[brd.BR_X] = Zs.imag
-                line_[brd.BR_B] = Zsh.imag
-                line_[brd.RATE_A] = Smax
-                line_[brd.BR_STATUS] = status
-                BRANCHES.append(line_)
+                trafo = Branch(bus_from=bus_from, bus_to=bus_to,
+                               name=transformers['loc_name'][i].decode(codification),
+                               r=Zs.real,
+                               x=Zs.imag,
+                               g=Zsh.real,
+                               b=Zsh.imag,
+                               rate=Smax,
+                               tap=1,
+                               shift_angle=0,
+                               active=status, mttf=0, mttr=0)
 
-                name_ = transformers['loc_name'][i]  # line_Name
-                BRANCH_NAMES.append(name_)
+                circuit.add_branch(trafo)
 
-                # add edge to graph
-                g.add_edge(bus1, bus2)
             else:
                 warn('Transformer type not found!')
         else:
@@ -879,12 +927,20 @@ def read_DGS(filename):
         for i in range(len(loads)):
             ID = loads_ID[i]
             bus_idx = buses_dict[(terminals_dict[ID][0])]
+            bus_obj = circuit.buses[bus_idx]
+            p = loads_P[i]  # in MW
+            q = loads_Q[i]  # in MVA
 
-            p = -loads_P[i]  # in MW
-            q = -loads_Q[i]  # in MVA
+            load = Load(name=loads['loc_name'][i].decode(codification),
+                        impedance=complex(0, 0),
+                        current=complex(0, 0),
+                        power=complex(p, q),
+                        impedance_prof=None, current_prof=None, power_prof=None)
 
-            BUSES[bus_idx, 2] += p
-            BUSES[bus_idx, 3] += q
+            circuit.add_load(bus_obj, load)
+
+            # BUSES[bus_idx, 2] += p
+            # BUSES[bus_idx, 3] += q
     else:
         warn('There are no loads')
 
@@ -913,71 +969,87 @@ def read_DGS(filename):
         ID = static_generators['ID'][i]
         buses = terminals_dict[ID]  # array with the ID of the connection Buses
         bus1 = buses_dict[buses[0]]
+        bus_obj = circuit.buses[bus1]
         mode = static_generators['av_mode'][i]
-        # declare the generator array
-        gen_ = gen_line.copy()
-        gen_[gd.GEN_BUS] = bus1
-        gen_[gd.GEN_STATUS] = not static_generators['outserv'][i]
-
         num_machines = static_generators['ngnum'][i]
 
-        gen_[gd.PG] = static_generators['pgini'][i] * num_machines
-        gen_[gd.QG] = static_generators['qgini'][i] * num_machines
-        gen_[gd.VG] = 1.0  # static_generators['outserv'][i]
-        gen_[gd.MBASE] = static_generators['sgn'][i]
-
-        GEN.append(gen_)
-
-        name_ = static_generators['loc_name'][i]
-        GEN_NAMES.append(name_)
+        gen = StaticGenerator(name=static_generators['loc_name'][i].decode(codification),
+                              power=complex(static_generators['pgini'][i] * num_machines,
+                                            static_generators['qgini'][i] * num_machines),
+                              power_prof=None)
+        circuit.add_static_generator(bus_obj, gen)
 
     ####################################################################################################################
-    # make data-frames out of data
+    # Synchronous Machine (Gen)
     ####################################################################################################################
+    '''
+    ********************************************************************************
+    *  Synchronous Machine
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  typ_id: Type in TypSym
+    *  ngnum: Number of: parallel Machines
+    *  i_mot: Generator/Motor
+    *  chr_name: Characteristic Name
+    *  outserv: Out of Service
+    *  pgini: Dispatch: Active Power in MW
+    *  qgini: Dispatch: Reactive Power in Mvar
+    *  usetp: Dispatch: Voltage in p.u.
+    *  iv_mode: Mode of Local Voltage Controller
+    *  q_min: Reactive Power Operational Limits: Min. in p.u.
+    *  q_max: Reactive Power Operational Limits: Max. in p.u.
+    ********************************************************************************
+    '''
+    for i in range(len(synchronous_machine)):
+        ID = synchronous_machine['ID'][i]
+        buses = terminals_dict[ID]  # array with the ID of the connection Buses
+        bus1 = buses_dict[buses[0]]
+        bus_obj = circuit.buses[bus1]
+        num_machines = synchronous_machine['ngnum'][i]
 
-    BRANCH_NAMES = array(BRANCH_NAMES, dtype=np.str)
-    BUS_NAMES = array(BUS_NAMES, dtype=np.str)
-    GEN_NAMES = array(GEN_NAMES, dtype=np.str)
+        gen = ControlledGenerator(name=synchronous_machine['loc_name'][i].decode(codification),
+                                  active_power=synchronous_machine['pgini'][i] * num_machines,
+                                  voltage_module=synchronous_machine['usetp'][i],
+                                  Qmin=-synchronous_machine['q_min'][i] * num_machines * circuit.Sbase,
+                                  Qmax=synchronous_machine['q_max'][i] * num_machines * circuit.Sbase,
+                                  Snom=9999,
+                                  power_prof=None,
+                                  vset_prof=None)
+        circuit.add_controlled_generator(bus_obj, gen)
 
-    if len(BRANCHES) > 0:
-        BRANCHES = df(data=np.array(BRANCHES, dtype=np.object), columns=brd.branch_headers, index=BRANCH_NAMES)
-    else:
-        BRANCHES = df(data=np.zeros((0, len(brd.branch_headers))), columns=brd.branch_headers)
+    return circuit
 
-    if len(BUSES) > 0:
-        BUSES = df(data=np.array(BUSES, dtype=np.object), columns=bd.bus_headers, index=BUS_NAMES)
-    else:
-        BUSES = df(data=np.zeros((0, len(bd.bus_headers))), columns=bd.bus_headers)
 
-    if len(GEN) > 0:
-        GEN = df(data=np.array(GEN, dtype=np.object), columns=gd.gen_headers, index=GEN_NAMES)
-    else:
-        GEN = df(data=np.zeros((0, len(gd.gen_headers))), columns=gd.gen_headers)
+def dgs_to_circuit(filename):
 
-    print('Done!')
+    data, pos_dict = read_DGS(filename)
 
-    return baseMVA, BUSES, BRANCHES, GEN, g, gpos, BUS_NAMES, BRANCH_NAMES, GEN_NAMES
+    return data_to_grid_object(data, pos_dict)
 
 
 if __name__ == "__main__":
 
-    fname = 'Bogfinkeveg.dgs'
+    fname = 'Example1.dgs'
     # fname = 'PLATOS grid 3.dgs'
     # fname = 'Example4.dgs'
-    baseMVA, BUSES, BRANCHES, GEN, graph, gpos, BUS_NAMES, BRANCH_NAMES, GEN_NAMES = read_DGS(fname)
+    circuit = dgs_to_circuit(fname)
 
-    print(BUS_NAMES, '\n')
-    print(BUSES)
+    circuit.compile()
 
-    print(BRANCH_NAMES, '\n')
-    print(BRANCHES)
-
-    print(GEN_NAMES, '\n')
-    print(GEN)
-
-    print(graph)
-    print('Plotting grid...')
-    nx.draw(graph, pos=gpos)
+    # print(BUS_NAMES, '\n')
+    # print(BUSES)
+    #
+    # print(BRANCH_NAMES, '\n')
+    # print(BRANCHES)
+    #
+    # print(GEN_NAMES, '\n')
+    # print(GEN)
+    #
+    # print(graph)
+    # print('Plotting grid...')
+    nx.draw(circuit.graph)
 
     from matplotlib import pyplot as plt
     plt.show()

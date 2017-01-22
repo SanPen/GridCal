@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.grid.ImportParsers.DGS_Parser import read_DGS
+
 from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
 from GridCal.grid.IwamotoNR import IwamotoNR
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -399,25 +399,6 @@ def load_from_xls(filename):
                 data[name] = df
 
     return data
-
-
-def load_from_dgs(filename):
-    """
-    Use the DGS parset to get a circuit structure dictionary
-    @param filename:
-    @return: Circuit dictionary
-    """
-    baseMVA, BUSES, BRANCHES, GEN, graph, gpos, BUS_NAMES, BRANCH_NAMES, GEN_NAMES = read_DGS(filename)
-    ppc = dict()
-    ppc["baseMVA"] = baseMVA
-    ppc["bus"] = BUSES.values
-    ppc['bus_names'] = BUS_NAMES
-    ppc["gen"] = GEN.values
-    ppc['gen_names'] = GEN_NAMES
-    ppc["branch"] = BRANCHES.values
-    ppc['branch_names'] = BRANCH_NAMES
-
-    return ppc
 
 
 class Bus:
@@ -2038,23 +2019,27 @@ class MultiCircuit(Circuit):
             print(name, file_extension)
             if file_extension == '.xls' or file_extension == '.xlsx':
                 ppc = load_from_xls(filename)
-                data_in_zero_base = True
+
+                # Pass the table-like data dictionary to objects in this circuit
+                if 'version' not in ppc.keys():
+                    self.interpret_data_v1(ppc)
+                    return True
+                elif ppc['version'] == 2.0:
+                    self.interpret_data_v2(ppc)
+                    return True
+                else:
+                    warn('The file could not be processed')
+                    return False
+
             elif file_extension == '.dgs':
-                ppc = load_from_dgs(filename)
+                from GridCal.grid.ImportParsers.DGS_Parser import dgs_to_circuit
+                circ = dgs_to_circuit(filename)
+                self.buses = circ.buses
+                self.branches = circ.branches
+
             elif file_extension == '.m':
                 ppc = parse_matpower_file(filename)
-                data_in_zero_base = False
-
-            # Pass the table-like data dictionary to objects in this circuit
-            if 'version' not in ppc.keys():
                 self.interpret_data_v1(ppc)
-                return True
-            elif ppc['version'] == 2.0:
-                self.interpret_data_v2(ppc)
-                return True
-            else:
-                warn('The file could not be processed')
-                return False
 
         else:
             warn('The file does not exist.')
@@ -2761,9 +2746,18 @@ class MultiCircuit(Circuit):
         # del self.branch_dictionary[obj]
         self.branches.remove(obj)
 
-    def add_load(self, bus: Bus):
-        print('')
-        api_obj = Load()
+    def add_load(self, bus: Bus, api_obj=None):
+        """
+
+        Args:
+            bus:
+            api_obj:
+
+        Returns:
+
+        """
+        if api_obj is None:
+            api_obj = Load()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -2773,8 +2767,18 @@ class MultiCircuit(Circuit):
 
         return api_obj
 
-    def add_controlled_generator(self, bus: Bus):
-        api_obj = ControlledGenerator()
+    def add_controlled_generator(self, bus: Bus, api_obj=None):
+        """
+
+        Args:
+            bus:
+            api_obj:
+
+        Returns:
+
+        """
+        if api_obj is None:
+            api_obj = ControlledGenerator()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -2784,8 +2788,18 @@ class MultiCircuit(Circuit):
 
         return api_obj
 
-    def add_static_generator(self, bus: Bus):
-        api_obj = StaticGenerator()
+    def add_static_generator(self, bus: Bus, api_obj=None):
+        """
+
+        Args:
+            bus:
+            api_obj:
+
+        Returns:
+
+        """
+        if api_obj is None:
+            api_obj = StaticGenerator()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -2795,8 +2809,18 @@ class MultiCircuit(Circuit):
 
         return api_obj
 
-    def add_battery(self, bus: Bus):
-        api_obj = Battery()
+    def add_battery(self, bus: Bus, api_obj=None):
+        """
+
+        Args:
+            bus:
+            api_obj:
+
+        Returns:
+
+        """
+        if api_obj is None:
+            api_obj = Battery()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -2806,8 +2830,18 @@ class MultiCircuit(Circuit):
 
         return api_obj
 
-    def add_shunt(self, bus: Bus):
-        api_obj = Shunt()
+    def add_shunt(self, bus: Bus, api_obj=None):
+        """
+
+        Args:
+            bus:
+            api_obj:
+
+        Returns:
+
+        """
+        if api_obj is None:
+            api_obj = Shunt()
         api_obj.bus = bus
 
         if self.time_profile is not None:
