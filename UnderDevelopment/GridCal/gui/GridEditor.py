@@ -614,7 +614,8 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         fig = plt.figure(figsize=(10, 6))
         ax1 = fig.add_subplot(111)
 
-        self.api_object.Yprof.plot(ax=ax1, linewidth=1)
+        if self.api_object.Yprof is not None:
+            self.api_object.Yprof.plot(ax=ax1, linewidth=1)
 
         ax1.set_title('Admittance profile')
 

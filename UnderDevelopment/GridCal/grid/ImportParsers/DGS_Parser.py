@@ -633,14 +633,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     '''
     print('Parsing terminals')
     buses_dict = dict()
-    buses_list = list()
     for i in range(len(buses)):
         ID = buses['ID'][i]
         x, y = pos_dict[ID]
         buses_dict[ID] = i
         bus_name = buses['loc_name'][i].decode(codification)   # BUS_Name
         vnom = buses['uknom'][i]
-        bus = Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=y, is_enabled=True)
+        bus = Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, is_enabled=True)
         circuit.add_bus(bus)
 
     ####################################################################################################################
@@ -945,6 +944,37 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         warn('There are no loads')
 
     ####################################################################################################################
+    # Shunts
+    ####################################################################################################################
+    '''
+    ********************************************************************************
+    *  Shunt/Filter
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  chr_name: Characteristic Name
+    *  shtype: Shunt Type
+    *  ushnm: Nominal Voltage in kV
+    *  qcapn: Design Parameter (per Step): Rated Reactive Power, C in Mvar
+    *  ncapx: Controller: Max. No. of Steps
+    *  ncapa: Controller: Act.No. of Step
+    *  outserv: Out of Service
+    ********************************************************************************
+    '''
+    for i in range(len(shunts)):
+        ID = shunts['ID'][i]
+        buses = terminals_dict[ID]  # array with the ID of the connection Buses
+        bus1 = buses_dict[buses[0]]
+        bus_obj = circuit.buses[bus1]
+        name = shunts['loc_name'][i].decode(codification)
+
+        c = shunts['ushnm'][i] / shunts['qcapn'][i]
+
+        shunt = Shunt(name=name, admittance=complex(0, c))
+        circuit.add_shunt(bus_obj, shunt)
+
+    ####################################################################################################################
     # Static generators (Gen)
     ####################################################################################################################
     '''
@@ -1009,15 +1039,43 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         bus_obj = circuit.buses[bus1]
         num_machines = synchronous_machine['ngnum'][i]
 
-        gen = ControlledGenerator(name=synchronous_machine['loc_name'][i].decode(codification),
+        # Get the type element
+        '''
+        ********************************************************************************
+        *  Synchronous Machine Type
+        *
+        *  ID: Unique identifier for DGS file
+        *  loc_name: Name
+        *  fold_id: In Folder
+        *  sgn: Nominal Apparent Power in MVA
+        *  ugn: Nominal Voltage in kV
+        *  cosn: Power Factor
+        *  xd: Synchronous Reactances: xd in p.u.
+        *  xq: Synchronous Reactances: xq in p.u.
+        *  xdsss: Subtransient Reactance: saturated value xd''sat in p.u.
+        *  rstr: Stator Resistance: rstr in p.u.
+        *  xdsat: For single fed short-circuit: Reciprocal of short-circuit ratio (xdsat) in p.u.
+        *  satur: For single fed short-circuit: Machine Type IEC909/IEC60909
+        ********************************************************************************
+        '''
+        typ = synchronous_machine_type[synchronous_machine_type.ID == synchronous_machine['typ_id'][i]]
+
+        snom = typ['sgn'].values[0]
+        vnom = synchronous_machine['usetp'][i]
+        name = synchronous_machine['loc_name'][i].decode(codification)
+        gen = ControlledGenerator(name=name,
                                   active_power=synchronous_machine['pgini'][i] * num_machines,
-                                  voltage_module=synchronous_machine['usetp'][i],
-                                  Qmin=-synchronous_machine['q_min'][i] * num_machines * circuit.Sbase,
-                                  Qmax=synchronous_machine['q_max'][i] * num_machines * circuit.Sbase,
-                                  Snom=9999,
+                                  voltage_module=vnom,
+                                  Qmin=-synchronous_machine['q_min'][i] * num_machines * snom,
+                                  Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
+                                  Snom=snom,
                                   power_prof=None,
                                   vset_prof=None)
         circuit.add_controlled_generator(bus_obj, gen)
+
+        if synchronous_machine['pgini'][i] != 0:
+            gen = StaticGenerator(name=name, power=complex(0, synchronous_machine['pgini'][i]))
+            circuit.add_static_generator(bus_obj, gen)
 
     return circuit
 
