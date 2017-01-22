@@ -969,7 +969,12 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         bus_obj = circuit.buses[bus1]
         name = shunts['loc_name'][i].decode(codification)
 
-        c = shunts['ushnm'][i] / shunts['qcapn'][i]
+        if 'qcapn' in shunts.columns.values:
+            c = shunts['ushnm'][i] / shunts['qcapn'][i]
+        elif 'qtotn' in shunts.columns.values:
+            c = shunts['ushnm'][i] / shunts['qtotn'][i]
+        else:
+            c = 1e-20
 
         shunt = Shunt(name=name, admittance=complex(0, c))
         circuit.add_shunt(bus_obj, shunt)
