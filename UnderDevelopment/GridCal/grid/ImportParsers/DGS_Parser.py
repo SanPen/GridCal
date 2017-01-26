@@ -92,7 +92,10 @@ def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_h
         xm = 0.0  # the square root cannot be computed
 
     # Calculated parameters in per unit
-    leakage_impedance = rsc + 1j * xsc
+    # leakage_impedance = rsc + 1j * xsc
+    # magnetizing_impedance = rfe + 1j * xm
+
+    leakage_impedance = (rcu_hv + rcu_lv) + 1j * (xs_hv + xs_lv)
     magnetizing_impedance = rfe + 1j * xm
 
     return leakage_impedance, magnetizing_impedance
@@ -856,6 +859,37 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     '''
 
     if len(transformers_types) > 0:
+        '''
+        ********************************************************************************
+        *  2-Winding Transformer Type
+        *
+        *  ID: Unique identifier for DGS file
+        *  loc_name: Name
+        *  fold_id: In Folder
+        *  strn: Rated Power in MVA
+        *  frnom: Nominal Frequency in Hz
+        *  utrn_h: Rated Voltage: HV-Side in kV
+        *  utrn_l: Rated Voltage: LV-Side in kV
+        *  uktr: Positive Sequence Impedance: Short-Circuit Voltage uk in %
+        *  pcutr: Positive Sequence Impedance: Copper Losses in kW
+        *  uk0tr: Zero Sequence Impedance: Short-Circuit Voltage uk0 in %
+        *  ur0tr: Zero Sequence Impedance: SHC-Voltage (Re(uk0)) uk0r in %
+        *  tr2cn_h: Vector Group: HV-Side:Y :YN:Z :ZN:D
+        *  tr2cn_l: Vector Group: LV-Side:Y :YN:Z :ZN:D
+        *  nt2ag: Vector Group: Phase Shift in *30deg
+        *  curmg: Magnetizing Impedance: No Load Current in %
+        *  pfe: Magnetizing Impedance: No Load Losses in kW
+        *  zx0hl_n: Zero Sequence Magnetizing Impedance: Mag. Impedance/uk0
+        *  tap_side: Tap Changer 1: at Side:HV:LV
+        *  dutap: Tap Changer 1: Additional Voltage per Tap in %
+        *  phitr: Tap Changer 1: Phase of du in deg
+        *  nntap0: Tap Changer 1: Neutral Position
+        *  ntpmn: Tap Changer 1: Minimum Position
+        *  ntpmx: Tap Changer 1: Maximum Position
+        *  manuf: Manufacturer
+        *  chr_name: Characteristic Name
+        ********************************************************************************
+        '''
         type_ID = transformers_types['ID'].values
         HV_nominal_voltage = transformers_types['utrn_h'].values
         LV_nominal_voltage = transformers_types['utrn_l'].values
@@ -901,8 +935,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                                name=transformers['loc_name'][i].decode(codification),
                                r=Zs.real,
                                x=Zs.imag,
-                               g=Zsh.real,
-                               b=Zsh.imag,
+                               g=0,  # Zsh.real,
+                               b=0,  # Zsh.imag,
                                rate=Smax,
                                tap=1,
                                shift_angle=0,
@@ -918,17 +952,32 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     ####################################################################################################################
     # Loads (nodes)
     ####################################################################################################################
+    '''
+    ********************************************************************************
+    *  General Load
+    *
+    *  ID: Unique identifier for DGS file
+    *  loc_name: Name
+    *  fold_id: In Folder
+    *  typ_id: Type in TypLod,TypLodind
+    *  chr_name: Characteristic Name
+    *  plini: Operating Point: Active Power in MW
+    *  qlini: Operating Point: Reactive Power in Mvar
+    *  scale0: Operating Point: Scaling Factor
+    ********************************************************************************
+    '''
     print('Parsing Loads')
     if len(loads) > 0:
         loads_ID = loads['ID']
         loads_P = loads['plini']
         loads_Q = loads['qlini']
+        scale = loads['scale0']
         for i in range(len(loads)):
             ID = loads_ID[i]
             bus_idx = buses_dict[(terminals_dict[ID][0])]
             bus_obj = circuit.buses[bus_idx]
-            p = loads_P[i]  # in MW
-            q = loads_Q[i]  # in MVA
+            p = loads_P[i] * scale[i]  # in MW
+            q = loads_Q[i] * scale[i]  # in MVA
 
             load = Load(name=loads['loc_name'][i].decode(codification),
                         impedance=complex(0, 0),
