@@ -109,17 +109,18 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
         the Iwamoto's optimal multiplier for ill conditioned systems
     """
     # evaluate the Jacobian of the voltage derivative
-    dS_dVm, dS_dVa = dSbus_dV(Ybus, dV, Ibus)  # compute the derivatives
-
-    J11 = dS_dVa[array([pvpq]).T, pvpq].real
-    J12 = dS_dVm[array([pvpq]).T, pq].real
-    J21 = dS_dVa[array([pq]).T, pvpq].imag
-    J22 = dS_dVm[array([pq]).T, pq].imag
-
-    # theoretically this is the second derivative matrix
-    # since the Jacobian (J2) has been calculated with dV instead of V
-    J2 = vstack([hstack([J11, J12]),
-                 hstack([J21, J22])], format="csr")
+    # dS_dVm, dS_dVa = dSbus_dV(Ybus, dV, Ibus)  # compute the derivatives
+    #
+    # J11 = dS_dVa[array([pvpq]).T, pvpq].real
+    # J12 = dS_dVm[array([pvpq]).T, pq].real
+    # J21 = dS_dVa[array([pq]).T, pvpq].imag
+    # J22 = dS_dVm[array([pq]).T, pq].imag
+    #
+    # # theoretically this is the second derivative matrix
+    # # since the Jacobian (J2) has been calculated with dV instead of V
+    # J2 = vstack([hstack([J11, J12]),
+    #              hstack([J21, J22])], format="csr")
+    J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
 
     a = incS
     b = J * dx
@@ -133,6 +134,34 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
     roots = np.roots([g3, g2, g1, g0])
     # three solutions are provided, the first two are complex, only the real solution is valid
     return roots[2].real
+
+
+def Jacobian(Ybus, V, Ibus, pq, pvpq):
+    """
+
+    Args:
+        Ybus:
+        V:
+        Ibus:
+        pq:
+        pvpq:
+
+    Returns:
+
+    """
+    dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
+
+    J11 = dS_dVa[array([pvpq]).T, pvpq].real
+    J12 = dS_dVm[array([pvpq]).T, pq].real
+    J21 = dS_dVa[array([pq]).T, pvpq].imag
+    J22 = dS_dVm[array([pq]).T, pq].imag
+
+    J = vstack([
+        hstack([J11, J12]),
+        hstack([J21, J22])
+    ], format="csr")
+
+    return J
 
 
 def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
@@ -214,17 +243,18 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
         i += 1
 
         # evaluate Jacobian
-        dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
-
-        J11 = dS_dVa[array([pvpq]).T, pvpq].real
-        J12 = dS_dVm[array([pvpq]).T, pq].real
-        J21 = dS_dVa[array([pq]).T, pvpq].imag
-        J22 = dS_dVm[array([pq]).T, pq].imag
-
-        J = vstack([
-                hstack([J11, J12]),
-                hstack([J21, J22])
-            ], format="csr")
+        # dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
+        #
+        # J11 = dS_dVa[array([pvpq]).T, pvpq].real
+        # J12 = dS_dVm[array([pvpq]).T, pq].real
+        # J21 = dS_dVa[array([pq]).T, pvpq].imag
+        # J22 = dS_dVm[array([pq]).T, pq].imag
+        #
+        # J = vstack([
+        #         hstack([J11, J12]),
+        #         hstack([J21, J22])
+        #     ], format="csr")
+        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
         # compute update step
         dx = spsolve(J, F)

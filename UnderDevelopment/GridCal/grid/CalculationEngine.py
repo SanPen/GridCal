@@ -15,7 +15,7 @@
 
 
 from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
-from GridCal.grid.IwamotoNR import IwamotoNR
+from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
 from GridCal.grid.HelmVect import helm
 from GridCal.grid.DCPF import dcpf
@@ -1968,6 +1968,27 @@ class Circuit:
                 elm.bus = bus
             lst = lst + bus.batteries
         return lst
+
+    def get_Jacobian(self, sparse=False):
+        """
+        Returns the Grid Jacobian matrix
+        Returns:
+            Grid Jacobian Matrix in CSR sparse format or as full matrix
+        """
+
+        # Initial magnitudes
+        pvpq = r_[self.power_flow_input.pv, self.power_flow_input.pq]
+
+        J = Jacobian(Ybus=self.power_flow_input.Ybus,
+                     V=self.power_flow_input.Vbus,
+                     Ibus=self.power_flow_input.Ibus,
+                     pq=self.power_flow_input.pq,
+                     pvpq=pvpq)
+
+        if sparse:
+            return J
+        else:
+            return J.todense()
 
 
 class MultiCircuit(Circuit):
