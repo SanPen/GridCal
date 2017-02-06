@@ -1,6 +1,7 @@
 from distutils.core import setup
 import sys
 import os
+import platform
 
 name = "GridCal"
 
@@ -25,12 +26,35 @@ for dirname, dirnames, filenames in os.walk('doc'):
             fileslist.append(fullname)
         data_files.append(('share/' + name + '/' + dirname, fileslist))
 
+if platform.system() == 'Windows':
+    required_packages = ["numpy",
+                          "scipy",
+                          "networkx",
+                          "pandas",
+                          "xlwt",
+                          "xlrd",
+                          # "PyQt5",
+                          "matplotlib",
+                          "qtconsole"
+                          ]
+else:
+    required_packages = ["numpy",
+                         "scipy",
+                         "networkx",
+                         "pandas",
+                         "xlwt",
+                         "xlrd",
+                         "PyQt5",
+                         "matplotlib",
+                         "qtconsole"
+                         ]
+
 setup(
     # Application name:
     name=name,
 
     # Version number (initial):
-    version="1.025",
+    version="1.029",
 
     # Application author details:
     author="Santiago Peñate Vera",
@@ -56,14 +80,5 @@ setup(
     # long_description=open("README.txt").read(),
 
     # Dependent packages (distributions)
-    install_requires=["numpy",
-                      "scipy",
-                      "networkx",
-                      "pandas",
-                      "xlwt",
-                      "xlrd",
-                      "PyQt5",
-                      "matplotlib",
-                      "qtconsole"
-                      ],
+    install_requires=required_packages,
 )
