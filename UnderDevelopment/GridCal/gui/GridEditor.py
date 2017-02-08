@@ -885,6 +885,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
+
         color = Qt.black
         pen = QPen(color, 2)
 
@@ -1015,8 +1016,11 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         self.graphic_children = list()
 
+        # Enabled for short circuit
+        self.sc_enabled = False
+        self.pen_width = 4
         # Properties of the rectangle:
-        self.setPen(QPen(QtCore.Qt.black, 2))
+        self.setPen(QPen(QtCore.Qt.black, self.pen_width))
         self.setBrush(QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
@@ -1204,6 +1208,11 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         arr = menu.addAction('Arrange')
         arr.triggered.connect(self.arrange_children)
 
+        menu.addSeparator()
+
+        sc = menu.addAction('Enable/Disable \nShort circuit')
+        sc.triggered.connect(self.enable_disable_sc)
+
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -1224,6 +1233,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         print('Enabled:', self.api_object.is_enabled)
 
         if self.api_object.is_enabled:
+
             self.setBrush(QBrush(QtCore.Qt.black))
 
             for term in self.terminals:
@@ -1235,6 +1245,20 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             for term in self.terminals:
                 for host in term.hosting_connections:
                     host.set_enable(val=False)
+
+    def enable_disable_sc(self):
+        """
+
+        Returns:
+
+        """
+        if self.sc_enabled is True:
+            self.setPen(QPen(QColor(QtCore.Qt.black), self.pen_width))
+            self.sc_enabled = False
+
+        else:
+            self.sc_enabled = True
+            self.setPen(QPen(QColor(QtCore.Qt.yellow), self.pen_width))
 
     def plot_profiles(self):
         """

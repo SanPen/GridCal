@@ -1422,6 +1422,7 @@ last solution</string>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
+   <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionPower_Flow_Time_series"/>
    <addaction name="actionPower_flow_Stochastic"/>
@@ -1704,6 +1705,15 @@ last solution</string>
    </property>
    <property name="text">
     <string>center view</string>
+   </property>
+  </action>
+  <action name="actionShort_Circuit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/file/short_circuit.svg</normaloff>:/file/short_circuit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Short Circuit</string>
    </property>
   </action>
  </widget>

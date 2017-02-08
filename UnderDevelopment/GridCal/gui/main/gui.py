@@ -761,6 +761,11 @@ class Ui_mainWindow(object):
         icon17.addPixmap(QtGui.QPixmap(":/file/resize.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionCenter_view.setIcon(icon17)
         self.actionCenter_view.setObjectName("actionCenter_view")
+        self.actionShort_Circuit = QtWidgets.QAction(mainWindow)
+        icon18 = QtGui.QIcon()
+        icon18.addPixmap(QtGui.QPixmap(":/file/short_circuit.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionShort_Circuit.setIcon(icon18)
+        self.actionShort_Circuit.setObjectName("actionShort_Circuit")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -775,6 +780,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPower_flow)
+        self.toolBar.addAction(self.actionShort_Circuit)
         self.toolBar.addAction(self.actionVoltage_stability)
         self.toolBar.addAction(self.actionPower_Flow_Time_series)
         self.toolBar.addAction(self.actionPower_flow_Stochastic)
@@ -899,6 +905,7 @@ class Ui_mainWindow(object):
         self.actionVoltage_stability.setText(_translate("mainWindow", "Voltage stability"))
         self.actionAbout.setText(_translate("mainWindow", "About"))
         self.actionCenter_view.setText(_translate("mainWindow", "center view"))
+        self.actionShort_Circuit.setText(_translate("mainWindow", "Short Circuit"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *

@@ -197,6 +197,7 @@ class MainGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
 
         self.power_flow = None
+        self.short_circuit = None
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
@@ -235,6 +236,8 @@ class MainGUI(QMainWindow):
         self.ui.actionSave.triggered.connect(self.save_file)
 
         self.ui.actionPower_flow.triggered.connect(self.run_power_flow)
+
+        self.ui.actionShort_Circuit.triggered.connect(self.run_short_circuit)
 
         self.ui.actionVoltage_stability.triggered.connect(self.run_voltage_stability)
 
@@ -797,6 +800,62 @@ class MainGUI(QMainWindow):
                                    Sbranch=self.circuit.power_flow_results.Sbranch,
                                    Vbus=self.circuit.power_flow_results.voltage,
                                    LoadBranch=self.circuit.power_flow_results.loading)
+            self.update_available_results()
+        else:
+            warn('Something went wrong, There are no power flow results.')
+        self.UNLOCK()
+
+    def run_short_circuit(self):
+        """
+        Run a power flow simulation
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.power_flow is not None:
+                self.LOCK()
+                # self.compile()
+
+                # get the short circuit selected buses
+                sel_buses = list()
+                for i, bus in enumerate(self.circuit.buses):
+                    if bus.graphic_obj.sc_enabled is True:
+                        sel_buses.append(i)
+
+                if len(sel_buses) == 0:
+                    self.msg('You need to enable some buses for short circuit.'
+                             + '\nEnable them by right click, and selecting on the context menu.')
+                else:
+                    # get the power flow options from the GUI
+                    sc_options = ShortCircuitOptions(bus_index=sel_buses, zf=0.0)
+                    self.short_circuit = ShortCircuit(self.circuit, sc_options)
+                    self.short_circuit.run()
+
+                    # self.power_flow.start()
+                    self.threadpool.start(self.short_circuit )
+                    self.threadpool.waitForDone()
+                    self.post_short_circuit()
+            else:
+                self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+        else:
+            pass
+
+    def post_short_circuit(self):
+        """
+        Action performed after the power flow.
+        Returns:
+
+        """
+        # update the results in the circuit structures
+        print('Post power flow')
+        if self.circuit.power_flow_results is not None:
+            print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
+            print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
+            print('ld:\n', abs(self.circuit.short_circuit_results.loading))
+            self.color_based_of_pf(Sbus=self.circuit.short_circuit_results.Sbus,
+                                   Sbranch=self.circuit.short_circuit_results.Sbranch,
+                                   Vbus=self.circuit.short_circuit_results.voltage,
+                                   LoadBranch=self.circuit.short_circuit_results.loading)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')

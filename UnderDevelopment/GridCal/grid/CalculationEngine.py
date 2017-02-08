@@ -2443,7 +2443,7 @@ class MultiCircuit(Circuit):
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if S_profiles is None:
+                if S_profiles is None and elm.Sprof is not None:
                     S_profiles = elm.Sprof.values
                     I_profiles = elm.Iprof.values
                     Z_profiles = elm.Zprof.values
@@ -2466,7 +2466,7 @@ class MultiCircuit(Circuit):
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if S_profiles is None:
+                if S_profiles is None and elm.Sprof is not None:
                     S_profiles = elm.Sprof.values
                 else:
                     S_profiles = c_[S_profiles, elm.Sprof.values]
@@ -2484,7 +2484,7 @@ class MultiCircuit(Circuit):
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if P_profiles is None:
+                if P_profiles is None and elm.Pprof is not None:
                     P_profiles = elm.Pprof.values
                     Vset_profiles = elm.Vsetprof.values
                 else:
@@ -2503,7 +2503,7 @@ class MultiCircuit(Circuit):
         for elm in self.get_controlled_generators():
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
-            if T is not None:
+            if T is not None and elm.Pprof is not None:
                 if P_profiles is None:
                     P_profiles = elm.Pprof.values
                     Vset_profiles = elm.Vsetprof.values
@@ -2523,7 +2523,7 @@ class MultiCircuit(Circuit):
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if Yprofiles is None:
+                if Yprofiles is None and elm.Yprof.values is not None:
                     Yprofiles = elm.Yprof.values
                 else:
                     Yprofiles = c_[Yprofiles, elm.Yprof.values]
