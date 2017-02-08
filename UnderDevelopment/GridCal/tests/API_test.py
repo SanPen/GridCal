@@ -53,43 +53,52 @@ print('\terr:', grid.power_flow_results.error)
 print('\tConv:', grid.power_flow_results.converged)
 
 ####################################################################################################################
-# Storage dispatch
+# Short circuit
 ####################################################################################################################
+print('\n\n')
+print('Short Circuit')
+sc_options = ShortCircuitOptions(bus_index=[16], zf=0.0)
+sc = ShortCircuit(grid, sc_options)
+sc.run()
 
+print('\n\n', grid.name)
+print('\t|V|:', abs(grid.short_circuit_results.voltage))
+print('\t|Sbranch|:', abs(grid.short_circuit_results.Sbranch))
+print('\t|loading|:', abs(grid.short_circuit_results.loading) * 100)
 
 ####################################################################################################################
 # Time Series
 ####################################################################################################################
-ts = TimeSeries(grid=grid, options=options)
-ts.run()
-
-if grid.time_series_results is not None:
-    print('\n\nVoltages:\n')
-    print(grid.time_series_results.voltage)
-    print(grid.time_series_results.converged)
-    print(grid.time_series_results.error)
-
-    # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-    # show()
-ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+# ts = TimeSeries(grid=grid, options=options)
+# ts.run()
+#
+# if grid.time_series_results is not None:
+#     print('\n\nVoltages:\n')
+#     print(grid.time_series_results.voltage)
+#     print(grid.time_series_results.converged)
+#     print(grid.time_series_results.error)
+#
+#     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
+#     # show()
+# ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
 
 ####################################################################################################################
 # Voltage collapse
 ####################################################################################################################
-vc_options = VoltageCollapseOptions()
-Sbase = zeros(len(grid.buses), dtype=complex)
-for c in grid.circuits:
-    Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
-unitary_vector = -1 + 2 * random.random(len(grid.buses))
-# unitary_vector = random.random(len(grid.buses))
-vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                 Vbase=grid.power_flow_results.voltage,
-                                 Starget=Sbase * (1+unitary_vector))
-vc = VoltageCollapse(grid=grid, options=vc_options, inputs=vc_inputs)
-vc.run()
-
-vc.results.plot()
-plt.show()
+# vc_options = VoltageCollapseOptions()
+# Sbase = zeros(len(grid.buses), dtype=complex)
+# for c in grid.circuits:
+#     Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
+# unitary_vector = -1 + 2 * random.random(len(grid.buses))
+# # unitary_vector = random.random(len(grid.buses))
+# vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+#                                  Vbase=grid.power_flow_results.voltage,
+#                                  Starget=Sbase * (1+unitary_vector))
+# vc = VoltageCollapse(grid=grid, options=vc_options, inputs=vc_inputs)
+# vc.run()
+#
+# vc.results.plot()
+# plt.show()
 
 ####################################################################################################################
 # Monte Carlo

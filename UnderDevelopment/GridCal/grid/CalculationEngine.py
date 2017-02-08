@@ -19,6 +19,7 @@ from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
 from GridCal.grid.HelmVect import helm
 from GridCal.grid.DCPF import dcpf
+from GridCal.grid.SC import short_circuit_3p
 
 import os
 from enum import Enum
@@ -33,6 +34,7 @@ from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
     where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import csc_matrix as sparse
+from scipy.sparse.linalg import inv
 
 if 'fivethirtyeight' in plt.style.available:
     plt.style.use('fivethirtyeight')
@@ -1720,6 +1722,9 @@ class Circuit:
         #  containing the power flow results
         self.power_flow_results = None
 
+        # containing the short circuit results
+        self.short_circuit_results = None
+
         # Object with the necessary inputs for th time series simulation
         self.time_series_input = None
 
@@ -3041,6 +3046,9 @@ class PowerFlowInput:
         # Full admittance matrix (will be converted to sparse)
         self.Ybus = zeros((n, n), dtype=complex)
 
+        # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
+        self.Zbus = None
+
         # Admittance matrix of the series elements (will be converted to sparse)
         self.Yseries = zeros((n, n), dtype=complex)
 
@@ -3819,6 +3827,172 @@ class PowerFlow(QRunnable):
 
         self.results = results
         self.grid.power_flow_results = results
+
+        # self.progress_signal.emit(0.0)
+        # self.done_signal.emit()
+
+    def run_at(self, t, mc=False):
+        """
+        Run power flow at the time series object index t
+        @param t:
+        @return:
+        """
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        if self.grid.power_flow_results is None:
+            self.grid.power_flow_results = PowerFlowResults()
+        self.grid.power_flow_results.initialize(n, m)
+        i = 1
+        # self.progress_signal.emit(0.0)
+        for circuit in self.grid.circuits:
+            if self.options.verbose:
+                print('Solving ' + circuit.name)
+
+            # Set the profile values
+            circuit.set_at(t, mc)
+            # run
+            circuit.power_flow_results = self.single_power_flow(circuit)
+            self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
+                                                           circuit.bus_original_idx,
+                                                           circuit.branch_original_idx)
+
+            # prog = (i / len(self.grid.circuits)) * 100
+            # self.progress_signal.emit(prog)
+            i += 1
+
+        # check the limits
+        sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
+
+        # self.progress_signal.emit(0.0)
+        # self.done_signal.emit()
+
+        return self.grid.power_flow_results
+
+    def cancel(self):
+        self.__cancel__ = True
+
+
+class ShortCircuitOptions:
+
+    def __init__(self, bus_index, zf, verbose=False):
+        """
+
+        Args:
+            bus_index: indices of the short circuited buses
+            zf: fault impedance
+        """
+        self.bus_index = bus_index
+
+        self.zf = zf
+
+        self.verbose = verbose
+
+
+class ShortCircuit(QRunnable):
+    # progress_signal = pyqtSignal(float)
+    # done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions):
+        """
+        PowerFlow class constructor
+        @param grid: MultiCircuit Object
+        """
+        QRunnable.__init__(self)
+
+        # Grid to run a power flow in
+        self.grid = grid
+
+        # Options to use
+        self.options = options
+
+        self.results = None
+
+        self.__cancel__ = False
+
+    def single_short_circuit(self, circuit: Circuit):
+        """
+        Run a power flow simulation for a single circuit
+        @param circuit:
+        @return:
+        """
+
+        assert(circuit.power_flow_results is not None)
+
+        # compute Zbus if needed
+        if circuit.power_flow_input.Zbus is None:
+            circuit.power_flow_input.Zbus = inv(circuit.power_flow_input.Ybus).toarray()  # is dense, so no need to store it as sparse
+
+        # Compute the short circuit
+        V = short_circuit_3p(bus_idx=self.options.bus_index,
+                             Zbus=circuit.power_flow_input.Zbus,
+                             Vbus=circuit.power_flow_results.voltage,
+                             Zf=self.options.zf)
+
+        # Compute the branches power
+        Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
+
+        # voltage, Sbranch, loading, losses, error, converged, Qpv
+        results = PowerFlowResults(Sbus=circuit.power_flow_input.Sbus,
+                                   voltage=V,
+                                   Sbranch=Sbranch,
+                                   Ibranch=Ibranch,
+                                   loading=loading,
+                                   losses=losses,
+                                   error=0,
+                                   converged=True,
+                                   Qpv=None)
+
+        # # check the limits
+        # sum_dev = results.check_limits(circuit.power_flow_input)
+        # print('dev sum: ', sum_dev)
+
+        return results
+
+    @staticmethod
+    def compute_branch_results(circuit: Circuit, V):
+        """
+        Compute the power flows trough the branches
+        @param circuit: instance of Circuit
+        @param V: Voltage solution array for the circuit buses
+        @return: Sbranch, Ibranch, loading, losses
+        """
+        If = circuit.power_flow_input.Yf * V
+        It = circuit.power_flow_input.Yt * V
+        Sf = V[circuit.power_flow_input.F] * conj(If)
+        St = V[circuit.power_flow_input.T] * conj(It)
+        losses = Sf - St
+        Ibranch = maximum(If, It)
+        Sbranch = maximum(Sf, St)
+        loading = Sbranch * circuit.Sbase / circuit.power_flow_input.branch_rates
+
+        # idx = where(abs(loading) == inf)[0]
+        # loading[idx] = 9999
+
+        return Sbranch, Ibranch, loading, losses
+
+    def run(self):
+        """
+        Run a power flow for every circuit
+        @return:
+        """
+        print('Short circuit at ', self.grid.name)
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        results = PowerFlowResults()  # yes, reuse this class
+        results.initialize(n, m)
+        k = 0
+        for circuit in self.grid.circuits:
+            if self.options.verbose:
+                print('Solving ' + circuit.name)
+
+            circuit.short_circuit_results = self.single_short_circuit(circuit)
+            results.apply_from_island(circuit.short_circuit_results, circuit.bus_original_idx, circuit.branch_original_idx)
+
+            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
+            k += 1
+
+        self.results = results
+        self.grid.short_circuit_results = results
 
         # self.progress_signal.emit(0.0)
         # self.done_signal.emit()
