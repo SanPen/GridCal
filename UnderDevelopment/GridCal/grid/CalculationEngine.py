@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
+
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
 from GridCal.grid.HelmVect import helm
@@ -2064,6 +2064,7 @@ class MultiCircuit(Circuit):
                 self.branches = circ.branches
 
             elif file_extension == '.m':
+                from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
                 ppc = parse_matpower_file(filename)
                 self.interpret_data_v1(ppc)
 

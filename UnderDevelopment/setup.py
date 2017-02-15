@@ -3,9 +3,54 @@ import sys
 import os
 import platform
 
-name = "GridCal"
 
-# Python 2.4 or later needed
+def make_linux_desktop_file(version_, comment):
+    """
+    Makes the linux desktop entry
+    Args:
+        version_: program version
+        comment: entry comment
+
+    Returns:
+
+    """
+
+    '''
+    [Desktop Entry]
+    Version=1.0
+    Terminal=false
+    Type=Application
+    Name=GridCal
+    Exec=/path/to/executable
+    Icon=/path/to/icon
+    Categories=Graphics;2DGraphics;Development;
+    Comment=Tooltip comment appears when you hover on menu icon.
+    '''
+
+    str = '[Desktop Entry]' + '\n'
+    str += 'Version=' + version_ + '\n'
+    str += 'Terminal=false' + '\n'
+    str += 'Type=Application' + '\n'
+    str += 'Name=GridCal' + '\n'
+    str += 'Exec=/path/to/executable' + '\n'
+    str += 'Icon=/path/to/icon' + '\n'
+    str += 'Categories=Science;' + '\n'
+    str += 'MimeType=text/x-python' + '\n'
+    str += 'Comment=' + comment
+
+    # save the file
+    fname = "GridCal.desktop"
+    text_file = open(fname, "w")
+    text_file.write(str)
+    text_file.close()
+
+    return fname
+
+name = "GridCal"
+version = "1.029"
+description = "Research Oriented electrical simulation software."
+
+# Python 3.5 or later needed
 if sys.version_info < (3, 5, 0, 'final', 0):
     raise (SystemExit, 'Python 3.5 or later is required!')
 
@@ -27,6 +72,7 @@ for dirname, dirnames, filenames in os.walk('doc'):
         data_files.append(('share/' + name + '/' + dirname, fileslist))
 
 if platform.system() == 'Windows':
+    # list the packages
     required_packages = ["numpy",
                           "scipy",
                           "networkx",
@@ -38,6 +84,10 @@ if platform.system() == 'Windows':
                           "qtconsole"
                           ]
 else:
+    # make the desktop entry
+    make_linux_desktop_file(version=version, comment=description)
+
+    # list the packages
     required_packages = ["numpy",
                          "scipy",
                          "networkx",
@@ -54,7 +104,7 @@ setup(
     name=name,
 
     # Version number (initial):
-    version="1.029",
+    version=version,
 
     # Application author details:
     author="Santiago Peñate Vera",
@@ -75,7 +125,7 @@ setup(
     license="LICENSE.txt",
 
     # description
-    description="Research Oriented electrical simulation software.",
+    description=description,
 
     # long_description=open("README.txt").read(),
 

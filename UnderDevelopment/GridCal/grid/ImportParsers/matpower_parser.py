@@ -16,20 +16,32 @@
 """
 import pandas as pd
 import numpy as np
+from GridCal.grid.CalculationEngine import *
 import os
 
-def find_between( s, first, last ):
+
+def find_between(s, first, last):
+    """
+    Find sting between two sub-strings
+    Args:
+        s: Main string
+        first: first sub-string
+        last: second sub-string
+    Example find_between('[Hello]', '[', ']')  -> returns 'Hello'
+    Returns:
+        String between the first and second sub-strings, if any was found otherwise returns an empty string
+    """
     try:
-        start = s.index( first ) + len( first )
-        end = s.index( last, start )
+        start = s.index(first) + len(first)
+        end = s.index(last, start)
         return s[start:end]
     except ValueError:
         return ""
 
 
-def parse_matpower_file(filename, export=False):
+def parse_matpower_file_old(filename, export=False):
     """
-    Converts a matpower file to gridcal basic dictionary
+    Converts a MatPower file to GridCal basic dictionary
     @param filename:
     @return:
     """
@@ -265,3 +277,88 @@ def parse_matpower_file(filename, export=False):
     structures['version'] = version
 
     return structures
+
+
+def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
+    """
+
+    Args:
+        txt:
+        line_splitter:
+        col_splitter:
+
+    Returns:
+
+    """
+    lines = txt.strip().split(line_splitter)
+    del lines[-1]
+    nrows = len(lines)
+
+    arr = None
+
+    for i, line in enumerate(lines):
+        vec = line.strip().split(col_splitter)
+
+        if arr is None:
+            ncols = len(vec)
+            if to_float:
+                arr = np.zeros((nrows, ncols))
+            else:
+                arr = np.zeros((nrows, ncols), dtype=np.object)
+        # print('VEC:', vec)
+        for j, val in enumerate(vec):
+            # print('[', val, ']')
+            if to_float:
+                arr[i, j] = float(val)
+            else:
+                arr[i, j] = val.strip()
+
+    return np.array(arr)
+
+
+def parse_matpower_file(filename, export=False):
+    """
+
+    Args:
+        filename:
+        export:
+
+    Returns:
+
+    """
+
+    # open the file as text
+    with open(filename, 'r') as myfile:
+        text = myfile.read().replace('\n', '')
+
+    # split the file into its case variables (the case variables always start with 'mpc.')
+    chunks = text.split('mpc.')
+
+    # declare circuit
+    circuit = MultiCircuit()
+
+    data = dict()
+
+    # further process the loaded text
+    for chunk in chunks:
+        if chunk.startswith("baseMVA"):
+            v = find_between(chunk, '=', ';')
+            circuit.Sbase = float(v)
+
+        elif chunk.startswith("bus"):
+            if chunk.startswith("bus_name"):
+                data['bus_name'] = txt2mat(find_between(chunk, '{', '}'), line_splitter=';', to_float=False)
+            else:
+                data['bus'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
+
+        elif chunk.startswith("gencost"):
+            data['gen_cost'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
+
+        elif chunk.startswith("gen"):
+            data['gen'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
+
+        elif chunk.startswith("branch"):
+            data['branch'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
+
+
+    print(data)

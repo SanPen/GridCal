@@ -1574,6 +1574,11 @@ class ObjectFactory(object):
 class GridEditor(QSplitter):
 
     def __init__(self, circuit: MultiCircuit):
+        """
+        Creates the Diagram Editor
+        Args:
+            circuit: Circuit that is handling
+        """
         QSplitter.__init__(self)
 
         # store a reference to the multi circuit instance
@@ -1603,7 +1608,6 @@ class GridEditor(QSplitter):
         # set the objects list
         self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
                              'Controlled Generators', 'Batteries', 'Shunts']
-
 
         # Actual libraryView object
         self.libraryBrowserView.setModel(self.libraryModel)
