@@ -405,7 +405,7 @@ def load_from_xls(filename):
 
 class Bus:
 
-    def __init__(self, name="Bus", vnom=0, vmin=0.9, vmax=1.1, xpos=None, ypos=None, is_enabled=True):
+    def __init__(self, name="Bus", vnom=0, vmin=0.9, vmax=1.1, xpos=0, ypos=0, is_enabled=True):
         """
         Bus  constructor
         """
@@ -2065,161 +2065,15 @@ class MultiCircuit(Circuit):
 
             elif file_extension == '.m':
                 from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
-                ppc = parse_matpower_file(filename)
-                self.interpret_data_v1(ppc)
+                circ = parse_matpower_file(filename)
+                self.buses = circ.buses
+                self.branches = circ.branches
 
         else:
             warn('The file does not exist.')
             return False
 
-    def interpret_data_v1(self, data):
-        """
-        Pass the loaded table-like data to the  structures
-        @param data: Data dictionary
-        @return:
-        """
 
-        self.clear()
-
-        # time profile
-        if 'master_time' in data.keys():
-            master_time_array = data['master_time']
-        else:
-            master_time_array = None
-
-        import GridCal.grid.ImportParsers.BusDefinitions as e
-        # Buses
-        table = data['bus']
-        buses_dict = dict()
-        n = len(table)
-
-        # load profiles
-        if 'Lprof' in data.keys():
-            Sprof = data['Lprof'] + 1j * data['LprofQ']
-            are_load_prfiles = True
-            print('There are load profiles')
-        else:
-            are_load_prfiles = False
-
-        if 'bus_names' in data.keys():
-            names = data['bus_names']
-        else:
-            names = ['bus ' + str(i) for i in range(n)]
-
-        #   Buses
-        for i in range(n):
-            # Create bus
-            bus = Bus(name=names[i],
-                      vnom=table[i, e.BASE_KV],
-                      vmax=table[i, e.VMAX],
-                      vmin=table[i, e.VMIN],
-                      xpos=table[i, e.BUS_X],
-                      ypos=table[i, e.BUS_Y])
-
-            # determine if the bus is set as slack manually
-            tpe = table[i, e.BUS_TYPE]
-            if tpe == e.REF:
-                bus.is_slack = True
-            else:
-                bus.is_slack = False
-
-            # Add the load
-            if table[i, e.PD] != 0 or table[i, e.QD] != 0:
-                load = Load(power=table[i, e.PD] + 1j * table[i, e.QD])
-                load.bus = bus
-                if are_load_prfiles:  # set the profile
-                    load.Sprof = pd.DataFrame(data=Sprof[:, i],
-                                              index=master_time_array,
-                                              columns=['Load@' + names[i]])
-                bus.loads.append(load)
-
-            # Add the shunt
-            if table[i, e.GS] != 0 or table[i, e.BS] != 0:
-                shunt = Shunt(admittance=table[i, e.GS] + 1j * table[i, e.BS])
-                shunt.bus = bus
-                bus.shunts.append(shunt)
-
-            # Add the bus to the circuit buses
-            self.add_bus(bus)
-
-        import GridCal.grid.ImportParsers.GenDefinitions as e
-        # Generators
-        table = data['gen']
-        n = len(table)
-        # load profiles
-        if 'Gprof' in data.keys():
-            Gprof = data['Gprof']
-            are_gen_prfiles = True
-            print('There are gen profiles')
-        else:
-            are_gen_prfiles = False
-
-        if 'gen_names' in data.keys():
-            names = data['gen_names']
-        else:
-            names = ['gen ' + str(i) for i in range(n)]
-        for i in range(len(table)):
-            bus_idx = int(table[i, e.GEN_BUS])
-            gen = ControlledGenerator(name=names[i],
-                                      active_power=table[i, e.PG],
-                                      voltage_module=table[i, e.VG],
-                                      Qmax=table[i, e.QMAX],
-                                      Qmin=table[i, e.QMIN])
-            if are_gen_prfiles:
-                gen.Pprof = pd.DataFrame(data=Gprof[:, i],
-                                         index=master_time_array,
-                                         columns=['Gen@' + names[i]])
-
-            # Add the generator to the bus
-            gen.bus = self.buses[bus_idx]
-            self.buses[bus_idx].controlled_generators.append(gen)
-
-        import GridCal.grid.ImportParsers.BranchDefinitions as e
-        # Branches
-        table = data['branch']
-        n = len(table)
-        if 'branch_names' in data.keys():
-            names = data['branch_names']
-        else:
-            names = ['branch ' + str(i) for i in range(n)]
-        for i in range(len(table)):
-            f = self.buses[int(table[i, e.F_BUS])]
-            t = self.buses[int(table[i, e.T_BUS])]
-            branch = Branch(bus_from=f,
-                            bus_to=t,
-                            name=names[i],
-                            r=table[i, e.BR_R],
-                            x=table[i, e.BR_X],
-                            g=0,
-                            b=table[i, e.BR_B],
-                            rate=table[i, e.RATE_A],
-                            tap=table[i, e.TAP],
-                            shift_angle=table[i, e.SHIFT],
-                            active=bool(table[i, e.BR_STATUS]))
-
-            self.add_branch(branch)
-
-        # add the profiles
-
-        if master_time_array is not None:
-
-            self.format_profiles(master_time_array)
-
-            table = data['bus']
-            for i in range(len(table)):
-                if are_load_prfiles and len(self.buses[i].loads) > 0:  # set the profile
-                    self.buses[i].loads[0].Sprof = pd.DataFrame(data=Sprof[:, i],
-                                                                index=master_time_array,
-                                                                columns=['Load@' + names[i]])
-            import GridCal.grid.ImportParsers.GenDefinitions as e
-            table = data['gen']
-            for i in range(len(table)):
-                bus_idx = int(table[i, e.GEN_BUS])
-                if are_gen_prfiles:
-                    self.buses[bus_idx].controlled_generators[0].Pprof = pd.DataFrame(data=Gprof[:, i],
-                                                                                      index=master_time_array,
-                                                                                      columns=['Gen@' + names[i]])
-        print('Interpreted.')
 
     def interpret_data_v2(self, data):
         """
