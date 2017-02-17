@@ -351,12 +351,16 @@ def interpret_data_v1(circuit, data):
         names = ['bus ' + str(i) for i in range(n)]
 
     # Buses
+    bus_idx_dict = dict()
     for i in range(n):
         # Create bus
         bus = Bus(name=names[i],
                   vnom=table[i, e.BASE_KV],
                   vmax=table[i, e.VMAX],
                   vmin=table[i, e.VMIN])
+
+        # store the given bus index in relation to its real index in the table for later
+        bus_idx_dict[table[i, e.BUS_I]] = i
 
         # determine if the bus is set as slack manually
         tpe = table[i, e.BUS_TYPE]
@@ -401,7 +405,7 @@ def interpret_data_v1(circuit, data):
     else:
         names = ['gen ' + str(i) for i in range(n)]
     for i in range(len(table)):
-        bus_idx = int(table[i, e.GEN_BUS]) - 1
+        bus_idx = bus_idx_dict[int(table[i, e.GEN_BUS])]
         gen = ControlledGenerator(name=names[i],
                                   active_power=table[i, e.PG],
                                   voltage_module=table[i, e.VG],
@@ -425,8 +429,8 @@ def interpret_data_v1(circuit, data):
     else:
         names = ['branch ' + str(i) for i in range(n)]
     for i in range(len(table)):
-        f = circuit.buses[int(table[i, e.F_BUS])-1]
-        t = circuit.buses[int(table[i, e.T_BUS])-1]
+        f = circuit.buses[bus_idx_dict[int(table[i, e.F_BUS])]]
+        t = circuit.buses[bus_idx_dict[int(table[i, e.T_BUS])]]
         branch = Branch(bus_from=f,
                         bus_to=t,
                         name=names[i],
@@ -442,7 +446,6 @@ def interpret_data_v1(circuit, data):
         circuit.add_branch(branch)
 
     # add the profiles
-
     if master_time_array is not None:
 
         circuit.format_profiles(master_time_array)

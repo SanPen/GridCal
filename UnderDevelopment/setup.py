@@ -47,7 +47,7 @@ def make_linux_desktop_file(version_, comment):
     return fname
 
 name = "GridCal"
-version = "1.029"
+version = "1.030"
 description = "Research Oriented electrical simulation software."
 
 # Python 3.5 or later needed
@@ -85,7 +85,7 @@ if platform.system() == 'Windows':
                           ]
 else:
     # make the desktop entry
-    make_linux_desktop_file(version=version, comment=description)
+    make_linux_desktop_file(version_=version, comment=description)
 
     # list the packages
     required_packages = ["numpy",
