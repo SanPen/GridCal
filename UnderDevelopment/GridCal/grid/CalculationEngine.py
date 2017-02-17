@@ -2048,7 +2048,8 @@ class MultiCircuit(Circuit):
 
                 # Pass the table-like data dictionary to objects in this circuit
                 if 'version' not in ppc.keys():
-                    self.interpret_data_v1(ppc)
+                    from GridCal.grid.ImportParsers.matpower_parser import interpret_data_v1
+                    interpret_data_v1(self, ppc)
                     return True
                 elif ppc['version'] == 2.0:
                     self.interpret_data_v2(ppc)
@@ -2427,7 +2428,7 @@ class MultiCircuit(Circuit):
                     f = self.bus_dictionary[self.branches[i].bus_from]
                     t = self.bus_dictionary[self.branches[i].bus_to]
                     # Add graph edge (automatically adds the vertices)
-                    self.graph.add_edge(f, t)
+                    self.graph.add_edge(f, t, length=self.branches[i].R)
                     self.branch_dictionary[self.branches[i]] = i
 
         # Split the graph into islands
@@ -2477,7 +2478,7 @@ class MultiCircuit(Circuit):
 
             isl_idx += 1
 
-            # print(islands)
+        print(islands)
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime=datetime.now()):
         """

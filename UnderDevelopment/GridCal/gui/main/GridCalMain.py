@@ -276,11 +276,13 @@ class MainGUI(QMainWindow):
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
 
         # node size
-        self.ui.actionBigger_nodes.triggered.connect(self.grid_editor.bigger_nodes)
+        self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
-        self.ui.actionSmaller_nodes.triggered.connect(self.grid_editor.smaller_nodes)
+        self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
 
-        self.ui.actionCenter_view.triggered.connect(self.grid_editor.center_nodes)
+        self.ui.actionCenter_view.triggered.connect(self.center_nodes)
+
+        self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
 
         # list clicks
         self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
@@ -480,6 +482,55 @@ class MainGUI(QMainWindow):
             self.ui.vs_target_comboBox.setModel(mdl)
             self.ui.profile_time_selection_comboBox.setModel(mdl)
 
+    def auto_layout(self):
+        """
+        Automatic layout of the nodes
+        Returns:
+
+        """
+        if self.circuit.graph is None:
+            self.circuit.compile()
+
+        # get the positions of a spring layout of the graph
+        pos = nx.spring_layout(self.circuit.graph, scale=2)
+
+        # assign the positions to the graphical objects of the nodes
+        for i, bus in enumerate(self.circuit.buses):
+            x, y = pos[i] * 500
+            bus.graphic_obj.setPos(QPoint(x, y))
+
+        # adjust the view
+        self.center_nodes()
+
+    def bigger_nodes(self):
+        """
+
+        Returns:
+
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.bigger_nodes()
+
+    def smaller_nodes(self):
+        """
+
+        Returns:
+
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.smaller_nodes()
+
+    def center_nodes(self):
+        """
+
+        Returns:
+
+        """
+        if self.grid_editor is not None:
+            # self.grid_editor.center_nodes()
+            self.grid_editor.diagramView.fitInView(self.grid_editor.diagramScene.sceneRect(), Qt.KeepAspectRatio)
+            self.grid_editor.diagramView.scale(1.0, 1.0)
+
     def new_project(self):
         """
         Create new grid
@@ -509,6 +560,7 @@ class MainGUI(QMainWindow):
                 self.time_series = None
                 self.voltage_stability = None
                 self.results_df = None
+                self.clear_results()
 
             else:
                 pass
@@ -543,6 +595,7 @@ class MainGUI(QMainWindow):
             self.ui.profile_time_selection_comboBox.setModel(mdl)
             self.ui.vs_departure_comboBox.setModel(mdl)
             self.ui.vs_target_comboBox.setModel(mdl)
+            self.clear_results()
 
     def save_file(self):
         """
@@ -1118,6 +1171,24 @@ class MainGUI(QMainWindow):
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
+
+    def clear_results(self):
+        """
+        Clear the results tab
+        Returns:
+
+        """
+        self.power_flow = None
+        self.short_circuit = None
+        self.monte_carlo = None
+        self.time_series = None
+        self.voltage_stability = None
+
+        self.available_results_dict = dict()
+        self.ui.result_listView.setModel(None)
+        self.ui.result_type_listView.setModel(None)
+        self.ui.result_element_selection_listView.setModel(None)
+        self.ui.resultsPlot.clear(force=True)
 
     def update_available_results_in_the_study(self):
         """

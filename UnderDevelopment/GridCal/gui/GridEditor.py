@@ -1748,6 +1748,20 @@ class GridEditor(QSplitter):
         self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.KeepAspectRatio)
         self.diagramView.scale(1.0, 1.0)
 
+    def auto_layout(self):
+        """
+        Automatic layout of the nodes
+        Returns:
+
+        """
+
+        if self.circuit.graph is None:
+            self.circuit.compile()
+
+        pos = nx.spring_layout(self.circuit.graph, scale=2)
+
+        self.circuit.buses
+
     def export(self, filename):
         """
         Save the grid to a png file

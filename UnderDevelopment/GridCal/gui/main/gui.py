@@ -766,6 +766,11 @@ class Ui_mainWindow(object):
         icon18.addPixmap(QtGui.QPixmap(":/file/short_circuit.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionShort_Circuit.setIcon(icon18)
         self.actionShort_Circuit.setObjectName("actionShort_Circuit")
+        self.actionAutoatic_layout = QtWidgets.QAction(mainWindow)
+        icon19 = QtGui.QIcon()
+        icon19.addPixmap(QtGui.QPixmap(":/file/automatic_layout.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionAutoatic_layout.setIcon(icon19)
+        self.actionAutoatic_layout.setObjectName("actionAutoatic_layout")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -788,6 +793,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionSmaller_nodes)
         self.toolBar.addAction(self.actionBigger_nodes)
         self.toolBar.addAction(self.actionCenter_view)
+        self.toolBar.addAction(self.actionAutoatic_layout)
         self.toolBar.addSeparator()
 
         self.retranslateUi(mainWindow)
@@ -906,6 +912,8 @@ class Ui_mainWindow(object):
         self.actionAbout.setText(_translate("mainWindow", "About"))
         self.actionCenter_view.setText(_translate("mainWindow", "center view"))
         self.actionShort_Circuit.setText(_translate("mainWindow", "Short Circuit"))
+        self.actionAutoatic_layout.setText(_translate("mainWindow", "Autoatic layout"))
+        self.actionAutoatic_layout.setToolTip(_translate("mainWindow", "Automatic layout the of the grid"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *

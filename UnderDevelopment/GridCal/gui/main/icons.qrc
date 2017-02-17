@@ -2,6 +2,7 @@
   <qresource prefix="file">
     <file>short_circuit.svg</file>
     <file>tower.svg</file>
+    <file>automatic_layout.svg</file>
     <file>resize.svg</file>
     <file>towertrafo.svg</file>
     <file>substation.svg</file>

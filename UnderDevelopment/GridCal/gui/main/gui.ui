@@ -1430,6 +1430,7 @@ last solution</string>
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionCenter_view"/>
+   <addaction name="actionAutoatic_layout"/>
    <addaction name="separator"/>
   </widget>
   <action name="actionRedraw">
@@ -1714,6 +1715,18 @@ last solution</string>
    </property>
    <property name="text">
     <string>Short Circuit</string>
+   </property>
+  </action>
+  <action name="actionAutoatic_layout">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/file/automatic_layout.svg</normaloff>:/file/automatic_layout.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Autoatic layout</string>
+   </property>
+   <property name="toolTip">
+    <string>Automatic layout the of the grid</string>
    </property>
   </action>
  </widget>
