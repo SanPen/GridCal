@@ -499,7 +499,9 @@ def parse_matpower_file(filename, export=False):
 
         elif chunk.startswith("bus"):
             if chunk.startswith("bus_name"):
-                data['bus_name'] = txt2mat(find_between(chunk, '{', '}'), line_splitter=';', to_float=False)
+                v = txt2mat(find_between(chunk, '{', '}'), line_splitter=';', to_float=False)
+                v = np.ndarray.flatten(v)
+                data['bus_names'] = v
             else:
                 data['bus'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 

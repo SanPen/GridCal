@@ -492,7 +492,7 @@ class MainGUI(QMainWindow):
             self.circuit.compile()
 
         # get the positions of a spring layout of the graph
-        pos = nx.spring_layout(self.circuit.graph, scale=2)
+        pos = nx.spectral_layout(self.circuit.graph, scale=2)
 
         # assign the positions to the graphical objects of the nodes
         for i, bus in enumerate(self.circuit.buses):
