@@ -426,9 +426,10 @@ class MainGUI(QMainWindow):
                 bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
 
                 tooltip = bus.name + '\n' \
-                          + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º'
+                          + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
+                          + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
                 if Sbus is not None:
-                    tooltip += '\nS:' + "{:10.4f}".format(Sbus[i])
+                    tooltip += '\nS:' + "{:10.4f}".format(Sbus[i] * self.circuit.Sbase) + ' [MVA]'
                 bus.graphic_obj.setToolTip(tooltip)
 
         # color branches
@@ -448,9 +449,9 @@ class MainGUI(QMainWindow):
                     color = Qt.gray
 
                 tooltip = branch.name
-                tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i])
+                tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
                 if Sbranch is not None:
-                    tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i])
+                    tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTip(tooltip)
                 branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
 

@@ -1779,7 +1779,7 @@ class Circuit:
         # Dictionary that helps referencing the nodes
         buses_dict = dict()
 
-        Ibase = zeros(n)
+        # declare the square root of 3 to do it only once
         sqrt3 = sqrt(3.0)
 
         # Compile the buses
@@ -1789,7 +1789,10 @@ class Circuit:
             buses_dict[self.buses[i]] = i
 
             # compute the base current for this bus
-            Ibase[i] = self.Sbase / (self.buses[i].Vnom * sqrt3)
+            power_flow_input.Ibase[i] = self.Sbase / (self.buses[i].Vnom * sqrt3)
+
+            # assign the nominal voltage value
+            power_flow_input.Vnom[i] = self.buses[i].Vnom
 
             # Determine the bus type
             self.buses[i].determine_bus_type()
@@ -1850,7 +1853,7 @@ class Circuit:
             Ycdf_[i] = Ycdf
 
         power_flow_input.Sbus /= self.Sbase  # normalize the power array
-        power_flow_input.Ibus /= Ibase  # normalize the currents array
+        power_flow_input.Ibus /= power_flow_input.Ibase  # normalize the currents array
         power_flow_input.Qmax /= self.Sbase
         power_flow_input.Qmin /= self.Sbase
 
@@ -1859,7 +1862,7 @@ class Circuit:
             Sprofile.columns = ['Sprof@Bus' + str(i) for i in range(Sprofile.shape[1])]
 
         if Iprofile is not None:
-            Iprofile /= Ibase
+            Iprofile /= power_flow_input.Ibase
             Iprofile.columns = ['Iprof@Bus' + str(i) for i in range(Iprofile.shape[1])]
 
         if Yprofile is not None:
@@ -2913,6 +2916,12 @@ class PowerFlowInput:
         # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
         self.Yshunt = zeros(n, dtype=complex)
 
+        # Array of base currents of the buses
+        self.Ibase = zeros(n)
+
+        # Array of line-line nominal voltages of the buses
+        self.Vnom = zeros(n)
+
         # Currents at the buses array
         self.Ibus = zeros(n, dtype=complex)
 
@@ -3060,14 +3069,14 @@ class PowerFlowResults:
                  converged=None, Qpv=None):
         """
 
-        @param voltage:
-        @param Sbranch:
-        @param Ibranch:
-        @param loading:
-        @param losses:
-        @param error:
-        @param converged:
-        @param Qpv:
+        @param voltage: Voltages array (p.u.)
+        @param Sbranch: Branches power array (MVA)
+        @param Ibranch: Branches current array (p.u.)
+        @param loading: Branches loading array (p.u.)
+        @param losses: Branches losses array (MW)
+        @param error: power flow error value
+        @param converged: converged (True / False)
+        @param Qpv: Reactive power at the PV nodes array (p.u.)
         """
         self.Sbus = Sbus
 
@@ -3238,7 +3247,7 @@ class PowerFlowResults:
 
             elif type == 'Branch current':
                 y = self.Ibranch[indices]
-                ylabel = 'Branch current (kA)'
+                ylabel = 'Branch current (p.u.)'
 
             elif type == 'Branch_loading':
                 y = self.loading[indices] * 100
@@ -3511,16 +3520,16 @@ class PowerFlow(QRunnable):
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
         @param V: Voltage solution array for the circuit buses
-        @return: Sbranch, Ibranch, loading, losses
+        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA)
         """
         If = circuit.power_flow_input.Yf * V
         It = circuit.power_flow_input.Yt * V
         Sf = V[circuit.power_flow_input.F] * conj(If)
         St = V[circuit.power_flow_input.T] * conj(It)
-        losses = Sf - St
-        Ibranch = maximum(If, It)
-        Sbranch = maximum(Sf, St)
-        loading = Sbranch * circuit.Sbase / circuit.power_flow_input.branch_rates
+        losses = abs(Sf - St) * circuit.Sbase  # Branch losses in MVA
+        Ibranch = maximum(If, It)  # Branch current in p.u.
+        Sbranch = maximum(Sf, St) * circuit.Sbase  # Branch power in MVA
+        loading = Sbranch / circuit.power_flow_input.branch_rates  # Branch loading in p.u.
 
         # idx = where(abs(loading) == inf)[0]
         # loading[idx] = 9999
