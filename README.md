@@ -16,8 +16,6 @@ Open a console and type:
 
 `pip3 install GridCal` (Linux / OSX)
 
-Easy enough right?
-
 *You must have Python 3.5 or higher installed to work with the GUI
 
 # Run with user interface
