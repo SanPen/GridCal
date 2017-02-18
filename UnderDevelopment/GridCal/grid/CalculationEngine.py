@@ -1701,9 +1701,6 @@ class Circuit:
         # Base power (MVA)
         self.Sbase = 100
 
-        # Base current (kA)
-        self.Ibase = 100
-
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
 
@@ -1746,7 +1743,6 @@ class Circuit:
         @return:
         """
         self.Sbase = 100
-        self.Ibase = 100
         self.branches = list()
         self.branch_original_idx = list()
         self.buses = list()
@@ -1783,11 +1779,17 @@ class Circuit:
         # Dictionary that helps referencing the nodes
         buses_dict = dict()
 
+        Ibase = zeros(n)
+        sqrt3 = sqrt(3.0)
+
         # Compile the buses
         for i in range(n):
 
             # Add buses dictionary entry
             buses_dict[self.buses[i]] = i
+
+            # compute the base current for this bus
+            Ibase[i] = self.Sbase / (self.buses[i].Vnom * sqrt3)
 
             # Determine the bus type
             self.buses[i].determine_bus_type()
@@ -1848,7 +1850,7 @@ class Circuit:
             Ycdf_[i] = Ycdf
 
         power_flow_input.Sbus /= self.Sbase  # normalize the power array
-        power_flow_input.Ibus /= self.Ibase  # normalize the currents array
+        power_flow_input.Ibus /= Ibase  # normalize the currents array
         power_flow_input.Qmax /= self.Sbase
         power_flow_input.Qmin /= self.Sbase
 
@@ -1857,7 +1859,7 @@ class Circuit:
             Sprofile.columns = ['Sprof@Bus' + str(i) for i in range(Sprofile.shape[1])]
 
         if Iprofile is not None:
-            Iprofile /= self.Ibase
+            Iprofile /= Ibase
             Iprofile.columns = ['Iprof@Bus' + str(i) for i in range(Iprofile.shape[1])]
 
         if Yprofile is not None:
