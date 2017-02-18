@@ -47,7 +47,7 @@ def make_linux_desktop_file(version_, comment):
     return fname
 
 name = "GridCal"
-version = "1.031"
+version = "1.032"
 description = "Research Oriented electrical simulation software."
 
 # Python 3.5 or later needed
