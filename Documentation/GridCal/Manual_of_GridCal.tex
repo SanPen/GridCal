@@ -144,7 +144,7 @@ Santiago
 \chapterimage{chapterhdr1.jpg} % Chapter heading image
 \chapter{Structure}
 
-GridCal uses an object oriented approach for all the data and simulation management. However the object orientation is very inefficient when used in numerical computation, that is why there are \verb|compile()| functions that extract the information out of the objects and turn this information into vectors, matrices and DataFrames in order to have efficient numerical computations. I have found this approach to be the best compromise between efficientcy and code escalability and maintainability after having been involved in quite some number-crunching software developments.
+GridCal uses an object oriented approach for all the data and simulation management. However the object orientation is very inefficient when used in numerical computation, that is why there are \verb|compile()| functions that extract the information out of the objects and turn this information into vectors, matrices and DataFrames in order to have efficient numerical computations. After having been involved in quite some number-crunching software developments, I have found this approach to be the best compromise between efficiency and code escalability and maintainability .
 
 The whole idea can be summarized as:
 
@@ -167,7 +167,6 @@ As I said before GridCal uses an object oriented approach for the data managemen
 \subsection{Circuit}
 
 \begin{itemize}
-	\item $Ibase$: Base current to compute the per unit current values (kA)
 	\item $Sbase$: Base power to compute the per unit power values (MVA)
 	\item $branch\_original\_idx$: Array that keeps the index of the branches in the parent MultiCircuit object.
 	\item $branches$: List of Branch objects.
