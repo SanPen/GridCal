@@ -67,6 +67,8 @@ Some of the features you'll find already are:
 
 - Monte Carlo simulation based on the input profiles. (Stochastic power flow)
 
+- Three-phase short circuit.
+
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
 
 Send feedback and requests to santiago.penate.vera@gmail.com.
