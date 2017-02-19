@@ -365,7 +365,7 @@ Here the API class diagram is sketched. All the classes are included but only th
 
 
 
-\section{Building the admittance matrices}
+\section{Building the admittance matrices} \label{admitances_section}
 
 This operation occurs in the \verb|Compile()| function of the \verb|Circuit| object. This function compiles many other magnitudes and among them, the following matrices:
 
@@ -528,11 +528,13 @@ $${Y_f}_{i, t} = {Y_f}_{i, t} + Y_{ft}$$
 $${Y_t}_{i, f} = {Y_t}_{i, f} + Y_{tf}$$
 $${Y_t}_{i, t} = {Y_t}_{i, t} + Y_{tt}$$
 
+Here $i$ is the index of the branch in the circuit and $f$, $t$ are the corresponding bus indices.
+
 
 \section{The transformer definition from the short circuit test values}
 \label{Transformer_definition}
 
-The transformers are modeled as $\pi$ branches too. In order to get the series impedance and shunt admittance of the transformer to match the branch model, it is advised to transform the specification sheet values of the device into the desired values. The values to take from the specs sheet are:
+The transformers are modeled as $\pi$ branches too. In order to get the series impedance and shunt admittance of the transformer to match the branch model, it is advised to transform the specification sheet values of the device into the desired values. The values to take from the specs sheet are: \newline
 \begin{itemize}
 	\item $S_n$: Nominal power in MVA.
 	\item $U_{hv}$: Voltage at the high-voltage side in kV.
@@ -593,7 +595,8 @@ Shunt admittance: $y_{shunt} = 1 / Z_l$
 %----------------------------------------------------------------------------------------
 
 \chapterimage{chapterhdr1.jpg} % Chapter heading image
-\chapter{Power flow methods}
+
+\chapter{Power flow}
 
 \section{Newton-Raphson-Iwamoto}
 
@@ -645,6 +648,82 @@ There will be three solutions to the polynomial $G(x)$. Only the last solution w
 The polynomial can be solved numerically using $1$ as the seed.
 
 The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment $\textbf{dV}= \textbf{V}_{i} - \textbf{V}_{i-1}$.  
+
+\newpage
+\section{DC approximation}
+
+The so called direct current power flow (or just DC power flow) is a convenient oversimplification of the power flow procedure.
+
+It assumes that in any branch the reactive part is much larger than the resistive part, hence the resistive part is neglected, and that all the voltages modules are the nominal per unit values. This is, $|v|=1$ for load nodes and $|v|=v_{set}$ the generator nodes, where $v_{set}$ is the generator set point value.
+
+In order to compute the DC approximation we must perform a transformation. The slack nodes are removed from the grid, and their influence is maintained by introducing equivalent currents in all the nodes. The equivalent admittance matrix ($\textbf{Y}_{red}$) is obtained by removing the rows and columns corresponding to the slack nodes. Likewise the removed elements conform the ($\textbf{Y}_{slack}$) matrix.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{Matrix_reduction.eps}
+	\caption{Matrix reduction}
+	\label{fig:Matrix_reduction}
+\end{figure}
+
+%# Decompose the voltage in angle and magnitude
+%Va_ref = angle(V0[ref])  # we only need the angles at the slack nodes
+%Vm = npabs(V0)
+%
+%# initialize result vector
+%Va = empty(len(V0))
+%
+%# reconvert the pqpv vector to a matrix so that we can call numpy directly with it
+%pvpq_ = matrix(pvpq)
+%
+%# Compile the reduced imaginary impedance matrix
+%Bpqpv = Ybus.imag[pvpq_.T, pvpq_]
+%Bref = Ybus.imag[pvpq_.T, ref]
+%
+%# compose the reduced power injections
+%# Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
+%Pinj = Sbus[pvpq].real - Bref * Va_ref + Ibus[pvpq].real
+%
+%# update angles for non-reference buses
+%Va[pvpq] = spsolve(Bpqpv, Pinj)
+%Va[ref] = Va_ref
+%
+%# re assemble the voltage
+%V = Vm * exp(1j * Va)
+%
+%# compute the calculated power injection and the error of the voltage solution
+%Scalc = V * conj(Ybus * V - Ibus)
+%
+%# compute the power mismatch between the specified power Sbus and the calculated power Scalc
+%mis = Scalc - Sbus  # complex power mismatch
+%F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+%
+%# check for convergence
+%normF = linalg.norm(F, Inf)
+
+\begin{equation}
+\textbf{P} = real(\textbf{S}_{red}) + (- imag(\textbf{Y}_{slack}) \cdot angle(\textbf{V}_{slack}) + real(\textbf{I}_{red})) \cdot |\textbf{V}_{red}|
+\label{dc_power_injections}
+\end{equation}
+
+The equation \ref{dc_power_injections} computes the DC power injections as the sum of the different factors mentioned:
+
+\begin{enumerate}
+	\item $real(\textbf{S}_{red})$: Real part of the reduced power injections.
+	\item $imag(\textbf{Y}_{slack}) \cdot angle(\textbf{V}_{slack}) \cdot |v_{red}|$: Currents that appear by removing the slack nodes while keeping their influence, multiplied by the voltage module to obtain power.
+	\item $real(\textbf{I}_{red}) \cdot |v_{red}|$: Real part of the grid reduced current injections, multiplied by the voltage module to obtain power.
+\end{enumerate}
+
+Once the power injections are computed, the new voltage angles are obtained by:
+
+\begin{equation}
+\textbf{V}_{angles} = imag(\textbf{Y}_{red})^{-1} \times \textbf{P}
+\end{equation}
+
+The new voltage is then:
+\begin{equation}
+\textbf{V}_{red} = |\textbf{V}_{red}| \cdot e^{1j \cdot  \textbf{V}_{angles}}
+\end{equation}
+
 
 \newpage
 \section{Holomorphic Embedding (ASU)}
@@ -875,6 +954,64 @@ Anyway, both implementations are there to be used in the code.
 
 
 \subsection{PV nodes formulation}
+
+To be done.
+
+\newpage
+\section{Post power flow (loading and losses)}
+
+As we have seen, the power flow routines compute the voltage at every bus of an island grid. However we do not get from those routines the "power flow" values, this is the power that flows through the branches of the grid. In this section I show how the \textit{post power flow} values are computed. \newline
+
+
+First we compute the branches per unit currents:
+
+\begin{equation}
+{\textbf{I}_f = \textbf{Y}_f \times \textbf{V}}
+\end{equation}
+
+\begin{equation}
+{\textbf{I}_t = \textbf{Y}_t \times \textbf{V}}
+\end{equation}
+
+
+These are matrix-vector multiplications. The result is the per unit currents flowing through a branch seen from the \textit{from} bus or from the \textit{to} bus.
+
+
+Then we compute the power values:
+
+\begin{equation}
+{\textbf{S}_f = \textbf{V}_f \cdot \textbf{I}_f^*}
+\end{equation}
+
+\begin{equation}
+{\textbf{S}_t = \textbf{V}_t \cdot \textbf{I}_t^*}
+\end{equation}
+
+These are element-wise multiplications, resulting in the per unit power flowing through a branch seen from the \textit{from} bus or from the \textit{to} bus.
+
+Now we can compute the losses in MVA as:
+
+\begin{equation}
+{\textbf{losses} = |\textbf{S}_f - \textbf{S}_t| \cdot Sbase}
+\end{equation}
+
+And also the branches loading in per unit as:
+\begin{equation}
+{\textbf{loading} = \frac{max(|\textbf{S}_f|, |\textbf{S}_t|) \cdot Sbase}{ \textbf{rate}}}
+\end{equation}
+
+The variables are:
+
+\begin{itemize}
+	\item $\textbf{Y}_f, \textbf{Y}_t$: \textit{From} and \textit{To} bus-branch admittance matrices, see section \ref{admitances_section}.
+	\item $\textbf{I}_f$: Array of currents at the \textit{from} buses in p.u.
+	\item $\textbf{I}_t$: Array of currents at the \textit{to} buses in p.u.
+	\item $\textbf{S}_f$: Array of powers at the \textit{from} buses in p.u.
+	\item $\textbf{S}_t$: Array of powers at the \textit{to} buses in p.u.
+	\item $\textbf{V}_f$: Array of voltages at the \textit{from} buses in p.u.
+	\item $\textbf{V}_t$: Array of voltages at the \textit{to} buses in p.u.
+	\item $\textbf{rate}$: Array of branch ratings in MVA.
+\end{itemize}
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 4
