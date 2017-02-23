@@ -902,7 +902,7 @@ class MainGUI(QMainWindow):
 
     def post_short_circuit(self):
         """
-        Action performed after the power flow.
+        Action performed after the short circuit.
         Returns:
 
         """
