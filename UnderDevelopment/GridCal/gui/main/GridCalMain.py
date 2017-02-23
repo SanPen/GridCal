@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from GridCal.grid.CalculationEngine import __GridCal_VERSION__
 from GridCal.gui.main.gui import *
 from GridCal.gui.GridEditor import *
 from GridCal.gui.ConsoleWidget import ConsoleWidget
@@ -340,11 +341,15 @@ class MainGUI(QMainWindow):
 
         msg = "GridCal is a research oriented electrical grid calculation software.\n"
         msg += "GridCal has been designed by Santiago Peñate Vera since 2015.\n"
-        msg += "The calculation engine has been designed in a fully object oriented fashion. " \
+        msg += "The calculation engine has been designed in an object oriented fashion. " \
                "The power flow routines have been adapted from MatPower, enhancing them to run fast in " \
                "the object oriented scheme.\n\n"
 
-        msg += "The source of Gridcal can be found at:\n" + url + "\n"
+        msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
+
+        msg += "Gridcal version " + str(__GridCal_VERSION__) + '\n\n'
+
+        msg += "Gridcal is licensed under the GNU general public license v.3 "
 
         QMessageBox.about(self, "About GridCal", msg)
 
@@ -867,7 +872,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.power_flow is not None:
-                self.LOCK()
+
                 # self.compile()
 
                 # get the short circuit selected buses
@@ -880,6 +885,7 @@ class MainGUI(QMainWindow):
                     self.msg('You need to enable some buses for short circuit.'
                              + '\nEnable them by right click, and selecting on the context menu.')
                 else:
+                    self.LOCK()
                     # get the power flow options from the GUI
                     sc_options = ShortCircuitOptions(bus_index=sel_buses, zf=0.0)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options)
@@ -1040,10 +1046,11 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            self.LOCK()
-            self.compile()
 
             if self.circuit.time_profile is not None:
+
+                self.LOCK()
+                self.compile()
 
                 options = self.get_selected_power_flow_options()
                 self.time_series = TimeSeries(grid=self.circuit, options=options)
@@ -1091,10 +1098,11 @@ class MainGUI(QMainWindow):
         print('run_stochastic')
 
         if len(self.circuit.buses) > 0:
-            self.LOCK()
-            self.compile()
 
             if self.circuit.time_profile is not None:
+
+                self.LOCK()
+                self.compile()
 
                 options = self.get_selected_power_flow_options()
 

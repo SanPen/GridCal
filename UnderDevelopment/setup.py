@@ -2,7 +2,7 @@ from distutils.core import setup
 import sys
 import os
 import platform
-
+from GridCal.grid.CalculationEngine import __GridCal_VERSION__
 
 def make_linux_desktop_file(version_, comment):
     """
@@ -47,7 +47,7 @@ def make_linux_desktop_file(version_, comment):
     return fname
 
 name = "GridCal"
-version = "1.032"
+version = str(__GridCal_VERSION__)
 description = "Research Oriented electrical simulation software."
 
 # Python 3.5 or later needed
