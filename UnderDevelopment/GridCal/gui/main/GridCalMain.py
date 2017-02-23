@@ -907,7 +907,7 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        print('Post power flow')
+        print('Post short circuit')
         if self.circuit.power_flow_results is not None:
             print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
             print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
