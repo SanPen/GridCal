@@ -2,7 +2,8 @@
 
 # What is this?
 
-This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/7BbO7KKWwEY)
+This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/7BbO7KKWwEY) and 
+ [check the manual](https://github.com/SanPen/GridCal/blob/master/Documentation/GridCal/Manual_of_GridCal.pdf)
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
@@ -17,6 +18,7 @@ Open a console and type:
 `pip3 install GridCal` (Linux / OSX)
 
 *You must have Python 3.5 or higher installed to work with the GUI
+
 
 # Run with user interface
 
