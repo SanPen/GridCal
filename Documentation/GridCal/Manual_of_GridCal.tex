@@ -653,14 +653,14 @@ The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage deriv
 
 The so called direct current power flow (or just DC power flow) is a convenient oversimplification of the power flow procedure.
 
-It assumes that in any branch the reactive part is much larger than the resistive part, hence the resistive part is neglected, and that all the voltages modules are the nominal per unit values. This is, $|v|=1$ for load nodes and $|v|=v_{set}$ the generator nodes, where $v_{set}$ is the generator set point value.
+It assumes that in any branch the reactive part is much larger than the resistive part, hence the resistive part is neglected, and that all the voltages modules are the nominal per unit values. This is, $|v|=1$ for load nodes and $|v|=v_{set}$ for the generator nodes, where $v_{set}$ is the generator set point value.
 
 In order to compute the DC approximation we must perform a transformation. The slack nodes are removed from the grid, and their influence is maintained by introducing equivalent currents in all the nodes. The equivalent admittance matrix ($\textbf{Y}_{red}$) is obtained by removing the rows and columns corresponding to the slack nodes. Likewise the removed elements conform the ($\textbf{Y}_{slack}$) matrix.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.5\linewidth]{Matrix_reduction.eps}
-	\caption{Matrix reduction}
+	\includegraphics[width=0.6\linewidth]{Matrix_reduction.eps}
+	\caption{Matrix reduction (VD: Slack, PV: Voltage controlled, PQ: Power controlled)}
 	\label{fig:Matrix_reduction}
 \end{figure}
 
@@ -1012,12 +1012,64 @@ The variables are:
 	\item $\textbf{rate}$: Array of branch ratings in MVA.
 \end{itemize}
 
+
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+\chapter{Short circuit}
+
+%I = zeros(n, dtype=complex)
+%I[bus_idx] = -1 * Vbus[bus_idx] / (Zbus[bus_idx, bus_idx] + Zf)
+%
+%incV = Zbus.dot(I)
+%
+%V = Vbus + incV
+
+\section{3-phase short circuit}
+
+First, declare an array of zeros of size equal to the number of nodes in the circuit.
+
+$$
+\textbf{I} = \{0, 0, 0, 0, ..., 0\}
+$$
+
+Then, compute the short circuit current at the selected bus $i$ and assign that value in the $i^{th}$ position of the array $\textbf{I}$.
+\begin{equation}
+\textbf{I}_i = - \frac{\textbf{V}_{pre-failure, i}}{\textbf{Z}_{i, i} + z_f}
+\end{equation}
+
+Then, compute the voltage increment for all the circuit nodes as:
+\begin{equation}
+\Delta \textbf{V} = \textbf{Z} \times \textbf{I}
+\end{equation}
+
+Finally, define the voltage at all the nodes as:
+
+\begin{equation}
+\textbf{V}_{post-failure} = \textbf{V}_{pre-failure} + \Delta \textbf{ V}
+\end{equation}
+
+Magnitudes:
+\begin{itemize}
+	\item $\textbf{I}$: Array of fault currents at the system nodes.
+	\item $\textbf{V}_{pre-failure}$: Array of system voltages prior to the failure. This is obtained from the power flow study.
+	\item $z_f$: Impedance of the failure itself. This is a given value, although you can set it to zero if you don't know.
+	\item $\textbf{Z}$: system impedance matrix. Obtained as the inverse of the complete system admittance matrix.
+	
+\end{itemize}
+
 %----------------------------------------------------------------------------------------
 %	CHAPTER 4
 %----------------------------------------------------------------------------------------
 
 \chapterimage{chapterhdr1.jpg} % Chapter heading image
 \chapter{Graphical User Interface}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.98\linewidth]{grid_data.png}
+	\caption{GridCal user interface representing the 200-bus Illinois grid.}
+	\label{fig:main_gui}
+\end{figure}
 
 % ----------------------------------------------------------------------------------------
 % 	BIBLIOGRAPHY
