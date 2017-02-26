@@ -65,4 +65,5 @@ checkvals('Vang', voltage_results_df['V angle'].values, np.angle(grid.power_flow
 
 print(loading_results_df['Losses_in_MW'].values)
 print(grid.power_flow_results.losses.real)
+print(grid.power_flow_results.losses.real.sum())
 checkvals('Losses(real)', loading_results_df['Losses_in_MW'].values, grid.power_flow_results.losses.real)
