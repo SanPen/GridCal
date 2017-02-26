@@ -392,8 +392,7 @@ def load_from_xls(filename):
             if name.lower() == "config":
                 df = xl.parse('config')
                 data["baseMVA"] = double(df.values[0, 1])
-                data["basekA"] = double(df.values[1, 1])
-                data["version"] = double(df.values[2, 1])
+                data["version"] = double(df.values[1, 1])
 
             else:
                 # just pick the DataFrame
@@ -2097,7 +2096,6 @@ class MultiCircuit(Circuit):
 
         # set the base magnitudes
         self.Sbase = data['baseMVA']
-        self.Ibase = data['basekA']
 
         self.time_profile = None
 
@@ -2275,7 +2273,6 @@ class MultiCircuit(Circuit):
         # configuration ################################################################################################
         obj = list()
         obj.append(['BaseMVA', self.Sbase])
-        obj.append(['BasekA', self.Ibase])
         obj.append(['Version', 2])
         dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
 
@@ -3526,7 +3523,7 @@ class PowerFlow(QRunnable):
         It = circuit.power_flow_input.Yt * V
         Sf = V[circuit.power_flow_input.F] * conj(If)
         St = V[circuit.power_flow_input.T] * conj(It)
-        losses = abs(Sf - St) * circuit.Sbase  # Branch losses in MVA
+        losses = (Sf + St) * circuit.Sbase  # Branch losses in MVA
         Ibranch = maximum(If, It)  # Branch current in p.u.
         Sbranch = maximum(Sf, St) * circuit.Sbase  # Branch power in MVA
         loading = Sbranch / circuit.power_flow_input.branch_rates  # Branch loading in p.u.

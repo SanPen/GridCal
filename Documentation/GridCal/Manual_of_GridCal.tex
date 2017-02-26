@@ -136,6 +136,64 @@ So, I do really hope you enjoy it, and if you have comments, suggestions or just
 Santiago
 \end{flushright}
 
+\newpage
+\section{installation}
+
+
+GridCal is designed to work with python 3.5 and onwards, hence retro-compatibility is not guaranteed.
+
+\subsection{Windows}
+
+Open a system console (go to the desktop menu and type \verb|cmd|, the console should appear). Then type:\newline
+
+\verb|pip install GridCal| \newline
+
+This assumes that your system-wide python is a python 3 distribution, hence you must make sure of this. An easy way to check this, is to open a console, type \verb|python| and if a python 3 console opens within the terminal, then it is allright.
+
+For windows systems I have disabled the installation of PyQt (the user interface technology) because it conflicts with the Qt version provided by Anaconda. This should not be the case, but it happens. Therefore, under windows, you must install python through Anaconda.
+
+\subsection{Linux / OSX}
+
+On Unix systems the python 2 / 3 issue is non existent since the terminal commands for python 2 and python 3 are different. So, simply go to a system terminal and type:\newline
+
+\verb|pip3 install GridCal|  \newline
+
+This command will install all the dependencies flawlessly unlike under windows.
+
+
+\section{Run with user interface}
+
+You must have Python 3.5 or higher installed to work with the GUI. From a Python console:
+
+\begin{verbatim}
+from GridCal.ExecuteGridCal import run
+run()
+\end{verbatim}
+
+\subsection{Windows}
+
+To run GridCal with GUI directly from a system console, type:\newline
+
+\verb|python -c "from GridCal.ExecuteGridCal import run; run()"|\newline
+
+You can embed this command in a shortcut file, and have a windows shortcut in the desktop for GridCal.
+
+\subsection{Linux / OSX}
+
+To run GridCal with GUI directly from a system console, type:\newline
+
+\verb|python3 -c "from GridCal.ExecuteGridCal import run; run()"|\newline
+
+
+
+\section{Using GridCal as a library}
+
+You can use the calculation engine directly or from other applications: \newline
+
+\verb|from GridCal.grid.CircuitOO import *| \newline
+
+This will provide access to all the objects in the calculation engine of GridCal.
+
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 2
@@ -603,22 +661,22 @@ The Newton-Raphson method is the standard power flow method tough at schools. Gr
 
 The expression to update the voltage solution in the Newton-Raphson algorithm is the following:
 \begin{equation}
-\textbf{V}_{i+1} = \textbf{V}_i + \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
+\textbf{V}_{t+1} = \textbf{V}_t + \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
 \end{equation}
 
 Where:
 \begin{itemize}
-	\item $\textbf{V}_i$: Voltage vector at the iteration $i$  (current voltage) 
-	\item $\textbf{V}_{i+1}$: Voltage vector at the iteration $i+1$  (new voltage)
+	\item $\textbf{V}_t$: Voltage vector at the iteration $t$  (current voltage) 
+	\item $\textbf{V}_{t+1}$: Voltage vector at the iteration $t+1$  (new voltage)
 	\item $\textbf{J}$: Jacobian matrix.
 	\item $\textbf{S}_0$: Specified power vector.
-	\item $\textbf{S}_{calc}$: Calculated power vector using $V_i$.
+	\item $\textbf{S}_{calc}$: Calculated power vector using $\textbf{V}_t$.\newline
 \end{itemize}
 
-The version implemented in GridCal is the following:
+The formulation implemented in GridCal is the following:
 
 \begin{equation}
-\textbf{V}_{i+1} = \textbf{V}_i + \mu \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
+\textbf{V}_{t+1} = \textbf{V}_t + \mu \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
 \end{equation}
 
 Here $\mu$ is the Iwamoto optimal step size parameter. In 1982 S.Iwamoto and Y.Tamura present a method \cite{iwamoto1981load} where the Jacobian matrix $J$ is only computed at the beginning, and the iteration control parameter $\mu$ is computed on every iteration. In GridCal I compute $J$ and $\mu$ on every iteration getting a more robust method on the expense of a greater computational effort.
@@ -646,20 +704,20 @@ $$\mu = solve(G(x), x_0=1)$$
 There will be three solutions to the polynomial $G(x)$. Only the last solution will be real, and therefore it is the only valid value for $\mu$.
 The polynomial can be solved numerically using $1$ as the seed.
 
-The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment $\textbf{dV}= \textbf{V}_{i} - \textbf{V}_{i-1}$.  
+The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment $\textbf{dV}= \textbf{V}_{t} - \textbf{V}_{t-1}$ (voltage difference between the current and the previous iteration).  
 
 \newpage
 \section{DC approximation}
 
 The so called direct current power flow (or just DC power flow) is a convenient oversimplification of the power flow procedure.
 
-It assumes that in any branch the reactive part is much larger than the resistive part, hence the resistive part is neglected, and that all the voltages modules are the nominal per unit values. This is, $|v|=1$ for load nodes and $|v|=v_{set}$ for the generator nodes, where $v_{set}$ is the generator set point value.
+It assumes that in any branch the reactive part of the impedance is much larger than the resistive part, hence the resistive part is neglected, and that all the voltages modules are the nominal per unit values. This is, $|v|=1$ for load nodes and $|v|=v_{set}$ for the generator nodes, where $v_{set}$ is the generator set point value.
 
 In order to compute the DC approximation we must perform a transformation. The slack nodes are removed from the grid, and their influence is maintained by introducing equivalent currents in all the nodes. The equivalent admittance matrix ($\textbf{Y}_{red}$) is obtained by removing the rows and columns corresponding to the slack nodes. Likewise the removed elements conform the ($\textbf{Y}_{slack}$) matrix.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.6\linewidth]{Matrix_reduction.eps}
+	\includegraphics[width=0.55\linewidth]{Matrix_reduction.eps}
 	\caption{Matrix reduction (VD: Slack, PV: Voltage controlled, PQ: Power controlled)}
 	\label{fig:Matrix_reduction}
 \end{figure}
@@ -723,6 +781,7 @@ The new voltage is then:
 \textbf{V}_{red} = |\textbf{V}_{red}| \cdot e^{1j \cdot  \textbf{V}_{angles}}
 \end{equation}
 
+This solution does usually produces a large power mismatch. That is to be expected because the method is an oversimplification with no iterative convergence criteria, just a straight forward set of operations.
 
 \newpage
 \section{Holomorphic Embedding (ASU)}
@@ -739,7 +798,7 @@ All the power flow algorithms until the HELM method was introduced were iterativ
 
 The fundamental idea of the recursive algorithms is that given a voltage initial point (1 p.u. at every node, usually) the algorithm explores the surroundings of the initial point until a suitable voltage solution is reached or no solution at all is found because the initial point is supposed to be "far" from the solution.
 
-On the HELM methods, we form a "curve" that departures from a known mathematically exact solution that is obtained from solving the grid with no power injections. This is possible because with no power injections, the grid equations become linear and straight forward to solve. The arriving point of the "curve" is the solution that we want to achieve. That "curve" is best approximated by a Padè approximation. To compute the Padè approximation we need to compute coefficient of the unknown variables, in our case the voltage (and possibly the reactive power).
+On the HELM methods, we form a "curve" that departures from a known mathematically exact solution that is obtained from solving the grid with no power injections. This is possible because with no power injections, the grid equations become linear and straight forward to solve. The arriving point of the "curve" is the solution that we want to achieve. That "curve" is best approximated by a Padè approximation. To compute the Padè approximation we need to compute the coefficients of the unknown variables, in our case the voltages (and possibly the reactive powers at the PV nodes).
 
 The HELM formulation consists in the derivation of formulas that enable the calculation of the coefficients of the series that describes the "curve" from the mathematically know solution to the unknown solution. Once the coefficients are obtained, the Padè approximation computes the voltage solution at the "end of the curve", providing the desired voltage solution. The more coefficients we compute the more exact the solution is (this is true until the numerical precision limit is reached).\newline 
 
@@ -753,7 +812,7 @@ If you want to get familiar with this concept, you should read about the homotop
 
 The fundamental equation that defines the power flow problem is:
 \begin{equation}
-S = V \times (Y \times V)^*
+\textbf{S} = \textbf{V} \times (\textbf{Y} \times \textbf{V})^*
 \end{equation}
 
 Most usefully represented like this:
@@ -765,7 +824,7 @@ Most usefully represented like this:
 \end{equation}
 
 
-The holomorphic embedding is to insert a "travelling" parameter $\alpha$, such that for $\alpha=0$ we have an mathematically exact solution of the problem (but not the solution we're looking for...), and for $\alpha=1$ we have the solution we're looking for. The other thing to do is to represent the variables to be computes as McLaurin series. We'll go step by step.\newline
+The holomorphic embedding is to insert a "travelling" parameter $\alpha$, such that for $\alpha=0$ we have an mathematically exact solution of the problem (but not the solution we're looking for...), and for $\alpha=1$ we have the solution we're looking for. The other thing to do is to represent the variables to be computed as McLaurin series. Let's go step by step.\newline
 
 For $\alpha=0$ we say that $S=0$, in this way the equation \ref{base_eq} becomes linear, and its solution is mathematically exact. But for that to be useful in our case we need to split the admittance matrix $Y$ into $Y_{series}$ and $Y_{shunt}$. $Y_{shunt}$ is a diagonal matrix, so it can be expressed as a vector instead (no need for matrix-vector product).
 
@@ -783,14 +842,14 @@ This is what will allow us to find the zero "state" in the holomorphic series ca
 
 Wait, what?? did you just made this stuff up??, well so far my reasoning is:
 \begin{itemize}
-	\item The voltage ($V$) is what I have to convert into a series, and the series depend of $\alpha$, so it makes sense to say that $V$ is now $V(\alpha)$.
+	\item The voltage $\textbf{V}$ is what I have to convert into a series, and the series depend of $\alpha$, so it makes sense to say that $\textbf{V}$, as it is dependent of $\alpha$, becomes $\textbf{V}(\alpha)$.
 	
-	\item Regarding the $\alpha$ that multiplies the $S$, the power ($S$) is what I vary during the \textit{travel} from $\alpha=0$ to $\alpha=1$, so that is why it has to be accompanied by the \textit{traveling} parameter $\alpha.$
+	\item Regarding the $\alpha$ that multiplies $\textbf{S}$, the amount of power ($\alpha \textbf{S}$) is what I vary during the \textit{travel} from $\alpha=0$ to $\alpha=1$, so that is why $\textbf{S}$ has to be accompanied by the \textit{traveling} parameter $\alpha.$
 	
-	\item In my opinion the $\alpha$ $\textbf{Y}_{shunt}$ is to provoke the first voltage coefficients to be one.  $\textbf{Y}_{series} \times \textbf{V}[0] = 0$, makes $V[0]=1$, and this is essential for later steps (to be able to use Padè). \newline
+	\item In my opinion the $\alpha$ $\textbf{Y}_{shunt}$ is to provoke the first voltage coefficients to be one.  $\textbf{Y}_{series} \times \textbf{V}[0] = 0$, makes $V[0]=1$. This is essential for later steps (is a condition to be able to use Padè). \newline
 \end{itemize}
 
-The series are expressed as McLaurin equations::
+The series are expressed as McLaurin equations:
 
 \begin{equation}
 V(\alpha) = \sum_{n}^{\infty} V_n \alpha ^n
@@ -799,23 +858,23 @@ V(\alpha) = \sum_{n}^{\infty} V_n \alpha ^n
 
 \begin{theorem}[Holomorphicity check]
 
-There's still something to do. The magnitude $\left(\textbf{V}( \alpha )\right)^*$ has to be converted into $\left(\textbf{V}( \alpha^* )\right)^*$. This is done in order to make the function be actually holomorphic. The holomorphicity condition is tested by the Cauchy-Riemann condition, this is $\partial V / \partial \alpha^* = 0$, let's check that:
-
-\begin{equation}
-\partial \left(\textbf{V}( \alpha )^*\right) / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} V_n^* (\alpha ^n)^*\right) / \partial \alpha^*  = \sum_{n}^{\infty} \alpha ^n V_n^* (\alpha ^{n-1})^*
-\end{equation} 
-Which is not zero, obviously. Now with the proposed change:
-
-\begin{equation}
-\partial \left( \textbf{V}( \alpha^* )\right)^* / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} \textbf{V}_n^* \alpha ^n \right) / \partial \alpha^*  = 0
-\end{equation} 
-
-Yay!, now we're mathematically happy, since this stuff has no effect in practice because our $\alpha$ is not going to be a complex parameter, but for sake of being correct the equation is now:
-
-\begin{equation}
-{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \frac{ \alpha\textbf{S}^*}{\textbf{V}^*( \alpha^* )} - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
-\label{base_eq_embedded2}
-\end{equation}
+	There's still something to do. The magnitude $\left(\textbf{V}( \alpha )\right)^*$ has to be converted into $\left(\textbf{V}( \alpha^* )\right)^*$. This is done in order to make the function be holomorphic. The holomorphicity condition is tested by the Cauchy-Riemann condition, this is $\partial \textbf{V} / \partial \alpha^* = 0$, let's check that:
+	
+	\begin{equation}
+	\partial \left(\textbf{V}( \alpha )^*\right) / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} V_n^* (\alpha ^n)^*\right) / \partial \alpha^*  = \sum_{n}^{\infty} \alpha ^n V_n^* (\alpha ^{n-1})^*
+	\end{equation} 
+	Which is not zero, obviously. Now with the proposed change:
+	
+	\begin{equation}
+	\partial \left( \textbf{V}( \alpha^* )\right)^* / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} \textbf{V}_n^* \alpha ^n \right) / \partial \alpha^*  = 0
+	\end{equation} 
+	
+	Yay!, now we're mathematically happy, since this stuff has no effect in practice because our $\alpha$ is not going to be a complex parameter, but for sake of being correct the equation is now:
+	
+	\begin{equation}
+	{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \frac{ \alpha\textbf{S}^*}{\textbf{V}^*( \alpha^* )} - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
+	\label{base_eq_embedded2}
+	\end{equation}
 
 \end{theorem}
 
@@ -842,7 +901,7 @@ Expanding the series and identifying terms of $\alpha$ we obtain the expression 
 Now, the equation \ref{base_eq_embedded2} is:
 
 \begin{equation}
-{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \alpha\textbf{S}^* \textbf{W}( \alpha)^*  - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
+{\textbf{Y}_{series}\times \textbf{V}( \alpha )} = \alpha\textbf{S}^* \cdot \textbf{W}( \alpha)^*  - \alpha \textbf{Y}_{shunt} \textbf{V}( \alpha )
 \label{base_eq_embedded3}
 \end{equation}
 
@@ -868,7 +927,7 @@ Expanding the series an identifying terms of $\alpha$ we obtain the expression f
 This is the HELM fundamental formula derivation for a grid with no voltage controlled nodes (no PV nodes). Once a sufficient number of coefficients are obtained, we still need to use the Padè approximation to get voltage values out of the series.
 
 
-In the previous formulas, the number of the bus has not been explicitly detailed. All the $\textbf{V}$ and the $\textbf{W}$ are matrices of dimension $n \times nbus$ (number of coefficients by number of buses in the grid) This structures are depicted in the figure \ref{fig:CoefficientsStructure}.
+In the previous formulas, the number of the bus has not been explicitly detailed. All the $\textbf{V}$ and the $\textbf{W}$ are matrices of dimension $n \times nbus$ (number of coefficients by number of buses in the grid) This structures are depicted in the figure \ref{fig:CoefficientsStructure}. For instance $\textbf{V}_n$ is the $n^{th}$ row of the coefficients structure $\textbf{V}$.
 
 
 \begin{figure}[h]
@@ -880,11 +939,11 @@ In the previous formulas, the number of the bus has not been explicitly detailed
 
 \subsection{Padè approximation}
 
-The equation \ref{eq:McLaurinV} provides us an expression to obtain the voltage from the coefficients, knowing that $\alpha$ should be $1$ to get the final voltage results. So, why do we need any further operation?, and what is this Padè thing?
+The equation \ref{eq:McLaurinV} provides us with an expression to obtain the voltage from the coefficients, knowing that for $\alpha=1$ we get the final voltage results. So, why do we need any further operation?, and what is this Padè thing?
 
-Well, it is true that the equation \ref{eq:McLaurinV} provides an approximation of the voltage by means of a series (this is similar to a Taylor approximation), but in practice, the approximation might provide a wrong value for a given number of coefficients. The Padè approximation accelerates the convergence of any given series, so that you get a more accurate result with less coefficients. This means that for the same series of voltage coefficients, using the equation \ref{eq:McLaurinV} could give a completely wrong result, whereas by applying Padè you could obtain a fairly accurate result.
+Well, it is true that the equation \ref{eq:McLaurinV} provides an approximation of the voltage by means of a series (this is similar to a Taylor approximation), but in practice, the approximation might provide a wrong value for a given number of coefficients. The Padè approximation accelerates the convergence of any given series, so that you get a more accurate result with less coefficients. This means that for the same series of voltage coefficients, using the equation \ref{eq:McLaurinV} could give a completely wrong result, whereas by applying Padè to those coefficients one could obtain a fairly accurate result.
 
-The Padè approximation is a rational approximation of a function (the voltage series in our case). The approximation is valid over a small domain of the function, in our case the domain is $\alpha=[0,1]$. The method requires the function to be continuous and differentiable for $\alpha=0$. Hence the Cauchy-Riemann condition (yes, our function meets this condition, we tested it before).
+The Padè approximation is a rational approximation of a function. In our case the function is $\textbf{V}(\alpha)$, represented by the coefficients structure $\textbf{V}$. The approximation is valid over a small domain of the function, in our case the domain is $\alpha=[0,1]$. The method requires the function to be continuous and differentiable for $\alpha=0$. Hence the Cauchy-Riemann condition. And yes, our function meets this condition, we tested it before.
 
 GridCal implements two algorithms that perform the Padè approximation; The Padè canonical algorithm, and Wynn's Padè approximation.
 
@@ -897,8 +956,7 @@ Voltage\_value\_approximation = \frac{P_N(\alpha)}{Q_M(\alpha)} \quad \forall \a
 \label{eq:pade_apprx}
 \end{equation}
 
-Here $N=M=n/2$, where $n$ is the number of available voltage coefficients, which has to be an even number to be exactly divisible by $2$.
-
+Here $N=M=n/2$, where $n$ is the number of available voltage coefficients, which has to be an even number to be exactly divisible by $2$. $P$ and $Q$ are polynomials which coefficients $p_i$ and $q_i$ must be computed. It turns out that if we make the first term of $Q_M(\alpha)$ be $q_0=1$, the function to be approximated is given by the McLaurin expression (What a happy coincidence!)
 \begin{equation}
 P_N(\alpha) = p_0 + p_1\alpha + p_2\alpha^2 + ... + p_N\alpha^N
 \end{equation}
@@ -907,11 +965,11 @@ P_N(\alpha) = p_0 + p_1\alpha + p_2\alpha^2 + ... + p_N\alpha^N
 Q_M(\alpha) = 1 + q_1\alpha + q_2\alpha^2 + ... + q_M\alpha^M
 \end{equation}
 
-It turns out that if we make the first term of $Q_M(\alpha)$ be $q_0=1$, the function to be approximated is given by the McLaurin expression (What a happy coincidence!)
 
-The problem now boils down to find the $q_i$ and $p_i$ coefficients. This is done by solving two systems of equations. The first one to find $q_i$ which does not depend on $p_i$, and the second one to get $p_i$ which does depend on $q_i$.
 
-First system: The only unknowns are the $q_i$.
+The problem now boils down to find the coefficients $q_i$ and $p_i$. This is done by solving two systems of equations. The first one to find $q_i$ which does not depend on $p_i$, and the second one to get $p_i$ which does depend on $q_i$.
+
+\textbf{First linear system}: The only unknowns are the $q_i$ coefficients.
 
 \begin{equation}
 \begin{matrix}
@@ -922,7 +980,7 @@ q_M V_{N} + q_{M-1}V_{N+1}+...+q_1V_{N+M+1} + V_{N+M} = 0\\
 \end{matrix}
 \end{equation}
 
-Second System: The only unknowns are the $p_i$.
+\textbf{Second linear System}: The only unknowns are the $p_i$ coefficients.
 \begin{equation}
 \begin{matrix}
 V_0 - p_0=0\\
@@ -937,7 +995,7 @@ q_MV_{N-M} + q_{M-1}V_{N-M+1} + ... + +V_N - p_N=0
 Once the coefficients are there, you would have defined completely the polynomials $P_N(\alpha)$ and $Q_M(\alpha)$, and it is only a matter of evaluating the equation \ref{eq:pade_apprx} for $\alpha=1$.\newline
 
 
-This process is done for every column of coefficients $\textbf{V}=\{V_0, V_1,V_2,V_3, ...,V_n\}$ of the structure depicted in the figure \ref{fig:CoefficientsStructure}, obtaining the voltage value for every bus.
+This process is done for every column of coefficients $\textbf{V}=\{V_0, V_1,V_2,V_3, ...,V_n\}$ of the structure depicted in the figure \ref{fig:CoefficientsStructure}. This means that we have to perform a Padè approximation for every node, using the one columns of the voltage coefficients per Padé approximation.
 
 \subsubsection{Wynn's Padè approximation algorithm}
 
