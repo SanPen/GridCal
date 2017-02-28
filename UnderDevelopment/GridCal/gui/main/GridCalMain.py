@@ -878,22 +878,23 @@ class MainGUI(QMainWindow):
 
     def run_short_circuit(self):
         """
-        Run a power flow simulation
+        Run a short circuit simulation
+        The short circuit simulation must be performed after a power flow simulation
+        without any load or topology change
         :return:
         """
         if len(self.circuit.buses) > 0:
 
             if self.power_flow is not None:
 
-                # self.compile()
+                # Since we must run this study in the same conditions as
+                # the last power flow, no compilation is needed
 
                 # get the short circuit selected buses
                 sel_buses = list()
-                zf = np.zeros(len(self.circuit.buses), dtype=complex)
                 for i, bus in enumerate(self.circuit.buses):
                     if bus.graphic_obj.sc_enabled is True:
                         sel_buses.append(i)
-                    zf[i] = bus.Zf
 
                 if len(sel_buses) == 0:
                     self.msg('You need to enable some buses for short circuit.'
@@ -901,12 +902,12 @@ class MainGUI(QMainWindow):
                 else:
                     self.LOCK()
                     # get the power flow options from the GUI
-                    sc_options = ShortCircuitOptions(bus_index=sel_buses, zf=zf)
+                    sc_options = ShortCircuitOptions(bus_index=sel_buses)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options)
                     self.short_circuit.run()
 
                     # self.power_flow.start()
-                    self.threadpool.start(self.short_circuit )
+                    self.threadpool.start(self.short_circuit)
                     self.threadpool.waitForDone()
                     self.post_short_circuit()
             else:
@@ -1192,6 +1193,10 @@ class MainGUI(QMainWindow):
             lst.append("Monte Carlo")
             self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
 
+        if self.short_circuit is not None:
+            lst.append("Short Circuit")
+            self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
+
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
 
@@ -1268,6 +1273,9 @@ class MainGUI(QMainWindow):
 
             elif study == 'Monte Carlo':
                 self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+
+            elif study == 'Short Circuit':
+                self.results_df = self.short_circuit.results.plot(type=study_type, ax=ax, indices=indices, names=names)
 
             if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)

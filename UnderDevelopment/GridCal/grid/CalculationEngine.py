@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.34
+__GridCal_VERSION__ = 1.35
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -32,7 +32,7 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
-    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
+     where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
 
@@ -3282,8 +3282,9 @@ class PowerFlowResults:
             # ax.plot(indices, y)
             # ax.set_xlabel('Element')
             # ax.set_ylabel(ylabel)
-            df = pd.DataFrame(data=y, index=labels, columns=['V'])
+            df = pd.DataFrame(data=y, index=labels, columns=[type])
             df.plot(ax=ax, kind='bar')
+            ax.set_ylabel(ylabel)
 
             return df
 
@@ -3759,7 +3760,7 @@ class PowerFlow(QRunnable):
 
 class ShortCircuitOptions:
 
-    def __init__(self, bus_index, zf, verbose=False):
+    def __init__(self, bus_index, verbose=False):
         """
 
         Args:
@@ -3768,9 +3769,175 @@ class ShortCircuitOptions:
         """
         self.bus_index = bus_index
 
-        self.zf = zf
-
         self.verbose = verbose
+
+
+class ShortCircuitResults(PowerFlowResults):
+
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, SCpower=None,
+                 error=None, converged=None, Qpv=None):
+
+        """
+
+        Args:
+            Sbus:
+            voltage:
+            Sbranch:
+            Ibranch:
+            loading:
+            losses:
+            SCpower:
+            error:
+            converged:
+            Qpv:
+        """
+        PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
+                                  loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
+
+        self.Scpower = SCpower
+
+        self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses',
+                                  'Bus short circuit power']
+
+    def copy(self):
+        """
+        Return a copy of this
+        @return:
+        """
+        return ShortCircuitResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
+                                   Ibranch=self.Ibranch, loading=self.loading,
+                                   losses=self.losses, SCpower=self.Scpower, error=self.error,
+                                   converged=self.converged, Qpv=self.Qpv)
+
+    def initialize(self, n, m):
+        """
+        Initialize the arrays
+        @param n: number of buses
+        @param m: number of branches
+        @return:
+        """
+        self.Sbus = zeros(n, dtype=complex)
+
+        self.voltage = zeros(n, dtype=complex)
+
+        self.Scpower = zeros(n, dtype=float)
+
+        self.overvoltage = zeros(n, dtype=complex)
+
+        self.undervoltage = zeros(n, dtype=complex)
+
+        self.Sbranch = zeros(m, dtype=complex)
+
+        self.Ibranch = zeros(m, dtype=complex)
+
+        self.loading = zeros(m, dtype=complex)
+
+        self.losses = zeros(m, dtype=complex)
+
+        self.overloads = zeros(m, dtype=complex)
+
+        self.error = 0
+
+        self.converged = True
+
+        self.buses_useful_for_storage = list()
+
+    def apply_from_island(self, results, b_idx, br_idx):
+        """
+        Apply results from another island circuit to the circuit results represented here
+        @param results: PowerFlowResults
+        @param b_idx: bus original indices
+        @param br_idx: branch original indices
+        @return:
+        """
+        self.Sbus[b_idx] = results.Sbus
+
+        self.voltage[b_idx] = results.voltage
+
+        self.Scpower[b_idx] = results.Scpower
+
+        self.overvoltage[b_idx] = results.overvoltage
+
+        self.undervoltage[b_idx] = results.undervoltage
+
+        self.Sbranch[br_idx] = results.Sbranch
+
+        self.Ibranch[br_idx] = results.Ibranch
+
+        self.loading[br_idx] = results.loading
+
+        self.losses[br_idx] = results.losses
+
+        self.overloads[br_idx] = results.overloads
+
+        if results.error > self.error:
+            self.error = results.error
+
+        self.converged = self.converged and results.converged
+
+        if results.buses_useful_for_storage is not None:
+            self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
+
+    def plot(self, type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        Args:
+            type:
+            indices:
+            names:
+
+        Returns:
+
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            if type == 'Bus voltage':
+                y = self.voltage[indices]
+                ylabel = 'Bus voltage (p.u.)'
+
+            elif type == 'Branch power':
+                y = self.Sbranch[indices]
+                ylabel = 'Branch power (MVA)'
+
+            elif type == 'Branch current':
+                y = self.Ibranch[indices]
+                ylabel = 'Branch current (p.u.)'
+
+            elif type == 'Branch_loading':
+                y = self.loading[indices] * 100
+                ylabel = 'Branch loading (%)'
+
+            elif type == 'Branch losses':
+                y = self.losses[indices]
+                ylabel = 'Branch losses (MVA)'
+
+            elif type == 'Bus short circuit power':
+                y = self.Scpower[indices]
+                ylabel = 'MVA'
+            else:
+                pass
+
+            # ax.set_xticklabels(names)
+            # ax.plot(indices, y)
+            # ax.set_xlabel('Element')
+            # ax.set_ylabel(ylabel)
+            df = pd.DataFrame(data=y, index=labels, columns=[type])
+            df.plot(ax=ax, kind='bar')
+            ax.set_ylabel(ylabel)
+            return df
+
+        else:
+            return None
+
 
 
 class ShortCircuit(QRunnable):
@@ -3790,6 +3957,12 @@ class ShortCircuit(QRunnable):
         # Options to use
         self.options = options
 
+        # compile the buses short circuit impedance array
+        n = len(self.grid.buses)
+        self.Zf = zeros(n, dtype=complex)
+        for i in range(n):
+            self.Zf[i] = self.grid.buses[i].Zf
+
         self.results = None
 
         self.__cancel__ = False
@@ -3808,24 +3981,25 @@ class ShortCircuit(QRunnable):
             circuit.power_flow_input.Zbus = inv(circuit.power_flow_input.Ybus).toarray()  # is dense, so no need to store it as sparse
 
         # Compute the short circuit
-        V = short_circuit_3p(bus_idx=self.options.bus_index,
-                             Zbus=circuit.power_flow_input.Zbus,
-                             Vbus=circuit.power_flow_results.voltage,
-                             Zf=self.options.zf)
+        V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
+                                      Zbus=circuit.power_flow_input.Zbus,
+                                      Vbus=circuit.power_flow_results.voltage,
+                                      Zf=self.Zf, baseMVA=circuit.Sbase)
 
         # Compute the branches power
         Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
-        results = PowerFlowResults(Sbus=circuit.power_flow_input.Sbus,
-                                   voltage=V,
-                                   Sbranch=Sbranch,
-                                   Ibranch=Ibranch,
-                                   loading=loading,
-                                   losses=losses,
-                                   error=0,
-                                   converged=True,
-                                   Qpv=None)
+        results = ShortCircuitResults(Sbus=circuit.power_flow_input.Sbus,
+                                      voltage=V,
+                                      Sbranch=Sbranch,
+                                      Ibranch=Ibranch,
+                                      loading=loading,
+                                      losses=losses,
+                                      SCpower=SCpower,
+                                      error=0,
+                                      converged=True,
+                                      Qpv=None)
 
         # # check the limits
         # sum_dev = results.check_limits(circuit.power_flow_input)
@@ -3861,9 +4035,11 @@ class ShortCircuit(QRunnable):
         @return:
         """
         print('Short circuit at ', self.grid.name)
+        # self.progress_signal.emit(0.0)
+
         n = len(self.grid.buses)
         m = len(self.grid.branches)
-        results = PowerFlowResults()  # yes, reuse this class
+        results = ShortCircuitResults()  # yes, reuse this class
         results.initialize(n, m)
         k = 0
         for circuit in self.grid.circuits:
@@ -3881,43 +4057,6 @@ class ShortCircuit(QRunnable):
 
         # self.progress_signal.emit(0.0)
         # self.done_signal.emit()
-
-    def run_at(self, t, mc=False):
-        """
-        Run power flow at the time series object index t
-        @param t:
-        @return:
-        """
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
-        if self.grid.power_flow_results is None:
-            self.grid.power_flow_results = PowerFlowResults()
-        self.grid.power_flow_results.initialize(n, m)
-        i = 1
-        # self.progress_signal.emit(0.0)
-        for circuit in self.grid.circuits:
-            if self.options.verbose:
-                print('Solving ' + circuit.name)
-
-            # Set the profile values
-            circuit.set_at(t, mc)
-            # run
-            circuit.power_flow_results = self.single_power_flow(circuit)
-            self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
-                                                           circuit.bus_original_idx,
-                                                           circuit.branch_original_idx)
-
-            # prog = (i / len(self.grid.circuits)) * 100
-            # self.progress_signal.emit(prog)
-            i += 1
-
-        # check the limits
-        sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
-
-        # self.progress_signal.emit(0.0)
-        # self.done_signal.emit()
-
-        return self.grid.power_flow_results
 
     def cancel(self):
         self.__cancel__ = True
