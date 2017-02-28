@@ -3933,6 +3933,7 @@ class ShortCircuitResults(PowerFlowResults):
             df = pd.DataFrame(data=y, index=labels, columns=[type])
             df.plot(ax=ax, kind='bar')
             ax.set_ylabel(ylabel)
+
             return df
 
         else:
