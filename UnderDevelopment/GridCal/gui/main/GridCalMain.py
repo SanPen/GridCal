@@ -1293,7 +1293,7 @@ class MainGUI(QMainWindow):
                     f = file[0] + '.xlsx'
                 else:
                     f = file[0]
-                self.results_df.to_excel(f)
+                self.results_df.astype(str).to_excel(f)
 
     def item_results_plot(self):
         """
