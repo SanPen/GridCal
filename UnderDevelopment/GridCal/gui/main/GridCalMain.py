@@ -584,7 +584,8 @@ class MainGUI(QMainWindow):
         files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m)"
         # call dialog to select the file
 
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file', directory=self.project_directory, filter=files_types)
+        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file', directory=self.project_directory,
+                                                              filter=files_types)
 
         if len(filename) > 0:
             # store the working directory
@@ -593,6 +594,7 @@ class MainGUI(QMainWindow):
             self.circuit = MultiCircuit()
             self.circuit.load_file(filename=filename)
             self.create_schematic_from_api(explode_factor=1)
+            self.grid_editor.name_label.setText(self.circuit.name)
             self.compile()
 
             if self.circuit.time_profile is not None:
@@ -612,7 +614,14 @@ class MainGUI(QMainWindow):
         # declare the allowed file types
         files_types = "Excel (*.xlsx)"
         # call dialog to select the file
-        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  self.project_directory, files_types)
+        if self.project_directory is None:
+            self.project_directory = ''
+
+        # set grid name
+        self.circuit.name = self.grid_editor.name_label.text()
+
+        fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  fname, files_types)
 
         if filename is not "":
             # if the user did not enter the extension, add it automatically

@@ -391,8 +391,21 @@ def load_from_xls(filename):
 
             if name.lower() == "config":
                 df = xl.parse('config')
-                data["baseMVA"] = double(df.values[0, 1])
-                data["version"] = double(df.values[1, 1])
+                idx = df['Property'][df['Property'] == 'BaseMVA'].index
+                if len(idx) > 0:
+                    data["baseMVA"] = double(df.values[idx, 1])
+                else:
+                    data["baseMVA"] = 100
+
+                idx = df['Property'][df['Property'] == 'Version'].index
+                if len(idx) > 0:
+                    data["version"] = double(df.values[idx, 1])
+
+                idx = df['Property'][df['Property'] == 'Name'].index
+                if len(idx) > 0:
+                    data["name"] = df.values[idx[0], 1]
+                else:
+                    data["name"] = 'Grid'
 
             else:
                 # just pick the DataFrame
@@ -2013,6 +2026,8 @@ class MultiCircuit(Circuit):
         """
         Circuit.__init__(self)
 
+        self.name = 'Grid'
+
         # List of circuits contained within this circuit
         self.circuits = list()
 
@@ -2083,8 +2098,6 @@ class MultiCircuit(Circuit):
             warn('The file does not exist.')
             return False
 
-
-
     def interpret_data_v2(self, data):
         """
         Interpret the new file version
@@ -2098,6 +2111,8 @@ class MultiCircuit(Circuit):
 
         # clear all the data
         self.clear()
+
+        self.name = data['name']
 
         # set the base magnitudes
         self.Sbase = data['baseMVA']
@@ -2279,6 +2294,7 @@ class MultiCircuit(Circuit):
         obj = list()
         obj.append(['BaseMVA', self.Sbase])
         obj.append(['Version', 2])
+        obj.append(['Name', self.name])
         dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
 
         # get the master time profile

@@ -1600,7 +1600,7 @@ class GridEditor(QSplitter):
         object_factory = ObjectFactory()
 
         # initialize library of items
-        self.libItems = []
+        self.libItems = list()
         self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
         for i in self.libItems:
             self.libraryModel.appendRow(i)
@@ -1618,9 +1618,27 @@ class GridEditor(QSplitter):
         self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView
         self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
 
+        # create the grid name editor
+        self.frame1 = QFrame()
+        self.frame1_layout = QVBoxLayout()
+        self.frame1_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.name_editor_frame = QFrame()
+        self.name_layout = QHBoxLayout()
+        self.name_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.name_label = QLineEdit()
+        self.name_label.setText(self.circuit.name)
+        self.name_layout.addWidget(self.name_label)
+        self.name_editor_frame.setLayout(self.name_layout)
+
+        self.frame1_layout.addWidget(self.name_editor_frame)
+        self.frame1_layout.addWidget(self.libraryBrowserView)
+        self.frame1.setLayout(self.frame1_layout)
+
         # Add the two objects into a layout
         splitter2 = QSplitter(self)
-        splitter2.addWidget(self.libraryBrowserView)
+        splitter2.addWidget(self.frame1)
         splitter2.addWidget(self.object_editor_table)
         splitter2.setOrientation(Qt.Vertical)
         self.addWidget(splitter2)
