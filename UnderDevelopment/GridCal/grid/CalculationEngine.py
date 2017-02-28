@@ -426,6 +426,8 @@ class Bus:
 
         self.Qmax_sum = 0
 
+        self.Zf = 0
+
         self.is_enabled = is_enabled
 
         # List of load s attached to this bus
@@ -459,7 +461,7 @@ class Bus:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'is_enabled', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'x', 'y']
+        self.edit_headers = ['name', 'is_enabled', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y']
 
         self.edit_types = {'name': str,
                            'is_enabled': bool,
@@ -467,6 +469,7 @@ class Bus:
                            'Vnom': float,
                            'Vmin': float,
                            'Vmax': float,
+                           'Zf': complex,
                            'x': float,
                            'y': float}
 
@@ -672,6 +675,8 @@ class Bus:
 
         bus.Vmax = self.Vmax
 
+        bus.Zf = self.Zf
+
         bus.Qmin_sum = self.Qmin_sum
 
         bus.Qmax_sum = self.Qmax_sum
@@ -722,7 +727,7 @@ class Bus:
         :return:
         """
         self.retrieve_graphic_position()
-        return [self.name, self.is_enabled, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.x, self.y]
+        return [self.name, self.is_enabled, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf, self.x, self.y]
 
     def set_state(self, t):
         """
@@ -2283,7 +2288,7 @@ class MultiCircuit(Circuit):
         obj = list()
         for elm in self.buses:
             obj.append(elm.get_save_data())
-        dfs['bus'] = pd.DataFrame(data=obj, columns=Bus().edit_headers)
+        dfs['bus'] = pd.DataFrame(data=array(obj).astype('str'), columns=Bus().edit_headers)
 
         # branches #####################################################################################################
         obj = list()

@@ -408,7 +408,7 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch):
+    def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch, Losses=None):
         """
         Color the grid based on the results passed
         @param Vbus: Nodal Voltages array
@@ -434,7 +434,7 @@ class MainGUI(QMainWindow):
                           + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
                 if Sbus is not None:
-                    tooltip += '\nS:' + "{:10.4f}".format(Sbus[i] * self.circuit.Sbase) + ' [MVA]'
+                    tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * self.circuit.Sbase) + ' [MVA]'
                 bus.graphic_obj.setToolTip(tooltip)
 
         # color branches
@@ -454,9 +454,11 @@ class MainGUI(QMainWindow):
                     color = Qt.gray
 
                 tooltip = branch.name
-                tooltip += '\nloading=' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                tooltip += '\nloading: ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
                 if Sbranch is not None:
-                    tooltip += '\nPower=' + "{:10.4f}".format(Sbranch[i]) + ' [MVA]'
+                    tooltip += '\nPower: ' + "{:10.4f}".format(Sbranch[i]) + ' [MVA]'
+                if Losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(Losses[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTip(tooltip)
                 branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
 
@@ -579,7 +581,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         # declare the allowed file types
-        files_types = "Excel 97 (*.xls);;Excel (*.xlsx);;DigSILENT (*.dgs);;MATPOWER (*.m)"
+        files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file', directory=self.project_directory, filter=files_types)
@@ -858,7 +860,8 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(Sbus=self.circuit.power_flow_results.Sbus,
                                    Sbranch=self.circuit.power_flow_results.Sbranch,
                                    Vbus=self.circuit.power_flow_results.voltage,
-                                   LoadBranch=self.circuit.power_flow_results.loading)
+                                   LoadBranch=self.circuit.power_flow_results.loading,
+                                   Losses=self.circuit.power_flow_results.losses)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
@@ -877,9 +880,11 @@ class MainGUI(QMainWindow):
 
                 # get the short circuit selected buses
                 sel_buses = list()
+                zf = np.zeros(len(self.circuit.buses), dtype=complex)
                 for i, bus in enumerate(self.circuit.buses):
                     if bus.graphic_obj.sc_enabled is True:
                         sel_buses.append(i)
+                    zf[i] = bus.Zf
 
                 if len(sel_buses) == 0:
                     self.msg('You need to enable some buses for short circuit.'
@@ -887,7 +892,7 @@ class MainGUI(QMainWindow):
                 else:
                     self.LOCK()
                     # get the power flow options from the GUI
-                    sc_options = ShortCircuitOptions(bus_index=sel_buses, zf=0.0)
+                    sc_options = ShortCircuitOptions(bus_index=sel_buses, zf=zf)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options)
                     self.short_circuit.run()
 
