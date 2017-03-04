@@ -588,13 +588,25 @@ class MainGUI(QMainWindow):
                                                               filter=files_types)
 
         if len(filename) > 0:
+
+            self.LOCK()
+
             # store the working directory
             self.project_directory = os.path.dirname(filename)
             print(filename)
             self.circuit = MultiCircuit()
+
+            self.ui.progress_label.setText('Loading file...')
+            QtGui.QGuiApplication.processEvents()
             self.circuit.load_file(filename=filename)
+
+            self.ui.progress_label.setText('Creating schematic...')
+            QtGui.QGuiApplication.processEvents()
             self.create_schematic_from_api(explode_factor=1)
             self.grid_editor.name_label.setText(self.circuit.name)
+
+            self.ui.progress_label.setText('Compiling grid...')
+            QtGui.QGuiApplication.processEvents()
             self.compile()
 
             if self.circuit.time_profile is not None:
@@ -606,6 +618,10 @@ class MainGUI(QMainWindow):
             self.ui.vs_departure_comboBox.setModel(mdl)
             self.ui.vs_target_comboBox.setModel(mdl)
             self.clear_results()
+
+            self.ui.progress_label.setText('Done!')
+            QtGui.QGuiApplication.processEvents()
+            self.UNLOCK()
 
     def save_file(self):
         """
@@ -826,6 +842,9 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             self.LOCK()
+
+            self.ui.progress_label.setText('Compiling the grid...')
+            QtGui.QGuiApplication.processEvents()
             self.compile()
 
             # get the power flow options from the GUI
@@ -840,6 +859,8 @@ class MainGUI(QMainWindow):
                 options.tolerance = tolerance
                 self.ui.tolerance_spinBox.setValue(tol_idx)
 
+            self.ui.progress_label.setText('Running power flow...')
+            QtGui.QGuiApplication.processEvents()
             # set power flow object instance
             self.power_flow = PowerFlow(self.circuit, options)
 
@@ -867,6 +888,10 @@ class MainGUI(QMainWindow):
             print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
             print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
             print('ld:\n', abs(self.circuit.power_flow_results.loading))
+
+            self.ui.progress_label.setText('Colouring power flow results in the grid...')
+            QtGui.QGuiApplication.processEvents()
+
             self.color_based_of_pf(Sbus=self.circuit.power_flow_results.Sbus,
                                    Sbranch=self.circuit.power_flow_results.Sbranch,
                                    Vbus=self.circuit.power_flow_results.voltage,
@@ -875,6 +900,8 @@ class MainGUI(QMainWindow):
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
+            QtGui.QGuiApplication.processEvents()
+
         self.UNLOCK()
 
     def run_short_circuit(self):
@@ -928,6 +955,10 @@ class MainGUI(QMainWindow):
             print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
             print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
             print('ld:\n', abs(self.circuit.short_circuit_results.loading))
+
+            self.ui.progress_label.setText('Colouring short circuit results in the grid...')
+            QtGui.QGuiApplication.processEvents()
+
             self.color_based_of_pf(Sbus=self.circuit.short_circuit_results.Sbus,
                                    Sbranch=self.circuit.short_circuit_results.Sbranch,
                                    Vbus=self.circuit.short_circuit_results.voltage,
@@ -976,6 +1007,8 @@ class MainGUI(QMainWindow):
                     # lock the UI
                     self.LOCK()
 
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
                     self.compile()
 
                     n = len(self.circuit.buses)
@@ -1067,6 +1100,9 @@ class MainGUI(QMainWindow):
             if self.circuit.time_profile is not None:
 
                 self.LOCK()
+
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
                 self.compile()
 
                 options = self.get_selected_power_flow_options()
@@ -1120,6 +1156,9 @@ class MainGUI(QMainWindow):
             if self.circuit.time_profile is not None:
 
                 self.LOCK()
+
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
                 self.compile()
 
                 options = self.get_selected_power_flow_options()
