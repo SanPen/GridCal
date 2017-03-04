@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.35
+__GridCal_VERSION__ = 1.36
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -3294,6 +3294,7 @@ class PowerFlowResults:
 
 class PowerFlow(QRunnable):
     # progress_signal = pyqtSignal(float)
+    # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
@@ -3940,9 +3941,9 @@ class ShortCircuitResults(PowerFlowResults):
             return None
 
 
-
 class ShortCircuit(QRunnable):
     # progress_signal = pyqtSignal(float)
+    # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions):
@@ -4489,6 +4490,7 @@ class TimeSeriesResultsAnalysis:
 class TimeSeries(QThread):
 
     progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
@@ -4521,7 +4523,9 @@ class TimeSeries(QThread):
         self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
 
         # For every circuit, run the time series
-        for c in self.grid.circuits:
+        for nc, c in enumerate(self.grid.circuits):
+
+            self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
             if c.time_series_input.valid:
 
@@ -4550,11 +4554,13 @@ class TimeSeries(QThread):
                                                                 c.time_series_input.time_array, c.name)
             else:
                 print('There are no profiles')
+                self.progress_text.emit('There are no profiles')
 
         self.results = self.grid.time_series_results
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
         self.done_signal.emit()
 
     def cancel(self):
@@ -4696,6 +4702,7 @@ class VoltageCollapseResults:
 class VoltageCollapse(QThread):
 
     progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: VoltageCollapseOptions, inputs: VoltageCollapseInput):
@@ -4727,7 +4734,9 @@ class VoltageCollapse(QThread):
         nbus = len(self.grid.buses)
         self.results = VoltageCollapseResults(nbus=nbus)
 
-        for c in self.grid.circuits:
+        for nc, c in enumerate(self.grid.circuits):
+            self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
+
             Voltage_series, Lambda_series, \
             normF, success = continuation_nr(Ybus=c.power_flow_input.Ybus,
                                              Sbus_base=self.inputs.Sbase[c.bus_original_idx],
@@ -4754,6 +4763,7 @@ class VoltageCollapse(QThread):
 
             self.results.apply_from_island(res, c.bus_original_idx, nbus)
         print('done!')
+        self.progress_text.emit('Done!')
         self.done_signal.emit()
 
     def cancel(self):
@@ -4809,6 +4819,7 @@ class MonteCarloInput:
 class MonteCarlo(QThread):
 
     progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
@@ -4848,6 +4859,7 @@ class MonteCarlo(QThread):
         iter = 0
         variance_sum = 0.0
         std_dev_progress = 0
+        Vvariance = 0
 
         n = len(self.grid.buses)
         m = len(self.grid.branches)
@@ -4858,6 +4870,8 @@ class MonteCarlo(QThread):
         self.progress_signal.emit(0.0)
 
         while (std_dev_progress < 100.0) and (iter < max_mc_iter) and not self.__cancel__:
+
+            self.progress_text.emit('Running Monte Carlo: Variance: ' + str(Vvariance))
 
             batch_results = MonteCarloResults(n, m, batch_size)
 
@@ -4911,6 +4925,7 @@ class MonteCarlo(QThread):
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
         self.done_signal.emit()
 
     def cancel(self):

@@ -1355,21 +1355,28 @@ last solution</string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QPushButton" name="cancelButton">
-         <property name="text">
-          <string>Cancel</string>
-         </property>
-        </widget>
-       </item>
-       <item>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="1" column="2">
         <widget class="QProgressBar" name="progressBar">
          <property name="value">
           <number>0</number>
          </property>
          <property name="invertedAppearance">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="progress_label">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="cancelButton">
+         <property name="text">
+          <string>Cancel</string>
          </property>
         </widget>
        </item>

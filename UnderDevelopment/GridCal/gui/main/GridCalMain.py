@@ -844,6 +844,7 @@ class MainGUI(QMainWindow):
             self.power_flow = PowerFlow(self.circuit, options)
 
             # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+            # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
             # self.power_flow.done_signal.connect(self.UNLOCK)
             # self.power_flow.done_signal.connect(self.post_power_flow)
 
@@ -992,6 +993,7 @@ class MainGUI(QMainWindow):
 
                     # make connections
                     self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
                     self.voltage_stability.done_signal.connect(self.UNLOCK)
                     self.voltage_stability.done_signal.connect(self.post_voltage_stability)
 
@@ -1072,6 +1074,7 @@ class MainGUI(QMainWindow):
 
                 # Set the time series run options
                 self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                self.time_series.progress_text.connect(self.ui.progress_label.setText)
                 self.time_series.done_signal.connect(self.UNLOCK)
                 self.time_series.done_signal.connect(self.post_time_series)
 
@@ -1124,6 +1127,7 @@ class MainGUI(QMainWindow):
                 self.monte_carlo = MonteCarlo(self.circuit, options)
 
                 self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
+                self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
                 self.monte_carlo.done_signal.connect(self.UNLOCK)
                 self.monte_carlo.done_signal.connect(self.post_stochastic)
 
