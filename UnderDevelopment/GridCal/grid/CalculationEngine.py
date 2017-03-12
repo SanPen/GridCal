@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.36
+__GridCal_VERSION__ = 1.37
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -3002,7 +3002,6 @@ class PowerFlowInput:
         self.pv = where(self.types == NodeType.PV.value[0])[0]
         self.ref = where(self.types == NodeType.REF.value[0])[0]
         self.sto = where(self.types == NodeType.STO_DISPATCH.value)[0]
-        self.pqpv = r_[self.pq, self.pv]
 
         if len(self.ref) == 0:
             if len(self.pv) == 0:
@@ -3016,6 +3015,8 @@ class PowerFlowInput:
             self.ref = ndarray.flatten(array(self.ref))
         else:
             pass  # no problem :)
+
+        self.pqpv = r_[self.pq, self.pv]
 
     def set_from(self, obj, bus_idx, br_idx):
         """
