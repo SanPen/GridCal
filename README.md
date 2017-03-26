@@ -47,7 +47,7 @@ Then you can create the grid objects and access the simulation objects as demons
 
 `GridCal/UnderDevelopment/GridCal/tests/`
 
-#Features overview
+# Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
 It is based on PyPower (MatPower for python) and it is compatible with Matpower files, and many more to come.
