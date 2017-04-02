@@ -37,9 +37,7 @@ def continued_fraction(seq):
     into a fraction, num / den
     Args:
         seq:
-
     Returns:
-
     """
     num, den = complex_type(1), complex_type(0)
     for u in reversed(seq):
@@ -51,12 +49,10 @@ def pade_approximation(n, an, s=1):
     """
     Computes the n/2 pade approximant of the series an at the approximation
     point s
-
     Arguments:
         an: coefficient matrix, (number of coefficients, number of series)
         n:  order of the series
         s: point of approximation
-
     Returns:
         pade approximation at s
     """
@@ -102,7 +98,6 @@ def pade_approximation(n, an, s=1):
 
 def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
     """
-
     Args:
         Vbus:
         Sbus:
@@ -114,9 +109,7 @@ def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
         pv:
         ref:
         pqpv:
-
     Returns:
-
     """
 
     # compose the slack nodes influence current
