@@ -1221,6 +1221,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @return:
         """
         self.delete_all_connections()
+
+        for g in self.graphic_children:
+            self.diagramScene.removeItem(g.nexus)
+
         self.diagramScene.removeItem(self)
         self.diagramScene.circuit.delete_bus(self.api_object)
 
