@@ -70,12 +70,15 @@ def make_z_i2(df_br, df_bus, df_gen, df_load):
     :param df_load: Loads DataFrame
     :return:
     """
+
+    # declare the length of the arrays
     nb = len(df_bus)
     ng = len(df_gen)
     nbr = len(df_br)
     nl = len(df_load)
     SBASE = 100
 
+    # declare the arrays
     n = nb + 1  # number of buses plus the ground node
     z = np.zeros((n, n), dtype=complex)  # system matrix
     vnom = np.zeros(n, dtype=float)  # nominal voltages
@@ -106,18 +109,17 @@ def make_z_i2(df_br, df_bus, df_gen, df_load):
     # include the voltage sources (slacks only where the full voltage is known)
     for i in range(ng):
         t = bus_dict[df_gen['bus'].values[i]]
-        row = np.zeros(n, dtype=complex)
-        row[t] = 1
-        z[t, :] = row  # substitute the row with an all-zero row but at t, t
-        ii[t] = df_gen['Vset'].values[i]  # set the independent term to the node voltage
+        if bool(df_bus['is_slack'].values[t-1]):
+            row = np.zeros(n, dtype=complex)
+            row[t] = 1
+            z[t, :] = row  # substitute the row with an all-zero row but at t, t
+            ii[t] = df_gen['Vset'].values[i]  # set the independent term to the node voltage
 
     # include the loads as linearized currents
     for i in range(nl):
         t = bus_dict[df_load['bus'].values[i]]
         sinj[t] = complex(df_load['S'].values[i]) / SBASE
         ii[t] = np.conj(sinj[t] / vnom[t])
-
-    print('Vnom: ', vnom)
 
     return z, ii, sinj, vnom
 
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     print('S:\n', S)
 
     # first voltage solve
-    V = np.linalg.solve(Z, I)
+    V = Z.dot(I)
 
     print('V:\n', V[:nn])
     print('Vabs: ', abs(V[:nn]))
@@ -166,8 +168,9 @@ if __name__ == '__main__':
     print('S:\n', S2)
 
     # first voltage solve
-    V2 = np.linalg.solve(Z2, I2)
+    V2 = Z2.dot(I2)
 
     print('V:\n', V2)
     print('Vabs: ', abs(V2))
+
 
