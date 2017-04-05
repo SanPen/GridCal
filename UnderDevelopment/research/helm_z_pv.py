@@ -3,16 +3,11 @@ import numpy as np
 
 np.set_printoptions(precision=6, suppress=True, linewidth=320)
 from numpy import where, zeros, ones, mod, conj, array, dot, complex128  # , complex256
-from numpy import poly1d, r_, eye, hstack, linalg, Inf
-
-from scipy import fftpack
 from scipy.linalg import solve
 
-from scipy.sparse.linalg import factorized, spsolve, inv
-from scipy.sparse import issparse, csr_matrix as sparse
+from scipy.sparse.linalg import factorized
+from scipy.sparse import issparse
 from matplotlib import pyplot as plt
-
-# from numba import jit
 
 # Set the complex precision to use
 complex_type = complex128
@@ -83,10 +78,11 @@ def reduce_arrays(n_bus, Ymat, slack_indices, Vset, S, types):
     Iind = -1 * np.ndarray.flatten(array(Yslack.dot(Vslack)))
     # Iind /= abs(Iind)
 
-    # Invert Yred
-    Zred = inv(Yred)
+    # Invert Yred: By storing into a factorization object we get a much better numerical performance
+    # In the end, if Zred=Yred^-1,  Zred^-1 x I is the same as Yred_LU.solve(I)
+    Zred = factorized(Yred)
 
-    Vind = Zred * Iind  # (not needed)
+    # Vind = Zred * Iind  # (not needed)
 
     # Vector of reduced power values (Non slack power injections)
     Sred = S[non_slack_indices]
@@ -115,17 +111,17 @@ def I_n(n, nbus, Iind, S, Vset_abs2, C, H, R, W, types_red, map_idx):
     rhs = np.empty(nbus, dtype=complex_type)
 
     for k in range(nbus):
-
+        kk = map_idx[k]
         if types_red[k] == 1:  # PQ
-            rhs[k] = I_PQ(n, k, Iind, S, W, map_idx)
+            rhs[k] = I_PQ(n, k, kk, Iind, S, W, map_idx)
         elif types_red[k] == 2:  # PV
-            rhs[k] = I_PV(n, k, S, Iind, Vset_abs2, C, H, R, map_idx)
+            rhs[k] = I_PV(n, k, kk, S, Iind, Vset_abs2, C, H, R, map_idx)
 
     return rhs
 
 
 # @jit(cache=True)
-def I_PQ(n, k, Iind, S, W, map_idx):
+def I_PQ(n, k, kk, Iind, S, W, map_idx):
     """
     Value of the intensity coefficient of order n for a PQ node k
     @param n: Order of the coefficients
@@ -141,12 +137,12 @@ def I_PQ(n, k, Iind, S, W, map_idx):
         return Iind[k]
 
     else:
-        kk = map_idx[k]
+        # kk = map_idx[k]
         return conj(S[k]) * W[n - 1, kk]
 
 
 # @jit(cache=True)
-def calc_W(n, k, C, W, map_idx):
+def calc_W(n, k, kk, C, W, map_idx):
     """
     Calculation of the inverse coefficients W. (only applicable for PQ buses)
     @param n: Order of the coefficients
@@ -161,7 +157,7 @@ def calc_W(n, k, C, W, map_idx):
         res = complex_type(1)
 
     else:
-        kk = map_idx[k]
+        # kk = map_idx[k]
         res = complex_type(0)
         for l in range(n):
             res -= W[l, kk] * conj(C[n - l, k])
@@ -172,7 +168,7 @@ def calc_W(n, k, C, W, map_idx):
 
 
 # @jit(cache=True)
-def I_PV(n, k, Sred, Iind, Vset_abs2, C, H, R, map_idx):
+def I_PV(n, k, kk, Sred, Iind, Vset_abs2, C, H, R, map_idx):
     """
     Get the intensity coefficient of order n of the PV node k
     @param n: order of the coefficient
@@ -190,7 +186,7 @@ def I_PV(n, k, Sred, Iind, Vset_abs2, C, H, R, map_idx):
     if n == 0:
         return Iind[k]
     else:
-        kk = map_idx[k]
+        # kk = map_idx[k]
         rhs = (2.0 * Sred[k].real * C[n - 1, k] - H[n - 1, kk] + R[n - 1, kk] * conj(Iind[k])) / Vset_abs2[k]
 
     return rhs
@@ -247,7 +243,7 @@ def calc_X(n, k, nbus, C, Yred):
 
 
 # @jit(cache=True)
-def calc_H(n, k, X, R, C, Yred, Vset_abs2, map_idx):
+def calc_H(n, k, kk, X, R, C, Yred, Vset_abs2, map_idx):
     """
     Calculate the combined coefficient
     Args:
@@ -268,12 +264,11 @@ def calc_H(n, k, X, R, C, Yred, Vset_abs2, map_idx):
     Output:
         Returns the H coefficient of order n for the bus of index k
     """
-    kk = map_idx[k]
-
+    # kk = map_idx[k]
+    #
     result = complex_type(0)
     for i in range(n + 1):
         result += X[n - i, kk] * R[i, kk]
-
     result += conj(Yred[k, k]) * C[n, k] * Vset_abs2[k]
 
     return result
@@ -437,8 +432,8 @@ def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, volta
     n_original = np.shape(admittances)[0]
 
     # get array with the PV buses indices
-    pq_idx_all = np.where(types == 1)[0]
-    pv_idx_all = np.where(types == 2)[0]
+    pq_idx_all = where(types == 1)[0]
+    pv_idx_all = where(types == 2)[0]
     # reduce the admittance matrix to omit the slack buses
     Yred, Zred, Iind, Sred, Vslack, types_red, non_slack_indices, \
     map_idx, npq, npv = reduce_arrays(n_bus=n_original, Ymat=admittances.copy(),
@@ -505,7 +500,7 @@ def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, volta
         I = I_n(n, nbus, Iind, Sred, Vset_abs2, C, H, R, W, types_red, map_idx)
 
         # C[n, :] = np.dot(Zred, I)
-        C[n, :] = Zred * I
+        C[n, :] = Zred(I)
 
         # check NaN's
         if not np.isnan(np.sum(C[n, :])):
@@ -517,12 +512,12 @@ def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, volta
             for j in range(nbus):
                 if types_red[j] == 1:  # PQ
                     kk = map_idx[j]  # actual index in the coefficients structure
-                    W[n, kk] = calc_W(n, j, C, W, map_idx)
+                    W[n, kk] = calc_W(n, j, kk, C, W, map_idx)
                 elif types_red[j] == 2:  # PV
                     kk = map_idx[j]  # actual index in the coefficients structures
                     R[n, kk] = calc_R(n, j, C)
                     X[n, kk] = calc_X(n, j, nbus, C, Yred)
-                    H[n, kk] = calc_H(n, j, X, R, C, Yred, Vset_abs2, map_idx)
+                    H[n, kk] = calc_H(n, j, kk, X, R, C, Yred, Vset_abs2, map_idx)
 
                 # calculate the voltages
                 if usePade:
@@ -710,7 +705,8 @@ if __name__ == "__main__":
     from GridCal.grid.CalculationEngine import *
 
     grid = MultiCircuit()
-    grid.load_file('lynn5buspv.xlsx')
+    grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('IEEE30.xlsx')
 
     grid.compile()
 
@@ -730,7 +726,7 @@ if __name__ == "__main__":
     import time
     print('HELM-Z')
     start_time = time.time()
-    cmax = 400
+    cmax = 250
     V1, C, W, X, R, H, Yred, err, converged_, \
     best_err, S, Vlst = helmz(admittances=circuit.power_flow_input.Ybus,
                               slackIndices=circuit.power_flow_input.ref,
@@ -738,7 +734,7 @@ if __name__ == "__main__":
                               powerInjections=circuit.power_flow_input.Sbus,
                               voltageSetPoints=circuit.power_flow_input.Vbus,
                               types=circuit.power_flow_input.types,
-                              eps=1e-3,
+                              eps=1e-9,
                               usePade=True,
                               inherited_pv=None)
 

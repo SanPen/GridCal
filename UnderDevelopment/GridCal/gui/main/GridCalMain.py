@@ -869,7 +869,7 @@ class MainGUI(QMainWindow):
             # self.power_flow.done_signal.connect(self.UNLOCK)
             # self.power_flow.done_signal.connect(self.post_power_flow)
 
-            # self.power_flow.start()
+            # self.power_flow.run()
             self.threadpool.start(self.power_flow)
             self.threadpool.waitForDone()
             self.post_power_flow()

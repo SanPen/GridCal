@@ -417,7 +417,7 @@ def load_from_xls(filename):
 
 class Bus:
 
-    def __init__(self, name="Bus", vnom=0, vmin=0.9, vmax=1.1, xpos=0, ypos=0, is_enabled=True):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, is_enabled=True):
         """
         Bus  constructor
         """

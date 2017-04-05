@@ -29,22 +29,28 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
     """
 
     # reduced impedance matrix
-    Zred = inv(Ybus[pqpv, :][:, pqpv]).toarray()
+    Zred = factorized(Ybus[pqpv, :][:, pqpv])
 
     # slack currents
     Ivd = Ybus[pqpv, :][:, ref].dot(Vbus[ref])
 
     # slack voltages influence
-    Ck = Zred.dot(Ivd)
+    Ck = Zred(Ivd)
 
     # make a copy of the voltage for convergence control
     Vprev = Vbus[pqpv].copy()
+
+    # Voltage module in the pv nodes
+    Vpv = abs(Vbus[pv])
+
+    # admittance matrix to compute the reactive power
+    Ybus_pv = Ybus[pv, :][:, pv]
 
     # approximate the currents with the current voltage solution
     Ik = conj(Sbus[pqpv] / Vprev) + Ibus[pqpv]
 
     # compute the new voltage solution
-    Vk = Zred.dot(Ik) - Ck
+    Vk = Zred(Ik) - Ck
 
     # compute the voltage solution maximum difference
     diff = max(abs(Vprev - Vk))
@@ -59,7 +65,13 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
         Ik = conj(Sbus[pqpv] / Vprev) + Ibus[pqpv]
 
         # compute the new voltage solution
-        Vk = Zred.dot(Ik) - Ck
+        Vk = Zred(Ik) - Ck
+
+        # tune PV nodes
+        #  ****** USE A reduced pv, pv, pqpv mapping!
+        # Vk[pv] *= Vpv / abs(Vk[pv])
+        # Qpv = (Vk * conj(Ybus[pv, :][:, pv].dot(Vk) - Ibus))[pv].imag
+        # Sbus[pv] = Sbus[pv].real + 1j * Qpv
 
         # compute the voltage solution maximum difference
         diff = max(abs(Vprev - Vk))
@@ -92,7 +104,8 @@ if __name__ == '__main__':
     from GridCal.grid.CalculationEngine import *
 
     grid = MultiCircuit()
-    grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('lynn5buspq.xlsx')
+    grid.load_file('IEEE30.xlsx')
 
     grid.compile()
 
