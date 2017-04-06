@@ -80,7 +80,7 @@ def dSbus_dV(Ybus, V, I):
         diagIbus = sparse((Ibus, (ib, ib)))
         diagVnorm = sparse((V / abs(V), (ib, ib)))
     else:
-        Ibus = Ybus * asmatrix(V).T + I
+        Ibus = Ybus * asmatrix(V).T - I
 
         diagV = asmatrix(diag(V))
         diagIbus = asmatrix(diag(asarray(Ibus).flatten()))
