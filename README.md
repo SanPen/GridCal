@@ -56,6 +56,7 @@ Some of the features you'll find already are:
 
 - Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).
+  - Levenberg-Marquardt
   - Holomorphic Embedding Power flow.
   - DC approximation.
   
