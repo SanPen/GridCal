@@ -23,7 +23,7 @@ from GridCal.grid.SC import short_circuit_3p
 
 import os
 from enum import Enum
-from warnings import w
+from warnings import warn
 import networkx as nx
 import pandas as pd
 from datetime import datetime, timedelta
