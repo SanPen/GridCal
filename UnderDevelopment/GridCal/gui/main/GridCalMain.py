@@ -167,6 +167,7 @@ class MainGUI(QMainWindow):
         # self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
         # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
         self.solvers_dict['DC approximation'] = SolverType.DC
+        self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
 
         lst = list(self.solvers_dict.keys())
         mdl = get_list_model(lst)

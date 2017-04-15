@@ -15,7 +15,7 @@
 
 __GridCal_VERSION__ = 1.38
 
-from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian
+from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
 from GridCal.grid.HelmVect import helm
 from GridCal.grid.DCPF import dcpf
@@ -58,7 +58,8 @@ class SolverType(Enum):
     ZBUS = 7,
     IWAMOTO = 8,
     CONTINUATION_NR = 9,
-    HELMZ = 10
+    HELMZ = 10,
+    LM = 11  # Levenberg-Marquardt
 
 
 class TimeGroups(Enum):
@@ -3436,6 +3437,16 @@ class PowerFlow(QRunnable):
                                                       pvpq=circuit.power_flow_input.pqpv,
                                                       pq=circuit.power_flow_input.pq,
                                                       pv=circuit.power_flow_input.pv)
+
+                elif self.options.solver_type == SolverType.LM:
+                    V, converged, normF, Scalc = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
+                                                                      Sbus=Sbus,
+                                                                      V0=V,
+                                                                      Ibus=circuit.power_flow_input.Ibus,
+                                                                      pv=circuit.power_flow_input.pv,
+                                                                      pq=circuit.power_flow_input.pq,
+                                                                      tol=self.options.tolerance,
+                                                                      max_it=self.options.max_iter)
 
                 # for any other method, for now, do a NR Iwamoto
                 else:

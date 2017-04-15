@@ -7,14 +7,12 @@
 # Copyright (c) 2016 Santiago Peñate Vera
 # This file retains the BSD-Style license
 
-
-from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, where, zeros_like
+import numpy as np
+from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like
 from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
 from scipy.sparse.linalg import spsolve
 import scipy
 scipy.ALLOW_THREADS = True
-
-import numpy as np
 
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
@@ -92,53 +90,18 @@ def dSbus_dV(Ybus, V, I):
     return dS_dVm, dS_dVa
 
 
-def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
-    """
-    Calculate the Iwamoto acceleration parameter as described in:
-    "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
-    Args:
-        Ybus: Admittance matrix
-        J: Jacobian matrix
-        incS: mismatch vector
-        dV: voltage increment (in complex form)
-        dx: solution vector as calculated dx = solve(J, incS)
-        pvpq: array of the pq and pv indices
-        pq: array of the pq indices
-
-    Returns:
-        the Iwamoto's optimal multiplier for ill conditioned systems
-    """
-    # evaluate the Jacobian of the voltage derivative
-    # theoretically this is the second derivative matrix
-    # since the Jacobian (J2) has been calculated with dV instead of V
-    J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
-
-    a = incS
-    b = J * dx
-    c = 0.5 * dx * J2 * dx
-
-    g0 = -a.dot(b)
-    g1 = b.dot(b) + 2 * a.dot(c)
-    g2 = -3.0 * b.dot(c)
-    g3 = 2.0 * c.dot(c)
-
-    roots = np.roots([g3, g2, g1, g0])
-    # three solutions are provided, the first two are complex, only the real solution is valid
-    return roots[2].real
-
-
 def Jacobian(Ybus, V, Ibus, pq, pvpq):
     """
-
+    Computes the system Jacobian matrix
     Args:
-        Ybus:
-        V:
-        Ibus:
-        pq:
-        pvpq:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
 
     Returns:
-
+        The system Jacobian matrix
     """
     dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
 
@@ -153,126 +116,6 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     ], format="csr")
 
     return J
-
-
-def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
-    """
-    Solves the power flow using a full Newton's method.
-
-    Solves for bus voltages given the full system admittance matrix (for
-    all buses), the complex bus power injection vector (for all buses),
-    the initial vector of complex bus voltages, and column vectors with
-    the lists of bus indices for the swing bus, PV buses, and PQ buses,
-    respectively. The bus voltage vector contains the set point for
-    generator (including ref bus) buses, and the reference angle of the
-    swing bus, as well as an initial guess for remaining magnitudes and
-    angles. C{ppopt} is a PYPOWER options vector which can be used to
-    set the termination tolerance, maximum number of iterations, and
-    output options (see L{ppoption} for details). Uses default options if
-    this parameter is not given. Returns the final complex voltages, a
-    flag which indicates whether it converged or not, and the number of
-    iterations performed.
-
-    Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        ref: Array with the indices of the slack buses
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
-        verbose: Boolean variable for the verbose mode activation
-    Returns:
-
-    @see: L{runpf}
-
-    @author: Ray Zimmerman (PSERC Cornell)
-    @Author: Santiago Penate Vera
-    """
-
-    # initialize
-    converged = 0
-    i = 0
-    V = V0
-    Va = angle(V)
-    Vm = abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
-    # set up indexing for updating V
-    pvpq = r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
-
-    # j1:j2 - V angle of pv buses
-    j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
-
-    # evaluate F(x0)
-    Scalc = V * conj(Ybus * V - Ibus)
-    mis = Scalc - Sbus  # compute the mismatch
-    F = r_[mis[pv].real,
-           mis[pq].real,
-           mis[pq].imag]
-
-    # check tolerance
-    normF = linalg.norm(F, Inf)
-
-    if normF < tol:
-        converged = 1
-
-    # do Newton iterations
-    while not converged and i < max_it:
-        # update iteration counter
-        i += 1
-
-        # evaluate Jacobian
-        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-
-        # compute update step
-        dx = spsolve(J, F)
-
-        # reassign the solution vector
-        if npv:
-            dVa[pv] = dx[j1:j2]
-        if npq:
-            dVa[pq] = dx[j3:j4]
-            dVm[pq] = dx[j5:j6]
-        dV = dVm * exp(1j * dVa)  # voltage mismatch
-
-        # update voltage
-        if robust:
-            mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
-            # print('mu:', mu_)
-        else:
-            mu_ = 1.0
-
-        Vm -= mu_ * dVm
-        Va -= mu_ * dVa
-        V = Vm * exp(1j * Va)
-
-        Vm = abs(V)  # update Vm and Va again in case
-        Va = angle(V)  # we wrapped around with a negative Vm
-
-        # evaluate F(x)
-        Scalc = V * conj(Ybus * V - Ibus)
-        mis = Scalc - Sbus  # complex power mismatch
-        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
-
-        # check for convergence
-        normF = linalg.norm(F, Inf)
-
-        if normF < tol:
-            converged = 1
-
-    return V, converged, normF, Scalc
 
 
 def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
@@ -392,3 +235,62 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
         iter_ += 1
 
     return V, converged, normF, Scalc
+
+
+if __name__ == "__main__":
+    from GridCal.grid.CalculationEngine import *
+
+    grid = MultiCircuit()
+    # grid.load_file('lynn5buspq.xlsx')
+    grid.load_file('IEEE30.xlsx')
+
+    grid.compile()
+
+    circuit = grid.circuits[0]
+
+    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
+    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
+    print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    print('\ntypes:\n', circuit.power_flow_input.types)
+    print('\npq:\n', circuit.power_flow_input.pq)
+    print('\npv:\n', circuit.power_flow_input.pv)
+    print('\nvd:\n', circuit.power_flow_input.ref)
+
+    import time
+    print('Levenberg-Marquardt')
+    start_time = time.time()
+    V1, converged_, err, S = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
+                                                  Sbus=circuit.power_flow_input.Sbus,
+                                                  V0=circuit.power_flow_input.Vbus,
+                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                  pv=circuit.power_flow_input.pv,
+                                                  pq=circuit.power_flow_input.pq,
+                                                  tol=1e-9,
+                                                  max_it=100)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+    # print_coeffs(C, W, R, X, H)
+
+    print('V module:\t', abs(V1))
+    print('V angle: \t', angle(V1))
+    print('error: \t', err)
+
+    # check the HELM solution: v against the NR power flow
+    print('\nNR')
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
+    power_flow = PowerFlow(grid, options)
+
+    start_time = time.time()
+    power_flow.run()
+    print("--- %s seconds ---" % (time.time() - start_time))
+    vnr = circuit.power_flow_results.voltage
+
+    print('V module:\t', abs(vnr))
+    print('V angle: \t', angle(vnr))
+    print('error: \t', circuit.power_flow_results.error)
+
+    # check
+    print('\ndiff:\t', V1 - vnr)
