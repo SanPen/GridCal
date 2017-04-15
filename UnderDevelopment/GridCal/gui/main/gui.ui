@@ -785,53 +785,21 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frame_14">
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_12">
-           <item>
-            <widget class="QLabel" name="label_11">
+            <widget class="QLabel" name="label_23">
              <property name="text">
               <string>Time series power flow</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_8">
+            <widget class="Line" name="line_15">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_9">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_3">
+            <spacer name="verticalSpacer_5">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -943,6 +911,62 @@ last solution</string>
            </item>
            <item>
             <spacer name="verticalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frame_14">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_12">
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Graphics</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_8">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string>Automatic layout</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="automatic_layout_comboBox"/>
+           </item>
+           <item>
+            <widget class="Line" name="line_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_3">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>

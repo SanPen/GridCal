@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.38
+__GridCal_VERSION__ = 1.40
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -23,8 +23,7 @@ from GridCal.grid.SC import short_circuit_3p
 
 import os
 from enum import Enum
-from warnings import warn
-
+from warnings import w
 import networkx as nx
 import pandas as pd
 from datetime import datetime, timedelta

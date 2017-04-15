@@ -181,6 +181,15 @@ class MainGUI(QMainWindow):
         self.ui.profile_device_type_comboBox.setModel(mdl)
         self.profile_device_type_changed()
 
+        # Automatic layout modes
+        mdl = get_list_model(['spectral_layout',
+                              'circular_layout',
+                               'random_layout',
+                               'shell_layout',
+                               'spring_layout',
+                               'fruchterman_reingold_layout'])
+        self.ui.automatic_layout_comboBox.setModel(mdl)
+
         ################################################################################################################
         # Declare the schematic editor
         ################################################################################################################
@@ -500,8 +509,19 @@ class MainGUI(QMainWindow):
         if self.circuit.graph is None:
             self.circuit.compile()
 
+        alg = dict()
+        alg['circular_layout'] = nx.circular_layout
+        alg['random_layout'] = nx.random_layout
+        alg['shell_layout'] = nx.shell_layout
+        alg['spring_layout'] = nx.spring_layout
+        alg['spectral_layout'] = nx.spectral_layout
+        alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+
+        sel = self.ui.automatic_layout_comboBox.currentText()
+        pos_alg = alg[sel]
+
         # get the positions of a spring layout of the graph
-        pos = nx.spectral_layout(self.circuit.graph, scale=2)
+        pos = pos_alg(self.circuit.graph, scale=2)
 
         # assign the positions to the graphical objects of the nodes
         for i, bus in enumerate(self.circuit.buses):
