@@ -47,7 +47,7 @@ Then you can create the grid objects and access the simulation objects as demons
 
 `GridCal/UnderDevelopment/GridCal/tests/`
 
-I use the engine to get the admittance matrix, power injections, etc. and then do research without having to worry abour getting those vectors and matrices right since they are well calculated in the engine.
+I use the engine to get the admittance matrix, power injections, etc. and then do research without having to worry about getting those vectors and matrices right since they are well calculated in the engine.
 
 
 Example:

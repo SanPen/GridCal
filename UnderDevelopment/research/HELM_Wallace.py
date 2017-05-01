@@ -213,18 +213,16 @@ def get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq, pv):
         Right hand side vector
     """
 
-    # common summation
-    m = array(range(n))
-    val = (conj(V[m, :]) * Y_series_red.dot(V[-m, :][0])).sum(axis=0)
-
-    if n == 1:
-        r1 = S_red.real - Y_shunt_red.real - val.real
-        rpq = S_red.imag[pq] - Y_shunt_red.imag[pq] - val.imag[pq]
+    if n == 0:
+        r1 = S_red.real - Y_shunt_red.real
+        rpq = S_red.imag[pq] - Y_shunt_red.imag[pq]
+        rpv = L2(n, M[pv])
     else:
+        m = array(range(n))
+        val = (conj(V[m, :]) * Y_series_red.dot(V[-m, :][0])).sum(axis=0)
         r1 = - val.real
         rpq = -val.imag[pq]
-
-    rpv = (conj(V[:, pv][m, :]) * V[:, pv][-m, :]).sum(axis=0).real + L2(n, M[pv])
+        rpv = (conj(V[:, pv][m, :]) * V[:, pv][-m, :]).sum(axis=0).real + L2(n, M[pv])
 
     return np.hstack((r1, rpq, rpv))
 
@@ -259,9 +257,9 @@ def helmw(admittances_series, admittances_shunt, powerInjections, voltageSetPoin
     Afac = factorized(A)
 
     # declare the voltages coefficient matrix
-    V = ones((1, npqpv), dtype=complex_type)
+    V = zeros((0, npqpv), dtype=complex_type)
 
-    for n in range(1, 10-1):
+    for n in range(10):
 
         # compute the right hand side of the linear system
         rhs = get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq_red, pv_red)
@@ -312,7 +310,7 @@ if __name__ == "__main__":
     print('\nvd:\n', circuit.power_flow_input.ref)
 
     import time
-    print('HELM-Z')
+    print('HELM model 4')
     start_time = time.time()
     cmax = 30
     V1 = helmw(admittances_series=circuit.power_flow_input.Yseries,
