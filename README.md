@@ -80,6 +80,12 @@ print('\npv:\n', circuit.power_flow_input.pv)
 print('\nvd:\n', circuit.power_flow_input.ref)
 ```
 
+The main logic is to store the grid elements information in objects, and then "compile the objects" to get efficient arrays that represent the grid for calculation.
+
+The compilation detects the islands formed in the grid and treats each island as a different power system. Then the results are merged back into single multi-island vectors of results.
+ 
+All the engine objects and calculations can be accessed through the embedded python console in the GUI.
+
 # Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
