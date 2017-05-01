@@ -49,6 +49,36 @@ Then you can create the grid objects and access the simulation objects as demons
 
 I use the engine to get the admittance matrix, power injections, etc. and then do research without having to worry abour getting those vectors and matrices right since they are well calculated in the engine.
 
+
+Example:
+```
+from GridCal.grid.CalculationEngine import *
+
+# Declare circuit object
+grid = MultiCircuit()
+
+# load the IEEE30 bus grid in the circuit object
+grid.load_file('IEEE30.xlsx')
+
+# compile the grid
+grid.compile()
+
+# pick the island 0, if there are no islands, each island holds its own calculation objects
+circuit = grid.circuits[0]
+
+# print some useful computed vectors and matrices
+print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
+print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
+print('\nSbus:\n', circuit.power_flow_input.Sbus)
+print('\nIbus:\n', circuit.power_flow_input.Ibus)
+print('\nVbus:\n', circuit.power_flow_input.Vbus)
+print('\ntypes:\n', circuit.power_flow_input.types)
+print('\npq:\n', circuit.power_flow_input.pq)
+print('\npv:\n', circuit.power_flow_input.pv)
+print('\nvd:\n', circuit.power_flow_input.ref)
+```
+
 # Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
