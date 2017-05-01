@@ -149,7 +149,7 @@ def reduce_arrays(Y_series, Y_shunt, slack_indices, S, Vset, types):
     return A, Y_series_red, Y_shunt_red, S_red, Iind, M, pq_red, pv_red, NPQPV
 
 
-def L(n, M):
+def L2(n, M):
     """
     
     Args:
@@ -162,9 +162,38 @@ def L(n, M):
     if n == 0:
         return ones(len(M))
     elif n == 1:
-        return M - 1
+        return 2 * M - 2
+    elif n == 2:
+        return M * M - 2 * M + 1
     else:
         return zeros(len(M))
+
+
+def calc_W(n, npqpv, pqpv, kw, C, W):
+    """
+    Calculation of the inverse coefficients W.
+    @param n: Order of the coefficients
+    @param npqpv: number of pq and pv nodes
+    @param pqpv: array with the PQ and PV node indices
+    @param kw: indices that correspond to PQPV in the W structure
+    @param C: Structure of voltage coefficients (Ncoeff x nbus elements)
+    @param W: Structure of inverse voltage coefficients (Ncoeff x nbus elements)
+    @return: Array of inverse voltage coefficients for the order n
+    """
+
+    if n == 0:
+        res = ones(npqpv, dtype=complex_type)
+    else:
+        # res = zeros(npqpv, dtype=complex_type)
+        # for l in range(n):
+        #     res -= W[l, kw] * C[n - l, pqpv]
+
+        l = array(range(n))
+        res = -(W[:, kw][l, :] * C[:, pqpv][n - l, :]).sum(axis=0)
+
+    res /= conj(C[0, pqpv])
+
+    return res
 
 
 def get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq, pv):
@@ -185,22 +214,17 @@ def get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq, pv):
     """
 
     # common summation
-    if n == 0:
-        suma2 = ones(npqpv, dtype=complex_type)
-        r1 = S_red.real - Y_shunt_red.real - suma2.real
-        rpq = -S_red.imag[pq] - Y_shunt_red.imag[pq] - suma2.imag[pq]
-        rpv = np.power(L(n, M[pv]), 2)
+    m = array(range(n))
+    val = (conj(V[m, :]) * Y_series_red.dot(V[-m, :][0])).sum(axis=0)
 
+    if n == 1:
+        r1 = S_red.real - Y_shunt_red.real - val.real
+        rpq = S_red.imag[pq] - Y_shunt_red.imag[pq] - val.imag[pq]
     else:
-        suma2 = zeros(npqpv, dtype=complex_type)
-        for m in range(n):
-            suma2 += conj(V[m, :]) * Y_series_red.dot(V[n - m - 1, :])
-        r1 = - suma2.real
-        rpq = -suma2.imag[pq]
+        r1 = - val.real
+        rpq = -val.imag[pq]
 
-        rpv = np.power(L(n, M[pv]), 2)
-        for m in range(n):
-            rpv -= (conj(V[m, pv]) * V[n-m-1, pv]).real
+    rpv = (conj(V[:, pv][m, :]) * V[:, pv][-m, :]).sum(axis=0).real + L2(n, M[pv])
 
     return np.hstack((r1, rpq, rpv))
 
@@ -235,9 +259,9 @@ def helmw(admittances_series, admittances_shunt, powerInjections, voltageSetPoin
     Afac = factorized(A)
 
     # declare the voltages coefficient matrix
-    V = zeros((0, npqpv), dtype=complex_type)
+    V = ones((1, npqpv), dtype=complex_type)
 
-    for n in range(10):
+    for n in range(1, 10-1):
 
         # compute the right hand side of the linear system
         rhs = get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq_red, pv_red)
