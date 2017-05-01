@@ -47,6 +47,8 @@ Then you can create the grid objects and access the simulation objects as demons
 
 `GridCal/UnderDevelopment/GridCal/tests/`
 
+I use the engine to get the admittance matrix, power injections, etc. and then do research without having to worry abour getting those vectors and matrices right since they are well calculated in the engine.
+
 # Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
@@ -56,8 +58,8 @@ Some of the features you'll find already are:
 
 - Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).
-  - Levenberg-Marquardt
-  - Holomorphic Embedding Power flow.
+  - Levenberg-Marquardt (Works very well with large grids)
+  - Holomorphic Embedding Power flow (Under investigation...)
   - DC approximation.
   
 - Includes the Z-I-P load model, this means that the power flows can handle both power and current.  
