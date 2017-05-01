@@ -129,16 +129,16 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
 
 def Jacobian(Ybus, V, Ibus, pq, pvpq):
     """
-
+    Computes the system Jacobian matrix
     Args:
-        Ybus:
-        V:
-        Ibus:
-        pq:
-        pvpq:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
 
     Returns:
-
+        The system Jacobian matrix
     """
     dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
 
@@ -155,38 +155,21 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return J
 
 
-def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
+def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     """
-    Solves the power flow using a full Newton's method.
-
-    Solves for bus voltages given the full system admittance matrix (for
-    all buses), the complex bus power injection vector (for all buses),
-    the initial vector of complex bus voltages, and column vectors with
-    the lists of bus indices for the swing bus, PV buses, and PQ buses,
-    respectively. The bus voltage vector contains the set point for
-    generator (including ref bus) buses, and the reference angle of the
-    swing bus, as well as an initial guess for remaining magnitudes and
-    angles. C{ppopt} is a PYPOWER options vector which can be used to
-    set the termination tolerance, maximum number of iterations, and
-    output options (see L{ppoption} for details). Uses default options if
-    this parameter is not given. Returns the final complex voltages, a
-    flag which indicates whether it converged or not, and the number of
-    iterations performed.
-
+    Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
         Ybus: Admittance matrix
         Sbus: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
         Ibus: Array of nodal current injections
-        ref: Array with the indices of the slack buses
         pv: Array with the indices of the PV buses
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        verbose: Boolean variable for the verbose mode activation
+        robust: Boolean variable for the use of the Iwamoto optimal step factor.
     Returns:
-
-    @see: L{runpf}
+        Voltage solution, converged?, error, calculated power injections
 
     @author: Ray Zimmerman (PSERC Cornell)
     @Author: Santiago Penate Vera
@@ -200,6 +183,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
     Vm = abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
+
     # set up indexing for updating V
     pvpq = r_[pv, pq]
     npv = len(pv)
@@ -275,21 +259,22 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it, robust=False):
     return V, converged, normF, Scalc
 
 
-def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
+def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     """
-    Solves the power flow problem by the Levenberg-Marquardt power flow algorithm
+    Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
+    It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
     Args:
         Ybus: Admittance matrix
         Sbus: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
         Ibus: Array of nodal current injections
-        ref: Array with the indices of the slack buses
         pv: Array with the indices of the PV buses
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        verbose: Boolean variable for the verbose mode activation
     Returns:
+        Voltage solution, converged?, error, calculated power injections
+
     @Author: Santiago Penate Vera
     """
 
@@ -314,7 +299,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
     j5 = j4
     j6 = j4 + npq
 
-    update_H = True
+    update_jacobian = True
     converged = False
     iter_ = 0
     nu = 2.0
@@ -326,7 +311,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
     while not converged and iter_ < max_it:
 
         # evaluate Jacobian
-        if update_H:
+        if update_jacobian:
             H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
         # evaluate the solution error F(x0)
@@ -335,7 +320,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
         dz = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
 
         # system matrix
-        # H1 = H^t·W
+        # H1 = H^t
         H1 = H.transpose()
         # H2 = H1·H
         H2 = H1.dot(H)
@@ -344,17 +329,17 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
         if iter_ == 0:
             lbmda = 1e-3 * H2.diagonal().max()
 
-        # compute system matrix
+        # compute system matrix A = H^T·H - lambda·I
         A = H2 + lbmda * Idn
 
         # right hand side
-        # H^t·W·dz
+        # H^t·dz
         rhs = H1.dot(dz)
 
         # Solve the increment
         dx = np.linalg.solve(A, rhs)
 
-        # objective function
+        # objective function to minimize
         f = 0.5 * dz.dot(dz)
 
         # decision function
@@ -362,7 +347,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
 
         # lambda update
         if rho > 0:
-            update_H = True
+            update_jacobian = True
             lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
             nu = 2.0
 
@@ -379,11 +364,11 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
             Vm = abs(V)  # update Vm and Va again in case
             Va = angle(V)  # we wrapped around with a negative Vm
         else:
-            update_H = False
+            update_jacobian = False
             lbmda *= nu
             nu *= 2
 
-        # ckeck convergence
+        # check convergence
         normF = np.linalg.norm(dx, np.Inf)
         converged = normF < tol
         f_prev = f
