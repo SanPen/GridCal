@@ -41,7 +41,7 @@ The GUI should pop up.
 
 You can use the calculation engine directly or from other applications:
 
-`from GridCal.grid.CircuitOO import *`
+`from GridCal.grid.CalculationEngine import *`
 
 Then you can create the grid objects and access the simulation objects as demonstrated in the test scripts in the test folder.
 
