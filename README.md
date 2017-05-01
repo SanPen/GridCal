@@ -54,19 +54,20 @@ Example:
 ```
 from GridCal.grid.CalculationEngine import *
 
-# Declare circuit object
+# Declare a multi-circuit object
 grid = MultiCircuit()
 
-# load the IEEE30 bus grid in the circuit object
+# Load the IEEE30 bus grid in the circuit object
 grid.load_file('IEEE30.xlsx')
 
-# compile the grid
+# Compile the grid
 grid.compile()
 
-# pick the island 0, if there are no islands, each island holds its own calculation objects
+# Pick the circuit 0, if there are no islands all the grid elements are in this object.
+# Each island holds its own calculation objects
 circuit = grid.circuits[0]
 
-# print some useful computed vectors and matrices
+# Print some useful computed vectors and matrices
 print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
 print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
 print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
