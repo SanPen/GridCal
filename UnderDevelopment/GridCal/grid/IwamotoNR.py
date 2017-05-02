@@ -360,9 +360,10 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
             Vm -= dVm
             Va -= dVa
+            # update Vm and Va again in case we wrapped around with a negative Vm
             V = Vm * exp(1j * Va)
-            Vm = abs(V)  # update Vm and Va again in case
-            Va = angle(V)  # we wrapped around with a negative Vm
+            Vm = abs(V)
+            Va = angle(V)
         else:
             update_jacobian = False
             lbmda *= nu

@@ -706,6 +706,65 @@ The polynomial can be solved numerically using $1$ as the seed.
 
 The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment $\textbf{dV}= \textbf{V}_{t} - \textbf{V}_{t-1}$ (voltage difference between the current and the previous iteration).  
 
+\section{Levenberg-Marquardt}
+
+The Levenberg-Marquardt iterative method is often used to solve non-linear least squares problems. in those problems one reduces the calculated error by iteratively solving a system of equations that provides the increment to add to the solution in order to decrease the solution error. So conceptually it applies to the power flow problem.
+
+%\begin{theorem}[Levenberg-Marquardt algorithm]
+%	$$\textbf{J} = Jacobian(\textbf{Y}, \textbf{V})$$
+%\end{theorem}
+Set the initial values:
+\begin{itemize}
+	\item $\nu=2$
+	\item $f_{prev} = 10^9$
+	\item $ComputeH = true$
+\end{itemize}
+
+In every iteration:
+\begin{itemize}
+	\item Compute the jacobian matrix if $ComputeH$ is $true$: 
+	$$\textbf{H} = Jacobian(\textbf{Y}, \textbf{V})$$
+	\item Compute the mismatch in the same order as the jacobian:
+	$$\textbf{S}_{calc} = \textbf{V} (\textbf{Y} \cdot \textbf{V} - \textbf{I})^*$$
+	$$\textbf{m} = \textbf{S}_{calc} - \textbf{S}$$
+	$$\textbf{dz} = [ Re(\textbf{m}_{pv}), Re(\textbf{m}_{pq}), Im(\textbf{m}_{pq})]$$
+	\item Compute the auxiliary jacobian transformations:
+	$$\textbf{H}_1 = \textbf{H}^\top$$
+	$$\textbf{H}_2 = \textbf{H}_1 \cdot \textbf{H}$$
+	\item Compute the first value of $\lambda$ (only in the first iteration): 
+	$$\lambda = 10^{-3} Max(Diag(\textbf{H}_2))$$
+	\item Compute the system Matrix:
+	$$\textbf{A} = \textbf{H}_2 + \lambda \cdot Identity $$
+	\item Compute the linear system right hand side:
+	$$\textbf{rhs} = \textbf{H}_1 \cdot \textbf{dz} $$
+	\item Solve the system increment:
+	$$\textbf{dx} = Solve(\textbf{A}, \textbf{rhs})$$
+	\item Compute the objective function:
+	$$f = 0.5 \cdot \textbf{dz} \cdot \textbf{dz}^\top  $$
+	\item Compute the decision function:
+	$$\rho = \frac{f_{prev}-f}{0.5 \cdot \textbf{dx}^\top \cdot (\lambda \textbf{dx} + \textbf{rhs})} $$
+	\item Update values: \newline
+	If $\rho > 0$
+	\begin{itemize}
+		\item $ComputeH = true$
+		\item $\lambda = \lambda \cdot max(1/3, 1- (2 \cdot \rho -1)^3)$
+		\item $\nu = 2$
+		\item Update the voltage solution using $\textbf{dx}$.
+	\end{itemize}
+	Else
+	\begin{itemize}
+		\item $ComputeH = false$
+		\item $\lambda = \lambda \cdot \nu$
+		\item $\nu = \nu \cdot 2$
+	\end{itemize}
+	\item Compute the convergence: 
+	$$converged = ||dx, \infty|| < tolerance $$
+	\item $f_{prev} = f$\newline
+\end{itemize}
+
+As you can see it takes more steps than Newton-Raphson. It is a slower method, but it works better for ill-conditioned and large grids.
+
+
 \newpage
 \section{DC approximation}
 
