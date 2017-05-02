@@ -81,7 +81,7 @@ def make_A(Y_series, Y_shunt, pq, pv, pqpv):
 
     dij_y = dia_matrix((Y_shunt[pqpv], zeros(1)), shape=(NPQPV, NPQPV)).tocsc()
 
-    dij_pq = dia_matrix((Y_shunt[pq], zeros(1)), shape=(NPQ, NPQPV)).tocsc()
+    dij_y_pq = dia_matrix((Y_shunt[pq], zeros(1)), shape=(NPQ, NPQPV)).tocsc()
 
     dij_pv = coo_matrix((ones(NPV) * 2, (linspace(0, NPV - 1, NPV), pv)), shape=(NPV, NPQPV)).tocsc()
 
@@ -97,9 +97,9 @@ def make_A(Y_series, Y_shunt, pq, pv, pqpv):
 
     A2 = B - dij_y.imag
 
-    APQ3 = Gpq - dij_pq.imag
+    APQ3 = Bpq - dij_y_pq.imag
 
-    APQ4 = Bpq + dij_pq.real
+    APQ4 = Gpq + dij_y_pq.real
 
     APV3 = dij_pv
 
@@ -248,11 +248,12 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, eps=1e-3
         V[n, pqpv] = vn
 
     # compute the voltages with Padè
+    print('\nVoltage coeff: \n', V)
     voltages = voltageSetPoints.copy()
     for j in pqpv:
         voltages[j], _, _ = pade_approximation(n, j, V)
 
-    print('\nVoltage coeff: \n', V)
+    # print('\nVoltage coeff: \n', V)
     print('\nVoltage values: \n', voltages)
     return voltages
 
@@ -283,7 +284,7 @@ if __name__ == "__main__":
     import time
     print('HELM model 4')
     start_time = time.time()
-    cmax = 10
+    cmax = 5
     V1 = helmw(Y_series=circuit.power_flow_input.Yseries,
                Y_shunt=circuit.power_flow_input.Yshunt,
                Sbus=circuit.power_flow_input.Sbus,
