@@ -1,7 +1,8 @@
 
 import numpy as np
 
-np.set_printoptions(precision=6, suppress=True, linewidth=320)
+
+
 from numpy import where, zeros, ones, mod, conj, array, dot, complex128, linspace  # , complex256
 from scipy.linalg import solve
 from scipy.sparse import dia_matrix, coo_matrix, csc_matrix, hstack as sp_hstack, vstack as sp_vstack
@@ -258,6 +259,7 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, eps=1e-3
 
 if __name__ == "__main__":
     from GridCal.grid.CalculationEngine import *
+    np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
 
     grid = MultiCircuit()
     grid.load_file('lynn5buspv.xlsx')

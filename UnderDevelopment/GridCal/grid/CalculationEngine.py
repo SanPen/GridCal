@@ -3017,6 +3017,7 @@ class PowerFlowInput:
             pass  # no problem :)
 
         self.pqpv = r_[self.pq, self.pv]
+        self.pqpv.sort()
 
     def set_from(self, obj, bus_idx, br_idx):
         """
