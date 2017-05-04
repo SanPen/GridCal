@@ -15,8 +15,9 @@
 
 from PyQt5.QtWidgets import *
 import matplotlib
+
 # Make sure that we are using QT5
-matplotlib.use('Qt5Agg')
+# matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigationtoolbar
 from matplotlib.figure import Figure
@@ -75,46 +76,6 @@ class MplCanvas(FigureCanvas):
         """
         self.fig.subplots_adjust(left=0, bottom=0, right=1, top=0.9, wspace=0, hspace=0)
 
-    # def on_pick_event(self, event):
-    #     """
-    #     Store which text object was picked and were the pick event occurs.
-    #     """
-    #
-    #     if isinstance(event.artist, Text):
-    #         self.element_dragged = event.artist
-    #         self.pick_pos = (event.mouseevent.xdata, event.mouseevent.ydata)
-    #         self.is_point = False
-    #     else:
-    #         self.element_dragged = event.artist
-    #         self.pick_pos = (event.mouseevent.xdata, event.mouseevent.ydata)
-    #         self.is_point = True
-    #         self.index = event.ind
-    #
-    #     return True
-    #
-    # def on_release_event(self, event):
-    #     " Update text position and redraw"
-    #
-    #     if self.element_dragged is not None :
-    #         if self.is_point:
-    #             old_pos = self.element_dragged.get_offsets()[self.index][0]
-    #         else:
-    #             old_pos = self.element_dragged.get_position()
-    #
-    #         new_pos = (old_pos[0] + event.xdata - self.pick_pos[0],
-    #                    old_pos[1] + event.ydata - self.pick_pos[1])
-    #
-    #         if self.is_point:
-    #             osets = self.element_dragged.get_offsets()
-    #             osets[self.index] = new_pos
-    #             self.element_dragged.set_offsets(osets)
-    #         else:
-    #             self.element_dragged.set_position(new_pos)
-    #
-    #         self.element_dragged = None
-    #         self.ax.figure.canvas.draw()
-    #     return True
-
     def zoom_factory(self, ax, base_scale=1.2):
         """
         Mouse zoom handler
@@ -123,8 +84,8 @@ class MplCanvas(FigureCanvas):
             cur_xlim = ax.get_xlim()
             cur_ylim = ax.get_ylim()
 
-            xdata = event.xdata # get event x location
-            ydata = event.ydata # get event y location
+            xdata = event.xdata  # get event x location
+            ydata = event.ydata  # get event y location
 
             if event.button == 'down':
                 # deal with zoom in
@@ -135,7 +96,6 @@ class MplCanvas(FigureCanvas):
             else:
                 # deal with something that should never happen
                 scale_factor = 1
-                # print(event.button)
 
             new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
             new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
@@ -145,9 +105,6 @@ class MplCanvas(FigureCanvas):
 
             self.zoom_x_limits = [xdata - new_width * (1-relx), xdata + new_width * relx]
             self.zoom_y_limits = [ydata - new_height * (1-rely), ydata + new_height * rely]
-
-            # print(self.zoom_x_limits)
-            # print(self.zoom_y_limits)
 
             ax.set_xlim(self.zoom_x_limits )
             ax.set_ylim(self.zoom_y_limits)
@@ -251,7 +208,8 @@ class MatplotlibWidget(QWidget):
     def plot(self, x, y, title='', xlabel='', ylabel=''):
         self.setTitle(title)
         self.canvas.ax.plot(x, y)
-
+        self.canvas.ax.set_xlabel(xlabel)
+        self.canvas.ax.set_ylabel(ylabel)
         self.redraw()
 
 
