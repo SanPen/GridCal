@@ -1,8 +1,5 @@
 
 import numpy as np
-
-
-
 from numpy import where, zeros, ones, mod, conj, array, dot, complex128, linspace  # , complex256
 from scipy.linalg import solve
 from scipy.sparse import dia_matrix, coo_matrix, csc_matrix, hstack as sp_hstack, vstack as sp_vstack
@@ -62,7 +59,7 @@ def pade_approximation(n, d, an, s=1):
     return p / q, a, b
 
 
-def make_A(Y_series, Y_shunt, pq, pv, pqpv):
+def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
     """
 
     Args:
@@ -80,30 +77,49 @@ def make_A(Y_series, Y_shunt, pq, pv, pqpv):
     NPQPV = NPQ + NPV
 
     dij_y = dia_matrix((Y_shunt[pqpv], zeros(1)), shape=(NPQPV, NPQPV)).tocsc()
-
-    dij_y_pq = dia_matrix((Y_shunt[pq], zeros(1)), shape=(NPQ, NPQPV)).tocsc()
-
     dij_pv = coo_matrix((ones(NPV) * 2, (linspace(0, NPV - 1, NPV), pv)), shape=(NPV, NPQPV)).tocsc()
 
     G = Y_series.real[pqpv, :][:, pqpv]
-
     B = Y_series.imag[pqpv, :][:, pqpv]
 
-    Gpq = Y_series.imag[pq, :][:, pqpv]
+    Gpq = csc_matrix((NPQ, NPQPV))
+    Bpq = csc_matrix((NPQ, NPQPV))
+    dij_y_pq = csc_matrix((NPQ, NPQPV), dtype=complex_type)
+    ii = 0
+    for i, ti in enumerate(types):
+        if ti == 1:
+            jj = 0
+            for j, tj in enumerate(types):
+                if tj == 1:
+                    Gpq[ii, jj] = Y_series.real[i, j]
+                    Bpq[ii, jj] = Y_series.imag[i, j]
+                    if ii == jj:
+                        dij_y_pq[ii, jj] = Y_shunt[i]
+                if tj == 1 or tj == 2:
+                    jj += 1
+            ii += 1
 
-    Bpq = Y_series.real[pq, :][:, pqpv]
+    print('G:\n', Y_series.real.toarray())
+    print('B:\n', Y_series.imag.toarray())
+    print('dij_y_pq:\n', dij_y_pq.toarray())
 
     A1 = G + dij_y.real
+    print('\nA1:\n', G.toarray(), '\n+\n', dij_y.real.toarray())
 
     A2 = B - dij_y.imag
+    print('\nA2:\n', B.toarray(), '\n-\n', dij_y.imag.toarray())
 
     APQ3 = Bpq - dij_y_pq.imag
+    print('\nA_PQ3:\n', Bpq.toarray(), '\n-\n', dij_y_pq.imag.toarray())
 
     APQ4 = Gpq + dij_y_pq.real
+    print('\nA_PQ4:\n', Gpq.toarray(), '\n+\n', dij_y_pq.real.toarray())
 
     APV3 = dij_pv
+    print('\nA_PV3:\n', dij_pv.toarray())
 
     APV4 = csc_matrix((NPV, NPQPV))
+    print('\nA_PV4:\n', APV4.toarray())
 
     A = sp_vstack((
         sp_hstack((A1, A2)),
@@ -130,6 +146,24 @@ def L2(n, M):
         return 2 * M - 2
     elif n == 2:
         return M * M - 2 * M + 1
+    else:
+        return zeros(len(M))
+
+
+def L(n, M):
+    """
+
+    Args:
+        n: coefficient order
+        M: Reduced set voltages vector for the pv buses
+
+    Returns:
+        The L vector
+    """
+    if n == 0:
+        return ones(len(M))
+    elif n == 1:
+        return M - 1
     else:
         return zeros(len(M))
 
@@ -178,25 +212,34 @@ def get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv):
         Right hand side vector
     """
 
-    if n == 0:
+    if n == 1:
         r1 = Sbus.real[pqpv] - Y_shunt.real[pqpv]
         rpq = Sbus.imag[pq] - Y_shunt.imag[pq]
-        rpv = L2(n, M[pv])
+        rpv = L(n, M[pv])**2
     else:
-        m = array(range(n))
-        mm = n - m - 1
-        val = (conj(V[m, :]) * Y_series.dot(V[mm, :][0])).sum(axis=0)
-        # print('VV')
-        # print('A', V[m, :])
-        # print('B', V[mm, :])
+
+        nbus = Y_series.shape[0]
+        val = zeros(nbus, dtype=complex_type)
+        for i in pqpv:
+            for m in range(n):
+                s = 0 + 0j
+                for k in range(nbus):
+                    s += Y_series[i, k] * V[n - m, k]
+                val[i] += conj(V[m, i]) * s
+
+        valpv = zeros(nbus, dtype=complex_type)
+        for i in pv:
+            for m in range(n):
+                valpv[i] += conj(V[m, i]) * V[n - m, i]
+
         r1 = - val.real[pqpv]
         rpq = -val.imag[pq]
-        rpv = (conj(V[m, :][:, pv]) * V[mm, :][:, pv]).sum(axis=0).real + L2(n, M[pv])
+        rpv = valpv.real[pv] + L(n, M[pv])**2
 
     return np.hstack((r1, rpq, rpv))
 
 
-def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, eps=1e-3, maxcoefficientCount=50):
+def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, eps=1e-3, maxcoefficientCount=50):
     """
 
     Args:
@@ -219,7 +262,7 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, eps=1e-3
     nref = len(ref)
 
     # reduce the arrays and build the system matrix
-    A, npqpv = make_A(Y_series=Y_series, Y_shunt=Y_shunt, pq=pq, pv=pv, pqpv=pqpv)
+    A, npqpv = make_A(Y_series=Y_series, Y_shunt=Y_shunt, pq=pq, pv=pv, pqpv=pqpv, types=types)
     print('\nA:\n', A.toarray())
 
     # get the set points array
@@ -229,10 +272,9 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, eps=1e-3
     Afac = factorized(A)
 
     # declare the voltages coefficient matrix
-    V = zeros((maxcoefficientCount, nbus), dtype=complex_type)
-    V[0, ref] = ones(nref, dtype=complex_type)
+    V = ones((maxcoefficientCount, nbus), dtype=complex_type)
 
-    for n in range(maxcoefficientCount):
+    for n in range(1, maxcoefficientCount):
 
         # compute the right hand side of the linear system
         rhs = get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv)
@@ -284,7 +326,7 @@ if __name__ == "__main__":
     import time
     print('HELM model 4')
     start_time = time.time()
-    cmax = 5
+    cmax = 15
     V1 = helmw(Y_series=circuit.power_flow_input.Yseries,
                Y_shunt=circuit.power_flow_input.Yshunt,
                Sbus=circuit.power_flow_input.Sbus,
@@ -293,6 +335,7 @@ if __name__ == "__main__":
                pv=circuit.power_flow_input.pv,
                ref=circuit.power_flow_input.ref,
                pqpv=circuit.power_flow_input.pqpv,
+               types=circuit.power_flow_input.types,
                eps=1e-9,
                maxcoefficientCount=cmax)
 
