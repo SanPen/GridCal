@@ -59,7 +59,7 @@ def pade_approximation(n, d, an, s=1):
     return p / q, a, b
 
 
-def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
+def make_A2(Y_series, Y_shunt, pq, pv, pqpv, types):
     """
 
     Args:
@@ -126,6 +126,49 @@ def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
         sp_hstack((APQ3, APQ4)),
         sp_hstack((APV3, APV4))
     )).tocsc()
+
+    return A, NPQPV
+
+
+def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
+
+    # create system matrix A of the model 4 of the Wallace article
+    N = len(Y_shunt)
+    NPQ = len(pq)
+    NPV = len(pv)
+    NPQPV = NPQ + NPV
+
+    dij_y = dia_matrix((Y_shunt, zeros(1)), shape=(N, N)).tocsc()
+    dij = dia_matrix((ones(N), zeros(1)), shape=(N, N)).tocsc()
+    G = Y_series.real
+    B = Y_series.imag
+
+    A1 = (G + dij_y.real)[pqpv, :][:, pqpv]
+    A2 = (B - dij_y.imag)[pqpv, :][:, pqpv]
+
+    APQ3 = (B - dij_y.imag)[pq, :][:, pqpv]
+    APQ4 = (G + dij_y.imag)[pq, :][:, pqpv]
+
+    APV3 = (2 * dij)[pv, :][:, pqpv]
+    APV4 = csc_matrix((NPV, NPQPV))
+
+    A = sp_vstack((
+        sp_hstack((A1, A2)),
+        sp_hstack((APQ3, APQ4)),
+        sp_hstack((APV3, APV4))
+    )).tocsc()
+
+    print("\ndij_y:\n", dij_y.toarray())
+    print("\ndij:\n", dij.toarray())
+
+    print("\nA1:\n", A1.toarray())
+    print("\nA2:\n", A2.toarray())
+
+    print("\nAPQ3:\n", APQ3.toarray())
+    print("\nAPQ4:\n", APQ4.toarray())
+
+    print("\nAPV3:\n", APV3.toarray())
+    print("\nAPV4:\n", APV4.toarray())
 
     return A, NPQPV
 
@@ -214,27 +257,21 @@ def get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv):
 
     if n == 1:
         r1 = Sbus.real[pqpv] - Y_shunt.real[pqpv]
-        rpq = Sbus.imag[pq] - Y_shunt.imag[pq]
+        rpq = -Sbus.imag[pq] - Y_shunt.imag[pq]
         rpv = L(n, M[pv])**2
+
     else:
 
         nbus = Y_series.shape[0]
         val = zeros(nbus, dtype=complex_type)
-        for i in pqpv:
-            for m in range(n):
-                s = 0 + 0j
-                for k in range(nbus):
-                    s += Y_series[i, k] * V[n - m, k]
-                val[i] += conj(V[m, i]) * s
-
         valpv = zeros(nbus, dtype=complex_type)
-        for i in pv:
-            for m in range(n):
-                valpv[i] += conj(V[m, i]) * V[n - m, i]
+        for m in range(1, n):
+            val += conj(V[m, :]) * (Y_series * V[n - m, :])
+            valpv += conj(V[m, :]) * V[n - m, :]
 
-        r1 = - val.real[pqpv]
+        r1 = -val.real[pqpv]
         rpq = -val.imag[pq]
-        rpv = valpv.real[pv] + L(n, M[pv])**2
+        rpv = -valpv.real[pv] + L(n, M[pv])**2
 
     return np.hstack((r1, rpq, rpv))
 
@@ -305,7 +342,8 @@ if __name__ == "__main__":
     np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
 
     grid = MultiCircuit()
-    grid.load_file('lynn5buspv.xlsx')
+    grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
 
     grid.compile()
