@@ -19,6 +19,8 @@ Open a console and type:
 
 *You must have Python 3.5 or higher installed to work with the GUI
 
+Check out the video on how to install [**Python and GridCal on Windows 10**.](https://youtu.be/yGxMq2JB1Zo)
+
 
 # Run with user interface
 
