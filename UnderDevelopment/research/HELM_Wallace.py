@@ -1,7 +1,5 @@
 
 import numpy as np
-
-np.set_printoptions(precision=6, suppress=True, linewidth=320)
 from numpy import where, zeros, ones, mod, conj, array, dot, complex128, linspace  # , complex256
 from scipy.linalg import solve
 from scipy.sparse import dia_matrix, coo_matrix, csc_matrix, hstack as sp_hstack, vstack as sp_vstack
@@ -61,84 +59,67 @@ def pade_approximation(n, d, an, s=1):
     return p / q, a, b
 
 
-def reduce_arrays(Y_series, Y_shunt, slack_indices, S, Vset, types):
+def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
     """
 
     Args:
         Y_series: series admittances matrix
         Y_shunt: shunt admittances vector
-        slack_indices: array of slack indices
-        S: power injections vector
-        Vset: set voltages vector for the pv buses
-        types: vector of types for every bus
-
+        pq:
+        pv:
     Returns:
 
     """
 
-    n_bus = len(Y_shunt)
-
-    # Compose the list of buses indices excluding the indices of the slack buses
-    non_slack_indices = list(range(n_bus))
-    for i in slack_indices[::-1]:
-        non_slack_indices.pop(i)
-    non_slack_indices = array(non_slack_indices)
-
-    # Types of the non slack buses
-    types_red = types[non_slack_indices]
-
-    # Re-map the pq and pv lists
-    pq_red = list()
-    pv_red = list()
-    for i in range(len(types_red)):
-        if types_red[i] == NodeType.PQ.value[0]:  # PQ
-            pq_red.append(i)
-        elif types_red[i] == NodeType.PV.value[0]:  # PV
-            pv_red.append(i)
-    pq_red = array(pq_red, dtype=int)
-    pv_red = array(pv_red, dtype=int)
-
-    # Compose a reduced admittance matrix without the rows and columns that correspond to the slack buses
-    Y_series_red = Y_series[non_slack_indices, :][:, non_slack_indices]
-
-    # reduce the Y_shunt array
-    Y_shunt_red = Y_shunt[non_slack_indices]
-
-    M = Vset[non_slack_indices]
-
-    S_red = S[non_slack_indices]
-
-    # matrix of the columns of the admittance matrix that correspond to the slack buses
-    Yslack = Y_series[non_slack_indices, :][:, slack_indices]
-
-    # vector of slack voltages (Complex)
-    Vslack = Vset[slack_indices]
-
-    # vector of currents being injected by the slack nodes (Matrix vector product)
-    Iind = -1 * np.ndarray.flatten(array(Yslack.dot(Vslack)))
-
     # create system matrix A of the model 4 of the Wallace article
-    NPQ = len(pq_red)
-    NPV = len(pv_red)
+    NPQ = len(pq)
+    NPV = len(pv)
     NPQPV = NPQ + NPV
 
-    dij_y = dia_matrix((Y_shunt_red, zeros(1)), shape=(NPQPV, NPQPV))
+    dij_y = dia_matrix((Y_shunt[pqpv], zeros(1)), shape=(NPQPV, NPQPV)).tocsc()
+    dij_pv = coo_matrix((ones(NPV) * 2, (linspace(0, NPV - 1, NPV), pv)), shape=(NPV, NPQPV)).tocsc()
 
-    dij_pq = coo_matrix((Y_shunt_red[pq_red], (linspace(0, NPQ - 1, NPQ).astype(int), pq_red)), shape=(NPQ, NPQPV)).tocsc()
+    G = Y_series.real[pqpv, :][:, pqpv]
+    B = Y_series.imag[pqpv, :][:, pqpv]
 
-    dij_pv = coo_matrix((ones(NPV) * 2, (linspace(0, NPV - 1, NPV), pv_red)), shape=(NPV, NPQPV)).tocsc()
+    Gpq = csc_matrix((NPQ, NPQPV))
+    Bpq = csc_matrix((NPQ, NPQPV))
+    dij_y_pq = csc_matrix((NPQ, NPQPV), dtype=complex_type)
+    ii = 0
+    for i, ti in enumerate(types):
+        if ti == 1:
+            jj = 0
+            for j, tj in enumerate(types):
+                if tj == 1:
+                    Gpq[ii, jj] = Y_series.real[i, j]
+                    Bpq[ii, jj] = Y_series.imag[i, j]
+                    if ii == jj:
+                        dij_y_pq[ii, jj] = Y_shunt[i]
+                if tj == 1 or tj == 2:
+                    jj += 1
+            ii += 1
 
-    A1 = Y_series_red.real + dij_y.real
+    print('G:\n', Y_series.real.toarray())
+    print('B:\n', Y_series.imag.toarray())
+    print('dij_y_pq:\n', dij_y_pq.toarray())
 
-    A2 = Y_series_red.imag - dij_y.imag
+    A1 = G + dij_y.real
+    print('\nA1:\n', G.toarray(), '\n+\n', dij_y.real.toarray())
 
-    APQ3 = Y_series_red.imag[pq_red] - dij_pq.imag
+    A2 = B - dij_y.imag
+    print('\nA2:\n', B.toarray(), '\n-\n', dij_y.imag.toarray())
 
-    APQ4 = Y_series_red.real[pq_red] + dij_pq.real
+    APQ3 = Bpq - dij_y_pq.imag
+    print('\nA_PQ3:\n', Bpq.toarray(), '\n-\n', dij_y_pq.imag.toarray())
+
+    APQ4 = Gpq + dij_y_pq.real
+    print('\nA_PQ4:\n', Gpq.toarray(), '\n+\n', dij_y_pq.real.toarray())
 
     APV3 = dij_pv
+    print('\nA_PV3:\n', dij_pv.toarray())
 
     APV4 = csc_matrix((NPV, NPQPV))
+    print('\nA_PV4:\n', APV4.toarray())
 
     A = sp_vstack((
         sp_hstack((A1, A2)),
@@ -146,7 +127,7 @@ def reduce_arrays(Y_series, Y_shunt, slack_indices, S, Vset, types):
         sp_hstack((APV3, APV4))
     )).tocsc()
 
-    return A, Y_series_red, Y_shunt_red, S_red, Iind, M, pq_red, pv_red, NPQPV
+    return A, NPQPV
 
 
 def L2(n, M):
@@ -165,6 +146,24 @@ def L2(n, M):
         return 2 * M - 2
     elif n == 2:
         return M * M - 2 * M + 1
+    else:
+        return zeros(len(M))
+
+
+def L(n, M):
+    """
+
+    Args:
+        n: coefficient order
+        M: Reduced set voltages vector for the pv buses
+
+    Returns:
+        The L vector
+    """
+    if n == 0:
+        return ones(len(M))
+    elif n == 1:
+        return M - 1
     else:
         return zeros(len(M))
 
@@ -196,15 +195,15 @@ def calc_W(n, npqpv, pqpv, kw, C, W):
     return res
 
 
-def get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq, pv):
+def get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv):
     """
     Compute the right hand side vector (rhs)    
     Args:
         n: coefficient order
         V: Voltage coefficients matrix (rows: coeff. order, columns: reduced bus index)
-        Y_series_red: Reduced series admittances matrix
-        Y_shunt_red: Reduced shunt admittances vector
-        S_red: Reduced power injections vector
+        Y_series: Reduced series admittances matrix
+        Y_shunt: Reduced shunt admittances vector
+        Sbus: Reduced power injections vector
         M: Reduced set voltages vector for the pv buses
         pq: array of reduced PQ bus numbers
         pv: array of reduced PV bus numbers
@@ -213,56 +212,72 @@ def get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq, pv):
         Right hand side vector
     """
 
-    if n == 0:
-        r1 = S_red.real - Y_shunt_red.real
-        rpq = S_red.imag[pq] - Y_shunt_red.imag[pq]
-        rpv = L2(n, M[pv])
+    if n == 1:
+        r1 = Sbus.real[pqpv] - Y_shunt.real[pqpv]
+        rpq = Sbus.imag[pq] - Y_shunt.imag[pq]
+        rpv = L(n, M[pv])**2
     else:
-        m = array(range(n))
-        val = (conj(V[m, :]) * Y_series_red.dot(V[-m, :][0])).sum(axis=0)
-        r1 = - val.real
+
+        nbus = Y_series.shape[0]
+        val = zeros(nbus, dtype=complex_type)
+        for i in pqpv:
+            for m in range(n):
+                s = 0 + 0j
+                for k in range(nbus):
+                    s += Y_series[i, k] * V[n - m, k]
+                val[i] += conj(V[m, i]) * s
+
+        valpv = zeros(nbus, dtype=complex_type)
+        for i in pv:
+            for m in range(n):
+                valpv[i] += conj(V[m, i]) * V[n - m, i]
+
+        r1 = - val.real[pqpv]
         rpq = -val.imag[pq]
-        rpv = (conj(V[:, pv][m, :]) * V[:, pv][-m, :]).sum(axis=0).real + L2(n, M[pv])
+        rpv = valpv.real[pv] + L(n, M[pv])**2
 
     return np.hstack((r1, rpq, rpv))
 
 
-def helmw(admittances_series, admittances_shunt, powerInjections, voltageSetPoints, types, ref, pqpv,
-          eps=1e-3, maxcoefficientCount=50):
+def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, eps=1e-3, maxcoefficientCount=50):
     """
 
     Args:
-        admittances_series:
-        admittances_shunt:
-        maxcoefficientCount:
-        powerInjections:
+        Y_series:
+        Y_shunt:
+        Sbus:
         voltageSetPoints:
-        types:
+        pq:
+        pv:
         ref:
+        pqpv:
         eps:
+        maxcoefficientCount:
 
     Returns:
 
     """
+
+    nbus = len(Y_shunt)
+    nref = len(ref)
+
     # reduce the arrays and build the system matrix
-    A, Y_series_red, Y_shunt_red, S_red, Iind, M, pq_red, pv_red, npqpv = reduce_arrays(Y_series=admittances_series,
-                                                                                        Y_shunt=admittances_shunt,
-                                                                                        slack_indices=ref,
-                                                                                        S=powerInjections,
-                                                                                        Vset=abs(voltageSetPoints),
-                                                                                        types=types)
+    A, npqpv = make_A(Y_series=Y_series, Y_shunt=Y_shunt, pq=pq, pv=pv, pqpv=pqpv, types=types)
     print('\nA:\n', A.toarray())
+
+    # get the set points array
+    M = abs(voltageSetPoints)
 
     # factorize the system matrix only once
     Afac = factorized(A)
 
     # declare the voltages coefficient matrix
-    V = zeros((0, npqpv), dtype=complex_type)
+    V = ones((maxcoefficientCount, nbus), dtype=complex_type)
 
-    for n in range(10):
+    for n in range(1, maxcoefficientCount):
 
         # compute the right hand side of the linear system
-        rhs = get_rhs(n, npqpv, V, Y_series_red, Y_shunt_red, S_red, M, pq_red, pv_red)
+        rhs = get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv)
 
         # solve the linear system
         x = Afac(rhs)
@@ -272,23 +287,22 @@ def helmw(admittances_series, admittances_shunt, powerInjections, voltageSetPoin
         vn = r + 1j * i
 
         # stack the coefficients solution
-        V = np.vstack((V, vn))
+        V[n, pqpv] = vn
 
     # compute the voltages with Padè
-    v_red = zeros(npqpv, dtype=complex_type)
-    for j in range(npqpv):
-        v_red[j], _, _ = pade_approximation(n, j, V)
-
-    voltages = voltageSetPoints.copy()
-    voltages[pqpv] = v_red
-
     print('\nVoltage coeff: \n', V)
+    voltages = voltageSetPoints.copy()
+    for j in pqpv:
+        voltages[j], _, _ = pade_approximation(n, j, V)
+
+    # print('\nVoltage coeff: \n', V)
     print('\nVoltage values: \n', voltages)
     return voltages
 
 
 if __name__ == "__main__":
     from GridCal.grid.CalculationEngine import *
+    np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
 
     grid = MultiCircuit()
     grid.load_file('lynn5buspv.xlsx')
@@ -312,14 +326,16 @@ if __name__ == "__main__":
     import time
     print('HELM model 4')
     start_time = time.time()
-    cmax = 30
-    V1 = helmw(admittances_series=circuit.power_flow_input.Yseries,
-               admittances_shunt=circuit.power_flow_input.Yshunt,
-               powerInjections=circuit.power_flow_input.Sbus,
+    cmax = 15
+    V1 = helmw(Y_series=circuit.power_flow_input.Yseries,
+               Y_shunt=circuit.power_flow_input.Yshunt,
+               Sbus=circuit.power_flow_input.Sbus,
                voltageSetPoints=circuit.power_flow_input.Vbus,
-               types=circuit.power_flow_input.types,
+               pq=circuit.power_flow_input.pq,
+               pv=circuit.power_flow_input.pv,
                ref=circuit.power_flow_input.ref,
                pqpv=circuit.power_flow_input.pqpv,
+               types=circuit.power_flow_input.types,
                eps=1e-9,
                maxcoefficientCount=cmax)
 
