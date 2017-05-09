@@ -334,7 +334,14 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
 
     # print('\nVoltage coeff: \n', V)
     print('\nVoltage values: \n', voltages)
-    return voltages
+
+    # evaluate the solution error F(x0)
+    Scalc = voltages * conj(Y_series * voltages)
+    mis = Scalc - Sbus  # compute the mismatch
+    dx = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+    normF = np.linalg.norm(dx, np.Inf)
+
+    return voltages, normF
 
 
 if __name__ == "__main__":
@@ -365,24 +372,23 @@ if __name__ == "__main__":
     print('HELM model 4')
     start_time = time.time()
     cmax = 15
-    V1 = helmw(Y_series=circuit.power_flow_input.Yseries,
-               Y_shunt=circuit.power_flow_input.Yshunt,
-               Sbus=circuit.power_flow_input.Sbus,
-               voltageSetPoints=circuit.power_flow_input.Vbus,
-               pq=circuit.power_flow_input.pq,
-               pv=circuit.power_flow_input.pv,
-               ref=circuit.power_flow_input.ref,
-               pqpv=circuit.power_flow_input.pqpv,
-               types=circuit.power_flow_input.types,
-               eps=1e-9,
-               maxcoefficientCount=cmax)
+    V1, err = helmw(Y_series=circuit.power_flow_input.Yseries,
+                    Y_shunt=circuit.power_flow_input.Yshunt,
+                    Sbus=circuit.power_flow_input.Sbus,
+                    voltageSetPoints=circuit.power_flow_input.Vbus,
+                    pq=circuit.power_flow_input.pq,
+                    pv=circuit.power_flow_input.pv,
+                    ref=circuit.power_flow_input.ref,
+                    pqpv=circuit.power_flow_input.pqpv,
+                    types=circuit.power_flow_input.types,
+                    eps=1e-9,
+                    maxcoefficientCount=cmax)
 
     print("--- %s seconds ---" % (time.time() - start_time))
-    # print_coeffs(C, W, R, X, H)
 
     print('V module:\t', abs(V1))
     print('V angle: \t', angle(V1))
-    #print('error: \t', best_err)
+    print('error: \t', err)
 
     # check the HELM solution: v against the NR power flow
     print('\nNR')
