@@ -146,8 +146,13 @@ def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
     A1 = (G + dij_y.real)[pqpv, :][:, pqpv]
     A2 = (B - dij_y.imag)[pqpv, :][:, pqpv]
 
-    APQ3 = (B - dij_y.imag)[pq, :][:, pqpv]
-    APQ4 = (G + dij_y.imag)[pq, :][:, pqpv]
+    M = (B - dij_y.imag)
+    M[:, pv] = zeros((N, 1))
+    APQ3 = M[pq, :][:, pqpv]
+
+    M = (G + dij_y.imag)
+    M[:, pv] = zeros((N, 1))
+    APQ4 = M[pq, :][:, pqpv]
 
     APV3 = (2 * dij)[pv, :][:, pqpv]
     APV4 = csc_matrix((NPV, NPQPV))
@@ -209,33 +214,6 @@ def L(n, M):
         return M - 1
     else:
         return zeros(len(M))
-
-
-def calc_W(n, npqpv, pqpv, kw, C, W):
-    """
-    Calculation of the inverse coefficients W.
-    @param n: Order of the coefficients
-    @param npqpv: number of pq and pv nodes
-    @param pqpv: array with the PQ and PV node indices
-    @param kw: indices that correspond to PQPV in the W structure
-    @param C: Structure of voltage coefficients (Ncoeff x nbus elements)
-    @param W: Structure of inverse voltage coefficients (Ncoeff x nbus elements)
-    @return: Array of inverse voltage coefficients for the order n
-    """
-
-    if n == 0:
-        res = ones(npqpv, dtype=complex_type)
-    else:
-        # res = zeros(npqpv, dtype=complex_type)
-        # for l in range(n):
-        #     res -= W[l, kw] * C[n - l, pqpv]
-
-        l = array(range(n))
-        res = -(W[:, kw][l, :] * C[:, pqpv][n - l, :]).sum(axis=0)
-
-    res /= conj(C[0, pqpv])
-
-    return res
 
 
 def get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv):
@@ -315,6 +293,7 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
 
         # compute the right hand side of the linear system
         rhs = get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv)
+        print('\nn:', n, ', rhs:\n', rhs)
 
         # solve the linear system
         x = Afac(rhs)
@@ -322,6 +301,8 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
         # assign the solution to the voltages (convert floats to complex)
         r, i = np.split(x, 2)
         vn = r + 1j * i
+
+        print('voltage coeff (n):\n', vn)
 
         # stack the coefficients solution
         V[n, pqpv] = vn
@@ -349,8 +330,8 @@ if __name__ == "__main__":
     np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
 
     grid = MultiCircuit()
-    grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('lynn5buspv.xlsx')
+    # grid.load_file('lynn5buspq.xlsx')
+    grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
 
     grid.compile()
@@ -371,7 +352,7 @@ if __name__ == "__main__":
     import time
     print('HELM model 4')
     start_time = time.time()
-    cmax = 15
+    cmax = 8
     V1, err = helmw(Y_series=circuit.power_flow_input.Yseries,
                     Y_shunt=circuit.power_flow_input.Yshunt,
                     Sbus=circuit.power_flow_input.Sbus,
