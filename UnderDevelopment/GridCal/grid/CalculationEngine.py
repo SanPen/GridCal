@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.41
+__GridCal_VERSION__ = 1.42
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -3132,6 +3132,8 @@ class PowerFlowResults:
 
         self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses']
 
+        self.plot_bars_limit = 100
+
     def copy(self):
         """
         Return a copy of this
@@ -3172,6 +3174,9 @@ class PowerFlowResults:
         self.converged = True
 
         self.buses_useful_for_storage = list()
+
+        self.plot_bars_limit = 100
+
 
     def apply_from_island(self, results, b_idx, br_idx):
         """
@@ -3285,7 +3290,10 @@ class PowerFlowResults:
             # ax.set_xlabel('Element')
             # ax.set_ylabel(ylabel)
             df = pd.DataFrame(data=y, index=labels, columns=[type])
-            df.plot(ax=ax, kind='bar')
+            if len(df) < self.plot_bars_limit:
+                df.plot(ax=ax, kind='bar')
+            else:
+                df.plot(ax=ax)
             ax.set_ylabel(ylabel)
 
             return df

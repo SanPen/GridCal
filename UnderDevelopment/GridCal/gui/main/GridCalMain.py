@@ -322,9 +322,9 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-        fname = 'IEEE_30BUS_profiles.xls'
-        self.circuit.load_file(fname)
-        self.create_schematic_from_api(explode_factor=50)
+        # fname = 'IEEE_30BUS_profiles.xls'
+        # self.circuit.load_file(fname)
+        # self.create_schematic_from_api(explode_factor=50)
 
     def LOCK(self, val=True):
         """
@@ -486,6 +486,18 @@ class MainGUI(QMainWindow):
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
+
+    def console_msg(self, msg_):
+        """
+        Print in the console some message
+        Args:
+            msg_:
+
+        Returns:
+
+        """
+        dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
+        self.console.print_text('\n' + dte + '->' + msg_)
 
     def compile(self):
         """
@@ -919,6 +931,11 @@ class MainGUI(QMainWindow):
                                    LoadBranch=self.circuit.power_flow_results.loading,
                                    Losses=self.circuit.power_flow_results.losses)
             self.update_available_results()
+
+            msg_ = 'Power flow converged: ' + str(self.circuit.power_flow_results.converged) \
+                   + ', err: ' + str(self.circuit.power_flow_results.error)
+            self.console_msg(msg_)
+
         else:
             warn('Something went wrong, There are no power flow results.')
             QtGui.QGuiApplication.processEvents()
