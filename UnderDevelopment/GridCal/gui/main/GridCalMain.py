@@ -157,17 +157,17 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
-        # self.solvers_dict['Newton-Raphson [NR]'] = SolverType.NR
+        self.solvers_dict['Newton-Raphson'] = SolverType.NR
         # self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
         # self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
         self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
+        self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
         # self.solvers_dict['Gauss-Seidel'] = SolverType.GAUSS
         # self.solvers_dict['Z-Matrix Gauss-Seidel'] = SolverType.ZBUS
         self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
         # self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
         # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
         self.solvers_dict['DC approximation'] = SolverType.DC
-        self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
 
         lst = list(self.solvers_dict.keys())
         mdl = get_list_model(lst)
@@ -933,7 +933,11 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
             msg_ = 'Power flow converged: ' + str(self.circuit.power_flow_results.converged) \
-                   + ', err: ' + str(self.circuit.power_flow_results.error)
+                   + '\n\terr: ' + str(self.circuit.power_flow_results.error) \
+                   + '\n\telapsed: ' + str(self.circuit.power_flow_results.elapsed) \
+                   + '\n\tmethods: ' + str(self.circuit.power_flow_results.methods) \
+                   + '\n\tinner iter: ' + str(self.circuit.power_flow_results.inner_iterations) \
+                   + '\n\touter iter: ' + str(self.circuit.power_flow_results.outer_iterations)
             self.console_msg(msg_)
 
         else:

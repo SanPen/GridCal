@@ -13,7 +13,7 @@ from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
 from scipy.sparse.linalg import spsolve
 import scipy
 scipy.ALLOW_THREADS = True
-
+import time
 import numpy as np
 
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
@@ -174,10 +174,11 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     @author: Ray Zimmerman (PSERC Cornell)
     @Author: Santiago Penate Vera
     """
+    start = time.time()
 
     # initialize
     converged = 0
-    i = 0
+    iter_ = 0
     V = V0
     Va = angle(V)
     Vm = abs(V)
@@ -213,9 +214,9 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
         converged = 1
 
     # do Newton iterations
-    while not converged and i < max_it:
+    while not converged and iter_ < max_it:
         # update iteration counter
-        i += 1
+        iter_ += 1
 
         # evaluate Jacobian
         J = Jacobian(Ybus, V, Ibus, pq, pvpq)
@@ -256,7 +257,10 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
         if normF < tol:
             converged = 1
 
-    return V, converged, normF, Scalc
+    end = time.time()
+    elapsed = end - start
+
+    return V, converged, normF, Scalc, iter_, elapsed
 
 
 def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
@@ -277,6 +281,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
     @Author: Santiago Penate Vera
     """
+    start = time.time()
 
     # initialize
     V = V0
@@ -376,5 +381,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
         # update iteration counter
         iter_ += 1
+    end = time.time()
+    elapsed = end - start
 
-    return V, converged, normF, Scalc
+    return V, converged, normF, Scalc, iter_, elapsed

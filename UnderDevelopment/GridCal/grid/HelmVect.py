@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
 import numpy as np
 np.set_printoptions(linewidth=320)
 from numpy import zeros, ones, mod, conj, array, r_, linalg, Inf, complex128
@@ -477,6 +478,8 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
         Scalc: Power computed from the voltage solution
     """
 
+    start = time.time()
+
     # number of nodes
     nbus = np.shape(Ys)[0]
 
@@ -619,7 +622,10 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
 
     # errors_lst = [array(errors), array(errors_PV_P), array(errors_PV_Q), array(errors_PQ_P), array(errors_PQ_Q)]
 
-    return Vred_last, converged, normF, Scalc
+    end = time.time()
+    elapsed = end - start
+
+    return Vred_last, converged, normF, Scalc, n, elapsed
 
 
 def bifurcation_point(C, pqpv):

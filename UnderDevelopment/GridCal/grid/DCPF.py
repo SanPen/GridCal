@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
 from scipy.sparse.linalg import spsolve
 from numpy import linalg, Inf, exp, r_, conj, angle, matrix, empty, abs as npabs
 
@@ -35,6 +36,9 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
         Solution error
         Computed power injections given the found solution
     """
+
+    start = time.time()
+
     # Decompose the voltage in angle and magnitude
     Va_ref = angle(V0[ref])  # we only need the angles at the slack nodes
     Vm = npabs(V0)
@@ -70,5 +74,8 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     # check for convergence
     normF = linalg.norm(F, Inf)
 
-    return V, True, normF, Scalc
+    end = time.time()
+    elapsed = end - start
+
+    return V, True, normF, Scalc, 1, elapsed
 

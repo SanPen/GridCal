@@ -3086,7 +3086,7 @@ class PowerFlowInput:
 class PowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
-                 converged=None, Qpv=None):
+                 converged=None, Qpv=None, inner_it=None, outer_it=None, elapsed=None, methods=None):
         """
 
         @param voltage: Voltages array (p.u.)
@@ -3134,6 +3134,14 @@ class PowerFlowResults:
 
         self.plot_bars_limit = 100
 
+        self.inner_iterations = inner_it
+
+        self.outer_iterations = outer_it
+
+        self.elapsed = elapsed
+
+        self.methods = methods
+
     def copy(self):
         """
         Return a copy of this
@@ -3142,7 +3150,8 @@ class PowerFlowResults:
         return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
                                 Ibranch=self.Ibranch, loading=self.loading,
                                 losses=self.losses, error=self.error,
-                                converged=self.converged, Qpv=self.Qpv)
+                                converged=self.converged, Qpv=self.Qpv, inner_it=self.inner_iterations,
+                                outer_it=self.outer_iterations, elapsed=self.elapsed, methods=self.methods)
 
     def initialize(self, n, m):
         """
@@ -3169,14 +3178,21 @@ class PowerFlowResults:
 
         self.overloads = zeros(m, dtype=complex)
 
-        self.error = 0
+        self.error = list()
 
-        self.converged = True
+        self.converged = list()
 
         self.buses_useful_for_storage = list()
 
         self.plot_bars_limit = 100
 
+        self.inner_iterations = list()
+
+        self.outer_iterations = list()
+
+        self.elapsed = list()
+
+        self.methods = list()
 
     def apply_from_island(self, results, b_idx, br_idx):
         """
@@ -3204,10 +3220,20 @@ class PowerFlowResults:
 
         self.overloads[br_idx] = results.overloads
 
-        if results.error > self.error:
-            self.error = results.error
+        # if results.error > self.error:
+        self.error.append(results.error)
 
-        self.converged = self.converged and results.converged
+        self.converged.append(results.converged)
+
+        self.inner_iterations.append(results.inner_iterations)
+
+        self.outer_iterations.append(results.outer_iterations)
+
+        self.elapsed.append(results.elapsed)
+
+        self.methods.append(results.methods)
+
+        # self.converged = self.converged and results.converged
 
         if results.buses_useful_for_storage is not None:
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
@@ -3413,6 +3439,11 @@ class PowerFlow(QRunnable):
 
         any_control_issue = True  # guilty assumption...
 
+        inner_it = list()
+        outer_it = 0
+        elapsed = list()
+        methods = list()
+
         while any_control_issue:
 
             if len(circuit.power_flow_input.ref) == 0:
@@ -3424,67 +3455,68 @@ class PowerFlow(QRunnable):
             else:
                 # type HELM
                 if self.options.solver_type == SolverType.HELM:
-                    V, converged, normF, Scalc = helm(Y=circuit.power_flow_input.Ybus,
-                                                      Ys=circuit.power_flow_input.Yseries,
-                                                      Ysh=circuit.power_flow_input.Yshunt,
-                                                      max_coefficient_count=30,
-                                                      S=circuit.power_flow_input.Sbus,
-                                                      voltage_set_points=V,
-                                                      pq=circuit.power_flow_input.pq,
-                                                      pv=circuit.power_flow_input.pv,
-                                                      vd=circuit.power_flow_input.ref,
-                                                      eps=self.options.tolerance)
+                    methods.append(SolverType.HELM)
+                    V, converged, normF, Scalc, it, el = helm(Y=circuit.power_flow_input.Ybus,
+                                                              Ys=circuit.power_flow_input.Yseries,
+                                                              Ysh=circuit.power_flow_input.Yshunt,
+                                                              max_coefficient_count=30,
+                                                              S=circuit.power_flow_input.Sbus,
+                                                              voltage_set_points=V,
+                                                              pq=circuit.power_flow_input.pq,
+                                                              pv=circuit.power_flow_input.pv,
+                                                              vd=circuit.power_flow_input.ref,
+                                                              eps=self.options.tolerance)
                 # type DC
                 elif self.options.solver_type == SolverType.DC:
-
-                    V, converged, normF, Scalc = dcpf(Ybus=circuit.power_flow_input.Ybus,
-                                                      Sbus=Sbus,
-                                                      Ibus=circuit.power_flow_input.Ibus,
-                                                      V0=V,
-                                                      ref=circuit.power_flow_input.ref,
-                                                      pvpq=circuit.power_flow_input.pqpv,
-                                                      pq=circuit.power_flow_input.pq,
-                                                      pv=circuit.power_flow_input.pv)
+                    methods.append(SolverType.DC)
+                    V, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.power_flow_input.Ybus,
+                                                              Sbus=Sbus,
+                                                              Ibus=circuit.power_flow_input.Ibus,
+                                                              V0=V,
+                                                              ref=circuit.power_flow_input.ref,
+                                                              pvpq=circuit.power_flow_input.pqpv,
+                                                              pq=circuit.power_flow_input.pq,
+                                                              pv=circuit.power_flow_input.pv)
 
                 elif self.options.solver_type == SolverType.LM:
-                    V, converged, normF, Scalc = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
-                                                                      Sbus=Sbus,
-                                                                      V0=V,
-                                                                      Ibus=circuit.power_flow_input.Ibus,
-                                                                      pv=circuit.power_flow_input.pv,
-                                                                      pq=circuit.power_flow_input.pq,
-                                                                      tol=self.options.tolerance,
-                                                                      max_it=self.options.max_iter)
+                    methods.append(SolverType.LM)
+                    V, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
+                                                                              Sbus=Sbus,
+                                                                              V0=V,
+                                                                              Ibus=circuit.power_flow_input.Ibus,
+                                                                              pv=circuit.power_flow_input.pv,
+                                                                              pq=circuit.power_flow_input.pq,
+                                                                              tol=self.options.tolerance,
+                                                                              max_it=self.options.max_iter)
+
+                elif self.options.solver_type == SolverType.NR:
+                    methods.append(SolverType.NR)
+                    V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                   Sbus=Sbus,
+                                                                   V0=V,
+                                                                   Ibus=circuit.power_flow_input.Ibus,
+                                                                   pv=circuit.power_flow_input.pv,
+                                                                   pq=circuit.power_flow_input.pq,
+                                                                   tol=self.options.tolerance,
+                                                                   max_it=self.options.max_iter,
+                                                                   robust=False)
+
+                elif self.options.solver_type == SolverType.IWAMOTO:
+                    methods.append(SolverType.IWAMOTO)
+                    V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                   Sbus=Sbus,
+                                                                   V0=V,
+                                                                   Ibus=circuit.power_flow_input.Ibus,
+                                                                   pv=circuit.power_flow_input.pv,
+                                                                   pq=circuit.power_flow_input.pq,
+                                                                   tol=self.options.tolerance,
+                                                                   max_it=self.options.max_iter,
+                                                                   robust=True)
 
                 # for any other method, for now, do a NR Iwamoto
                 else:
-                    V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                           Sbus=Sbus,
-                                                           V0=V,
-                                                           Ibus=circuit.power_flow_input.Ibus,
-                                                           pv=circuit.power_flow_input.pv,
-                                                           pq=circuit.power_flow_input.pq,
-                                                           tol=self.options.tolerance,
-                                                           max_it=self.options.max_iter,
-                                                           robust=self.options.robust)
-
-                    if not converged:
-                        # Try with HELM
-                        V, converged, normF, Scalc = helm(Y=circuit.power_flow_input.Ybus,
-                                                          Ys=circuit.power_flow_input.Yseries,
-                                                          Ysh=circuit.power_flow_input.Yshunt,
-                                                          max_coefficient_count=30,
-                                                          S=circuit.power_flow_input.Sbus,
-                                                          voltage_set_points=circuit.power_flow_input.Vbus,
-                                                          pq=circuit.power_flow_input.pq,
-                                                          pv=circuit.power_flow_input.pv,
-                                                          vd=circuit.power_flow_input.ref,
-                                                          eps=self.options.tolerance)
-                        Vhelm = V.copy()
-
-                        # Retry NR using the HELM solution as starting point
-                        if not converged:
-                            V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                    methods.append(SolverType.IWAMOTO)
+                    V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                    Sbus=Sbus,
                                                                    V0=V,
                                                                    Ibus=circuit.power_flow_input.Ibus,
@@ -3493,6 +3525,34 @@ class PowerFlow(QRunnable):
                                                                    tol=self.options.tolerance,
                                                                    max_it=self.options.max_iter,
                                                                    robust=self.options.robust)
+
+                    if not converged:
+                        # Try with HELM
+                        methods.append(SolverType.HELM)
+                        V, converged, normF, Scalc, it, el = helm(Y=circuit.power_flow_input.Ybus,
+                                                                  Ys=circuit.power_flow_input.Yseries,
+                                                                  Ysh=circuit.power_flow_input.Yshunt,
+                                                                  max_coefficient_count=30,
+                                                                  S=circuit.power_flow_input.Sbus,
+                                                                  voltage_set_points=circuit.power_flow_input.Vbus,
+                                                                  pq=circuit.power_flow_input.pq,
+                                                                  pv=circuit.power_flow_input.pv,
+                                                                  vd=circuit.power_flow_input.ref,
+                                                                  eps=self.options.tolerance)
+                        Vhelm = V.copy()
+
+                        # Retry NR using the HELM solution as starting point
+                        if not converged:
+                            methods.append(SolverType.IWAMOTO)
+                            V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                           Sbus=Sbus,
+                                                                           V0=V,
+                                                                           Ibus=circuit.power_flow_input.Ibus,
+                                                                           pv=circuit.power_flow_input.pv,
+                                                                           pq=circuit.power_flow_input.pq,
+                                                                           tol=self.options.tolerance,
+                                                                           max_it=self.options.max_iter,
+                                                                           robust=self.options.robust)
 
                             # if it still did not converge, just use the helm voltage approximation
                             if not converged:
@@ -3515,24 +3575,17 @@ class PowerFlow(QRunnable):
                     if self.options.verbose:
                         print('Controls Ok')
 
+            # # increment the inner iterations counter
+            inner_it.append(it)
+
+            # increment the outer control iterations counter
+            outer_it += 1
+
+            # add the time taken by the solver in this iteration
+            elapsed.append(el)
+
         # revert the types to the original
         circuit.power_flow_input.compile_types(original_types)
-
-        # if not self.check_controls(circuit, Sbus):
-
-        # if optimize:
-        #     print('Controls out of bounds: optimizing...')
-        #
-        #     # The voltage solution V is modified by reference, therefore after the optimization
-        #     # V in this function is the voltage solution
-        #     fev, normF = self.optimization(pv=circuit.power_flow_input.pv,
-        #                                    circuit=circuit, Sbus=Sbus, V=V,
-        #                                    tol=self.options.tolerance,
-        #                                    maxiter=self.options.max_iter,
-        #                                    robust=self.options.robust,
-        #                                    verbose=self.options.verbose)
-        #     if abs(fev) > 1e-3:
-        #         print('Controls cannot be satisfied.')
 
         # Compute the branches power
         Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
@@ -3546,7 +3599,11 @@ class PowerFlow(QRunnable):
                                    losses=losses,
                                    error=normF,
                                    converged=bool(converged),
-                                   Qpv=None)
+                                   Qpv=None,
+                                   inner_it=inner_it,
+                                   outer_it=outer_it,
+                                   elapsed=elapsed,
+                                   methods=methods)
 
         # # check the limits
         # sum_dev = results.check_limits(circuit.power_flow_input)
