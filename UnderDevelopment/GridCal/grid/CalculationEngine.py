@@ -5145,11 +5145,15 @@ class MonteCarloResults:
                 pass
 
             df = pd.DataFrame(data=y, columns=labels)
-            df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+            if len(df.columns) > 10:
+                df.plot(ax=ax, linewidth=1, legend=False)
+            else:
+                df.plot(ax=ax, linewidth=1, legend=True)
 
             ax.set_title(ylabel)
             ax.set_ylabel(ylabel)
-            ax.set_xlabel('MC points')
+            ax.set_xlabel('Sampling points')
 
             return df
 
