@@ -20,7 +20,7 @@ grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
-fname = 'IEEE_30BUS_profiles.xls'
+fname = 'IEEE_30_new.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 grid.load_file(fname)
@@ -55,16 +55,16 @@ print('\tConv:', grid.power_flow_results.converged)
 ####################################################################################################################
 # Short circuit
 ####################################################################################################################
-print('\n\n')
-print('Short Circuit')
-sc_options = ShortCircuitOptions(bus_index=[16], zf=0.0)
-sc = ShortCircuit(grid, sc_options)
-sc.run()
-
-print('\n\n', grid.name)
-print('\t|V|:', abs(grid.short_circuit_results.voltage))
-print('\t|Sbranch|:', abs(grid.short_circuit_results.Sbranch))
-print('\t|loading|:', abs(grid.short_circuit_results.loading) * 100)
+# print('\n\n')
+# print('Short Circuit')
+# sc_options = ShortCircuitOptions(bus_index=[16])
+# sc = ShortCircuit(grid, sc_options)
+# sc.run()
+#
+# print('\n\n', grid.name)
+# print('\t|V|:', abs(grid.short_circuit_results.voltage))
+# print('\t|Sbranch|:', abs(grid.short_circuit_results.Sbranch))
+# print('\t|loading|:', abs(grid.short_circuit_results.loading) * 100)
 
 ####################################################################################################################
 # Time Series
@@ -106,4 +106,11 @@ print('\t|loading|:', abs(grid.short_circuit_results.loading) * 100)
 
 # mc_sim = MonteCarlo(grid, options)
 # mc_sim.run()
+
+####################################################################################################################
+# Latin Hypercube
+####################################################################################################################
+
+lhs_sim = LatinHypercubeSampling(grid, options, sampling_points=100)
+lhs_sim.run()
 

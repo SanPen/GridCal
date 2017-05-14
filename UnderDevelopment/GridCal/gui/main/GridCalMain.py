@@ -212,6 +212,7 @@ class MainGUI(QMainWindow):
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
+        self.latin_hypercube_sampling = None
 
         self.results_df = None
 
@@ -255,6 +256,8 @@ class MainGUI(QMainWindow):
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_time_series)
 
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
+
+        self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -1237,6 +1240,58 @@ class MainGUI(QMainWindow):
                                Sbus=None)
         self.update_available_results()
 
+    def run_lhs(self):
+        """
+        Run a Monte Carlo simulation
+        @return:
+        """
+        print('run_lhs')
+
+        if len(self.circuit.buses) > 0:
+
+            if self.circuit.time_profile is not None:
+
+                self.LOCK()
+
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+                self.compile()
+
+                options = self.get_selected_power_flow_options()
+
+                sampling_points = self.ui.lhs_samples_number_spinBox.value()
+
+                self.latin_hypercube_sampling = LatinHypercubeSampling(self.circuit, options, sampling_points)
+
+                self.latin_hypercube_sampling.progress_signal.connect(self.ui.progressBar.setValue)
+                self.latin_hypercube_sampling.progress_text.connect(self.ui.progress_label.setText)
+                self.latin_hypercube_sampling.done_signal.connect(self.UNLOCK)
+                self.latin_hypercube_sampling.done_signal.connect(self.post_lhs)
+
+                self.latin_hypercube_sampling.start()
+            else:
+                self.msg('There are no time series.')
+
+        else:
+            pass
+
+    def post_lhs(self):
+        """
+        Actions to perform after the Monte Carlo simulation is finished
+        @return:
+        """
+        print('post_lhs')
+        # update the results in the circuit structures
+        print('Vbus:\n', abs(self.latin_hypercube_sampling.results.voltage))
+        print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
+        print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
+
+        self.color_based_of_pf(Vbus=self.latin_hypercube_sampling.results.voltage,
+                               LoadBranch=self.latin_hypercube_sampling.results.loading,
+                               Sbranch=self.latin_hypercube_sampling.results.sbranch,
+                               Sbus=None)
+        self.update_available_results()
+
     def set_cancel_state(self):
         """
         Cancel whatever's going on that can be cancelled
@@ -1277,6 +1332,10 @@ class MainGUI(QMainWindow):
         if self.monte_carlo is not None:
             lst.append("Monte Carlo")
             self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
+
+        if self.latin_hypercube_sampling is not None:
+            lst.append("Latin Hypercube")
+            self.available_results_dict["Latin Hypercube"] = self.latin_hypercube_sampling.results.available_results
 
         if self.short_circuit is not None:
             lst.append("Short Circuit")
@@ -1358,6 +1417,9 @@ class MainGUI(QMainWindow):
 
             elif study == 'Monte Carlo':
                 self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+
+            elif study == 'Latin Hypercube':
+                self.results_df = self.latin_hypercube_sampling.results.plot(type=study_type, ax=ax, indices=indices, names=names)
 
             elif study == 'Short Circuit':
                 self.results_df = self.short_circuit.results.plot(type=study_type, ax=ax, indices=indices, names=names)

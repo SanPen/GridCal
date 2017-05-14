@@ -80,6 +80,7 @@ if platform.system() == 'Windows':
                           "xlwt",
                           "xlrd",
                           # "PyQt5",
+                          "pyDOE",
                           "matplotlib",
                           "qtconsole"
                           ]
@@ -95,6 +96,7 @@ else:
                          "xlwt",
                          "xlrd",
                          "PyQt5",
+                         "pyDOE",
                          "matplotlib",
                          "qtconsole"
                          ]

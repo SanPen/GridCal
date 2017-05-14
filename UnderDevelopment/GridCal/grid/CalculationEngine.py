@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.42
+__GridCal_VERSION__ = 1.44
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -34,6 +34,7 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
      where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
+from pyDOE import lhs
 
 if 'fivethirtyeight' in plt.style.available:
     plt.style.use('fivethirtyeight')
@@ -163,7 +164,12 @@ class CDF(object):
         @param prob: probability from 0 to 1
         @return: Corresponding CDF value
         """
-        return interp(prob, self.prob, self.arr)
+        if self.iscomplex:
+            a = interp(prob, self.prob, self.arr.real)
+            b = interp(prob, self.prob, self.arr.imag)
+            return a + 1j * b
+        else:
+            return interp(prob, self.prob, self.arr)
 
     def plot(self, ax=None):
         """
@@ -1948,13 +1954,13 @@ class Circuit:
         else:
             warn('No time series values')
 
-    def sample_monte_carlo_batch(self, batch_size):
+    def sample_monte_carlo_batch(self, batch_size, use_latin_hypercube=False):
         """
         Samples a monte carlo batch as a time series object
         @param batch_size: size of the batch (integer)
         @return:
         """
-        self.mc_time_series = self.monte_carlo_input(batch_size)
+        self.mc_time_series = self.monte_carlo_input(batch_size, use_latin_hypercube)
 
     def get_loads(self):
         lst = list()
@@ -4359,9 +4365,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.losses[t, :] = results.losses[br_idx]
 
-        self.error[t] = results.error
+        self.error[t] = max(results.error)
 
-        self.converged[t] = results.converged
+        self.converged[t] = min(results.converged)
 
         # self.Qpv = Qpv
 
@@ -4852,9 +4858,9 @@ class MonteCarloInput:
     def __init__(self, n, Scdf, Icdf, Ycdf):
         """
 
-        @param Scdf:
-        @param Icdf:
-        @param Ycdf:
+        @param Scdf: Power cumulative density function
+        @param Icdf: Current cumulative density function
+        @param Ycdf: Admittances cumulative density function
         """
         self.n = n
 
@@ -4864,25 +4870,38 @@ class MonteCarloInput:
 
         self.Ycdf = Ycdf
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, samples=0, use_latin_hypercube=False):
 
-        if len(args) > 0:
-            samples = args[0]
-            S = zeros((samples, self.n), dtype=complex)
-            I = zeros((samples, self.n), dtype=complex)
-            Y = zeros((samples, self.n), dtype=complex)
+        if use_latin_hypercube:
 
-            for i in range(self.n):
-                if self.Scdf[i] is not None:
-                    S[:, i] = self.Scdf[i].get_sample(samples)
+            lhs_points = lhs(self.n, samples=samples, criterion='center')
+
+            if samples > 0:
+                S = zeros((samples, self.n), dtype=complex)
+                I = zeros((samples, self.n), dtype=complex)
+                Y = zeros((samples, self.n), dtype=complex)
+
+                for i in range(self.n):
+                    if self.Scdf[i] is not None:
+                        S[:, i] = self.Scdf[i].get_at(lhs_points[:, i])
+
         else:
-            S = zeros(self.n, dtype=complex)
-            I = zeros(self.n, dtype=complex)
-            Y = zeros(self.n, dtype=complex)
+            if samples > 0:
+                S = zeros((samples, self.n), dtype=complex)
+                I = zeros((samples, self.n), dtype=complex)
+                Y = zeros((samples, self.n), dtype=complex)
 
-            for i in range(self.n):
-                if self.Scdf[i] is not None:
-                    S[i] = complex(self.Scdf[i].get_sample()[0])
+                for i in range(self.n):
+                    if self.Scdf[i] is not None:
+                        S[:, i] = self.Scdf[i].get_sample(samples)
+            else:
+                S = zeros(self.n, dtype=complex)
+                I = zeros(self.n, dtype=complex)
+                Y = zeros(self.n, dtype=complex)
+
+                for i in range(self.n):
+                    if self.Scdf[i] is not None:
+                        S[i] = complex(self.Scdf[i].get_sample()[0])
 
         time_series_input = TimeSeriesInput()
         time_series_input.S = S
@@ -5060,7 +5079,7 @@ class MonteCarloResults:
         """
         return self.V_points.sum(axis=0)
 
-    def compile(self):
+    def compile(self, lhs_mode=False):
         """
         Compiles the final Monte Carlo values
         @return:
@@ -5070,14 +5089,18 @@ class MonteCarloResults:
         self.loading = self.loading_points.mean(axis=0)
 
         p, n = self.V_points.shape
-        p, m = self.I_points.shape
-        step = 100
+        ni, m = self.I_points.shape
+        if lhs_mode:
+            step = 1
+        else:
+            step = 100
         nn = int(floor(p / step) + 1)
         self.v_convergence = zeros((nn, n))
         self.c_convergence = zeros((nn, m))
         self.l_convergence = zeros((nn, m))
         k = 0
-        for i in range(1, p, 100):
+
+        for i in range(1, p+1, step):
             self.v_convergence[k, :] = abs(self.V_points[0:i, :].std(axis=0))
             self.c_convergence[k, :] = abs(self.I_points[0:i, :].std(axis=0))
             self.l_convergence[k, :] = abs(self.loading_points[0:i, :].std(axis=0))
@@ -5129,3 +5152,105 @@ class MonteCarloResults:
 
         else:
             return None
+
+
+class LatinHypercubeSampling(QThread):
+
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, sampling_points=1000):
+        """
+
+        Args:
+            grid:
+            options:
+            sampling_points:
+        """
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.options = options
+
+        self.sampling_points = sampling_points
+
+        self.results = None
+
+        self.__cancel__ = False
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+
+        self.__cancel__ = False
+
+        # initialize the power flow
+        powerflow = PowerFlow(self.grid, self.options)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+
+        mc_tol = 1e-6
+        batch_size = self.sampling_points
+        max_mc_iter = 100000
+        iter = 0
+        variance_sum = 0.0
+        std_dev_progress = 0
+        Vvariance = 0
+
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+
+        mc_results = MonteCarloResults(n, m)
+
+        Vsum = zeros(n, dtype=complex)
+        self.progress_signal.emit(0.0)
+
+        self.progress_text.emit('Running Latin Hypercube Sampling...')
+
+        lhs_results = MonteCarloResults(n, m, batch_size)
+
+        max_iter = batch_size * len(self.grid.circuits)
+        iter = 0
+
+        # For every circuit, run the time series
+        for c in self.grid.circuits:
+
+            # set the time series as sampled
+            c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
+
+            # run the time series
+            for t in range(batch_size):
+                # print(t + 1, ' / ', batch_size)
+                # set the power values
+                Y, I, S = c.mc_time_series.get_at(t)
+
+                res = powerflow.run_at(t, mc=True)
+                lhs_results.S_points[t, c.bus_original_idx] = S
+                lhs_results.V_points[t, c.bus_original_idx] = res.voltage[c.bus_original_idx]
+                lhs_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
+                lhs_results.loading_points[t, c.branch_original_idx] = res.loading[c.branch_original_idx]
+
+                iter += 1
+                self.progress_signal.emit(iter / max_iter * 100)
+
+        # compile MC results
+        lhs_results.compile(True)
+
+        # lhs_results the averaged branch magnitudes
+        mc_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
+
+        self.results = lhs_results
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def cancel(self):
+        self.__cancel__ = True
