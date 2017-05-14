@@ -3317,15 +3317,11 @@ class PowerFlowResults:
             else:
                 pass
 
-            # ax.set_xticklabels(names)
-            # ax.plot(indices, y)
-            # ax.set_xlabel('Element')
-            # ax.set_ylabel(ylabel)
             df = pd.DataFrame(data=y, index=labels, columns=[type])
-            if len(df) < self.plot_bars_limit:
+            if len(df.columns) < self.plot_bars_limit:
                 df.plot(ax=ax, kind='bar')
             else:
-                df.plot(ax=ax)
+                df.plot(ax=ax, legend=False)
             ax.set_ylabel(ylabel)
 
             return df
@@ -4517,9 +4513,12 @@ class TimeSeriesResults(PowerFlowResults):
             else:
                 pass
 
-            # df = pd.DataFrame(data=y, index=time_index, columns=labels)
             df.columns = labels
-            df.plot(ax=ax, linewidth=1)  # , kind='bar')
+
+            if len(df.columns) > 10:
+                df.plot(ax=ax, linewidth=1, legend=False)
+            else:
+                df.plot(ax=ax, linewidth=1, legend=True)
 
             ax.set_title(ylabel)
             ax.set_ylabel(ylabel)
@@ -4773,7 +4772,10 @@ class VoltageCollapseResults:
 
             df = pd.DataFrame(data=y, index=x, columns=indices)
             df.columns = labels
-            df.plot(ax=ax, linewidth=1)  # , kind='bar')
+            if len(df.columns) > 10:
+                df.plot(ax=ax, linewidth=1, legend=False)
+            else:
+                df.plot(ax=ax, linewidth=1, legend=True)
 
             ax.set_title(ylabel)
             ax.set_ylabel(ylabel)
