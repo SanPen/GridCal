@@ -1309,6 +1309,9 @@ class MainGUI(QMainWindow):
         if self.voltage_stability is not None:
             self.voltage_stability.cancel()
 
+        if self.latin_hypercube_sampling is not None:
+            self.latin_hypercube_sampling.cancel()
+
     def update_available_results(self):
         """
 

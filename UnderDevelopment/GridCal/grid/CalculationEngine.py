@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.44
+__GridCal_VERSION__ = 1.45
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -5026,6 +5026,9 @@ class MonteCarlo(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
 
 
 class MonteCarloResults:
@@ -5239,6 +5242,12 @@ class LatinHypercubeSampling(QThread):
                 iter += 1
                 self.progress_signal.emit(iter / max_iter * 100)
 
+                if self.__cancel__:
+                    break
+
+            if self.__cancel__:
+                break
+
         # compile MC results
         lhs_results.compile(True)
 
@@ -5254,3 +5263,6 @@ class LatinHypercubeSampling(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
