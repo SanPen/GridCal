@@ -1120,15 +1120,18 @@ class MainGUI(QMainWindow):
         """
         if self.voltage_stability.results is not None:
 
-            V = self.voltage_stability.results.voltages[-1, :]
-            Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
-            Sbranch, Ibranch, loading, losses = self.power_flow.compute_branch_results(self.circuit, V)
+            if self.voltage_stability.results.voltages is not None:
+                V = self.voltage_stability.results.voltages[-1, :]
+                Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
+                Sbranch, Ibranch, loading, losses = self.power_flow.compute_branch_results(self.circuit, V)
 
-            self.color_based_of_pf(Sbus=Sbus,
-                                   Sbranch=Sbranch,
-                                   Vbus=V,
-                                   LoadBranch=loading)
-            self.update_available_results()
+                self.color_based_of_pf(Sbus=Sbus,
+                                       Sbranch=Sbranch,
+                                       Vbus=V,
+                                       LoadBranch=loading)
+                self.update_available_results()
+            else:
+                self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
             warn('Something went wrong, There are no power flow results.')
         self.UNLOCK()
