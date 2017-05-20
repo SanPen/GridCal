@@ -5060,11 +5060,19 @@ class MonteCarloResults:
         self.sbranch = None
         self.losses = None
 
-        self.v_convergence = None
-        self.c_convergence = None
-        self.l_convergence = None
+        # magnitudes standard deviation convergence
+        self.v_std_conv = None
+        self.c_std_conv = None
+        self.l_std_conv = None
 
-        self.available_results = ['Bus voltage std', 'Bus current std', 'Branch loading std']
+        # magnitudes average convergence
+        self.v_avg_conv = None
+        self.c_avg_conv = None
+        self.l_avg_conv = None
+
+        self.available_results = ['Bus voltage avg', 'Bus voltage std',
+                                  'Bus current avg', 'Bus current std',
+                                  'Branch loading avg', 'Branch loading std']
 
     def append_batch(self, mcres):
         """
@@ -5100,16 +5108,68 @@ class MonteCarloResults:
         else:
             step = 100
         nn = int(floor(p / step) + 1)
-        self.v_convergence = zeros((nn, n))
-        self.c_convergence = zeros((nn, m))
-        self.l_convergence = zeros((nn, m))
-        k = 0
+        self.v_std_conv = zeros((nn, n))
+        self.c_std_conv = zeros((nn, m))
+        self.l_std_conv = zeros((nn, m))
+        self.v_avg_conv = zeros((nn, n))
+        self.c_avg_conv = zeros((nn, m))
+        self.l_avg_conv = zeros((nn, m))
+        # k = 0
 
-        for i in range(1, p+1, step):
-            self.v_convergence[k, :] = abs(self.V_points[0:i, :].std(axis=0))
-            self.c_convergence[k, :] = abs(self.I_points[0:i, :].std(axis=0))
-            self.l_convergence[k, :] = abs(self.loading_points[0:i, :].std(axis=0))
-            k += 1
+        # for i in range(1, p+1, step):
+        #     self.v_convergence[k, :] = abs(self.V_points[0:i, :].std(axis=0))
+        #     self.c_convergence[k, :] = abs(self.I_points[0:i, :].std(axis=0))
+        #     self.l_convergence[k, :] = abs(self.loading_points[0:i, :].std(axis=0))
+        #     k += 1
+
+        '''
+        def statsnp(x):
+          n = 0
+          S = 0.0
+          m = 0.0
+          Sarr = zeros_like(x)
+          Marr = zeros_like(x)
+          for x_i in x:
+            n += 1
+            m_prev = m
+            m += (x_i - m) / n
+            S += (x_i - m) * (x_i - m_prev)
+            Marr[n-1] = m
+            Sarr[n-1] = S/n
+
+          return Marr, Sarr
+        '''
+
+        v_mean = zeros(n)
+        c_mean = zeros(m)
+        l_mean = zeros(m)
+        v_std = zeros(n)
+        c_std = zeros(m)
+        l_std = zeros(m)
+
+        for t in range(1, p, step):
+            v_mean_prev = v_mean.copy()
+            c_mean_prev = c_mean.copy()
+            l_mean_prev = l_mean.copy()
+
+            v = abs(self.V_points[t, :])
+            c = abs(self.I_points[t, :])
+            l = abs(self.loading_points[t, :])
+
+            v_mean += (v - v_mean) / t
+            v_std += (v - v_mean) * (v - v_mean_prev)
+            self.v_avg_conv[t] = v_mean
+            self.v_std_conv[t] = v_std / t
+
+            c_mean += (c - c_mean) / t
+            c_std += (c - c_mean) * (c - c_mean_prev)
+            self.c_std_conv[t] = c_std / t
+            self.c_avg_conv[t] = c_mean
+
+            l_mean += (l - l_mean) / t
+            l_std += (l - l_mean) * (l - l_mean_prev)
+            self.l_std_conv[t] = l_std / t
+            self.l_avg_conv[t] = l_mean
 
     def plot(self, type, ax=None, indices=None, names=None):
         """
@@ -5125,23 +5185,43 @@ class MonteCarloResults:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
+        p, n = self.V_points.shape
+
         if indices is None:
-            indices = array(range(len(names)))
+            if names is None:
+                indices = arange(0, n, 1)
+                labels = None
+            else:
+                indices = array(range(len(names)))
+                labels = names[indices]
 
         if len(indices) > 0:
-            labels = names[indices]
+
             ylabel = ''
-            if type == 'Bus voltage std':
-                y = self.v_convergence[1:-1, indices]
-                ylabel = 'Bus voltage (p.u.)'
+
+            if type == 'Bus voltage avg':
+                y = self.v_avg_conv[1:-1, indices]
+                ylabel = 'Bus voltage average convergence(p.u.)'
+
+            elif type == 'Bus current avg':
+                y = self.c_avg_conv[1:-1, indices]
+                ylabel = 'Branch current average convergence(kA)'
+
+            elif type == 'Branch loading avg':
+                y = self.l_avg_conv[1:-1, indices]
+                ylabel = 'Branch loading average convergence(%)'
+
+            elif type == 'Bus voltage std':
+                y = self.v_std_conv[1:-1, indices]
+                ylabel = 'Bus voltage standard deviation convergence(p.u.)'
 
             elif type == 'Bus current std':
-                y = self.c_convergence[1:-1, indices]
-                ylabel = 'Branch current (kA)'
+                y = self.c_std_conv[1:-1, indices]
+                ylabel = 'Branch current standard deviation convergence(kA)'
 
             elif type == 'Branch loading std':
-                y = self.l_convergence[1:-1, indices]
-                ylabel = 'Branch loading (%)'
+                y = self.l_std_conv[1:-1, indices]
+                ylabel = 'Branch loading standard deviation convergence(%)'
 
             else:
                 pass

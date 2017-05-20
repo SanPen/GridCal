@@ -254,13 +254,13 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
         for c in range(Yp[pq[r]], Yp[pq[r]+1]):
             cc = pvpq_lookup[Yj[c]]
             if pvpq[cc] == Yj[c]:
-                #entry found
+                # entry found
                 # equals entry of J21: J[r + lpvpq, cc] = dVa_x[c].imag
                 Jx[nnz] = dVa_x[c].imag
                 Jj[nnz] = cc
                 nnz += 1
                 if cc >= lpv:
-                    #if entry is found in the "pq part" of pvpq = Add entry of J22
+                    # if entry is found in the "pq part" of pvpq = Add entry of J22
                     Jx[nnz] = dVm_x[c].imag
                     Jj[nnz] = cc + lpq
                     nnz += 1
@@ -339,14 +339,17 @@ def create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq, Ibus=None):
     """
 
     Ibus = zeros(len(V), dtype=complex128) if Ibus is None else -Ibus
+
     # create Jacobian from fast calc of dS_dV
     dVm_x, dVa_x = dSbus_dV_numba_sparse(Ybus.data, Ybus.indptr, Ybus.indices, V, V / abs(V), Ibus)
 
-    # data in J, space preallocated is bigger than acutal Jx -> will be reduced later on
+    # data in J, space pre-allocated is bigger than actual Jx -> will be reduced later on
     Jx = empty(len(dVm_x) * 4, dtype=float64)
+
     # row pointer, dimension = pvpq.shape[0] + pq.shape[0] + 1
     Jp = zeros(pvpq.shape[0] + pq.shape[0] + 1, dtype=int32)
-    # indices, same with the preallocated space (see Jx)
+
+    # indices, same with the pre-allocated space (see Jx)
     Jj = empty(len(dVm_x) * 4, dtype=int32)
 
     # fill Jx, Jj and Jp
@@ -358,9 +361,7 @@ def create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq, Ibus=None):
 
     # generate scipy sparse matrix
     dimJ = npv + npq + npq
-    J = sparse((Jx, Jj, Jp), shape=(dimJ, dimJ))
-
-    return J
+    return sparse((Jx, Jj, Jp), shape=(dimJ, dimJ))
 
 
 def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):

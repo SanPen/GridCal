@@ -114,3 +114,6 @@ print('\tConv:', grid.power_flow_results.converged)
 lhs_sim = LatinHypercubeSampling(grid, options, sampling_points=100)
 lhs_sim.run()
 
+lhs_sim.results.plot('Bus voltage avg')
+
+plt.show()
