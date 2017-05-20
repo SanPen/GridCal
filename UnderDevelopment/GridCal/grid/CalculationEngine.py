@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.46
+__GridCal_VERSION__ = 1.47
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -5050,7 +5050,7 @@ class MonteCarloResults:
 
         self.loading_points = zeros((p, m), dtype=complex)
 
-        self.Vstd = zeros(n, dtype=complex)
+        # self.Vstd = zeros(n, dtype=complex)
 
         self.error_series = list()
 
@@ -5094,13 +5094,9 @@ class MonteCarloResults:
 
     def compile(self):
         """
-        Compiles the final Monte Carlo values
+        Compiles the final Monte Carlo values by running an online mean and
         @return:
         """
-        self.voltage = self.V_points.mean(axis=0)
-        self.current = self.I_points.mean(axis=0)
-        self.loading = self.loading_points.mean(axis=0)
-
         p, n = self.V_points.shape
         ni, m = self.I_points.shape
         step = 1
@@ -5111,31 +5107,6 @@ class MonteCarloResults:
         self.v_avg_conv = zeros((nn, n))
         self.c_avg_conv = zeros((nn, m))
         self.l_avg_conv = zeros((nn, m))
-        # k = 0
-
-        # for i in range(1, p+1, step):
-        #     self.v_convergence[k, :] = abs(self.V_points[0:i, :].std(axis=0))
-        #     self.c_convergence[k, :] = abs(self.I_points[0:i, :].std(axis=0))
-        #     self.l_convergence[k, :] = abs(self.loading_points[0:i, :].std(axis=0))
-        #     k += 1
-
-        '''
-        def statsnp(x):
-          n = 0
-          S = 0.0
-          m = 0.0
-          Sarr = zeros_like(x)
-          Marr = zeros_like(x)
-          for x_i in x:
-            n += 1
-            m_prev = m
-            m += (x_i - m) / n
-            S += (x_i - m) * (x_i - m_prev)
-            Marr[n-1] = m
-            Sarr[n-1] = S/n
-
-          return Marr, Sarr
-        '''
 
         v_mean = zeros(n)
         c_mean = zeros(m)
@@ -5167,6 +5138,10 @@ class MonteCarloResults:
             l_std += (l - l_mean) * (l - l_mean_prev)
             self.l_std_conv[t] = l_std / t
             self.l_avg_conv[t] = l_mean
+
+        self.voltage = self.v_avg_conv[-2]
+        self.current = self.c_avg_conv[-2]
+        self.loading = self.l_avg_conv[-2]
 
     def plot(self, type, ax=None, indices=None, names=None):
         """
@@ -5335,7 +5310,7 @@ class LatinHypercubeSampling(QThread):
         lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
-        mc_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
+        lhs_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
 
