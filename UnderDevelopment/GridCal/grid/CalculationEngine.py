@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.45
+__GridCal_VERSION__ = 1.46
 
 from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
@@ -5092,7 +5092,7 @@ class MonteCarloResults:
         """
         return self.V_points.sum(axis=0)
 
-    def compile(self, lhs_mode=False):
+    def compile(self):
         """
         Compiles the final Monte Carlo values
         @return:
@@ -5103,10 +5103,7 @@ class MonteCarloResults:
 
         p, n = self.V_points.shape
         ni, m = self.I_points.shape
-        if lhs_mode:
-            step = 1
-        else:
-            step = 100
+        step = 1
         nn = int(floor(p / step) + 1)
         self.v_std_conv = zeros((nn, n))
         self.c_std_conv = zeros((nn, m))
@@ -5335,7 +5332,7 @@ class LatinHypercubeSampling(QThread):
                 break
 
         # compile MC results
-        lhs_results.compile(True)
+        lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
         mc_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
