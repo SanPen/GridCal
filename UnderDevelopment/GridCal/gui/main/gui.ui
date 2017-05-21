@@ -956,6 +956,30 @@ last solution</string>
             </widget>
            </item>
            <item>
+            <widget class="Line" name="line_14">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_26">
+             <property name="text">
+              <string>Cascading</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="cascade_step_by_step_checkBox">
+             <property name="text">
+              <string>Step by step?</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
             <spacer name="verticalSpacer_4">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -1461,7 +1485,7 @@ last solution</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>25</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -1504,6 +1528,7 @@ last solution</string>
    <addaction name="actionPower_Flow_Time_series"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionLatin_Hypercube_Sampling"/>
+   <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionBigger_nodes"/>
@@ -1817,6 +1842,18 @@ last solution</string>
    </property>
    <property name="toolTip">
     <string>Run Latin Hypercube Sampling</string>
+   </property>
+  </action>
+  <action name="actionBlackout_cascade">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/file/blackout.svg</normaloff>:/file/blackout.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Blackout cascade</string>
+   </property>
+   <property name="toolTip">
+    <string>Run a simulation or step by step blackout cascade</string>
    </property>
   </action>
  </widget>

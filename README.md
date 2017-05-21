@@ -91,14 +91,17 @@ All the engine objects and calculations can be accessed through the embedded pyt
 # Features overview
 It is pure Python, It works for Windows, Linux and OSX.
 
-It is based on PyPower (MatPower for python) and it is compatible with Matpower files, and many more to come.
-
 Some of the features you'll find already are:
+
+- Compatible with other formats:
+  - Matpower (might not be fully compatible, notify me if not).
+  - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
+  - PSS/e is planned for when I get a PSS/e example grid...
 
 - Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).
-  - Levenberg-Marquardt (Works very well with large grids)
-  - Holomorphic Embedding Power flow (Under investigation...)
+  - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
+  - Holomorphic Embedding Power flow (Unicorn under investigation...)
   - DC approximation.
   
 - Includes the Z-I-P load model, this means that the power flows can handle both power and current.  
@@ -112,6 +115,8 @@ Some of the features you'll find already are:
 - Monte Carlo simulation based on the input profiles. (Stochastic power flow)
 
 - Latin Hypercube Sampling based on the input profiles.
+
+- Blackout cascading in simulation and step by step mode.
 
 - Three-phase short circuit.
 

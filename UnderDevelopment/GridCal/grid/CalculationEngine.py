@@ -2485,15 +2485,13 @@ class MultiCircuit(Circuit):
                 if f in island and t in island:
                     # Copy the branch into a new
                     branch = self.branches[i].copy()
-                    # # Re-reference the buses indices
-                    # branch.bus_from = isl_dict[branch.bus_from]
-                    # branch.bus_to = isl_dict[branch.bus_to]
                     # Add the branch to the circuit
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
             circuit.compile()
-            self.power_flow_input.set_from(circuit.power_flow_input, circuit.bus_original_idx,
+            self.power_flow_input.set_from(circuit.power_flow_input,
+                                           circuit.bus_original_idx,
                                            circuit.branch_original_idx)
 
             self.time_series_input.apply_from_island(circuit.time_series_input,
@@ -3271,6 +3269,22 @@ class PowerFlowResults:
         self.buses_useful_for_storage = list(set(r_[vo_idx, vu_idx, bb_f, bb_t]))
 
         return abs(wo * sum(self.overloads) + wv1 * sum(self.overvoltage) + wv2 * sum(self.undervoltage))
+
+    def get_convergence_report(self):
+
+        res = 'converged' + str(self.converged)
+
+        res += '\n\tinner_iterations: ' + str(self.inner_iterations)
+
+        res += '\n\touter_iterations: ' + str(self.outer_iterations)
+
+        res += '\n\terror: ' + str(self.error)
+
+        res += '\n\telapsed: ' + str(self.elapsed)
+
+        res += '\n\tmethods: ' + str(self.methods)
+
+        return res
 
     def plot(self, type, ax=None, indices=None, names=None):
         """
@@ -4954,7 +4968,7 @@ class MonteCarlo(QThread):
         mc_tol = 1e-6
         batch_size = 100
         max_mc_iter = 100000
-        iter = 0
+        it = 0
         variance_sum = 0.0
         std_dev_progress = 0
         Vvariance = 0
@@ -4967,7 +4981,7 @@ class MonteCarlo(QThread):
         Vsum = zeros(n, dtype=complex)
         self.progress_signal.emit(0.0)
 
-        while (std_dev_progress < 100.0) and (iter < max_mc_iter) and not self.__cancel__:
+        while (std_dev_progress < 100.0) and (it < max_mc_iter) and not self.__cancel__:
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(Vvariance))
 
@@ -4992,15 +5006,15 @@ class MonteCarlo(QThread):
                     batch_results.loading_points[t, c.branch_original_idx] = res.loading[c.branch_original_idx]
 
             # Compute the Monte Carlo values
-            iter += batch_size
+            it += batch_size
             mc_results.append_batch(batch_results)
             Vsum += batch_results.get_voltage_sum()
             Vavg = Vsum / iter
-            Vvariance = abs((power(mc_results.V_points - Vavg, 2.0) / (iter - 1)).min())
+            Vvariance = abs((power(mc_results.V_points - Vavg, 2.0) / (it - 1)).min())
 
             # progress
             variance_sum += Vvariance
-            err = variance_sum / iter
+            err = variance_sum / it
             if err == 0:
                 err = 1e-200  # to avoid division by zeros
             mc_results.error_series.append(err)
@@ -5009,13 +5023,16 @@ class MonteCarlo(QThread):
             std_dev_progress = 100 * mc_tol / err
             if std_dev_progress > 100:
                 std_dev_progress = 100
-            self.progress_signal.emit(max((std_dev_progress, iter/max_mc_iter*100)))
+            self.progress_signal.emit(max((std_dev_progress, it/max_mc_iter*100)))
 
             print(iter, '/', max_mc_iter)
             # print('Vmc:', Vavg)
             print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
 
+        # compile results
+        self.progress_text.emit('Compiling results...')
         mc_results.compile()
+
         # compute the averaged branch magnitudes
         mc_results.sbranch, Ibranch, loading, mc_results.losses = powerflow.compute_branch_results(self.grid, mc_results.voltage)
 
@@ -5256,28 +5273,17 @@ class LatinHypercubeSampling(QThread):
         # we will append the island results with another function
         self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
 
-        mc_tol = 1e-6
         batch_size = self.sampling_points
-        max_mc_iter = 100000
-        iter = 0
-        variance_sum = 0.0
-        std_dev_progress = 0
-        Vvariance = 0
-
         n = len(self.grid.buses)
         m = len(self.grid.branches)
 
-        mc_results = MonteCarloResults(n, m)
-
-        Vsum = zeros(n, dtype=complex)
         self.progress_signal.emit(0.0)
-
         self.progress_text.emit('Running Latin Hypercube Sampling...')
 
         lhs_results = MonteCarloResults(n, m, batch_size)
 
         max_iter = batch_size * len(self.grid.circuits)
-        iter = 0
+        it = 0
 
         # For every circuit, run the time series
         for c in self.grid.circuits:
@@ -5297,8 +5303,8 @@ class LatinHypercubeSampling(QThread):
                 lhs_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
                 lhs_results.loading_points[t, c.branch_original_idx] = res.loading[c.branch_original_idx]
 
-                iter += 1
-                self.progress_signal.emit(iter / max_iter * 100)
+                it += 1
+                self.progress_signal.emit(it / max_iter * 100)
 
                 if self.__cancel__:
                     break
@@ -5307,6 +5313,7 @@ class LatinHypercubeSampling(QThread):
                 break
 
         # compile MC results
+        self.progress_text.emit('Compiling results...')
         lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
@@ -5318,6 +5325,171 @@ class LatinHypercubeSampling(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')
         self.done_signal.emit()
+
+    def cancel(self):
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
+
+
+class Cascading(QThread):
+
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None):
+        """
+        Constructor
+        Args:
+            grid: Grid to cascade
+            options: Power flow Options
+            triggering_idx: branch indices to trigger first
+        """
+
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.options = options
+
+        self.triggering_idx = triggering_idx
+
+        self.results = None
+
+        self.__cancel__ = False
+
+        self.report = list()
+
+        self.current_step = 0
+
+    def remove_elements(self, circuit: Circuit, idx=None):
+        """
+        Remove branches based on loading
+        Returns:
+            Nothing
+        """
+
+        if idx is None:
+            l = abs(circuit.power_flow_results.loading)
+            idx = where(l > 1)[0]
+
+            if len(idx) == 0:
+                idx = where(l >= l.max())[0]
+
+        # disable the selected branches
+        print('Removing:', idx, l[idx])
+
+        for i in idx:
+            circuit.branches[i].is_enabled = False
+
+        return idx
+
+    def perform_step_run(self):
+        """
+        Perform only one step cascading
+        Returns:
+            Nothing
+        """
+        self.grid.compile()
+
+        # initialize the power flow
+        power_flow = PowerFlow(self.grid, self.options)
+
+        # For every circuit, run a power flow
+        for c in self.grid.circuits:
+
+            power_flow.run()
+
+        if self.current_step == 0:
+            # the first iteration try to trigger the selected indices, if any
+            idx = self.remove_elements(self.grid, idx=self.triggering_idx)
+        else:
+            # cascade normally
+            idx = self.remove_elements(self.grid)
+
+        # store the removed indices and the results
+        self.report.append([idx, power_flow.results])
+
+        # increase the step number
+        self.current_step += 1
+
+        print(power_flow.results.get_convergence_report())
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+
+        self.__cancel__ = False
+
+        self.report = list()
+
+        if len(self.grid.circuits) == 0:
+            self.grid.compile()
+
+        # initialize the power flow
+        power_flow = PowerFlow(self.grid, self.options)
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running cascading failure...')
+
+        n_grids = len(self.grid.circuits)
+
+        it = 0
+        while n_grids == len(self.grid.circuits):
+
+            # For every circuit, run a power flow
+            for c in self.grid.circuits:
+
+                power_flow.run()
+                print(power_flow.results.get_convergence_report())
+
+            if it == 0:
+                # the first iteration try to trigger the selected indices, if any
+                idx = self.remove_elements(self.grid, idx=self.triggering_idx)
+            else:
+                # for the next indices, just cascade normally
+                idx = self.remove_elements(self.grid)
+
+            # store the removed indices and the results
+            self.report.append([idx, power_flow.results])
+
+            self.grid.compile()
+
+            it += 1
+
+            if self.__cancel__:
+                break
+
+        print('Grid split into ', len(self.grid.circuits), ' islands after', it, ' steps')
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def get_failed_idx(self):
+        """
+        Return the array of all failed branches
+        Returns:
+            array of all failed branches
+        """
+        res = None
+        for i in range(len(self.report)):
+            if i == 0:
+                res = self.report[i][0]
+            else:
+                res = r_[res, self.report[i][0]]
+
+        return res
 
     def cancel(self):
         self.__cancel__ = True

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="file">
+    <file>blackout.svg</file>
     <file>short_circuit.svg</file>
     <file>tower.svg</file>
     <file>automatic_layout.svg</file>

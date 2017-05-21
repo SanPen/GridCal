@@ -213,6 +213,7 @@ class MainGUI(QMainWindow):
         self.time_series = None
         self.voltage_stability = None
         self.latin_hypercube_sampling = None
+        self.cascade = None
 
         self.results_df = None
 
@@ -258,6 +259,8 @@ class MainGUI(QMainWindow):
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
         self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
+
+        self.ui.actionBlackout_cascade.triggered.connect(self.run_cascade)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -421,7 +424,7 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch, Losses=None):
+    def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch, Losses=None, failed_br_idx=None):
         """
         Color the grid based on the results passed
         @param Vbus: Nodal Voltages array
@@ -474,6 +477,14 @@ class MainGUI(QMainWindow):
                     tooltip += '\nLosses: ' + "{:10.4f}".format(Losses[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTip(tooltip)
                 branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
+
+        if failed_br_idx is not None:
+
+            for i in failed_br_idx:
+                w = self.circuit.branches[i].graphic_obj.pen_width
+                style = Qt.DashLine
+                color = Qt.gray
+                self.circuit.branches[i].graphic_obj.setPen(QtGui.QPen(color, w, style))
 
     def msg(self, text):
         """
@@ -1294,6 +1305,73 @@ class MainGUI(QMainWindow):
                                Sbranch=self.latin_hypercube_sampling.results.sbranch,
                                Sbus=None)
         self.update_available_results()
+
+    def run_cascade(self):
+        """
+        Run a Monte Carlo simulation
+        @return:
+        """
+        print('run_cascade')
+
+        if len(self.circuit.buses) > 0:
+
+            self.LOCK()
+
+            self.ui.progress_label.setText('Compiling the grid...')
+            QtGui.QGuiApplication.processEvents()
+            self.compile()
+
+            options = self.get_selected_power_flow_options()
+
+            step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
+
+            if step_by_step:
+                if self.cascade is None:
+                    self.cascade = Cascading(self.circuit.copy(), options)
+                else:
+                    pass  # there is already an object
+            else:
+                self.cascade = Cascading(self.circuit.copy(), options)
+
+            # connect signals
+            self.cascade.progress_signal.connect(self.ui.progressBar.setValue)
+            self.cascade.progress_text.connect(self.ui.progress_label.setText)
+            self.cascade.done_signal.connect(self.UNLOCK)
+            self.cascade.done_signal.connect(self.post_cascade)
+
+            # run
+            if step_by_step:
+                self.cascade.perform_step_run()
+            else:
+                self.cascade.start()
+
+        else:
+            pass
+
+    def post_cascade(self):
+        """
+        Actions to perform after the Monte Carlo simulation is finished
+        @return:
+        """
+        print('post_lhs')
+        # update the results in the circuit structures
+
+        n = len(self.cascade.report)
+
+        if n > 0:
+
+            br_idx = self.cascade.get_failed_idx()
+            results = self.cascade.report[n-1][1]
+
+            print('Vbus:\n', abs(results.voltage))
+            print('ld:\n', abs(results.loading))
+
+            self.color_based_of_pf(Vbus=results.voltage,
+                                   LoadBranch=results.loading,
+                                   Sbranch=results.Sbranch,
+                                   Sbus=None,
+                                   failed_br_idx=br_idx)
+            self.update_available_results()
 
     def set_cancel_state(self):
         """
