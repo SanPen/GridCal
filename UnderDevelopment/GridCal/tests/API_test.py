@@ -26,7 +26,7 @@ fname = 'Illinois200Bus.xlsx'
 grid.load_file(fname)
 grid.compile()
 
-options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False)
+options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, initialize_with_existing_solution=False)
 
 ####################################################################################################################
 # PowerFlow
@@ -122,12 +122,12 @@ print('\tConv:', grid.power_flow_results.converged)
 ####################################################################################################################
 
 cascade = Cascading(grid.copy(), options)
-cascade.run()
+# cascade.run()
 
-# cascade.perform_step_run()
-# cascade.perform_step_run()
-# cascade.perform_step_run()
-# cascade.perform_step_run()
+cascade.perform_step_run()
+cascade.perform_step_run()
+cascade.perform_step_run()
+cascade.perform_step_run()
 
 
 plt.show()

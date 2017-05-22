@@ -3459,7 +3459,8 @@ class PowerFlow(QRunnable):
         outer_it = 0
         elapsed = list()
         methods = list()
-
+        it = list()
+        el = list()
         while any_control_issue:
 
             if len(circuit.power_flow_input.ref) == 0:

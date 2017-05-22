@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="file">
+    <file>run_cascade.svg</file>
+    <file>run_cascade_step.svg</file>
     <file>blackout.svg</file>
     <file>short_circuit.svg</file>
     <file>tower.svg</file>
