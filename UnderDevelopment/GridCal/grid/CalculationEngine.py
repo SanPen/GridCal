@@ -26,6 +26,7 @@ from enum import Enum
 from warnings import warn
 import networkx as nx
 import pandas as pd
+import pickle as pkl
 from datetime import datetime, timedelta
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
@@ -35,6 +36,14 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
 from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
 from pyDOE import lhs
+from pySOT import *
+from poap.controller import ThreadController, BasicWorkerThread, SerialController
+from sklearn.neural_network import MLPRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import LinearRegression
 
 if 'fivethirtyeight' in plt.style.available:
     plt.style.use('fivethirtyeight')
@@ -149,7 +158,7 @@ class CDF(object):
         @param npoints: Number of points to sample, 1 by default
         @return: Corresponding probabilities
         """
-        pt = random.uniform(0, 1, npoints)
+        pt = np.random.uniform(0, 1, npoints)
         if self.iscomplex:
             a = interp(pt, self.prob, self.arr.real)
             b = interp(pt, self.prob, self.arr.imag)
@@ -419,6 +428,76 @@ def load_from_xls(filename):
                 data[name] = df
 
     return data
+
+
+
+
+
+# class KNN:
+#
+#     def __init__(self, X, y):
+#         """
+#
+#         Args:
+#             X:
+#             y:
+#         """
+#         assert len(X) == len(y), "len(X) %d != len(z) %d" % (len(X), len(y))
+#         self.x_train = X
+#         self.y_train = y
+#
+#     @staticmethod
+#     def knn_search(x, Xtrain, n_neighbours):
+#         """ find K nearest neighbours of data among D """
+#         ndata = x.shape[0]
+#         n_neighbours = n_neighbours if n_neighbours < ndata else ndata
+#
+#         distances = np.empty((ndata, n_neighbours), dtype=float)
+#         neighbours = np.empty((ndata, n_neighbours), dtype=int)
+#         for i in range(ndata):
+#             # euclidean distances from the other points
+#             sqd = sqrt((abs(Xtrain - x[i]) ** 2).sum(axis=1))
+#             idx = np.argsort(sqd)  # sorting
+#
+#             neighbours[i] = idx[:n_neighbours]
+#             distances[i] = sqd[neighbours[i]]
+#
+#         # return the indexes of K nearest neighbours
+#         return distances, neighbours
+#
+#     def __call__(self, x_test, nnear=6, p=2, weights=None):
+#         """
+#
+#         Args:
+#             x_test:
+#             nnear:
+#             p:
+#             weights:
+#
+#         Returns:
+#
+#         """
+#         x_dim = x_test.ndim
+#
+#         distances, indices = self.knn_search(x_test, self.x_train, nnear)
+#
+#         interpol = np.zeros((x_test.shape[0], self.y_train.shape[1]), dtype=complex)
+#         i2 = 0
+#         for d, idx in zip(distances, indices):
+#             if nnear == 1:
+#                 wz = self.y_train[idx]
+#             elif d[0] < 1e-10:
+#                 wz = self.y_train[idx]
+#             else:  # weight z s by 1/dist --
+#                 w = 1 / d**p
+#                 if weights is not None:
+#                     w *= weights[idx]  # >= 0
+#                 w /= np.sum(w)
+#                 wz = np.dot(w, self.y_train[idx])
+#
+#             interpol[i2] = wz
+#             i2 += 1
+#         return interpol if x_dim > 1 else interpol[0]
 
 
 class Bus:
@@ -1962,6 +2041,17 @@ class Circuit:
         """
         self.mc_time_series = self.monte_carlo_input(batch_size, use_latin_hypercube)
 
+    def sample_at(self, x):
+        """
+        Get samples at x
+        Args:
+            x: values in [0, 1+ to sample the CDF
+
+        Returns:
+
+        """
+        self.mc_time_series = self.monte_carlo_input.get_at(x)
+
     def get_loads(self):
         lst = list()
         for bus in self.buses:
@@ -2193,6 +2283,10 @@ class MultiCircuit(Circuit):
                     self.time_profile = idx
 
             bus = bus_dict[bus_from[i]]
+
+            if obj.name == 'Load':
+                obj.name += str(len(bus.loads)+1) + '@' + bus.name
+
             obj.bus = bus
             bus.loads.append(obj)
 
@@ -2217,6 +2311,10 @@ class MultiCircuit(Circuit):
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
+
+            if obj.name == 'gen':
+                obj.name += str(len(bus.controlled_generators)+1) + '@' + bus.name
+
             obj.bus = bus
             bus.controlled_generators.append(obj)
 
@@ -2241,6 +2339,10 @@ class MultiCircuit(Circuit):
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
+
+            if obj.name == 'batt':
+                obj.name += str(len(bus.batteries)+1) + '@' + bus.name
+
             obj.bus = bus
             bus.batteries.append(obj)
 
@@ -2260,6 +2362,10 @@ class MultiCircuit(Circuit):
                 obj.Sprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
+
+            if obj.name == 'StaticGen':
+                obj.name += str(len(bus.static_generators)+1) + '@' + bus.name
+
             obj.bus = bus
             bus.static_generators.append(obj)
 
@@ -2279,6 +2385,10 @@ class MultiCircuit(Circuit):
                 obj.Yprof = pd.DataFrame(data=val, index=idx)
 
             bus = bus_dict[bus_from[i]]
+
+            if obj.name == 'shunt':
+                obj.name += str(len(bus.shunts)+1) + '@' + bus.name
+
             obj.bus = bus
             bus.shunts.append(obj)
 
@@ -2671,6 +2781,9 @@ class MultiCircuit(Circuit):
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'Load':
+            api_obj.name += '@' + bus.name
 
         bus.loads.append(api_obj)
 
@@ -3461,6 +3574,7 @@ class PowerFlow(QRunnable):
         methods = list()
         it = list()
         el = list()
+
         while any_control_issue:
 
             if len(circuit.power_flow_input.ref) == 0:
@@ -4928,6 +5042,31 @@ class MonteCarloInput:
 
         return time_series_input
 
+    def get_at(self, x):
+        """
+        Get samples at x
+        Args:
+            x: values in [0, 1+ to sample the CDF
+
+        Returns:
+
+        """
+        S = zeros((1, self.n), dtype=complex)
+        I = zeros((1, self.n), dtype=complex)
+        Y = zeros((1, self.n), dtype=complex)
+
+        for i in range(self.n):
+            if self.Scdf[i] is not None:
+                S[:, i] = self.Scdf[i].get_at(x[i])
+
+        time_series_input = TimeSeriesInput()
+        time_series_input.S = S
+        time_series_input.I = I
+        time_series_input.Y = Y
+        time_series_input.valid = True
+
+        return time_series_input
+
 
 class MonteCarlo(QThread):
 
@@ -4947,7 +5086,10 @@ class MonteCarlo(QThread):
 
         self.options = options
 
-        self.results = None
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+
+        self.results = MonteCarloResults(n, m)
 
         self.__cancel__ = False
 
@@ -5010,7 +5152,7 @@ class MonteCarlo(QThread):
             it += batch_size
             mc_results.append_batch(batch_results)
             Vsum += batch_results.get_voltage_sum()
-            Vavg = Vsum / iter
+            Vavg = Vsum / it
             Vvariance = abs((power(mc_results.V_points - Vavg, 2.0) / (it - 1)).min())
 
             # progress
@@ -5160,6 +5302,81 @@ class MonteCarloResults:
         self.voltage = self.v_avg_conv[-2]
         self.current = self.c_avg_conv[-2]
         self.loading = self.l_avg_conv[-2]
+
+    def save(self, fname):
+        """
+        Export as pickle
+        Args:
+            fname:
+
+        Returns:
+
+        """
+        data = [self.S_points, self.V_points, self.I_points]
+
+        with open(fname, "wb") as output_file:
+            pkl.dump(data, output_file)
+
+    def open(self, fname):
+        """
+        open pickle
+        Args:
+            fname:
+
+        Returns:
+
+        """
+        if os.path.exists(fname):
+            with open(fname, "rb") as input_file:
+                self.S_points, self.V_points, self.I_points = pkl.load(input_file)
+            return True
+        else:
+            warn(fname + " not found")
+            return False
+
+    def query_voltage(self, power_array):
+        """
+        Fantastic function that allows to query the voltage from the sampled points without having to run power flows
+        Args:
+            power_array: power injections vector
+
+        Returns: Interpolated voltages vector
+        """
+        x_train = np.hstack((self.S_points.real, self.S_points.imag))
+        y_train = np.hstack((self.V_points.real, self.V_points.imag))
+        x_test = np.hstack((power_array.real, power_array.imag))
+
+        n, d = x_train.shape
+
+        # #  declare PCA reductor
+        # red = PCA()
+        #
+        # # Train PCA
+        # red.fit(x_train, y_train)
+        #
+        # # Reduce power dimensions
+        # x_train = red.transform(x_train)
+
+        # model = MLPRegressor(hidden_layer_sizes=(10*n, n, n, n), activation='relu', solver='adam', alpha=0.0001,
+        #                      batch_size=2, learning_rate='constant', learning_rate_init=0.01, power_t=0.5,
+        #                      max_iter=3, shuffle=True, random_state=None, tol=0.0001, verbose=True,
+        #                      warm_start=False, momentum=0.9, nesterovs_momentum=True, early_stopping=False,
+        #                      validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+
+        # algorithm : {‘auto’, ‘ball_tree’, ‘kd_tree’, ‘brute’},
+        # model = KNeighborsRegressor(n_neighbors=4, algorithm='brute', leaf_size=16)
+
+        model = RandomForestRegressor(10)
+
+        # model = DecisionTreeRegressor()
+
+        # model = LinearRegression()
+
+        model.fit(x_train, y_train)
+
+        y_pred = model.predict(x_test)
+
+        return y_pred[:, :int(d/2)] + 1j * y_pred[:, int(d/2):d]
 
     def plot(self, type, ax=None, indices=None, names=None):
         """
@@ -5334,13 +5551,21 @@ class LatinHypercubeSampling(QThread):
         self.done_signal.emit()
 
 
+class CascadingReportElement:
+
+    def __init__(self, removed_idx, pf_results):
+
+        self.removed_idx = removed_idx
+        self.pf_results = pf_results
+
+
 class Cascading(QThread):
 
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1):
         """
         Constructor
         Args:
@@ -5357,15 +5582,16 @@ class Cascading(QThread):
 
         self.triggering_idx = triggering_idx
 
-        self.results = None
-
         self.__cancel__ = False
 
         self.report = list()
 
         self.current_step = 0
 
-    def remove_elements(self, circuit: Circuit, idx=None):
+        self.max_additional_islands = max_additional_islands
+
+    @staticmethod
+    def remove_elements(circuit: Circuit, idx=None):
         """
         Remove branches based on loading
         Returns:
@@ -5411,7 +5637,8 @@ class Cascading(QThread):
             idx = self.remove_elements(self.grid)
 
         # store the removed indices and the results
-        self.report.append([idx, power_flow.results])
+        entry = CascadingReportElement(idx, power_flow.results)
+        self.report.append(entry)
 
         # increase the step number
         self.current_step += 1
@@ -5442,10 +5669,14 @@ class Cascading(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running cascading failure...')
 
-        n_grids = len(self.grid.circuits)
+        n_grids = len(self.grid.circuits) + self.max_additional_islands
+        if n_grids > len(self.grid.buses):  # safety check
+            n_grids = len(self.grid.buses) - 1
+
+        print('n grids: ', n_grids)
 
         it = 0
-        while n_grids == len(self.grid.circuits):
+        while len(self.grid.circuits) <= n_grids and it <= n_grids:
 
             # For every circuit, run a power flow
             for c in self.grid.circuits:
@@ -5461,7 +5692,8 @@ class Cascading(QThread):
                 idx = self.remove_elements(self.grid)
 
             # store the removed indices and the results
-            self.report.append([idx, power_flow.results])
+            entry = CascadingReportElement(idx, power_flow.results)
+            self.report.append(entry)
 
             self.grid.compile()
 
@@ -5491,6 +5723,173 @@ class Cascading(QThread):
                 res = r_[res, self.report[i][0]]
 
         return res
+
+    def get_table(self):
+
+        dta = list()
+        for i in range(len(self.report)):
+            dta.append(['Step ' + str(i+1), len(self.report[i].removed_idx)])
+
+        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed'])
+
+    def cancel(self):
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
+
+
+class Optimize(QThread):
+
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, max_iter=1000):
+        """
+        Constructor
+        Args:
+            grid: Grid to cascade
+            options: Power flow Options
+            triggering_idx: branch indices to trigger first
+        """
+
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.options = options
+
+        self.__cancel__ = False
+
+        # initialize the power flow
+        self.power_flow = PowerFlow(self.grid, self.options)
+
+        self.max_eval = max_iter
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+
+        # the dimension is the number of nodes
+        self.dim = n
+
+        # results
+        self.results = MonteCarloResults(n, m, self.max_eval)
+
+        # variables for the optimization
+        self.xlow = zeros(n)  # lower bounds
+        self.xup = ones(n)
+        self.info = ""  # info
+        self.integer = array([])  # integer variables
+        self.continuous = arange(0, n, 1)  # continuous variables
+        self.solution = None
+        self.optimization_values = None
+        self.it = 0
+
+    def objfunction(self, x):
+
+        # For every circuit, run the time series
+        for c in self.grid.circuits:
+
+            # sample from the CDF give the vector x of values in [0, 1]
+            c.sample_at(x)
+
+            #  run the sampled values
+            res = self.power_flow.run_at(0, mc=True)
+
+            Y, I, S = c.mc_time_series.get_at(0)
+            self.results.S_points[self.it, c.bus_original_idx] = S
+            self.results.V_points[self.it, c.bus_original_idx] = res.voltage[c.bus_original_idx]
+            self.results.I_points[self.it, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
+            self.results.loading_points[self.it, c.branch_original_idx] = res.loading[c.branch_original_idx]
+
+        self.it += 1
+        prog = self.it / self.max_eval * 100
+        # self.progress_signal.emit(prog)
+
+        f = abs(self.results.V_points[self.it-1, :].sum()) / self.dim
+        print(prog, ' % \t', f)
+
+        return f
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        self.it = 0
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        self.xlow = zeros(n)  # lower bounds
+        self.xup = ones(n)  # upper bounds
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running stochastic voltage collapse...')
+        self.results = MonteCarloResults(n, m, self.max_eval)
+
+        # (1) Optimization problem
+        # print(data.info)
+
+        # (2) Experimental design
+        # Use a symmetric Latin hypercube with 2d + 1 samples
+        exp_des = SymmetricLatinHypercube(dim=self.dim, npts=2 * self.dim + 1)
+
+        # (3) Surrogate model
+        # Use a cubic RBF interpolant with a linear tail
+        surrogate = RBFInterpolant(kernel=CubicKernel, tail=LinearTail, maxp=self.max_eval)
+
+        # (4) Adaptive sampling
+        # Use DYCORS with 100d candidate points
+        adapt_samp = CandidateDYCORS(data=self, numcand=100 * self.dim)
+
+        # Use the serial controller (uses only one thread)
+        controller = SerialController(self.objfunction)
+
+        # (5) Use the sychronous strategy without non-bound constraints
+        strategy = SyncStrategyNoConstraints(worker_id=0,
+                                             data=self,
+                                             maxeval=self.max_eval,
+                                             nsamples=1,
+                                             exp_design=exp_des,
+                                             response_surface=surrogate,
+                                             sampling_method=adapt_samp)
+        controller.strategy = strategy
+
+        # Run the optimization strategy
+        result = controller.run()
+
+        # Print the final result
+        print('Best value found: {0}'.format(result.value))
+        print('Best solution found: {0}'.format(np.array_str(result.params[0], max_line_width=np.inf, precision=5,
+                                                             suppress_small=True)))
+        self.solution = result.params[0]
+
+        # Extract function values from the controller
+        self.optimization_values = np.array([o.value for o in controller.fevals])
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def plot(self, ax=None):
+        """
+        Plot the optimization convergence
+        Returns:
+
+        """
+        clr = np.array(['#2200CC', '#D9007E', '#FF6600', '#FFCC00', '#ACE600', '#0099CC',
+                        '#8900CC', '#FF0000', '#FF9900', '#FFFF00', '#00CC01', '#0055CC'])
+        if self.optimization_values is not None:
+            max_eval = len(self.optimization_values)
+
+            if ax is None:
+                f, ax = plt.subplots()
+            # Points
+            ax.scatter(np.arange(0, max_eval), self.optimization_values, color=clr[6])
+            # Best value found
+            ax.plot(np.arange(0, max_eval), np.minimum.accumulate(self.optimization_values), color=clr[1], linewidth=3.0)
+            ax.set_xlabel('Evaluations')
+            ax.set_ylabel('Function Value')
+            ax.set_title('Optimization convergence')
 
     def cancel(self):
         self.__cancel__ = True

@@ -15,7 +15,7 @@
 
 from GridCal.grid.CalculationEngine import __GridCal_VERSION__
 from GridCal.gui.main.gui import *
-from GridCal.gui.GridEditor import *
+from GridCal.gui.GridEditorWidget import *
 from GridCal.gui.ConsoleWidget import ConsoleWidget
 
 import os.path
@@ -260,7 +260,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
 
-        self.ui.actionBlackout_cascade.triggered.connect(self.run_cascade)
+        self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -292,6 +292,12 @@ class MainGUI(QMainWindow):
 
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
 
+        self.ui.run_cascade_pushButton.clicked.connect(self.run_cascade)
+
+        self.ui.clear_cascade_pushButton.clicked.connect(self.clear_cascade)
+
+        self.ui.run_cascade_step_pushButton.clicked.connect(self.run_cascade_step)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -306,6 +312,9 @@ class MainGUI(QMainWindow):
         self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
+
+        # Table clicks
+        self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
 
         # combobox
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
@@ -332,6 +341,8 @@ class MainGUI(QMainWindow):
         # self.circuit.load_file(fname)
         # self.create_schematic_from_api(explode_factor=50)
 
+        self.view_cascade_menu()
+
     def LOCK(self, val=True):
         """
         Lock the interface to prevent new simulation launches
@@ -347,6 +358,13 @@ class MainGUI(QMainWindow):
         @return:
         """
         self.LOCK(False)
+
+    def view_cascade_menu(self):
+        """
+        show/hide the cascade simulation menu
+        """
+        self.ui.cascade_menu.setVisible(self.ui.actionBlackout_cascade.isChecked())
+        self.ui.cascade_grid_splitter.setStretchFactor(1, 4)
 
     def about_box(self):
         """
@@ -1306,6 +1324,41 @@ class MainGUI(QMainWindow):
                                Sbus=None)
         self.update_available_results()
 
+    def clear_cascade(self):
+        """
+
+        Returns:
+
+        """
+        self.cascade = None
+        self.ui.cascade_tableView.setModel(None)
+
+    def run_cascade_step(self):
+        """
+        Run cascade step
+        Returns:
+
+        """
+        if len(self.circuit.buses) > 0:
+
+            self.LOCK()
+
+            # self.ui.progress_label.setText('Compiling the grid...')
+            # QtGui.QGuiApplication.processEvents()
+            # self.compile()
+
+            if self.cascade is None:
+                options = self.get_selected_power_flow_options()
+                options.solver_type = SolverType.LM
+                max_isl = self.ui.cascading_islands_spinBox.value()
+                self.cascade = Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
+
+            self.cascade.perform_step_run()
+
+            self.post_cascade()
+
+            self.UNLOCK()
+
     def run_cascade(self):
         """
         Run a Monte Carlo simulation
@@ -1322,16 +1375,12 @@ class MainGUI(QMainWindow):
             self.compile()
 
             options = self.get_selected_power_flow_options()
+            options.solver_type = SolverType.LM
 
-            step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
+            # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
 
-            if step_by_step:
-                if self.cascade is None:
-                    self.cascade = Cascading(self.circuit.copy(), options)
-                else:
-                    pass  # there is already an object
-            else:
-                self.cascade = Cascading(self.circuit.copy(), options)
+            max_isl = self.ui.cascading_islands_spinBox.value()
+            self.cascade = Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
 
             # connect signals
             self.cascade.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1340,15 +1389,12 @@ class MainGUI(QMainWindow):
             self.cascade.done_signal.connect(self.post_cascade)
 
             # run
-            if step_by_step:
-                self.cascade.perform_step_run()
-            else:
-                self.cascade.start()
+            self.cascade.start()
 
         else:
             pass
 
-    def post_cascade(self):
+    def post_cascade(self, idx=None):
         """
         Actions to perform after the Monte Carlo simulation is finished
         @return:
@@ -1360,18 +1406,37 @@ class MainGUI(QMainWindow):
 
         if n > 0:
 
-            br_idx = self.cascade.get_failed_idx()
-            results = self.cascade.report[n-1][1]
+            if idx is None:
+                idx = n-1
 
-            print('Vbus:\n', abs(results.voltage))
-            print('ld:\n', abs(results.loading))
+            br_idx = zeros(0, dtype=int)
+            for i in range(idx):
+                br_idx = r_[br_idx, self.cascade.report[i].removed_idx]
+            results = self.cascade.report[idx].pf_results
+
+            # print('Vbus:\n', abs(results.voltage))
+            # print('ld:\n', abs(results.loading))
+            print('Removed at ', idx, ':\n', br_idx)
 
             self.color_based_of_pf(Vbus=results.voltage,
                                    LoadBranch=results.loading,
                                    Sbranch=results.Sbranch,
                                    Sbus=None,
                                    failed_br_idx=br_idx)
+
+            self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
+
             self.update_available_results()
+
+    def cascade_table_click(self):
+        """
+        Display cascade upon cascade scenario click
+        Returns:
+
+        """
+        idx = self.ui.cascade_tableView.currentIndex()
+        if idx.row() > -1:
+            self.post_cascade(idx=idx.row())
 
     def set_cancel_state(self):
         """

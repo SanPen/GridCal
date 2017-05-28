@@ -19,8 +19,8 @@ from matplotlib import pyplot as plt
 grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = 'Pegasus 89 Bus.xlsx'
-fname = 'Illinois200Bus.xlsx'
-# fname = 'IEEE_30_new.xlsx'
+# fname = 'Illinois200Bus.xlsx'
+fname = 'IEEE_30_new.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 grid.load_file(fname)
@@ -121,13 +121,21 @@ print('\tConv:', grid.power_flow_results.converged)
 # Cascading
 ####################################################################################################################
 
-cascade = Cascading(grid.copy(), options)
-# cascade.run()
+# cascade = Cascading(grid.copy(), options)
+# # cascade.run()
+#
+# cascade.perform_step_run()
+# cascade.perform_step_run()
+# cascade.perform_step_run()
+# cascade.perform_step_run()
 
-cascade.perform_step_run()
-cascade.perform_step_run()
-cascade.perform_step_run()
-cascade.perform_step_run()
+####################################################################################################################
+# Fuck up the voltage
+####################################################################################################################
 
+options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False, initialize_with_existing_solution=False)
+opt = Optimize(grid, options, max_iter=10000)
+opt.run()
+opt.plot()
 
 plt.show()
