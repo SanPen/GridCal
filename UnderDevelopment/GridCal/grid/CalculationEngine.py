@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.47
+__GridCal_VERSION__ = 1.5
 
-from GridCal.grid.IwamotoNR import IwamotoNR, Jacobian, LevenbergMarquardtPF
+from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
+from GridCal.grid.FastDecoupled import FDPF
 from GridCal.grid.ContinuationPowerFlow import continuation_nr
 from GridCal.grid.HelmVect import helm
 from GridCal.grid.DCPF import dcpf
@@ -69,6 +70,7 @@ class SolverType(Enum):
     CONTINUATION_NR = 9,
     HELMZ = 10,
     LM = 11  # Levenberg-Marquardt
+    FASTDECOUPLED = 12,
 
 
 class TimeGroups(Enum):
@@ -1077,7 +1079,7 @@ class Branch:
         """
         return self.tap_module * exp(-1j * self.angle)
 
-    def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, i, f, t):
+    def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, i, f, t):
         """
 
         Modify the circuit admittance matrices with the admittances of this branch
@@ -1086,6 +1088,8 @@ class Branch:
         @param Yshunt: Admittance matrix of the shunt elements
         @param Yf: Admittance matrix of the branches with the from buses
         @param Yt: Admittance matrix of the branches with the to buses
+        @param B1: Jacobian 1 for the fast-decoupled power flow
+        @param B1: Jacobian 2 for the fast-decoupled power flow
         @param i: index of the branch in the circuit
         @return: Nothing, the inputs are implicitly modified
         """
@@ -1106,25 +1110,61 @@ class Branch:
         Yff_sh = Ysh
         Ytt_sh = Yff_sh / (tap * conj(tap))
 
+        # Full admittance matrix
         Ybus[f, f] += Yff
         Ybus[f, t] += Yft
         Ybus[t, f] += Ytf
         Ybus[t, t] += Ytt
 
-        # Yf = csr_matrix((r_[Yff, Yft], (i, r_[f, t])), (nl, nb))
-        # Yt = csr_matrix((r_[Ytf, Ytt], (i, r_[f, t])), (nl, nb))
-        Yf[i, f] += Yff  # Ybus[f, f]
-        Yf[i, t] += Yft  # Ybus[f, t]
-        Yt[i, f] += Ytf  # Ybus[t, f]
-        Yt[i, t] += Ytt  # Ybus[t, t]
+        # Y-from and Y-to for the lines power flow computation
+        Yf[i, f] += Yff
+        Yf[i, t] += Yft
+        Yt[i, f] += Ytf
+        Yt[i, t] += Ytt
 
+        # Y shunt for HELM
         Yshunt[f] += Yff_sh
         Yshunt[t] += Ytt_sh
 
+        # Y series for HELM
         Yseries[f, f] += Ys / (tap * conj(tap))
         Yseries[f, t] += Yft
         Yseries[t, f] += Ytf
         Yseries[t, t] += Ys
+
+        # B1 for FDPF (no shunts, no resistance, no tap module)
+        z_series = complex(0, self.X)
+        y_shunt = complex(0, 0)
+        tap = exp(-1j * self.angle)  # self.tap_module * exp(-1j * self.angle)
+        Ysh = y_shunt / 2
+        Ys = 1 / z_series
+
+        Ytt = Ys + Ysh
+        Yff = Ytt / (tap * conj(tap))
+        Yft = - Ys / conj(tap)
+        Ytf = - Ys / tap
+
+        B1[f, f] -= Yff.imag
+        B1[f, t] -= Yft.imag
+        B1[t, f] -= Ytf.imag
+        B1[t, t] -= Ytt.imag
+
+        # B2 for FDPF (with shunts, only the tap module)
+        z_series = complex(self.R, self.X)
+        y_shunt = complex(self.G, self.B)
+        tap = self.tap_module  # self.tap_module * exp(-1j * self.angle)
+        Ysh = y_shunt / 2
+        Ys = 1 / z_series
+
+        Ytt = Ys + Ysh
+        Yff = Ytt / (tap * conj(tap))
+        Yft = - Ys / conj(tap)
+        Ytf = - Ys / tap
+
+        B2[f, f] -= Yff.imag
+        B2[f, t] -= Yft.imag
+        B2[t, f] -= Ytf.imag
+        B2[t, t] -= Ytt.imag
 
         return f, t
 
@@ -1991,6 +2031,8 @@ class Circuit:
                                                  Yshunt=power_flow_input.Yshunt,
                                                  Yf=power_flow_input.Yf,
                                                  Yt=power_flow_input.Yt,
+                                                 B1=power_flow_input.B1,
+                                                 B2=power_flow_input.B2,
                                                  i=i, f=f, t=t)
                 # add the bus shunts
                 # power_flow_input.Yf[i, f] += power_flow_input.Yshunt[f, f]
@@ -3051,6 +3093,12 @@ class PowerFlowInput:
         # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
         self.Yshunt = zeros(n, dtype=complex)
 
+        # Jacobian matrix 1 for the fast-decoupled power flow
+        self.B1 = zeros((n, n), dtype=double)
+
+        # Jacobian matrix 2 for the fast-decoupled power flow
+        self.B2 = zeros((n, n), dtype=double)
+
         # Array of base currents of the buses
         self.Ibase = zeros(n)
 
@@ -3086,6 +3134,8 @@ class PowerFlowInput:
         self.Yt = sparse(self.Yt)
         self.Ybus = sparse(self.Ybus)
         self.Yseries = sparse(self.Yseries)
+        self.B1 = sparse(self.B1)
+        self.B2 = sparse(self.B2)
         # self.Yshunt = sparse(self.Yshunt)  No need to make it sparse, it is a vector already
         # compile the types lists from the types vector
         self.compile_types()
@@ -3619,6 +3669,20 @@ class PowerFlow(QRunnable):
                                                                               pq=circuit.power_flow_input.pq,
                                                                               tol=self.options.tolerance,
                                                                               max_it=self.options.max_iter)
+
+                elif self.options.solver_type == SolverType.FASTDECOUPLED:
+                    methods.append(SolverType.FASTDECOUPLED)
+                    V, converged, normF, Scalc, it, el = FDPF(Vbus=circuit.power_flow_input.Vbus,
+                                                              Sbus=circuit.power_flow_input.Sbus,
+                                                              Ibus=circuit.power_flow_input.Ibus,
+                                                              Ybus=circuit.power_flow_input.Ybus,
+                                                              B1=circuit.power_flow_input.B1,
+                                                              B2=circuit.power_flow_input.B2,
+                                                              pq=circuit.power_flow_input.pq,
+                                                              pv=circuit.power_flow_input.pv,
+                                                              pqpv=circuit.power_flow_input.pqpv,
+                                                              tol=self.options.tolerance,
+                                                              max_it=self.options.max_iter)
 
                 elif self.options.solver_type == SolverType.NR:
                     methods.append(SolverType.NR)
