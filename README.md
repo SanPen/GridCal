@@ -100,8 +100,9 @@ Some of the features you'll find already are:
 
 - Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).
+  - Fast Decoupled Power Flow
   - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
-  - Holomorphic Embedding Power flow (Unicorn under investigation...)
+  - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
   
 - Includes the Z-I-P load model, this means that the power flows can handle both power and current.  
