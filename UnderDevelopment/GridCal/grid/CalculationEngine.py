@@ -5465,6 +5465,8 @@ class MonteCarloResults:
             else:
                 indices = array(range(len(names)))
                 labels = names[indices]
+        else:
+            labels = names[indices]
 
         if len(indices) > 0:
 
