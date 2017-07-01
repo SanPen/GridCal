@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.5
+__GridCal_VERSION__ = 1.51
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -77,6 +77,11 @@ class TimeGroups(Enum):
     NoGroup = 0,
     ByDay = 1,
     ByHour = 2
+
+
+class CascadeType(Enum):
+    PowerFlow = 0,
+    LatinHypercube = 1
 
 
 class CDF(object):
@@ -563,6 +568,8 @@ class Bus:
 
         self.edit_headers = ['name', 'is_enabled', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y']
 
+        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', '', '']
+
         self.edit_types = {'name': str,
                            'is_enabled': bool,
                            'is_slack': bool,
@@ -1027,6 +1034,9 @@ class Branch:
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
 
+        self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
+                             'p.u.', 'rad']
+
         self.edit_types = {'name': str,
                            'bus_from': None,
                            'bus_to': None,
@@ -1241,6 +1251,8 @@ class Load:
 
         self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
 
+        self.units = ['', '', 'Ohm', 'kA', 'MVA']
+
         self.edit_types = {'name': str, 'bus': None, 'Z': complex, 'I': complex, 'S': complex}
 
     def create_profiles(self, index):
@@ -1376,6 +1388,8 @@ class StaticGenerator:
 
         self.edit_headers = ['name', 'bus', 'S']
 
+        self.units = ['', '', 'MVA']
+
         self.edit_types = {'name': str,  'bus': None,  'S': complex}
 
     def copy(self):
@@ -1485,6 +1499,8 @@ class Battery:
         self.Enom = Enom
 
         self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+
+        self.units = ['', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1640,6 +1656,8 @@ class ControlledGenerator:
 
         self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
 
+        self.units = ['', '', 'kW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
+
         self.edit_types = {'name': str,
                            'bus': None,
                            'P': float,
@@ -1766,6 +1784,8 @@ class Shunt:
         self.Yprof = admittance_prof
 
         self.edit_headers = ['name', 'bus', 'Y']
+
+        self.units = ['', '', 'p.u.']
 
         self.edit_types = {'name': str,   'bus': None, 'Y': complex}
 
@@ -2069,7 +2089,11 @@ class Circuit:
         """
         if self.time_series_input is not None:
             if mc:
-                self.power_flow_input.Sbus = self.mc_time_series.S[t, :] / self.Sbase
+
+                if self.mc_time_series is None:
+                    warn('No monte carlo inputs in island!!!')
+                else:
+                    self.power_flow_input.Sbus = self.mc_time_series.S[t, :] / self.Sbase
             else:
                 self.power_flow_input.Sbus = self.time_series_input.S[t, :] / self.Sbase
         else:
@@ -3605,7 +3629,7 @@ class PowerFlow(QRunnable):
         @param circuit:
         @return:
         """
-
+        # print('Single grid PF')
         optimize = False
 
         # Initial magnitudes
@@ -3618,6 +3642,8 @@ class PowerFlow(QRunnable):
 
         any_control_issue = True  # guilty assumption...
 
+        control_max_iter = 10
+
         inner_it = list()
         outer_it = 0
         elapsed = list()
@@ -3625,7 +3651,7 @@ class PowerFlow(QRunnable):
         it = list()
         el = list()
 
-        while any_control_issue:
+        while any_control_issue and outer_it < control_max_iter:
 
             if len(circuit.power_flow_input.ref) == 0:
                 V = zeros(len(Sbus), dtype=complex)
@@ -4897,6 +4923,7 @@ class VoltageCollapseInput:
 
 
 class VoltageCollapseResults:
+
     def __init__(self, nbus):
         """
         VoltageCollapseResults instance
@@ -4972,7 +4999,7 @@ class VoltageCollapseResults:
 
             ax.set_title(ylabel)
             ax.set_ylabel(ylabel)
-            ax.set_xlabel('Loading from the base situation ($\Lambda$)')
+            ax.set_xlabel('Loading from the base situation ($\lambda$)')
 
             return df
 
@@ -5547,7 +5574,7 @@ class LatinHypercubeSampling(QThread):
         Run the monte carlo simulation
         @return:
         """
-
+        print('LHS run')
         self.__cancel__ = False
 
         # initialize the power flow
@@ -5631,7 +5658,8 @@ class Cascading(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1,
+                 cascade_type_: CascadeType=CascadeType.LatinHypercube, n_lhs_samples_=1000):
         """
         Constructor
         Args:
@@ -5656,6 +5684,10 @@ class Cascading(QThread):
 
         self.max_additional_islands = max_additional_islands
 
+        self.cascade_type = cascade_type_
+
+        self.n_lhs_samples = n_lhs_samples_
+
     @staticmethod
     def remove_elements(circuit: Circuit, idx=None):
         """
@@ -5665,14 +5697,14 @@ class Cascading(QThread):
         """
 
         if idx is None:
-            l = abs(circuit.power_flow_results.loading)
-            idx = where(l > 1)[0]
+            load = abs(circuit.power_flow_results.loading)
+            idx = where(load > 1.0)[0]
 
             if len(idx) == 0:
-                idx = where(l >= l.max())[0]
+                idx = where(load >= load.max())[0]
 
         # disable the selected branches
-        print('Removing:', idx, l[idx])
+        print('Removing:', idx, load[idx])
 
         for i in idx:
             circuit.branches[i].is_enabled = False
@@ -5685,15 +5717,23 @@ class Cascading(QThread):
         Returns:
             Nothing
         """
+
+        # recompile the grid
         self.grid.compile()
 
-        # initialize the power flow
-        power_flow = PowerFlow(self.grid, self.options)
+        # initialize the simulator
+        if self.cascade_type is CascadeType.PowerFlow:
+            model_simulator = PowerFlow(self.grid, self.options)
+
+        elif self.cascade_type is CascadeType.LatinHypercube:
+            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
+
+        else:
+            model_simulator = PowerFlow(self.grid, self.options)
 
         # For every circuit, run a power flow
-        for c in self.grid.circuits:
-
-            power_flow.run()
+        # for c in self.grid.circuits:
+        model_simulator.run()
 
         if self.current_step == 0:
             # the first iteration try to trigger the selected indices, if any
@@ -5703,13 +5743,13 @@ class Cascading(QThread):
             idx = self.remove_elements(self.grid)
 
         # store the removed indices and the results
-        entry = CascadingReportElement(idx, power_flow.results)
+        entry = CascadingReportElement(idx, model_simulator.results)
         self.report.append(entry)
 
         # increase the step number
         self.current_step += 1
 
-        print(power_flow.results.get_convergence_report())
+        print(model_simulator.results.get_convergence_report())
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -5729,8 +5769,15 @@ class Cascading(QThread):
         if len(self.grid.circuits) == 0:
             self.grid.compile()
 
-        # initialize the power flow
-        power_flow = PowerFlow(self.grid, self.options)
+        # initialize the simulator
+        if self.cascade_type is CascadeType.PowerFlow:
+            model_simulator = PowerFlow(self.grid, self.options)
+
+        elif self.cascade_type is CascadeType.LatinHypercube:
+            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=1000)
+
+        else:
+            model_simulator = PowerFlow(self.grid, self.options)
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running cascading failure...')
@@ -5745,10 +5792,9 @@ class Cascading(QThread):
         while len(self.grid.circuits) <= n_grids and it <= n_grids:
 
             # For every circuit, run a power flow
-            for c in self.grid.circuits:
-
-                power_flow.run()
-                print(power_flow.results.get_convergence_report())
+            # for c in self.grid.circuits:
+            model_simulator.run()
+            # print(model_simulator.results.get_convergence_report())
 
             if it == 0:
                 # the first iteration try to trigger the selected indices, if any
@@ -5758,9 +5804,10 @@ class Cascading(QThread):
                 idx = self.remove_elements(self.grid)
 
             # store the removed indices and the results
-            entry = CascadingReportElement(idx, power_flow.results)
+            entry = CascadingReportElement(idx, model_simulator.results)
             self.report.append(entry)
 
+            # recompile grid
             self.grid.compile()
 
             it += 1

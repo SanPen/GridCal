@@ -16,15 +16,12 @@
 from PyQt5.QtWidgets import *
 import matplotlib
 
-# Make sure that we are using QT5
-# matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigationtoolbar
 from matplotlib.figure import Figure
 
 from matplotlib import pyplot as plt
 plt.style.use('fivethirtyeight')
-# plt.ion()
 
 
 class MplCanvas(FigureCanvas):
@@ -44,7 +41,10 @@ class MplCanvas(FigureCanvas):
         self.zoom_y_limits = None
 
         self.fig = Figure()
-        self.ax = self.fig.add_subplot(111, axisbg='white')
+        try:
+            self.ax = self.fig.add_subplot(111, facecolor='white')
+        except:
+            self.ax = self.fig.add_subplot(111, axisbg='white')
 
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)

@@ -779,37 +779,37 @@ class MainGUI(QMainWindow):
 
         if elm_type == 'Buses':
             elm = Bus()
-            mdl = ObjectsModel(self.circuit.buses, elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.buses, elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True)
 
         elif elm_type == 'Branches':
             elm = Branch(None, None)
-            mdl = ObjectsModel(self.circuit.branches, elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1, 2])
 
         elif elm_type == 'Loads':
             elm = Load()
-            mdl = ObjectsModel(self.circuit.get_loads(), elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.get_loads(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Static Generators':
             elm = StaticGenerator()
-            mdl = ObjectsModel(self.circuit.get_static_generators(), elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.get_static_generators(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Controlled Generators':
             elm = ControlledGenerator()
-            mdl = ObjectsModel(self.circuit.get_controlled_generators(), elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.get_controlled_generators(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Batteries':
             elm = Battery()
-            mdl = ObjectsModel(self.circuit.get_batteries(), elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.get_batteries(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Shunts':
             elm = Shunt()
-            mdl = ObjectsModel(self.circuit.get_shunts(), elm.edit_headers, elm.edit_types,
+            mdl = ObjectsModel(self.circuit.get_shunts(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)

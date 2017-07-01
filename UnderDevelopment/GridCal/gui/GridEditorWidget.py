@@ -177,7 +177,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         layout.addWidget(grid)
         dialogue.setLayout(layout)
 
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=grid, editable=True, transposed=True, non_editable_indices=[1, 2])
 
         grid.setModel(mdl)
@@ -189,7 +189,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
                            non_editable_indices=[1, 2])
 
@@ -512,7 +512,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -631,7 +631,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -751,7 +751,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -862,7 +862,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -978,7 +978,9 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers,
+                           self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1285,7 +1287,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         layout.addWidget(grid)
         dialogue.setLayout(layout)
 
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=grid, editable=True, transposed=True)
 
         grid.setModel(mdl)
@@ -1297,7 +1299,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 

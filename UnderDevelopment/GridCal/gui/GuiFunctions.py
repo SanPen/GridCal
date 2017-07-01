@@ -277,9 +277,9 @@ class PandasModel(QtCore.QAbstractTableModel):
 
 class ObjectsModel(QtCore.QAbstractTableModel):
     """
-    Class to populate a Qt table view with a pandas data frame
+    Class to populate a Qt table view with the properties of objects
     """
-    def __init__(self, objects, attributes, attr_types, parent=None, editable=False, non_editable_indices=list(),
+    def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False, non_editable_indices=list(),
                  transposed=False):
         """
 
@@ -298,6 +298,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         self.attributes = attributes
 
         self.attribute_types = attr_types
+
+        self.units = attr_units
 
         self.objects = objects
 
@@ -456,10 +458,16 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 if orientation == QtCore.Qt.Horizontal:
                     return 'Value'
                 elif orientation == QtCore.Qt.Vertical:
-                    return self.attributes[p_int]
+                    if self.units[p_int] != '':
+                        return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
+                    else:
+                        return self.attributes[p_int]
             else:
                 if orientation == QtCore.Qt.Horizontal:
-                    return self.attributes[p_int]
+                    if self.units[p_int] != '':
+                        return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
+                    else:
+                        return self.attributes[p_int]
                 elif orientation == QtCore.Qt.Vertical:
                     return str(p_int)
 
@@ -491,7 +499,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
 class ProfilesModel(QtCore.QAbstractTableModel):
     """
-    Class to populate a Qt table view with a pandas data frame
+    Class to populate a Qt table view with profiles from objects
     """
     def __init__(self, multi_circuit, device, magnitude, format, parent):
         """
