@@ -2,9 +2,10 @@
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
 import sys
+import numpy as np
 from numpy import angle, conj, exp, array, asmatrix, asarray, diag, r_, linalg, Inf, dot, zeros, shape, where, pi
 from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import splu
 from warnings import warn
 
 
@@ -359,7 +360,7 @@ def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, par
             ], format="csr")
     
         # compute update step
-        dx = -spsolve(J, F)
+        dx = -splu(J).solve(F)   #-np.linalg.solve(J, F)
     
         # update voltage
         if npv:
@@ -473,7 +474,7 @@ def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameteriz
     # compute normalized tangent predictor
     s = zeros(npv + 2 * npq + 1)
     s[npv + 2 * npq] = 1                    # increase in the direction of lambda
-    z[r_[pvpq, nb+pq, 2*nb]] = spsolve(J, s)  # tangent vector
+    z[r_[pvpq, nb+pq, 2*nb]] = splu(J).solve(s)  #spsolve(J, s)  # tangent vector
     z /= linalg.norm(z)                         # normalize tangent predictor  (dividing by the euclidean norm)
     
     Va0 = Vaprv

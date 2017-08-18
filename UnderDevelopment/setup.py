@@ -80,9 +80,9 @@ if platform.system() == 'Windows':
                           "xlwt",
                           "xlrd",
                           # "PyQt5",
-                          "pyDOE",
                           "matplotlib",
-                          "qtconsole"
+                          "qtconsole",
+                          "pysot"
                           ]
 else:
     # make the desktop entry
@@ -96,9 +96,9 @@ else:
                          "xlwt",
                          "xlrd",
                          "PyQt5",
-                         "pyDOE",
                          "matplotlib",
-                         "qtconsole"
+                         "qtconsole",
+                         "pysot"
                          ]
 
 setup(

@@ -19,7 +19,7 @@
 from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \
 empty, float64, int32, arange
 from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import spsolve, splu
 import scipy
 scipy.ALLOW_THREADS = True
 import time
@@ -216,16 +216,16 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
     # J = zeros(shape=(ndim, ndim), dtype=float64)
 
     # get length of vectors
-    lpvpq = len(pvpq)
-    lpq = len(pq)
-    lpv = lpvpq - lpq
+    npvpq = len(pvpq)
+    npq = len(pq)
+    npv = npvpq - npq
 
     # nonzeros in J
     nnz = 0
 
     # iterate rows of J
     # first iterate pvpq (J11 and J12)
-    for r in range(lpvpq):
+    for r in range(npvpq):
         # nnzStar is necessary to calculate nonzeros per row
         nnzStart = nnz
         # iterate columns of J11 = dS_dVa.real at positions in pvpq
@@ -241,14 +241,14 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
                 Jj[nnz] = cc
                 nnz += 1
                 # if entry is found in the "pq part" of pvpq = add entry of J12
-                if cc >= lpv:
+                if cc >= npv:
                     Jx[nnz] = dVm_x[c].real
-                    Jj[nnz] = cc + lpq
+                    Jj[nnz] = cc + npq
                     nnz += 1
         # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
         Jp[r+1] = nnz - nnzStart + Jp[r]
     # second: iterate pq (J21 and J22)
-    for r in range(lpq):
+    for r in range(npq):
         nnzStart = nnz
         # iterate columns of J21 = dS_dVa.imag at positions in pvpq
         for c in range(Yp[pq[r]], Yp[pq[r]+1]):
@@ -259,13 +259,13 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
                 Jx[nnz] = dVa_x[c].imag
                 Jj[nnz] = cc
                 nnz += 1
-                if cc >= lpv:
+                if cc >= npv:
                     # if entry is found in the "pq part" of pvpq = Add entry of J22
                     Jx[nnz] = dVm_x[c].imag
-                    Jj[nnz] = cc + lpq
+                    Jj[nnz] = cc + npq
                     nnz += 1
         # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
-        Jp[r + lpvpq + 1] = nnz - nnzStart + Jp[r + lpvpq]
+        Jp[r + npvpq + 1] = nnz - nnzStart + Jp[r + npvpq]
 
 
 # @jit(Tuple((c16[:], c16[:]))(c16[:], i4[:], i4[:], c16[:], c16[:]), nopython=True, cache=True)
@@ -532,7 +532,9 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     nu = 2.0
     lbmda = 0
     f_prev = 1e9  # very large number
-    Idn = np.identity(2 * npq + npv)
+    nn = 2 * npq + npv
+    ii = np.linspace(0, nn-1, nn)
+    Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
 
     # do Newton iterations
     while not converged and iter_ < max_it:
@@ -567,7 +569,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         rhs = H1.dot(dz)
 
         # Solve the increment
-        dx = np.linalg.solve(A, rhs)
+        dx = spsolve(A, rhs)
 
         # objective function to minimize
         f = 0.5 * dz.dot(dz)

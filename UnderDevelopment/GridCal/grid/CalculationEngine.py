@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.51
+__GridCal_VERSION__ = 1.52
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -99,7 +99,8 @@ class CDF(object):
             self.arr = sort(ndarray.flatten(data.values))
 
         else:
-            self.arr = sort(ndarray.flatten(data))
+            # self.arr = sort(ndarray.flatten(data), axis=0)
+            self.arr = sort(data, axis=0)
 
         self.iscomplex = iscomplexobj(self.arr)
 
@@ -5323,7 +5324,8 @@ class MonteCarloResults:
 
         self.available_results = ['Bus voltage avg', 'Bus voltage std',
                                   'Bus current avg', 'Bus current std',
-                                  'Branch loading avg', 'Branch loading std']
+                                  'Branch loading avg', 'Branch loading std',
+                                  'Bus voltage CDF', 'Branch loading CDF']
 
     def append_batch(self, mcres):
         """
@@ -5502,40 +5504,61 @@ class MonteCarloResults:
             if type == 'Bus voltage avg':
                 y = self.v_avg_conv[1:-1, indices]
                 ylabel = 'Bus voltage average convergence(p.u.)'
+                xlabel = 'Sampling points'
 
             elif type == 'Bus current avg':
                 y = self.c_avg_conv[1:-1, indices]
-                ylabel = 'Branch current average convergence(kA)'
+                ylabel = 'Bus current average convergence(kA)'
+                xlabel = 'Sampling points'
 
             elif type == 'Branch loading avg':
                 y = self.l_avg_conv[1:-1, indices]
                 ylabel = 'Branch loading average convergence(%)'
+                xlabel = 'Sampling points'
 
             elif type == 'Bus voltage std':
                 y = self.v_std_conv[1:-1, indices]
                 ylabel = 'Bus voltage standard deviation convergence(p.u.)'
+                xlabel = 'Sampling points'
 
             elif type == 'Bus current std':
                 y = self.c_std_conv[1:-1, indices]
-                ylabel = 'Branch current standard deviation convergence(kA)'
+                ylabel = 'Bus current standard deviation convergence(kA)'
+                xlabel = 'Sampling points'
 
             elif type == 'Branch loading std':
                 y = self.l_std_conv[1:-1, indices]
                 ylabel = 'Branch loading standard deviation convergence(%)'
+                xlabel = 'Sampling points'
+
+            elif type == 'Bus voltage CDF':
+                cdf = CDF(self.V_points.real[:, indices])
+                cdf.plot(ax=ax)
+                ylabel = 'Bus voltage'
+                xlabel = 'Probability $P(X \leq x)$'
+
+            elif type == 'Branch loading CDF':
+                cdf = CDF(self.loading_points.real[:, indices])
+                cdf.plot(ax=ax)
+                ylabel = 'Branch loading'
+                xlabel = 'Probability $P(X \leq x)$'
 
             else:
                 pass
 
-            df = pd.DataFrame(data=y, columns=labels)
+            if 'CDF' not in type:
+                df = pd.DataFrame(data=y, columns=labels)
 
-            if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=1, legend=False)
+                if len(df.columns) > 10:
+                    df.plot(ax=ax, linewidth=1, legend=False)
+                else:
+                    df.plot(ax=ax, linewidth=1, legend=True)
             else:
-                df.plot(ax=ax, linewidth=1, legend=True)
+                df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 
             ax.set_title(ylabel)
             ax.set_ylabel(ylabel)
-            ax.set_xlabel('Sampling points')
+            ax.set_xlabel(xlabel)
 
             return df
 

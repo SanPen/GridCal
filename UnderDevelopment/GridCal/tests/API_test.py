@@ -20,7 +20,8 @@ grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = 'Pegasus 89 Bus.xlsx'
 # fname = 'Illinois200Bus.xlsx'
-fname = 'IEEE_30_new.xlsx'
+# fname = 'IEEE_30_new.xlsx'
+fname = 'lynn5buspq.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 grid.load_file(fname)
@@ -89,14 +90,14 @@ print('\tConv:', grid.power_flow_results.converged)
 # Sbase = zeros(len(grid.buses), dtype=complex)
 # for c in grid.circuits:
 #     Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
-# unitary_vector = -1 + 2 * random.random(len(grid.buses))
+# unitary_vector = -1 + 2 * np.random.random(len(grid.buses))
 # # unitary_vector = random.random(len(grid.buses))
 # vc_inputs = VoltageCollapseInput(Sbase=Sbase,
 #                                  Vbase=grid.power_flow_results.voltage,
 #                                  Starget=Sbase * (1+unitary_vector))
 # vc = VoltageCollapse(grid=grid, options=vc_options, inputs=vc_inputs)
 # vc.run()
-#
+
 # vc.results.plot()
 # plt.show()
 
@@ -121,8 +122,11 @@ print('\tConv:', grid.power_flow_results.converged)
 # Cascading
 ####################################################################################################################
 
-# cascade = Cascading(grid.copy(), options)
-# # cascade.run()
+# cascade = Cascading(grid.copy(), options,
+#                     max_additional_islands=5,
+#                     cascade_type_=CascadeType.LatinHypercube,
+#                     n_lhs_samples_=10)
+# cascade.run()
 #
 # cascade.perform_step_run()
 # cascade.perform_step_run()
@@ -133,9 +137,9 @@ print('\tConv:', grid.power_flow_results.converged)
 # Fuck up the voltage
 ####################################################################################################################
 
-options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False, initialize_with_existing_solution=False)
-opt = Optimize(grid, options, max_iter=10000)
-opt.run()
-opt.plot()
-
-plt.show()
+# options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False, initialize_with_existing_solution=False)
+# opt = Optimize(grid, options, max_iter=10000)
+# opt.run()
+# opt.plot()
+#
+# plt.show()
