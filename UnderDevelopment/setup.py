@@ -72,7 +72,7 @@ for dirname, dirnames, filenames in os.walk('doc'):
         data_files.append(('share/' + name + '/' + dirname, fileslist))
 
 if platform.system() == 'Windows':
-    # list the packages
+    # list the packages (On windows anaconda is assumed)
     required_packages = ["numpy",
                           "scipy",
                           "networkx",
@@ -133,4 +133,5 @@ setup(
 
     # Dependent packages (distributions)
     install_requires=required_packages,
+    setup_requires=required_packages,
 )
