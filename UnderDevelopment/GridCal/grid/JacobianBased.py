@@ -458,6 +458,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
 
         Vm -= mu_ * dVm
         Va -= mu_ * dVa
+
         V = Vm * exp(1j * Va)
 
         Vm = abs(V)  # update Vm and Va again in case

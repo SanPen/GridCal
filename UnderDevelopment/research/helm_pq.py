@@ -113,7 +113,8 @@ def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
     """
 
     # compose the slack nodes influence current
-    Iref = Yserie[pqpv, :][:, ref].dot(Vbus[ref])
+    Yslack = Yserie[pqpv, :][:, ref]
+    Iref = Yslack.dot(Vbus[ref])
 
     nbus = len(Vbus)
     npqpv = len(pqpv)
@@ -122,6 +123,7 @@ def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
 
     # factorize the Yseries matrix only once
     Yseries_pqpv = Yserie[pqpv, :][:, pqpv]
+    # Yseries_pqpv = Ybus[pqpv, :][:, pqpv]
     Ysolve = factorized(Yseries_pqpv)
 
     # declare the matrix of coefficients that will lead to the voltage computation
@@ -216,15 +218,15 @@ if __name__ == '__main__':
     print('error: \t', err)
 
     # check the HELM solution: v against the NR power flow
-    print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
-    power_flow = PowerFlow(grid, options)
-    power_flow.run()
-    vnr = circuit.power_flow_results.voltage
-
-    print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
-    print('error: \t', circuit.power_flow_results.error)
-
-    # check
-    print('\ndiff:\t', v - vnr)
+    # print('\nNR')
+    # options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
+    # power_flow = PowerFlow(grid, options)
+    # power_flow.run()
+    # vnr = circuit.power_flow_results.voltage
+    #
+    # print('V module:\t', abs(vnr))
+    # print('V angle: \t', angle(vnr))
+    # print('error: \t', circuit.power_flow_results.error)
+    #
+    # # check
+    # print('\ndiff:\t', v - vnr)

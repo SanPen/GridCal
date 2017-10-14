@@ -12,3 +12,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+
+
+def Parse_PSS_33(file_name):
+
+    print('Parsing ', file_name)
+

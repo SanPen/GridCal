@@ -157,12 +157,12 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
+        self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
         self.solvers_dict['Fast-Decoupled'] = SolverType.FASTDECOUPLED
         self.solvers_dict['Newton-Raphson'] = SolverType.NR
         # self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
         # self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
         self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
-        self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
         # self.solvers_dict['Gauss-Seidel'] = SolverType.GAUSS
         # self.solvers_dict['Z-Matrix Gauss-Seidel'] = SolverType.ZBUS
         self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
@@ -629,6 +629,11 @@ class MainGUI(QMainWindow):
                 self.ui.schematic_layout.addWidget(self.grid_editor)
                 self.ui.splitter_8.setStretchFactor(1, 15)
 
+                # clear the results
+                self.ui.resultsPlot.clear()
+                self.ui.resultsTableView.setModel(None)
+
+                # clear the simulation objects
                 self.power_flow = None
                 self.monte_carlo = None
                 self.time_series = None
@@ -650,7 +655,8 @@ class MainGUI(QMainWindow):
         files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m)"
         # call dialog to select the file
 
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file', directory=self.project_directory,
+        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
+                                                              directory=self.project_directory,
                                                               filter=files_types)
 
         if len(filename) > 0:

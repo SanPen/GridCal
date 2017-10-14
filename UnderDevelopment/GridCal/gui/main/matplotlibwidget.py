@@ -194,6 +194,14 @@ class MatplotlibWidget(QWidget):
         return self.canvas.fig
 
     def clear(self, force=False):
+        """
+        Clear the interface
+        Args:
+            force: Remove the object and create a new one (brute force)
+
+        Returns:
+
+        """
         if force:
             self.canvas.fig.clear()
             self.canvas.ax = self.canvas.fig.add_subplot(111)
@@ -201,8 +209,14 @@ class MatplotlibWidget(QWidget):
             # self.canvas = MplCanvas()
         else:
             self.canvas.ax.clear()
+        self.redraw()
 
     def redraw(self):
+        """
+        Redraw the interface
+        Returns:
+
+        """
         self.canvas.ax.figure.canvas.draw()
 
     def plot(self, x, y, title='', xlabel='', ylabel=''):
