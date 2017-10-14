@@ -170,6 +170,7 @@ class MainGUI(QMainWindow):
         # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
         self.solvers_dict['DC approximation'] = SolverType.DC
 
+
         lst = list(self.solvers_dict.keys())
         mdl = get_list_model(lst)
         self.ui.solver_comboBox.setModel(mdl)
