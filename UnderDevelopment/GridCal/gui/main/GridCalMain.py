@@ -22,7 +22,7 @@ import os.path
 import sys
 from collections import OrderedDict
 from enum import Enum
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap, Colormap
 from multiprocessing import cpu_count
 
 __author__ = 'Santiago Peñate Vera'
@@ -170,7 +170,6 @@ class MainGUI(QMainWindow):
         # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
         self.solvers_dict['DC approximation'] = SolverType.DC
 
-
         lst = list(self.solvers_dict.keys())
         mdl = get_list_model(lst)
         self.ui.solver_comboBox.setModel(mdl)
@@ -186,10 +185,10 @@ class MainGUI(QMainWindow):
         # Automatic layout modes
         mdl = get_list_model(['spectral_layout',
                               'circular_layout',
-                               'random_layout',
-                               'shell_layout',
-                               'spring_layout',
-                               'fruchterman_reingold_layout'])
+                              'random_layout',
+                              'shell_layout',
+                              'spring_layout',
+                              'fruchterman_reingold_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         ################################################################################################################
@@ -311,6 +310,7 @@ class MainGUI(QMainWindow):
 
         # list clicks
         self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
+
         self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
@@ -331,9 +331,11 @@ class MainGUI(QMainWindow):
                (1.05 / vmax, 'orange'),
                (1.2 / vmax, 'red')]
         self.voltage_cmap = LinearSegmentedColormap.from_list('vcolors', seq)
-        seq = [(0.0, 'green'),
-               (0.8, 'orange'),
-               (1.0, 'red')]
+        load_max = 1.5
+        seq = [(0.0 / load_max, 'gray'),
+               (0.5 / load_max, 'green'),
+               (1.0 / load_max, 'orange'),
+               (1.5 / load_max, 'red')]
         self.loading_cmap = LinearSegmentedColormap.from_list('lcolors', seq)
 
         ################################################################################################################
