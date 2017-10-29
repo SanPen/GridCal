@@ -21,8 +21,9 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.gui.main.GridCalMain import run
 
 if __name__ == "__main__":
-    print("GridCal  Copyright (C) 2016 Santiago Peñate Vera\n" +
+    print("GridCal  \nCopyright (C) 2017 Santiago Peñate Vera\n" +
           "This program comes with ABSOLUTELY NO WARRANTY.\n" +
-          "This is free software, and you are welcome to redistribute it\n" +
-          "under certain conditions;\nSee the license file for more details.\n\n")
+          "This is free software, and you are welcome to \n" +
+          "redistribute it under certain conditions;\n" +
+          "See the license file for more details.\n\n")
     run()
