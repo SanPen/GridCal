@@ -885,7 +885,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-
         color = Qt.black
         pen = QPen(color, 2)
 
@@ -1007,8 +1006,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         super(BusGraphicItem, self).__init__(parent)
 
-        self.w = 60.0
-        self.h = 60.0
+        self.min_w = 60.0
+        self.min_h = 60.0
+        self.h = self.min_h
+        self.w = self.min_w
 
         self.api_object = bus
 
@@ -1039,7 +1040,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         # Create corner for resize:
         self.sizer = HandleItem(self)
-        self.sizer.setPos(self.w, self.h)
+        self.sizer.setPos(self.min_w, self.min_h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
 
         self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
@@ -1057,7 +1058,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.terminals = self.upper_terminals + self.lower_terminals + self.right_terminals + self.left_terminals
 
         # Update size:
-        self.change_size(self.w, self.h)
+        self.change_size(self.min_w, self.min_h)
 
     def change_size(self, w, h):
         """
@@ -1067,12 +1068,14 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @return:
         """
         # Limit the block size to the minimum size:
-        if h < self.h:
-            h = self.h
-        if w < self.w:
-            w = self.w
-        self.setRect(0.0, 0.0, w, h)
+        if h < self.min_h:
+            h = self.min_h
+        if w < self.min_w:
+            w = self.min_w
 
+        self.setRect(0.0, 0.0, w, h)
+        self.h = h
+        self.w = w
         offset = 10
 
         # center label:
@@ -1121,6 +1124,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             term.setPos(x0, y0)
             # term.setPos(x0, y0 - h / 2 + offset / 2)
             y0 += dy
+
+        # rearrange children
+        self.arrange_children()
 
         return w, h
 

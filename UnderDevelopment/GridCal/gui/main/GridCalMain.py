@@ -466,6 +466,16 @@ class MainGUI(QMainWindow):
         vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
 
+        '''
+        class NodeType(Enum):
+    PQ = 1,
+    PV = 2,
+    REF = 3,
+    NONE = 4,
+    STO_DISPATCH = 5
+        '''
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
+
         for i, bus in enumerate(self.circuit.buses):
             if bus.active:
                 r, g, b, a = self.voltage_cmap(vnorm[i])
@@ -479,7 +489,7 @@ class MainGUI(QMainWindow):
                 if s_bus is not None:
                     tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * self.circuit.Sbase) + ' [MVA]'
                 if types is not None:
-                    tooltip += '\nType: ' + str(types[i])
+                    tooltip += '\nType: ' + bus_types[types[i]]
                 bus.graphic_obj.setToolTip(tooltip)
 
         # color branches
@@ -575,7 +585,7 @@ class MainGUI(QMainWindow):
         pos_alg = alg[sel]
 
         # get the positions of a spring layout of the graph
-        pos = pos_alg(self.circuit.graph, scale=2)
+        pos = pos_alg(self.circuit.graph, scale=10)
 
         # assign the positions to the graphical objects of the nodes
         for i, bus in enumerate(self.circuit.buses):
