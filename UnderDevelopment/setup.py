@@ -82,7 +82,8 @@ if platform.system() == 'Windows':
                           # "PyQt5",
                           "matplotlib",
                           "qtconsole",
-                          "pysot"
+                          "pysot",
+                          "openpyxl"
                           ]
 else:
     # make the desktop entry
@@ -98,7 +99,8 @@ else:
                          "PyQt5",
                          "matplotlib",
                          "qtconsole",
-                         "pysot"
+                         "pysot",
+                         "openpyxl"
                          ]
 
 setup(

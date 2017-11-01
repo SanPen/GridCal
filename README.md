@@ -94,9 +94,10 @@ It is pure Python, It works for Windows, Linux and OSX.
 Some of the features you'll find already are:
 
 - Compatible with other formats:
+  - PSS/e 30, 32 and 33
   - Matpower (might not be fully compatible, notify me if not).
   - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
-  - PSS/e is planned for when I get a PSS/e example grid...
+
 
 - Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).

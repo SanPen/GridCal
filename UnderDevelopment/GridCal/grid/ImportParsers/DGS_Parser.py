@@ -642,7 +642,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         buses_dict[ID] = i
         bus_name = buses['loc_name'][i].decode(codification)   # BUS_Name
         vnom = buses['uknom'][i]
-        bus = Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, is_enabled=True)
+        bus = Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
         circuit.add_bus(bus)
 
     ####################################################################################################################

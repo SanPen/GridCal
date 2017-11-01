@@ -171,6 +171,7 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
 
     return J
 
+
 if NUMBA_DETECTED:
     # @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=True)
     @jit(nopython=True, cache=True)

@@ -12,7 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+
+from GridCal.grid.CalculationEngine import *
+import math
 import chardet
+import numpy as np
+import pandas as pd
+from numpy import array
+from pandas import DataFrame as df
 from warnings import warn
 
 
@@ -82,6 +89,74 @@ class PSSeGrid:
         self.branches = list()
         self.transformers = list()
 
+    def get_circuit(self):
+        """
+        Return GridCal circuit
+        Returns:
+
+        """
+
+        circuit = MultiCircuit()
+        circuit.Sbase = self.SBASE
+
+        # ---------------------------------------------------------------------
+        # Bus related
+        # ---------------------------------------------------------------------
+        psse_bus_dict = dict()
+        for psse_bus in self.buses:
+
+            # relate each PSS bus index with a GridCal bus object
+            psse_bus_dict[psse_bus.I] = psse_bus.bus
+
+            # add the bus to the circuit
+            circuit.add_bus(psse_bus.bus)
+
+        # Go through loads
+        for psse_load in self.loads:
+
+            bus = psse_bus_dict[psse_load.I]
+            api_obj = psse_load.get_object(bus)
+
+            circuit.add_load(bus, api_obj)
+
+        # Go through shunts
+        for psse_shunt in self.shunts:
+
+            bus = psse_bus_dict[psse_shunt.I]
+            api_obj = psse_shunt.get_object(bus)
+
+            circuit.add_shunt(bus, api_obj)
+
+        # Go through generators
+        for psse_gen in self.generators:
+
+            bus = psse_bus_dict[psse_gen.I]
+            api_obj = psse_gen.get_object()
+
+            circuit.add_controlled_generator(bus, api_obj)
+
+        # ---------------------------------------------------------------------
+        # Branches
+        # ---------------------------------------------------------------------
+        # Go through Branches
+        for psse_banch in self.branches:
+            # get the object
+            branch = psse_banch.get_object(psse_bus_dict)
+
+            # Add to the circuit
+            circuit.add_branch(branch)
+
+        # Go through Transformers
+        for psse_banch in self.transformers:
+            # get the object
+            branches = psse_banch.get_object(psse_bus_dict)
+
+            # Add to the circuit
+            for branch in branches:
+                circuit.add_branch(branch)
+
+        return circuit
+
 
 class PSSeBus:
 
@@ -112,9 +187,40 @@ class PSSeBus:
         Args:
             data:
         """
+
+        bustype = {1: NodeType.PQ, 2: NodeType.PV, 3: NodeType.REF, 4: NodeType.PQ}
+
         if version == 33:
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, \
              self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = data[0]
+
+            # create bus
+            self.bus = Bus(name=self.NAME, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True)
+
+        elif version == 32:
+
+            self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, self.OWNER, self.VM, self.VA = data[0]
+
+            # create bus
+            self.bus = Bus(name=self.NAME, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+                           active=True)
+
+        elif version == 30:
+
+            self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
+             self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
+
+            # create bus
+            self.bus = Bus(name=self.NAME, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+                           active=True)
+
+        # set type
+        self.bus.type = bustype[self.IDE]
+
+        if self.bus.type == NodeType.REF:
+            self.bus.is_slack = True
+
+        self.bus.name = self.bus.name.replace("'", "").strip()
 
 
 class PSSeLoad:
@@ -158,6 +264,44 @@ class PSSeLoad:
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
              self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT = data[0]
 
+        elif version == 32:
+
+            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE = data[0]
+
+        elif version == 30:
+
+            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, \
+             self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
+
+    def get_object(self, bus: Bus):
+        """
+        Return GridCal Load object
+        Returns:
+            Gridcal Load object
+        """
+
+        # GL and BL come in MW and MVAr
+        # THey must be in siemens
+        vv = bus.Vnom ** 2.0
+
+        if vv == 0:
+            warn('Voltage equal to zero in shunt conversion!!!')
+
+        g, b = self.YP, self.YQ
+        ir, ii = self.IP, self.IQ
+        p, q = self.PL, self.QL
+
+        object = Load(name='Load ' + self.ID,
+                      impedance=complex(g, b),
+                      current=complex(ir, ii),
+                      power=complex(p, q),
+                      impedance_prof=None,
+                      current_prof=None,
+                      power_prof=None)
+
+        return object
+
 
 class PSSeShunt:
 
@@ -186,6 +330,34 @@ class PSSeShunt:
         """
         if version == 33:
             self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
+
+        elif version == 32:
+
+            self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
+
+    def get_object(self, bus: Bus):
+        """
+        Return GridCal Load object
+        Returns:
+            Gridcal Load object
+        """
+
+        # GL and BL come in MW and MVAr
+        # THey must be in siemens
+        vv = bus.Vnom**2.0
+
+        if vv == 0:
+            warn('Voltage equal to zero in shunt conversion!!!')
+
+        g = self.GL
+        b = self.BL
+
+        object = Shunt(name='Shunt' + self.ID,
+                       admittance=complex(g, b),
+                       admittance_prof=None,
+                       active=bool(self.STATUS))
+
+        return object
 
 
 class PSSeGenerator:
@@ -267,32 +439,56 @@ class PSSeGenerator:
             version:
         """
 
-        length = len(data)
+        length = len(data[0])
 
-        if version == 33:
+        if version in [33, 32, 30]:
 
             if length == 28:
                 self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, self.WMOD, self.WPF = data[0]
+
             elif length == 26:
                 self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.WMOD, self.WPF = data[0]
+
             elif length == 24:
                 self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
                  self.O1, self.F1, self.O2, self.F2, self.WMOD, self.WPF = data[0]
+
             elif length == 22:
                 self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
                  self.O1, self.F1, self.WMOD, self.WPF = data[0]
+
             elif length == 20:
                 self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
                  self.WMOD, self.WPF = data[0]
+
             else:
-                pass
+                raise Exception('Wrong data length in generator' + str(length))
+
+    def get_object(self):
+        """
+        Return GridCal Load object
+        Returns:
+            Gridcal Load object
+        """
+
+        object = ControlledGenerator(name='gen',
+                                     active_power=self.PG,
+                                     voltage_module=self.VS,
+                                     Qmin=-self.QB,
+                                     Qmax=self.QT,
+                                     Snom=self.MBASE,
+                                     power_prof=None,
+                                     vset_prof=None,
+                                     active=bool(self.STAT))
+
+        return object
 
 
 class PSSeBranch:
@@ -305,7 +501,7 @@ class PSSeBranch:
         CKT: One- or two-character uppercase non-blank alphanumeric branch circuit identifier;
             the first character of CKT must not be an ampersand ( & ); refer to Multi-Section
             Line Grouping Data. If the first character of CKT is an at sign ( @ ), the branch is
-            treated as a breaker; if it is an asterisk (  ), it is treated as a switch (see Section
+            treated as a breaker; if it is an asterisk ( * ), it is treated as a switch (see Section
             6.17.2, Outage Statistics Data File Contents). Unless it is a breaker or switch, it is
             recommended that single circuit branches be designated as having the circuit identifier 1.
             CKT = 1 by default.
@@ -353,9 +549,9 @@ class PSSeBranch:
             version:
         """
 
-        length = len(data)
+        length = len(data[0])
 
-        if version == 33:
+        if version in [33, 32]:
 
             if length == 24:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
@@ -377,6 +573,75 @@ class PSSeBranch:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN = data[0]
 
+            else:
+                raise Exception('Wrong data length in branch' + str(length))
+
+        elif version == 30:
+            """
+            I,J,CKT,R,X,B,RATEA,RATEB,RATEC,GI,BI,GJ,BJ,ST,LEN,01,F1, ,04,F4
+            """
+            if length == 24:
+                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
+                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+            elif length == 22:
+                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
+                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            elif length == 20:
+                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
+                 self.O1, self.F1, self.O2, self.F2 = data[0]
+            elif length == 18:
+                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
+                 self.O1, self.F1 = data[0]
+            elif length == 16:
+                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN = data[0]
+
+            else:
+                raise Exception('Wrong data length in branch' + str(length))
+
+        else:
+
+            warn('Invalid Branch version')
+
+    def get_object(self, psse_bus_dict):
+        """
+        Return GridCal branch object
+        Args:
+            psse_bus_dict: Dictionary that relates PSSe bus indices with GridCal Bus objects
+
+        Returns:
+            Gridcal Branch object
+        """
+        bus_from = psse_bus_dict[self.I]
+        bus_to = psse_bus_dict[self.J]
+
+        if self.LEN > 0:
+            r = self.R * self.LEN
+            x = self.X * self.LEN
+            b = self.B * self.LEN
+        else:
+            r = self.R
+            x = self.X
+            b = self.B
+
+        object = Branch(bus_from=bus_from, bus_to=bus_to,
+                        name='Branch',
+                        r=r,
+                        x=x,
+                        g=1e-20,
+                        b=b,
+                        rate=max(self.RATEA, self.RATEB, self.RATEC),
+                        tap=1,
+                        shift_angle=0,
+                        active=True,
+                        mttf=0,
+                        mttr=0)
+        return object
+
 
 class PSSeTransformer:
 
@@ -396,7 +661,7 @@ class PSSeTransformer:
             specified). K = 0 by default.
         CKT One- or two-character uppercase non-blank alphanumeric transformer circuit identi-
             fier; the first character of CKT must not be an ampersand ( & ), at sign ( @ ), or
-            asterisk (  ); refer to Multi-Section Line Grouping Data and Section 6.17.2, Outage
+            asterisk ( * ); refer to Multi-Section Line Grouping Data and Section 6.17.2, Outage
             Statistics Data File Contents. CKT = 1 by default.
         CW The winding data I/O code defines the units in which the turns ratios WINDV1,
             WINDV2 and WINDV3 are specified (the units of RMAn and RMIn are also
@@ -408,12 +673,14 @@ class PSSeTransformer:
             CW = 1 by default.
         CZ  The impedance data I/O code defines the units in which the winding impedances
             R1-2, X1-2, R2-3, X2-3, R3-1 and X3-1 are specified:
-            1 for resistance and reactance in pu on system MVA base and 
-            winding voltage base
-            2 for resistance and reactance in pu on a specified MVA base and 
-            winding voltage base
-            3 for transformer load loss in watts and impedance magnitude in pu 
-            on a specified MVA base and winding voltage base.
+
+            1 for resistance and reactance in pu on system MVA base and  winding voltage base
+
+            2 for resistance and reactance in pu on a specified MVA base and winding voltage base
+
+            3 for transformer load loss in watts and impedance magnitude in pu on a specified
+              MVA base and winding voltage base.
+
             In specifying transformer leakage impedances, the base voltage values are always
             the nominal winding voltages that are specified on the third, fourth and fifth records
             of the transformer data block (NOMV1, NOMV2 and NOMV3). If the default NOMVn
@@ -791,6 +1058,218 @@ class PSSeTransformer:
                  self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
                  self.CR3, self.CX3, self.CNXA3 = data[3]
 
+        elif version == 32:
+
+            '''
+            I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+
+            R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
+
+            WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
+
+            WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2,COD2,CONT2,RMA2,RMI2,VMA2,VMI2,NTP2,TAB2,CR2,CX2,CNXA2
+            WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3,COD3,CONT3,RMA3,RMI3,VMA3,VMI3,NTP3,TAB3,CR3,CX3,CNXA3
+            '''
+
+            # Line 1: for both types
+            if len(data[0]) == 20:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+            elif len(data[0]) == 18:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            elif len(data[0]) == 16:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
+            elif len(data[0]) == 14:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1 = data[0]
+            elif len(data[0]) == 12:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT = data[0]
+
+            # line 2
+            if len(data[1]) == 3:
+                # 2-windings
+                self.windings = 2
+                self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
+            else:
+                # 3-windings
+                self.windings = 3
+                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
+                 self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+
+            # line 3: for both types
+            self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
+             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+
+            # line 4
+            if len(data[3]) == 2:
+                # 2-windings
+                self.WINDV2, self.NOMV2 = data[3]
+            else:
+                # 3 - windings
+                self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
+                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2, \
+                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
+                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
+                 self.CR3, self.CX3, self.CNXA3 = data[3]
+
+        elif version == 30:
+
+            """
+            I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,Ol,Fl 04,F4
+
+            R1—2,X1—2,SBASE1—2,R2—3,X2—3,SBASE2—3,R3—1,X3—1,SBASE3—1,VMSTAR,ANSTAR
+
+            WINDV1,NOMV1,ANG1, RATA1, BATB1, RATC1, COD1, CONT1, RMA1, RMI1,VMA1,VMI1,NTP1, TAB1, CR1, CX1
+
+            WINDV2 ,NOMV2 , ANG2 , RATA2 , BATB2 , RATC2, COD2, CONT2 , RMA2 , RMI2 , VMA2 , VMI2 ,NTP2, TAB2,CR2, CX2
+            WINDV3,NOMV3,ANG3, RATA3, BATB3, RATC3, COD3, CONT3, RMA3, RMI3,VMA3,VMI3,NTP3, TAB3, CR3, CX3
+            """
+
+            # Line 1: for both types
+            if len(data[0]) == 20:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+            elif len(data[0]) == 18:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            elif len(data[0]) == 16:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
+            elif len(data[0]) == 14:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1 = data[0]
+            elif len(data[0]) == 12:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT = data[0]
+
+            # line 2
+            if len(data[1]) == 3:
+                # 2-windings
+                self.windings = 2
+                self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
+            else:
+                # 3-windings
+                self.windings = 3
+                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
+                self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+
+            # line 3: for both types
+            self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
+            self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+
+            # line 4
+            if len(data[3]) == 2:
+                # 2-windings
+                self.WINDV2, self.NOMV2 = data[3]
+            else:
+                # 3 - windings
+                self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
+                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, \
+                self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
+                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
+                self.CR3, self.CX3 = data[3]
+
+    def get_object(self, psse_bus_dict):
+        """
+        Return GridCal branch object
+        Args:
+            psse_bus_dict: Dictionary that relates PSSe bus indices with GridCal Bus objects
+
+        Returns:
+            Gridcal Branch object
+        """
+
+        if self.CZ != 1:
+            warn('Transformer impedance is not in p.u.')
+
+        if self.windings == 2:
+            bus_from = psse_bus_dict[self.I]
+            bus_to = psse_bus_dict[self.J]
+
+            r = self.R1_2
+            x = self.X1_2
+            g = self.MAG1
+            b = self.MAG2
+
+            object = Branch(bus_from=bus_from, bus_to=bus_to,
+                            name=self.NAME,
+                            r=r,
+                            x=x,
+                            g=g,
+                            b=b,
+                            rate=max(self.RATA1, self.RATB1, self.RATC1),
+                            tap=1,
+                            shift_angle=0,
+                            active=True,
+                            mttf=0,
+                            mttr=0)
+            return [object]
+
+        elif self.windings == 3:
+
+            bus_1 = psse_bus_dict[self.I]
+            bus_2 = psse_bus_dict[self.J]
+            bus_3 = psse_bus_dict[self.k]
+
+            r = self.R1_2
+            x = self.X1_2
+            g = self.MAG1
+            b = self.MAG2
+
+            object1 = Branch(bus_from=bus_1, bus_to=bus_2,
+                             name=self.NAME + '_1_2',
+                             r=r,
+                             x=x,
+                             g=g,
+                             b=b,
+                             rate=max(self.RATA1, self.RATB1, self.RATC1),
+                             tap=1,
+                             shift_angle=0,
+                             active=True,
+                             mttf=0,
+                             mttr=0)
+
+            r = self.R2_3
+            x = self.X2_3
+            g = self.MAG1
+            b = self.MAG2
+
+            object2 = Branch(bus_from=bus_2, bus_to=bus_3,
+                             name=self.NAME + '_2_3',
+                             r=r,
+                             x=x,
+                             g=g,
+                             b=b,
+                             rate=max(self.RATA1, self.RATB1, self.RATC1),
+                             tap=1,
+                             shift_angle=0,
+                             active=True,
+                             mttf=0,
+                             mttr=0)
+
+            r = self.R3_1
+            x = self.X3_1
+            g = self.MAG1
+            b = self.MAG2
+
+            object3 = Branch(bus_from=bus_3, bus_to=bus_1,
+                             name=self.NAME + '_3_1',
+                             r=r,
+                             x=x,
+                             g=g,
+                             b=b,
+                             rate=max(self.RATA1, self.RATB1, self.RATC1),
+                             tap=1,
+                             shift_angle=0,
+                             active=True,
+                             mttf=0,
+                             mttr=0)
+
+            return [object1, object2, object3]
+
 
 def interpret_line(line, splitter=','):
     """
@@ -827,16 +1306,17 @@ class PSSeParser:
             file_name: file name or path
         """
         self.parsers = dict()
-        self.versions = [33]
+        self.versions = [33, 32, 30]
 
-        self.grid = self.parse_psse(file_name)
+        self.pss_grid = self.parse_psse(file_name)
+
+        self.circuit = self.pss_grid.get_circuit()
 
     def parse_psse(self, file_name):
         """
         Parser implemented according to:
             - POM section 5.2.1 (v.33)
-
-
+            - POM section 5.2.1 (v.32)
 
         Args:
             file_name:
@@ -892,11 +1372,11 @@ class PSSeParser:
         # 20: Q Record
 
         meta_data.append([1, grid.buses, PSSeBus, 1])
-        meta_data.append([2, grid.loads,  PSSeLoad, 1])
+        meta_data.append([2, grid.loads, PSSeLoad, 1])
         meta_data.append([3, grid.shunts, PSSeShunt, 1])
         meta_data.append([4, grid.generators, PSSeGenerator, 1])
-        meta_data.append([5, grid.branches,  PSSeBranch, 1])
-        meta_data.append([6, grid.transformers,  PSSeTransformer, 4])
+        meta_data.append([5, grid.branches, PSSeBranch, 1])
+        meta_data.append([6, grid.transformers, PSSeTransformer, 4])
 
         for section_idx, objects_list, ObjectT, lines_per_object in meta_data:
 
@@ -924,7 +1404,6 @@ class PSSeParser:
 
 
 if __name__ == '__main__':
-
     # fname = 'raw/ExampleGrid_PSSEver32.raw'
     fname = 'raw/ExampleGrid_PSSEver33.raw'
 

@@ -462,7 +462,7 @@ class MainGUI(QMainWindow):
         vnorm = (vabs - vmin) / vrng
 
         for i, bus in enumerate(self.circuit.buses):
-            if bus.is_enabled:
+            if bus.active:
                 r, g, b, a = self.voltage_cmap(vnorm[i])
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
@@ -483,7 +483,7 @@ class MainGUI(QMainWindow):
             for i, branch in enumerate(self.circuit.branches):
 
                 w = branch.graphic_obj.pen_width
-                if branch.is_enabled:
+                if branch.active:
                     style = Qt.SolidLine
                     r, g, b, a = self.loading_cmap(lnorm[i])
                     color = QColor(r*255, g*255, b*255, a*255)
@@ -573,9 +573,11 @@ class MainGUI(QMainWindow):
 
         # assign the positions to the graphical objects of the nodes
         for i, bus in enumerate(self.circuit.buses):
-            x, y = pos[i] * 500
-            bus.graphic_obj.setPos(QPoint(x, y))
-
+            try:
+                x, y = pos[i] * 500
+                bus.graphic_obj.setPos(QPoint(x, y))
+            except KeyError as ex:
+                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
         # adjust the view
         self.center_nodes()
 
@@ -655,7 +657,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         # declare the allowed file types
-        files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m)"
+        files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
@@ -906,7 +908,7 @@ class MainGUI(QMainWindow):
                                dispatch_storage=dispatch_storage,
                                tolerance=tolerance,
                                max_iter=max_iter,
-                               control_Q=enforce_Q_limits)
+                               control_q=enforce_Q_limits)
 
         return ops
 
@@ -1422,7 +1424,7 @@ class MainGUI(QMainWindow):
             br_idx = zeros(0, dtype=int)
             for i in range(idx):
                 br_idx = r_[br_idx, self.cascade.report[i].removed_idx]
-            results = self.cascade.report[idx].pf_results
+            results = self.cascade.report[idx].pf_results  # MonteCarloResults object
 
             # print('Vbus:\n', abs(results.voltage))
             # print('ld:\n', abs(results.loading))

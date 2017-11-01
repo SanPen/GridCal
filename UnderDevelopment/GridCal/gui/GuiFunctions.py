@@ -528,7 +528,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.r = len(self.circuit.time_profile)
 
-        self.elements, self.buses = self.circuit.get_elements_by_type(device)
+        self.elements, self.buses = self.circuit.get_node_elements_by_type(device)
 
         self.c = len(self.elements)
 

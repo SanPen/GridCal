@@ -110,7 +110,7 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         self.api_object = branch
         if self.api_object is not None:
-            if self.api_object.is_enabled:
+            if self.api_object.active:
                 self.style = Qt.SolidLine
                 self.color = Qt.black
             else:
@@ -215,7 +215,7 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         @return:
         """
-        if self.api_object.is_enabled:
+        if self.api_object.active:
             self.set_enable(False)
         else:
             self.set_enable(True)
@@ -226,9 +226,9 @@ class BranchGraphicItem(QGraphicsLineItem):
         @param val:
         @return:
         """
-        self.api_object.is_enabled = val
+        self.api_object.active = val
         if self.api_object is not None:
-            if self.api_object.is_enabled:
+            if self.api_object.active:
                 self.style = Qt.SolidLine
                 self.color = QtCore.Qt.black
             else:
@@ -1235,10 +1235,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Toggle bus element state
         @return:
         """
-        self.api_object.is_enabled = not self.api_object.is_enabled
-        print('Enabled:', self.api_object.is_enabled)
+        self.api_object.active = not self.api_object.active
+        print('Enabled:', self.api_object.active)
 
-        if self.api_object.is_enabled:
+        if self.api_object.active:
 
             self.setBrush(QBrush(QtCore.Qt.black))
 

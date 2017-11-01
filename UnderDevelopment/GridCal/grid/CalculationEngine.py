@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.54
+__GridCal_VERSION__ = 1.7
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -46,8 +46,29 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
 
+
+########################################################################################################################
+# Set Matplotlib global parameters
+########################################################################################################################
 if 'fivethirtyeight' in plt.style.available:
     plt.style.use('fivethirtyeight')
+
+SMALL_SIZE = 8
+MEDIUM_SIZE = 10
+BIGGER_SIZE = 12
+
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
+
+
+########################################################################################################################
+# Enumerations
+########################################################################################################################
 
 
 class NodeType(Enum):
@@ -82,6 +103,11 @@ class TimeGroups(Enum):
 class CascadeType(Enum):
     PowerFlow = 0,
     LatinHypercube = 1
+
+
+########################################################################################################################
+# Statistics classes
+########################################################################################################################
 
 
 class CDF(object):
@@ -437,80 +463,14 @@ def load_from_xls(filename):
 
     return data
 
-
-
-
-
-# class KNN:
-#
-#     def __init__(self, X, y):
-#         """
-#
-#         Args:
-#             X:
-#             y:
-#         """
-#         assert len(X) == len(y), "len(X) %d != len(z) %d" % (len(X), len(y))
-#         self.x_train = X
-#         self.y_train = y
-#
-#     @staticmethod
-#     def knn_search(x, Xtrain, n_neighbours):
-#         """ find K nearest neighbours of data among D """
-#         ndata = x.shape[0]
-#         n_neighbours = n_neighbours if n_neighbours < ndata else ndata
-#
-#         distances = np.empty((ndata, n_neighbours), dtype=float)
-#         neighbours = np.empty((ndata, n_neighbours), dtype=int)
-#         for i in range(ndata):
-#             # euclidean distances from the other points
-#             sqd = sqrt((abs(Xtrain - x[i]) ** 2).sum(axis=1))
-#             idx = np.argsort(sqd)  # sorting
-#
-#             neighbours[i] = idx[:n_neighbours]
-#             distances[i] = sqd[neighbours[i]]
-#
-#         # return the indexes of K nearest neighbours
-#         return distances, neighbours
-#
-#     def __call__(self, x_test, nnear=6, p=2, weights=None):
-#         """
-#
-#         Args:
-#             x_test:
-#             nnear:
-#             p:
-#             weights:
-#
-#         Returns:
-#
-#         """
-#         x_dim = x_test.ndim
-#
-#         distances, indices = self.knn_search(x_test, self.x_train, nnear)
-#
-#         interpol = np.zeros((x_test.shape[0], self.y_train.shape[1]), dtype=complex)
-#         i2 = 0
-#         for d, idx in zip(distances, indices):
-#             if nnear == 1:
-#                 wz = self.y_train[idx]
-#             elif d[0] < 1e-10:
-#                 wz = self.y_train[idx]
-#             else:  # weight z s by 1/dist --
-#                 w = 1 / d**p
-#                 if weights is not None:
-#                     w *= weights[idx]  # >= 0
-#                 w /= np.sum(w)
-#                 wz = np.dot(w, self.y_train[idx])
-#
-#             interpol[i2] = wz
-#             i2 += 1
-#         return interpol if x_dim > 1 else interpol[0]
+########################################################################################################################
+# Circuit classes
+########################################################################################################################
 
 
 class Bus:
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, is_enabled=True):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, active=True):
         """
         Bus  constructor
         """
@@ -534,7 +494,7 @@ class Bus:
 
         self.Zf = 0
 
-        self.is_enabled = is_enabled
+        self.active = active
 
         # List of load s attached to this bus
         self.loads = list()
@@ -567,12 +527,12 @@ class Bus:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'is_enabled', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y']
+        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y']
 
         self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', '', '']
 
         self.edit_types = {'name': str,
-                           'is_enabled': bool,
+                           'active': bool,
                            'is_slack': bool,
                            'Vnom': float,
                            'Vmin': float,
@@ -623,86 +583,95 @@ class Bus:
         S = complex(0, 0)  # Positive Generates, negative consumes
         V = complex(1, 0)
 
-        Yprof = None
-        Iprof = None  # Positive Generates, negative consumes
-        Sprof = None  # Positive Generates, negative consumes
+        y_profile = None
+        i_profile = None  # Positive Generates, negative consumes
+        s_profile = None  # Positive Generates, negative consumes
 
-        Ycdf = None
-        Icdf = None   # Positive Generates, negative consumes
-        Scdf = None   # Positive Generates, negative consumes
+        y_cdf = None
+        i_cdf = None   # Positive Generates, negative consumes
+        s_cdf = None   # Positive Generates, negative consumes
 
         self.Qmin_sum = 0
         self.Qmax_sum = 0
 
         is_v_controlled = False
 
+        # Loads
         for elm in self.loads:
-            if elm.Z != 0:
-                Y += 1 / elm.Z
-            I -= elm.I  # Reverse sign convention in the load
-            S -= elm.S  # Reverse sign convention in the load
 
-            # Add the profiles
-            elm_Sprof, elm_Iprof, elm_Zprof = elm.get_profiles(index)
-            if elm_Zprof is not None:
-                if elm_Zprof.values.sum(axis=0) != complex(0):
-                    if Yprof is None:
-                        Yprof = 1 / elm_Zprof
-                        Ycdf = CDF(Yprof)
-                    else:
-                        pr = 1 / elm_Zprof
-                        Yprof = Yprof.add(pr, fill_value=0)
-                        Ycdf = Ycdf + CDF(pr)
+            if elm.active:
 
-            if elm_Iprof is not None:
-                if elm_Iprof.values.sum(axis=0) != complex(0):
-                    if Iprof is None:
-                        Iprof = -elm_Iprof  # Reverse sign convention in the load
-                        Icdf = CDF(Iprof)
-                    else:
-                        pr = -elm_Iprof
-                        Iprof = Iprof.add(pr, fill_value=0)  # Reverse sign convention in the load
-                        Icdf = Icdf + CDF(pr)
+                if elm.Z != 0:
+                    Y += 1 / elm.Z
+                I -= elm.I  # Reverse sign convention in the load
+                S -= elm.S  # Reverse sign convention in the load
 
-            if elm_Sprof is not None:
-                if elm_Sprof.values.sum(axis=0) != complex(0):
-                    if Sprof is None:
-                        Sprof = -elm_Sprof  # Reverse sign convention in the load
-                        Scdf = CDF(Sprof)
-                    else:
-                        pr = -elm_Sprof
-                        Sprof = Sprof.add(pr, fill_value=0)  # Reverse sign convention in the load
-                        Scdf = Scdf + CDF(pr)
+                # Add the profiles
+                elm_s_prof, elm_i_prof, elm_z_prof = elm.get_profiles(index)
+                if elm_z_prof is not None:
+                    if elm_z_prof.values.sum(axis=0) != complex(0):
+                        if y_profile is None:
+                            y_profile = 1 / elm_z_prof
+                            y_cdf = CDF(y_profile)
+                        else:
+                            pr = 1 / elm_z_prof
+                            y_profile = y_profile.add(pr, fill_value=0)
+                            y_cdf = y_cdf + CDF(pr)
+
+                if elm_i_prof is not None:
+                    if elm_i_prof.values.sum(axis=0) != complex(0):
+                        if i_profile is None:
+                            i_profile = -elm_i_prof  # Reverse sign convention in the load
+                            i_cdf = CDF(i_profile)
+                        else:
+                            pr = -elm_i_prof
+                            i_profile = i_profile.add(pr, fill_value=0)  # Reverse sign convention in the load
+                            i_cdf = i_cdf + CDF(pr)
+
+                if elm_s_prof is not None:
+                    if elm_s_prof.values.sum(axis=0) != complex(0):
+                        if s_profile is None:
+                            s_profile = -elm_s_prof  # Reverse sign convention in the load
+                            s_cdf = CDF(s_profile)
+                        else:
+                            pr = -elm_s_prof
+                            s_profile = s_profile.add(pr, fill_value=0)  # Reverse sign convention in the load
+                            s_cdf = s_cdf + CDF(pr)
+            else:
+                warn(elm.name + ' is not active')
 
         # controlled gen and batteries
         for elm in self.controlled_generators + self.batteries:
 
-            # Add the generator active power
-            S = complex(S.real + elm.P, S.imag)
+            if elm.active:
+                # Add the generator active power
+                S = complex(S.real + elm.P, S.imag)
 
-            self.Qmin_sum += elm.Qmin
-            self.Qmax_sum += elm.Qmax
+                self.Qmin_sum += elm.Qmin
+                self.Qmax_sum += elm.Qmax
 
-            # Voltage of the bus
-            if not is_v_controlled:
-                V = complex(elm.Vset, 0)
-                is_v_controlled = True
+                # Voltage of the bus
+                if not is_v_controlled:
+                    V = complex(elm.Vset, 0)
+                    is_v_controlled = True
+                else:
+                    if elm.Vset != V.real:
+                        raise Exception("Different voltage controlled generators try to control " +
+                                        "the same bus with different voltage set points")
+                    else:
+                        pass
+
+                # add the power profile
+                elm_p_prof, elm_vset_prof = elm.get_profiles(index)
+                if elm_p_prof is not None:
+                    if s_profile is None:
+                        s_profile = elm_p_prof  # Reverse sign convention in the load
+                        s_cdf = CDF(s_profile)
+                    else:
+                        s_profile = s_profile.add(elm_p_prof, fill_value=0)
+                        s_cdf = s_cdf + CDF(elm_p_prof)
             else:
-                if elm.Vset != V.real:
-                    raise "Different voltage controlled generators try to control " \
-                          "the same bus with different voltage set points"
-                else:
-                    pass
-
-            # add the power profile
-            elm_Pprof, elm_Vsetprof = elm.get_profiles(index)
-            if elm_Pprof is not None:
-                if Sprof is None:
-                    Sprof = elm_Pprof  # Reverse sign convention in the load
-                    Scdf = CDF(Sprof)
-                else:
-                    Sprof = Sprof.add(elm_Pprof, fill_value=0)
-                    Scdf = Scdf + CDF(elm_Pprof)
+                warn(elm.name + ' is not active')
 
         # set maximum reactive power limits
         if self.Qmin_sum == 0:
@@ -710,33 +679,40 @@ class Bus:
         if self.Qmax_sum == 0:
             self.Qmax_sum = 999900
 
+        # Shunts
         for elm in self.shunts:
-            Y += elm.Y
+            if elm.active:
+                Y += elm.Y
+            else:
+                warn(elm.name + ' is not active')
 
-        # for elm in self.batteries:
-        #     S += elm.S
-
+        # Static generators
         for elm in self.static_generators:
-            S += elm.S
 
-            if elm.Sprof is not None:
-                if Sprof is None:
-                    Sprof = elm.Sprof  # Reverse sign convention in the load
-                    Scdf = CDF(Sprof)
-                else:
-                    Sprof = Sprof.add(elm.Sprof, fill_value=0)
-                    Scdf = Scdf + CDF(elm.Pprof)
+            if elm.active:
+                S += elm.S
 
-        if Sprof is not None:
-            Sprof = Sprof.sum(axis=1)
+                if elm.Sprof is not None:
+                    if s_profile is None:
+                        s_profile = elm.Sprof  # Reverse sign convention in the load
+                        s_cdf = CDF(s_profile)
+                    else:
+                        s_profile = s_profile.add(elm.Sprof, fill_value=0)
+                        s_cdf = s_cdf + CDF(elm.Pprof)
+            else:
+                warn(elm.name + ' is not active')
 
-        if Iprof is not None:
-            Iprof = Iprof.sum(axis=1)
+        # Align profiles into a common column sum based on the time axis
+        if s_profile is not None:
+            s_profile = s_profile.sum(axis=1)
 
-        if Yprof is not None:
-            Yprof = Yprof.sum(axis=1)
+        if i_profile is not None:
+            i_profile = i_profile.sum(axis=1)
 
-        return Y, I, S, V, Yprof, Iprof, Sprof, Ycdf, Icdf, Scdf
+        if y_profile is not None:
+            y_profile = y_profile.sum(axis=1)
+
+        return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
 
     def plot_profiles(self, ax=None):
         """
@@ -789,7 +765,7 @@ class Bus:
 
         bus.Qmax_sum = self.Qmax_sum
 
-        bus.is_enabled = self.is_enabled
+        bus.active = self.active
 
         # List of load s attached to this bus
         for elm in self.loads:
@@ -835,7 +811,7 @@ class Bus:
         :return:
         """
         self.retrieve_graphic_position()
-        return [self.name, self.is_enabled, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf, self.x, self.y]
+        return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf, self.x, self.y]
 
     def set_state(self, t):
         """
@@ -1008,7 +984,7 @@ class Branch:
         self.bus_from = bus_from
         self.bus_to = bus_to
 
-        self.is_enabled = active
+        self.active = active
 
         # self.z_series = zserie  # R + jX
         # self.y_shunt = yshunt  # G + jB
@@ -1033,7 +1009,7 @@ class Branch:
 
         self.type_obj = None
 
-        self.edit_headers = ['name', 'bus_from', 'bus_to', 'is_enabled', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
+        self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
                              'p.u.', 'rad']
@@ -1041,7 +1017,7 @@ class Branch:
         self.edit_types = {'name': str,
                            'bus_from': None,
                            'bus_to': None,
-                           'is_enabled': bool,
+                           'active': bool,
                            'rate': float,
                            'mttf': float,
                            'mttr': float,
@@ -1077,7 +1053,7 @@ class Branch:
                    rate=self.rate,
                    tap=self.tap_module,
                    shift_angle=self.angle,
-                   active=self.is_enabled,
+                   active=self.active,
                    mttf=self.mttf,
                    mttr=self.mttr)
 
@@ -1190,8 +1166,13 @@ class Branch:
         """
         leakage_impedance, magnetizing_impedance = obj.get_impedances()
 
-        self.z_series = magnetizing_impedance
-        self.y_shunt = 1 / leakage_impedance
+        z_series = magnetizing_impedance
+        y_shunt = 1 / leakage_impedance
+
+        self.R = z_series.real
+        self.X = z_series.imag
+        self.G = y_shunt.real
+        self.B = y_shunt.imag
 
         self.type_obj = obj
 
@@ -1200,14 +1181,14 @@ class Branch:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus_from.name, self.bus_to.name, self.is_enabled, self.rate, self.mttf, self.mttr,
+        return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.tap_module, self.angle]
 
 
 class Load:
 
     def __init__(self, name='Load', impedance=complex(0, 0), current=complex(0, 0), power=complex(0, 0),
-                 impedance_prof=None, current_prof=None, power_prof=None):
+                 impedance_prof=None, current_prof=None, power_prof=None, active=True):
         """
         Load model constructor
         This model implements the so-called ZIP model
@@ -1218,6 +1199,8 @@ class Load:
         """
 
         self.name = name
+
+        self.active = active
 
         self.type_name = 'Load'
 
@@ -1252,7 +1235,7 @@ class Load:
 
         self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
 
-        self.units = ['', '', 'Ohm', 'kA', 'MVA']
+        self.units = ['', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
 
         self.edit_types = {'name': str, 'bus': None, 'Z': complex, 'I': complex, 'S': complex}
 
@@ -1363,13 +1346,15 @@ class Load:
 
 class StaticGenerator:
 
-    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None):
+    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True):
         """
 
         @param power:
         """
 
         self.name = name
+
+        self.active = active
 
         self.type_name = 'StaticGenerator'
 
@@ -1449,7 +1434,7 @@ class StaticGenerator:
 class Battery:
 
     def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
-                 power_prof=None, vset_prof=None):
+                 power_prof=None, vset_prof=None, active=True):
         """
         Batery (Voltage controlled and dispatchable)
         @param name:
@@ -1461,9 +1446,12 @@ class Battery:
         @param Enom:
         @param power_prof:
         @param vset_prof:
+        @param active:
         """
 
         self.name = name
+
+        self.active = active
 
         self.type_name = 'Battery'
 
@@ -1610,7 +1598,7 @@ class Battery:
 class ControlledGenerator:
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None):
+                 power_prof=None, vset_prof=None, active=True):
         """
         Voltage controlled generator
         @param name:
@@ -1619,10 +1607,14 @@ class ControlledGenerator:
         @param Qmin:
         @param Qmax:
         @param Snom:
-        @param Enom:
+        @param power_prof:
+        @param vset_prof
+        @param active
         """
 
         self.name = name
+
+        self.active = active
 
         self.type_name = 'ControlledGenerator'
 
@@ -1657,7 +1649,7 @@ class ControlledGenerator:
 
         self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
 
-        self.units = ['', '', 'kW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
+        self.units = ['', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1761,12 +1753,18 @@ class ControlledGenerator:
 
 class Shunt:
 
-    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None):
+    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True):
         """
-        Shunt
-        @param admittance:
+        Shunt object
+        Args:
+            name:
+            admittance: Admittance in MVA at 1 p.u. voltage
+            admittance_prof: Admittance profile in MVA at 1 p.u. voltage
+            active: Is active True or False
         """
         self.name = name
+
+        self.active = active
 
         self.type_name = 'Shunt'
 
@@ -1786,7 +1784,7 @@ class Shunt:
 
         self.edit_headers = ['name', 'bus', 'Y']
 
-        self.units = ['', '', 'p.u.']
+        self.units = ['', '', 'MVA']  # MVA at 1 p.u.
 
         self.edit_types = {'name': str,   'bus': None, 'Y': complex}
 
@@ -1951,9 +1949,6 @@ class Circuit:
             # Add buses dictionary entry
             buses_dict[self.buses[i]] = i
 
-            # compute the base current for this bus
-            power_flow_input.Ibase[i] = self.Sbase / (self.buses[i].Vnom * sqrt3)
-
             # assign the nominal voltage value
             power_flow_input.Vnom[i] = self.buses[i].Vnom
 
@@ -1966,8 +1961,8 @@ class Circuit:
             power_flow_input.Sbus[i] += S  # set the bus power
             power_flow_input.Ibus[i] += I  # set the bus currents
 
-            power_flow_input.Ybus[i, i] += Y / self.Sbase  # set the bus shunt impedance in per unit
-            power_flow_input.Yshunt[i] += power_flow_input.Ybus[i, i]  # copy the shunt impedance
+            power_flow_input.Ybus[i, i] += Y  # set the bus shunt impedance in per unit
+            power_flow_input.Yshunt[i] += Y  # copy the shunt impedance
 
             power_flow_input.types[i] = self.buses[i].type.value[0]  # set type
 
@@ -2015,8 +2010,17 @@ class Circuit:
             Icdf_[i] = Icdf
             Ycdf_[i] = Ycdf
 
-        power_flow_input.Sbus /= self.Sbase  # normalize the power array
-        power_flow_input.Ibus /= power_flow_input.Ibase  # normalize the currents array
+        # normalize the power array
+        power_flow_input.Sbus /= self.Sbase
+
+        # normalize the currents array (I was given in MVA at v=1 p.u.)
+        power_flow_input.Ibus /= self.Sbase
+
+        # normalize the admittances array (Y was given in MVA at v=1 p.u.)
+        power_flow_input.Ybus /= self.Sbase
+        power_flow_input.Yshunt /= self.Sbase
+
+        # normalize the reactive power limits array (Q was given in MVAr)
         power_flow_input.Qmax /= self.Sbase
         power_flow_input.Qmin /= self.Sbase
 
@@ -2025,7 +2029,7 @@ class Circuit:
             Sprofile.columns = ['Sprof@Bus' + str(i) for i in range(Sprofile.shape[1])]
 
         if Iprofile is not None:
-            Iprofile /= power_flow_input.Ibase
+            Iprofile /= self.Sbase
             Iprofile.columns = ['Iprof@Bus' + str(i) for i in range(Iprofile.shape[1])]
 
         if Yprofile is not None:
@@ -2041,7 +2045,7 @@ class Circuit:
         # Compile the branches
         for i in range(m):
 
-            if self.branches[i].is_enabled:
+            if self.branches[i].active:
                 # Set the branch impedance
 
                 f = buses_dict[self.branches[i].bus_from]
@@ -2073,7 +2077,8 @@ class Circuit:
             if self.branches[i].rate > 0:
                 power_flow_input.branch_rates[i] = self.branches[i].rate
             else:
-                warn('The branch ' + str(i) + ' has no rate.')
+                power_flow_input.branch_rates[i] = 1e-6
+                warn('The branch ' + str(i) + ' has no rate. Setting 1e-6 to avoid zero division.')
 
         # Assign the power flow inputs  button
         power_flow_input.compile()
@@ -2254,6 +2259,13 @@ class MultiCircuit(Circuit):
             elif file_extension == '.m':
                 from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
                 circ = parse_matpower_file(filename)
+                self.buses = circ.buses
+                self.branches = circ.branches
+            
+            elif file_extension in ['.raw', '.RAW', '.Raw']:
+                from GridCal.grid.ImportParsers.PSS_Parser import PSSeParser
+                parser = PSSeParser(filename)
+                circ = parser.circuit
                 self.buses = circ.buses
                 self.branches = circ.branches
 
@@ -2465,10 +2477,10 @@ class MultiCircuit(Circuit):
         #                   'baseMVA', 'load_Iprof', 'battery', 'load', 'bus', 'shunt', 'controlled_generator',
         #                   'load_Sprof', 'static_generator']
 
-    def save_file(self, filepath):
+    def save_file(self, file_path):
         """
         Save the circuit information
-        :param filepath: file path to save
+        :param file_path: file path to save
         :return:
         """
         dfs = dict()
@@ -2497,107 +2509,112 @@ class MultiCircuit(Circuit):
 
         # loads ########################################################################################################
         obj = list()
-        S_profiles = None
-        I_profiles = None
-        Z_profiles = None
+        s_profiles = None
+        i_profiles = None
+        z_profiles = None
         hdr = list()
         for elm in self.get_loads():
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if S_profiles is None and elm.Sprof is not None:
-                    S_profiles = elm.Sprof.values
-                    I_profiles = elm.Iprof.values
-                    Z_profiles = elm.Zprof.values
+                if s_profiles is None and elm.Sprof is not None:
+                    s_profiles = elm.Sprof.values
+                    i_profiles = elm.Iprof.values
+                    z_profiles = elm.Zprof.values
                 else:
-                    S_profiles = c_[S_profiles, elm.Sprof.values]
-                    I_profiles = c_[I_profiles, elm.Iprof.values]
-                    Z_profiles = c_[Z_profiles, elm.Zprof.values]
+                    s_profiles = c_[s_profiles, elm.Sprof.values]
+                    i_profiles = c_[i_profiles, elm.Iprof.values]
+                    z_profiles = c_[z_profiles, elm.Zprof.values]
 
         dfs['load'] = pd.DataFrame(data=obj, columns=Load().edit_headers)
-        if S_profiles is not None:
-            dfs['load_Sprof'] = pd.DataFrame(data=S_profiles.astype('str'), columns=hdr, index=T)
-            dfs['load_Iprof'] = pd.DataFrame(data=I_profiles.astype('str'), columns=hdr, index=T)
-            dfs['load_Zprof'] = pd.DataFrame(data=Z_profiles.astype('str'), columns=hdr, index=T)
+
+        if s_profiles is not None:
+            dfs['load_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
+            dfs['load_Iprof'] = pd.DataFrame(data=i_profiles.astype('str'), columns=hdr, index=T)
+            dfs['load_Zprof'] = pd.DataFrame(data=z_profiles.astype('str'), columns=hdr, index=T)
 
         # static generators ############################################################################################
         obj = list()
         hdr = list()
-        S_profiles = None
+        s_profiles = None
         for elm in self.get_static_generators():
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if S_profiles is None and elm.Sprof is not None:
-                    S_profiles = elm.Sprof.values
+                if s_profiles is None and elm.Sprof is not None:
+                    s_profiles = elm.Sprof.values
                 else:
-                    S_profiles = c_[S_profiles, elm.Sprof.values]
+                    s_profiles = c_[s_profiles, elm.Sprof.values]
 
         dfs['static_generator'] = pd.DataFrame(data=obj, columns=StaticGenerator().edit_headers)
-        if S_profiles is not None:
-            dfs['static_generator_Sprof'] = pd.DataFrame(data=S_profiles.astype('str'), columns=hdr, index=T)
+
+        if s_profiles is not None:
+            dfs['static_generator_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
 
         # battery ######################################################################################################
         obj = list()
         hdr = list()
-        Vset_profiles = None
-        P_profiles = None
+        v_set_profiles = None
+        p_profiles = None
         for elm in self.get_batteries():
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if P_profiles is None and elm.Pprof is not None:
-                    P_profiles = elm.Pprof.values
-                    Vset_profiles = elm.Vsetprof.values
+                if p_profiles is None and elm.Pprof is not None:
+                    p_profiles = elm.Pprof.values
+                    v_set_profiles = elm.Vsetprof.values
                 else:
-                    P_profiles = c_[P_profiles, elm.Pprof.values]
-                    Vset_profiles = c_[Vset_profiles, elm.Vsetprof.values]
+                    p_profiles = c_[p_profiles, elm.Pprof.values]
+                    v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
         dfs['battery'] = pd.DataFrame(data=obj, columns=Battery().edit_headers)
-        if P_profiles is not None:
-            dfs['battery_Vset_profiles'] = pd.DataFrame(data=Vset_profiles, columns=hdr, index=T)
-            dfs['battery_P_profiles'] = pd.DataFrame(data=P_profiles, columns=hdr, index=T)
+
+        if p_profiles is not None:
+            dfs['battery_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
+            dfs['battery_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
 
         # controlled generator
         obj = list()
         hdr = list()
-        Vset_profiles = None
-        P_profiles = None
+        v_set_profiles = None
+        p_profiles = None
         for elm in self.get_controlled_generators():
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None and elm.Pprof is not None:
-                if P_profiles is None:
-                    P_profiles = elm.Pprof.values
-                    Vset_profiles = elm.Vsetprof.values
+                if p_profiles is None:
+                    p_profiles = elm.Pprof.values
+                    v_set_profiles = elm.Vsetprof.values
                 else:
-                    P_profiles = c_[P_profiles, elm.Pprof.values]
-                    Vset_profiles = c_[Vset_profiles, elm.Vsetprof.values]
+                    p_profiles = c_[p_profiles, elm.Pprof.values]
+                    v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
         dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=ControlledGenerator().edit_headers)
-        if P_profiles is not None:
-            dfs['CtrlGen_Vset_profiles'] = pd.DataFrame(data=Vset_profiles, columns=hdr, index=T)
-            dfs['CtrlGen_P_profiles'] = pd.DataFrame(data=P_profiles, columns=hdr, index=T)
+        if p_profiles is not None:
+            dfs['CtrlGen_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
+            dfs['CtrlGen_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
 
         # shunt
         obj = list()
         hdr = list()
-        Yprofiles = None
+        y_profiles = None
         for elm in self.get_shunts():
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if Yprofiles is None and elm.Yprof.values is not None:
-                    Yprofiles = elm.Yprof.values
+                if y_profiles is None and elm.Yprof.values is not None:
+                    y_profiles = elm.Yprof.values
                 else:
-                    Yprofiles = c_[Yprofiles, elm.Yprof.values]
+                    y_profiles = c_[y_profiles, elm.Yprof.values]
 
         dfs['shunt'] = pd.DataFrame(data=obj, columns=Shunt().edit_headers)
-        if Yprofiles is not None:
-            dfs['shunt_Y_profiles'] = pd.DataFrame(data=Yprofiles, columns=hdr, index=T)
+
+        if y_profiles is not None:
+            dfs['shunt_Y_profiles'] = pd.DataFrame(data=y_profiles, columns=hdr, index=T)
 
         # flush-save
-        writer = pd.ExcelWriter(filepath)
+        writer = pd.ExcelWriter(file_path)
         for key in dfs.keys():
             dfs[key].to_excel(writer, key)
+
         writer.save()
 
     def compile(self):
@@ -2629,8 +2646,8 @@ class MultiCircuit(Circuit):
         # Compile the branches
         for i in range(m):
             self.branch_names[i] = self.branches[i].name
-            if self.branches[i].is_enabled:
-                if self.branches[i].bus_from.is_enabled and self.branches[i].bus_to.is_enabled:
+            if self.branches[i].active:
+                if self.branches[i].bus_from.active and self.branches[i].bus_to.active:
                     f = self.bus_dictionary[self.branches[i].bus_from]
                     t = self.bus_dictionary[self.branches[i].bus_to]
                     # Add graph edge (automatically adds the vertices)
@@ -2692,9 +2709,6 @@ class MultiCircuit(Circuit):
             step_length: time length (1, 2, 15, ...)
             step_unit: unit of the time step
             time_base: Date to start from
-
-        Returns:
-            Nothing
         """
 
         index = [None] * steps
@@ -2710,13 +2724,9 @@ class MultiCircuit(Circuit):
 
     def format_profiles(self, index):
         """
-
+        Format the pandas profiles in place using a time index
         Args:
-            index:
-            steps:
-
-        Returns:
-
+            index: Time profile
         """
 
         self.time_profile = array(index)
@@ -2738,36 +2748,42 @@ class MultiCircuit(Circuit):
             for elm in bus.shunts:
                 elm.create_profiles(index)
 
-    def get_elements_by_type(self, type):
+    def get_node_elements_by_type(self, element_type):
+        """
+        Get set of elements and their parent nodes
+        Args:
+            element_type: String {'Load', 'StaticGenerator', 'ControlledGenerator', 'Battery', 'Shunt'}
 
+        Returns: List of elements, list of matching parent buses
+        """
         elements = list()
         parent_buses = list()
 
-        if type == 'Load':
+        if element_type == 'Load':
             for bus in self.buses:
                 for elm in bus.loads:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif type == 'StaticGenerator':
+        elif element_type == 'StaticGenerator':
             for bus in self.buses:
                 for elm in bus.static_generators:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif type == 'ControlledGenerator':
+        elif element_type == 'ControlledGenerator':
             for bus in self.buses:
                 for elm in bus.controlled_generators:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif type == 'Battery':
+        elif element_type == 'Battery':
             for bus in self.buses:
                 for elm in bus.batteries:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif type == 'Shunt':
+        elif element_type == 'Shunt':
             for bus in self.buses:
                 for elm in bus.shunts:
                     elements.append(elm)
@@ -2778,69 +2794,53 @@ class MultiCircuit(Circuit):
     def set_power(self, S):
         """
         Set the power array in the circuits
-        @param S:
-        @return:
+        @param S: Array of power values in MVA for all the nodes in all the islands
         """
-        for circuit in self.circuits:
-            idx = circuit.bus_original_idx
-            circuit.power_flow_input.Sbus = S[idx]
+        for circuit_island in self.circuits:
+            idx = circuit_island.bus_original_idx  # get the buses original indexing in the island
+            circuit_island.power_flow_input.Sbus = S[idx]  # set the values
 
     def add_bus(self, obj: Bus):
         """
         Add bus keeping track of it as object
         @param obj:
-        @return:
         """
         self.buses.append(obj)
-        # self.bus_dictionary[obj] = len(self.buses) - 1
 
     def delete_bus(self, obj: Bus):
         """
         Remove bus
-        @param obj:
-        @return:
+        @param obj: Bus object
         """
 
-        # remove associated branches
+        # remove associated branches in reverse order
         for i in range(len(self.branches) - 1, -1, -1):
             if self.branches[i].bus_from == obj or self.branches[i].bus_to == obj:
                 self.branches.pop(i)
 
         # remove the bus itself
-        # idx = self.bus_dictionary[obj]
         self.buses.remove(obj)
-        # self.buses.pop(idx)
-        # del self.bus_dictionary[obj]
 
     def add_branch(self, obj: Branch):
         """
         Add a branch object to the circuit
-        @param obj:
-        @return:
+        @param obj: Branch object
         """
         self.branches.append(obj)
-        # self.branch_dictionary[obj] = len(self.branches) - 1
 
     def delete_branch(self, obj: Branch):
         """
         Delete a branch object from the circuit
         @param obj:
-        @return:
         """
-        # idx = self.branch_dictionary[obj]
-        # self.branches.pop(idx)
-        # del self.branch_dictionary[obj]
         self.branches.remove(obj)
 
     def add_load(self, bus: Bus, api_obj=None):
         """
-
+        Add load object to a bus
         Args:
-            bus:
-            api_obj:
-
-        Returns:
-
+            bus: Bus object
+            api_obj: Load object
         """
         if api_obj is None:
             api_obj = Load()
@@ -2858,13 +2858,10 @@ class MultiCircuit(Circuit):
 
     def add_controlled_generator(self, bus: Bus, api_obj=None):
         """
-
+        Add controlled generator to a bus
         Args:
-            bus:
-            api_obj:
-
-        Returns:
-
+            bus: Bus object
+            api_obj: ControlledGenerator object
         """
         if api_obj is None:
             api_obj = ControlledGenerator()
@@ -2879,13 +2876,10 @@ class MultiCircuit(Circuit):
 
     def add_static_generator(self, bus: Bus, api_obj=None):
         """
-
+        Add a static generator object to a bus
         Args:
-            bus:
-            api_obj:
-
-        Returns:
-
+            bus: Bus object to add it to
+            api_obj: StaticGenerator object
         """
         if api_obj is None:
             api_obj = StaticGenerator()
@@ -2900,13 +2894,10 @@ class MultiCircuit(Circuit):
 
     def add_battery(self, bus: Bus, api_obj=None):
         """
-
+        Add battery object to a bus
         Args:
-            bus:
-            api_obj:
-
-        Returns:
-
+            bus: Bus object to add it to
+            api_obj: Battery object to add it to
         """
         if api_obj is None:
             api_obj = Battery()
@@ -2921,13 +2912,10 @@ class MultiCircuit(Circuit):
 
     def add_shunt(self, bus: Bus, api_obj=None):
         """
-
+        Add shunt object to a bus
         Args:
-            bus:
-            api_obj:
-
-        Returns:
-
+            bus: Bus object to add it to
+            api_obj: Shunt object
         """
         if api_obj is None:
             api_obj = Shunt()
@@ -3032,13 +3020,18 @@ class MultiCircuit(Circuit):
             bus.set_state(t)
 
 
+########################################################################################################################
+# Power flow classes
+########################################################################################################################
+
+
 class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True, dispatch_storage=True,
-                 tolerance=1e-6, max_iter=25, control_Q=True):
+                 tolerance=1e-6, max_iter=25, control_q=True):
         """
-
+        Power flow execution options
         @param solver_type:
         @param aux_solver_type:
         @param verbose:
@@ -3047,7 +3040,7 @@ class PowerFlowOptions:
         @param dispatch_storage:
         @param tolerance:
         @param max_iter:
-        @param control_Q:
+        @param control_q:
         """
         self.solver_type = solver_type
 
@@ -3057,7 +3050,7 @@ class PowerFlowOptions:
 
         self.max_iter = max_iter
 
-        self.control_Q = control_Q
+        self.control_Q = control_q
 
         self.dispatch_storage = dispatch_storage
 
@@ -3123,9 +3116,6 @@ class PowerFlowInput:
 
         # Jacobian matrix 2 for the fast-decoupled power flow
         self.B2 = zeros((n, n), dtype=double)
-
-        # Array of base currents of the buses
-        self.Ibase = zeros(n)
 
         # Array of line-line nominal voltages of the buses
         self.Vnom = zeros(n)
@@ -4058,6 +4048,11 @@ class PowerFlow(QRunnable):
         self.__cancel__ = True
 
 
+########################################################################################################################
+# Short circuit classes
+########################################################################################################################
+
+
 class ShortCircuitOptions:
 
     def __init__(self, bus_index, verbose=False):
@@ -4363,22 +4358,27 @@ class ShortCircuit(QRunnable):
         self.__cancel__ = True
 
 
+########################################################################################################################
+# Time series classes
+########################################################################################################################
+
+
 class TimeSeriesInput:
 
-    def __init__(self, Sprof: pd.DataFrame=None, Iprof: pd.DataFrame=None, Yprof: pd.DataFrame=None):
+    def __init__(self, s_profile: pd.DataFrame=None, i_profile: pd.DataFrame=None, y_profile: pd.DataFrame=None):
         """
         Time series input
-        @param Sprof: DataFrame with the profile of the injected power at the buses
-        @param Iprof: DataFrame with the profile of the injected current at the buses
-        @param Yprof: DataFrame with the profile of the shunt admittance at the buses
+        @param s_profile: DataFrame with the profile of the injected power at the buses
+        @param i_profile: DataFrame with the profile of the injected current at the buses
+        @param y_profile: DataFrame with the profile of the shunt admittance at the buses
         """
 
         # master time array. All the profiles must match its length
         self.time_array = None
 
-        self.Sprof = Sprof
-        self.Iprof = Iprof
-        self.Yprof = Yprof
+        self.Sprof = s_profile
+        self.Iprof = i_profile
+        self.Yprof = y_profile
 
         # Array of load admittances (shunt)
         self.Y = None
@@ -4749,6 +4749,7 @@ class TimeSeriesResults(PowerFlowResults):
         else:
             return None
 
+
 class TimeSeriesResultsAnalysis:
 
     def __init__(self, results: TimeSeriesResults):
@@ -4867,6 +4868,11 @@ class TimeSeries(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+
+
+########################################################################################################################
+# Voltage collapse classes
+########################################################################################################################
 
 
 class VoltageCollapseOptions:
@@ -5074,6 +5080,11 @@ class VoltageCollapse(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+
+
+########################################################################################################################
+# Monte Carlo classes
+########################################################################################################################
 
 
 class MonteCarloInput:
@@ -5667,6 +5678,11 @@ class LatinHypercubeSampling(QThread):
         self.done_signal.emit()
 
 
+########################################################################################################################
+# Cascading classes
+########################################################################################################################
+
+
 class CascadingReportElement:
 
     def __init__(self, removed_idx, pf_results):
@@ -5730,7 +5746,7 @@ class Cascading(QThread):
         print('Removing:', idx, load[idx])
 
         for i in idx:
-            circuit.branches[i].is_enabled = False
+            circuit.branches[i].active = False
 
         return idx
 
@@ -5873,6 +5889,11 @@ class Cascading(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
+
+
+########################################################################################################################
+# Optimization classes
+########################################################################################################################
 
 
 class Optimize(QThread):
