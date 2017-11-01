@@ -283,9 +283,9 @@ class MainGUI(QMainWindow):
 
         self.ui.plot_pushButton.clicked.connect(self.item_results_plot)
 
-        self.ui.select_all_pushButton.clicked.connect(self.ckeck_all_result_objects)
+        self.ui.select_all_pushButton.clicked.connect(self.check_all_result_objects)
 
-        self.ui.select_none_pushButton.clicked.connect(self.ckeck_none_result_objects)
+        self.ui.select_none_pushButton.clicked.connect(self.check_none_result_objects)
 
         self.ui.saveResultsButton.clicked.connect(self.save_results_df)
 
@@ -446,19 +446,24 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def color_based_of_pf(self, Sbus, Sbranch, Vbus, LoadBranch, Losses=None, failed_br_idx=None):
+    def color_based_of_pf(self, s_bus, s_branch, voltages, loadings, types, losses=None, failed_br_idx=None):
         """
         Color the grid based on the results passed
-        @param Vbus: Nodal Voltages array
-        @param LoadBranch: Branch loading array
-        @return: Nothing
+        Args:
+            s_bus: Buses power
+            s_branch: Branches power
+            voltages: Buses voltage
+            loadings: Branches load
+            types: Buses type
+            losses: Branches losses
+            failed_br_idx: failed branches
         """
         # color nodes
         vmin = 0
         vmax = 1.2
         vrng = vmax - vmin
-        vabs = abs(Vbus)
-        vang = np.angle(Vbus, deg=True)
+        vabs = abs(voltages)
+        vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
 
         for i, bus in enumerate(self.circuit.buses):
@@ -471,13 +476,15 @@ class MainGUI(QMainWindow):
                 tooltip = bus.name + '\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-                if Sbus is not None:
-                    tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * self.circuit.Sbase) + ' [MVA]'
+                if s_bus is not None:
+                    tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * self.circuit.Sbase) + ' [MVA]'
+                if types is not None:
+                    tooltip += '\nType: ' + str(types[i])
                 bus.graphic_obj.setToolTip(tooltip)
 
         # color branches
-        if Sbranch is not None:
-            lnorm = abs(LoadBranch)
+        if s_branch is not None:
+            lnorm = abs(loadings)
             lnorm[lnorm == np.inf] = 0
 
             for i, branch in enumerate(self.circuit.branches):
@@ -493,15 +500,14 @@ class MainGUI(QMainWindow):
 
                 tooltip = branch.name
                 tooltip += '\nloading: ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-                if Sbranch is not None:
-                    tooltip += '\nPower: ' + "{:10.4f}".format(Sbranch[i]) + ' [MVA]'
-                if Losses is not None:
-                    tooltip += '\nLosses: ' + "{:10.4f}".format(Losses[i]) + ' [MVA]'
+                if s_branch is not None:
+                    tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
+                if losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTip(tooltip)
                 branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
 
         if failed_br_idx is not None:
-
             for i in failed_br_idx:
                 w = self.circuit.branches[i].graphic_obj.pen_width
                 style = Qt.DashLine
@@ -764,23 +770,27 @@ class MainGUI(QMainWindow):
         # first create the buses
         for bus in self.circuit.buses:
             # print(bus.x, bus.y)
-            bus.graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+            graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+            bus.graphic_obj = graphic_obj
             bus.graphic_obj.create_children_icons()
 
         for branch in self.circuit.branches:
             terminal_from = branch.bus_from.graphic_obj.lower_terminals[0]
             terminal_to = branch.bus_to.graphic_obj.lower_terminals[0]
-            connection = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
-            terminal_from.hosting_connections.append(connection)
-            terminal_to.hosting_connections.append(connection)
-            connection.redraw()
-            branch.graphic_obj = connection
+            graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
+            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_obj)
+            terminal_to.hosting_connections.append(graphic_obj)
+            graphic_obj.redraw()
+            branch.graphic_obj = graphic_obj
 
+        #  center the view
         self.grid_editor.center_nodes()
 
     def view_objects_data(self):
         """
-
+        on click, display the objects properties
         Returns:
 
         """
@@ -859,9 +869,7 @@ class MainGUI(QMainWindow):
 
     def display_profiles(self):
         """
-
-        Returns:
-
+        Display profile
         """
         if self.circuit.time_profile is not None:
             print('display_profiles')
@@ -884,7 +892,7 @@ class MainGUI(QMainWindow):
         """
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        enforce_Q_limits = self.ui.control_Q_checkBox.isChecked()
+        enforce_q_limits = self.ui.control_Q_checkBox.isChecked()
 
         exponent = self.ui.tolerance_spinBox.value()
         tolerance = 1.0 / (10.0**exponent)
@@ -908,7 +916,7 @@ class MainGUI(QMainWindow):
                                dispatch_storage=dispatch_storage,
                                tolerance=tolerance,
                                max_iter=max_iter,
-                               control_q=enforce_Q_limits)
+                               control_q=enforce_q_limits)
 
         return ops
 
@@ -969,11 +977,12 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
-            self.color_based_of_pf(Sbus=self.circuit.power_flow_results.Sbus,
-                                   Sbranch=self.circuit.power_flow_results.Sbranch,
-                                   Vbus=self.circuit.power_flow_results.voltage,
-                                   LoadBranch=self.circuit.power_flow_results.loading,
-                                   Losses=self.circuit.power_flow_results.losses)
+            self.color_based_of_pf(s_bus=self.circuit.power_flow_results.Sbus,
+                                   s_branch=self.circuit.power_flow_results.Sbranch,
+                                   voltages=self.circuit.power_flow_results.voltage,
+                                   loadings=self.circuit.power_flow_results.loading,
+                                   types=self.circuit.power_flow_input.types,
+                                   losses=self.circuit.power_flow_results.losses)
             self.update_available_results()
 
             msg_ = 'Power flow converged: ' + str(self.circuit.power_flow_results.converged) \
@@ -1045,10 +1054,11 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
-            self.color_based_of_pf(Sbus=self.circuit.short_circuit_results.Sbus,
-                                   Sbranch=self.circuit.short_circuit_results.Sbranch,
-                                   Vbus=self.circuit.short_circuit_results.voltage,
-                                   LoadBranch=self.circuit.short_circuit_results.loading)
+            self.color_based_of_pf(s_bus=self.circuit.short_circuit_results.Sbus,
+                                   s_branch=self.circuit.short_circuit_results.Sbranch,
+                                   voltages=self.circuit.short_circuit_results.voltage,
+                                   types=self.circuit.power_flow_input.types,
+                                   loadings=self.circuit.short_circuit_results.loading)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
@@ -1166,10 +1176,11 @@ class MainGUI(QMainWindow):
                 Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
                 Sbranch, Ibranch, loading, losses = self.power_flow.compute_branch_results(self.circuit, V)
 
-                self.color_based_of_pf(Sbus=Sbus,
-                                       Sbranch=Sbranch,
-                                       Vbus=V,
-                                       LoadBranch=loading)
+                self.color_based_of_pf(s_bus=Sbus,
+                                       s_branch=Sbranch,
+                                       voltages=V,
+                                       loadings=loading,
+                                       types=self.circuit.power_flow_input.types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
@@ -1228,7 +1239,8 @@ class MainGUI(QMainWindow):
             voltage = self.circuit.time_series_results.voltage.max(axis=1)
             loading = self.circuit.time_series_results.loading.max(axis=1)
             Sbranch = self.circuit.time_series_results.Sbranch.max(axis=1)
-            self.color_based_of_pf(Sbus=None, Sbranch=Sbranch, Vbus=voltage, LoadBranch=loading)
+            self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                   types=self.circuit.power_flow_input.types)
             self.update_available_results()
         else:
             print('No results for the time series simulation.')
@@ -1278,10 +1290,11 @@ class MainGUI(QMainWindow):
         print('Ibr:\n', abs(self.monte_carlo.results.current))
         print('ld:\n', abs(self.monte_carlo.results.loading))
 
-        self.color_based_of_pf(Vbus=self.monte_carlo.results.voltage,
-                               LoadBranch=self.monte_carlo.results.loading,
-                               Sbranch=self.monte_carlo.results.sbranch,
-                               Sbus=None)
+        self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
+                               loadings=self.monte_carlo.results.loading,
+                               s_branch=self.monte_carlo.results.sbranch,
+                               types=self.circuit.power_flow_input.types,
+                               s_bus=None)
         self.update_available_results()
 
     def run_lhs(self):
@@ -1330,10 +1343,11 @@ class MainGUI(QMainWindow):
         print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
         print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
 
-        self.color_based_of_pf(Vbus=self.latin_hypercube_sampling.results.voltage,
-                               LoadBranch=self.latin_hypercube_sampling.results.loading,
-                               Sbranch=self.latin_hypercube_sampling.results.sbranch,
-                               Sbus=None)
+        self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
+                               loadings=self.latin_hypercube_sampling.results.loading,
+                               types=self.circuit.power_flow_input.types,
+                               s_branch=self.latin_hypercube_sampling.results.sbranch,
+                               s_bus=None)
         self.update_available_results()
 
     def clear_cascade(self):
@@ -1430,10 +1444,11 @@ class MainGUI(QMainWindow):
             # print('ld:\n', abs(results.loading))
             print('Removed at ', idx, ':\n', br_idx)
 
-            self.color_based_of_pf(Vbus=results.voltage,
-                                   LoadBranch=results.loading,
-                                   Sbranch=results.Sbranch,
-                                   Sbus=None,
+            self.color_based_of_pf(voltages=results.voltage,
+                                   loadings=results.loading,
+                                   types=self.circuit.power_flow_input.types,
+                                   s_branch=results.Sbranch,
+                                   s_bus=None,
                                    failed_br_idx=br_idx)
 
             self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
@@ -1568,22 +1583,22 @@ class MainGUI(QMainWindow):
             self.results_df = None
             res_mdl = None
             if study == 'Power Flow':
-                self.results_df = self.power_flow.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.power_flow.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             elif study == 'Time Series':
-                self.results_df = self.time_series.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.time_series.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             elif study == 'Voltage Stability':
-                self.results_df = self.voltage_stability.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.voltage_stability.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             elif study == 'Monte Carlo':
-                self.results_df = self.monte_carlo.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.monte_carlo.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             elif study == 'Latin Hypercube':
-                self.results_df = self.latin_hypercube_sampling.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.latin_hypercube_sampling.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             elif study == 'Short Circuit':
-                self.results_df = self.short_circuit.results.plot(type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.short_circuit.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)
@@ -1591,7 +1606,11 @@ class MainGUI(QMainWindow):
                 # set hte table model
                 self.ui.resultsTableView.setModel(res_mdl)
 
-            # refresh the plot display
+            # refresh the plot display (LEFT, RIGHT, TOP, BOTTOM are defined in CalculationEngine.py)
+            self.ui.resultsPlot.get_figure().subplots_adjust(left=LEFT,
+                                                             right=RIGHT,
+                                                             top=TOP,
+                                                             bottom=BOTTOM)
             self.ui.resultsPlot.redraw()
 
         else:
@@ -1621,7 +1640,7 @@ class MainGUI(QMainWindow):
             indices = get_checked_indices(mdl)
             self.result_type_click(qt_val=None, indices=indices)
 
-    def ckeck_all_result_objects(self):
+    def check_all_result_objects(self):
         """
         Check all the result objects
         :return:
@@ -1631,7 +1650,7 @@ class MainGUI(QMainWindow):
             for row in range(mdl.rowCount()):
                 mdl.item(row).setCheckState(QtCore.Qt.Checked)
 
-    def ckeck_none_result_objects(self):
+    def check_none_result_objects(self):
         """
         Check all the result objects
         :return:
@@ -1668,6 +1687,7 @@ def run():
     window.resize(1.61 * 700, 700)  # golden ratio
     window.show()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     run()

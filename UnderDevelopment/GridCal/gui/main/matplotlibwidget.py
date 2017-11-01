@@ -43,7 +43,7 @@ class MplCanvas(FigureCanvas):
         self.fig = Figure()
         try:
             self.ax = self.fig.add_subplot(111, facecolor='white')
-        except:
+        except Exception as ex:
             self.ax = self.fig.add_subplot(111, axisbg='white')
 
         FigureCanvas.__init__(self, self.fig)
@@ -157,9 +157,9 @@ class MplCanvas(FigureCanvas):
         fig = ax.get_figure()  # get the figure of interest
 
         # attach the call back
-        fig.canvas.mpl_connect('button_press_event',onPress)
-        fig.canvas.mpl_connect('button_release_event',onRelease)
-        fig.canvas.mpl_connect('motion_notify_event',onMotion)
+        fig.canvas.mpl_connect('button_press_event', onPress)
+        fig.canvas.mpl_connect('button_release_event', onRelease)
+        fig.canvas.mpl_connect('motion_notify_event', onMotion)
 
         # return the function
         return onMotion
@@ -220,6 +220,18 @@ class MatplotlibWidget(QWidget):
         self.canvas.ax.figure.canvas.draw()
 
     def plot(self, x, y, title='', xlabel='', ylabel=''):
+        """
+        Plot series
+        Args:
+            x: X values
+            y: Y values
+            title: Title
+            xlabel: Label for X
+            ylabel: Label for Y
+
+        Returns:
+
+        """
         self.setTitle(title)
         self.canvas.ax.plot(x, y)
         self.canvas.ax.set_xlabel(xlabel)

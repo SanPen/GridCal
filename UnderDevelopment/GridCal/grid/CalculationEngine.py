@@ -56,10 +56,15 @@ if 'fivethirtyeight' in plt.style.available:
 SMALL_SIZE = 8
 MEDIUM_SIZE = 10
 BIGGER_SIZE = 12
+LINEWIDTH = 1
 
+LEFT = 0.12
+RIGHT = 0.98
+TOP = 0.8
+BOTTOM = 0.2
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+plt.rc('axes', labelsize=SMALL_SIZE)     # fontsize of the x and y labels
 plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
@@ -223,7 +228,7 @@ class CDF(object):
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
-        ax.plot(self.prob, self.arr)
+        ax.plot(self.prob, self.arr, linewidth=LINEWIDTH)
         ax.set_xlabel('$p(x)$')
         ax.set_ylabel('$x$')
         # ax.plot(self.norm_points, self.values, 'x')
@@ -2297,6 +2302,11 @@ class MultiCircuit(Circuit):
         # common function
         def set_object_attributes(obj_, attr_list, values):
             for a, attr in enumerate(attr_list):
+
+                # Hack to change the enabled by active...
+                if attr == 'is_enabled':
+                    attr = 'active'
+
                 conv = obj.edit_types[attr]  # get the type converter
                 if conv is None:
                     setattr(obj_, attr, values[a])
@@ -3464,11 +3474,12 @@ class PowerFlowResults:
 
         return res
 
-    def plot(self, type, ax=None, indices=None, names=None):
+    def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
         Args:
-            type:
+            result_type:
+            ax:
             indices:
             names:
 
@@ -3486,35 +3497,42 @@ class PowerFlowResults:
         if len(indices) > 0:
             labels = names[indices]
             ylabel = ''
-            if type == 'Bus voltage':
+            title = ''
+            if result_type == 'Bus voltage':
                 y = self.voltage[indices]
-                ylabel = 'Bus voltage (p.u.)'
+                ylabel = '(p.u.)'
+                title = 'Bus voltage '
 
-            elif type == 'Branch power':
+            elif result_type == 'Branch power':
                 y = self.Sbranch[indices]
-                ylabel = 'Branch power (MVA)'
+                ylabel = '(MVA)'
+                title = 'Branch power '
 
-            elif type == 'Branch current':
+            elif result_type == 'Branch current':
                 y = self.Ibranch[indices]
-                ylabel = 'Branch current (p.u.)'
+                ylabel = '(p.u.)'
+                title = 'Branch current '
 
-            elif type == 'Branch_loading':
+            elif result_type == 'Branch_loading':
                 y = self.loading[indices] * 100
-                ylabel = 'Branch loading (%)'
+                ylabel = '(%)'
+                title = 'Branch loading '
 
-            elif type == 'Branch losses':
+            elif result_type == 'Branch losses':
                 y = self.losses[indices]
-                ylabel = 'Branch losses (MVA)'
+                ylabel = '(MVA)'
+                title = 'Branch losses '
 
             else:
                 pass
 
-            df = pd.DataFrame(data=y, index=labels, columns=[type])
+            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
             if len(df.columns) < self.plot_bars_limit:
                 df.plot(ax=ax, kind='bar')
             else:
-                df.plot(ax=ax, legend=False)
+                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
+            ax.set_title(title)
 
             return df
 
@@ -4173,11 +4191,12 @@ class ShortCircuitResults(PowerFlowResults):
         if results.buses_useful_for_storage is not None:
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
-    def plot(self, type, ax=None, indices=None, names=None):
+    def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
         Args:
-            type:
+            result_type:
+            ax:
             indices:
             names:
 
@@ -4195,39 +4214,43 @@ class ShortCircuitResults(PowerFlowResults):
         if len(indices) > 0:
             labels = names[indices]
             ylabel = ''
-            if type == 'Bus voltage':
+            title = ''
+            if result_type == 'Bus voltage':
                 y = self.voltage[indices]
-                ylabel = 'Bus voltage (p.u.)'
+                ylabel = '(p.u.)'
+                title = 'Bus voltage '
 
-            elif type == 'Branch power':
+            elif result_type == 'Branch power':
                 y = self.Sbranch[indices]
-                ylabel = 'Branch power (MVA)'
+                ylabel = '(MVA)'
+                title = 'Branch power '
 
-            elif type == 'Branch current':
+            elif result_type == 'Branch current':
                 y = self.Ibranch[indices]
-                ylabel = 'Branch current (p.u.)'
+                ylabel = '(p.u.)'
+                title = 'Branch current '
 
-            elif type == 'Branch_loading':
+            elif result_type == 'Branch_loading':
                 y = self.loading[indices] * 100
-                ylabel = 'Branch loading (%)'
+                ylabel = '(%)'
+                title = 'Branch loading '
 
-            elif type == 'Branch losses':
+            elif result_type == 'Branch losses':
                 y = self.losses[indices]
-                ylabel = 'Branch losses (MVA)'
+                ylabel = '(MVA)'
+                title = 'Branch losses '
 
-            elif type == 'Bus short circuit power':
+            elif result_type == 'Bus short circuit power':
                 y = self.Scpower[indices]
-                ylabel = 'MVA'
+                ylabel = '(MVA)'
+                title = 'Bus short circuit power'
             else:
                 pass
 
-            # ax.set_xticklabels(names)
-            # ax.plot(indices, y)
-            # ax.set_xlabel('Element')
-            # ax.set_ylabel(ylabel)
-            df = pd.DataFrame(data=y, index=labels, columns=[type])
-            df.plot(ax=ax, kind='bar')
+            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            df.plot(ax=ax, kind='bar', linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
+            ax.set_title(title)
 
             return df
 
@@ -4690,10 +4713,10 @@ class TimeSeriesResults(PowerFlowResults):
 
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, buses_selected_for_storage_frequency
 
-    def plot(self, type, ax=None, indices=None, names=None):
+    def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
-        :param type:
+        :param result_type:
         :param ax:
         :param indices:
         :param names:
@@ -4710,25 +4733,31 @@ class TimeSeriesResults(PowerFlowResults):
         if len(indices) > 0:
             labels = names[indices]
             ylabel = ''
-            if type == 'Bus voltage':
+            title = ''
+            if result_type == 'Bus voltage':
                 df = self.voltage[indices]
-                ylabel = 'Bus voltage (p.u.)'
+                ylabel = '(p.u.)'
+                title = 'Bus voltage '
 
-            elif type == 'Branch power':
+            elif result_type == 'Branch power':
                 df = self.Sbranch[indices]
-                ylabel = 'Branch power (MVA)'
+                ylabel = '(MVA)'
+                title = 'Branch power '
 
-            elif type == 'Branch current':
+            elif result_type == 'Branch current':
                 df = self.Ibranch[indices]
-                ylabel = 'Branch current (kA)'
+                ylabel = '(kA)'
+                title = 'Branch current '
 
-            elif type == 'Branch_loading':
+            elif result_type == 'Branch_loading':
                 df = self.loading[indices] * 100
-                ylabel = 'Branch loading (%)'
+                ylabel = '(%)'
+                title = 'Branch loading '
 
-            elif type == 'Branch losses':
+            elif result_type == 'Branch losses':
                 df = self.losses[indices]
-                ylabel = 'Branch losses (MVA)'
+                ylabel = '(MVA)'
+                title = 'Branch losses'
 
             else:
                 pass
@@ -4736,11 +4765,11 @@ class TimeSeriesResults(PowerFlowResults):
             df.columns = labels
 
             if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=1, legend=False)
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.plot(ax=ax, linewidth=1, legend=True)
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
-            ax.set_title(ylabel)
+            ax.set_title(title)
             ax.set_ylabel(ylabel)
             ax.set_xlabel('Time')
 
@@ -4967,10 +4996,10 @@ class VoltageCollapseResults:
             else:
                 self.voltages[:, bus_original_idx] = res.voltages
 
-    def plot(self, type='Bus voltage', ax=None, indices=None, names=None):
+    def plot(self, result_type='Bus voltage', ax=None, indices=None, names=None):
         """
         Plot the results
-        :param type:
+        :param result_type:
         :param ax:
         :param indices:
         :param names:
@@ -4990,21 +5019,22 @@ class VoltageCollapseResults:
         if len(indices) > 0:
             labels = names[indices]
             ylabel = ''
-            if type == 'Bus voltage':
+            if result_type == 'Bus voltage':
                 y = abs(array(self.voltages)[:, indices])
                 x = self.lambdas
-                ylabel = 'Bus voltage (p.u.)'
+                title = 'Bus voltage'
+                ylabel = '(p.u.)'
             else:
                 pass
 
             df = pd.DataFrame(data=y, index=x, columns=indices)
             df.columns = labels
             if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=1, legend=False)
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.plot(ax=ax, linewidth=1, legend=True)
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
-            ax.set_title(ylabel)
+            ax.set_title(title)
             ax.set_ylabel(ylabel)
             ax.set_xlabel('Loading from the base situation ($\lambda$)')
 
@@ -5482,10 +5512,10 @@ class MonteCarloResults:
 
         return y_pred[:, :int(d/2)] + 1j * y_pred[:, int(d/2):d]
 
-    def plot(self, type, ax=None, indices=None, names=None):
+    def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
-        :param type:
+        :param result_type:
         :param ax:
         :param indices:
         :param names:
@@ -5511,63 +5541,71 @@ class MonteCarloResults:
         if len(indices) > 0:
 
             ylabel = ''
-
-            if type == 'Bus voltage avg':
+            title = ''
+            if result_type == 'Bus voltage avg':
                 y = self.v_avg_conv[1:-1, indices]
-                ylabel = 'Bus voltage average convergence(p.u.)'
+                ylabel = '(p.u.)'
                 xlabel = 'Sampling points'
+                title = 'Bus voltage \naverage convergence'
 
-            elif type == 'Bus current avg':
+            elif result_type == 'Bus current avg':
                 y = self.c_avg_conv[1:-1, indices]
-                ylabel = 'Bus current average convergence(kA)'
+                ylabel = '(p.u.)'
                 xlabel = 'Sampling points'
+                title = 'Bus current \naverage convergence'
 
-            elif type == 'Branch loading avg':
+            elif result_type == 'Branch loading avg':
                 y = self.l_avg_conv[1:-1, indices]
-                ylabel = 'Branch loading average convergence(%)'
+                ylabel = '(%)'
                 xlabel = 'Sampling points'
+                title = 'Branch loading \naverage convergence'
 
-            elif type == 'Bus voltage std':
+            elif result_type == 'Bus voltage std':
                 y = self.v_std_conv[1:-1, indices]
-                ylabel = 'Bus voltage standard deviation convergence(p.u.)'
+                ylabel = '(p.u.)'
                 xlabel = 'Sampling points'
+                title = 'Bus voltage standard \ndeviation convergence'
 
-            elif type == 'Bus current std':
+            elif result_type == 'Bus current std':
                 y = self.c_std_conv[1:-1, indices]
-                ylabel = 'Bus current standard deviation convergence(kA)'
+                ylabel = '(p.u.)'
                 xlabel = 'Sampling points'
+                title = 'Bus current standard \ndeviation convergence'
 
-            elif type == 'Branch loading std':
+            elif result_type == 'Branch loading std':
                 y = self.l_std_conv[1:-1, indices]
-                ylabel = 'Branch loading standard deviation convergence(%)'
+                ylabel = '(%)'
                 xlabel = 'Sampling points'
+                title = 'Branch loading standard \ndeviation convergence'
 
-            elif type == 'Bus voltage CDF':
+            elif result_type == 'Bus voltage CDF':
                 cdf = CDF(self.V_points.real[:, indices])
                 cdf.plot(ax=ax)
-                ylabel = 'Bus voltage'
+                ylabel = '(p.u.)'
                 xlabel = 'Probability $P(X \leq x)$'
+                title = 'Bus voltage'
 
-            elif type == 'Branch loading CDF':
+            elif result_type == 'Branch loading CDF':
                 cdf = CDF(self.loading_points.real[:, indices])
                 cdf.plot(ax=ax)
-                ylabel = 'Branch loading'
+                ylabel = '(p.u.)'
                 xlabel = 'Probability $P(X \leq x)$'
+                title = 'Branch loading'
 
             else:
                 pass
 
-            if 'CDF' not in type:
+            if 'CDF' not in result_type:
                 df = pd.DataFrame(data=y, columns=labels)
 
                 if len(df.columns) > 10:
-                    df.plot(ax=ax, linewidth=1, legend=False)
+                    df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
                 else:
-                    df.plot(ax=ax, linewidth=1, legend=True)
+                    df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
             else:
                 df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 
-            ax.set_title(ylabel)
+            ax.set_title(title)
             ax.set_ylabel(ylabel)
             ax.set_xlabel(xlabel)
 
