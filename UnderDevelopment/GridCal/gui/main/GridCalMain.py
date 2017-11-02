@@ -776,6 +776,7 @@ class MainGUI(QMainWindow):
         """
         # clear all
         self.grid_editor.diagramView.scene_.clear()
+        self.grid_editor.circuit = self.circuit  # set pointer to the circuit
 
         # first create the buses
         for bus in self.circuit.buses:
