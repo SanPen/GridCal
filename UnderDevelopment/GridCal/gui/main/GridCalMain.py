@@ -200,10 +200,14 @@ class MainGUI(QMainWindow):
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
+        pfo = PowerFlowInput(1, 1)
+        self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
+
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
         self.grid_editor.setStretchFactor(1, 10)
         self.ui.splitter_8.setStretchFactor(1, 15)
+        self.ui.simulationDataSplitter.setStretchFactor(1, 15)
 
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
@@ -299,6 +303,8 @@ class MainGUI(QMainWindow):
 
         self.ui.run_cascade_step_pushButton.clicked.connect(self.run_cascade_step)
 
+        self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -314,6 +320,8 @@ class MainGUI(QMainWindow):
         self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
+
+        self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -571,34 +579,34 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        # if self.circuit.graph is None:
-        #     self.circuit.compile()
-        #
-        # alg = dict()
-        # alg['circular_layout'] = nx.circular_layout
-        # alg['random_layout'] = nx.random_layout
-        # alg['shell_layout'] = nx.shell_layout
-        # alg['spring_layout'] = nx.spring_layout
-        # alg['spectral_layout'] = nx.spectral_layout
-        # alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
-        #
-        # sel = self.ui.automatic_layout_comboBox.currentText()
-        # pos_alg = alg[sel]
-        #
-        # # get the positions of a spring layout of the graph
-        # pos = pos_alg(self.circuit.graph, scale=10)
-        #
-        # # assign the positions to the graphical objects of the nodes
-        # for i, bus in enumerate(self.circuit.buses):
-        #     try:
-        #         x, y = pos[i] * 500
-        #         bus.graphic_obj.setPos(QPoint(x, y))
-        #     except KeyError as ex:
-        #         warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
-        # # adjust the view
-        # self.center_nodes()
+        if self.circuit.graph is None:
+            self.circuit.compile()
 
-        self.grid_editor.auto_layout()
+        alg = dict()
+        alg['circular_layout'] = nx.circular_layout
+        alg['random_layout'] = nx.random_layout
+        alg['shell_layout'] = nx.shell_layout
+        alg['spring_layout'] = nx.spring_layout
+        alg['spectral_layout'] = nx.spectral_layout
+        alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+
+        sel = self.ui.automatic_layout_comboBox.currentText()
+        pos_alg = alg[sel]
+
+        # get the positions of a spring layout of the graph
+        pos = pos_alg(self.circuit.graph, scale=10)
+
+        # assign the positions to the graphical objects of the nodes
+        for i, bus in enumerate(self.circuit.buses):
+            try:
+                x, y = pos[i] * 500
+                bus.graphic_obj.setPos(QPoint(x, y))
+            except KeyError as ex:
+                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+        # adjust the view
+        self.center_nodes()
+
+        # self.grid_editor.auto_layout()
 
     def bigger_nodes(self):
         """
@@ -752,6 +760,30 @@ class MainGUI(QMainWindow):
             # call to save the file in the circuit
             self.circuit.save_file(filename)
 
+    def export_simulation_data(self):
+        """
+        Export the calculation objects to file
+        """
+
+        if self.circuit.graph is None:
+            self.circuit.compile()
+
+        # declare the allowed file types
+        files_types = "Numpy zipped file (*.npz)"
+        # call dialog to select the file
+        if self.project_directory is None:
+            self.project_directory = ''
+
+        # set grid name
+        self.circuit.name = self.grid_editor.name_label.text()
+
+        fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+
+        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+        if filename is not "":
+            pass
+
     def export_diagram(self):
         """
         Save the schematic
@@ -851,6 +883,22 @@ class MainGUI(QMainWindow):
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
+
+    def view_simulation_objects_data(self):
+        """
+        Simulation data structure clicked
+        """
+
+        if self.circuit.graph is None:
+            self.circuit.compile()
+
+        elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
+
+        df = self.circuit.circuits[0].power_flow_input.get_structure(elm_type)
+
+        mdl = PandasModel(df)
+
+        self.ui.simulationDataStructureTableView.setModel(mdl)
 
     def profile_device_type_changed(self):
         """
@@ -1103,7 +1151,7 @@ class MainGUI(QMainWindow):
         Run voltage stability (voltage collapse) in a separated thread
         :return:
         """
-        print('run_voltage_stability')
+
         if len(self.circuit.buses) > 0:
             # get the selected UI options
             use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
@@ -1267,7 +1315,6 @@ class MainGUI(QMainWindow):
         Run a Monte Carlo simulation
         @return:
         """
-        print('run_stochastic')
 
         if len(self.circuit.buses) > 0:
 
@@ -1316,10 +1363,9 @@ class MainGUI(QMainWindow):
 
     def run_lhs(self):
         """
-        Run a Monte Carlo simulation
+        Run a Monte Carlo simulation with Latin-Hypercube sampling
         @return:
         """
-        print('run_lhs')
 
         if len(self.circuit.buses) > 0:
 
@@ -1575,7 +1621,7 @@ class MainGUI(QMainWindow):
         """
 
         if len(self.ui.result_listView.selectedIndexes()) > 0 and \
-                        len(self.ui.result_type_listView.selectedIndexes()) > 0:
+           len(self.ui.result_type_listView.selectedIndexes()) > 0:
 
             study = self.ui.result_listView.selectedIndexes()[0].data()
             study_type = self.ui.result_type_listView.selectedIndexes()[0].data()
@@ -1699,9 +1745,10 @@ class MainGUI(QMainWindow):
 
 
 def run():
+
     app = QApplication(sys.argv)
     window = MainGUI()
-    window.resize(1.61 * 700, 700)  # golden ratio
+    window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
 

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.7
+__GridCal_VERSION__ = 1.75
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -1954,6 +1954,9 @@ class Circuit:
             # Add buses dictionary entry
             buses_dict[self.buses[i]] = i
 
+            # set the name
+            power_flow_input.bus_names[i] = self.buses[i].name
+
             # assign the nominal voltage value
             power_flow_input.Vnom[i] = self.buses[i].Vnom
 
@@ -3158,6 +3161,10 @@ class PowerFlowInput:
 
         self.branch_rates = zeros(m)
 
+        self.bus_names = zeros(n, dtype=object)
+
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
+
     def compile(self):
         """
         Make the matrices sparse
@@ -3230,6 +3237,8 @@ class PowerFlowInput:
         """
         self.types[bus_idx] = obj.types
 
+        self.bus_names[bus_idx] = obj.bus_names
+
         # self.ref = None
         #
         # self.pv = None
@@ -3283,6 +3292,59 @@ class PowerFlowInput:
 
         self.compile()
 
+    def get_structure(self, structure_type):
+        """
+        Get a DataFrame with the input
+        Args:
+            structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
+
+        Returns: Pandas DataFrame
+        """
+
+        if structure_type == 'Vbus':
+
+            df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Sbus':
+            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ibus':
+            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ybus':
+            df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Yshunt':
+            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Yseries':
+            df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Types':
+            df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
+
+        elif structure_type == 'Jacobian':
+
+            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
+
+            """
+            J11 = dS_dVa[array([pvpq]).T, pvpq].real
+            J12 = dS_dVm[array([pvpq]).T, pq].real
+            J21 = dS_dVa[array([pq]).T, pvpq].imag
+            J22 = dS_dVm[array([pq]).T, pq].imag
+            """
+            npq = len(self.pq)
+            npv = len(self.pv)
+            npqpv = npq + npv
+            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
+            rows = cols
+            df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
+
+        else:
+
+            raise Exception('PF input: structure type not found')
+
+        return df
 
 class PowerFlowResults:
 
@@ -5090,6 +5152,8 @@ class VoltageCollapse(QThread):
 
             Voltage_series, Lambda_series, \
             normF, success = continuation_nr(Ybus=c.power_flow_input.Ybus,
+                                             Ibus_base=c.power_flow_input.Ibus[c.bus_original_idx],
+                                             Ibus_target=c.power_flow_input.Ibus[c.bus_original_idx],
                                              Sbus_base=self.inputs.Sbase[c.bus_original_idx],
                                              Sbus_target=self.inputs.Starget[c.bus_original_idx],
                                              V=self.inputs.Vbase[c.bus_original_idx],

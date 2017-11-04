@@ -4,95 +4,12 @@
 import sys
 import numpy as np
 from numpy import angle, conj, exp, array, asmatrix, asarray, diag, r_, linalg, Inf, dot, zeros, shape, where, pi
-from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
+from scipy.sparse import issparse, csc_matrix as sparse, hstack, vstack
 from scipy.sparse.linalg import splu
+from GridCal.grid.JacobianBased import dSbus_dV, Jacobian
 from warnings import warn
 
 
-def dSbus_dV(Ybus, V):
-    """
-    Computes partial derivatives of power injection w.r.t. voltage.
-
-    Returns two matrices containing partial derivatives of the complex bus
-    power injections w.r.t voltage magnitude and voltage angle respectively
-    (for all buses). If C{Ybus} is a sparse matrix, the return values will be
-    also. The following explains the expressions used to form the matrices::
-
-        S = diag(V) * conj(Ibus) = diag(conj(Ibus)) * V
-
-    Partials of V & Ibus w.r.t. voltage magnitudes::
-        dV/dVm = diag(V / abs(V))
-        dI/dVm = Ybus * dV/dVm = Ybus * diag(V / abs(V))
-
-    Partials of V & Ibus w.r.t. voltage angles::
-        dV/dVa = j * diag(V)
-        dI/dVa = Ybus * dV/dVa = Ybus * j * diag(V)
-
-    Partials of S w.r.t. voltage magnitudes::
-        dS/dVm = diag(V) * conj(dI/dVm) + diag(conj(Ibus)) * dV/dVm
-               = diag(V) * conj(Ybus * diag(V / abs(V)))
-                                        + conj(diag(Ibus)) * diag(V / abs(V))
-
-    Partials of S w.r.t. voltage angles::
-        dS/dVa = diag(V) * conj(dI/dVa) + diag(conj(Ibus)) * dV/dVa
-               = diag(V) * conj(Ybus * j * diag(V))
-                                        + conj(diag(Ibus)) * j * diag(V)
-               = -j * diag(V) * conj(Ybus * diag(V))
-                                        + conj(diag(Ibus)) * j * diag(V)
-               = j * diag(V) * conj(diag(Ibus) - Ybus * diag(V))
-
-    For more details on the derivations behind the derivative code used
-    in PYPOWER information, see:
-
-    [TN2]  R. D. Zimmerman, "AC Power Flows, Generalized OPF Costs and
-    their Derivatives using Complex Matrix Notation", MATPOWER
-    Technical Note 2, February 2010.
-    U{http://www.pserc.cornell.edu/matpower/TN2-OPF-Derivatives.pdf}
-
-    @author: Ray Zimmerman (PSERC Cornell)
-    """
-    ib = range(len(V))
-
-    if issparse(Ybus):
-        Ibus = Ybus * V
-
-        diagV = sparse((V, (ib, ib)))
-        diagIbus = sparse((Ibus, (ib, ib)))
-        diagVnorm = sparse((V / abs(V), (ib, ib)))
-    else:
-        Ibus = Ybus * asmatrix(V).T
-
-        diagV = asmatrix(diag(V))
-        diagIbus = asmatrix(diag( asarray(Ibus).flatten() ))
-        diagVnorm = asmatrix(diag(V / abs(V)))
-
-    dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
-    dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
-
-    return dS_dVm, dS_dVa
-
-
-def jacobian(Ybus, V, pvpq, pq):
-    """
-    Calculates the system Jacobian matrix
-    :param Ybus: Admittance matrix
-    :param V: Voltage vector
-    :param pvpq: array of the pq and pv indices
-    :param pq: array of the pq indices
-    :return: The system Jacobian Matrix
-    """
-    dS_dVm, dS_dVa = dSbus_dV(Ybus, V)  # compute the derivatives
-
-    J11 = dS_dVa[array([pvpq]).T, pvpq].real
-    J12 = dS_dVm[array([pvpq]).T, pq].real
-    J21 = dS_dVa[array([pq]).T, pvpq].imag
-    J22 = dS_dVm[array([pq]).T, pq].imag
-
-    J = vstack([
-            hstack([J11, J12]),
-            hstack([J21, J22])
-            ], format="csr")
-    return J
 
 
 def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
@@ -228,7 +145,7 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     return dP_dV, dP_dlam
 
 
-def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose):
+def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose):
     """
     # CPF_CORRECTOR  Solves the corrector step of a continuation power flow using a
     #   full Newton method with selected parameterization scheme.
@@ -344,7 +261,7 @@ def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, par
         i += 1
         
         # evaluate Jacobian
-        J = jacobian(Ybus, V, pvpq, pq)
+        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
     
         dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
         dP_dV, dP_dlam = cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
@@ -384,7 +301,7 @@ def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, par
                mis[pq].imag]
     
         # evaluate P(x, lambda)
-        # parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq
+        # parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq
         P = cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
         # augment F(x,lambda) with P(x,lambda)
@@ -408,7 +325,7 @@ def cpf_corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, par
     return V, converged, i, lam, normF
 
 
-def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameterization):
+def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameterization):
     """
     %CPF_PREDICTOR  Performs the predictor step for the continuation power flow
     %   [V0, LAM0, Z] = CPF_PREDICTOR(VPRV, LAMPRV, YBUS, SXFR, PV, PQ, STEP, Z)
@@ -453,7 +370,7 @@ def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameteriz
     pvpq = r_[pv, pq]
     nj = npv+npq*2
     # compute Jacobian for the power flow equations
-    J = jacobian(Ybus, V, pvpq, pq)
+    J = Jacobian(Ybus, V, Ibus, pq, pvpq)
     
     dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
     dP_dV, dP_dlam = cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
@@ -474,7 +391,7 @@ def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameteriz
     # compute normalized tangent predictor
     s = zeros(npv + 2 * npq + 1)
     s[npv + 2 * npq] = 1                    # increase in the direction of lambda
-    z[r_[pvpq, nb+pq, 2*nb]] = splu(J).solve(s)  #spsolve(J, s)  # tangent vector
+    z[r_[pvpq, nb+pq, 2*nb]] = splu(J).solve(s)  # spsolve(J, s)  # tangent vector
     z /= linalg.norm(z)                         # normalize tangent predictor  (dividing by the euclidean norm)
     
     Va0 = Vaprv
@@ -490,7 +407,8 @@ def cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameteriz
     return V0, lam0, z
 
 
-def continuation_nr(Ybus, Sbus_base, Sbus_target, V, pv, pq, step, approximation_order, adapt_step, step_min, step_max,
+def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv, pq, step, approximation_order,
+                    adapt_step, step_min, step_max,
                     error_tol=1e-3, tol=1e-6, max_it=20, stop_at='NOSE', verbose=False):
     """
     Runs a full AC continuation power flow using a normalized tangent
@@ -560,7 +478,7 @@ def continuation_nr(Ybus, Sbus_base, Sbus_target, V, pv, pq, step, approximation
         cont_steps += 1
 
         # prediction for next step
-        V0, lam0, z = cpf_predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, V_prev, lam_prev, approximation_order)
+        V0, lam0, z = cpf_predictor(V, Ibus_base, lam, Ybus, Sxfr, pv, pq, step, z, V_prev, lam_prev, approximation_order)
 
         # save previous voltage, lambda before updating
         V_prev = V
@@ -568,8 +486,8 @@ def continuation_nr(Ybus, Sbus_base, Sbus_target, V, pv, pq, step, approximation
 
         # correction
         # Ybus, Sbus, V0, ref, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose
-        V, success, i, lam, normF = cpf_corrector(Ybus, Sbus_base, V0, pv, pq, lam0, Sxfr, V_prev, lam_prev, z,
-                                                  step, approximation_order, tol, max_it, verbose)
+        V, success, i, lam, normF = cpf_corrector(Ybus, Ibus_base,  Sbus_base, V0, pv, pq, lam0, Sxfr, V_prev,
+                                                  lam_prev, z, step, approximation_order, tol, max_it, verbose)
         if not success:
             continuation = 0
             print('step ', cont_steps, ' : lambda = ', lam, ', corrector did not converge in ', i, ' iterations\n')

@@ -31,7 +31,7 @@ try:
     from numba import jit
     NUMBA_DETECTED = True
     print('Numba was detected, enjoy :D')
-except:
+except :
     NUMBA_DETECTED = False
     print('No numba on the system, you may want to consider installing it :)')
 
@@ -453,7 +453,6 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
         # update voltage
         if robust:
             mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
-            # print('mu:', mu_)
         else:
             mu_ = 1.0
 
@@ -498,7 +497,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
-    @Author: Santiago Penate Vera
+    @Author: Santiago Peñate Vera
     """
     start = time.time()
 
@@ -610,6 +609,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
         # update iteration counter
         iter_ += 1
+
     end = time.time()
     elapsed = end - start
 
