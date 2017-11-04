@@ -2507,7 +2507,16 @@ class MultiCircuit(Circuit):
 
         # buses ########################################################################################################
         obj = list()
+        names_count = dict()
         for elm in self.buses:
+
+            # check name: if the name is repeated, change it so that it is not
+            if elm.name in names_count.keys():
+                names_count[elm.name] += 1
+                elm.name = elm.name + '_' + str(names_count[elm.name])
+            else:
+                names_count[elm.name] = 1
+
             obj.append(elm.get_save_data())
         dfs['bus'] = pd.DataFrame(data=array(obj).astype('str'), columns=Bus().edit_headers)
 

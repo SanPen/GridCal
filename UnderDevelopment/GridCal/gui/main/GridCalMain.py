@@ -391,7 +391,8 @@ class MainGUI(QMainWindow):
 
         QMessageBox.about(self, "About GridCal", msg)
 
-    def print_console_help(self):
+    @staticmethod
+    def print_console_help():
         """
         print the console help in the console
         @return:
@@ -570,32 +571,34 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        if self.circuit.graph is None:
-            self.circuit.compile()
+        # if self.circuit.graph is None:
+        #     self.circuit.compile()
+        #
+        # alg = dict()
+        # alg['circular_layout'] = nx.circular_layout
+        # alg['random_layout'] = nx.random_layout
+        # alg['shell_layout'] = nx.shell_layout
+        # alg['spring_layout'] = nx.spring_layout
+        # alg['spectral_layout'] = nx.spectral_layout
+        # alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+        #
+        # sel = self.ui.automatic_layout_comboBox.currentText()
+        # pos_alg = alg[sel]
+        #
+        # # get the positions of a spring layout of the graph
+        # pos = pos_alg(self.circuit.graph, scale=10)
+        #
+        # # assign the positions to the graphical objects of the nodes
+        # for i, bus in enumerate(self.circuit.buses):
+        #     try:
+        #         x, y = pos[i] * 500
+        #         bus.graphic_obj.setPos(QPoint(x, y))
+        #     except KeyError as ex:
+        #         warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+        # # adjust the view
+        # self.center_nodes()
 
-        alg = dict()
-        alg['circular_layout'] = nx.circular_layout
-        alg['random_layout'] = nx.random_layout
-        alg['shell_layout'] = nx.shell_layout
-        alg['spring_layout'] = nx.spring_layout
-        alg['spectral_layout'] = nx.spectral_layout
-        alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
-
-        sel = self.ui.automatic_layout_comboBox.currentText()
-        pos_alg = alg[sel]
-
-        # get the positions of a spring layout of the graph
-        pos = pos_alg(self.circuit.graph, scale=10)
-
-        # assign the positions to the graphical objects of the nodes
-        for i, bus in enumerate(self.circuit.buses):
-            try:
-                x, y = pos[i] * 500
-                bus.graphic_obj.setPos(QPoint(x, y))
-            except KeyError as ex:
-                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
-        # adjust the view
-        self.center_nodes()
+        self.grid_editor.auto_layout()
 
     def bigger_nodes(self):
         """
@@ -673,7 +676,9 @@ class MainGUI(QMainWindow):
         @return:
         """
         # declare the allowed file types
-        files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
+        # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
+
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
@@ -730,6 +735,7 @@ class MainGUI(QMainWindow):
         self.circuit.name = self.grid_editor.name_label.text()
 
         fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+
         filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  fname, files_types)
 
         if filename is not "":

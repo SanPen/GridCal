@@ -478,7 +478,7 @@ class PSSeGenerator:
             Gridcal Load object
         """
 
-        object = ControlledGenerator(name='gen',
+        object = ControlledGenerator(name='Gen_' + str(self.ID),
                                      active_power=self.PG,
                                      voltage_module=self.VS,
                                      Qmin=-self.QB,
@@ -1195,7 +1195,7 @@ class PSSeTransformer:
             b = self.MAG2
 
             object = Branch(bus_from=bus_from, bus_to=bus_to,
-                            name=self.NAME,
+                            name=self.NAME.replace("'", "").strip(),
                             r=r,
                             x=x,
                             g=g,
@@ -1220,7 +1220,7 @@ class PSSeTransformer:
             b = self.MAG2
 
             object1 = Branch(bus_from=bus_1, bus_to=bus_2,
-                             name=self.NAME + '_1_2',
+                             name=self.NAME.replace("'", "").strip() + '_1_2',
                              r=r,
                              x=x,
                              g=g,
@@ -1238,7 +1238,7 @@ class PSSeTransformer:
             b = self.MAG2
 
             object2 = Branch(bus_from=bus_2, bus_to=bus_3,
-                             name=self.NAME + '_2_3',
+                             name=self.NAME.replace("'", "").strip() + '_2_3',
                              r=r,
                              x=x,
                              g=g,
@@ -1256,7 +1256,7 @@ class PSSeTransformer:
             b = self.MAG2
 
             object3 = Branch(bus_from=bus_3, bus_to=bus_1,
-                             name=self.NAME + '_3_1',
+                             name=self.NAME.replace("'", "").strip() + '_3_1',
                              r=r,
                              x=x,
                              g=g,

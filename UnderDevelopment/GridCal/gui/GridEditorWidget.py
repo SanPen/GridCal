@@ -1728,16 +1728,34 @@ class GridEditor(QSplitter):
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
-        for item in self.diagramScene.items():
-            if type(item) is BusGraphicItem:
-                x = item.pos().x() * self.expand_factor
-                y = item.pos().y() * self.expand_factor
-                item.setPos(QPointF(x, y))
 
-                max_x = max(max_x, x)
-                min_x = min(min_x, x)
-                max_y = max(max_y, y)
-                min_y = min(min_y, y)
+        if len(self.diagramScene.selectedItems()) > 0:
+
+            # expand selection
+            for item in self.diagramScene.selectedItems():
+                if type(item) is BusGraphicItem:
+                    x = item.pos().x() * self.expand_factor
+                    y = item.pos().y() * self.expand_factor
+                    item.setPos(QPointF(x, y))
+
+                    max_x = max(max_x, x)
+                    min_x = min(min_x, x)
+                    max_y = max(max_y, y)
+                    min_y = min(min_y, y)
+
+        else:
+
+            # expand all
+            for item in self.diagramScene.items():
+                if type(item) is BusGraphicItem:
+                    x = item.pos().x() * self.expand_factor
+                    y = item.pos().y() * self.expand_factor
+                    item.setPos(QPointF(x, y))
+
+                    max_x = max(max_x, x)
+                    min_x = min(min_x, x)
+                    max_y = max(max_y, y)
+                    min_y = min(min_y, y)
 
         print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
@@ -1754,16 +1772,33 @@ class GridEditor(QSplitter):
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
-        for item in self.diagramScene.items():
-            if type(item) is BusGraphicItem:
-                x = item.pos().x() / self.expand_factor
-                y = item.pos().y() / self.expand_factor
-                item.setPos(QPointF(x, y))
 
-                max_x = max(max_x, x)
-                min_x = min(min_x, x)
-                max_y = max(max_y, y)
-                min_y = min(min_y, y)
+        if len(self.diagramScene.selectedItems()) > 0:
+
+            # shrink selection only
+            for item in self.diagramScene.selectedItems():
+                if type(item) is BusGraphicItem:
+                    x = item.pos().x() / self.expand_factor
+                    y = item.pos().y() / self.expand_factor
+                    item.setPos(QPointF(x, y))
+
+                    max_x = max(max_x, x)
+                    min_x = min(min_x, x)
+                    max_y = max(max_y, y)
+                    min_y = min(min_y, y)
+        else:
+
+            # shrink all
+            for item in self.diagramScene.items():
+                if type(item) is BusGraphicItem:
+                    x = item.pos().x() / self.expand_factor
+                    y = item.pos().y() / self.expand_factor
+                    item.setPos(QPointF(x, y))
+
+                    max_x = max(max_x, x)
+                    min_x = min(min_x, x)
+                    max_y = max(max_y, y)
+                    min_y = min(min_y, y)
 
         print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
@@ -1782,16 +1817,25 @@ class GridEditor(QSplitter):
     def auto_layout(self):
         """
         Automatic layout of the nodes
-        Returns:
-
         """
 
         if self.circuit.graph is None:
             self.circuit.compile()
 
-        pos = nx.spring_layout(self.circuit.graph, scale=2)
+        pos = nx.spectral_layout(self.circuit.graph, scale=2, weight='weight')
 
-        self.circuit.buses
+        pos = nx.fruchterman_reingold_layout(self.circuit.graph, dim=2, k=None, pos=pos, fixed=None, iterations=500,
+                                             weight='weight', scale=20.0, center=None)
+
+        # assign the positions to the graphical objects of the nodes
+        for i, bus in enumerate(self.circuit.buses):
+            try:
+                x, y = pos[i] * 500
+                bus.graphic_obj.setPos(QPoint(x, y))
+            except KeyError as ex:
+                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+
+        self.center_nodes()
 
     def export(self, filename):
         """
