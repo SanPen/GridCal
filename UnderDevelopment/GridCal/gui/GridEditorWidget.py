@@ -23,9 +23,10 @@ The graphic objects need to call the API objects and functions inside the MultiC
 To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
-
+# Declare colors
 ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
+EMERGENCY = {'style': Qt.SolidLine, 'color': QtCore.Qt.yellow}
 OTHER = ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
 
 
@@ -58,6 +59,13 @@ class QLine(LineUpdateMixin, QGraphicsLineItem):
 
 
 class GeneralItem(object):
+
+    def __init__(self):
+        self.color = ACTIVE['color']
+        self.width = 2
+        self.style = ACTIVE['style']
+        self.setBrush(QBrush(Qt.darkGray))
+        self.setPen(QPen(self.color, self.width, self.style))
 
     def editParameters(self):
         pd = ParameterDialog(self.window())
@@ -126,7 +134,7 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.color = OTHER['color']
         self.width = width
         self.pen_width = width
-        self.setPen(QPen(Qt.black, self.width, self.style))
+        self.setPen(QPen(self.color, self.width, self.style))
         self.setFlag(self.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
@@ -325,7 +333,11 @@ class TerminalItem(QGraphicsEllipseItem):
         self.setCursor(QCursor(QtCore.Qt.CrossCursor))
 
         # Properties:
-        self.setBrush(QBrush(Qt.white))
+        self.color = ACTIVE['color']
+        self.width = 2
+        self.style = ACTIVE['style']
+        self.setBrush(QBrush(Qt.darkGray))
+        self.setPen(QPen(self.color, self.width, self.style))
 
         # terminal parent object
         self.parent = parent
@@ -435,7 +447,6 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.diagramScene = diagramScene
 
         # Properties of the container:
-        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
@@ -602,7 +613,6 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         pen = QPen(self.color, self.width, self.style)
 
         # Properties of the container:
-        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
@@ -754,7 +764,6 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.h = 40
 
         # Properties of the container:
-        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
@@ -910,7 +919,6 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.h = 40
 
         # Properties of the container:
-        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
@@ -1064,7 +1072,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.h = 40
 
         # Properties of the container:
-        # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
@@ -1090,9 +1097,9 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        label = QGraphicsTextItem('B', parent=self.glyph)
-        label.setDefaultTextColor(self.color)
-        label.setPos(self.h/4, self.w/4)
+        self.label = QGraphicsTextItem('B', parent=self.glyph)
+        self.label.setDefaultTextColor(self.color)
+        self.label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -1238,8 +1245,11 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.sc_enabled = False
         self.pen_width = 4
         # Properties of the rectangle:
-        self.setPen(QPen(QtCore.Qt.black, self.pen_width))
-        self.setBrush(QBrush(QtCore.Qt.black))
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
+        self.setBrush(QBrush(Qt.darkGray))
+        self.setPen(QPen(self.color, self.pen_width, self.style))
+        self.setBrush(QBrush(self.color))
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
@@ -1461,13 +1471,13 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         if self.api_object.active:
 
-            self.setBrush(QBrush(QtCore.Qt.black))
+            self.setBrush(QBrush(ACTIVE['color']))
 
             for term in self.terminals:
                 for host in term.hosting_connections:
                     host.set_enable(val=True)
         else:
-            self.setBrush(QBrush(QtCore.Qt.gray))
+            self.setBrush(QBrush(DEACTIVATED['color']))
 
             for term in self.terminals:
                 for host in term.hosting_connections:
@@ -1480,12 +1490,12 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if self.sc_enabled is True:
-            self.setPen(QPen(QColor(QtCore.Qt.black), self.pen_width))
+            self.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
             self.sc_enabled = False
 
         else:
             self.sc_enabled = True
-            self.setPen(QPen(QColor(QtCore.Qt.yellow), self.pen_width))
+            self.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
 
     def plot_profiles(self):
         """
