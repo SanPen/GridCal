@@ -336,7 +336,7 @@ class TerminalItem(QGraphicsEllipseItem):
         self.color = ACTIVE['color']
         self.width = 2
         self.style = ACTIVE['style']
-        self.setBrush(QBrush(Qt.darkGray))
+        self.setBrush(Qt.darkGray)
         self.setPen(QPen(self.color, self.width, self.style))
 
         # terminal parent object
@@ -400,7 +400,7 @@ class HandleItem(QGraphicsEllipseItem):
         QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
         # super(HandleItem, self).__init__(QRectF(-4, -4, 8, 8), parent)
         self.posChangeCallbacks = []
-        self.setBrush(QBrush(Qt.red))
+        self.setBrush(Qt.red)
         self.setFlag(self.ItemIsMovable, True)
         self.setFlag(self.ItemSendsScenePositionChanges, True)
         self.setCursor(QCursor(Qt.SizeFDiagCursor))
@@ -1249,7 +1249,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.style = ACTIVE['style']
         self.setBrush(QBrush(Qt.darkGray))
         self.setPen(QPen(self.color, self.pen_width, self.style))
-        self.setBrush(QBrush(self.color))
+        self.setBrush(self.color)
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
