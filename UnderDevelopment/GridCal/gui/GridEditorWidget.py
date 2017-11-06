@@ -24,6 +24,11 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
 
+ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
+DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
+OTHER = ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
+
+
 class LineUpdateMixin(object):
 
     def __init__(self, parent):
@@ -111,14 +116,14 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.api_object = branch
         if self.api_object is not None:
             if self.api_object.active:
-                self.style = Qt.SolidLine
-                self.color = Qt.black
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
             else:
-                self.style = Qt.DashLine
-                self.color = Qt.gray
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
         else:
-            self.style = Qt.SolidLine
-            self.color = Qt.black
+            self.style = OTHER['style']
+            self.color = OTHER['color']
         self.width = width
         self.pen_width = width
         self.setPen(QPen(Qt.black, self.width, self.style))
@@ -229,14 +234,14 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.api_object.active = val
         if self.api_object is not None:
             if self.api_object.active:
-                self.style = Qt.SolidLine
-                self.color = QtCore.Qt.black
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
             else:
-                self.style = Qt.DashLine
-                self.color = QtCore.Qt.gray
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
         else:
-            self.style = Qt.SolidLine
-            self.color = QtCore.Qt.black
+            self.style = OTHER['style']
+            self.color = OTHER['color']
         self.setPen(QPen(self.color, self.width, self.style))
 
     def setFromPort(self, fromPort):
@@ -418,8 +423,6 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        # QGraphicsPolygonItem.__init__(self, parent=parent)
-        # QGraphicsItemGroup.__init__(self, parent=parent)
         super(LoadGraphicItem, self).__init__(parent)
 
         self.w = 20.0
@@ -441,10 +444,23 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.nexus = QGraphicsLineItem()
         parent.scene().addItem(self.nexus)
 
-        triangle = Polygon(self)
-        triangle.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w/2, self.h)]))
-        triangle.setPen(QPen(Qt.black, 2))
-        self.addToGroup(triangle)
+        self.width = 2
+
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+
+        self.glyph = Polygon(self)
+        self.glyph.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.addToGroup(self.glyph)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -469,6 +485,9 @@ class LoadGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pe = menu.addAction('Enable/Disable')
+        pe.triggered.connect(self.enable_disable_toggle)
+
         pa = menu.addAction('Plot profiles')
         pa.triggered.connect(self.plot)
 
@@ -482,6 +501,35 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.loads.remove(self.api_object)
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object.active:
+            self.set_enable(False)
+        else:
+            self.set_enable(True)
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
 
     def plot(self):
 
@@ -529,7 +577,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         # QGraphicsItemGroup.__init__(self, parent=parent)
         super(ShuntGraphicItem, self).__init__(parent)
 
-        self.w = 10.0
+        self.w = 15.0
         self.h = 30.0
 
         self.parent = parent
@@ -538,7 +586,20 @@ class ShuntGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        pen = QPen(Qt.black, 2)
+        self.width = 2
+
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+
+        pen = QPen(self.color, self.width, self.style)
 
         # Properties of the container:
         # self.setBrush(QtGui.QBrush(QtCore.Qt.black))
@@ -550,24 +611,19 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.nexus = QGraphicsLineItem()
         parent.scene().addItem(self.nexus)
 
-        lines = list()
-        lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
-        lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
-        lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
-        lines.append(QLineF(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h)))
-        lines.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
-        lines.append(QLineF(QPointF(self.w*0.15, self.h * 1.1), QPointF(self.w*0.85, self.h * 1.1)))
-        lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
-        for l in lines:
+        self.lines = list()
+        self.lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
+        self.lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
+        self.lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
+        self.lines.append(QLineF(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h)))
+        self.lines.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
+        self.lines.append(QLineF(QPointF(self.w*0.15, self.h * 1.1), QPointF(self.w*0.85, self.h * 1.1)))
+        self.lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
+        for l in self.lines:
             l1 = QLine(self)
             l1.setLine(l)
             l1.setPen(pen)
             self.addToGroup(l1)
-
-        # line = QLine(self)
-        # line.setLine(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
-        # line.setPen(pen)
-        # self.addToGroup(line)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -593,6 +649,9 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pe = menu.addAction('Enable/Disable')
+        pe.triggered.connect(self.enable_disable_toggle)
+
         pa = menu.addAction('Plot profile')
         pa.triggered.connect(self.plot)
 
@@ -606,6 +665,39 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.shunts.remove(self.api_object)
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object.active:
+            self.set_enable(False)
+        else:
+            self.set_enable(True)
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+
+        pen = QPen(self.color, self.width, self.style)
+
+        for l in self.childItems():
+            l.setPen(pen)
 
     def plot(self):
         """
@@ -658,9 +750,6 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        color = Qt.black
-        pen = QPen(color, 2)
-
         self.w = 40
         self.h = 40
 
@@ -674,18 +763,28 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.nexus = QGraphicsLineItem()
         parent.scene().addItem(self.nexus)
 
-        # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
-        # l1.setPen(pen)
-        # self.addToGroup(l1)
+        self.width = 2
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
 
-        circle = Circle(self)
-        circle.setRect(0, 0, self.h, self.w)
-        circle.setPen(pen)
-        self.addToGroup(circle)
+        pen = QPen(self.color, self.width, self.style)
 
-        label = QGraphicsTextItem('G', parent=circle)
-        label.setDefaultTextColor(color)
-        label.setPos(self.h/4, self.w/4)
+        self.glyph = Circle(self)
+        self.glyph.setRect(0, 0, self.h, self.w)
+        self.glyph.setPen(pen)
+        self.addToGroup(self.glyph)
+
+        self.label = QGraphicsTextItem('G', parent=self.glyph)
+        self.label.setDefaultTextColor(self.color)
+        self.label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -710,6 +809,9 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pe = menu.addAction('Enable/Disable')
+        pe.triggered.connect(self.enable_disable_toggle)
+
         pa = menu.addAction('Plot profiles')
         pa.triggered.connect(self.plot)
 
@@ -723,6 +825,36 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.controlled_generators.remove(self.api_object)
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object.active:
+            self.set_enable(False)
+        else:
+            self.set_enable(True)
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.label.setDefaultTextColor(self.color)
 
     def plot(self):
         """
@@ -774,9 +906,6 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        color = Qt.black
-        pen = QPen(color, 2)
-
         self.w = 40
         self.h = 40
 
@@ -793,14 +922,27 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         # l1.setPen(pen)
         # self.addToGroup(l1)
 
-        square = Square(parent)
-        square.setRect(0, 0, self.h, self.w)
-        square.setPen(pen)
-        self.addToGroup(square)
+        self.width = 2
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+        pen = QPen(self.color, self.width, self.style)
 
-        label = QGraphicsTextItem('S', parent=square)
-        label.setDefaultTextColor(color)
-        label.setPos(self.h/4, self.w/4)
+        self.glyph = Square(parent)
+        self.glyph.setRect(0, 0, self.h, self.w)
+        self.glyph.setPen(pen)
+        self.addToGroup(self.glyph)
+
+        self.label = QGraphicsTextItem('S', parent=self.glyph)
+        self.label.setDefaultTextColor(self.color)
+        self.label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -825,6 +967,9 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pe = menu.addAction('Enable/Disable')
+        pe.triggered.connect(self.enable_disable_toggle)
+
         pa = menu.addAction('Plot profile')
         pa.triggered.connect(self.plot)
 
@@ -838,6 +983,36 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.static_generators.remove(self.api_object)
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object.active:
+            self.set_enable(False)
+        else:
+            self.set_enable(True)
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.label.setDefaultTextColor(self.color)
 
     def plot(self):
         """
@@ -885,9 +1060,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        color = Qt.black
-        pen = QPen(color, 2)
-
         self.w = 40
         self.h = 40
 
@@ -900,17 +1072,26 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.nexus = QGraphicsLineItem()
         parent.scene().addItem(self.nexus)
 
-        # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
-        # l1.setPen(pen)
-        # self.addToGroup(l1)
+        self.width = 2
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+        pen = QPen(self.color, self.width, self.style)
 
-        square = Square(self)
-        square.setRect(0, 0, self.h, self.w)
-        square.setPen(pen)
-        self.addToGroup(square)
+        self.glyph = Square(self)
+        self.glyph.setRect(0, 0, self.h, self.w)
+        self.glyph.setPen(pen)
+        self.addToGroup(self.glyph)
 
-        label = QGraphicsTextItem('B', parent=square)
-        label.setDefaultTextColor(color)
+        label = QGraphicsTextItem('B', parent=self.glyph)
+        label.setDefaultTextColor(self.color)
         label.setPos(self.h/4, self.w/4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
@@ -936,6 +1117,9 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)
 
+        pe = menu.addAction('Enable/Disable')
+        pe.triggered.connect(self.enable_disable_toggle)
+
         pa = menu.addAction('Plot profiles')
         pa.triggered.connect(self.plot)
 
@@ -949,6 +1133,37 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
         self.api_object.bus.batteries.remove(self.api_object)
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object.active:
+            self.set_enable(False)
+        else:
+            self.set_enable(True)
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.label.setDefaultTextColor(self.color)
+
 
     def plot(self):
         """
