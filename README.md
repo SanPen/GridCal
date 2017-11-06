@@ -21,6 +21,15 @@ Open a console and type:
 
 Check out the video on how to install [**Python and GridCal on Windows 10**.](https://youtu.be/yGxMq2JB1Zo)
 
+## Manual installation
+
+Sometimes `pip` does not download the lattest version for some reason. In those cases, go to https://pypi.python.org/pypi/GridCal/ and download the lattest GridCal file: `GridCal-x.xx.tar.gz`.
+
+From a console install the file manually:
+
+Windows: `pip install GridCal-x.xx.tar.gz`
+
+OSX/Linux: `pip3 install GridCal-x.xx.tar.gz`
 
 # Run with user interface
 
