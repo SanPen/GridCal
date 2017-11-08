@@ -33,7 +33,7 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
-     where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
+    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
 from pyDOE import lhs
@@ -45,7 +45,6 @@ from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
-
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -62,12 +61,12 @@ LEFT = 0.12
 RIGHT = 0.98
 TOP = 0.8
 BOTTOM = 0.2
-plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-plt.rc('axes', labelsize=SMALL_SIZE)     # fontsize of the x and y labels
-plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
+plt.rc('axes', labelsize=SMALL_SIZE)  # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
 
 
@@ -119,6 +118,7 @@ class CDF(object):
     """
     Inverse Cumulative density function of a given array f data
     """
+
     def __init__(self, data):
         """
         Constructor
@@ -242,6 +242,7 @@ class StatisticalCharacterization(object):
     - grouped by day
     - grouped by hour
     """
+
     def __init__(self, gen_P, load_P, load_Q):
         """
         Constructor
@@ -326,9 +327,9 @@ class StatisticalCharacterization(object):
         for cdf in self.gen_P_laws:
             ax.plot(cdf.prob, cdf.data_sorted, color='r', marker='x')
         for cdf in self.load_P_laws:
-            ax.plot(cdf.prob, cdf.data_sorted, color='g',  marker='x')
+            ax.plot(cdf.prob, cdf.data_sorted, color='g', marker='x')
         for cdf in self.load_Q_laws:
-            ax.plot(cdf.prob, cdf.data_sorted, color='b',  marker='x')
+            ax.plot(cdf.prob, cdf.data_sorted, color='b', marker='x')
         ax.set_xlabel('$p(x)$')
         ax.set_ylabel('$x$')
 
@@ -343,16 +344,16 @@ def classify_by_hour(t: pd.DatetimeIndex):
     n = len(t)
 
     offset = t[0].hour * t[0].dayofyear
-    mx = t[n-1].hour * t[n-1].dayofyear
+    mx = t[n - 1].hour * t[n - 1].dayofyear
 
     arr = list()
 
-    for i in range(mx-offset+1):
+    for i in range(mx - offset + 1):
         arr.append(list())
 
     for i in range(n):
         hourofyear = t[i].hour * t[i].dayofyear
-        arr[hourofyear-offset].append(i)
+        arr[hourofyear - offset].append(i)
 
     return arr
 
@@ -367,16 +368,16 @@ def classify_by_day(t: pd.DatetimeIndex):
     n = len(t)
 
     offset = t[0].dayofyear
-    mx = t[n-1].dayofyear
+    mx = t[n - 1].dayofyear
 
     arr = list()
 
-    for i in range(mx-offset+1):
+    for i in range(mx - offset + 1):
         arr.append(list())
 
     for i in range(n):
         hourofyear = t[i].dayofyear
-        arr[hourofyear-offset].append(i)
+        arr[hourofyear - offset].append(i)
 
     return arr
 
@@ -467,6 +468,7 @@ def load_from_xls(filename):
                 data[name] = df
 
     return data
+
 
 ########################################################################################################################
 # Circuit classes
@@ -593,8 +595,8 @@ class Bus:
         s_profile = None  # Positive Generates, negative consumes
 
         y_cdf = None
-        i_cdf = None   # Positive Generates, negative consumes
-        s_cdf = None   # Positive Generates, negative consumes
+        i_cdf = None  # Positive Generates, negative consumes
+        s_cdf = None  # Positive Generates, negative consumes
 
         self.Qmin_sum = 0
         self.Qmax_sum = 0
@@ -1014,10 +1016,11 @@ class Branch:
 
         self.type_obj = None
 
-        self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B', 'tap_module', 'angle']
+        self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
+                             'tap_module', 'angle']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                             'p.u.', 'rad']
+                      'p.u.', 'rad']
 
         self.edit_types = {'name': str,
                            'bus_from': None,
@@ -1238,11 +1241,16 @@ class Load:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S']
 
-        self.units = ['', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
+        self.units = ['', '', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
 
-        self.edit_types = {'name': str, 'bus': None, 'Z': complex, 'I': complex, 'S': complex}
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'active': bool,
+                           'Z': complex,
+                           'I': complex,
+                           'S': complex}
 
     def create_profiles(self, index):
         """
@@ -1377,11 +1385,14 @@ class StaticGenerator:
         # power profile for this load
         self.Sprof = power_prof
 
-        self.edit_headers = ['name', 'bus', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'S']
 
-        self.units = ['', '', 'MVA']
+        self.units = ['', '', '', 'MVA']
 
-        self.edit_types = {'name': str,  'bus': None,  'S': complex}
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'active': bool,
+                           'S': complex}
 
     def copy(self):
         """
@@ -1492,12 +1503,13 @@ class Battery:
         # Nominal energy MWh
         self.Enom = Enom
 
-        self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
 
-        self.units = ['', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
+                           'active': bool,
                            'P': float,
                            'Vset': float,
                            'Snom': float,
@@ -1652,12 +1664,13 @@ class ControlledGenerator:
         # Nominal power
         self.Snom = Snom
 
-        self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
 
-        self.units = ['', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
+                           'active': bool,
                            'P': float,
                            'Vset': float,
                            'Snom': float,
@@ -1787,11 +1800,14 @@ class Shunt:
         # admittance profile
         self.Yprof = admittance_prof
 
-        self.edit_headers = ['name', 'bus', 'Y']
+        self.edit_headers = ['name', 'bus', 'active', 'Y']
 
-        self.units = ['', '', 'MVA']  # MVA at 1 p.u.
+        self.units = ['', '', '', 'MVA']  # MVA at 1 p.u.
 
-        self.edit_types = {'name': str,   'bus': None, 'Y': complex}
+        self.edit_types = {'name': str,
+                           'active': bool,
+                           'bus': None,
+                           'Y': complex}
 
     def copy(self):
 
@@ -2269,7 +2285,7 @@ class MultiCircuit(Circuit):
                 circ = parse_matpower_file(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
-            
+
             elif file_extension in ['.raw', '.RAW', '.Raw']:
                 from GridCal.grid.ImportParsers.PSS_Parser import PSSeParser
                 parser = PSSeParser(filename)
@@ -2377,7 +2393,7 @@ class MultiCircuit(Circuit):
             bus = bus_dict[bus_from[i]]
 
             if obj.name == 'Load':
-                obj.name += str(len(bus.loads)+1) + '@' + bus.name
+                obj.name += str(len(bus.loads) + 1) + '@' + bus.name
 
             obj.bus = bus
             bus.loads.append(obj)
@@ -2405,7 +2421,7 @@ class MultiCircuit(Circuit):
             bus = bus_dict[bus_from[i]]
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.controlled_generators)+1) + '@' + bus.name
+                obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
 
             obj.bus = bus
             bus.controlled_generators.append(obj)
@@ -2433,7 +2449,7 @@ class MultiCircuit(Circuit):
             bus = bus_dict[bus_from[i]]
 
             if obj.name == 'batt':
-                obj.name += str(len(bus.batteries)+1) + '@' + bus.name
+                obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
 
             obj.bus = bus
             bus.batteries.append(obj)
@@ -2456,7 +2472,7 @@ class MultiCircuit(Circuit):
             bus = bus_dict[bus_from[i]]
 
             if obj.name == 'StaticGen':
-                obj.name += str(len(bus.static_generators)+1) + '@' + bus.name
+                obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
 
             obj.bus = bus
             bus.static_generators.append(obj)
@@ -2479,7 +2495,7 @@ class MultiCircuit(Circuit):
             bus = bus_dict[bus_from[i]]
 
             if obj.name == 'shunt':
-                obj.name += str(len(bus.shunts)+1) + '@' + bus.name
+                obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
 
             obj.bus = bus
             bus.shunts.append(obj)
@@ -2723,7 +2739,7 @@ class MultiCircuit(Circuit):
 
         print(islands)
 
-    def create_profiles(self, steps, step_length, step_unit, time_base: datetime=datetime.now()):
+    def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
         Set the default profiles in all the objects enabled to have profiles
         Args:
@@ -2736,11 +2752,11 @@ class MultiCircuit(Circuit):
         index = [None] * steps
         for i in range(steps):
             if step_unit == 'h':
-                index[i] = time_base + timedelta(hours=i*step_length)
+                index[i] = time_base + timedelta(hours=i * step_length)
             elif step_unit == 'm':
-                index[i] = time_base + timedelta(minutes=i*step_length)
+                index[i] = time_base + timedelta(minutes=i * step_length)
             elif step_unit == 's':
-                index[i] = time_base + timedelta(seconds=i*step_length)
+                index[i] = time_base + timedelta(seconds=i * step_length)
 
         self.format_profiles(index)
 
@@ -3346,6 +3362,7 @@ class PowerFlowInput:
 
         return df
 
+
 class PowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
@@ -3860,23 +3877,27 @@ class PowerFlow(QRunnable):
                                 V = Vhelm
 
                 # Check controls
-                Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
-                                                                             Vset=abs(V),
-                                                                             Q=Scalc.imag,
-                                                                             Qmax=circuit.power_flow_input.Qmax,
-                                                                             Qmin=circuit.power_flow_input.Qmin,
-                                                                             types=circuit.power_flow_input.types,
-                                                                             original_types=original_types,
-                                                                             verbose=self.options.verbose)
-                if any_control_issue:
-                    V = Vnew
-                    Sbus = Sbus.real + 1j * Qnew
-                    circuit.power_flow_input.compile_types(types_new)
+                if self.options.control_Q:
+                    Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
+                                                                                 Vset=abs(V),
+                                                                                 Q=Scalc.imag,
+                                                                                 Qmax=circuit.power_flow_input.Qmax,
+                                                                                 Qmin=circuit.power_flow_input.Qmin,
+                                                                                 types=circuit.power_flow_input.types,
+                                                                                 original_types=original_types,
+                                                                                 verbose=self.options.verbose)
+                    if any_control_issue:
+                        V = Vnew
+                        Sbus = Sbus.real + 1j * Qnew
+                        circuit.power_flow_input.compile_types(types_new)
+                    else:
+                        if self.options.verbose:
+                            print('Controls Ok')
                 else:
-                    if self.options.verbose:
-                        print('Controls Ok')
+                    # did not check Q limits
+                    any_control_issue = False
 
-            # # increment the inner iterations counter
+            # increment the inner iterations counter
             inner_it.append(it)
 
             # increment the outer control iterations counter
@@ -4364,11 +4385,12 @@ class ShortCircuit(QRunnable):
         @return:
         """
 
-        assert(circuit.power_flow_results is not None)
+        assert (circuit.power_flow_results is not None)
 
         # compute Zbus if needed
         if circuit.power_flow_input.Zbus is None:
-            circuit.power_flow_input.Zbus = inv(circuit.power_flow_input.Ybus).toarray()  # is dense, so no need to store it as sparse
+            circuit.power_flow_input.Zbus = inv(
+                circuit.power_flow_input.Ybus).toarray()  # is dense, so no need to store it as sparse
 
         # Compute the short circuit
         V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
@@ -4437,7 +4459,8 @@ class ShortCircuit(QRunnable):
                 print('Solving ' + circuit.name)
 
             circuit.short_circuit_results = self.single_short_circuit(circuit)
-            results.apply_from_island(circuit.short_circuit_results, circuit.bus_original_idx, circuit.branch_original_idx)
+            results.apply_from_island(circuit.short_circuit_results, circuit.bus_original_idx,
+                                      circuit.branch_original_idx)
 
             # self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
@@ -4459,7 +4482,7 @@ class ShortCircuit(QRunnable):
 
 class TimeSeriesInput:
 
-    def __init__(self, s_profile: pd.DataFrame=None, i_profile: pd.DataFrame=None, y_profile: pd.DataFrame=None):
+    def __init__(self, s_profile: pd.DataFrame = None, i_profile: pd.DataFrame = None, y_profile: pd.DataFrame = None):
         """
         Time series input
         @param s_profile: DataFrame with the profile of the injected power at the buses
@@ -4891,7 +4914,6 @@ class TimeSeriesResultsAnalysis:
 
 
 class TimeSeries(QThread):
-
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
@@ -5113,7 +5135,6 @@ class VoltageCollapseResults:
 
 
 class VoltageCollapse(QThread):
-
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
@@ -5275,7 +5296,6 @@ class MonteCarloInput:
 
 
 class MonteCarlo(QThread):
-
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
@@ -5372,7 +5392,7 @@ class MonteCarlo(QThread):
             std_dev_progress = 100 * mc_tol / err
             if std_dev_progress > 100:
                 std_dev_progress = 100
-            self.progress_signal.emit(max((std_dev_progress, it/max_mc_iter*100)))
+            self.progress_signal.emit(max((std_dev_progress, it / max_mc_iter * 100)))
 
             print(iter, '/', max_mc_iter)
             # print('Vmc:', Vavg)
@@ -5383,7 +5403,8 @@ class MonteCarlo(QThread):
         mc_results.compile()
 
         # compute the averaged branch magnitudes
-        mc_results.sbranch, Ibranch, loading, mc_results.losses = powerflow.compute_branch_results(self.grid, mc_results.voltage)
+        mc_results.sbranch, Ibranch, loading, mc_results.losses = powerflow.compute_branch_results(self.grid,
+                                                                                                   mc_results.voltage)
 
         self.results = mc_results
 
@@ -5583,7 +5604,7 @@ class MonteCarloResults:
 
         y_pred = model.predict(x_test)
 
-        return y_pred[:, :int(d/2)] + 1j * y_pred[:, int(d/2):d]
+        return y_pred[:, :int(d / 2)] + 1j * y_pred[:, int(d / 2):d]
 
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
@@ -5689,7 +5710,6 @@ class MonteCarloResults:
 
 
 class LatinHypercubeSampling(QThread):
-
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
@@ -5773,7 +5793,8 @@ class LatinHypercubeSampling(QThread):
         lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
+        lhs_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid,
+                                                                                                     lhs_results.voltage)
 
         self.results = lhs_results
 
@@ -5797,19 +5818,17 @@ class LatinHypercubeSampling(QThread):
 class CascadingReportElement:
 
     def __init__(self, removed_idx, pf_results):
-
         self.removed_idx = removed_idx
         self.pf_results = pf_results
 
 
 class Cascading(QThread):
-
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1,
-                 cascade_type_: CascadeType=CascadeType.LatinHypercube, n_lhs_samples_=1000):
+                 cascade_type_: CascadeType = CascadeType.LatinHypercube, n_lhs_samples_=1000):
         """
         Constructor
         Args:
@@ -5991,7 +6010,7 @@ class Cascading(QThread):
 
         dta = list()
         for i in range(len(self.report)):
-            dta.append(['Step ' + str(i+1), len(self.report[i].removed_idx)])
+            dta.append(['Step ' + str(i + 1), len(self.report[i].removed_idx)])
 
         return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed'])
 
@@ -6008,7 +6027,6 @@ class Cascading(QThread):
 
 
 class Optimize(QThread):
-
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
@@ -6057,7 +6075,6 @@ class Optimize(QThread):
 
         # For every circuit, run the time series
         for c in self.grid.circuits:
-
             # sample from the CDF give the vector x of values in [0, 1]
             c.sample_at(x)
 
@@ -6074,7 +6091,7 @@ class Optimize(QThread):
         prog = self.it / self.max_eval * 100
         # self.progress_signal.emit(prog)
 
-        f = abs(self.results.V_points[self.it-1, :].sum()) / self.dim
+        f = abs(self.results.V_points[self.it - 1, :].sum()) / self.dim
         print(prog, ' % \t', f)
 
         return f
@@ -6154,7 +6171,8 @@ class Optimize(QThread):
             # Points
             ax.scatter(np.arange(0, max_eval), self.optimization_values, color=clr[6])
             # Best value found
-            ax.plot(np.arange(0, max_eval), np.minimum.accumulate(self.optimization_values), color=clr[1], linewidth=3.0)
+            ax.plot(np.arange(0, max_eval), np.minimum.accumulate(self.optimization_values), color=clr[1],
+                    linewidth=3.0)
             ax.set_xlabel('Evaluations')
             ax.set_ylabel('Function Value')
             ax.set_title('Optimization convergence')
