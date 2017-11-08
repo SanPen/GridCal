@@ -1,22 +1,17 @@
 import pandas as pd
-from numpy import r_, where
+from numpy import r_
+from numpy.core.multiarray import where
 
-from GridCal.grid.sample.cascade_type import CascadeType
-from GridCal.grid.calculate.power_flow.power_flow import PowerFlowOptions, \
-    PowerFlow
-from GridCal.grid.model.circuit import MultiCircuit, Circuit
+from GridCal.grid.calculate.power_flow.options import PowerFlowOptions
+from GridCal.grid.calculate.power_flow.runnable import PowerFlowRunnable
+from GridCal.grid.model.circuit.circuit import Circuit
+from GridCal.grid.sample.cascade.cascade_type import CascadeType
+from GridCal.grid.sample.cascade.report_element import CascadingReportElement
 from GridCal.grid.sample.latin_hypercube.latin_hypercube import \
     LatinHypercubeSampling
 
 
-class CascadingReportElement:
-
-    def __init__(self, removed_idx, pf_results):
-
-        self.removed_idx = removed_idx
-        self.pf_results = pf_results
-
-class Cascading(QThread):
+class CascadingThread(QThread):
 
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
@@ -87,13 +82,13 @@ class Cascading(QThread):
 
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowRunnable(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
             model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
 
         else:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowRunnable(self.grid, self.options)
 
         # For every circuit, run a power flow
         # for c in self.grid.circuits:
@@ -135,13 +130,13 @@ class Cascading(QThread):
 
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowRunnable(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
             model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=1000)
 
         else:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowRunnable(self.grid, self.options)
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running cascading failure...')

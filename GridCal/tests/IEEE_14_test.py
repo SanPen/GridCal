@@ -1,7 +1,7 @@
 import numpy as np
 
-from GridCal.grid.calculate.power_flow.power_flow import PowerFlowOptions, \
-    PowerFlow
+from GridCal.grid.calculate.power_flow.runnable import PowerFlowRunnable
+from GridCal.grid.calculate.power_flow.options import PowerFlowOptions
 from GridCal.grid.calculate.solver_type import SolverType
 from GridCal.grid.model.circuit import MultiCircuit
 
@@ -21,7 +21,7 @@ options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False)
 # PowerFlow
 ####################################################################################################################
 print('\n\n')
-power_flow = PowerFlow(grid, options)
+power_flow = PowerFlowRunnable(grid, options)
 power_flow.run()
 
 for c in grid.circuits:

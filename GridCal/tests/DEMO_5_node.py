@@ -15,10 +15,13 @@
 
 import numpy as np
 
-from GridCal.grid.calculate.power_flow.power_flow import PowerFlowOptions, \
-    PowerFlow
+from GridCal.grid.calculate.power_flow.runnable import PowerFlowRunnable
+from GridCal.grid.calculate.power_flow.options import PowerFlowOptions
 from GridCal.grid.calculate.solver_type import SolverType
-from GridCal.grid.model.circuit import Branch, Load, ControlledGenerator, Bus
+from GridCal.grid.model.circuit import Branch, Bus
+from GridCal.grid.model.generator.controlled import \
+    ControlledGenerator
+from GridCal.grid.model.load import Load
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
@@ -68,7 +71,7 @@ grid.compile()
 print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())
 
 options = PowerFlowOptions(SolverType.HELM, verbose=False, robust=False)
-power_flow = PowerFlow(grid, options)
+power_flow = PowerFlowRunnable(grid, options)
 power_flow.run()
 
 print('\n\n', grid.name)

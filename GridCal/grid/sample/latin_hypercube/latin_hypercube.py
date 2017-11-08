@@ -1,8 +1,8 @@
-from GridCal.grid.calculate.power_flow.power_flow import PowerFlowOptions, \
-    PowerFlow
-from GridCal.grid.calculate.time_series.time_series import TimeSeriesResults
+from GridCal.grid.calculate.power_flow.runnable import PowerFlowRunnable
+from GridCal.grid.calculate.power_flow.options import PowerFlowOptions
+from GridCal.grid.calculate.time_series.results import TimeSeriesResults
 from GridCal.grid.model.circuit import MultiCircuit
-from GridCal.grid.sample.monte_carlo.monte_carlo import MonteCarloResults
+from GridCal.grid.sample.monte_carlo.results import MonteCarloResults
 
 
 class LatinHypercubeSampling(QThread):
@@ -40,7 +40,7 @@ class LatinHypercubeSampling(QThread):
         self.__cancel__ = False
 
         # initialize the power flow
-        powerflow = PowerFlow(self.grid, self.options)
+        powerflow = PowerFlowRunnable(self.grid, self.options)
 
         # initialize the grid time series results
         # we will append the island results with another function

@@ -14,13 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-
 import numpy as np
+import os
 import pandas as pd
 
-from GridCal.grid.model.circuit import Branch, Load, ControlledGenerator, Shunt, \
-    MultiCircuit, Bus
+from GridCal.grid.model.circuit import Branch, MultiCircuit, Bus
+from GridCal.grid.model.shunt import Shunt
+from GridCal.grid.model.generator.controlled import \
+    ControlledGenerator
+from GridCal.grid.model.load import Load
 
 
 def find_between(s, first, last):

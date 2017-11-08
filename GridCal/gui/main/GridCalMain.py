@@ -13,17 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
-from collections import OrderedDict
 from multiprocessing import cpu_count
 
+import os.path
+from collections import OrderedDict
 from matplotlib.colors import LinearSegmentedColormap
 
-from GridCal.grid.calculate.power_flow.power_flow import PowerFlowInput
-from GridCal.grid.calculate.short_circuit.short_circuit import ShortCircuit
+from GridCal.grid.calculate.power_flow.input import PowerFlowInput
+from GridCal.grid.calculate.short_circuit.runnable import ShortCircuitRunnable
 from GridCal.grid.calculate.solver_type import SolverType
 from GridCal.grid.plot.params import LEFT, RIGHT, TOP, BOTTOM
-from GridCal.grid.sample.cascading import Cascading
+from GridCal.grid.sample.cascade.thread import CascadingThread
 from GridCal.gui.ConsoleWidget import ConsoleWidget
 from GridCal.version import __GridCal_VERSION__
 
@@ -1093,7 +1093,7 @@ class MainGUI(QMainWindow):
                     self.LOCK()
                     # get the power flow options from the GUI
                     sc_options = ShortCircuitOptions(bus_index=sel_buses)
-                    self.short_circuit = ShortCircuit(self.circuit, sc_options)
+                    self.short_circuit = ShortCircuitRunnable(self.circuit, sc_options)
                     self.short_circuit.run()
 
                     # self.power_flow.start()
@@ -1442,7 +1442,7 @@ class MainGUI(QMainWindow):
                 options = self.get_selected_power_flow_options()
                 options.solver_type = SolverType.LM
                 max_isl = self.ui.cascading_islands_spinBox.value()
-                self.cascade = Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
+                self.cascade = CascadingThread(self.circuit.copy(), options, max_additional_islands=max_isl)
 
             self.cascade.perform_step_run()
 
@@ -1471,7 +1471,7 @@ class MainGUI(QMainWindow):
             # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
 
             max_isl = self.ui.cascading_islands_spinBox.value()
-            self.cascade = Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
+            self.cascade = CascadingThread(self.circuit.copy(), options, max_additional_islands=max_isl)
 
             # connect signals
             self.cascade.progress_signal.connect(self.ui.progressBar.setValue)

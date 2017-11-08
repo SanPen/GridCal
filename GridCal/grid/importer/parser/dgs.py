@@ -22,8 +22,12 @@ import numpy as np
 from numpy import array
 from pandas import DataFrame as df
 
-from GridCal.grid.model.circuit import Branch, Load, StaticGenerator, \
-    ControlledGenerator, Shunt, MultiCircuit, Bus
+from GridCal.grid.model.circuit import Branch, MultiCircuit, Bus
+from GridCal.grid.model.shunt import Shunt
+from GridCal.grid.model.generator.controlled import \
+    ControlledGenerator
+from GridCal.grid.model.generator.static import StaticGenerator
+from GridCal.grid.model.load import Load
 
 pd.set_option('display.height', 1000)
 pd.set_option('display.max_rows', 500)

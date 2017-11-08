@@ -1,8 +1,8 @@
 from matplotlib import pyplot as plt
 from numpy import ones
 
-from GridCal.grid.calculate.power_flow.power_flow import PowerFlowOptions, \
-    PowerFlow
+from GridCal.grid.calculate.power_flow.runnable import PowerFlowRunnable
+from GridCal.grid.calculate.power_flow.options import PowerFlowOptions
 from GridCal.grid.model.circuit import MultiCircuit
 
 
@@ -30,7 +30,7 @@ class Optimize(QThread):
         self.__cancel__ = False
 
         # initialize the power flow
-        self.power_flow = PowerFlow(self.grid, self.options)
+        self.power_flow = PowerFlowRunnable(self.grid, self.options)
 
         self.max_eval = max_iter
         n = len(self.grid.buses)
