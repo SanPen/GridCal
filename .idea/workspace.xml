@@ -1,0 +1,948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="4ff7d8ac-3a54-441d-a962-3b4e88a21457" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/power_flow.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/short_circuit.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/solver_type.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/time_series/time_groups.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/time_series/time_series.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/voltage_collapse/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/voltage_collapse/voltage_collapse.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/import/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/import/define/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/import/parse/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/model/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/model/circuit.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/model/node_type.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/optimize/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/optimize/optimize.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/plot/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/plot/params.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/cascade_type.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/cascading.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/latin_hypercube/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/latin_hypercube/latin_hypercube.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/monte_carlo/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/sample/monte_carlo/monte_carlo.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/statistics/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/grid/statistics/statistics.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/gui/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/gui/main/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/tests/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/tests/matpower_import_test.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GridCal/version.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/requirements.txt" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/LICENSE.md" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/CalculationEngine.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/Example1.dgs" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/Example2.dgs" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/Example3_OPD.dgs" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/Example4.dgs" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/matpower_import_test.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/IEEE_30_new.xlsx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/lynn5buspq.xlsx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/lynn5buspv.xlsx" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Manual_of_GridCal.pdf" afterPath="$PROJECT_DIR$/doc/Manual_of_GridCal.pdf" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Manual_of_GridCal.tex" afterPath="$PROJECT_DIR$/doc/Manual_of_GridCal.tex" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/ClassDiagram.dia" afterPath="$PROJECT_DIR$/doc/Pictures/ClassDiagram.dia" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/ClassDiagram.eps" afterPath="$PROJECT_DIR$/doc/Pictures/ClassDiagram.eps" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/CoefficientsStructure.dia" afterPath="$PROJECT_DIR$/doc/Pictures/CoefficientsStructure.dia" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/CoefficientsStructure.eps" afterPath="$PROJECT_DIR$/doc/Pictures/CoefficientsStructure.eps" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/Matrix_reduction.dia" afterPath="$PROJECT_DIR$/doc/Pictures/Matrix_reduction.dia" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/Matrix_reduction.eps" afterPath="$PROJECT_DIR$/doc/Pictures/Matrix_reduction.eps" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/Settings.png" afterPath="$PROJECT_DIR$/doc/Pictures/Settings.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/chapterhdr1.jpg" afterPath="$PROJECT_DIR$/doc/Pictures/chapterhdr1.jpg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/frontpage.jpg" afterPath="$PROJECT_DIR$/doc/Pictures/frontpage.jpg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/pi-trafo.dia" afterPath="$PROJECT_DIR$/doc/Pictures/pi-trafo.dia" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/pi-trafo.eps" afterPath="$PROJECT_DIR$/doc/Pictures/pi-trafo.eps" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/Pictures/results.png" afterPath="$PROJECT_DIR$/doc/Pictures/results.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/StyleInd.ist" afterPath="$PROJECT_DIR$/doc/StyleInd.ist" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/bibliography.bib" afterPath="$PROJECT_DIR$/doc/bibliography.bib" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal/structure.tex" afterPath="$PROJECT_DIR$/doc/structure.tex" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/Documentation/GridCal_banner.svg" afterPath="$PROJECT_DIR$/pics/GridCal_banner.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/Distribution_grid.dgs" afterPath="$PROJECT_DIR$/grids/dgs/Distribution_grid.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/ExecuteGridCal.py" afterPath="$PROJECT_DIR$/GridCal/ExecuteGridCal.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/__init__.py" afterPath="$PROJECT_DIR$/GridCal/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ContinuationPowerFlow.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/ContinuationPowerFlow.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/DCPF.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/DCPF.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/FastDecoupled.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/FastDecoupled.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/Helm.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/Helm.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/HelmVect.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/HelmVect.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/BranchDefinitions.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/define/branch.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/BusDefinitions.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/define/bus.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/DGS_Parser.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/parse/dgs.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/Example1.dgs" afterPath="$PROJECT_DIR$/grids/dgs/dgs/Example1.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/Example2.dgs" afterPath="$PROJECT_DIR$/grids/dgs/dgs/Example2.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/Example3_OPD.dgs" afterPath="$PROJECT_DIR$/grids/dgs/dgs/Example3_OPD.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/Example4.dgs" afterPath="$PROJECT_DIR$/grids/dgs/dgs/Example4.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/GenDefinitions.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/define/gen.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/PSS_Parser.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/parse/pss.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/StorageDefinitions.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/define/storage.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/__init__.py" afterPath="$PROJECT_DIR$/GridCal/grid/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/IEEE_14.dgs" afterPath="$PROJECT_DIR$/grids/dgs/IEEE_14.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/IEEE_14_bus_results.txt" afterPath="$PROJECT_DIR$/grids/dgs/dgs/IEEE_14_bus_results.txt" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/IEEE_14_edge_results.txt" afterPath="$PROJECT_DIR$/grids/dgs/dgs/IEEE_14_edge_results.txt" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/IEEE_39.dgs" afterPath="$PROJECT_DIR$/grids/dgs/IEEE_39.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/IEEE_39_bus_results.txt" afterPath="$PROJECT_DIR$/grids/dgs/dgs/IEEE_39_bus_results.txt" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/dgs/IEEE_39_edge_results.txt" afterPath="$PROJECT_DIR$/grids/dgs/dgs/IEEE_39_edge_results.txt" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/ImportParsers/matpower_parser.py" afterPath="$PROJECT_DIR$/GridCal/grid/import/parse/matpower.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/JacobianBased.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/JacobianBased.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/SC.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/SC.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/__init__.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/ConsoleWidget.py" afterPath="$PROJECT_DIR$/GridCal/gui/ConsoleWidget.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/GridEditorWidget.py" afterPath="$PROJECT_DIR$/GridCal/gui/GridEditorWidget.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/GuiFunctions.py" afterPath="$PROJECT_DIR$/GridCal/gui/GuiFunctions.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/__init__.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/GridCalMain.py" afterPath="$PROJECT_DIR$/GridCal/gui/main/GridCalMain.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/GridCal_icon.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/GridCal_icon.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/__init__.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/branch_add.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/branch_add.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/branch_del.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/branch_del.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/continuation_power_flow.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/continuation_power_flow.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/create_py_code.bat" afterPath="$PROJECT_DIR$/GridCal/gui/main/create_py_code.bat" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/create_py_code.sh" afterPath="$PROJECT_DIR$/GridCal/gui/main/create_py_code.sh" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/grid_icon.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/grid_icon.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/grid_icon.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/grid_icon.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/gui.py" afterPath="$PROJECT_DIR$/GridCal/gui/main/gui.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/gui.ui" afterPath="$PROJECT_DIR$/GridCal/gui/main/gui.ui" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_add_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_add_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_add_circle_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_add_circle_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_autorenew_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_autorenew_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_border_all_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_border_all_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_clear_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_clear_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_content_copy_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_content_copy_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_content_cut_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_content_cut_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_content_paste_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_content_paste_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_description_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_description_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_dialpad_48px.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_dialpad_48px.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_extension_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_extension_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_file_download_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_file_download_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_file_upload_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_file_upload_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_group_work_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_group_work_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_insert_chart_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_insert_chart_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_insert_drive_file_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_insert_drive_file_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_insert_photo_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_insert_photo_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_memory_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_memory_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_mode_edit_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_mode_edit_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_polymer_48px.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_polymer_48px.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_polymer_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_polymer_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_publish_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_publish_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_remove_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_remove_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_remove_circle_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_remove_circle_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_settings_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_settings_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_trending_down_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_trending_down_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/ic_vertical_align_bottom_black_48dp.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/ic_vertical_align_bottom_black_48dp.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/icons.qrc" afterPath="$PROJECT_DIR$/GridCal/gui/main/icons.qrc" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/icons_rc.py" afterPath="$PROJECT_DIR$/GridCal/gui/main/icons_rc.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/matplotlibwidget.py" afterPath="$PROJECT_DIR$/GridCal/gui/main/matplotlibwidget.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/node_add.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/node_add.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/node_del.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/node_del.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/plot_gridA.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/plot_gridA.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/plot_gridA2.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/plot_gridA2.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/plot_gridB.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/plot_gridB.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/plot_gridB2.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/plot_gridB2.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/powerplant.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/powerplant.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/resize.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/resize.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/stochastic_power_flow.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/stochastic_power_flow.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/substation.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/substation.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/timeseriesicon.png" afterPath="$PROJECT_DIR$/GridCal/gui/main/timeseriesicon.png" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/tower.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/tower.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/main/towertrafo.svg" afterPath="$PROJECT_DIR$/GridCal/gui/main/towertrafo.svg" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/create_py_code.bat" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/create_py_code.bat" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/create_py_code.sh" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/create_py_code.sh" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/excel_dialog.py" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/excel_dialog.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/excel_sheet_selection.py" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/excel_sheet_selection.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/excel_sheet_selection.ui" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/excel_sheet_selection.ui" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/gui.py" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/gui.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/gui.ui" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/gui.ui" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/matplotlibwidget.py" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/matplotlibwidget.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/gui/profiles_input/profile_dialogue.py" afterPath="$PROJECT_DIR$/GridCal/gui/profiles_input/profile_dialogue.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/API_MultiCore_test.py" afterPath="$PROJECT_DIR$/GridCal/tests/API_MultiCore_test.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/API_helm.py" afterPath="$PROJECT_DIR$/GridCal/tests/API_helm.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/API_test.py" afterPath="$PROJECT_DIR$/GridCal/tests/API_test.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/DEMO_5_node.py" afterPath="$PROJECT_DIR$/GridCal/tests/DEMO_5_node.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_14.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/IEEE_14.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_14BUS_results.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_14BUS_results.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_14_test.py" afterPath="$PROJECT_DIR$/GridCal/tests/IEEE_14_test.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_30BUS.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_30BUS.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_30BUS_profiles.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_30BUS_profiles.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_30_new.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/IEEE_30_new.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_39Bus(Islands) - Copy.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_39Bus(Islands) - Copy.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_39Bus(Islands) - most fixed.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_39Bus(Islands) - most fixed.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_39Bus.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_39Bus.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_57BUS.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_57BUS.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_5Bus.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_5Bus.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/IEEE_6wwBus.xls" afterPath="$PROJECT_DIR$/grids/xls/IEEE_6wwBus.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/Illinois200Bus.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/Illinois200Bus.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/Pegasus 89 Bus.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/Pegasus 89 Bus.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/__init__.py" afterPath="$PROJECT_DIR$/GridCal/grid/calculate/time_series/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/case9target.xls" afterPath="$PROJECT_DIR$/grids/xls/case9target.xls" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/demo_5_node_grid.ipynb" afterPath="$PROJECT_DIR$/GridCal/tests/demo_5_node_grid.ipynb" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/download_stats.py" afterPath="$PROJECT_DIR$/GridCal/tests/download_stats.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/lynn5buspq.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/lynn5buspq.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/GridCal/tests/lynn5buspv.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/lynn5buspv.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/IEEE_14.dgs" afterPath="$PROJECT_DIR$/grids/dgs/dgs/IEEE_14.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/IEEE_39.dgs" afterPath="$PROJECT_DIR$/grids/dgs/dgs/IEEE_39.dgs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/LICENSE.txt" afterPath="$PROJECT_DIR$/LICENSE.txt" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/TODO list" afterPath="$PROJECT_DIR$/TODO list" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/Comparison_automation.py" afterPath="$PROJECT_DIR$/scripts/research/Comparison_automation.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/HELM_Wallace.py" afterPath="$PROJECT_DIR$/scripts/research/HELM_Wallace.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/IEEE30.xlsx" afterPath="$PROJECT_DIR$/grids/xlsx/IEEE30.xlsx" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/ZPF.py" afterPath="$PROJECT_DIR$/scripts/research/ZPF.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/continued_fraction.py" afterPath="$PROJECT_DIR$/scripts/research/continued_fraction.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/helm_pq.py" afterPath="$PROJECT_DIR$/scripts/research/helm_pq.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/helm_z_pq.py" afterPath="$PROJECT_DIR$/scripts/research/helm_z_pq.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/helm_z_pv.py" afterPath="$PROJECT_DIR$/scripts/research/helm_z_pv.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/levmar_pf.py" afterPath="$PROJECT_DIR$/scripts/research/levmar_pf.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/research/running_avg_std.py" afterPath="$PROJECT_DIR$/scripts/research/running_avg_std.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/setup.py" afterPath="$PROJECT_DIR$/setup.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/upload_to_pypi.sh" afterPath="$PROJECT_DIR$/scripts/development/upload_to_pypi.sh" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/UnderDevelopment/windows_post_install.py" afterPath="$PROJECT_DIR$/scripts/development/windows_post_install.py" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="Helm.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/Helm.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="6120">
+              <caret line="340" column="0" lean-forward="true" selection-start-line="340" selection-start-column="0" selection-end-line="340" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dgs.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/grid/import/parse/dgs.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="14256">
+              <caret line="799" column="20" lean-forward="false" selection-start-line="799" selection-start-column="20" selection-end-line="799" selection-end-column="20" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GuiFunctions.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/gui/GuiFunctions.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3636">
+              <caret line="204" column="80" lean-forward="false" selection-start-line="204" selection-start-column="80" selection-end-line="204" selection-end-column="80" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="continued_fraction.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/research/continued_fraction.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="450">
+              <caret line="26" column="0" lean-forward="true" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="setup.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1152">
+              <caret line="69" column="44" lean-forward="true" selection-start-line="69" selection-start-column="44" selection-end-line="69" selection-end-column="44" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="short_circuit.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/short_circuit.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3618">
+              <caret line="201" column="19" lean-forward="false" selection-start-line="201" selection-start-column="19" selection-end-line="201" selection-end-column="19" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="power_flow.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/power_flow.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="108">
+              <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GridEditorWidget.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/gui/GridEditorWidget.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="27756">
+              <caret line="1542" column="32" lean-forward="false" selection-start-line="1542" selection-start-column="32" selection-end-line="1542" selection-end-column="32" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="circuit.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GridCal/grid/model/circuit.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="30186">
+              <caret line="1686" column="68" lean-forward="false" selection-start-line="1686" selection-start-column="68" selection-end-line="1686" selection-end-column="68" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cascading.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/GridCal/grid/sample/cascading.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="174">
+              <caret line="70" column="32" lean-forward="false" selection-start-line="70" selection-start-column="32" selection-end-line="70" selection-end-column="32" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>import *</find>
+    </findStrings>
+    <replaceStrings>
+      <replace />
+    </replaceStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/GridCal</dir>
+      <dir>$PROJECT_DIR$/GridCal/</dir>
+    </dirStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/grids/DEMO_5_node.py" />
+        <option value="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/calculation/time_series/time_series.py" />
+        <option value="$PROJECT_DIR$/UnderDevelopment/GridCal/grid/CalculationEngine.py" />
+        <option value="$PROJECT_DIR$/LICENSE.txt" />
+        <option value="$PROJECT_DIR$/GridCal/grid/model/model.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/plot/params.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/CalculationEngine.py" />
+        <option value="$PROJECT_DIR$/GridCal/tests/API_helm.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/sample/monte_carlo/monte_carlo.py" />
+        <option value="$PROJECT_DIR$/GridCal/gui/GuiFunctions.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/calculate/time_series/time_series.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/calculate/voltage_collapse/voltage_collapse.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/sample/cascading.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/statistics/statistics.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/sample/latin_hypercube/latin_hypercube.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/power_flow.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/short_circuit.py" />
+        <option value="$PROJECT_DIR$/scripts/research/continued_fraction.py" />
+        <option value="$PROJECT_DIR$/setup.py" />
+        <option value="$PROJECT_DIR$/GridCal/gui/GridEditorWidget.py" />
+        <option value="$PROJECT_DIR$/GridCal/grid/calculate/power_flow/Helm.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="y" value="27" />
+    <option name="width" value="1680" />
+    <option name="height" value="970" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>PyCompatibilityInspection</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="GridCal" type="b2602c69:ProjectViewProjectNode" />
+              <item name="GridCal" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="GridCal" type="b2602c69:ProjectViewProjectNode" />
+              <item name="GridCal" type="462c0819:PsiDirectoryNode" />
+              <item name="grids" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="GridCal" type="b2602c69:ProjectViewProjectNode" />
+              <item name="GridCal" type="462c0819:PsiDirectoryNode" />
+              <item name="grids" type="462c0819:PsiDirectoryNode" />
+              <item name="dgs" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="GridCal" type="b2602c69:ProjectViewProjectNode" />
+              <item name="GridCal" type="462c0819:PsiDirectoryNode" />
+              <item name="grids" type="462c0819:PsiDirectoryNode" />
+              <item name="dgs" type="462c0819:PsiDirectoryNode" />
+              <item name="dgs" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/grids/dgs" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/grids/dgs" />
+      <recent name="$PROJECT_DIR$/GridCal" />
+      <recent name="$PROJECT_DIR$/GridCal/grid/sample" />
+      <recent name="$PROJECT_DIR$/GridCal/grid/calculate/power_flow" />
+      <recent name="$PROJECT_DIR$/GridCal/grid/calculate/short_circuit" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.DEMO_5_node">
+    <configuration name="DEMO_5_node" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/grids" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="GridCal" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/grids/DEMO_5_node.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
+    <recent_temporary>
+      <list size="1">
+        <item index="0" class="java.lang.String" itemvalue="Python.DEMO_5_node" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4ff7d8ac-3a54-441d-a962-3b4e88a21457" name="Default" comment="" />
+      <created>1509032145902</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1509032145902</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="27" width="1680" height="970" extended-state="6" />
+    <layout>
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27512255" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32889965" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32965687" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection Results" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32889965" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32889965" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/GridCal" />
+    </ignored-roots>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="4" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/GridCal/ExecuteGridCal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/matpower_import_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/IEEE_14_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/demo_5_node_grid.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/download_stats.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/DEMO_5_node.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/API_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/API_MultiCore_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/tests/API_helm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="277">
+          <caret line="17" column="0" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/ConsoleWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/profiles_input/excel_sheet_selection.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/profiles_input/excel_dialog.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/sample/cascade_type.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/model/node_type.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/parse/matpower.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/define/storage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" column="46" lean-forward="true" selection-start-line="10" selection-start-column="46" selection-end-line="10" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/define/gen.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/define/bus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/define/branch.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="26" column="54" lean-forward="false" selection-start-line="26" selection-start-column="54" selection-end-line="26" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/solver_type.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/time_series/time_groups.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/SC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/HelmVect.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/FastDecoupled.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/DCPF.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/ContinuationPowerFlow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/JacobianBased.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/plot/params.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/main/icons_rc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="8" column="8" lean-forward="false" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/profiles_input/matplotlibwidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/parse/pss.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="174">
+          <caret line="15" column="7" lean-forward="false" selection-start-line="15" selection-start-column="7" selection-end-line="15" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/main/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/sample/monte_carlo/monte_carlo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="15" column="0" lean-forward="false" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/profiles_input/profile_dialogue.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="7" column="8" lean-forward="false" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/profiles_input/gui.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="155">
+          <caret line="9" column="5" lean-forward="false" selection-start-line="9" selection-start-column="5" selection-end-line="9" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/time_series/time_series.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="395">
+          <caret line="474" column="24" lean-forward="false" selection-start-line="474" selection-start-column="24" selection-end-line="474" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/voltage_collapse/voltage_collapse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/statistics/statistics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="346" column="38" lean-forward="false" selection-start-line="346" selection-start-column="38" selection-end-line="346" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/optimize/optimize.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="20" column="12" lean-forward="false" selection-start-line="20" selection-start-column="12" selection-end-line="20" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/sample/latin_hypercube/latin_hypercube.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="55" column="32" lean-forward="false" selection-start-line="55" selection-start-column="32" selection-end-line="55" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/short_circuit/short_circuit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3618">
+          <caret line="201" column="19" lean-forward="false" selection-start-line="201" selection-start-column="19" selection-end-line="201" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/power_flow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/GuiFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3636">
+          <caret line="204" column="80" lean-forward="false" selection-start-line="204" selection-start-column="80" selection-end-line="204" selection-end-column="80" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/research/continued_fraction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="26" column="0" lean-forward="true" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1152">
+          <caret line="69" column="44" lean-forward="true" selection-start-line="69" selection-start-column="44" selection-end-line="69" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/calculate/power_flow/Helm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6120">
+          <caret line="340" column="0" lean-forward="true" selection-start-line="340" selection-start-column="0" selection-end-line="340" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/import/parse/dgs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="14256">
+          <caret line="799" column="20" lean-forward="false" selection-start-line="799" selection-start-column="20" selection-end-line="799" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/gui/GridEditorWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="27756">
+          <caret line="1542" column="32" lean-forward="false" selection-start-line="1542" selection-start-column="32" selection-end-line="1542" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/model/circuit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30186">
+          <caret line="1686" column="68" lean-forward="false" selection-start-line="1686" selection-start-column="68" selection-end-line="1686" selection-end-column="68" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GridCal/grid/sample/cascading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="174">
+          <caret line="70" column="32" lean-forward="false" selection-start-line="70" selection-start-column="32" selection-end-line="70" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>
