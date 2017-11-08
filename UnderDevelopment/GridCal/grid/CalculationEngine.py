@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.75
+__GridCal_VERSION__ = 1.76
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -25,6 +25,7 @@ from GridCal.grid.SC import short_circuit_3p
 import os
 from enum import Enum
 from warnings import warn
+import json
 import networkx as nx
 import pandas as pd
 import pickle as pkl
@@ -2652,6 +2653,27 @@ class MultiCircuit(Circuit):
         writer = pd.ExcelWriter(file_path)
         for key in dfs.keys():
             dfs[key].to_excel(writer, key)
+
+        writer.save()
+
+    def save_calculation_objects(self, file_path):
+        """
+        Save all the calculation objects of all the grids
+        Args:
+            file_path: path to file
+
+        Returns:
+
+        """
+        writer = pd.ExcelWriter(file_path)
+
+        for c, circuit in enumerate(self.circuits):
+
+            for elm_type in circuit.power_flow_input.available_structures:
+
+                name = elm_type + '_' + str(c)
+                df = circuit.power_flow_input.get_structure(elm_type).astype(str)
+                df.to_excel(writer, name)
 
         writer.save()
 

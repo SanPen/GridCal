@@ -769,7 +769,7 @@ class MainGUI(QMainWindow):
             self.circuit.compile()
 
         # declare the allowed file types
-        files_types = "Numpy zipped file (*.npz)"
+        files_types = "Excel file (*.xlsx)"
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -781,8 +781,11 @@ class MainGUI(QMainWindow):
 
         filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
+        if not filename.endswith('.xlsx'):
+            filename += '.xlsx'
+
         if filename is not "":
-            pass
+            self.circuit.save_calculation_objects(file_path=filename)
 
     def export_diagram(self):
         """
