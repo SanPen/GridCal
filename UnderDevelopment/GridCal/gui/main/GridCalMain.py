@@ -781,10 +781,9 @@ class MainGUI(QMainWindow):
 
         filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
-        if not filename.endswith('.xlsx'):
-            filename += '.xlsx'
-
         if filename is not "":
+            if not filename.endswith('.xlsx'):
+                filename += '.xlsx'
             self.circuit.save_calculation_objects(file_path=filename)
 
     def export_diagram(self):
@@ -1513,7 +1512,7 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
                                    types=self.circuit.power_flow_input.types,
-                                   s_branch=results.Sbranch,
+                                   s_branch=results.sbranch,
                                    s_bus=None,
                                    failed_br_idx=br_idx)
 
