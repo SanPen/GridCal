@@ -1238,11 +1238,16 @@ class Load:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'bus', 'Z', 'I', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S']
 
-        self.units = ['', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
+        self.units = ['', '', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
 
-        self.edit_types = {'name': str, 'bus': None, 'Z': complex, 'I': complex, 'S': complex}
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'active':bool,
+                           'Z': complex,
+                           'I': complex,
+                           'S': complex}
 
     def create_profiles(self, index):
         """
@@ -1377,11 +1382,14 @@ class StaticGenerator:
         # power profile for this load
         self.Sprof = power_prof
 
-        self.edit_headers = ['name', 'bus', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'S']
 
-        self.units = ['', '', 'MVA']
+        self.units = ['', '', '', 'MVA']
 
-        self.edit_types = {'name': str,  'bus': None,  'S': complex}
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'active':bool,
+                           'S': complex}
 
     def copy(self):
         """
@@ -1492,12 +1500,13 @@ class Battery:
         # Nominal energy MWh
         self.Enom = Enom
 
-        self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
 
-        self.units = ['', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
+                           'active':bool,
                            'P': float,
                            'Vset': float,
                            'Snom': float,
@@ -1652,12 +1661,13 @@ class ControlledGenerator:
         # Nominal power
         self.Snom = Snom
 
-        self.edit_headers = ['name', 'bus', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
 
-        self.units = ['', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
+                           'active':bool,
                            'P': float,
                            'Vset': float,
                            'Snom': float,
@@ -1787,11 +1797,14 @@ class Shunt:
         # admittance profile
         self.Yprof = admittance_prof
 
-        self.edit_headers = ['name', 'bus', 'Y']
+        self.edit_headers = ['name', 'bus', 'active', 'Y']
 
-        self.units = ['', '', 'MVA']  # MVA at 1 p.u.
+        self.units = ['', '', '', 'MVA']  # MVA at 1 p.u.
 
-        self.edit_types = {'name': str,   'bus': None, 'Y': complex}
+        self.edit_types = {'name': str,
+                           'active':bool,
+                           'bus': None,
+                           'Y': complex}
 
     def copy(self):
 
@@ -3860,23 +3873,27 @@ class PowerFlow(QRunnable):
                                 V = Vhelm
 
                 # Check controls
-                Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
-                                                                             Vset=abs(V),
-                                                                             Q=Scalc.imag,
-                                                                             Qmax=circuit.power_flow_input.Qmax,
-                                                                             Qmin=circuit.power_flow_input.Qmin,
-                                                                             types=circuit.power_flow_input.types,
-                                                                             original_types=original_types,
-                                                                             verbose=self.options.verbose)
-                if any_control_issue:
-                    V = Vnew
-                    Sbus = Sbus.real + 1j * Qnew
-                    circuit.power_flow_input.compile_types(types_new)
+                if self.options.control_Q:
+                    Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
+                                                                                 Vset=abs(V),
+                                                                                 Q=Scalc.imag,
+                                                                                 Qmax=circuit.power_flow_input.Qmax,
+                                                                                 Qmin=circuit.power_flow_input.Qmin,
+                                                                                 types=circuit.power_flow_input.types,
+                                                                                 original_types=original_types,
+                                                                                 verbose=self.options.verbose)
+                    if any_control_issue:
+                        V = Vnew
+                        Sbus = Sbus.real + 1j * Qnew
+                        circuit.power_flow_input.compile_types(types_new)
+                    else:
+                        if self.options.verbose:
+                            print('Controls Ok')
                 else:
-                    if self.options.verbose:
-                        print('Controls Ok')
+                    # did not check Q limits
+                    any_control_issue = False
 
-            # # increment the inner iterations counter
+            # increment the inner iterations counter
             inner_it.append(it)
 
             # increment the outer control iterations counter
