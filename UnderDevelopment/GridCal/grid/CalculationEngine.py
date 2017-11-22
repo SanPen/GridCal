@@ -1355,7 +1355,7 @@ class Load:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, str(self.Z), str(self.I), str(self.S)]
+        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S)]
 
 
 class StaticGenerator:
@@ -1407,7 +1407,7 @@ class StaticGenerator:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, str(self.S)]
+        return [self.name, self.bus.name, self.active, str(self.S)]
 
     def create_profiles(self, index):
         """
@@ -1713,7 +1713,7 @@ class ControlledGenerator:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
 
     def create_profiles(self, index):
         """
@@ -1830,7 +1830,7 @@ class Shunt:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, str(self.Y)]
+        return [self.name, self.bus.name, self.active, str(self.Y)]
 
     def create_profiles(self, index):
         """
