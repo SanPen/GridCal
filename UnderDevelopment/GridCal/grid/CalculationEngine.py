@@ -2136,7 +2136,10 @@ class Circuit:
         @param batch_size: size of the batch (integer)
         @return:
         """
-        self.mc_time_series = self.monte_carlo_input(batch_size, use_latin_hypercube)
+        if self.monte_carlo_input is not None:
+            self.mc_time_series = self.monte_carlo_input(batch_size, use_latin_hypercube)
+        else:
+            raise Exception('self.monte_carlo_input is None')
 
     def sample_at(self, x):
         """
@@ -2259,7 +2262,7 @@ class MultiCircuit(Circuit):
         """
         if os.path.exists(filename):
             name, file_extension = os.path.splitext(filename)
-            print(name, file_extension)
+            # print(name, file_extension)
             if file_extension == '.xls' or file_extension == '.xlsx':
                 ppc = load_from_xls(filename)
 
@@ -2307,7 +2310,7 @@ class MultiCircuit(Circuit):
         Returns: Nothing, just applies the loaded data to this MultiCircuit instance
 
         """
-        print('Interpreting V2 data...')
+        # print('Interpreting V2 data...')
 
         # clear all the data
         self.clear()
@@ -2501,11 +2504,7 @@ class MultiCircuit(Circuit):
             obj.bus = bus
             bus.shunts.append(obj)
 
-        print('Done!')
-
-        # ['branch', 'load_Zprof', 'version', 'CtrlGen_Vset_profiles', 'CtrlGen_P_profiles', 'basekA',
-        #                   'baseMVA', 'load_Iprof', 'battery', 'load', 'bus', 'shunt', 'controlled_generator',
-        #                   'load_Sprof', 'static_generator']
+        # print('Done!')
 
     def save_file(self, file_path):
         """
@@ -2759,7 +2758,7 @@ class MultiCircuit(Circuit):
 
             isl_idx += 1
 
-        print(islands)
+        # print(islands)
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -3255,7 +3254,7 @@ class PowerFlowInput:
             else:  # select the first PV generator as the slack
                 mx = max(self.Sbus)
                 i = where(self.Sbus == mx)[0]
-                print('Setting the bus ' + str(i) + ' as slack instead of pv')
+                # print('Setting the bus ' + str(i) + ' as slack instead of pv')
                 self.pv = delete(self.pv, i)
                 self.ref = [i]
             self.ref = ndarray.flatten(array(self.ref))
@@ -3720,6 +3719,7 @@ class PowerFlow(QRunnable):
                 print('\tQmin:', circuit.power_flow_input.Qmin[pv])
                 print('\tQgen:', Qgen[pv])
                 print('\tQmax:', circuit.power_flow_input.Qmax[pv])
+
             return fev
 
         x0 = ones(len(pv))  # starting solution for the iteration
@@ -3949,10 +3949,6 @@ class PowerFlow(QRunnable):
                                    elapsed=elapsed,
                                    methods=methods)
 
-        # # check the limits
-        # sum_dev = results.check_limits(circuit.power_flow_input)
-        # print('dev sum: ', sum_dev)
-
         return results
 
     @staticmethod
@@ -3970,7 +3966,7 @@ class PowerFlow(QRunnable):
         losses = (Sf + St) * circuit.Sbase  # Branch losses in MVA
         Ibranch = maximum(If, It)  # Branch current in p.u.
         Sbranch = maximum(Sf, St) * circuit.Sbase  # Branch power in MVA
-        loading = Sbranch / circuit.power_flow_input.branch_rates  # Branch loading in p.u.
+        loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)  # Branch loading in p.u.
 
         # idx = where(abs(loading) == inf)[0]
         # loading[idx] = 9999
@@ -4111,14 +4107,16 @@ class PowerFlow(QRunnable):
         Run a power flow for every circuit
         @return:
         """
-        print('PowerFlow at ', self.grid.name)
+        # print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         results = PowerFlowResults()
         results.initialize(n, m)
         # self.progress_signal.emit(0.0)
+
         k = 0
         for circuit in self.grid.circuits:
+
             if self.options.verbose:
                 print('Solving ' + circuit.name)
 
@@ -4164,8 +4162,6 @@ class PowerFlow(QRunnable):
                                                            circuit.bus_original_idx,
                                                            circuit.branch_original_idx)
 
-            # prog = (i / len(self.grid.circuits)) * 100
-            # self.progress_signal.emit(prog)
             i += 1
 
         # check the limits
@@ -4435,10 +4431,6 @@ class ShortCircuit(QRunnable):
                                       converged=True,
                                       Qpv=None)
 
-        # # check the limits
-        # sum_dev = results.check_limits(circuit.power_flow_input)
-        # print('dev sum: ', sum_dev)
-
         return results
 
     @staticmethod
@@ -4468,7 +4460,7 @@ class ShortCircuit(QRunnable):
         Run a power flow for every circuit
         @return:
         """
-        print('Short circuit at ', self.grid.name)
+        # print('Short circuit at ', self.grid.name)
         # self.progress_signal.emit(0.0)
 
         n = len(self.grid.buses)
@@ -4489,9 +4481,6 @@ class ShortCircuit(QRunnable):
 
         self.results = results
         self.grid.short_circuit_results = results
-
-        # self.progress_signal.emit(0.0)
-        # self.done_signal.emit()
 
     def cancel(self):
         self.__cancel__ = True
@@ -5191,6 +5180,7 @@ class VoltageCollapse(QThread):
         self.results = VoltageCollapseResults(nbus=nbus)
 
         for nc, c in enumerate(self.grid.circuits):
+
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
             Voltage_series, Lambda_series, \
@@ -5386,7 +5376,6 @@ class MonteCarlo(QThread):
 
                 # run the time series
                 for t in range(batch_size):
-                    # print(t + 1, ' / ', batch_size)
                     # set the power values
                     Y, I, S = c.mc_time_series.get_at(t)
 
@@ -5416,9 +5405,9 @@ class MonteCarlo(QThread):
                 std_dev_progress = 100
             self.progress_signal.emit(max((std_dev_progress, it / max_mc_iter * 100)))
 
-            print(iter, '/', max_mc_iter)
+            # print(iter, '/', max_mc_iter)
             # print('Vmc:', Vavg)
-            print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
+            # print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
 
         # compile results
         self.progress_text.emit('Compiling results...')
@@ -5761,7 +5750,7 @@ class LatinHypercubeSampling(QThread):
         Run the monte carlo simulation
         @return:
         """
-        print('LHS run')
+        # print('LHS run')
         self.__cancel__ = False
 
         # initialize the power flow
@@ -5786,26 +5775,29 @@ class LatinHypercubeSampling(QThread):
         # For every circuit, run the time series
         for c in self.grid.circuits:
 
-            # set the time series as sampled
-            c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
+            try:
+                # set the time series as sampled
+                c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
 
-            # run the time series
-            for t in range(batch_size):
-                # print(t + 1, ' / ', batch_size)
-                # set the power values
-                Y, I, S = c.mc_time_series.get_at(t)
+                # run the time series
+                for t in range(batch_size):
 
-                res = powerflow.run_at(t, mc=True)
-                lhs_results.S_points[t, c.bus_original_idx] = S
-                lhs_results.V_points[t, c.bus_original_idx] = res.voltage[c.bus_original_idx]
-                lhs_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
-                lhs_results.loading_points[t, c.branch_original_idx] = res.loading[c.branch_original_idx]
+                    # set the power values
+                    Y, I, S = c.mc_time_series.get_at(t)
 
-                it += 1
-                self.progress_signal.emit(it / max_iter * 100)
+                    res = powerflow.run_at(t, mc=True)
+                    lhs_results.S_points[t, c.bus_original_idx] = S
+                    lhs_results.V_points[t, c.bus_original_idx] = res.voltage[c.bus_original_idx]
+                    lhs_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
+                    lhs_results.loading_points[t, c.branch_original_idx] = res.loading[c.branch_original_idx]
 
-                if self.__cancel__:
-                    break
+                    it += 1
+                    self.progress_signal.emit(it / max_iter * 100)
+
+                    if self.__cancel__:
+                        break
+            except Exception as ex:
+                print(c.name, ex)
 
             if self.__cancel__:
                 break
@@ -5815,8 +5807,8 @@ class LatinHypercubeSampling(QThread):
         lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch, Ibranch, loading, lhs_results.losses = powerflow.compute_branch_results(self.grid,
-                                                                                                     lhs_results.voltage)
+        lhs_results.sbranch, Ibranch, \
+        loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
 
@@ -5895,7 +5887,7 @@ class Cascading(QThread):
                 idx = where(load >= load.max())[0]
 
         # disable the selected branches
-        print('Removing:', idx, load[idx])
+        # print('Removing:', idx, load[idx])
 
         for i in idx:
             circuit.branches[i].active = False
@@ -5940,7 +5932,7 @@ class Cascading(QThread):
         # increase the step number
         self.current_step += 1
 
-        print(model_simulator.results.get_convergence_report())
+        # print(model_simulator.results.get_convergence_report())
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -5977,7 +5969,7 @@ class Cascading(QThread):
         if n_grids > len(self.grid.buses):  # safety check
             n_grids = len(self.grid.buses) - 1
 
-        print('n grids: ', n_grids)
+        # print('n grids: ', n_grids)
 
         it = 0
         while len(self.grid.circuits) <= n_grids and it <= n_grids:
@@ -6114,7 +6106,7 @@ class Optimize(QThread):
         # self.progress_signal.emit(prog)
 
         f = abs(self.results.V_points[self.it - 1, :].sum()) / self.dim
-        print(prog, ' % \t', f)
+        # print(prog, ' % \t', f)
 
         return f
 

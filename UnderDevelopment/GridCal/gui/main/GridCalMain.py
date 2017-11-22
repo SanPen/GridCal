@@ -242,7 +242,11 @@ class MainGUI(QMainWindow):
 
         # push some variables to the console
         self.console.push_vars({"hlp": self.print_console_help,
-                                "np": np, "pd": pd, "plt": plt, "clc": self.clc, 'app': self})
+                                "np": np,
+                                "pd": pd,
+                                "plt": plt,
+                                "clc": self.clc,
+                                'app': self})
 
         ################################################################################################################
         # Connections
@@ -647,7 +651,7 @@ class MainGUI(QMainWindow):
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-                print('New')
+                # print('New')
                 self.circuit = MultiCircuit()
 
                 self.grid_editor = GridEditor(self.circuit)
@@ -699,7 +703,7 @@ class MainGUI(QMainWindow):
 
             # store the working directory
             self.project_directory = os.path.dirname(filename)
-            print(filename)
+            # print(filename)
             self.circuit = MultiCircuit()
 
             self.ui.progress_label.setText('Loading file...')
@@ -716,7 +720,7 @@ class MainGUI(QMainWindow):
             self.compile()
 
             if self.circuit.time_profile is not None:
-                print('Profiles available')
+                # print('Profiles available')
                 mdl = get_list_model(self.circuit.time_profile)
             else:
                 mdl = QStandardItemModel()
@@ -916,12 +920,12 @@ class MainGUI(QMainWindow):
         Create new profiles structure
         :return:
         """
-        print('new_profiles_structure')
+        # print('new_profiles_structure')
 
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
             steps, step_length, step_unit, time_base = dlg.get_values()
-            print(steps, step_length, step_unit, time_base)
+            # print(steps, step_length, step_unit, time_base)
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
             self.compile()
 
@@ -939,7 +943,7 @@ class MainGUI(QMainWindow):
         Display profile
         """
         if self.circuit.time_profile is not None:
-            print('display_profiles')
+            # print('display_profiles')
 
             dev_type = self.ui.profile_device_type_comboBox.currentText()
 
@@ -1035,11 +1039,11 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        print('Post power flow')
+        # print('Post power flow')
         if self.circuit.power_flow_results is not None:
-            print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
-            print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
-            print('ld:\n', abs(self.circuit.power_flow_results.loading))
+            # print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
+            # print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
+            # print('ld:\n', abs(self.circuit.power_flow_results.loading))
 
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -1112,11 +1116,11 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        print('Post short circuit')
+        # print('Post short circuit')
         if self.circuit.power_flow_results is not None:
-            print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
-            print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
-            print('ld:\n', abs(self.circuit.short_circuit_results.loading))
+            # print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
+            # print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
+            # print('ld:\n', abs(self.circuit.short_circuit_results.loading))
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -1295,10 +1299,10 @@ class MainGUI(QMainWindow):
         """
 
         if self.circuit.time_series_results is not None:
-            print('\n\nVoltages:\n')
-            print(self.circuit.time_series_results.voltage)
-            print(self.circuit.time_series_results.converged)
-            print(self.circuit.time_series_results.error)
+            # print('\n\nVoltages:\n')
+            # print(self.circuit.time_series_results.voltage)
+            # print(self.circuit.time_series_results.converged)
+            # print(self.circuit.time_series_results.error)
 
             # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
             # show()
@@ -1350,11 +1354,11 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        print('post_stochastic')
+        # print('post_stochastic')
         # update the results in the circuit structures
-        print('Vbus:\n', abs(self.monte_carlo.results.voltage))
-        print('Ibr:\n', abs(self.monte_carlo.results.current))
-        print('ld:\n', abs(self.monte_carlo.results.loading))
+        # print('Vbus:\n', abs(self.monte_carlo.results.voltage))
+        # print('Ibr:\n', abs(self.monte_carlo.results.current))
+        # print('ld:\n', abs(self.monte_carlo.results.loading))
 
         self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
                                loadings=self.monte_carlo.results.loading,
@@ -1402,11 +1406,11 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        print('post_lhs')
+        # print('post_lhs')
         # update the results in the circuit structures
-        print('Vbus:\n', abs(self.latin_hypercube_sampling.results.voltage))
-        print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
-        print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
+        # print('Vbus:\n', abs(self.latin_hypercube_sampling.results.voltage))
+        # print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
+        # print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
 
         self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
                                loadings=self.latin_hypercube_sampling.results.loading,
@@ -1455,7 +1459,7 @@ class MainGUI(QMainWindow):
         Run a Monte Carlo simulation
         @return:
         """
-        print('run_cascade')
+        # print('run_cascade')
 
         if len(self.circuit.buses) > 0:
 
@@ -1490,7 +1494,7 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        print('post_lhs')
+        # print('post_lhs')
         # update the results in the circuit structures
 
         n = len(self.cascade.report)
@@ -1507,7 +1511,7 @@ class MainGUI(QMainWindow):
 
             # print('Vbus:\n', abs(results.voltage))
             # print('ld:\n', abs(results.loading))
-            print('Removed at ', idx, ':\n', br_idx)
+            # print('Removed at ', idx, ':\n', br_idx)
 
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
@@ -1742,7 +1746,7 @@ class MainGUI(QMainWindow):
         col = idx.column()
         if mdl is not None:
             if col > -1:
-                print(idx.row(), idx.column())
+                # print(idx.row(), idx.column())
                 mdl.copy_to_column(idx)
 
 
