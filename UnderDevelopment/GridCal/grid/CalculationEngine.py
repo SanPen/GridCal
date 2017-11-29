@@ -25,7 +25,6 @@ from GridCal.grid.SC import short_circuit_3p
 import os
 from enum import Enum
 from warnings import warn
-import json
 import networkx as nx
 import pandas as pd
 import pickle as pkl
@@ -5061,6 +5060,7 @@ class VoltageCollapseOptions:
 
 
 class VoltageCollapseInput:
+
     def __init__(self, Sbase, Vbase, Starget):
         """
         VoltageCollapseInput constructor
