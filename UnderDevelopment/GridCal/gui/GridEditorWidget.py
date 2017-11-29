@@ -1230,8 +1230,8 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         self.min_w = 60.0
         self.min_h = 60.0
-        self.h = self.min_h
-        self.w = self.min_w
+        self.h = bus.h if bus.h >= self.min_h else self.min_h
+        self.w = bus.w if bus.w >= self.min_w else self.min_w
 
         self.api_object = bus
 
@@ -1265,7 +1265,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         # Create corner for resize:
         self.sizer = HandleItem(self)
-        self.sizer.setPos(self.min_w, self.min_h)
+        self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
 
         self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
@@ -1283,7 +1283,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.terminals = self.upper_terminals + self.lower_terminals + self.right_terminals + self.left_terminals
 
         # Update size:
-        self.change_size(self.min_w, self.min_h)
+        self.change_size(self.w, self.h)
 
     def change_size(self, w, h):
         """

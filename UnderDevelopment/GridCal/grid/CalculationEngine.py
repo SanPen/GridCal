@@ -478,7 +478,7 @@ def load_from_xls(filename):
 
 class Bus:
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, active=True):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0, active=True):
         """
         Bus  constructor
         """
@@ -533,11 +533,15 @@ class Bus:
 
         self.y = ypos
 
+        self.h = height
+
+        self.w = width
+
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y']
+        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w']
 
-        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', '', '']
+        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px']
 
         self.edit_types = {'name': str,
                            'active': bool,
@@ -547,7 +551,9 @@ class Bus:
                            'Vmax': float,
                            'Zf': complex,
                            'x': float,
-                           'y': float}
+                           'y': float,
+                           'h': float,
+                           'w': float}
 
     def determine_bus_type(self):
         """
@@ -809,6 +815,10 @@ class Bus:
 
         bus.y = self.y
 
+        bus.h = self.h
+
+        bus.w = self.w
+
         # self.graphic_obj = None
 
         return bus
@@ -819,7 +829,8 @@ class Bus:
         :return:
         """
         self.retrieve_graphic_position()
-        return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf, self.x, self.y]
+        return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
+                self.x, self.y, self.h, self.w]
 
     def set_state(self, t):
         """
@@ -854,6 +865,8 @@ class Bus:
         if self.graphic_obj is not None:
             self.x = self.graphic_obj.pos().x()
             self.y = self.graphic_obj.pos().y()
+            self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
+
 
 
 class TransformerType:
