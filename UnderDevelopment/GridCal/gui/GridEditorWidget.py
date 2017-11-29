@@ -2062,13 +2062,13 @@ class GridEditor(QSplitter):
 
         self.center_nodes()
 
-    def export(self, filename):
+    def export(self, filename, w=1920, h=1080):
         """
         Save the grid to a png file
         :return:
         """
 
-        image = QImage(1024, 768, QImage.Format_ARGB32_Premultiplied)
+        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
         image.fill(Qt.transparent)
         painter = QPainter(image)
         painter.setRenderHint(QPainter.Antialiasing)

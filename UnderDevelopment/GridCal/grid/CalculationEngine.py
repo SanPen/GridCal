@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.77
+__GridCal_VERSION__ = 1.78
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
