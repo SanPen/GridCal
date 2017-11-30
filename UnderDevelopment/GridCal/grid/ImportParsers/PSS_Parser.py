@@ -217,6 +217,14 @@ class PSSeBus:
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True)
 
+            if self.GL > 0 or self.BL > 0:
+                sh = Shunt(name='Shunt_' + self.ID,
+                           admittance=complex(self.GL, self.BL),
+                           admittance_prof=None,
+                           active=True)
+
+                self.bus.shunts.append(sh)
+
         # set type
         self.bus.type = bustype[self.IDE]
 
@@ -1030,9 +1038,23 @@ class PSSeTransformer:
         if version == 33:
 
             # Line 1: for both types
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-             self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
-             self.VECGRP = data[0]
+
+            if len(data[0]) == 20:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
+                 self.VECGRP = data[0]
+            elif len(data[0]) == 18:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.VECGRP = data[0]
+            elif len(data[0]) == 16:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.VECGRP = data[0]
+            elif len(data[0]) == 14:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.VECGRP = data[0]
+            elif len(data[0]) == 12:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.VECGRP = data[0]
 
             # line 2
             if len(data[1]) == 3:

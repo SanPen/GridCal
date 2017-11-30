@@ -811,7 +811,10 @@ class MainGUI(QMainWindow):
                 if file_extension == '':
                     filename = name + extension[type_selected]
 
-                self.grid_editor.export(filename)
+                # save in 10K
+                w = 1920 * 10
+                h = 1080 * 10
+                self.grid_editor.export(filename, w, h)
 
     def create_schematic_from_api(self, explode_factor=1):
         """
