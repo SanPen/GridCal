@@ -195,14 +195,16 @@ class PSSeBus:
              self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = data[0]
 
             # create bus
-            self.bus = Bus(name=self.NAME, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True)
+            name = str(self.I) + '_' + self.NAME
+            self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True)
 
         elif version == 32:
 
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, self.OWNER, self.VM, self.VA = data[0]
 
             # create bus
-            self.bus = Bus(name=self.NAME, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+            name = str(self.I) + '_' + self.NAME
+            self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True)
 
         elif version == 30:
@@ -211,7 +213,8 @@ class PSSeBus:
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
             # create bus
-            self.bus = Bus(name=self.NAME, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+            name = str(self.I) + '_' + self.NAME
+            self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True)
 
         # set type

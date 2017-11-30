@@ -2068,7 +2068,7 @@ class GridEditor(QSplitter):
         :return:
         """
 
-        image = QImage(1024, 768, QImage.Format_ARGB32_Premultiplied)
+        image = QImage(1024 * 16, 768 * 16, QImage.Format_ARGB32_Premultiplied)
         image.fill(Qt.transparent)
         painter = QPainter(image)
         painter.setRenderHint(QPainter.Antialiasing)
