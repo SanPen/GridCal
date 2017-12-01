@@ -10,9 +10,24 @@ from GridCal.grid.JacobianBased import dSbus_dV, Jacobian
 from warnings import warn
 
 
-
-
 def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
+    """
+    Computes the value of the CPF parameterization function.
+    Args:
+        parameterization: Value of parameterization option
+        step: continuation step size
+        z: normalized tangent prediction vector from previous step
+        V: complex bus voltage vector at current solution
+        lam: scalar lambda value at current solution
+        Vprv: complex bus voltage vector at previous solution
+        lamprv: scalar lambda value at previous solution
+        pv: vector of indices of PV buses
+        pq: vector of indices of PQ buses
+        pvpq: vector of indices of PQ and PV buses
+
+    Returns:
+        value of the parameterization function at the current point
+    """
     """
     #CPF_P Computes the value of the CPF parameterization function.
     #
@@ -81,6 +96,23 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
 
 def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     """
+    Computes partial derivatives of CPF parameterization function.
+    Args:
+        parameterization:
+        z: normalized tangent prediction vector from previous step
+        V: complex bus voltage vector at current solution
+        lam: scalar lambda value at current solution
+        Vprv: complex bus voltage vector at previous solution
+        lamprv: scalar lambda value at previous solution
+        pv: vector of indices of PV buses
+        pq: vector of indices of PQ buses
+        pvpq: vector of indices of PQ and PV buses
+
+    Returns:
+        DP_DV : partial of parameterization function w.r.t. voltages
+        DP_DLAM : partial of parameterization function w.r.t. lambda
+    """
+    """
     #CPF_P_JAC Computes partial derivatives of CPF parameterization function.
     #
     #   [DP_DV, DP_DLAM ] = CPF_P_JAC(PARAMETERIZATION, Z, V, LAM, ...
@@ -146,6 +178,51 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
 
 
 def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose):
+    """
+    Solves the corrector step of a continuation power flow using a full Newton method
+    with selected parameterization scheme.
+
+    solves for bus voltages and lambda given the full system admittance
+    matrix (for all buses), the complex bus power injection vector (for
+    all buses), the initial vector of complex bus voltages, and column
+    vectors with the lists of bus indices for the swing bus, PV buses, and
+    PQ buses, respectively. The bus voltage vector contains the set point
+    for generator (including ref bus) buses, and the reference angle of the
+    swing bus, as well as an initial guess for remaining magnitudes and
+    angles.
+
+     Uses default options if this parameter is not given. Returns the
+     final complex voltages, a flag which indicates whether it converged or not,
+     the number of iterations performed, and the final lambda.
+
+     The extra continuation inputs are LAM0 (initial predicted lambda),
+     SXFR ([delP+j*delQ] transfer/loading vector for all buses), VPRV
+     (final complex V corrector solution from previous continuation step),
+     LAMPRV (final lambda corrector solution from previous continuation step),
+     Z (normalized predictor for all buses), and STEP (continuation step size).
+     The extra continuation output is LAM (final corrector lambda).
+
+    Args:
+        Ybus:
+        Ibus:
+        Sbus:
+        V0:
+        pv:
+        pq:
+        lam0:
+        Sxfr:
+        Vprv:
+        lamprv:
+        z:
+        step:
+        parameterization:
+        tol:
+        max_it:
+        verbose:
+
+    Returns:
+
+    """
     """
     # CPF_CORRECTOR  Solves the corrector step of a continuation power flow using a
     #   full Newton method with selected parameterization scheme.
@@ -274,7 +351,7 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
         J = vstack([
             hstack([J, dF_dlam.reshape(nj, 1)]),
             hstack([dP_dV, dP_dlam])
-            ], format="csr")
+            ], format="csc")
     
         # compute update step
         dx = -splu(J).solve(F)   #-np.linalg.solve(J, F)
@@ -383,7 +460,7 @@ def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, param
     J = vstack([
         hstack([J, dF_dlam.reshape(nj, 1)]),
         hstack([dP_dV, dP_dlam])
-        ], format="csr")
+        ], format="csc")
 
     Vaprv = angle(V)
     Vmprv = abs(V)
@@ -543,6 +620,9 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         if adapt_step and continuation:
             # Adapt step size
             cpf_error = linalg.norm(r_[angle(V[pq]), abs(V[pvpq]), lam] - r_[angle(V0[pq]), abs(V0[pvpq]), lam0], Inf)
+
+            if cpf_error == 0:
+                cpf_error = 1e-20
 
             if cpf_error < error_tol:
                 # Increase step size

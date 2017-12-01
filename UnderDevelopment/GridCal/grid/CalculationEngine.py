@@ -2368,7 +2368,7 @@ class MultiCircuit(Circuit):
         hdr = delete(hdr, argwhere(hdr == 'bus_to'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Branch(bus_from=bus_dict[bus_from[i]], bus_to=bus_dict[bus_to[i]])
+            obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
             set_object_attributes(obj, hdr, vals[i, :])
             self.add_branch(obj)
 
@@ -2406,7 +2406,7 @@ class MultiCircuit(Circuit):
                 if self.time_profile is None:
                     self.time_profile = idx
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'Load':
                 obj.name += str(len(bus.loads) + 1) + '@' + bus.name
@@ -2434,7 +2434,7 @@ class MultiCircuit(Circuit):
                 idx = data['CtrlGen_Vset_profiles'].index
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'gen':
                 obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
@@ -2462,7 +2462,7 @@ class MultiCircuit(Circuit):
                 idx = data['battery_Vset_profiles'].index
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'batt':
                 obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
@@ -2485,7 +2485,7 @@ class MultiCircuit(Circuit):
                 idx = data['static_generator_Sprof'].index
                 obj.Sprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'StaticGen':
                 obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
@@ -2508,7 +2508,7 @@ class MultiCircuit(Circuit):
                 idx = data['shunt_Y_profiles'].index
                 obj.Yprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'shunt':
                 obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
