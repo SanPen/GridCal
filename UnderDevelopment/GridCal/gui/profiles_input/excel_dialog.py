@@ -1,17 +1,15 @@
 import sys
 import xlrd
 
-from PyQt4 import QtCore, QtGui
-try:
-    from excel_sheet_selection import *
-except:
-    from .excel_sheet_selection import *
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+from GridCal.gui.profiles_input.excel_sheet_selection import *
 
 
-class ExcelDialog(QtGui.QDialog):
+class ExcelDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None, excel_file=None):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_ExcelSelectionDialog()
         self.ui.setupUi(self)
 
@@ -23,21 +21,20 @@ class ExcelDialog(QtGui.QDialog):
             self.ui.sheets_list.addItems(self.sheet_names)
 
         # click
-        QtCore.QObject.connect(self.ui.buttonBox, QtCore.SIGNAL('accepted()'), self.accepted)
-        QtCore.QObject.connect(self.ui.buttonBox, QtCore.SIGNAL('rejected()'), self.rejected)
+        self.ui.buttonBox.accepted.connect(self.accepted)
+        self.ui.buttonBox.rejected.connect(self.rejected)
 
     def accepted(self):
         if len(self.ui.sheets_list.selectedIndexes()):
             self.excel_sheet = self.ui.sheets_list.selectedIndexes()[0].row()
-        print('self.excel_sheet: ', self.excel_sheet)
-
+        print('Accepted: self.excel_sheet: ', self.excel_sheet)
 
     def rejected(self):
-        print('self.excel_sheet: ', self.excel_sheet)
+        print('Rejected: self.excel_sheet: ', self.excel_sheet)
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = ExcelDialog()
     window.show()
     sys.exit(app.exec_())

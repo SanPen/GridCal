@@ -866,6 +866,8 @@ class Bus:
             self.y = self.graphic_obj.pos().y()
             self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
 
+    def __str__(self):
+        return self.name
 
 
 class TransformerType:
@@ -975,6 +977,9 @@ class TransformerType:
         magnetizing_impedance = rfe + 1j * xm
 
         return leakage_impedance, magnetizing_impedance
+
+    def __str__(self):
+        return self.name
 
 
 class Branch:
@@ -1205,6 +1210,9 @@ class Branch:
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.tap_module, self.angle]
 
+    def __str__(self):
+        return self.name
+
 
 class Load:
 
@@ -1369,6 +1377,9 @@ class Load:
         """
         return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S)]
 
+    def __str__(self):
+        return self.name
+
 
 class StaticGenerator:
 
@@ -1458,6 +1469,9 @@ class StaticGenerator:
             if self.Sprof is None:
                 self.create_S_profile(index)
         return self.Sprof
+
+    def __str__(self):
+        return self.name
 
 
 class Battery:
@@ -1624,6 +1638,9 @@ class Battery:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
 
+    def __str__(self):
+        return self.name
+
 
 class ControlledGenerator:
 
@@ -1781,6 +1798,9 @@ class ControlledGenerator:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
 
+    def __str__(self):
+        return self.name
+
 
 class Shunt:
 
@@ -1881,6 +1901,9 @@ class Shunt:
             if self.Yprof is None:
                 self.create_Y_profile(index)
         return self.Yprof
+
+    def __str__(self):
+        return self.name
 
 
 class Circuit:

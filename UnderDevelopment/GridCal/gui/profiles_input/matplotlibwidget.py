@@ -16,15 +16,12 @@
 from PyQt5.QtWidgets import *
 import matplotlib
 
-# Make sure that we are using QT5
-# matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigationtoolbar
 from matplotlib.figure import Figure
 
 from matplotlib import pyplot as plt
 plt.style.use('fivethirtyeight')
-# plt.ion()
 
 
 class MplCanvas(FigureCanvas):
@@ -44,7 +41,10 @@ class MplCanvas(FigureCanvas):
         self.zoom_y_limits = None
 
         self.fig = Figure()
-        self.ax = self.fig.add_subplot(111, axisbg='white')
+        try:
+            self.ax = self.fig.add_subplot(111, facecolor='white')
+        except Exception as ex:
+            self.ax = self.fig.add_subplot(111, axisbg='white')
 
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -157,9 +157,9 @@ class MplCanvas(FigureCanvas):
         fig = ax.get_figure()  # get the figure of interest
 
         # attach the call back
-        fig.canvas.mpl_connect('button_press_event',onPress)
-        fig.canvas.mpl_connect('button_release_event',onRelease)
-        fig.canvas.mpl_connect('motion_notify_event',onMotion)
+        fig.canvas.mpl_connect('button_press_event', onPress)
+        fig.canvas.mpl_connect('button_release_event', onRelease)
+        fig.canvas.mpl_connect('motion_notify_event', onMotion)
 
         # return the function
         return onMotion
@@ -194,6 +194,14 @@ class MatplotlibWidget(QWidget):
         return self.canvas.fig
 
     def clear(self, force=False):
+        """
+        Clear the interface
+        Args:
+            force: Remove the object and create a new one (brute force)
+
+        Returns:
+
+        """
         if force:
             self.canvas.fig.clear()
             self.canvas.ax = self.canvas.fig.add_subplot(111)
@@ -201,11 +209,29 @@ class MatplotlibWidget(QWidget):
             # self.canvas = MplCanvas()
         else:
             self.canvas.ax.clear()
+        self.redraw()
 
     def redraw(self):
+        """
+        Redraw the interface
+        Returns:
+
+        """
         self.canvas.ax.figure.canvas.draw()
 
     def plot(self, x, y, title='', xlabel='', ylabel=''):
+        """
+        Plot series
+        Args:
+            x: X values
+            y: Y values
+            title: Title
+            xlabel: Label for X
+            ylabel: Label for Y
+
+        Returns:
+
+        """
         self.setTitle(title)
         self.canvas.ax.plot(x, y)
         self.canvas.ax.set_xlabel(xlabel)

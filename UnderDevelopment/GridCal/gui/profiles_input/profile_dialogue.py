@@ -5,14 +5,12 @@ from enum import Enum
 
 import numpy as np
 import pandas as pd
-from PyQt4 import QtCore, QtGui
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
-try:
-    from GridCal.gui import *
-    from excel_dialog import *
-except:
-    from .gui import *
-    from .excel_dialog import *
+from GridCal.gui.profiles_input.gui import *
+from GridCal.gui.profiles_input.excel_dialog import *
 
 
 class PandasModel(QtCore.QAbstractTableModel):
@@ -77,13 +75,16 @@ class MultiplierType(Enum):
     Cosfi = 2
 
 
-class ProfileInputGUI(QtGui.QDialog):
+class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=None, AlsoReactivePower=False):
-        QtGui.QDialog.__init__(self, parent)
+    def __init__(self, parent=None, list_of_objects=list(), AlsoReactivePower=False):
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Profiles import dialogue')
+
+        self.project_directory = None
+
         # units
         self.units = dict()
         self.units['Y'] = 1e24
@@ -145,16 +146,17 @@ class ProfileInputGUI(QtGui.QDialog):
         # Slots connection
 
         # click
-        QtCore.QObject.connect(self.ui.open_button, QtCore.SIGNAL('clicked()'), self.import_profile)
-        QtCore.QObject.connect(self.ui.doit_button, QtCore.SIGNAL('clicked()'), self.do_it)
-        QtCore.QObject.connect(self.ui.set_multiplier_button, QtCore.SIGNAL('clicked()'), lambda: self.set_multiplier(MultiplierType.Mult))
-        QtCore.QObject.connect(self.ui.set_cosfi_button, QtCore.SIGNAL('clicked()'), lambda: self.set_multiplier(MultiplierType.Cosfi))
-        QtCore.QObject.connect(self.ui.autolink_button, QtCore.SIGNAL('clicked()'), self.auto_link)
+        self.ui.open_button.clicked.connect(self.import_profile)
+        self.ui.doit_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
+        self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
+        self.ui.set_cosfi_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Cosfi))
+        self.ui.autolink_button.clicked.connect(self.auto_link)
+        self.ui.doit_button.clicked.connect(self.do_it)
 
         # double click
-        QtCore.QObject.connect(self.ui.sources_list, QtCore.SIGNAL('doubleClicked(QModelIndex)'), self.sources_list_double_click)
-        QtCore.QObject.connect(self.ui.assignation_table, QtCore.SIGNAL('doubleClicked(QModelIndex)'), self.assignation_table_double_click)
-        QtCore.QObject.connect(self.ui.tableView, QtCore.SIGNAL('doubleClicked(QModelIndex)'), self.print_profile)
+        self.ui.sources_list.doubleClicked.connect(self.sources_list_double_click)
+        self.ui.assignation_table.doubleClicked.connect(self.assignation_table_double_click)
+        self.ui.tableView.doubleClicked.connect(self.print_profile)
 
     def get_multiplier(self):
         """
@@ -170,9 +172,15 @@ class ProfileInputGUI(QtGui.QDialog):
         """
 
         # declare the allowed file types
-        files_types = "Excel 97 (*.xls);;Excel (*.xlsx);;CSV (*.csv)"
+        files_types = "Formats (*.xlsx *.xls *.csv)"
         # call dialog to select the file
-        filename, type_selected = QtGui.QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
+        # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
+
+        # call dialog to select the file
+
+        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
+                                                              directory=self.project_directory,
+                                                              filter=files_types)
 
         if len(filename) > 0:
 
@@ -288,7 +296,7 @@ class ProfileInputGUI(QtGui.QDialog):
             idx_o = self.ui.assignation_table.selectedIndexes()[0].row()
             col = self.ui.assignation_table.selectedIndexes()[0].column()
 
-            if col > 0 and col < len(self.associations[idx_o])-1:
+            if 0 < col < len(self.associations[idx_o]) - 1:
                 self.make_association(idx_s, idx_o, mult=None, col_idx=col)
 
             self.display_associations()
@@ -313,6 +321,7 @@ class ProfileInputGUI(QtGui.QDialog):
 
             self.display_associations()
 
+    @staticmethod
     def normalize(self, s):
         """
         Normalizes a string
@@ -347,7 +356,6 @@ class ProfileInputGUI(QtGui.QDialog):
             Array of profiles assigned to the input objectives
             Array specifying which objectives are not assigned
         """
-
 
         if self.original_data_frame is None:
             return None, None, None
@@ -442,7 +450,7 @@ class ProfileInputGUI(QtGui.QDialog):
 
     def do_it(self):
         """
-        Close. THe data has to be queried later to the object by the parent by calling get_association_data
+        Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
         print('profile input done!')
         #
@@ -452,8 +460,12 @@ class ProfileInputGUI(QtGui.QDialog):
 
         self.close()
 
+
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    window = ProfileInputGUI(list_of_objects=['E1', 'E2', 'E3'], AlsoReactivePower=True)
+
+    app = QtWidgets.QApplication(sys.argv)
+    window = ProfileInputGUI(list_of_objects=[], AlsoReactivePower=False)
+    window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
+
