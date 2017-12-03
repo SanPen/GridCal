@@ -77,13 +77,28 @@ class MultiplierType(Enum):
 
 class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=list(), AlsoReactivePower=False):
+    def __init__(self, parent=None, list_of_objects=list(), magnitude=None, AlsoReactivePower=False):
+        """
+
+        Args:
+            parent:
+            list_of_objects: List of objects to which set a profile to
+            magnitude: Property of the objects to which set the pandas DataFrame
+            AlsoReactivePower: Link also the reactive power?
+        """
         QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Profiles import dialogue')
 
         self.project_directory = None
+
+        self.magnitude = magnitude
+
+        # results
+        self.data = None
+        self.time = None
+        self.zeroed = None
 
         # units
         self.units = dict()
@@ -114,7 +129,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.plotwidget.canvas.draw()
 
         # initialize the objectives list
-        self.objective_names = list_of_objects
+        self.objects = list_of_objects
 
         # initialize associations
         self.magnitudes = ['P']
@@ -142,8 +157,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.original_data_frame = None
 
         self.profile_names = []
-
-        # Slots connection
 
         # click
         self.ui.open_button.clicked.connect(self.import_profile)
@@ -322,7 +335,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             self.display_associations()
 
     @staticmethod
-    def normalize(self, s):
+    def normalize_string(s):
         """
         Normalizes a string
         """
@@ -336,12 +349,12 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         mult = self.get_multiplier()
         idx_o = 0
-        for objective in self.objective_names:
+        for objective in self.objects:
 
             idx_s = 0
             for source in self.profile_names:
 
-                if self.normalize(source) in self.normalize(objective) or source in objective:
+                if self.normalize_string(source) in self.normalize_string(objective) or source in objective:
                     self.make_association(idx_s, idx_o, mult)
 
                 idx_s += 1
@@ -360,7 +373,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         if self.original_data_frame is None:
             return None, None, None
 
-        n_obj = len(self.objective_names)
+        n_obj = len(self.objects)
         rows_o, cols_o = np.shape(self.original_data_frame)
 
         profiles = [None] * n_obj
@@ -452,11 +465,9 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
-        print('profile input done!')
-        #
-        # # data = self.get_association_data()
-        # data = self.get_profile()
-        # print(data)
+
+        # Generate profiles
+        self.data, self.time, self.zeroed = self.get_profile()
 
         self.close()
 

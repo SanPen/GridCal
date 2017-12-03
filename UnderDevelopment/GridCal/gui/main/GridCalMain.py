@@ -967,10 +967,24 @@ class MainGUI(QMainWindow):
             objects = self.circuit.get_shunts()
 
         if len(objects) > 0:
-            window = ProfileInputGUI(parent=self, list_of_objects=objects, AlsoReactivePower=False)
+            window = ProfileInputGUI(parent=self,
+                                     list_of_objects=objects, magnitude=magnitude, AlsoReactivePower=False)
             window.resize(1.61 * 600.0, 600.0)  # golden ratio
             # window.show()
             window.exec()
+
+            # if there are no profiles:
+            if self.circuit.time_profile is None:
+                self.circuit.format_profiles(window.time)
+            elif len(window.time) != len(self.circuit.time_profile):
+                self.msg("The imported profile length does not match the existing one.\n"
+                         "Delete the existing profiles before continuing.\n"
+                         "The import action will not be performed")
+                return False
+
+            # Assign profiles
+            for col, elm in enumerate(objects):
+                elm.create_profiles_maginitude(window.time, window.data[:, col], magnitude)
         else:
             self.msg("There are no objects to which assign a profile")
 

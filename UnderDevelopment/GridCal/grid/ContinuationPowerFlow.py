@@ -469,7 +469,7 @@ def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, param
     s = zeros(npv + 2 * npq + 1)
     s[npv + 2 * npq] = 1                    # increase in the direction of lambda
     z[r_[pvpq, nb+pq, 2*nb]] = splu(J).solve(s)  # spsolve(J, s)  # tangent vector
-    z /= linalg.norm(z)                         # normalize tangent predictor  (dividing by the euclidean norm)
+    z /= linalg.norm(z)                         # normalize_string tangent predictor  (dividing by the euclidean norm)
     
     Va0 = Vaprv
     Vm0 = Vmprv
