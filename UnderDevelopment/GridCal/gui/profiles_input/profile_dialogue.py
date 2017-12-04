@@ -99,6 +99,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.data = None
         self.time = None
         self.zeroed = None
+        self.normalized = False
 
         # units
         self.units = dict()
@@ -468,6 +469,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # Generate profiles
         self.data, self.time, self.zeroed = self.get_profile()
+        self.normalized = self.ui.normalized_checkBox.isChecked()
+
+        if self.normalized:
+            self.data /= self.data.max(axis=0)  # divide each series by the maximum
+            self.data = np.nan_to_num(self.data)  # set nan to zero
 
         self.close()
 
