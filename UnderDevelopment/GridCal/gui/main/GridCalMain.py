@@ -17,6 +17,7 @@ from GridCal.grid.CalculationEngine import __GridCal_VERSION__
 from GridCal.gui.main.gui import *
 from GridCal.gui.GridEditorWidget import *
 from GridCal.gui.ConsoleWidget import ConsoleWidget
+from GridCal.gui.profiles_input.profile_dialogue import ProfileInputGUI
 
 import os.path
 import sys
@@ -285,7 +286,7 @@ class MainGUI(QMainWindow):
 
         self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
-        self.ui.profile_import_pushButton.clicked.connect(self.import_profiles)
+        self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
 
         self.ui.profile_display_pushButton.clicked.connect(self.display_profiles)
 
@@ -939,7 +940,54 @@ class MainGUI(QMainWindow):
         print('set_profiles_state_to_grid')
 
     def import_profiles(self):
-        print('import_profiles')
+        """
+        Profile importer
+        """
+
+        # Load(), StaticGenerator(), ControlledGenerator(), Battery(), Shunt()
+
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude = magnitudes[idx]
+
+        if dev_type == 'Load':
+            objects = self.circuit.get_loads()
+
+        elif dev_type == 'StaticGenerator':
+            objects = self.circuit.get_static_generators()
+
+        elif dev_type == 'ControlledGenerator':
+            objects = self.circuit.get_controlled_generators()
+
+        elif dev_type == 'Battery':
+            objects = self.circuit.get_batteries()
+
+        elif dev_type == 'Shunt':
+            objects = self.circuit.get_shunts()
+
+        if len(objects) > 0:
+            dialogue = ProfileInputGUI(parent=self,
+                                       list_of_objects=objects, magnitude=magnitude,
+                                       AlsoReactivePower=False)
+            dialogue.resize(1.61 * 600.0, 600.0)  # golden ratio
+            dialogue.exec()  # exec leaves the parent on hold
+
+            # if there are no profiles:
+            if self.circuit.time_profile is None:
+                self.circuit.format_profiles(dialogue.time)
+
+            elif len(dialogue.time) != len(self.circuit.time_profile):
+                self.msg("The imported profile length does not match the existing one.\n"
+                         "Delete the existing profiles before continuing.\n"
+                         "The import action will not be performed")
+                return False
+
+            # Assign profiles
+            for col, elm in enumerate(objects):
+                elm.create_profiles_maginitude(dialogue.time, dialogue.data[:, col], magnitude)
+        else:
+            self.msg("There are no objects to which to assign a profile")
 
     def display_profiles(self):
         """

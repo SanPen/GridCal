@@ -866,6 +866,8 @@ class Bus:
             self.y = self.graphic_obj.pos().y()
             self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
 
+    def __str__(self):
+        return self.name
 
 
 class TransformerType:
@@ -975,6 +977,9 @@ class TransformerType:
         magnetizing_impedance = rfe + 1j * xm
 
         return leakage_impedance, magnetizing_impedance
+
+    def __str__(self):
+        return self.name
 
 
 class Branch:
@@ -1205,6 +1210,9 @@ class Branch:
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.tap_module, self.angle]
 
+    def __str__(self):
+        return self.name
+
 
 class Load:
 
@@ -1265,7 +1273,24 @@ class Load:
                            'I': complex,
                            'S': complex}
 
-    def create_profiles(self, index):
+    def create_profiles_maginitude(self, index, arr, mag):
+        """
+        Create profiles from magnitude
+        Args:
+            index: Time index
+            arr: values array
+            mag: String with the magnitude to assign
+        """
+        if mag =='S':
+            self.create_profiles(index, arr, None, None)
+        elif mag == 'I':
+            self.create_profiles(index, None, arr, None)
+        elif mag == 'I':
+            self.create_profiles(index, None, None, arr)
+        else:
+            raise Exception('Magnitude ' + mag + ' not supported')
+
+    def create_profiles(self, index, S=None, I=None, Z=None):
         """
         Create the load object default profiles
         Args:
@@ -1276,11 +1301,11 @@ class Load:
 
         """
 
-        self.create_S_profile(index)
-        self.create_I_profile(index)
-        self.create_Z_profile(index)
+        self.create_S_profile(index, S)
+        self.create_I_profile(index, I)
+        self.create_Z_profile(index, Z)
 
-    def create_S_profile(self, index):
+    def create_S_profile(self, index, arr=None):
         """
         Create power profile based on index
         Args:
@@ -1290,9 +1315,10 @@ class Load:
 
         """
         steps = len(index)
-        self.Sprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.S
+        dta = ones(steps) * self.S if arr is None else arr
+        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.S
 
-    def create_I_profile(self, index):
+    def create_I_profile(self, index, arr):
         """
         Create current profile based on index
         Args:
@@ -1302,9 +1328,10 @@ class Load:
 
         """
         steps = len(index)
-        self.Iprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.I
+        dta = ones(steps) * self.I if arr is None else arr
+        self.Iprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.I
 
-    def create_Z_profile(self, index):
+    def create_Z_profile(self, index, arr):
         """
         Create impedance profile based on index
         Args:
@@ -1314,7 +1341,8 @@ class Load:
 
         """
         steps = len(index)
-        self.Zprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Z
+        dta = ones(steps) * self.Z if arr is None else arr
+        self.Zprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Z
 
     def get_profiles(self, index=None):
         """
@@ -1369,6 +1397,9 @@ class Load:
         """
         return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S)]
 
+    def __str__(self):
+        return self.name
+
 
 class StaticGenerator:
 
@@ -1421,7 +1452,20 @@ class StaticGenerator:
         """
         return [self.name, self.bus.name, self.active, str(self.S)]
 
-    def create_profiles(self, index):
+    def create_profiles_maginitude(self, index, arr, mag):
+        """
+        Create profiles from magnitude
+        Args:
+            index: Time index
+            arr: values array
+            mag: String with the magnitude to assign
+        """
+        if mag =='S':
+            self.create_profiles(index, arr)
+        else:
+            raise Exception('Magnitude ' + mag + ' not supported')
+
+    def create_profiles(self, index, S=None):
         """
         Create the load object default profiles
         Args:
@@ -1431,9 +1475,9 @@ class StaticGenerator:
         Returns:
 
         """
-        self.create_S_profile(index)
+        self.create_S_profile(index, S)
 
-    def create_S_profile(self, index):
+    def create_S_profile(self, index, arr):
         """
         Create power profile based on index
         Args:
@@ -1443,7 +1487,8 @@ class StaticGenerator:
 
         """
         steps = len(index)
-        self.Sprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.S
+        dta = ones(steps) * self.S if arr is None else arr
+        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.S
 
     def get_profiles(self, index=None):
         """
@@ -1458,6 +1503,9 @@ class StaticGenerator:
             if self.Sprof is None:
                 self.create_S_profile(index)
         return self.Sprof
+
+    def __str__(self):
+        return self.name
 
 
 class Battery:
@@ -1570,7 +1618,22 @@ class Battery:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
 
-    def create_profiles(self, index):
+    def create_profiles_maginitude(self, index, arr, mag):
+        """
+        Create profiles from magnitude
+        Args:
+            index: Time index
+            arr: values array
+            mag: String with the magnitude to assign
+        """
+        if mag =='P':
+            self.create_profiles(index, arr, None)
+        elif mag == 'V':
+            self.create_profiles(index, None, arr)
+        else:
+            raise Exception('Magnitude ' + mag + ' not supported')
+
+    def create_profiles(self, index, P=None, V=None):
         """
         Create the load object default profiles
         Args:
@@ -1580,11 +1643,10 @@ class Battery:
         Returns:
 
         """
-        self.create_P_profile(index)
+        self.create_P_profile(index, P)
+        self.create_Vset_profile(index, V)
 
-        self.create_Vset_profile(index)
-
-    def create_P_profile(self, index):
+    def create_P_profile(self, index, arr=None):
         """
         Create power profile based on index
         Args:
@@ -1594,9 +1656,10 @@ class Battery:
 
         """
         steps = len(index)
-        self.Pprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.P
+        dta = ones(steps) * self.P if arr is None else arr
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.P
 
-    def create_Vset_profile(self, index):
+    def create_Vset_profile(self, index, arr=None):
         """
         Create power profile based on index
         Args:
@@ -1606,7 +1669,8 @@ class Battery:
 
         """
         steps = len(index)
-        self.Vsetprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Vset
+        dta = ones(steps) * self.Vset if arr is None else arr
+        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Vset
 
     def get_profiles(self, index=None):
         """
@@ -1623,6 +1687,9 @@ class Battery:
             if self.Vsetprof is None:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
+
+    def __str__(self):
+        return self.name
 
 
 class ControlledGenerator:
@@ -1727,7 +1794,22 @@ class ControlledGenerator:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
 
-    def create_profiles(self, index):
+    def create_profiles_maginitude(self, index, arr, mag):
+        """
+        Create profiles from magnitude
+        Args:
+            index: Time index
+            arr: values array
+            mag: String with the magnitude to assign
+        """
+        if mag =='P':
+            self.create_profiles(index, arr, None)
+        elif mag == 'V':
+            self.create_profiles(index, None, arr)
+        else:
+            raise Exception('Magnitude ' + mag + ' not supported')
+
+    def create_profiles(self, index, P=None, V=None):
         """
         Create the load object default profiles
         Args:
@@ -1737,11 +1819,10 @@ class ControlledGenerator:
         Returns:
 
         """
-        self.create_P_profile(index)
+        self.create_P_profile(index, P)
+        self.create_Vset_profile(index, V)
 
-        self.create_Vset_profile(index)
-
-    def create_P_profile(self, index):
+    def create_P_profile(self, index, arr=None):
         """
         Create power profile based on index
         Args:
@@ -1751,9 +1832,10 @@ class ControlledGenerator:
 
         """
         steps = len(index)
-        self.Pprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.P
+        dta = ones(steps) * self.P if arr is None else arr
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.P
 
-    def create_Vset_profile(self, index):
+    def create_Vset_profile(self, index, arr=None):
         """
         Create power profile based on index
         Args:
@@ -1763,7 +1845,8 @@ class ControlledGenerator:
 
         """
         steps = len(index)
-        self.Vsetprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Vset
+        dta = ones(steps) * self.Vset if arr is None else arr
+        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Vset
 
     def get_profiles(self, index=None):
         """
@@ -1780,6 +1863,9 @@ class ControlledGenerator:
             if self.Vsetprof is None:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
+
+    def __str__(self):
+        return self.name
 
 
 class Shunt:
@@ -1844,7 +1930,20 @@ class Shunt:
         """
         return [self.name, self.bus.name, self.active, str(self.Y)]
 
-    def create_profiles(self, index):
+    def create_profiles_maginitude(self, index, arr, mag):
+        """
+        Create profiles from magnitude
+        Args:
+            index: Time index
+            arr: values array
+            mag: String with the magnitude to assign
+        """
+        if mag =='Y':
+            self.create_profiles(index, arr)
+        else:
+            raise Exception('Magnitude ' + mag + ' not supported')
+
+    def create_profiles(self, index, Y=None):
         """
         Create the load object default profiles
         Args:
@@ -1854,9 +1953,9 @@ class Shunt:
         Returns:
 
         """
-        self.create_Y_profile(index)
+        self.create_Y_profile(index, Y)
 
-    def create_Y_profile(self, index):
+    def create_Y_profile(self, index, arr):
         """
         Create power profile based on index
         Args:
@@ -1866,7 +1965,8 @@ class Shunt:
 
         """
         steps = len(index)
-        self.Yprof = pd.DataFrame(data=ones(steps), index=index, columns=[self.name]) * self.Y
+        dta = ones(steps) * self.Y if arr is None else arr
+        self.Yprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Y
 
     def get_profiles(self, index=None):
         """
@@ -1881,6 +1981,9 @@ class Shunt:
             if self.Yprof is None:
                 self.create_Y_profile(index)
         return self.Yprof
+
+    def __str__(self):
+        return self.name
 
 
 class Circuit:
@@ -2047,17 +2150,17 @@ class Circuit:
             Icdf_[i] = Icdf
             Ycdf_[i] = Ycdf
 
-        # normalize the power array
+        # normalize_string the power array
         power_flow_input.Sbus /= self.Sbase
 
-        # normalize the currents array (I was given in MVA at v=1 p.u.)
+        # normalize_string the currents array (I was given in MVA at v=1 p.u.)
         power_flow_input.Ibus /= self.Sbase
 
-        # normalize the admittances array (Y was given in MVA at v=1 p.u.)
+        # normalize_string the admittances array (Y was given in MVA at v=1 p.u.)
         power_flow_input.Ybus /= self.Sbase
         power_flow_input.Yshunt /= self.Sbase
 
-        # normalize the reactive power limits array (Q was given in MVAr)
+        # normalize_string the reactive power limits array (Q was given in MVAr)
         power_flow_input.Qmax /= self.Sbase
         power_flow_input.Qmin /= self.Sbase
 
@@ -2368,7 +2471,7 @@ class MultiCircuit(Circuit):
         hdr = delete(hdr, argwhere(hdr == 'bus_to'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Branch(bus_from=bus_dict[bus_from[i]], bus_to=bus_dict[bus_to[i]])
+            obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
             set_object_attributes(obj, hdr, vals[i, :])
             self.add_branch(obj)
 
@@ -2406,7 +2509,7 @@ class MultiCircuit(Circuit):
                 if self.time_profile is None:
                     self.time_profile = idx
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'Load':
                 obj.name += str(len(bus.loads) + 1) + '@' + bus.name
@@ -2434,7 +2537,7 @@ class MultiCircuit(Circuit):
                 idx = data['CtrlGen_Vset_profiles'].index
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'gen':
                 obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
@@ -2462,7 +2565,7 @@ class MultiCircuit(Circuit):
                 idx = data['battery_Vset_profiles'].index
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'batt':
                 obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
@@ -2485,7 +2588,7 @@ class MultiCircuit(Circuit):
                 idx = data['static_generator_Sprof'].index
                 obj.Sprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'StaticGen':
                 obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
@@ -2508,7 +2611,7 @@ class MultiCircuit(Circuit):
                 idx = data['shunt_Y_profiles'].index
                 obj.Yprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[bus_from[i]]
+            bus = bus_dict[str(bus_from[i])]
 
             if obj.name == 'shunt':
                 obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
