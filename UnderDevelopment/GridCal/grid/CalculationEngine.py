@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.78
+__GridCal_VERSION__ = 1.81
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -1273,22 +1273,13 @@ class Load:
                            'I': complex,
                            'S': complex}
 
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag =='S':
-            self.create_profiles(index, arr, None, None)
-        elif mag == 'I':
-            self.create_profiles(index, None, arr, None)
-        elif mag == 'I':
-            self.create_profiles(index, None, None, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
+        self.profile_f = {'S': self.create_S_profile,
+                          'I': self.create_I_profile,
+                          'Z': self.create_Z_profile}
+
+        self.profile_attr = {'S': 'Sprof',
+                             'I': 'Iprof',
+                             'Z': 'Zprof'}
 
     def create_profiles(self, index, S=None, I=None, Z=None):
         """
@@ -1305,43 +1296,48 @@ class Load:
         self.create_I_profile(index, I)
         self.create_Z_profile(index, Z)
 
-    def create_S_profile(self, index, arr=None):
+    def create_S_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
-            index:
-
-        Returns:
-
+            index: time index
+            arr: array
+            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
         """
-        steps = len(index)
-        dta = ones(steps) * self.S if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.S
+        else:
+            dta = ones(len(index)) * self.S if arr is None else arr
         self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.S
 
-    def create_I_profile(self, index, arr):
+    def create_I_profile(self, index, arr, arr_in_pu=False):
         """
         Create current profile based on index
         Args:
-            index:
-
-        Returns:
-
+            index: time index
+            arr: array
+            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
         """
-        steps = len(index)
-        dta = ones(steps) * self.I if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.I
+        else:
+            dta = ones(len(index)) * self.I if arr is None else arr
         self.Iprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.I
 
-    def create_Z_profile(self, index, arr):
+    def create_Z_profile(self, index, arr, arr_in_pu=False):
         """
         Create impedance profile based on index
         Args:
-            index:
-
+            index: time index
+            arr: array
+            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.Z if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.Z
+        else:
+            dta = ones(len(index)) * self.Z if arr is None else arr
         self.Zprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Z
 
     def get_profiles(self, index=None):
@@ -1438,6 +1434,10 @@ class StaticGenerator:
                            'active': bool,
                            'S': complex}
 
+        self.profile_f = {'S': self.create_S_profile}
+
+        self.profile_attr = {'S': 'Sprof'}
+
     def copy(self):
         """
 
@@ -1452,19 +1452,6 @@ class StaticGenerator:
         """
         return [self.name, self.bus.name, self.active, str(self.S)]
 
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag =='S':
-            self.create_profiles(index, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
     def create_profiles(self, index, S=None):
         """
         Create the load object default profiles
@@ -1477,7 +1464,7 @@ class StaticGenerator:
         """
         self.create_S_profile(index, S)
 
-    def create_S_profile(self, index, arr):
+    def create_S_profile(self, index, arr, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -1486,8 +1473,10 @@ class StaticGenerator:
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.S if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.S
+        else:
+            dta = ones(len(index)) * self.S if arr is None else arr
         self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.S
 
     def get_profiles(self, index=None):
@@ -1578,6 +1567,12 @@ class Battery:
                            'Qmin': float,
                            'Qmax': float}
 
+        self.profile_f = {'P': self.create_P_profile,
+                          'Vset': self.create_Vset_profile}
+
+        self.profile_attr = {'P': 'Pprof',
+                           'Vset': 'Vsetprof'}
+
     def copy(self):
 
         batt = Battery()
@@ -1618,21 +1613,6 @@ class Battery:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
 
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag =='P':
-            self.create_profiles(index, arr, None)
-        elif mag == 'V':
-            self.create_profiles(index, None, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
     def create_profiles(self, index, P=None, V=None):
         """
         Create the load object default profiles
@@ -1646,7 +1626,7 @@ class Battery:
         self.create_P_profile(index, P)
         self.create_Vset_profile(index, V)
 
-    def create_P_profile(self, index, arr=None):
+    def create_P_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -1655,11 +1635,13 @@ class Battery:
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.P if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.P
+        else:
+            dta = ones(len(index)) * self.P if arr is None else arr
         self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.P
 
-    def create_Vset_profile(self, index, arr=None):
+    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -1668,8 +1650,10 @@ class Battery:
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.Vset if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.Vset
+        else:
+            dta = ones(len(index)) * self.Vset if arr is None else arr
         self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Vset
 
     def get_profiles(self, index=None):
@@ -1757,6 +1741,12 @@ class ControlledGenerator:
                            'Qmin': float,
                            'Qmax': float}
 
+        self.profile_f = {'P': self.create_P_profile,
+                          'Vset': self.create_Vset_profile}
+
+        self.profile_attr = {'P': 'Pprof',
+                           'Vset': 'Vsetprof'}
+
     def copy(self):
 
         gen = ControlledGenerator()
@@ -1822,7 +1812,7 @@ class ControlledGenerator:
         self.create_P_profile(index, P)
         self.create_Vset_profile(index, V)
 
-    def create_P_profile(self, index, arr=None):
+    def create_P_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -1831,11 +1821,13 @@ class ControlledGenerator:
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.P if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.P
+        else:
+            dta = ones(len(index)) * self.P if arr is None else arr
         self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.P
 
-    def create_Vset_profile(self, index, arr=None):
+    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -1844,8 +1836,10 @@ class ControlledGenerator:
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.Vset if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.Vset
+        else:
+            dta = ones(len(index)) * self.Vset if arr is None else arr
         self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Vset
 
     def get_profiles(self, index=None):
@@ -1908,6 +1902,10 @@ class Shunt:
                            'bus': None,
                            'Y': complex}
 
+        self.profile_f = {'Y': self.create_Y_profile}
+
+        self.profile_attr = {'Y': 'Yprof'}
+
     def copy(self):
 
         shu = Shunt()
@@ -1955,7 +1953,7 @@ class Shunt:
         """
         self.create_Y_profile(index, Y)
 
-    def create_Y_profile(self, index, arr):
+    def create_Y_profile(self, index, arr, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -1964,8 +1962,10 @@ class Shunt:
         Returns:
 
         """
-        steps = len(index)
-        dta = ones(steps) * self.Y if arr is None else arr
+        if arr_in_pu:
+            dta = arr * self.Y
+        else:
+            dta = ones(len(index)) * self.Y if arr is None else arr
         self.Yprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Y
 
     def get_profiles(self, index=None):

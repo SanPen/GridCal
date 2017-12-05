@@ -310,6 +310,14 @@ class MainGUI(QMainWindow):
 
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
 
+        self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
+
+        self.ui.profile_subtract_pushButton.clicked.connect(lambda: self.modify_profiles('-'))
+
+        self.ui.profile_multiply_pushButton.clicked.connect(lambda: self.modify_profiles('*'))
+
+        self.ui.profile_divide_pushButton.clicked.connect(lambda: self.modify_profiles('/'))
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -482,11 +490,11 @@ class MainGUI(QMainWindow):
 
         '''
         class NodeType(Enum):
-    PQ = 1,
-    PV = 2,
-    REF = 3,
-    NONE = 4,
-    STO_DISPATCH = 5
+        PQ = 1,
+        PV = 2,
+        REF = 3,
+        NONE = 4,
+        STO_DISPATCH = 5
         '''
         bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
 
@@ -984,10 +992,54 @@ class MainGUI(QMainWindow):
                 return False
 
             # Assign profiles
-            for col, elm in enumerate(objects):
-                elm.create_profiles_maginitude(dialogue.time, dialogue.data[:, col], magnitude)
+            for i, elm in enumerate(objects):
+                if not dialogue.zeroed[i]:
+                    elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
         else:
             self.msg("There are no objects to which to assign a profile")
+
+    def modify_profiles(self, operation='+'):
+
+        value = self.ui.profile_factor_doubleSpinBox.value()
+
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude = magnitudes[idx]
+
+        if dev_type == 'Load':
+            objects = self.circuit.get_loads()
+
+        elif dev_type == 'StaticGenerator':
+            objects = self.circuit.get_static_generators()
+
+        elif dev_type == 'ControlledGenerator':
+            objects = self.circuit.get_controlled_generators()
+
+        elif dev_type == 'Battery':
+            objects = self.circuit.get_batteries()
+
+        elif dev_type == 'Shunt':
+            objects = self.circuit.get_shunts()
+
+        # Assign profiles
+        attr = objects[0].profile_attr[magnitude]
+        if operation == '+':
+            for i, elm in enumerate(objects):
+                setattr(elm, attr, getattr(elm, attr) + value)
+        elif operation == '-':
+            for i, elm in enumerate(objects):
+                setattr(elm, attr, getattr(elm, attr) - value)
+        elif operation == '*':
+            for i, elm in enumerate(objects):
+                setattr(elm, attr, getattr(elm, attr) * value)
+        elif operation == '/':
+            for i, elm in enumerate(objects):
+                setattr(elm, attr, getattr(elm, attr) / value)
+        else:
+            raise Exception('Operation not supported: ' + str(operation))
+
+        self.display_profiles()
 
     def display_profiles(self):
         """
@@ -1358,9 +1410,9 @@ class MainGUI(QMainWindow):
             # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
             # show()
             # ts_analysis = TimeSeriesResultsAnalysis(self.circuit.circuits[0].time_series_results)
-            voltage = self.circuit.time_series_results.voltage.max(axis=1)
-            loading = self.circuit.time_series_results.loading.max(axis=1)
-            Sbranch = self.circuit.time_series_results.Sbranch.max(axis=1)
+            voltage = self.circuit.time_series_results.voltage.max(axis=0)
+            loading = self.circuit.time_series_results.loading.max(axis=0)
+            Sbranch = self.circuit.time_series_results.Sbranch.max(axis=0)
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
                                    types=self.circuit.power_flow_input.types)
             self.update_available_results()
