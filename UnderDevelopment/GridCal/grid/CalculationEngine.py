@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.81
+__GridCal_VERSION__ = 1.83
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -4046,8 +4046,8 @@ class PowerFlow(QRunnable):
         # revert the types to the original
         circuit.power_flow_input.compile_types(original_types)
 
-        # Compute the branches power
-        Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
+        # Compute the branches power and the slack buses power
+        Sbranch, Ibranch, loading, losses, Sbus = self.power_flow_post_process(circuit=circuit, V=V)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
@@ -4067,13 +4067,20 @@ class PowerFlow(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(circuit: Circuit, V):
+    def power_flow_post_process(circuit: Circuit, V):
         """
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
         @param V: Voltage solution array for the circuit buses
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA)
         """
+        # Compute the slack buses power
+        Sbus = circuit.power_flow_input.Sbus
+        vd = r_[circuit.power_flow_input.ref, circuit.power_flow_input.pv]
+
+        Sbus[vd] = V[vd] * conj(circuit.power_flow_input.Ybus[vd, :][:, :].dot(V))
+
+        # Branches
         If = circuit.power_flow_input.Yf * V
         It = circuit.power_flow_input.Yt * V
         Sf = V[circuit.power_flow_input.F] * conj(If)
@@ -4086,7 +4093,7 @@ class PowerFlow(QRunnable):
         # idx = where(abs(loading) == inf)[0]
         # loading[idx] = 9999
 
-        return Sbranch, Ibranch, loading, losses
+        return Sbranch, Ibranch, loading, losses, Sbus
 
     @staticmethod
     def switch_logic(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
@@ -5530,8 +5537,8 @@ class MonteCarlo(QThread):
         mc_results.compile()
 
         # compute the averaged branch magnitudes
-        mc_results.sbranch, Ibranch, loading, mc_results.losses = powerflow.compute_branch_results(self.grid,
-                                                                                                   mc_results.voltage)
+        mc_results.sbranch, Ibranch, \
+        loading, mc_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, mc_results.voltage)
 
         self.results = mc_results
 
@@ -5924,7 +5931,7 @@ class LatinHypercubeSampling(QThread):
 
         # lhs_results the averaged branch magnitudes
         lhs_results.sbranch, Ibranch, \
-        loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
+        loading, lhs_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
 

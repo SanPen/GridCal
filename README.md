@@ -119,6 +119,8 @@ Some of the features you'll find already are:
 
 - The ability to handle island grids in all the simulation modes.
 
+- Profile editor and importer from Excel and CSV.
+
 - Time series with profiles in all the objects physical magnitudes.
 
 - Bifurcation point with predictor-corrector Newton-Raphson.
