@@ -47,6 +47,21 @@ class DcOpf:
         :return:
         """
 
+        '''
+        CSR format explanation:
+        The standard CSR representation where the column indices for row i are stored in 
+
+        -> indices[indptr[i]:indptr[i+1]] 
+
+        and their corresponding values are stored in 
+
+        -> data[indptr[i]:indptr[i+1]]
+
+        If the shape parameter is not supplied, the matrix dimensions are inferred from the index arrays.
+
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html
+        '''
+
         print('Compiling LP')
         prob = LpProblem("DC optimal power flow", LpMinimize)
 
@@ -54,19 +69,6 @@ class DcOpf:
         # Add the objective function
         ################################################################################################################
         fobj = 0
-
-        '''
-        CSR format explanation:
-        The standard CSR representation where the column indices for row i are stored in 
-        
-        -> indices[indptr[i]:indptr[i+1]] 
-        
-        and their corresponding values are stored in 
-        
-        -> data[indptr[i]:indptr[i+1]]
-        
-        If the shape parameter is not supplied, the matrix dimensions are inferred from the index arrays.
-        '''
 
         # add the voltage angles multiplied by zero (trick)
         for j in self.pqpv:
@@ -81,9 +83,9 @@ class DcOpf:
 
             # Add the bus LP vars
             for gen in bus.controlled_generators:
-                # create the controlled variable
-                name = "Gen" + gen.name + '_' + bus.name
-                gen.make_lp_vars(name, self.Sbase)
+
+                # create the generation variable
+                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name, self.Sbase)
 
                 # add the variable to the objective function
                 fobj += gen.LPVar_P * gen.Cost
@@ -103,8 +105,6 @@ class DcOpf:
             d = 0
 
             # add the calculated node power
-            # for j in self.pqpv:
-            #     s += self.B[i, j] * self.theta[j]
             for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
                 j = self.B.indices[ii]
                 if j not in self.vd:
@@ -134,8 +134,6 @@ class DcOpf:
             g = 0
 
             # compute the slack node power
-            # for j in range(self.nbus):
-            #     val += self.B[i, j] * self.theta[j]
             for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
                 j = self.B.indices[ii]
                 val += self.B.data[ii] * self.theta[j]
@@ -202,10 +200,10 @@ class DcOpf:
 if __name__ == '__main__':
 
     grid = MultiCircuit()
+
     # grid.load_file('lynn5buspv.xlsx')
-    # grid.load_file('IEEE30.xlsx')
+    grid.load_file('IEEE30.xlsx')
     # grid.load_file('Illinois200Bus.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/Pegase 2869.xlsx')
 
     grid.compile()
 
