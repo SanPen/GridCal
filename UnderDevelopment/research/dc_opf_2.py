@@ -8,11 +8,12 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from GridCal.grid.CalculationEngine import *
+
 
 class DcOpf:
 
-    def __init__(self, Sbase, B, branches, flow_limits, demand, pq, pv, vd,
-                 costs, lower_limits, upper_limits):
+    def __init__(self, circuit:Circuit):
         """
         OPF simple dispatch problem
         :param Sbase: System base power (MVA)
@@ -27,38 +28,38 @@ class DcOpf:
         :param lower_limits: generation lower limits
         :param upper_limits: generation upper limits
         """
-        self.Sbase = Sbase
-        self.B = B
+        self.Sbase = circuit.Sbase
+        self.B = circuit.power_flow_input.Ybus.imag
         self.branches = branches
 
         self.nbus = B.shape[0]
 
         # node sets
-        self.pqpv = np.r_[pq, pv]
-        self.pqpv.sort()
-        self.pv = pv
-        self.vd = vd
-        self.pq = pq
+        self.pqpv = circuit.power_flow_input.pqpv
+        self.pv = circuit.power_flow_input.pv
+        self.vd = circuit.power_flow_input.ref
+        self.pq = circuit.power_flow_input.pq
 
         # All the values must be in p.u.
         self.costs = costs
         self.flow_limits = flow_limits / Sbase
-        self.PD = demand / Sbase
-        self.lower_limits = lower_limits / Sbase
-        self.upper_limits = upper_limits / Sbase
+        self.PD = circuit.power_flow_input.Sbus.real / Sbase
+        pos = np.where(self.PD > 0)[0]
+        self.PD[pos] = 0.0
 
-        npv = len(self.pv)
-        n = len(self.PD)
+        self.gen_lower_limits = lower_limits / Sbase
+        self.gen_upper_limits = upper_limits / Sbase
+
 
         # declare the voltage angles
-        self.theta = [None] * n
-        for i in range(n):
+        self.theta = [None] * self.nbus
+        for i in range(self.nbus):
             self.theta[i] = LpVariable("Theta" + str(i), -0.5, 0.5)
 
         # declare the generation
-        self.PG = [None] * n
-        for i in range(n):
-            self.PG[i] = LpVariable("PG" + str(i), self.lower_limits[i], self.upper_limits[i])
+        self.PG = [None] * self.nbus
+        for i in self.pv:
+            self.PG[i] = LpVariable("PG" + str(i), self.gen_lower_limits[i], self.gen_upper_limits[i])
 
     def solve(self):
         """
@@ -213,3 +214,31 @@ if __name__ == '__main__':
     problem.solve()
     problem.print()
 
+
+
+
+    grid = MultiCircuit()
+    grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('IEEE30.xlsx')
+
+    grid.compile()
+
+    circuit = grid.circuits[0]
+
+    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
+    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
+    print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    print('\ntypes:\n', circuit.power_flow_input.types)
+    print('\npq:\n', circuit.power_flow_input.pq)
+    print('\npv:\n', circuit.power_flow_input.pv)
+    print('\nvd:\n', circuit.power_flow_input.ref)
+
+    # declare and solve problem
+    problem = DcOpf(Sbase=circuit.Sbase,
+                    B=circuit.power_flow_input.Ybus.imag,
+                    branches, flow_limits, PD, pq, pv, vd, costs, lower_lim, upper_lim)
+    problem.solve()
+    problem.print()

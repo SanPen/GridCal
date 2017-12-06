@@ -1679,7 +1679,7 @@ class Battery:
 class ControlledGenerator:
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True):
+                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=1.0, fuel_cost=0):
         """
         Voltage controlled generator
         @param name:
@@ -1710,6 +1710,15 @@ class ControlledGenerator:
         # MVA = kV * kA
         self.P = active_power
 
+        # Nominal power in MVA
+        self.Snom = Snom
+
+        # Minimum dispatched power in MW
+        self.Pmin = p_min
+
+        # Maximum dispatched power in MW
+        self.Pmax = p_max
+
         # power profile for this load
         self.Pprof = power_prof
 
@@ -1719,18 +1728,18 @@ class ControlledGenerator:
         # voltage set profile for this load
         self.Vsetprof = vset_prof
 
-        # minimum reactive power in per unit
+        # minimum reactive power in MVAr
         self.Qmin = Qmin
 
-        # Maximum reactive power in per unit
+        # Maximum reactive power in MVAr
         self.Qmax = Qmax
 
-        # Nominal power
-        self.Snom = Snom
+        # Cost of operation
+        self.Cost = fuel_cost
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1739,7 +1748,9 @@ class ControlledGenerator:
                            'Vset': float,
                            'Snom': float,
                            'Qmin': float,
-                           'Qmax': float}
+                           'Qmax': float,
+                           'Pmin': float,
+                           'Pmax': float}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
@@ -1756,6 +1767,8 @@ class ControlledGenerator:
         # Power (MVA)
         # MVA = kV * kA
         gen.P = self.P
+
+        gen.active = self.active
 
         # power profile for this load
         gen.Pprof = self.Pprof
@@ -1782,7 +1795,8 @@ class ControlledGenerator:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost]
 
     def create_profiles_maginitude(self, index, arr, mag):
         """
@@ -2108,8 +2122,8 @@ class Circuit:
 
             power_flow_input.Vmin[i] = self.buses[i].Vmin
             power_flow_input.Vmax[i] = self.buses[i].Vmax
-            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum
-            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum
+            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum / self.Sbase
+            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum / self.Sbase
 
             # compute the time series arrays  ##############################################
 
