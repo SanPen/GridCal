@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 This program implements the DC power flow as a linear program
+This version uses the sparse structures and it the problem compilation is
+blazing fast compared to the full matrix version
 """
 from pulp import *
 import numpy as np
@@ -22,7 +24,7 @@ class DcOpf:
         self.circuit = circuit
 
         self.Sbase = circuit.Sbase
-        self.B = circuit.power_flow_input.Ybus.imag
+        self.B = circuit.power_flow_input.Ybus.imag.tocsr()
         self.nbus = self.B.shape[0]
 
         # node sets
@@ -41,7 +43,7 @@ class DcOpf:
 
     def solve(self):
         """
-        Solve OPF
+        Solve OPF using the sparse formulation
         :return:
         """
 
@@ -52,6 +54,19 @@ class DcOpf:
         # Add the objective function
         ################################################################################################################
         fobj = 0
+
+        '''
+        CSR format explanation:
+        The standard CSR representation where the column indices for row i are stored in 
+        
+        -> indices[indptr[i]:indptr[i+1]] 
+        
+        and their corresponding values are stored in 
+        
+        -> data[indptr[i]:indptr[i+1]]
+        
+        If the shape parameter is not supplied, the matrix dimensions are inferred from the index arrays.
+        '''
 
         # add the voltage angles multiplied by zero (trick)
         for j in self.pqpv:
@@ -88,9 +103,12 @@ class DcOpf:
             d = 0
 
             # add the calculated node power
-            for j in self.pqpv:
-                print(i, j, self.B[i, j])
-                s += self.B[i, j] * self.theta[j]
+            # for j in self.pqpv:
+            #     s += self.B[i, j] * self.theta[j]
+            for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
+                j = self.B.indices[ii]
+                if j not in self.vd:
+                    s += self.B.data[ii] * self.theta[j]
 
             # add the generation LP vars
             for gen in self.circuit.buses[i].controlled_generators:
@@ -116,9 +134,11 @@ class DcOpf:
             g = 0
 
             # compute the slack node power
-            for j in range(self.nbus):
-                if self.B[i, j] != 0.0:
-                    val += self.B[i, j] * self.theta[j]
+            # for j in range(self.nbus):
+            #     val += self.B[i, j] * self.theta[j]
+            for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
+                j = self.B.indices[ii]
+                val += self.B.data[ii] * self.theta[j]
 
             # Sum the slack generators
             for gen in self.circuit.buses[i].controlled_generators:
@@ -182,25 +202,14 @@ class DcOpf:
 if __name__ == '__main__':
 
     grid = MultiCircuit()
-    grid.load_file('lynn5buspv.xlsx')
+    # grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('Illinois200Bus.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/Pegase 2869.xlsx')
+    grid.load_file('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/Pegase 2869.xlsx')
 
     grid.compile()
 
     for circuit in grid.circuits:
-
-        # print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-        # print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-        # print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-        # print('\nSbus:\n', circuit.power_flow_input.Sbus)
-        # print('\nIbus:\n', circuit.power_flow_input.Ibus)
-        # print('\nVbus:\n', circuit.power_flow_input.Vbus)
-        # print('\ntypes:\n', circuit.power_flow_input.types)
-        # print('\npq:\n', circuit.power_flow_input.pq)
-        # print('\npv:\n', circuit.power_flow_input.pv)
-        # print('\nvd:\n', circuit.power_flow_input.ref)
 
         # declare and solve problem
         problem = DcOpf(circuit)

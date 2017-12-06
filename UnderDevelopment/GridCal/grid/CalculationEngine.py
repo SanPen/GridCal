@@ -1893,6 +1893,16 @@ class ControlledGenerator:
 
         self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
 
+    def apply_lp_vars(self, at=None):
+        """
+        Set the LP vars to the main value or the profile
+        """
+        if self.LPVar_P is not None:
+            if at is None:
+                self.P = self.LPVar_P.value()
+            else:
+                self.Pprof.values[at] = self.LPVar_P.value()
+
     def __str__(self):
         return self.name
 
