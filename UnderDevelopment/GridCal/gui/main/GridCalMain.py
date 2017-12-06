@@ -1348,7 +1348,7 @@ class MainGUI(QMainWindow):
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
                 Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
-                Sbranch, Ibranch, loading, losses = self.power_flow.compute_branch_results(self.circuit, V)
+                Sbranch, Ibranch, loading, losses = self.power_flow.power_flow_post_process(self.circuit, V)
 
                 self.color_based_of_pf(s_bus=Sbus,
                                        s_branch=Sbranch,
