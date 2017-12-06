@@ -13,26 +13,17 @@ from GridCal.grid.CalculationEngine import *
 
 class DcOpf:
 
-    def __init__(self, circuit:Circuit):
+    def __init__(self, circuit: Circuit):
         """
         OPF simple dispatch problem
-        :param Sbase: System base power (MVA)
-        :param B: System susceptance matrix (Imaginary part of the admittance matrix)
-        :param branches: List of branches from, to bus indices
-        :param flow_limits: Array of branch flow limits
-        :param demand: Array of node demand
-        :param pqpv: list of non-slack nodes
-        :param pv: list of nodes with generation
-        :param vd: list of slack nodes
-        :param costs: list of generator costs
-        :param lower_limits: generation lower limits
-        :param upper_limits: generation upper limits
+        :param circuit: GridCal Circuit instance (remember this must be a connected island)
         """
+
+        self.circuit = circuit
+
         self.Sbase = circuit.Sbase
         self.B = circuit.power_flow_input.Ybus.imag
-        self.branches = branches
-
-        self.nbus = B.shape[0]
+        self.nbus = self.B.shape[0]
 
         # node sets
         self.pqpv = circuit.power_flow_input.pqpv
@@ -40,26 +31,13 @@ class DcOpf:
         self.vd = circuit.power_flow_input.ref
         self.pq = circuit.power_flow_input.pq
 
-        # All the values must be in p.u.
-        self.costs = costs
-        self.flow_limits = flow_limits / Sbase
-        self.PD = circuit.power_flow_input.Sbus.real / Sbase
-        pos = np.where(self.PD > 0)[0]
-        self.PD[pos] = 0.0
-
-        self.gen_lower_limits = lower_limits / Sbase
-        self.gen_upper_limits = upper_limits / Sbase
-
-
         # declare the voltage angles
         self.theta = [None] * self.nbus
         for i in range(self.nbus):
             self.theta[i] = LpVariable("Theta" + str(i), -0.5, 0.5)
 
         # declare the generation
-        self.PG = [None] * self.nbus
-        for i in self.pv:
-            self.PG[i] = LpVariable("PG" + str(i), self.gen_lower_limits[i], self.gen_upper_limits[i])
+        self.PG = list()
 
     def solve(self):
         """
@@ -67,8 +45,6 @@ class DcOpf:
         :return:
         """
         prob = LpProblem("DC optimal power flow", LpMinimize)
-
-        n = len(self.PD)
 
         ################################################################################################################
         # Add the objective function
@@ -80,8 +56,22 @@ class DcOpf:
             fobj += self.theta[j] * 0.0
 
         # Add the generators cost
-        for i in range(n):
-            fobj += self.PG[i] * self.costs[i]
+        for bus in self.circuit.buses:
+
+            # check that there are at least one generator at the slack node
+            if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
+                raise Warning('There is no generator at the Slack node ' + bus.name + '!!!')
+
+            # Add the bus LP vars
+            for gen in bus.controlled_generators:
+                # create the controlled variable
+                name = "Gen" + gen.name + '_' + bus.name
+                gen.make_lp_vars(name, self.Sbase)
+
+                # add the variable to the objective function
+                fobj += gen.LPVar_P * gen.Cost
+
+                self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
 
         # Add the objective function to the problem
         prob += fobj
@@ -93,46 +83,58 @@ class DcOpf:
         ################################################################################################################
         for i in self.pqpv:
             s = 0
+            d = 0
+
+            # add the calculated node power
             for j in self.pqpv:
                 s += self.B[i, j] * self.theta[j]
-            prob.add(s == -self.PD[i] + self.PG[i], 'ct_node_mismatch_' + str(i))
-            # prob += s == -self.PD[i] + self.PG[i]
+
+            # add the generation LP vars
+            for gen in self.circuit.buses[i].controlled_generators:
+                d += gen.LPVar_P
+
+            # add the nodal demand
+            for load in self.circuit.buses[i].loads:
+                d -= load.S.real / self.Sbase
+
+            prob.add(s == d, 'ct_node_mismatch_' + str(i))
 
         ################################################################################################################
         #  set the slack nodes voltage angle
         ################################################################################################################
         for i in self.vd:
             prob.add(self.theta[i] == 0, 'ct_slack_theta')
-            # prob += self.theta[i] == 0
 
         ################################################################################################################
         #  set the slack generator power
         ################################################################################################################
         for i in self.vd:
             val = 0
+            g = 0
+
+            # compute the slack node power
             for j in range(self.nbus):
                 val += self.B[i, j] * self.theta[j]
-            prob.add(self.PG[i] == val, 'ct_slack_power_' + str(i))
-            # prob += self.PG[i] == val
 
-        ################################################################################################################
-        #  set the PQ generators equal to zero
-        ################################################################################################################
-        for i in self.pq:
-            # prob += LpConstraint(self.PG[i] == 0, name='ct_zero_pq_gen_' + str(i))
-            prob.add(self.PG[i] == 0, 'ct_zero_pq_gen_' + str(i))
+            # Sum the slack generators
+            for gen in self.circuit.buses[i].controlled_generators:
+                g += gen.LPVar_P
+
+            # the sum of the slack node generators must be equal to the slack node power
+            prob.add(g == val, 'ct_slack_power_' + str(i))
 
         ################################################################################################################
         # Set the branch limits
         ################################################################################################################
-        for k, coord in enumerate(self.branches):
-            i, j = coord
+        for k, branch in enumerate(self.circuit.branches):
+            i = self.circuit.buses_dict[branch.bus_from]
+            j = self.circuit.buses_dict[branch.bus_to]
             # branch flow
             Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
             Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
             # constraints
-            prob.add(Fij <= self.flow_limits[k], 'ct_br_flow_ij_' + str(k))
-            prob.add(Fji <= self.flow_limits[k], 'ct_br_flow_ji_' + str(k))
+            prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+            prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
 
         ################################################################################################################
         # Solve
@@ -163,82 +165,39 @@ class DcOpf:
 
         # Set the branch limits
         print('\nBranch flows (in MW)')
-        for k, coord in enumerate(self.branches):
-            i, j = coord
+        for k, branch in enumerate(self.circuit.branches):
+            i = self.circuit.buses_dict[branch.bus_from]
+            j = self.circuit.buses_dict[branch.bus_to]
             if self.theta[i].value() is not None and self.theta[j].value() is not None:
                 F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
             else:
                 F = 'None'
-            print('Branch ' + str(i) + '-' + str(j) + '(', self.flow_limits[k] * self.Sbase, 'MW) ->', F)
+            print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
+
 
 if __name__ == '__main__':
 
-    # Susceptance matrix in p.u.
-    B = np.array([[-25.99739726,   7.53424658,   7.53424658,   0.        ,  10.95890411],
-                  [  7.53424658, -26.06094761,   9.27835052,   0.        ,   9.27835052],
-                  [  7.53424658,   9.27835052, -23.11906051,   6.34146341,   0.        ],
-                  [  0.        ,   0.        ,   6.34146341, -15.59481393,   9.27835052],
-                  [ 10.95890411,   9.27835052,   0.        ,   9.27835052, -29.48560514]])
-
-    # Branch indices
-    branches = [[2, 0],
-                [3, 2],
-                [4, 3],
-                [4, 1],
-                [4, 0],
-                [1, 0],
-                [1, 2]]
-
-    # Branch flows in MW
-    flow_limits = np.array([70, 18, 20, 10, 90, 60, 20])
-
-    # Node demands in MW
-    PD = np.array([0.  , 40 , 25, 40, 50])
-
-    pq = np.array([1, 2, 4])
-    vd = np.array([0])
-    pv = np.array([3])
-
-    # Generator costs in €/MW (vector for all the nodes...)
-    costs = np.array([250, 0, 0, 200, 0])
-
-    # Generator limits in MW (vectors for all the nodes...)
-    lower_lim = np.array([0, 0, 0, 0, 0, 0])
-    upper_lim = np.array([100, 100, 100, 100, 100])
-
-    # System base power (MW)
-    Sbase = 100.0
-
-    # declare and solve problem
-    problem = DcOpf(Sbase, B, branches, flow_limits, PD, pq, pv, vd, costs, lower_lim, upper_lim)
-    problem.solve()
-    problem.print()
-
-
-
-
     grid = MultiCircuit()
-    grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('lynn5buspq.xlsx')
     # grid.load_file('IEEE30.xlsx')
+    grid.load_file('Illinois200Bus.xlsx')
 
     grid.compile()
 
     circuit = grid.circuits[0]
 
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
+    # print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+    # print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
+    # print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
+    # print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    # print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    # print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    # print('\ntypes:\n', circuit.power_flow_input.types)
+    # print('\npq:\n', circuit.power_flow_input.pq)
+    # print('\npv:\n', circuit.power_flow_input.pv)
+    # print('\nvd:\n', circuit.power_flow_input.ref)
 
     # declare and solve problem
-    problem = DcOpf(Sbase=circuit.Sbase,
-                    B=circuit.power_flow_input.Ybus.imag,
-                    branches, flow_limits, PD, pq, pv, vd, costs, lower_lim, upper_lim)
+    problem = DcOpf(circuit)
     problem.solve()
     problem.print()
