@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.81
+__GridCal_VERSION__ = 1.83
 
 from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.grid.FastDecoupled import FDPF
@@ -38,6 +38,7 @@ from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
 from pyDOE import lhs
 from pySOT import *
+import pulp
 from poap.controller import ThreadController, BasicWorkerThread, SerialController
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
@@ -1679,7 +1680,7 @@ class Battery:
 class ControlledGenerator:
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True):
+                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0):
         """
         Voltage controlled generator
         @param name:
@@ -1691,6 +1692,9 @@ class ControlledGenerator:
         @param power_prof:
         @param vset_prof
         @param active
+        @param p_min: minimum dispatchable power in MW
+        @param p_max maximum dispatchable power in MW
+        @param op_cost operational cost in Eur (or other currency) per MW
         """
 
         self.name = name
@@ -1710,6 +1714,15 @@ class ControlledGenerator:
         # MVA = kV * kA
         self.P = active_power
 
+        # Nominal power in MVA
+        self.Snom = Snom
+
+        # Minimum dispatched power in MW
+        self.Pmin = p_min
+
+        # Maximum dispatched power in MW
+        self.Pmax = p_max
+
         # power profile for this load
         self.Pprof = power_prof
 
@@ -1719,18 +1732,21 @@ class ControlledGenerator:
         # voltage set profile for this load
         self.Vsetprof = vset_prof
 
-        # minimum reactive power in per unit
+        # minimum reactive power in MVAr
         self.Qmin = Qmin
 
-        # Maximum reactive power in per unit
+        # Maximum reactive power in MVAr
         self.Qmax = Qmax
 
-        # Nominal power
-        self.Snom = Snom
+        # Cost of operation
+        self.Cost = op_cost
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax']
+        # Linear problem generator dispatch power variable (in p.u.)
+        self.LPVar_P = None
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'p.u.', 'p.u.']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
+
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1739,7 +1755,10 @@ class ControlledGenerator:
                            'Vset': float,
                            'Snom': float,
                            'Qmin': float,
-                           'Qmax': float}
+                           'Qmax': float,
+                           'Pmin': float,
+                           'Pmax': float,
+                           'Cost': float}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
@@ -1756,6 +1775,8 @@ class ControlledGenerator:
         # Power (MVA)
         # MVA = kV * kA
         gen.P = self.P
+
+        gen.active = self.active
 
         # power profile for this load
         gen.Pprof = self.Pprof
@@ -1782,7 +1803,8 @@ class ControlledGenerator:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Qmin, self.Qmax]
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost]
 
     def create_profiles_maginitude(self, index, arr, mag):
         """
@@ -1857,6 +1879,29 @@ class ControlledGenerator:
             if self.Vsetprof is None:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
+
+    def make_lp_vars(self, name, Sbase):
+        """
+        Create all the necessary LP variables
+        Args:
+            name: base name of the variables to make them unique
+            Sbase: Base system power in MVA
+
+        Returns:
+            nothing
+        """
+
+        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
+
+    def apply_lp_vars(self, at=None):
+        """
+        Set the LP vars to the main value or the profile
+        """
+        if self.LPVar_P is not None:
+            if at is None:
+                self.P = self.LPVar_P.value()
+            else:
+                self.Pprof.values[at] = self.LPVar_P.value()
 
     def __str__(self):
         return self.name
@@ -2011,6 +2056,9 @@ class Circuit:
         # array of bus indices in the master circuit
         self.bus_original_idx = list()
 
+        # Dictionary relating the bus object to its index. Updated upon compilation
+        self.buses_dict = dict()
+
         # Object with the necessary inputs for a power flow study
         self.power_flow_input = None
 
@@ -2075,7 +2123,7 @@ class Circuit:
         are_cdfs = False
 
         # Dictionary that helps referencing the nodes
-        buses_dict = dict()
+        self.buses_dict = dict()
 
         # declare the square root of 3 to do it only once
         sqrt3 = sqrt(3.0)
@@ -2084,7 +2132,7 @@ class Circuit:
         for i in range(n):
 
             # Add buses dictionary entry
-            buses_dict[self.buses[i]] = i
+            self.buses_dict[self.buses[i]] = i
 
             # set the name
             power_flow_input.bus_names[i] = self.buses[i].name
@@ -2108,8 +2156,8 @@ class Circuit:
 
             power_flow_input.Vmin[i] = self.buses[i].Vmin
             power_flow_input.Vmax[i] = self.buses[i].Vmax
-            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum
-            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum
+            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum / self.Sbase
+            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum / self.Sbase
 
             # compute the time series arrays  ##############################################
 
@@ -2188,8 +2236,8 @@ class Circuit:
             if self.branches[i].active:
                 # Set the branch impedance
 
-                f = buses_dict[self.branches[i].bus_from]
-                t = buses_dict[self.branches[i].bus_to]
+                f = self.buses_dict[self.branches[i].bus_from]
+                t = self.buses_dict[self.branches[i].bus_to]
 
                 f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
                                                  Yseries=power_flow_input.Yseries,
@@ -4046,8 +4094,8 @@ class PowerFlow(QRunnable):
         # revert the types to the original
         circuit.power_flow_input.compile_types(original_types)
 
-        # Compute the branches power
-        Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
+        # Compute the branches power and the slack buses power
+        Sbranch, Ibranch, loading, losses, Sbus = self.power_flow_post_process(circuit=circuit, V=V)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
@@ -4067,13 +4115,19 @@ class PowerFlow(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(circuit: Circuit, V):
+    def power_flow_post_process(circuit: Circuit, V):
         """
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
         @param V: Voltage solution array for the circuit buses
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA)
         """
+        # Compute the slack and pv buses power
+        Sbus = circuit.power_flow_input.Sbus
+        vdpv = r_[circuit.power_flow_input.ref, circuit.power_flow_input.pv]
+        Sbus[vdpv] = V[vdpv] * conj(circuit.power_flow_input.Ybus[vdpv, :][:, :].dot(V))
+
+        # Branches current, loading, etc
         If = circuit.power_flow_input.Yf * V
         It = circuit.power_flow_input.Yt * V
         Sf = V[circuit.power_flow_input.F] * conj(If)
@@ -4086,7 +4140,7 @@ class PowerFlow(QRunnable):
         # idx = where(abs(loading) == inf)[0]
         # loading[idx] = 9999
 
-        return Sbranch, Ibranch, loading, losses
+        return Sbranch, Ibranch, loading, losses, Sbus
 
     @staticmethod
     def switch_logic(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
@@ -5530,8 +5584,8 @@ class MonteCarlo(QThread):
         mc_results.compile()
 
         # compute the averaged branch magnitudes
-        mc_results.sbranch, Ibranch, loading, mc_results.losses = powerflow.compute_branch_results(self.grid,
-                                                                                                   mc_results.voltage)
+        mc_results.sbranch, Ibranch, \
+        loading, mc_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, mc_results.voltage)
 
         self.results = mc_results
 
@@ -5924,7 +5978,7 @@ class LatinHypercubeSampling(QThread):
 
         # lhs_results the averaged branch magnitudes
         lhs_results.sbranch, Ibranch, \
-        loading, lhs_results.losses = powerflow.compute_branch_results(self.grid, lhs_results.voltage)
+        loading, lhs_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
 
