@@ -83,7 +83,8 @@ if platform.system() == 'Windows':
                           "matplotlib",
                           "qtconsole",
                           "pysot",
-                          "openpyxl"
+                          "openpyxl",
+                          "pulp"
                           ]
 else:
     # make the desktop entry
@@ -100,7 +101,8 @@ else:
                          "matplotlib",
                          "qtconsole",
                          "pysot",
-                         "openpyxl"
+                         "openpyxl",
+                         "pulp"
                          ]
 
 # Read the license

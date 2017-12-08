@@ -38,6 +38,7 @@ from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
 from pyDOE import lhs
 from pySOT import *
+import pulp
 from poap.controller import ThreadController, BasicWorkerThread, SerialController
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
@@ -1679,7 +1680,7 @@ class Battery:
 class ControlledGenerator:
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=1.0, fuel_cost=0):
+                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0):
         """
         Voltage controlled generator
         @param name:
@@ -1691,6 +1692,9 @@ class ControlledGenerator:
         @param power_prof:
         @param vset_prof
         @param active
+        @param p_min: minimum dispatchable power in MW
+        @param p_max maximum dispatchable power in MW
+        @param op_cost operational cost in Eur (or other currency) per MW
         """
 
         self.name = name
@@ -1735,7 +1739,10 @@ class ControlledGenerator:
         self.Qmax = Qmax
 
         # Cost of operation
-        self.Cost = fuel_cost
+        self.Cost = op_cost
+
+        # Linear problem generator dispatch power variable (in p.u.)
+        self.LPVar_P = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
 
@@ -1750,7 +1757,8 @@ class ControlledGenerator:
                            'Qmin': float,
                            'Qmax': float,
                            'Pmin': float,
-                           'Pmax': float}
+                           'Pmax': float,
+                           'Cost': float}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
@@ -1871,6 +1879,29 @@ class ControlledGenerator:
             if self.Vsetprof is None:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
+
+    def make_lp_vars(self, name, Sbase):
+        """
+        Create all the necessary LP variables
+        Args:
+            name: base name of the variables to make them unique
+            Sbase: Base system power in MVA
+
+        Returns:
+            nothing
+        """
+
+        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
+
+    def apply_lp_vars(self, at=None):
+        """
+        Set the LP vars to the main value or the profile
+        """
+        if self.LPVar_P is not None:
+            if at is None:
+                self.P = self.LPVar_P.value()
+            else:
+                self.Pprof.values[at] = self.LPVar_P.value()
 
     def __str__(self):
         return self.name
@@ -2025,6 +2056,9 @@ class Circuit:
         # array of bus indices in the master circuit
         self.bus_original_idx = list()
 
+        # Dictionary relating the bus object to its index. Updated upon compilation
+        self.buses_dict = dict()
+
         # Object with the necessary inputs for a power flow study
         self.power_flow_input = None
 
@@ -2089,7 +2123,7 @@ class Circuit:
         are_cdfs = False
 
         # Dictionary that helps referencing the nodes
-        buses_dict = dict()
+        self.buses_dict = dict()
 
         # declare the square root of 3 to do it only once
         sqrt3 = sqrt(3.0)
@@ -2098,7 +2132,7 @@ class Circuit:
         for i in range(n):
 
             # Add buses dictionary entry
-            buses_dict[self.buses[i]] = i
+            self.buses_dict[self.buses[i]] = i
 
             # set the name
             power_flow_input.bus_names[i] = self.buses[i].name
@@ -2202,8 +2236,8 @@ class Circuit:
             if self.branches[i].active:
                 # Set the branch impedance
 
-                f = buses_dict[self.branches[i].bus_from]
-                t = buses_dict[self.branches[i].bus_to]
+                f = self.buses_dict[self.branches[i].bus_from]
+                t = self.buses_dict[self.branches[i].bus_to]
 
                 f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
                                                  Yseries=power_flow_input.Yseries,
@@ -4088,13 +4122,12 @@ class PowerFlow(QRunnable):
         @param V: Voltage solution array for the circuit buses
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA)
         """
-        # Compute the slack buses power
+        # Compute the slack and pv buses power
         Sbus = circuit.power_flow_input.Sbus
-        vd = r_[circuit.power_flow_input.ref, circuit.power_flow_input.pv]
+        vdpv = r_[circuit.power_flow_input.ref, circuit.power_flow_input.pv]
+        Sbus[vdpv] = V[vdpv] * conj(circuit.power_flow_input.Ybus[vdpv, :][:, :].dot(V))
 
-        Sbus[vd] = V[vd] * conj(circuit.power_flow_input.Ybus[vd, :][:, :].dot(V))
-
-        # Branches
+        # Branches current, loading, etc
         If = circuit.power_flow_input.Yf * V
         It = circuit.power_flow_input.Yt * V
         Sf = V[circuit.power_flow_input.F] * conj(If)
