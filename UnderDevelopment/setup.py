@@ -105,6 +105,10 @@ else:
                          "pulp"
                          ]
 
+# Read the license
+with open('LICENSE.txt', 'r') as myfile:
+    license_text = myfile.read()
+
 setup(
     # Application name:
     name=name,
@@ -128,7 +132,7 @@ setup(
     url="http://pypi.python.org/pypi/GridCal/",
 
     # License file
-    license="LICENSE.txt",
+    license=license_text,
 
     # description
     description=description,
