@@ -46,6 +46,7 @@ def make_linux_desktop_file(version_, comment):
 
     return fname
 
+
 name = "GridCal"
 version = str(__GridCal_VERSION__)
 description = "Research Oriented electrical simulation software."
@@ -56,36 +57,36 @@ if sys.version_info < (3, 5, 0, 'final', 0):
 
 # Build a list of all project modules
 packages = []
-for dirname, dirnames, filenames in os.walk(name):
-        if '__init__.py' in filenames:
-            packages.append(dirname.replace('/', '.'))
+for dir_name, dir_names, file_names in os.walk(name):
+        if '__init__.py' in file_names:
+            packages.append(dir_name.replace('/', '.'))
 
 package_dir = {name: name}
 
 # Data_files (e.g. doc) needs (directory, files-in-this-directory) tuples
 data_files = []
-for dirname, dirnames, filenames in os.walk('doc'):
-        fileslist = []
-        for filename in filenames:
-            fullname = os.path.join(dirname, filename)
-            fileslist.append(fullname)
-        data_files.append(('share/' + name + '/' + dirname, fileslist))
+for dir_name, dir_names, file_names in os.walk('doc'):
+        files_list = []
+        for filename in file_names:
+            fullname = os.path.join(dir_name, filename)
+            files_list.append(fullname)
+        data_files.append(('share/' + name + '/' + dir_name, files_list))
 
 if platform.system() == 'Windows':
     # list the packages (On windows anaconda is assumed)
     required_packages = ["numpy",
-                          "scipy",
-                          "networkx",
-                          "pandas",
-                          "xlwt",
-                          "xlrd",
-                          # "PyQt5",
-                          "matplotlib",
-                          "qtconsole",
-                          "pysot",
-                          "openpyxl",
-                          "pulp"
-                          ]
+                         "scipy",
+                         "networkx",
+                         "pandas",
+                         "xlwt",
+                         "xlrd",
+                         # "PyQt5",
+                         "matplotlib",
+                         "qtconsole",
+                         "pysot",
+                         "openpyxl",
+                         "pulp"
+                         ]
 else:
     # make the desktop entry
     make_linux_desktop_file(version_=version, comment=description)
@@ -106,8 +107,8 @@ else:
                          ]
 
 # Read the license
-with open('LICENSE.txt', 'r') as myfile:
-    license_text = myfile.read()
+with open('LICENSE.txt', 'r') as f:
+    license_text = f.read()
 
 setup(
     # Application name:
@@ -141,5 +142,6 @@ setup(
 
     # Dependent packages (distributions)
     install_requires=required_packages,
-    setup_requires=required_packages,
+
+    setup_requires=required_packages
 )
