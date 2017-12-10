@@ -220,6 +220,7 @@ class MainGUI(QMainWindow):
         self.voltage_stability = None
         self.latin_hypercube_sampling = None
         self.cascade = None
+        self.optimal_power_flow = None
 
         self.results_df = None
 
@@ -271,6 +272,8 @@ class MainGUI(QMainWindow):
         self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
+
+        self.ui.actionOPF.triggered.connect(self.run_opf)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -1636,6 +1639,48 @@ class MainGUI(QMainWindow):
         idx = self.ui.cascade_tableView.currentIndex()
         if idx.row() > -1:
             self.post_cascade(idx=idx.row())
+
+    def run_opf(self):
+        """
+        Run OPF simulation
+        """
+        if len(self.circuit.buses) > 0:
+            self.LOCK()
+
+            self.ui.progress_label.setText('Compiling the grid...')
+            QtGui.QGuiApplication.processEvents()
+            self.compile()
+
+            # get the power flow options from the GUI
+            options = OptimalPowerFlowOptions()
+
+            self.ui.progress_label.setText('Running optimal power flow...')
+            QtGui.QGuiApplication.processEvents()
+            # set power flow object instance
+            self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
+
+            # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+            # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
+            # self.power_flow.done_signal.connect(self.UNLOCK)
+            # self.power_flow.done_signal.connect(self.post_power_flow)
+
+            # self.power_flow.run()
+            self.threadpool.start(self.optimal_power_flow)
+            self.threadpool.waitForDone()
+            self.post_opf()
+        else:
+            pass
+
+    def post_opf(self):
+        """
+        Actions to run after the OPF simulation
+        Returns:
+
+        """
+        if self.optimal_power_flow is not None:
+            pass
+
+        self.UNLOCK()
 
     def set_cancel_state(self):
         """

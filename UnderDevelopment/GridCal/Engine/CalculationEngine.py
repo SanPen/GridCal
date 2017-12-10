@@ -29,6 +29,7 @@ from GridCal.Engine.Numerical.DCPF import dcpf
 from GridCal.Engine.Numerical.HelmVect import helm
 from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
+
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from networkx import connected_components
@@ -6362,3 +6363,543 @@ class Optimize(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
+
+
+########################################################################################################################
+# Optimal Power flow classes
+########################################################################################################################
+
+class DcOpf:
+
+    def __init__(self, circuit):
+        """
+        OPF simple dispatch problem
+        :param circuit: GridCal Circuit instance (remember this must be a connected island)
+        """
+
+        self.circuit = circuit
+
+        self.Sbase = circuit.Sbase
+        self.B = circuit.power_flow_input.Ybus.imag.tocsr()
+        self.nbus = self.B.shape[0]
+
+        # node sets
+        self.pqpv = circuit.power_flow_input.pqpv
+        self.pv = circuit.power_flow_input.pv
+        self.vd = circuit.power_flow_input.ref
+        self.pq = circuit.power_flow_input.pq
+
+        # declare the voltage angles
+        self.theta = [None] * self.nbus
+        for i in range(self.nbus):
+            self.theta[i] = pulp.LpVariable("Theta" + str(i), -0.5, 0.5)
+
+        # declare the generation
+        self.PG = list()
+
+        # LP problem
+        self.problem = None
+
+        # LP problem restrictions saved on build and added to the problem with every load change
+        self.s_restrictions = list()
+        self.p_restrictions = list()
+
+    def build(self):
+        """
+        Build the OPF problem using the sparse formulation
+        In this step, the circuit loads are not included
+        those are added separately for greater flexibility
+        """
+
+        '''
+        CSR format explanation:
+        The standard CSR representation where the column indices for row i are stored in 
+
+        -> indices[indptr[i]:indptr[i+1]] 
+
+        and their corresponding values are stored in 
+
+        -> data[indptr[i]:indptr[i+1]]
+
+        If the shape parameter is not supplied, the matrix dimensions are inferred from the index arrays.
+
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html
+        '''
+
+        print('Compiling LP')
+        prob = pulp.LpProblem("DC optimal power flow", pulp.LpMinimize)
+
+        ################################################################################################################
+        # Add the objective function
+        ################################################################################################################
+        fobj = 0
+
+        # add the voltage angles multiplied by zero (trick)
+        for j in self.pqpv:
+            fobj += self.theta[j] * 0.0
+
+        # Add the generators cost
+        for bus in self.circuit.buses:
+
+            # check that there are at least one generator at the slack node
+            if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
+                raise Warning('There is no generator at the Slack node ' + bus.name + '!!!')
+
+            # Add the bus LP vars
+            for gen in bus.controlled_generators:
+
+                # create the generation variable
+                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name, self.Sbase)
+
+                # add the variable to the objective function
+                fobj += gen.LPVar_P * gen.Cost
+
+                self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
+
+        # Add the objective function to the problem
+        prob += fobj
+
+        ################################################################################################################
+        # Add the nodal power balance equations as constraints (without loads, those are added later)
+        # See: https://math.stackexchange.com/questions/1727572/solving-a-feasible-system-of-linear-equations-
+        #      using-linear-programming
+        ################################################################################################################
+        for i in self.pqpv:
+            calculated_node_power = 0
+            node_power_injection = 0
+
+            # add the calculated node power
+            for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
+                j = self.B.indices[ii]
+                if j not in self.vd:
+                    calculated_node_power += self.B.data[ii] * self.theta[j]
+
+            # add the generation LP vars
+            for gen in self.circuit.buses[i].controlled_generators:
+                node_power_injection += gen.LPVar_P
+
+            # Store the terms for adding the load later.
+            # This allows faster problem compilation in case of recurrent runs
+            self.s_restrictions.append(calculated_node_power)
+            self.p_restrictions.append(node_power_injection)
+
+            # # add the nodal demand
+            # for load in self.circuit.buses[i].loads:
+            #     node_power_injection -= load.S.real / self.Sbase
+            #
+            # prob.add(calculated_node_power == node_power_injection, 'ct_node_mismatch_' + str(i))
+
+        ################################################################################################################
+        #  set the slack nodes voltage angle
+        ################################################################################################################
+        for i in self.vd:
+            prob.add(self.theta[i] == 0, 'ct_slack_theta')
+
+        ################################################################################################################
+        #  set the slack generator power
+        ################################################################################################################
+        for i in self.vd:
+            val = 0
+            g = 0
+
+            # compute the slack node power
+            for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
+                j = self.B.indices[ii]
+                val += self.B.data[ii] * self.theta[j]
+
+            # Sum the slack generators
+            for gen in self.circuit.buses[i].controlled_generators:
+                g += gen.LPVar_P
+
+            # the sum of the slack node generators must be equal to the slack node power
+            prob.add(g == val, 'ct_slack_power_' + str(i))
+
+        ################################################################################################################
+        # Set the branch limits
+        ################################################################################################################
+        for k, branch in enumerate(self.circuit.branches):
+            i = self.circuit.buses_dict[branch.bus_from]
+            j = self.circuit.buses_dict[branch.bus_to]
+            # branch flow
+            Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
+            Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+            # constraints
+            prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+            prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+
+        # set the global OPF LP problem
+        self.problem = prob
+
+    def set_loads(self, t_idx=None):
+        """
+        Add the loads to the LP problem
+        Args:
+            t_idx: time index, if none, the default object values are taken
+        """
+
+        if t_idx is None:
+            for k, i in enumerate(self.pqpv):
+
+                # these restrictions come from the build step to be fulfilled with the load now
+                node_power_injection = self.p_restrictions[k]
+                calculated_node_power = self.s_restrictions[k]
+
+                # add the nodal demand
+                for load in self.circuit.buses[i].loads:
+                    node_power_injection -= load.S.real / self.Sbase
+
+                self.problem.add(calculated_node_power == node_power_injection, 'ct_node_mismatch_' + str(i))
+        else:
+
+            for k, i in enumerate(self.pqpv):
+
+                # these restrictions come from the build step to be fulfilled with the load now
+                node_power_injection = self.p_restrictions[k]
+                calculated_node_power = self.s_restrictions[k]
+
+                # add the nodal demand
+                for load in self.circuit.buses[i].loads:
+                    node_power_injection -= load.S_prof.values[t_idx].real / self.Sbase
+
+                self.problem.add(calculated_node_power == node_power_injection, 'ct_node_mismatch_' + str(i))
+
+    def solve(self):
+        """
+        Solve the LP OPF problem
+        """
+
+        # if there is no problem there, make it
+        if self.problem is None:
+            self.build()
+
+        print('Solving LP')
+        self.problem.solve()  # solve with CBC
+        # prob.solve(CPLEX())
+
+        # The status of the solution is printed to the screen
+        print("Status:", pulp.LpStatus[self.problem.status])
+
+        # The optimised objective function value is printed to the screen
+        print("Cost =", pulp.value(self.problem.objective), '€')
+
+        self.print()
+
+    def print(self):
+        """
+        Print results
+        :return:
+        """
+        print('\nVoltage angles (in rad)')
+        for i, th in enumerate(self.theta):
+            print('Bus', i, '->', th.value())
+
+        print('\nGeneration power (in MW)')
+        for i, g in enumerate(self.PG):
+            val = g.value() * self.Sbase if g.value() is not None else 'None'
+            print(g.name, '->', val)
+
+        # Set the branch limits
+        print('\nBranch flows (in MW)')
+        for k, branch in enumerate(self.circuit.branches):
+            i = self.circuit.buses_dict[branch.bus_from]
+            j = self.circuit.buses_dict[branch.bus_to]
+            if self.theta[i].value() is not None and self.theta[j].value() is not None:
+                F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+            else:
+                F = 'None'
+            print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
+
+
+class OptimalPowerFlowOptions:
+
+    def __init__(self, verbose=False):
+        """
+
+        """
+        self.verbose = verbose
+
+
+class OptimalPowerFlowResults:
+
+    def __init__(self, n_gen, n_branch):
+        """
+
+        Args:
+            n_gen: number of controlled generators
+            n_branch: number of branches
+        """
+        # self.Sbus = Sbus
+        #
+        # self.voltage = voltage
+        #
+        # self.Sbranch = Sbranch
+        #
+        # self.Ibranch = Ibranch
+        #
+        # self.loading = loading
+        #
+        # self.losses = losses
+        #
+        # self.error = error
+        #
+        # self.converged = converged
+        #
+        # self.Qpv = Qpv
+        #
+        # self.overloads = None
+        #
+        # self.overvoltage = None
+        #
+        # self.undervoltage = None
+        #
+        # self.overloads_idx = None
+        #
+        # self.overvoltage_idx = None
+        #
+        # self.undervoltage_idx = None
+        #
+        # self.buses_useful_for_storage = None
+
+        self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses']
+
+        self.plot_bars_limit = 100
+
+    def copy(self):
+        """
+        Return a copy of this
+        @return:
+        """
+        return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
+                                Ibranch=self.Ibranch, loading=self.loading,
+                                losses=self.losses, error=self.error,
+                                converged=self.converged, Qpv=self.Qpv, inner_it=self.inner_iterations,
+                                outer_it=self.outer_iterations, elapsed=self.elapsed, methods=self.methods)
+
+    def initialize(self, n, m):
+        """
+        Initialize the arrays
+        @param n: number of buses
+        @param m: number of branches
+        @return:
+        """
+        self.Sbus = zeros(n, dtype=complex)
+
+        self.voltage = zeros(n, dtype=complex)
+
+        self.overvoltage = zeros(n, dtype=complex)
+
+        self.undervoltage = zeros(n, dtype=complex)
+
+        self.Sbranch = zeros(m, dtype=complex)
+
+        self.Ibranch = zeros(m, dtype=complex)
+
+        self.loading = zeros(m, dtype=complex)
+
+        self.losses = zeros(m, dtype=complex)
+
+        self.overloads = zeros(m, dtype=complex)
+
+        self.error = list()
+
+        self.converged = list()
+
+        self.buses_useful_for_storage = list()
+
+        self.plot_bars_limit = 100
+
+    def apply_from_island(self, results, b_idx, br_idx):
+        """
+        Apply results from another island circuit to the circuit results represented here
+        @param results: PowerFlowResults
+        @param b_idx: bus original indices
+        @param br_idx: branch original indices
+        @return:
+        """
+        # self.Sbus[b_idx] = results.Sbus
+        #
+        # self.voltage[b_idx] = results.voltage
+        #
+        # self.overvoltage[b_idx] = results.overvoltage
+        #
+        # self.undervoltage[b_idx] = results.undervoltage
+        #
+        # self.Sbranch[br_idx] = results.Sbranch
+        #
+        # self.Ibranch[br_idx] = results.Ibranch
+        #
+        # self.loading[br_idx] = results.loading
+        #
+        # self.losses[br_idx] = results.losses
+        #
+        # self.overloads[br_idx] = results.overloads
+        #
+        # # if results.error > self.error:
+        # self.error.append(results.error)
+        #
+        # self.converged.append(results.converged)
+        #
+        # self.inner_iterations.append(results.inner_iterations)
+        #
+        # self.outer_iterations.append(results.outer_iterations)
+        #
+        # self.elapsed.append(results.elapsed)
+        #
+        # self.methods.append(results.methods)
+        #
+        # # self.converged = self.converged and results.converged
+        #
+        # if results.buses_useful_for_storage is not None:
+        #     self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
+
+    def plot(self, result_type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        Args:
+            result_type:
+            ax:
+            indices:
+            names:
+
+        Returns:
+
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            title = ''
+            if result_type == 'Bus voltage':
+                y = self.voltage[indices]
+                ylabel = '(p.u.)'
+                title = 'Bus voltage '
+
+            elif result_type == 'Branch power':
+                y = self.Sbranch[indices]
+                ylabel = '(MVA)'
+                title = 'Branch power '
+
+            elif result_type == 'Branch current':
+                y = self.Ibranch[indices]
+                ylabel = '(p.u.)'
+                title = 'Branch current '
+
+            elif result_type == 'Branch_loading':
+                y = self.loading[indices] * 100
+                ylabel = '(%)'
+                title = 'Branch loading '
+
+            elif result_type == 'Branch losses':
+                y = self.losses[indices]
+                ylabel = '(MVA)'
+                title = 'Branch losses '
+
+            else:
+                pass
+
+            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            if len(df.columns) < self.plot_bars_limit:
+                df.plot(ax=ax, kind='bar')
+            else:
+                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+            ax.set_ylabel(ylabel)
+            ax.set_title(title)
+
+            return df
+
+        else:
+            return None
+
+
+class OptimalPowerFlow(QRunnable):
+    # progress_signal = pyqtSignal(float)
+    # progress_text = pyqtSignal(str)
+    # done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
+        """
+        PowerFlow class constructor
+        @param grid: MultiCircuit Object
+        """
+        QRunnable.__init__(self)
+
+        # Grid to run a power flow in
+        self.grid = grid
+
+        # Options to use
+        self.options = options
+
+        # set cancel state
+        self.__cancel__ = False
+
+    @staticmethod
+    def single_optimal_power_flow(circuit: Circuit, t_idx=None):
+        """
+        Run a power flow simulation for a single circuit
+        @param circuit: Single island circuit
+        @param t_idx: time index, if none the default values are taken
+        @return: OptimalPowerFlowResults object
+        """
+
+        # declare LP problem
+        problem = DcOpf(circuit)
+        problem.build()
+        problem.set_loads(t_idx=t_idx)
+        problem.solve()
+
+        # results
+        res = OptimalPowerFlowResults(0, 0)
+
+        # fill results
+        # TODO
+
+        return res
+
+    def run(self, t_idx=None):
+        """
+        Run a power flow for every circuit
+        @return: OptimalPowerFlowResults object
+        """
+        # print('PowerFlow at ', self.grid.name)
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        ng = n
+        results = OptimalPowerFlowResults(ng, m)
+        results.initialize(n, m)
+        # self.progress_signal.emit(0.0)
+
+        k = 0
+        for circuit in self.grid.circuits:
+
+            if self.options.verbose:
+                print('Solving ' + circuit.name)
+
+            optimal_power_flow_results = self.single_optimal_power_flow(circuit, t_idx=t_idx)
+
+            results.apply_from_island(optimal_power_flow_results, circuit.bus_original_idx, circuit.branch_original_idx)
+
+            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
+            k += 1
+
+        return results
+
+    def run_at(self, t):
+        """
+        Run power flow at the time series object index t
+        @param t: time index
+        @return: OptimalPowerFlowResults object
+        """
+
+        res = self.run(t)
+
+        return res
+
+    def cancel(self):
+        self.__cancel__ = True
