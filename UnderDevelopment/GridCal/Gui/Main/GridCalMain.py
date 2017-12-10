@@ -1678,7 +1678,13 @@ class MainGUI(QMainWindow):
 
         """
         if self.optimal_power_flow is not None:
-            pass
+
+            self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
+                                   loadings=self.optimal_power_flow.results.loading,
+                                   types=self.circuit.power_flow_input.types,
+                                   s_branch=self.optimal_power_flow.results.Sbranch,
+                                   s_bus=self.optimal_power_flow.results.Sbus)
+            self.update_available_results()
 
         self.UNLOCK()
 
@@ -1733,6 +1739,10 @@ class MainGUI(QMainWindow):
         if self.short_circuit is not None:
             lst.append("Short Circuit")
             self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
+
+        if self.optimal_power_flow is not None:
+            lst.append("Optimal power flow")
+            self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)

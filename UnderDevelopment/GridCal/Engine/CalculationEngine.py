@@ -6609,6 +6609,46 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
+    def get_results(self):
+        """
+        Return the optimization results
+        Returns:
+            OptimalPowerFlowResults instance
+        """
+        n = len(self.circuit.buses)
+        m = len(self.circuit.branches)
+        res = OptimalPowerFlowResults()
+        res.initialize(n, m)
+
+        # Add buses
+        for i in range(n):
+            g = 0.0
+
+            # Sum the slack generators
+            for gen in self.circuit.buses[i].controlled_generators:
+                g += gen.LPVar_P.value()
+
+            # Set the results
+            res.Sbus[i] = g
+
+            # Set the voltage
+            res.voltage[i] = 1 * exp(1j * self.theta[i].value())
+
+        # Add branches
+        for k, branch in enumerate(self.circuit.branches):
+            i = self.circuit.buses_dict[branch.bus_from]
+            j = self.circuit.buses_dict[branch.bus_to]
+            if self.theta[i].value() is not None and self.theta[j].value() is not None:
+                F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+            else:
+                F = -1
+
+            # Set the results
+            res.Sbranch[k] = F
+            res.loading[k] = F / branch.rate
+
+        return res
+
 
 class OptimalPowerFlowOptions:
 
@@ -6621,46 +6661,30 @@ class OptimalPowerFlowOptions:
 
 class OptimalPowerFlowResults:
 
-    def __init__(self, n_gen, n_branch):
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, loading=None, losses=None, converged=None):
         """
 
         Args:
-            n_gen: number of controlled generators
-            n_branch: number of branches
+            Sbus:
+            voltage:
+            Sbranch:
+            loading:
+            losses:
+            converged:
         """
-        # self.Sbus = Sbus
-        #
-        # self.voltage = voltage
-        #
-        # self.Sbranch = Sbranch
-        #
-        # self.Ibranch = Ibranch
-        #
-        # self.loading = loading
-        #
-        # self.losses = losses
-        #
-        # self.error = error
-        #
-        # self.converged = converged
-        #
-        # self.Qpv = Qpv
-        #
-        # self.overloads = None
-        #
-        # self.overvoltage = None
-        #
-        # self.undervoltage = None
-        #
-        # self.overloads_idx = None
-        #
-        # self.overvoltage_idx = None
-        #
-        # self.undervoltage_idx = None
-        #
-        # self.buses_useful_for_storage = None
+        self.Sbus = Sbus
 
-        self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses']
+        self.voltage = voltage
+
+        self.Sbranch = Sbranch
+
+        self.loading = loading
+
+        self.losses = losses
+
+        self.converged = converged
+
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch_loading']
 
         self.plot_bars_limit = 100
 
@@ -6670,10 +6694,7 @@ class OptimalPowerFlowResults:
         @return:
         """
         return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
-                                Ibranch=self.Ibranch, loading=self.loading,
-                                losses=self.losses, error=self.error,
-                                converged=self.converged, Qpv=self.Qpv, inner_it=self.inner_iterations,
-                                outer_it=self.outer_iterations, elapsed=self.elapsed, methods=self.methods)
+                                loading=self.loading, losses=self.losses, converged=self.converged)
 
     def initialize(self, n, m):
         """
@@ -6686,25 +6707,13 @@ class OptimalPowerFlowResults:
 
         self.voltage = zeros(n, dtype=complex)
 
-        self.overvoltage = zeros(n, dtype=complex)
-
-        self.undervoltage = zeros(n, dtype=complex)
-
         self.Sbranch = zeros(m, dtype=complex)
-
-        self.Ibranch = zeros(m, dtype=complex)
 
         self.loading = zeros(m, dtype=complex)
 
         self.losses = zeros(m, dtype=complex)
 
-        self.overloads = zeros(m, dtype=complex)
-
-        self.error = list()
-
         self.converged = list()
-
-        self.buses_useful_for_storage = list()
 
         self.plot_bars_limit = 100
 
@@ -6716,41 +6725,17 @@ class OptimalPowerFlowResults:
         @param br_idx: branch original indices
         @return:
         """
-        # self.Sbus[b_idx] = results.Sbus
-        #
-        # self.voltage[b_idx] = results.voltage
-        #
-        # self.overvoltage[b_idx] = results.overvoltage
-        #
-        # self.undervoltage[b_idx] = results.undervoltage
-        #
-        # self.Sbranch[br_idx] = results.Sbranch
-        #
-        # self.Ibranch[br_idx] = results.Ibranch
-        #
-        # self.loading[br_idx] = results.loading
-        #
-        # self.losses[br_idx] = results.losses
-        #
-        # self.overloads[br_idx] = results.overloads
-        #
-        # # if results.error > self.error:
-        # self.error.append(results.error)
-        #
-        # self.converged.append(results.converged)
-        #
-        # self.inner_iterations.append(results.inner_iterations)
-        #
-        # self.outer_iterations.append(results.outer_iterations)
-        #
-        # self.elapsed.append(results.elapsed)
-        #
-        # self.methods.append(results.methods)
-        #
-        # # self.converged = self.converged and results.converged
-        #
-        # if results.buses_useful_for_storage is not None:
-        #     self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
+        self.Sbus[b_idx] = results.Sbus
+
+        self.voltage[b_idx] = results.voltage
+
+        self.Sbranch[br_idx] = results.Sbranch
+
+        self.loading[br_idx] = results.loading
+
+        self.losses[br_idx] = results.losses
+
+        self.converged.append(results.converged)
 
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
@@ -6786,10 +6771,10 @@ class OptimalPowerFlowResults:
                 ylabel = '(MVA)'
                 title = 'Branch power '
 
-            elif result_type == 'Branch current':
-                y = self.Ibranch[indices]
+            elif result_type == 'Bus power':
+                y = self.Sbus[indices]
                 ylabel = '(p.u.)'
-                title = 'Branch current '
+                title = 'Bus power '
 
             elif result_type == 'Branch_loading':
                 y = self.loading[indices] * 100
@@ -6836,6 +6821,9 @@ class OptimalPowerFlow(QRunnable):
         # Options to use
         self.options = options
 
+        # OPF results
+        self.results = None
+
         # set cancel state
         self.__cancel__ = False
 
@@ -6855,14 +6843,11 @@ class OptimalPowerFlow(QRunnable):
         problem.solve()
 
         # results
-        res = OptimalPowerFlowResults(0, 0)
-
-        # fill results
-        # TODO
+        res = problem.get_results()
 
         return res
 
-    def run(self, t_idx=None):
+    def opf(self, t_idx=None):
         """
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
@@ -6870,9 +6855,8 @@ class OptimalPowerFlow(QRunnable):
         # print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
         m = len(self.grid.branches)
-        ng = n
-        results = OptimalPowerFlowResults(ng, m)
-        results.initialize(n, m)
+        self.results = OptimalPowerFlowResults()
+        self.results.initialize(n, m)
         # self.progress_signal.emit(0.0)
 
         k = 0
@@ -6883,12 +6867,18 @@ class OptimalPowerFlow(QRunnable):
 
             optimal_power_flow_results = self.single_optimal_power_flow(circuit, t_idx=t_idx)
 
-            results.apply_from_island(optimal_power_flow_results, circuit.bus_original_idx, circuit.branch_original_idx)
+            self.results.apply_from_island(optimal_power_flow_results,
+                                           circuit.bus_original_idx,
+                                           circuit.branch_original_idx)
 
             # self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
 
-        return results
+        return self.results
+
+    def run(self):
+
+        self.opf()
 
     def run_at(self, t):
         """
@@ -6897,7 +6887,7 @@ class OptimalPowerFlow(QRunnable):
         @return: OptimalPowerFlowResults object
         """
 
-        res = self.run(t)
+        res = self.opf(t)
 
         return res
 
