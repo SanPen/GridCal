@@ -1827,6 +1827,9 @@ class MainGUI(QMainWindow):
             elif study == 'Short Circuit':
                 self.results_df = self.short_circuit.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
+            elif study == 'Optimal power flow':
+                self.results_df = self.optimal_power_flow.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+
             if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)
 

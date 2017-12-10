@@ -6404,6 +6404,8 @@ class DcOpf:
         self.s_restrictions = list()
         self.p_restrictions = list()
 
+        self.loads = np.zeros(self.nbus)
+
     def build(self):
         """
         Build the OPF problem using the sparse formulation
@@ -6546,9 +6548,9 @@ class DcOpf:
 
                 # add the nodal demand
                 for load in self.circuit.buses[i].loads:
-                    node_power_injection -= load.S.real / self.Sbase
+                    self.loads[i] += load.S.real / self.Sbase
 
-                self.problem.add(calculated_node_power == node_power_injection, 'ct_node_mismatch_' + str(i))
+                self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(i))
         else:
 
             for k, i in enumerate(self.pqpv):
@@ -6559,9 +6561,9 @@ class DcOpf:
 
                 # add the nodal demand
                 for load in self.circuit.buses[i].loads:
-                    node_power_injection -= load.S_prof.values[t_idx].real / self.Sbase
+                    self.loads[i] += load.S_prof.values[t_idx].real / self.Sbase
 
-                self.problem.add(calculated_node_power == node_power_injection, 'ct_node_mismatch_' + str(i))
+                self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(i))
 
     def solve(self):
         """
@@ -6582,7 +6584,7 @@ class DcOpf:
         # The optimised objective function value is printed to the screen
         print("Cost =", pulp.value(self.problem.objective), '€')
 
-        self.print()
+        # self.print()
 
     def print(self):
         """
@@ -6629,7 +6631,7 @@ class DcOpf:
                 g += gen.LPVar_P.value()
 
             # Set the results
-            res.Sbus[i] = g
+            res.Sbus[i] = g - self.loads[i]
 
             # Set the voltage
             res.voltage[i] = 1 * exp(1j * self.theta[i].value())
@@ -6645,7 +6647,7 @@ class DcOpf:
 
             # Set the results
             res.Sbranch[k] = F
-            res.loading[k] = F / branch.rate
+            res.loading[k] = abs(F / branch.rate)
 
         return res
 
