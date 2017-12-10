@@ -3,7 +3,7 @@ import xlrd
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from GridCal.gui.profiles_input.excel_sheet_selection import *
+from GridCal.Gui.ProfilesInput.excel_sheet_selection import *
 
 
 class ExcelDialog(QtWidgets.QDialog):

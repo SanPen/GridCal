@@ -16,7 +16,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.CalculationEngine import *
 import math
 import numpy as np
 import pandas as pd

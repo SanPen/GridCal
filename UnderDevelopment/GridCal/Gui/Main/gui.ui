@@ -16,345 +16,11 @@
     <height>0</height>
    </size>
   </property>
-  <property name="palette">
-   <palette>
-    <active>
-     <colorrole role="WindowText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Button">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Light">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Midlight">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Dark">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>127</red>
-        <green>127</green>
-        <blue>127</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Mid">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>170</red>
-        <green>170</green>
-        <blue>170</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Text">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="BrightText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ButtonText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="AlternateBase">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ToolTipBase">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>220</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ToolTipText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-    </active>
-    <inactive>
-     <colorrole role="WindowText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Button">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Light">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Midlight">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Dark">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>127</red>
-        <green>127</green>
-        <blue>127</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Mid">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>170</red>
-        <green>170</green>
-        <blue>170</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Text">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="BrightText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ButtonText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="AlternateBase">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ToolTipBase">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>220</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ToolTipText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-    </inactive>
-    <disabled>
-     <colorrole role="WindowText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>127</red>
-        <green>127</green>
-        <blue>127</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Button">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Light">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Midlight">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Dark">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>127</red>
-        <green>127</green>
-        <blue>127</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Mid">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>170</red>
-        <green>170</green>
-        <blue>170</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="Text">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>127</red>
-        <green>127</green>
-        <blue>127</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="BrightText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ButtonText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>127</red>
-        <green>127</green>
-        <blue>127</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="AlternateBase">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ToolTipBase">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>220</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="ToolTipText">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-    </disabled>
-   </palette>
-  </property>
   <property name="windowTitle">
    <string>GridCal</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icons.qrc">
+   <iconset>
     <normaloff>:/Program/GridCal_icon.svg</normaloff>:/Program/GridCal_icon.svg</iconset>
   </property>
   <property name="iconSize">
@@ -394,7 +60,7 @@
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
         <iconset resource="icons.qrc">
-         <normaloff>:/file/grid_icon.svg</normaloff>:/file/grid_icon.svg</iconset>
+         <normaloff>:/Icons/white_icons/grid_icon.svg</normaloff>:/Icons/white_icons/grid_icon.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Grid data</string>
@@ -435,7 +101,7 @@
           <widget class="QWidget" name="GridSectionTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/file/grid_icon.svg</normaloff>:/file/grid_icon.svg</iconset>
+             <normaloff>:/Icons/white_icons/grid_icon.svg</normaloff>:/Icons/white_icons/grid_icon.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>Grid</string>
@@ -520,7 +186,7 @@
                           </property>
                           <property name="icon">
                            <iconset resource="icons.qrc">
-                            <normaloff>:/file/run_cascade.svg</normaloff>:/file/run_cascade.svg</iconset>
+                            <normaloff>:/Icons/white_icons/run_cascade.svg</normaloff>:/Icons/white_icons/run_cascade.svg</iconset>
                           </property>
                          </widget>
                         </item>
@@ -534,7 +200,7 @@
                           </property>
                           <property name="icon">
                            <iconset resource="icons.qrc">
-                            <normaloff>:/file/run_cascade_step.svg</normaloff>:/file/run_cascade_step.svg</iconset>
+                            <normaloff>:/Icons/white_icons/run_cascade_step.svg</normaloff>:/Icons/white_icons/run_cascade_step.svg</iconset>
                           </property>
                          </widget>
                         </item>
@@ -548,7 +214,7 @@
                           </property>
                           <property name="icon">
                            <iconset resource="icons.qrc">
-                            <normaloff>:/file/ic_content_copy_black_48dp.png</normaloff>:/file/ic_content_copy_black_48dp.png</iconset>
+                            <normaloff>:/Icons/white_icons/copy.svg</normaloff>:/Icons/white_icons/copy.svg</iconset>
                           </property>
                          </widget>
                         </item>
@@ -572,7 +238,7 @@
                           </property>
                           <property name="icon">
                            <iconset resource="icons.qrc">
-                            <normaloff>:/file/ic_clear_black_48dp.png</normaloff>:/file/ic_clear_black_48dp.png</iconset>
+                            <normaloff>:/Icons/white_icons/delete.svg</normaloff>:/Icons/white_icons/delete.svg</iconset>
                           </property>
                          </widget>
                         </item>
@@ -628,7 +294,7 @@
           <widget class="QWidget" name="DataTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/file/ic_border_all_black_48dp.png</normaloff>:/file/ic_border_all_black_48dp.png</iconset>
+             <normaloff>:/Icons/white_icons/squares.svg</normaloff>:/Icons/white_icons/squares.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>Data</string>
@@ -741,7 +407,7 @@
                         </property>
                         <property name="icon">
                          <iconset resource="icons.qrc">
-                          <normaloff>:/file/ic_content_copy_black_48dp.png</normaloff>:/file/ic_content_copy_black_48dp.png</iconset>
+                          <normaloff>:/Icons/white_icons/copy.svg</normaloff>:/Icons/white_icons/copy.svg</iconset>
                         </property>
                        </widget>
                       </item>
@@ -773,7 +439,7 @@
           <widget class="QWidget" name="tab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/file/ic_border_all_black_48dp.png</normaloff>:/file/ic_border_all_black_48dp.png</iconset>
+             <normaloff>:/Icons/white_icons/squares.svg</normaloff>:/Icons/white_icons/squares.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>Simulation data</string>
@@ -866,7 +532,7 @@
                         </property>
                         <property name="icon">
                          <iconset resource="icons.qrc">
-                          <normaloff>:/file/ic_file_download_black_48dp.png</normaloff>:/file/ic_file_download_black_48dp.png</iconset>
+                          <normaloff>:/Icons/white_icons/save.svg</normaloff>:/Icons/white_icons/save.svg</iconset>
                         </property>
                        </widget>
                       </item>
@@ -922,7 +588,7 @@
       <widget class="QWidget" name="SettingsTab">
        <attribute name="icon">
         <iconset resource="icons.qrc">
-         <normaloff>:/file/ic_settings_black_48dp.png</normaloff>:/file/ic_settings_black_48dp.png</iconset>
+         <normaloff>:/Icons/white_icons/gear.svg</normaloff>:/Icons/white_icons/gear.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Settings</string>
@@ -1480,7 +1146,7 @@ last solution</string>
       <widget class="QWidget" name="TimeEventsTab">
        <attribute name="icon">
         <iconset resource="icons.qrc">
-         <normaloff>:/file/ic_memory_black_48dp.png</normaloff>:/file/ic_memory_black_48dp.png</iconset>
+         <normaloff>:/Icons/white_icons/chip.svg</normaloff>:/Icons/white_icons/chip.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Time events</string>
@@ -1566,7 +1232,7 @@ last solution</string>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/file/ic_clear_black_48dp.png</normaloff>:/file/ic_clear_black_48dp.png</iconset>
+                   <normaloff>:/Icons/white_icons/delete.svg</normaloff>:/Icons/white_icons/delete.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1584,7 +1250,7 @@ last solution</string>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/file/ic_description_black_48dp.png</normaloff>:/file/ic_description_black_48dp.png</iconset>
+                   <normaloff>:/Icons/white_icons/new.svg</normaloff>:/Icons/white_icons/new.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1616,7 +1282,7 @@ last solution</string>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/file/ic_border_all_black_48dp.png</normaloff>:/file/ic_border_all_black_48dp.png</iconset>
+                   <normaloff>:/Icons/white_icons/squares.svg</normaloff>:/Icons/white_icons/squares.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1627,7 +1293,7 @@ last solution</string>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/file/ic_mode_edit_black_48dp.png</normaloff>:/file/ic_mode_edit_black_48dp.png</iconset>
+                   <normaloff>:/Icons/white_icons/edit.svg</normaloff>:/Icons/white_icons/edit.svg</iconset>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -1747,7 +1413,7 @@ last solution</string>
       <widget class="QWidget" name="ResultsTab">
        <attribute name="icon">
         <iconset resource="icons.qrc">
-         <normaloff>:/file/ic_insert_chart_black_48dp.png</normaloff>:/file/ic_insert_chart_black_48dp.png</iconset>
+         <normaloff>:/Icons/white_icons/bars.svg</normaloff>:/Icons/white_icons/bars.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Results</string>
@@ -1874,6 +1540,10 @@ last solution</string>
                   <property name="text">
                    <string>Plot</string>
                   </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/white_icons/pic.svg</normaloff>:/Icons/white_icons/pic.svg</iconset>
+                  </property>
                  </widget>
                 </item>
                 <item row="1" column="0" colspan="2">
@@ -1918,6 +1588,10 @@ last solution</string>
                <property name="text">
                 <string>Export</string>
                </property>
+               <property name="icon">
+                <iconset resource="icons.qrc">
+                 <normaloff>:/Icons/white_icons/save.svg</normaloff>:/Icons/white_icons/save.svg</iconset>
+               </property>
               </widget>
              </item>
              <item row="1" column="0">
@@ -1941,6 +1615,10 @@ last solution</string>
        </layout>
       </widget>
       <widget class="QWidget" name="console_tab">
+       <attribute name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/Icons/white_icons/console.svg</normaloff>:/Icons/white_icons/console.svg</iconset>
+       </attribute>
        <attribute name="title">
         <string>Console</string>
        </attribute>
@@ -2027,34 +1705,28 @@ last solution</string>
    <addaction name="actionNew_project"/>
    <addaction name="actionOpen_file"/>
    <addaction name="actionSave"/>
-   <addaction name="actionRevert_grid_to_initial_state"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
-   <addaction name="actionShort_Circuit"/>
-   <addaction name="actionVoltage_stability"/>
    <addaction name="actionPower_Flow_Time_series"/>
+   <addaction name="separator"/>
+   <addaction name="actionShort_Circuit"/>
+   <addaction name="separator"/>
+   <addaction name="actionVoltage_stability"/>
+   <addaction name="separator"/>
+   <addaction name="actionOPF"/>
+   <addaction name="actionOPF_time_series"/>
+   <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionLatin_Hypercube_Sampling"/>
+   <addaction name="separator"/>
    <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
-   <addaction name="actionSmaller_nodes"/>
    <addaction name="actionBigger_nodes"/>
+   <addaction name="actionSmaller_nodes"/>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
    <addaction name="separator"/>
   </widget>
-  <action name="actionRedraw">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_autorenew_black_48dp.png</normaloff>:/file/ic_autorenew_black_48dp.png</iconset>
-   </property>
-   <property name="text">
-    <string>Redraw</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Alt+R</string>
-   </property>
-  </action>
   <action name="actionLine">
    <property name="text">
     <string>Add Line</string>
@@ -2093,7 +1765,7 @@ last solution</string>
   <action name="actionOpen_file">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_file_upload_black_48dp.png</normaloff>:/file/ic_file_upload_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/load.svg</normaloff>:/Icons/white_icons/load.svg</iconset>
    </property>
    <property name="text">
     <string>Open file</string>
@@ -2105,7 +1777,7 @@ last solution</string>
   <action name="actionSave">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_file_download_black_48dp.png</normaloff>:/file/ic_file_download_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/save.svg</normaloff>:/Icons/white_icons/save.svg</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -2127,7 +1799,7 @@ last solution</string>
   <action name="actionNew_project">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_insert_drive_file_black_48dp.png</normaloff>:/file/ic_insert_drive_file_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/new2.svg</normaloff>:/Icons/white_icons/new2.svg</iconset>
    </property>
    <property name="text">
     <string>New project</string>
@@ -2155,7 +1827,7 @@ last solution</string>
   <action name="actionPower_flow">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_polymer_black_48dp.png</normaloff>:/file/ic_polymer_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/pf.svg</normaloff>:/Icons/white_icons/pf.svg</iconset>
    </property>
    <property name="text">
     <string>Power Flow</string>
@@ -2164,10 +1836,13 @@ last solution</string>
   <action name="actionPower_Flow_Time_series">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/timeseriesicon.png</normaloff>:/file/timeseriesicon.png</iconset>
+     <normaloff>:/Icons/white_icons/pf_ts.svg</normaloff>:/Icons/white_icons/pf_ts.svg</iconset>
    </property>
    <property name="text">
     <string>Power Flow: Time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Power flow time series</string>
    </property>
   </action>
   <action name="actionBlackout">
@@ -2240,7 +1915,7 @@ last solution</string>
   <action name="actionBigger_nodes">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_add_circle_black_48dp.png</normaloff>:/file/ic_add_circle_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/plus.svg</normaloff>:/Icons/white_icons/plus.svg</iconset>
    </property>
    <property name="text">
     <string>Expand</string>
@@ -2252,7 +1927,7 @@ last solution</string>
   <action name="actionSmaller_nodes">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_remove_circle_black_48dp.png</normaloff>:/file/ic_remove_circle_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/minus.svg</normaloff>:/Icons/white_icons/minus.svg</iconset>
    </property>
    <property name="text">
     <string>Shrink</string>
@@ -2264,10 +1939,13 @@ last solution</string>
   <action name="actionPower_flow_Stochastic">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/stochastic_power_flow.svg</normaloff>:/file/stochastic_power_flow.svg</iconset>
+     <normaloff>:/Icons/white_icons/stochastic_power_flow.svg</normaloff>:/Icons/white_icons/stochastic_power_flow.svg</iconset>
    </property>
    <property name="text">
     <string>Power flow: Stochastic</string>
+   </property>
+   <property name="toolTip">
+    <string>Monte Carlo stochastic power flow</string>
    </property>
   </action>
   <action name="actionActivate_map">
@@ -2298,10 +1976,13 @@ last solution</string>
   <action name="actionVoltage_stability">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/continuation_power_flow.svg</normaloff>:/file/continuation_power_flow.svg</iconset>
+     <normaloff>:/Icons/white_icons/continuation_power_flow.svg</normaloff>:/Icons/white_icons/continuation_power_flow.svg</iconset>
    </property>
    <property name="text">
     <string>Voltage stability</string>
+   </property>
+   <property name="toolTip">
+    <string>Voltage collapse</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -2312,16 +1993,19 @@ last solution</string>
   <action name="actionCenter_view">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/resize.svg</normaloff>:/file/resize.svg</iconset>
+     <normaloff>:/Icons/white_icons/resize.svg</normaloff>:/Icons/white_icons/resize.svg</iconset>
    </property>
    <property name="text">
     <string>center view</string>
+   </property>
+   <property name="toolTip">
+    <string>Center view</string>
    </property>
   </action>
   <action name="actionShort_Circuit">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/short_circuit.svg</normaloff>:/file/short_circuit.svg</iconset>
+     <normaloff>:/Icons/white_icons/short_circuit.svg</normaloff>:/Icons/white_icons/short_circuit.svg</iconset>
    </property>
    <property name="text">
     <string>Short Circuit</string>
@@ -2330,7 +2014,7 @@ last solution</string>
   <action name="actionAutoatic_layout">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/automatic_layout.svg</normaloff>:/file/automatic_layout.svg</iconset>
+     <normaloff>:/Icons/white_icons/automatic_layout.svg</normaloff>:/Icons/white_icons/automatic_layout.svg</iconset>
    </property>
    <property name="text">
     <string>Autoatic layout</string>
@@ -2342,13 +2026,13 @@ last solution</string>
   <action name="actionLatin_Hypercube_Sampling">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/latin_hypercube2.svg</normaloff>:/file/latin_hypercube2.svg</iconset>
+     <normaloff>:/Icons/white_icons/latin_hypercube2.svg</normaloff>:/Icons/white_icons/latin_hypercube2.svg</iconset>
    </property>
    <property name="text">
     <string>Latin Hypercube Sampling</string>
    </property>
    <property name="toolTip">
-    <string>Run Latin Hypercube Sampling</string>
+    <string>Latin Hypercube stochastic power flow</string>
    </property>
   </action>
   <action name="actionBlackout_cascade">
@@ -2357,7 +2041,7 @@ last solution</string>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/blackout.svg</normaloff>:/file/blackout.svg</iconset>
+     <normaloff>:/Icons/white_icons/blackout.svg</normaloff>:/Icons/white_icons/blackout.svg</iconset>
    </property>
    <property name="text">
     <string>Blackout cascade</string>
@@ -2368,7 +2052,7 @@ last solution</string>
   </action>
   <action name="actionRun_complete_cascade">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/file/run_cascade.svg</normaloff>:/file/run_cascade.svg</iconset>
    </property>
    <property name="text">
@@ -2377,7 +2061,7 @@ last solution</string>
   </action>
   <action name="actionRun_cascade_step">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/file/run_cascade_step.svg</normaloff>:/file/run_cascade_step.svg</iconset>
    </property>
    <property name="text">
@@ -2386,23 +2070,35 @@ last solution</string>
   </action>
   <action name="actionCopy_cascade_state_to_main_grid">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_content_copy_black_48dp.png</normaloff>:/file/ic_content_copy_black_48dp.png</iconset>
+    <iconset>
+     <normaloff>:/white/white_icons/copy.svg</normaloff>:/white/white_icons/copy.svg</iconset>
    </property>
    <property name="text">
     <string>Copy cascade state to main grid</string>
    </property>
   </action>
-  <action name="actionRevert_grid_to_initial_state">
+  <action name="actionOPF">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/file/ic_autorenew_black_48dp.png</normaloff>:/file/ic_autorenew_black_48dp.png</iconset>
+     <normaloff>:/Icons/white_icons/dcopf.svg</normaloff>:/Icons/white_icons/dcopf.svg</iconset>
    </property>
    <property name="text">
-    <string>Revert grid to initial state</string>
+    <string>OPF</string>
    </property>
    <property name="toolTip">
-    <string>Revert grid to initial state</string>
+    <string>Optimal power flow</string>
+   </property>
+  </action>
+  <action name="actionOPF_time_series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/white_icons/dcopf_ts.svg</normaloff>:/Icons/white_icons/dcopf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>OPF time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal power flow time series</string>
    </property>
   </action>
  </widget>

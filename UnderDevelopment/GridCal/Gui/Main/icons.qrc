@@ -1,0 +1,36 @@
+<RCC>
+  <qresource prefix="Icons">
+    <file>white_icons/console.svg</file>
+    <file>white_icons/run_cascade.svg</file>
+    <file>white_icons/run_cascade_step.svg</file>
+    <file>white_icons/delete.svg</file>
+    <file>white_icons/save.svg</file>
+    <file>white_icons/load.svg</file>
+    <file>white_icons/gear.svg</file>
+    <file>white_icons/bars.svg</file>
+    <file>white_icons/new2.svg</file>
+    <file>white_icons/pic.svg</file>
+    <file>white_icons/minus.svg</file>
+    <file>white_icons/chip.svg</file>
+    <file>white_icons/squares.svg</file>
+    <file>white_icons/copy.svg</file>
+    <file>white_icons/plus.svg</file>
+    <file>white_icons/new.svg</file>
+    <file>white_icons/edit.svg</file>
+    <file>white_icons/resize.svg</file>
+    <file>white_icons/latin_hypercube2.svg</file>
+    <file>white_icons/automatic_layout.svg</file>
+    <file>white_icons/blackout.svg</file>
+    <file>white_icons/continuation_power_flow.svg</file>
+    <file>white_icons/dcopf.svg</file>
+    <file>white_icons/dcopf_ts.svg</file>
+    <file>white_icons/grid_icon.svg</file>
+    <file>white_icons/pf.svg</file>
+    <file>white_icons/short_circuit.svg</file>
+    <file>white_icons/stochastic_power_flow.svg</file>
+    <file>white_icons/pf_ts.svg</file>
+  </qresource>
+  <qresource prefix="Program icon">
+    <file>GridCal_icon.svg</file>
+  </qresource>
+</RCC>

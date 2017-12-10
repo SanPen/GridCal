@@ -13,39 +13,35 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.84
-
-from GridCal.grid.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
-from GridCal.grid.FastDecoupled import FDPF
-from GridCal.grid.ContinuationPowerFlow import continuation_nr
-from GridCal.grid.HelmVect import helm
-from GridCal.grid.DCPF import dcpf
-from GridCal.grid.SC import short_circuit_3p
+__GridCal_VERSION__ = 1.85
 
 import os
-from enum import Enum
-from warnings import warn
-import networkx as nx
-import pandas as pd
 import pickle as pkl
 from datetime import datetime, timedelta
+from enum import Enum
+from warnings import warn
+
+import networkx as nx
+import pandas as pd
+import pulp
+from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
+from GridCal.Engine.Numerical.DCPF import dcpf
+from GridCal.Engine.Numerical.HelmVect import helm
+from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
+from GridCal.Engine.Numerical.SC import short_circuit_3p
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from matplotlib import pyplot as plt
 from networkx import connected_components
-from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, angle, \
-    where, r_, Inf, linalg, maximum, array, random, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
-from scipy.sparse import csc_matrix as sparse
-from scipy.sparse.linalg import inv
+from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
+    r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
+from poap.controller import SerialController
 from pyDOE import lhs
 from pySOT import *
-import pulp
-from poap.controller import ThreadController, BasicWorkerThread, SerialController
-from sklearn.neural_network import MLPRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.decomposition import PCA
+from scipy.sparse import csc_matrix as sparse
+from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import LinearRegression
+
+from GridCal.Engine.Numerical.FastDecoupled import FDPF
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -2431,7 +2427,7 @@ class MultiCircuit(Circuit):
 
                 # Pass the table-like data dictionary to objects in this circuit
                 if 'version' not in ppc.keys():
-                    from GridCal.grid.ImportParsers.matpower_parser import interpret_data_v1
+                    from GridCal.Engine.Importers.matpower_parser import interpret_data_v1
                     interpret_data_v1(self, ppc)
                     return True
                 elif ppc['version'] == 2.0:
@@ -2442,19 +2438,19 @@ class MultiCircuit(Circuit):
                     return False
 
             elif file_extension == '.dgs':
-                from GridCal.grid.ImportParsers.DGS_Parser import dgs_to_circuit
+                from GridCal.Engine.Importers.DGS_Parser import dgs_to_circuit
                 circ = dgs_to_circuit(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
 
             elif file_extension == '.m':
-                from GridCal.grid.ImportParsers.matpower_parser import parse_matpower_file
+                from GridCal.Engine.Importers.matpower_parser import parse_matpower_file
                 circ = parse_matpower_file(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
 
             elif file_extension in ['.raw', '.RAW', '.Raw']:
-                from GridCal.grid.ImportParsers.PSS_Parser import PSSeParser
+                from GridCal.Engine.Importers.PSS_Parser import PSSeParser
                 parser = PSSeParser(filename)
                 circ = parser.circuit
                 self.buses = circ.buses

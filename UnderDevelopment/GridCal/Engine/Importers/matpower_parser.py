@@ -16,7 +16,7 @@
 """
 import pandas as pd
 import numpy as np
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.CalculationEngine import *
 import os
 
 
@@ -331,7 +331,7 @@ def interpret_data_v1(circuit, data):
     else:
         master_time_array = None
 
-    import GridCal.grid.ImportParsers.BusDefinitions as e
+    import GridCal.Engine.Importers.BusDefinitions as e
     # Buses
     table = data['bus']
     buses_dict = dict()
@@ -388,7 +388,7 @@ def interpret_data_v1(circuit, data):
         # Add the bus to the circuit buses
         circuit.add_bus(bus)
 
-    import GridCal.grid.ImportParsers.GenDefinitions as e
+    import GridCal.Engine.Importers.GenDefinitions as e
     # Generators
     table = data['gen']
     n = len(table)
@@ -420,7 +420,7 @@ def interpret_data_v1(circuit, data):
         gen.bus = circuit.buses[bus_idx]
         circuit.buses[bus_idx].controlled_generators.append(gen)
 
-    import GridCal.grid.ImportParsers.BranchDefinitions as e
+    import GridCal.Engine.Importers.BranchDefinitions as e
     # Branches
     table = data['branch']
     n = len(table)
@@ -456,7 +456,7 @@ def interpret_data_v1(circuit, data):
                 circuit.buses[i].loads[0].Sprof = pd.DataFrame(data=Sprof[:, i],
                                                                index=master_time_array,
                                                                columns=['Load@' + names[i]])
-        import GridCal.grid.ImportParsers.GenDefinitions as e
+        import GridCal.Engine.Importers.GenDefinitions as e
         table = data['gen']
         for i in range(len(table)):
             bus_idx = int(table[i, e.GEN_BUS]) - 1

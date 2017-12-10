@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.CalculationEngine import *
 import math
 import chardet
 import numpy as np

@@ -1,13 +1,11 @@
 # This file is a python port of the routines included in MATPOWER to perform continuation power flow.
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
-import sys
-import numpy as np
-from numpy import angle, conj, exp, array, asmatrix, asarray, diag, r_, linalg, Inf, dot, zeros, shape, where, pi
-from scipy.sparse import issparse, csc_matrix as sparse, hstack, vstack
+from numpy import angle, conj, exp, r_, linalg, Inf, dot, zeros
+from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import splu
-from GridCal.grid.JacobianBased import dSbus_dV, Jacobian
-from warnings import warn
+
+from GridCal.Engine.Numerical.JacobianBased import Jacobian
 
 
 def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):

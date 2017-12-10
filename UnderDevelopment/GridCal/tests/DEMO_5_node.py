@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.CalculationEngine import *
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()

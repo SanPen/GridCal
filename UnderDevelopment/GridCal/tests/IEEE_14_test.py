@@ -1,4 +1,4 @@
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.CalculationEngine import *
 import numpy as np
 
 '''

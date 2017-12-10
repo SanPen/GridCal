@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.grid.CalculationEngine import __GridCal_VERSION__
-from GridCal.gui.main.gui import *
-from GridCal.gui.GridEditorWidget import *
-from GridCal.gui.ConsoleWidget import ConsoleWidget
-from GridCal.gui.profiles_input.profile_dialogue import ProfileInputGUI
+from GridCal.Engine.CalculationEngine import __GridCal_VERSION__
+from GridCal.Gui.Main.gui import *
+from GridCal.Gui.GridEditorWidget import *
+from GridCal.Gui.ConsoleWidget import ConsoleWidget
+from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 
 import os.path
 import sys

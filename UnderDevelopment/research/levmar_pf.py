@@ -238,7 +238,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it):
 
 
 if __name__ == "__main__":
-    from GridCal.grid.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')

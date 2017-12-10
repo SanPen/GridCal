@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.CalculationEngine import *
 
 
 class DcOpf:

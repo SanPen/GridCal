@@ -181,7 +181,7 @@ def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
     return voltage, normF
 
 if __name__ == '__main__':
-    from GridCal.grid.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
     grid.load_file('lynn5buspq.xlsx')

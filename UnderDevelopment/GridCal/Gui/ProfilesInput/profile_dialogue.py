@@ -9,8 +9,8 @@ import pandas as pd
 # from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from GridCal.gui.profiles_input.gui import *
-from GridCal.gui.profiles_input.excel_dialog import *
+from GridCal.Gui.ProfilesInput.gui import *
+from GridCal.Gui.ProfilesInput.excel_dialog import *
 
 
 class PandasModel(QtCore.QAbstractTableModel):

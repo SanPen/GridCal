@@ -152,7 +152,7 @@ def helmz(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
 
 
 if __name__ == "__main__":
-    from GridCal.grid.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
     grid.load_file('lynn5buspq.xlsx')

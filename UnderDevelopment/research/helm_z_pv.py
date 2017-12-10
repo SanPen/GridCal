@@ -702,7 +702,7 @@ def plot_full_convergence(err, powerInjections, S, title, ext='.eps', save=True)
     #     plt.show()
 
 if __name__ == "__main__":
-    from GridCal.grid.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
     grid.load_file('lynn5buspq.xlsx')

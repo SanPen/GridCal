@@ -2,7 +2,8 @@ from distutils.core import setup
 import sys
 import os
 import platform
-from GridCal.grid.CalculationEngine import __GridCal_VERSION__
+from GridCal.Engine.CalculationEngine import __GridCal_VERSION__
+
 
 def make_linux_desktop_file(version_, comment):
     """
@@ -107,6 +108,7 @@ else:
                          ]
 
 # Read the license
+data_files.append('LICENSE.txt')
 with open('LICENSE.txt', 'r') as f:
     license_text = f.read()
 

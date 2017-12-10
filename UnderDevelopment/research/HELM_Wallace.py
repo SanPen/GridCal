@@ -326,7 +326,7 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
 
 
 if __name__ == "__main__":
-    from GridCal.grid.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import *
     np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
 
     grid = MultiCircuit()

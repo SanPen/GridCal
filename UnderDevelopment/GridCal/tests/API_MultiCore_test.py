@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from grid.CircuitOO import *
+from GridCal.Engine.CalculationEngine import *
 from multiprocessing import Pool
 
 grid = MultiCircuit()
