@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>white_icons/new2c.svg</file>
+    <file>white_icons/loadc.svg</file>
+    <file>white_icons/savec.svg</file>
     <file>white_icons/console.svg</file>
     <file>white_icons/run_cascade.svg</file>
     <file>white_icons/run_cascade_step.svg</file>

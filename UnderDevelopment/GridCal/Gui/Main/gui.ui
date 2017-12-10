@@ -1765,7 +1765,7 @@ last solution</string>
   <action name="actionOpen_file">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/white_icons/load.svg</normaloff>:/Icons/white_icons/load.svg</iconset>
+     <normaloff>:/Icons/white_icons/loadc.svg</normaloff>:/Icons/white_icons/loadc.svg</iconset>
    </property>
    <property name="text">
     <string>Open file</string>
@@ -1777,7 +1777,7 @@ last solution</string>
   <action name="actionSave">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/white_icons/save.svg</normaloff>:/Icons/white_icons/save.svg</iconset>
+     <normaloff>:/Icons/white_icons/savec.svg</normaloff>:/Icons/white_icons/savec.svg</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -1799,7 +1799,7 @@ last solution</string>
   <action name="actionNew_project">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/white_icons/new2.svg</normaloff>:/Icons/white_icons/new2.svg</iconset>
+     <normaloff>:/Icons/white_icons/new2c.svg</normaloff>:/Icons/white_icons/new2c.svg</iconset>
    </property>
    <property name="text">
     <string>New project</string>
