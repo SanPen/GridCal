@@ -31,6 +31,8 @@ from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, Levenber
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
+
 from matplotlib import pyplot as plt
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
@@ -6400,6 +6402,12 @@ class DcOpf:
         # LP problem
         self.problem = None
 
+        # potential errors flag
+        self.potential_errors = False
+
+        # Check if the problem was solved or not
+        self.solved = False
+
         # LP problem restrictions saved on build and added to the problem with every load change
         self.s_restrictions = list()
         self.p_restrictions = list()
@@ -6431,6 +6439,9 @@ class DcOpf:
         print('Compiling LP')
         prob = pulp.LpProblem("DC optimal power flow", pulp.LpMinimize)
 
+        # initialize the potential errors
+        self.potential_errors = False
+
         ################################################################################################################
         # Add the objective function
         ################################################################################################################
@@ -6445,7 +6456,8 @@ class DcOpf:
 
             # check that there are at least one generator at the slack node
             if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
-                raise Warning('There is no generator at the Slack node ' + bus.name + '!!!')
+                self.potential_errors = True
+                warn('There is no generator at the Slack node ' + bus.name + '!!!')
 
             # Add the bus LP vars
             for gen in bus.controlled_generators:
@@ -6519,6 +6531,7 @@ class DcOpf:
         ################################################################################################################
         # Set the branch limits
         ################################################################################################################
+        any_rate_zero = False
         for k, branch in enumerate(self.circuit.branches):
             i = self.circuit.buses_dict[branch.bus_from]
             j = self.circuit.buses_dict[branch.bus_to]
@@ -6528,6 +6541,15 @@ class DcOpf:
             # constraints
             prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
             prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+
+            if branch.rate <= 1e-6:
+                any_rate_zero = True
+
+        # No branch can have rate = 0, otherwise the problem fails
+        if any_rate_zero:
+            self.potential_errors = True
+            warn('There are branches with no rate.')
+
 
         # set the global OPF LP problem
         self.problem = prob
@@ -6570,21 +6592,26 @@ class DcOpf:
         Solve the LP OPF problem
         """
 
-        # if there is no problem there, make it
-        if self.problem is None:
-            self.build()
+        if not self.potential_errors:
 
-        print('Solving LP')
-        self.problem.solve()  # solve with CBC
-        # prob.solve(CPLEX())
+            # if there is no problem there, make it
+            if self.problem is None:
+                self.build()
 
-        # The status of the solution is printed to the screen
-        print("Status:", pulp.LpStatus[self.problem.status])
+            print('Solving LP')
+            self.problem.solve()  # solve with CBC
+            # prob.solve(CPLEX())
 
-        # The optimised objective function value is printed to the screen
-        print("Cost =", pulp.value(self.problem.objective), '€')
+            # The status of the solution is printed to the screen
+            print("Status:", pulp.LpStatus[self.problem.status])
 
-        # self.print()
+            # The optimised objective function value is printed to the screen
+            print("Cost =", pulp.value(self.problem.objective), '€')
+
+            self.solved = True
+
+        else:
+            self.solved = False
 
     def print(self):
         """
@@ -6622,32 +6649,37 @@ class DcOpf:
         res = OptimalPowerFlowResults()
         res.initialize(n, m)
 
-        # Add buses
-        for i in range(n):
-            g = 0.0
+        if self.solved:
 
-            # Sum the slack generators
-            for gen in self.circuit.buses[i].controlled_generators:
-                g += gen.LPVar_P.value()
+            # Add buses
+            for i in range(n):
+                g = 0.0
 
-            # Set the results
-            res.Sbus[i] = g - self.loads[i]
+                # Sum the slack generators
+                for gen in self.circuit.buses[i].controlled_generators:
+                    g += gen.LPVar_P.value()
 
-            # Set the voltage
-            res.voltage[i] = 1 * exp(1j * self.theta[i].value())
+                # Set the results
+                res.Sbus[i] = g - self.loads[i]
 
-        # Add branches
-        for k, branch in enumerate(self.circuit.branches):
-            i = self.circuit.buses_dict[branch.bus_from]
-            j = self.circuit.buses_dict[branch.bus_to]
-            if self.theta[i].value() is not None and self.theta[j].value() is not None:
-                F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
-            else:
-                F = -1
+                # Set the voltage
+                res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
-            # Set the results
-            res.Sbranch[k] = F
-            res.loading[k] = abs(F / branch.rate)
+            # Add branches
+            for k, branch in enumerate(self.circuit.branches):
+                i = self.circuit.buses_dict[branch.bus_from]
+                j = self.circuit.buses_dict[branch.bus_to]
+                if self.theta[i].value() is not None and self.theta[j].value() is not None:
+                    F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                else:
+                    F = -1
+
+                # Set the results
+                res.Sbranch[k] = F
+                res.loading[k] = abs(F / branch.rate)
+
+        else:
+            pass
 
         return res
 
@@ -6829,6 +6861,8 @@ class OptimalPowerFlow(QRunnable):
         # set cancel state
         self.__cancel__ = False
 
+        self.all_solved = True
+
     @staticmethod
     def single_optimal_power_flow(circuit: Circuit, t_idx=None):
         """
@@ -6847,7 +6881,7 @@ class OptimalPowerFlow(QRunnable):
         # results
         res = problem.get_results()
 
-        return res
+        return res, problem.solved
 
     def opf(self, t_idx=None):
         """
@@ -6861,14 +6895,21 @@ class OptimalPowerFlow(QRunnable):
         self.results.initialize(n, m)
         # self.progress_signal.emit(0.0)
 
+        self.all_solved = True
+
         k = 0
         for circuit in self.grid.circuits:
 
             if self.options.verbose:
                 print('Solving ' + circuit.name)
 
-            optimal_power_flow_results = self.single_optimal_power_flow(circuit, t_idx=t_idx)
+            # run OPF
+            optimal_power_flow_results, solved = self.single_optimal_power_flow(circuit, t_idx=t_idx)
 
+            # assert the total solvability
+            self.all_solved = self.all_solved and solved
+
+            # merge island results
             self.results.apply_from_island(optimal_power_flow_results,
                                            circuit.bus_original_idx,
                                            circuit.branch_original_idx)

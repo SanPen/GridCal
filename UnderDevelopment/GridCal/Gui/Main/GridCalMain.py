@@ -549,17 +549,18 @@ class MainGUI(QMainWindow):
                 color = Qt.gray
                 self.circuit.branches[i].graphic_obj.setPen(QtGui.QPen(color, w, style))
 
-    def msg(self, text):
+    def msg(self, text, title="Warning"):
         """
         Message box
         :param text:
+        :param title:
         :return:
         """
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
-        msg.setWindowTitle("Aviso")
+        msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
@@ -1008,7 +1009,13 @@ class MainGUI(QMainWindow):
             self.msg("There are no objects to which to assign a profile")
 
     def modify_profiles(self, operation='+'):
+        """
+        Edit profiles with a linear combination
+        Args:
+            operation: '+', '-', '*', '/'
 
+        Returns: Nothing
+        """
         value = self.ui.profile_factor_doubleSpinBox.value()
 
         dev_type = self.ui.profile_device_type_comboBox.currentText()
@@ -1685,12 +1692,20 @@ class MainGUI(QMainWindow):
         """
         if self.optimal_power_flow is not None:
 
-            self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
-                                   loadings=self.optimal_power_flow.results.loading,
-                                   types=self.circuit.power_flow_input.types,
-                                   s_branch=self.optimal_power_flow.results.Sbranch,
-                                   s_bus=self.optimal_power_flow.results.Sbus)
-            self.update_available_results()
+            if self.optimal_power_flow.all_solved:
+
+                self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
+                                       loadings=self.optimal_power_flow.results.loading,
+                                       types=self.circuit.power_flow_input.types,
+                                       s_branch=self.optimal_power_flow.results.Sbranch,
+                                       s_bus=self.optimal_power_flow.results.Sbus)
+                self.update_available_results()
+
+            else:
+
+                self.msg('Some islands did not solve.\n'
+                         'Check that all branches have rating and that there is\n'
+                         'a generator at the slack node.', 'OPF')
 
         self.UNLOCK()
 
