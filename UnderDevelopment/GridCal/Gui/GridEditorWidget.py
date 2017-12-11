@@ -150,10 +150,6 @@ class BranchGraphicItem(QGraphicsLineItem):
         if toPort:
             self.setToPort(toPort)
 
-        # Create arrow item:
-        # self.line_object = LineItem(self)
-        self.diagramScene.addItem(self)
-
         # add transformer circles
         self.c1 = None
         self.c2 = None
@@ -165,9 +161,12 @@ class BranchGraphicItem(QGraphicsLineItem):
                 self.c1_offset = QPointF(self.t_diam * 3 / 4, self.t_diam/2)
                 self.c2_offset = QPointF(self.t_diam / 4, self.t_diam / 2)
                 self.c1.setPen(QPen(self.color, self.width, self.style))
-                self.diagramScene.addItem(self.c1)
+                # self.diagramScene.addItem(self.c1)
                 self.c2.setPen(QPen(self.color, self.width, self.style))
-                self.diagramScene.addItem(self.c2)
+                # self.diagramScene.addItem(self.c2)
+
+        # add the line and it possible children to the scene
+        self.diagramScene.addItem(self)
 
         if fromPort and toPort:
             self.redraw()
