@@ -108,30 +108,32 @@ Some of the features you'll find already are:
   - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
 
 
-- Power flow:
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/pf.svg)Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).
   - Fast Decoupled Power Flow
   - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
-  
+
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/dcopf.svg) DC Optimal power flow
+ 
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/pf_ts.svg) Time series with profiles in all the objects physical magnitudes.
+
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/continuation_power_flow.svg) Bifurcation point with predictor-corrector Newton-Raphson.
+
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/stochastic_power_flow.svg) Monte Carlo simulation based on the input profiles. (Stochastic power flow)
+
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/latin_hypercube2.svg) Latin Hypercube Sampling based on the input profiles.
+
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/blackout.svg) Blackout cascading in simulation and step by step mode.
+
+- ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/short_circuit.svg) Three-phase short circuit.
+
 - Includes the Z-I-P load model, this means that the power flows can handle both power and current.  
 
 - The ability to handle island grids in all the simulation modes.
 
 - Profile editor and importer from Excel and CSV.
-
-- Time series with profiles in all the objects physical magnitudes.
-
-- Bifurcation point with predictor-corrector Newton-Raphson.
-
-- Monte Carlo simulation based on the input profiles. (Stochastic power flow)
-
-- Latin Hypercube Sampling based on the input profiles.
-
-- Blackout cascading in simulation and step by step mode.
-
-- Three-phase short circuit.
 
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
 
