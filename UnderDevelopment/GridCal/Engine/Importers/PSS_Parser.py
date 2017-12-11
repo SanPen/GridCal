@@ -650,7 +650,8 @@ class PSSeBranch:
                         shift_angle=0,
                         active=True,
                         mttf=0,
-                        mttr=0)
+                        mttr=0,
+                        is_transformer=False)
         return object
 
 
@@ -1230,7 +1231,9 @@ class PSSeTransformer:
                             shift_angle=0,
                             active=True,
                             mttf=0,
-                            mttr=0)
+                            mttr=0,
+                            is_transformer=True)
+
             return [object]
 
         elif self.windings == 3:
@@ -1255,7 +1258,8 @@ class PSSeTransformer:
                              shift_angle=0,
                              active=True,
                              mttf=0,
-                             mttr=0)
+                             mttr=0,
+                             is_transformer=True)
 
             r = self.R2_3
             x = self.X2_3
@@ -1273,7 +1277,8 @@ class PSSeTransformer:
                              shift_angle=0,
                              active=True,
                              mttf=0,
-                             mttr=0)
+                             mttr=0,
+                             is_transformer=True)
 
             r = self.R3_1
             x = self.X3_1
@@ -1291,7 +1296,8 @@ class PSSeTransformer:
                              shift_angle=0,
                              active=True,
                              mttf=0,
-                             mttr=0)
+                             mttr=0,
+                             is_transformer=True)
 
             return [object1, object2, object3]
 
