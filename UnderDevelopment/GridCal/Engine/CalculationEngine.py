@@ -985,7 +985,7 @@ class TransformerType:
 class Branch:
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1, tap=1, shift_angle=0, active=True, mttf=0, mttr=0):
+                 rate=1, tap=1, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -998,6 +998,7 @@ class Branch:
         @param shift_angle: tap shift angle in radians
         @param mttf: Mean time to failure
         @param mttr: Mean time to repair
+        @param is_transformer: Is the branch a transformer?
         """
 
         self.name = name
@@ -1032,13 +1033,15 @@ class Branch:
 
         self.mttr = mttr
 
+        self.is_transformer = is_transformer
+
         self.type_obj = None
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'tap_module', 'angle']
+                             'tap_module', 'angle', 'is_transformer']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'p.u.', 'rad']
+                      'p.u.', 'rad', '']
 
         self.edit_types = {'name': str,
                            'bus_from': None,
@@ -1052,7 +1055,8 @@ class Branch:
                            'G': float,
                            'B': float,
                            'tap_module': float,
-                           'angle': float}
+                           'angle': float,
+                           'is_transformer':bool}
 
     def copy(self, bus_dict=None):
         """
@@ -1081,7 +1085,8 @@ class Branch:
                    shift_angle=self.angle,
                    active=self.active,
                    mttf=self.mttf,
-                   mttr=self.mttr)
+                   mttr=self.mttr,
+                   is_transformer=self.is_transformer)
 
         return b
 
@@ -1202,13 +1207,15 @@ class Branch:
 
         self.type_obj = obj
 
+        self.is_transformer = True
+
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
         :return:
         """
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.tap_module, self.angle]
+                self.R, self.X, self.G, self.B, self.tap_module, self.angle, self.is_transformer]
 
     def __str__(self):
         return self.name

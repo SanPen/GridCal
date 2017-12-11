@@ -154,6 +154,21 @@ class BranchGraphicItem(QGraphicsLineItem):
         # self.line_object = LineItem(self)
         self.diagramScene.addItem(self)
 
+        # add transformer circles
+        self.c1 = None
+        self.c2 = None
+        self.t_diam = 40
+        if self.api_object is not None:
+            if self.api_object.is_transformer:
+                self.c1 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
+                self.c2 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
+                self.c1_offset = QPointF(self.t_diam * 3 / 4, self.t_diam/2)
+                self.c2_offset = QPointF(self.t_diam / 4, self.t_diam / 2)
+                self.c1.setPen(QPen(self.color, self.width, self.style))
+                self.diagramScene.addItem(self.c1)
+                self.c2.setPen(QPen(self.color, self.width, self.style))
+                self.diagramScene.addItem(self.c2)
+
         if fromPort and toPort:
             self.redraw()
 
@@ -250,7 +265,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-        self.setPen(QPen(self.color, self.width, self.style))
+        self.set_pen(QPen(self.color, self.width, self.style))
 
     def setFromPort(self, fromPort):
         """
@@ -302,6 +317,25 @@ class BranchGraphicItem(QGraphicsLineItem):
         if self.pos1 is not None and self.pos2 is not None:
             self.setLine(QLineF(self.pos1, self.pos2))
             self.setZValue(0)
+
+            if self.api_object.is_transformer:
+                # pos = self.pos1 - ((self.pos1 - self.pos2) / 2.0)
+                pos1 = (self.pos1 + self.pos2) / 2.0 - self.c1_offset
+                pos2 = (self.pos1 + self.pos2) / 2.0 - self.c2_offset
+                self.c1.setPos(pos1)
+                self.c2.setPos(pos2)
+                # self.c1.setPos(self.pos1)
+
+    def set_pen(self, pen):
+        """
+        Set pen to all objects
+        Args:
+            pen:
+        """
+        self.setPen(pen)
+        if self.api_object.is_transformer:
+            self.c1.setPen(pen)
+            self.c2.setPen(pen)
 
 
 class ParameterDialog(QDialog):

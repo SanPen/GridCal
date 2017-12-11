@@ -540,14 +540,14 @@ class MainGUI(QMainWindow):
                 if losses is not None:
                     tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTip(tooltip)
-                branch.graphic_obj.setPen(QtGui.QPen(color, w, style))
+                branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
         if failed_br_idx is not None:
             for i in failed_br_idx:
                 w = self.circuit.branches[i].graphic_obj.pen_width
                 style = Qt.DashLine
                 color = Qt.gray
-                self.circuit.branches[i].graphic_obj.setPen(QtGui.QPen(color, w, style))
+                self.circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
     def msg(self, text, title="Warning"):
         """
@@ -1704,8 +1704,8 @@ class MainGUI(QMainWindow):
             else:
 
                 self.msg('Some islands did not solve.\n'
-                         'Check that all branches have rating and that there is\n'
-                         'a generator at the slack node.', 'OPF')
+                         'Check that all branches have rating and \n'
+                         'that there is a generator at the slack node.', 'OPF')
 
         self.UNLOCK()
 
