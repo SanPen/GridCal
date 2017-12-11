@@ -984,20 +984,26 @@ class MainGUI(QMainWindow):
             dialogue.resize(1.61 * 600.0, 600.0)  # golden ratio
             dialogue.exec()  # exec leaves the parent on hold
 
-            # if there are no profiles:
-            if self.circuit.time_profile is None:
-                self.circuit.format_profiles(dialogue.time)
+            if dialogue.time is not None:
 
-            elif len(dialogue.time) != len(self.circuit.time_profile):
-                self.msg("The imported profile length does not match the existing one.\n"
-                         "Delete the existing profiles before continuing.\n"
-                         "The import action will not be performed")
-                return False
+                # if there are no profiles:
+                if self.circuit.time_profile is None:
+                    self.circuit.format_profiles(dialogue.time)
 
-            # Assign profiles
-            for i, elm in enumerate(objects):
-                if not dialogue.zeroed[i]:
-                    elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+                elif len(dialogue.time) != len(self.circuit.time_profile):
+                    self.msg("The imported profile length does not match the existing one.\n"
+                             "Delete the existing profiles before continuing.\n"
+                             "The import action will not be performed")
+                    return False
+
+                # Assign profiles
+                for i, elm in enumerate(objects):
+                    if not dialogue.zeroed[i]:
+                        elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+
+            else:
+                pass  # the dialogue was closed
+
         else:
             self.msg("There are no objects to which to assign a profile")
 
