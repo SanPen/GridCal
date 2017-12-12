@@ -2932,10 +2932,13 @@ class MultiCircuit(Circuit):
                     circuit.branch_original_idx.append(i)
 
             circuit.compile()
+
+            # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
                                            circuit.bus_original_idx,
                                            circuit.branch_original_idx)
 
+            # initialize the multi circuit time series inputs (for later use in displays and such)
             self.time_series_input.apply_from_island(circuit.time_series_input,
                                                      circuit.bus_original_idx,
                                                      circuit.branch_original_idx,
@@ -4821,7 +4824,7 @@ class TimeSeriesInput:
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, nt):
+    def __init__(self, n, m, nt, time=None):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -4833,6 +4836,8 @@ class TimeSeriesResults(PowerFlowResults):
         self.nt = nt
         self.m = m
         self.n = n
+
+        self.time = time
 
         if nt > 0:
             self.voltage = zeros((nt, n), dtype=complex)
@@ -4964,34 +4969,34 @@ class TimeSeriesResults(PowerFlowResults):
         @return:
         """
 
-        # self.voltage[:, b_idx] = results.voltage
+        self.voltage[:, b_idx] = results.voltage
+
+        self.Sbranch[:, br_idx] = results.Sbranch
+
+        self.Ibranch[:, br_idx] = results.Ibranch
+
+        self.loading[:, br_idx] = results.loading
+
+        self.losses[:, br_idx] = results.losses
+
+        if (results.error > self.error).any():
+            self.error = results.error
+
+        self.converged = self.converged * results.converged
+
+        # self.voltage = self.merge_if(self.voltage, results.voltage, index, b_idx)
         #
-        # self.Sbranch[:, br_idx] = results.Sbranch
+        # self.Sbranch = self.merge_if(self.Sbranch, results.Sbranch, index, br_idx)
         #
-        # self.Ibranch[:, br_idx] = results.Ibranch
+        # self.Ibranch = self.merge_if(self.Ibranch, results.Ibranch, index, br_idx)
         #
-        # self.loading[:, br_idx] = results.loading
+        # self.loading = self.merge_if(self.loading, results.loading, index, br_idx)
         #
-        # self.losses[:, br_idx] = results.losses
+        # self.losses = self.merge_if(self.losses, results.losses, index, br_idx)
         #
-        # if (results.error > self.error).any():
-        #     self.error = results.error
+        # self.error = self.merge_if(self.error, results.error, index, [grid_idx])
         #
-        # self.converged = self.converged * results.converged
-
-        self.voltage = self.merge_if(self.voltage, results.voltage, index, b_idx)
-
-        self.Sbranch = self.merge_if(self.Sbranch, results.Sbranch, index, br_idx)
-
-        self.Ibranch = self.merge_if(self.Ibranch, results.Ibranch, index, br_idx)
-
-        self.loading = self.merge_if(self.loading, results.loading, index, br_idx)
-
-        self.losses = self.merge_if(self.losses, results.losses, index, br_idx)
-
-        self.error = self.merge_if(self.error, results.error, index, [grid_idx])
-
-        self.converged = self.merge_if(self.converged, results.converged, index, [grid_idx])
+        # self.converged = self.merge_if(self.converged, results.converged, index, [grid_idx])
 
         # self.Qpv = Qpv
 
@@ -5048,34 +5053,38 @@ class TimeSeriesResults(PowerFlowResults):
             ylabel = ''
             title = ''
             if result_type == 'Bus voltage':
-                df = self.voltage[indices]
+                data = self.voltage[:, indices]
                 ylabel = '(p.u.)'
                 title = 'Bus voltage '
 
             elif result_type == 'Branch power':
-                df = self.Sbranch[indices]
+                data = self.Sbranch[:, indices]
                 ylabel = '(MVA)'
                 title = 'Branch power '
 
             elif result_type == 'Branch current':
-                df = self.Ibranch[indices]
+                data = self.Ibranch[:, indices]
                 ylabel = '(kA)'
                 title = 'Branch current '
 
             elif result_type == 'Branch_loading':
-                df = self.loading[indices] * 100
+                data = self.loading[:, indices] * 100
                 ylabel = '(%)'
                 title = 'Branch loading '
 
             elif result_type == 'Branch losses':
-                df = self.losses[indices]
+                data = self.losses[:, indices]
                 ylabel = '(MVA)'
                 title = 'Branch losses'
 
             else:
                 pass
 
-            df.columns = labels
+            # df.columns = labels
+            if self.time is not None:
+                df = pd.DataFrame(data=data, columns=labels, index=self.time)
+            else:
+                df = pd.DataFrame(data=data, columns=labels)
 
             if len(df.columns) > 10:
                 df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
@@ -5164,7 +5173,10 @@ class TimeSeries(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        nt = len(self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
 
         # For every circuit, run the time series
         for nc, c in enumerate(self.grid.circuits):
@@ -5189,8 +5201,8 @@ class TimeSeries(QThread):
                     res = powerflow.run_at(t)
                     results.set_at(t, res, c.bus_original_idx, c.branch_original_idx)
 
-                    prog = ((t + 1) / nt) * 100
-                    self.progress_signal.emit(prog)
+                    progress = ((t + 1) / nt) * 100
+                    self.progress_signal.emit(progress)
                     t += 1
 
                 c.time_series_results = results
