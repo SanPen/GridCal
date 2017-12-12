@@ -6514,7 +6514,7 @@ class DcOpf:
         #  set the slack nodes voltage angle
         ################################################################################################################
         for i in self.vd:
-            prob.add(self.theta[i] == 0, 'ct_slack_theta')
+            prob.add(self.theta[i] == 0, 'ct_slack_theta_' + str(i))
 
         ################################################################################################################
         #  set the slack generator power
@@ -6557,7 +6557,6 @@ class DcOpf:
             self.potential_errors = True
             warn('There are branches with no rate.')
 
-
         # set the global OPF LP problem
         self.problem = prob
 
@@ -6579,7 +6578,11 @@ class DcOpf:
                 for load in self.circuit.buses[i].loads:
                     self.loads[i] += load.S.real / self.Sbase
 
-                self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(i))
+                # print(k)
+                if calculated_node_power == 0 and node_power_injection == 0:
+                    pass
+                else:
+                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(k))
         else:
 
             for k, i in enumerate(self.pqpv):

@@ -249,10 +249,11 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         @return:
         """
-        if self.api_object.active:
-            self.set_enable(False)
-        else:
-            self.set_enable(True)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
 
     def set_enable(self, val=True):
         """
@@ -563,10 +564,11 @@ class LoadGraphicItem(QGraphicsItemGroup):
 
         @return:
         """
-        if self.api_object.active:
-            self.set_enable(False)
-        else:
-            self.set_enable(True)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
 
     def set_enable(self, val=True):
         """
@@ -726,10 +728,11 @@ class ShuntGraphicItem(QGraphicsItemGroup):
 
         @return:
         """
-        if self.api_object.active:
-            self.set_enable(False)
-        else:
-            self.set_enable(True)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
 
     def set_enable(self, val=True):
         """
@@ -885,10 +888,11 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
 
         @return:
         """
-        if self.api_object.active:
-            self.set_enable(False)
-        else:
-            self.set_enable(True)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
 
     def set_enable(self, val=True):
         """
@@ -1042,10 +1046,11 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         @return:
         """
-        if self.api_object.active:
-            self.set_enable(False)
-        else:
-            self.set_enable(True)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
 
     def set_enable(self, val=True):
         """
@@ -1191,10 +1196,11 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         @return:
         """
-        if self.api_object.active:
-            self.set_enable(False)
-        else:
-            self.set_enable(True)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
 
     def set_enable(self, val=True):
         """
@@ -1511,22 +1517,23 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         Toggle bus element state
         @return:
         """
-        self.api_object.active = not self.api_object.active
-        print('Enabled:', self.api_object.active)
+        if self.api_object is not None:
+            self.api_object.active = not self.api_object.active
+            print('Enabled:', self.api_object.active)
 
-        if self.api_object.active:
+            if self.api_object.active:
 
-            self.setBrush(QBrush(ACTIVE['color']))
+                self.setBrush(QBrush(ACTIVE['color']))
 
-            for term in self.terminals:
-                for host in term.hosting_connections:
-                    host.set_enable(val=True)
-        else:
-            self.setBrush(QBrush(DEACTIVATED['color']))
+                for term in self.terminals:
+                    for host in term.hosting_connections:
+                        host.set_enable(val=True)
+            else:
+                self.setBrush(QBrush(DEACTIVATED['color']))
 
-            for term in self.terminals:
-                for host in term.hosting_connections:
-                    host.set_enable(val=False)
+                for term in self.terminals:
+                    for host in term.hosting_connections:
+                        host.set_enable(val=False)
 
     def enable_disable_sc(self):
         """
