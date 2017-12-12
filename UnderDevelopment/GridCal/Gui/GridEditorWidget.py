@@ -1401,6 +1401,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             # term.setPos(x0, y0 - h / 2 + offset / 2)
             y0 += dy
 
+        if self.api_object is not None:
+            self.label.setPlainText(self.api_object.name)
+
+
         # rearrange children
         self.arrange_children()
 
