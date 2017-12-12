@@ -158,7 +158,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c2_offset = QPointF(self.t_diam / 4, self.t_diam / 2)
         if self.api_object is not None:
             if self.api_object.is_transformer:
-                self.make_trafo_signs()
+                self.make_transformer_signs()
                 # self.diagramScene.addItem(self.c2)
 
         # add the line and it possible children to the scene
@@ -167,7 +167,11 @@ class BranchGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
-    def make_trafo_signs(self):
+    def make_transformer_signs(self):
+        """
+        
+        :return: 
+        """
         self.c1 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
         self.c2 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
         self.c1.setPen(QPen(self.color, self.width, self.style))
@@ -324,7 +328,7 @@ class BranchGraphicItem(QGraphicsLineItem):
                 if self.api_object.is_transformer:
 
                     if self.c1 is None:
-                        self.make_trafo_signs()
+                        self.make_transformer_signs()
 
                     # pos = self.pos1 - ((self.pos1 - self.pos2) / 2.0)
                     pos1 = (self.pos1 + self.pos2) / 2.0 - self.c1_offset
