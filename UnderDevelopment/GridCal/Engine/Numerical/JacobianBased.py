@@ -31,7 +31,7 @@ try:
     from numba import jit
     NUMBA_DETECTED = True
     print('Numba was detected, enjoy :D')
-except :
+except Exception as ex:
     NUMBA_DETECTED = False
     print('No numba on the system, you may want to consider installing it :)')
 
@@ -554,7 +554,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
         # system matrix
         # H1 = H^t
-        H1 = H.transpose()
+        H1 = H.transpose().tocsr()
         # H2 = H1·H
         H2 = H1.dot(H)
 

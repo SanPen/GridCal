@@ -2947,7 +2947,7 @@ class MultiCircuit(Circuit):
 
             isl_idx += 1
 
-        # print(islands)
+        pass
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -3437,16 +3437,19 @@ class PowerFlowInput:
         self.ref = where(self.types == NodeType.REF.value[0])[0]
         self.sto = where(self.types == NodeType.STO_DISPATCH.value)[0]
 
-        if len(self.ref) == 0:
-            if len(self.pv) == 0:
+        if len(self.ref) == 0:  # there is no slack!
+
+            if len(self.pv) == 0:  # there are no pv neither -> blackout grid
                 warn('There are no slack nodes selected')
+
             else:  # select the first PV generator as the slack
-                mx = max(self.Sbus)
+                mx = max(self.Sbus[self.pv])
                 i = where(self.Sbus == mx)[0]
                 # print('Setting the bus ' + str(i) + ' as slack instead of pv')
-                self.pv = delete(self.pv, i)
+                self.pv = delete(self.pv, where(self.pv == i)[0])
                 self.ref = [i]
             self.ref = ndarray.flatten(array(self.ref))
+            self.types[self.ref] = NodeType.REF.value[0]
         else:
             pass  # no problem :)
 
@@ -3967,6 +3970,7 @@ class PowerFlow(QRunnable):
                 Scalc = Sbus.copy()
                 any_control_issue = False
                 converged = True
+                warn('Not solving power flow because there is no slack bus')
             else:
                 # type HELM
                 if self.options.solver_type == SolverType.HELM:
@@ -3981,6 +3985,7 @@ class PowerFlow(QRunnable):
                                                               pv=circuit.power_flow_input.pv,
                                                               vd=circuit.power_flow_input.ref,
                                                               eps=self.options.tolerance)
+
                 # type DC
                 elif self.options.solver_type == SolverType.DC:
                     methods.append(SolverType.DC)
@@ -3993,6 +3998,7 @@ class PowerFlow(QRunnable):
                                                               pq=circuit.power_flow_input.pq,
                                                               pv=circuit.power_flow_input.pv)
 
+                # Levenberg-Marquardt
                 elif self.options.solver_type == SolverType.LM:
                     methods.append(SolverType.LM)
                     V, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
@@ -4004,6 +4010,7 @@ class PowerFlow(QRunnable):
                                                                               tol=self.options.tolerance,
                                                                               max_it=self.options.max_iter)
 
+                # Fast decoupled
                 elif self.options.solver_type == SolverType.FASTDECOUPLED:
                     methods.append(SolverType.FASTDECOUPLED)
                     V, converged, normF, Scalc, it, el = FDPF(Vbus=circuit.power_flow_input.Vbus,
@@ -4018,6 +4025,7 @@ class PowerFlow(QRunnable):
                                                               tol=self.options.tolerance,
                                                               max_it=self.options.max_iter)
 
+                # Newton-Raphson
                 elif self.options.solver_type == SolverType.NR:
                     methods.append(SolverType.NR)
                     V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
@@ -4030,6 +4038,7 @@ class PowerFlow(QRunnable):
                                                                    max_it=self.options.max_iter,
                                                                    robust=False)
 
+                # Newton-Raphson-Iwamoto
                 elif self.options.solver_type == SolverType.IWAMOTO:
                     methods.append(SolverType.IWAMOTO)
                     V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
@@ -4042,9 +4051,9 @@ class PowerFlow(QRunnable):
                                                                    max_it=self.options.max_iter,
                                                                    robust=True)
 
-                # for any other method, for now, do a NR Iwamoto
+                # for any other method, for now, do a LM
                 else:
-                    methods.append(SolverType.IWAMOTO)
+                    methods.append(SolverType.LM)
                     V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                    Sbus=Sbus,
                                                                    V0=V,
@@ -4104,9 +4113,12 @@ class PowerFlow(QRunnable):
                     else:
                         if self.options.verbose:
                             print('Controls Ok')
+
                 else:
                     # did not check Q limits
                     any_control_issue = False
+
+                pass
 
             # increment the inner iterations counter
             inner_it.append(it)
@@ -4316,6 +4328,7 @@ class PowerFlow(QRunnable):
                 print('Solving ' + circuit.name)
 
             circuit.power_flow_results = self.single_power_flow(circuit)
+
             results.apply_from_island(circuit.power_flow_results, circuit.bus_original_idx, circuit.branch_original_idx)
 
             # self.progress_signal.emit((k+1) / len(self.grid.circuits))
