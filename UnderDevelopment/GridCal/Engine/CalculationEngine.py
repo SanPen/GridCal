@@ -2525,7 +2525,12 @@ class MultiCircuit(Circuit):
         hdr = delete(hdr, argwhere(hdr == 'bus_to'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
+
+            try:
+                obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
+            except KeyError as ex:
+                raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
+
             set_object_attributes(obj, hdr, vals[i, :])
             self.add_branch(obj)
 
@@ -2563,7 +2568,10 @@ class MultiCircuit(Circuit):
                 if self.time_profile is None:
                     self.time_profile = idx
 
-            bus = bus_dict[str(bus_from[i])]
+            try:
+                bus = bus_dict[str(bus_from[i])]
+            except KeyError as ex:
+                raise Exception(str(i) + ': Load bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'Load':
                 obj.name += str(len(bus.loads) + 1) + '@' + bus.name
@@ -2591,7 +2599,10 @@ class MultiCircuit(Circuit):
                 idx = data['CtrlGen_Vset_profiles'].index
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[str(bus_from[i])]
+            try:
+                bus = bus_dict[str(bus_from[i])]
+            except KeyError as ex:
+                raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
                 obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
@@ -2619,7 +2630,10 @@ class MultiCircuit(Circuit):
                 idx = data['battery_Vset_profiles'].index
                 obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[str(bus_from[i])]
+            try:
+                bus = bus_dict[str(bus_from[i])]
+            except KeyError as ex:
+                raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'batt':
                 obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
@@ -2642,7 +2656,10 @@ class MultiCircuit(Circuit):
                 idx = data['static_generator_Sprof'].index
                 obj.Sprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[str(bus_from[i])]
+            try:
+                bus = bus_dict[str(bus_from[i])]
+            except KeyError as ex:
+                raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'StaticGen':
                 obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
@@ -2665,7 +2682,10 @@ class MultiCircuit(Circuit):
                 idx = data['shunt_Y_profiles'].index
                 obj.Yprof = pd.DataFrame(data=val, index=idx)
 
-            bus = bus_dict[str(bus_from[i])]
+            try:
+                bus = bus_dict[str(bus_from[i])]
+            except KeyError as ex:
+                raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'shunt':
                 obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
