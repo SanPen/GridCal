@@ -5359,10 +5359,30 @@ class VoltageCollapse(QThread):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
+            # Voltage_series, Lambda_series, \
+            # normF, success = continuation_nr(Ybus=c.power_flow_input.Ybus,
+            #                                  Ibus_base=c.power_flow_input.Ibus[c.bus_original_idx],
+            #                                  Ibus_target=c.power_flow_input.Ibus[c.bus_original_idx],
+            #                                  Sbus_base=self.inputs.Sbase[c.bus_original_idx],
+            #                                  Sbus_target=self.inputs.Starget[c.bus_original_idx],
+            #                                  V=self.inputs.Vbase[c.bus_original_idx],
+            #                                  pv=c.power_flow_input.pv,
+            #                                  pq=c.power_flow_input.pq,
+            #                                  step=self.options.step,
+            #                                  approximation_order=self.options.approximation_order,
+            #                                  adapt_step=self.options.adapt_step,
+            #                                  step_min=self.options.step_min,
+            #                                  step_max=self.options.step_max,
+            #                                  error_tol=1e-3,
+            #                                  tol=1e-6,
+            #                                  max_it=20,
+            #                                  stop_at='NOSE',
+            #                                  verbose=False)
+
             Voltage_series, Lambda_series, \
             normF, success = continuation_nr(Ybus=c.power_flow_input.Ybus,
-                                             Ibus_base=c.power_flow_input.Ibus[c.bus_original_idx],
-                                             Ibus_target=c.power_flow_input.Ibus[c.bus_original_idx],
+                                             Ibus_base=c.power_flow_input.Ibus,
+                                             Ibus_target=c.power_flow_input.Ibus,
                                              Sbus_base=self.inputs.Sbase[c.bus_original_idx],
                                              Sbus_target=self.inputs.Starget[c.bus_original_idx],
                                              V=self.inputs.Vbase[c.bus_original_idx],
@@ -6579,9 +6599,9 @@ class DcOpf:
                     self.loads[i] += load.S.real / self.Sbase
 
                 # print(k)
-                if calculated_node_power == 0 and node_power_injection == 0:
+                if calculated_node_power == 0 and node_power_injection == 0:  # nodes without injection or generation
                     pass
-                else:
+                else:  # desired situation
                     self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(k))
         else:
 
