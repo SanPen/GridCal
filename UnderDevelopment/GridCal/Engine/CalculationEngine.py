@@ -5307,7 +5307,13 @@ class VoltageCollapseResults:
                 self.voltages[:, bus_original_idx] = res.voltages
                 self.lambdas = res.lambdas
             else:
-                self.voltages[:, bus_original_idx] = res.voltages
+                lprev = self.voltages.shape[0]
+                if l > lprev:
+                    vv = self.voltages.copy()
+                    self.voltages = zeros((l, nbus_full), dtype=complex)
+                    self.voltages[0:l, :] = vv
+
+                self.voltages[0:l, bus_original_idx] = res.voltages
 
     def plot(self, result_type='Bus voltage', ax=None, indices=None, names=None):
         """
