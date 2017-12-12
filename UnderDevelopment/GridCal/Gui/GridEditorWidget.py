@@ -154,15 +154,11 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1 = None
         self.c2 = None
         self.t_diam = 40
+        self.c1_offset = QPointF(self.t_diam * 3 / 4, self.t_diam / 2)
+        self.c2_offset = QPointF(self.t_diam / 4, self.t_diam / 2)
         if self.api_object is not None:
             if self.api_object.is_transformer:
-                self.c1 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
-                self.c2 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
-                self.c1_offset = QPointF(self.t_diam * 3 / 4, self.t_diam/2)
-                self.c2_offset = QPointF(self.t_diam / 4, self.t_diam / 2)
-                self.c1.setPen(QPen(self.color, self.width, self.style))
-                # self.diagramScene.addItem(self.c1)
-                self.c2.setPen(QPen(self.color, self.width, self.style))
+                self.make_trafo_signs()
                 # self.diagramScene.addItem(self.c2)
 
         # add the line and it possible children to the scene
@@ -170,6 +166,13 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         if fromPort and toPort:
             self.redraw()
+
+    def make_trafo_signs(self):
+        self.c1 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
+        self.c2 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
+        self.c1.setPen(QPen(self.color, self.width, self.style))
+        # self.diagramScene.addItem(self.c1)
+        self.c2.setPen(QPen(self.color, self.width, self.style))
 
     def contextMenuEvent(self, event):
         """
@@ -317,13 +320,18 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.setLine(QLineF(self.pos1, self.pos2))
             self.setZValue(0)
 
-            if self.api_object.is_transformer:
-                # pos = self.pos1 - ((self.pos1 - self.pos2) / 2.0)
-                pos1 = (self.pos1 + self.pos2) / 2.0 - self.c1_offset
-                pos2 = (self.pos1 + self.pos2) / 2.0 - self.c2_offset
-                self.c1.setPos(pos1)
-                self.c2.setPos(pos2)
-                # self.c1.setPos(self.pos1)
+            if self.api_object is not None:
+                if self.api_object.is_transformer:
+
+                    if self.c1 is None:
+                        self.make_trafo_signs()
+
+                    # pos = self.pos1 - ((self.pos1 - self.pos2) / 2.0)
+                    pos1 = (self.pos1 + self.pos2) / 2.0 - self.c1_offset
+                    pos2 = (self.pos1 + self.pos2) / 2.0 - self.c2_offset
+                    self.c1.setPos(pos1)
+                    self.c2.setPos(pos2)
+                    # self.c1.setPos(self.pos1)
 
     def set_pen(self, pen):
         """
