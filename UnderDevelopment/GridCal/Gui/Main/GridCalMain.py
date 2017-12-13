@@ -517,6 +517,9 @@ class MainGUI(QMainWindow):
                     tooltip += '\nType: ' + bus_types[types[i]]
                 bus.graphic_obj.setToolTip(tooltip)
 
+            else:
+                bus.graphic_obj.setBrush(Qt.gray)
+
         # color branches
         if s_branch is not None:
             lnorm = abs(loadings)

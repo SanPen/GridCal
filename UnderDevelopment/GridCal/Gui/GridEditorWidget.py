@@ -1296,8 +1296,17 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.sc_enabled = False
         self.pen_width = 4
         # Properties of the rectangle:
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
         self.setBrush(QBrush(Qt.darkGray))
         self.setPen(QPen(self.color, self.pen_width, self.style))
         self.setBrush(self.color)
@@ -1403,8 +1412,6 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
-
-
         # rearrange children
         self.arrange_children()
 
@@ -1528,12 +1535,19 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             if self.api_object.active:
 
                 self.setBrush(QBrush(ACTIVE['color']))
+                self.setPen(QPen(ACTIVE['style']))
+                # self.color = ACTIVE['color']
+                # self.style = ACTIVE['style']
 
                 for term in self.terminals:
                     for host in term.hosting_connections:
                         host.set_enable(val=True)
             else:
                 self.setBrush(QBrush(DEACTIVATED['color']))
+                self.setPen(QPen(ACTIVE['style']))
+
+                # self.color = DEACTIVATED['color']
+                # self.style = DEACTIVATED['style']
 
                 for term in self.terminals:
                     for host in term.hosting_connections:
