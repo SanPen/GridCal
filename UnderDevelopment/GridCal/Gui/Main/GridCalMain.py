@@ -782,7 +782,11 @@ class MainGUI(QMainWindow):
                 filename = name + extension[type_selected]
 
             # call to save the file in the circuit
-            self.circuit.save_file(filename)
+            try:
+                self.circuit.save_file(filename)
+            except Exception as ex:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
     def export_simulation_data(self):
         """

@@ -660,7 +660,7 @@ class Bus:
 
             if elm.active:
                 # Add the generator active power
-                S = complex(S.real + elm.P, S.imag)
+                S += complex(elm.P, 0)
 
                 self.Qmin_sum += elm.Qmin
                 self.Qmax_sum += elm.Qmax

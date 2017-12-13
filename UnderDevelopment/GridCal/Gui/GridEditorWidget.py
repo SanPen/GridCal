@@ -108,10 +108,7 @@ class GeneralItem(object):
 
 
 class BranchGraphicItem(QGraphicsLineItem):
-    """
-    - fromPort
-    - toPort
-    """
+
     def __init__(self, fromPort, toPort, diagramScene, width=5, branch: Branch=None):
         """
 
