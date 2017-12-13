@@ -572,7 +572,7 @@ class Bus:
                 # If there are storage devices and the dispatchable flag is on, set the bus as dispatchable
                 self.type = NodeType.STO_DISPATCH
             else:
-                # Otherwise a storage device shall be marked as a voltage controlld bus
+                # Otherwise a storage device shall be marked as a voltage controlled bus
                 self.type = NodeType.PV
         else:
             if self.is_slack:  # If there is no device but still is marked as REF, then set as REF
@@ -580,6 +580,8 @@ class Bus:
             else:
                 # Nothing special; set it as PQ
                 self.type = NodeType.PQ
+
+        pass
 
     def get_YISV(self, index=None):
         """
@@ -3447,7 +3449,7 @@ class PowerFlowInput:
 
             else:  # select the first PV generator as the slack
                 mx = max(self.Sbus[self.pv])
-                i = where(self.Sbus == mx)[0]
+                i = where(self.Sbus == mx)[0][0]
                 # print('Setting the bus ' + str(i) + ' as slack instead of pv')
                 self.pv = delete(self.pv, where(self.pv == i)[0])
                 self.ref = [i]
@@ -3458,6 +3460,7 @@ class PowerFlowInput:
 
         self.pqpv = r_[self.pq, self.pv]
         self.pqpv.sort()
+        pass
 
     def set_from(self, obj, bus_idx, br_idx):
         """
