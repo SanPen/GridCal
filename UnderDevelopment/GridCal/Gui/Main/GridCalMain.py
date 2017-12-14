@@ -596,8 +596,6 @@ class MainGUI(QMainWindow):
     def auto_layout(self):
         """
         Automatic layout of the nodes
-        Returns:
-
         """
         if self.circuit.graph is None:
             self.circuit.compile()
@@ -625,8 +623,6 @@ class MainGUI(QMainWindow):
                 warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
         # adjust the view
         self.center_nodes()
-
-        # self.grid_editor.auto_layout()
 
     def bigger_nodes(self):
         """
@@ -784,7 +780,7 @@ class MainGUI(QMainWindow):
             # call to save the file in the circuit
             try:
                 self.circuit.save_file(filename)
-            except Exception as ex:
+            except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
