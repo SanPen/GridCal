@@ -603,9 +603,9 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
             nu *= 2
 
         # check convergence
-        F = Sbus - V*conj(Ybus.dot(V))
-        # normF = np.linalg.norm(dx, np.Inf)
-        normF = np.linalg.norm(F, np.Inf)
+        # F = Sbus - V*conj(Ybus.dot(V))
+        normF = np.linalg.norm(dx, np.Inf)
+        # normF = np.linalg.norm(F, np.Inf)
         converged = normF < tol
         f_prev = f
 

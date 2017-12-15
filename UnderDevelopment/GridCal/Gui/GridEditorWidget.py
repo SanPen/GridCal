@@ -73,8 +73,6 @@ class GeneralItem(object):
 
     def contextMenuEvent(self, event):
         menu = QMenu()
-        pa = menu.addAction('Parameters')
-        pa.triggered.connect(self.editParameters)
 
         ra1 = menu.addAction('Rotate +90')
         ra1.triggered.connect(self.rotate_clockwise)
@@ -109,7 +107,7 @@ class GeneralItem(object):
 
 class BranchGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, fromPort, toPort, diagramScene, width=5, branch: Branch=None):
+    def __init__(self, fromPort, toPort, diagramScene, width=5, branch: Branch = None):
         """
 
         @param fromPort:
@@ -166,8 +164,8 @@ class BranchGraphicItem(QGraphicsLineItem):
 
     def make_transformer_signs(self):
         """
-        
-        :return: 
+
+        :return:
         """
         self.c1 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
         self.c2 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
@@ -183,9 +181,6 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         menu = QMenu()
 
-        ra1 = menu.addAction('Properties')
-        ra1.triggered.connect(self.editParameters)
-
         pe = menu.addAction('Enable/Disable')
         pe.triggered.connect(self.enable_disable_toggle)
 
@@ -196,31 +191,14 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         menu.exec_(event.screenPos())
 
-    def editParameters(self):
-        """
-        Display parameters editor for the Bus
-        :return:
-        """
-        dialogue = QDialog(parent=self.diagramScene.parent())
-        dialogue.setWindowTitle(self.api_object.name)
-        layout = QVBoxLayout()
-        grid = QTableView()
-        layout.addWidget(grid)
-        dialogue.setLayout(layout)
-
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
-                           parent=grid, editable=True, transposed=True, non_editable_indices=[1, 2])
-
-        grid.setModel(mdl)
-        dialogue.show()
-
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
                            non_editable_indices=[1, 2])
 
@@ -281,7 +259,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         if self.fromPort:
             self.pos1 = fromPort.scenePos()
             self.fromPort.posCallbacks.append(self.setBeginPos)
-            self.fromPort.setZValue(0)
+            self.fromPort.parent.setZValue(0)
 
     def setToPort(self, toPort):
         """
@@ -293,7 +271,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         if self.toPort:
             self.pos2 = toPort.scenePos()
             self.toPort.posCallbacks.append(self.setEndPos)
-            self.toPort.setZValue(0)
+            self.toPort.parent.setZValue(0)
 
     def setEndPos(self, endpos):
         """
@@ -360,7 +338,7 @@ class ParameterDialog(QDialog):
         self.close()
 
 
-class TerminalItem(QGraphicsEllipseItem):
+class TerminalItem(QGraphicsRectItem):
     """
     Represents a connection point to a subsystem
     """
@@ -372,15 +350,16 @@ class TerminalItem(QGraphicsEllipseItem):
         @param editor:
         @param parent:
         """
-        QGraphicsEllipseItem.__init__(self, QRectF(-6, -6, h, w), parent)
+
+        QGraphicsRectItem.__init__(self, QRectF(-6, -6, h, w), parent)
         self.setCursor(QCursor(QtCore.Qt.CrossCursor))
 
         # Properties:
         self.color = ACTIVE['color']
-        self.width = 2
+        self.pen_width = 2
         self.style = ACTIVE['style']
         self.setBrush(Qt.darkGray)
-        self.setPen(QPen(self.color, self.width, self.style))
+        self.setPen(QPen(self.color, self.pen_width, self.style))
 
         # terminal parent object
         self.parent = parent
@@ -391,21 +370,39 @@ class TerminalItem(QGraphicsEllipseItem):
 
         # Name:
         self.name = name
-        self.posCallbacks = []
+        self.posCallbacks = list()
         self.setFlag(self.ItemSendsScenePositionChanges, True)
+
+    def process_callbacks(self, value):
+
+        w = self.rect().width()
+        h2 = self.rect().height() / 2.0
+        n = len(self.posCallbacks)
+        dx = w / (n + 1)
+        for i, call_back in enumerate(self.posCallbacks):
+            call_back(value + QPointF((i + 1) * dx, h2))
 
     def itemChange(self, change, value):
         """
 
         @param change:
-        @param value:
+        @param value: This is a QPointF object with the coordinates of the upper left corner of the TerminalItem
         @return:
         """
         if change == self.ItemScenePositionHasChanged:
-            for cb in self.posCallbacks:
-                cb(value)
+
+            self.process_callbacks(value)
+            # w = self.rect().width()
+            # h2 = self.rect().height() / 2.0
+            # n = len(self.posCallbacks)
+            # dx = w / (n+1)
+            # for i, call_back in enumerate(self.posCallbacks):
+            #     call_back(value + QPointF((i+1) * dx, h2))
+
             return value
-        return super(TerminalItem, self).itemChange(change, value)
+
+        else:
+            return super(TerminalItem, self).itemChange(change, value)
 
     def mousePressEvent(self, event):
         """
@@ -426,7 +423,7 @@ class TerminalItem(QGraphicsEllipseItem):
 
         """
         n = len(self.hosting_connections)
-        for i in range(n-1, -1, -1):
+        for i in range(n - 1, -1, -1):
             self.hosting_connections[i].remove_()
             self.hosting_connections.pop(i)
 
@@ -435,6 +432,7 @@ class HandleItem(QGraphicsEllipseItem):
     """
     A handle that can be moved by the mouse: Element to resize the boxes
     """
+
     def __init__(self, parent=None):
         """
 
@@ -523,7 +521,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w/2, pos.y() + 0,
+            pos.x() + self.w / 2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -615,7 +613,8 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -666,12 +665,12 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         parent.scene().addItem(self.nexus)
 
         self.lines = list()
-        self.lines.append(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, self.h*0.4)))
-        self.lines.append(QLineF(QPointF(0, self.h*0.4), QPointF(self.w, self.h*0.4)))
-        self.lines.append(QLineF(QPointF(0, self.h*0.6), QPointF(self.w, self.h*0.6)))
-        self.lines.append(QLineF(QPointF(self.w/2, self.h*0.6), QPointF(self.w/2, self.h)))
+        self.lines.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
+        self.lines.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
+        self.lines.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
+        self.lines.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
         self.lines.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
-        self.lines.append(QLineF(QPointF(self.w*0.15, self.h * 1.1), QPointF(self.w*0.85, self.h * 1.1)))
+        self.lines.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
         self.lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
         for l in self.lines:
             l1 = QLine(self)
@@ -686,7 +685,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w/2,
+            pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
@@ -778,7 +777,8 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -838,7 +838,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.label = QGraphicsTextItem('G', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h/4, self.w/4)
+        self.label.setPos(self.h / 4, self.w / 4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -847,7 +847,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w/2, pos.y() + 0,
+            pos.x() + self.w / 2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -938,7 +938,8 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -996,7 +997,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.label = QGraphicsTextItem('S', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h/4, self.w/4)
+        self.label.setPos(self.h / 4, self.w / 4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -1005,7 +1006,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w/2, pos.y() + 0,
+            pos.x() + self.w / 2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -1092,7 +1093,8 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1146,7 +1148,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.label = QGraphicsTextItem('B', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h/4, self.w/4)
+        self.label.setPos(self.h / 4, self.w / 4)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -1155,7 +1157,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w/2, pos.y() + 0,
+            pos.x() + self.w / 2, pos.y() + 0,
             parent.x() + rect.width() / 2,
             parent.y() + rect.height(),
         )
@@ -1219,7 +1221,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.glyph.setPen(QPen(self.color, self.width, self.style))
         self.label.setDefaultTextColor(self.color)
 
-
     def plot(self):
         """
         Plot API objects profiles
@@ -1264,8 +1265,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
       - parameters
       - description
     """
+
     def __init__(self, diagramScene, name='Untitled', parent=None, index=0, editor=None,
-                 bus: Bus=None, pos: QPoint=None):
+                 bus: Bus = None, pos: QPoint = None):
         """
 
         @param diagramScene:
@@ -1287,7 +1289,8 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         self.editor = editor
 
-        self.graphic_children = list()
+        # loads, shunts, generators, etc...
+        self.shunt_children = list()
 
         # Enabled for short circuit
         self.sc_enabled = False
@@ -1327,17 +1330,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
 
-        # connection terminals the block:
-        self.upper_terminals = []
-        self.upper_terminals.append(TerminalItem('n', parent=self, editor=self.editor))  # , h=self.h))
-        self.lower_terminals = []
-        self.lower_terminals.append(TerminalItem('s', parent=self, editor=self.editor))  # , h=self.h))
-        self.right_terminals = []
-        self.right_terminals.append(TerminalItem('e', parent=self, editor=self.editor))  # , w=self.w))
-        self.left_terminals = []
-        self.left_terminals.append(TerminalItem('w', parent=self, editor=self.editor))  # , w=self.w))
+        # connection terminals the block
+        self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
 
-        self.terminals = self.upper_terminals + self.lower_terminals + self.right_terminals + self.left_terminals
+        self.hosting_connections = list()
 
         # Update size:
         self.change_size(self.w, self.h)
@@ -1367,48 +1363,16 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         ly = (h - lh) / 2
         self.label.setPos(lx, ly)
 
-        # upper
-        n = len(self.upper_terminals)
-        y0 = -offset/2
-        dx = w / (n+1)
-        x0 = dx
-        for term in self.upper_terminals:
-            term.setPos(x0, y0)
-            # term.setPos(x0 - w / 2 + offset / 2, y0)
-            x0 += dx
-
         # lower
-        n = len(self.lower_terminals)
         y0 = h + offset
-        dx = w / (n+1)
-        x0 = dx
-        for term in self.lower_terminals:
-            term.setPos(x0, y0)
-            # term.setPos(x0 - w / 2 + offset / 2, y0)
-            x0 += dx
+        x0 = 0
+        self.terminal.setPos(x0, y0)
+        self.terminal.setRect(0.0, 0.0, w, 10)
 
-        # right
-        n = len(self.right_terminals)
-        x0 = w + offset
-        dy = h / (n+1)
-        y0 = dy
-        for term in self.right_terminals:
-            term.setPos(x0, y0)
-            # term.setPos(x0, y0 - h / 2 + offset / 2)
-            y0 += dy
-
-        # left
-        n = len(self.left_terminals)
-        x0 = - offset
-        dy = h / (n+1)
-        y0 = dy
-        for term in self.left_terminals:
-            term.setPos(x0, y0)
-            # term.setPos(x0, y0 - h / 2 + offset / 2)
-            y0 += dy
-
+        # Set text
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
+
         # rearrange children
         self.arrange_children()
 
@@ -1422,9 +1386,12 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         y0 = self.h + 40
         x = 0
-        for elm in self.graphic_children:
+        for elm in self.shunt_children:
             elm.setPos(x, y0)
             x += elm.w + 10
+
+        # Arrange line positions
+        self.terminal.process_callbacks(self.pos() + self.terminal.pos())
 
     def create_children_icons(self):
         """
@@ -1514,7 +1481,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         self.delete_all_connections()
 
-        for g in self.graphic_children:
+        for g in self.shunt_children:
             self.diagramScene.removeItem(g.nexus)
 
         self.diagramScene.removeItem(self)
@@ -1573,31 +1540,14 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # self.api_object.plot_profiles(time_idx=t)
         self.api_object.plot_profiles()
 
-    def editParameters(self):
-        """
-        Display parameters editor for the Bus
-        :return:
-        """
-        dialogue = QDialog(parent=self.diagramScene.parent())
-        dialogue.setWindowTitle(self.api_object.name)
-        layout = QVBoxLayout()
-        grid = QTableView()
-        layout.addWidget(grid)
-        dialogue.setLayout(layout)
-
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
-                           parent=grid, editable=True, transposed=True)
-
-        grid.setModel(mdl)
-        dialogue.show()
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+    def mousePressEvent(self, event):
         """
         mouse press: display the editor
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units, self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+                           self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1612,7 +1562,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         _grph = LoadGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
-        self.graphic_children.append(_grph)
+        self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_shunt(self, api_obj=None):
@@ -1626,7 +1576,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         _grph = ShuntGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
-        self.graphic_children.append(_grph)
+        self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_controlled_generator(self, api_obj=None):
@@ -1640,7 +1590,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         _grph = ControlledGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
-        self.graphic_children.append(_grph)
+        self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_static_generator(self, api_obj=None):
@@ -1654,7 +1604,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         _grph = StaticGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
-        self.graphic_children.append(_grph)
+        self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_battery(self, api_obj=None):
@@ -1668,17 +1618,15 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         _grph = BatteryGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
-        self.graphic_children.append(_grph)
+        self.shunt_children.append(_grph)
         self.arrange_children()
 
 
 class EditorGraphicsView(QGraphicsView):
-    """
-    Editor where the diagram is displayed
-    """
+
     def __init__(self, scene, parent=None, editor=None):
         """
-
+        Editor where the diagram is displayed
         @param scene: DiagramScene object
         @param parent:
         @param editor:
@@ -1721,28 +1669,22 @@ class EditorGraphicsView(QGraphicsView):
         @return:
         """
         if event.mimeData().hasFormat('component/name'):
-            objtype = event.mimeData().data('component/name')
-            # name = str(objtype)
-
-            # print(str(event.mimeData().data('component/name')))
-
+            obj_type = event.mimeData().data('component/name')
             elm = None
             data = QByteArray()
             stream = QDataStream(data, QIODevice.WriteOnly)
             stream.writeQString('Bus')
-            if objtype == data:
+            if obj_type == data:
                 name = 'Bus ' + str(self.last_n)
                 self.last_n += 1
                 obj = Bus(name=name)
                 elm = BusGraphicItem(diagramScene=self.scene(), name=name, editor=self.editor, bus=obj)
                 obj.graphic_obj = elm
-                self.scene_.circuit.add_bus(obj)  # weird but only way to have graphical-API communication
+                self.scene_.circuit.add_bus(obj)  # weird but it's the only way to have graphical-API communication
 
             if elm is not None:
                 elm.setPos(self.mapToScene(event.pos()))
                 self.scene_.addItem(elm)
-                # self.scene_.circuit.add_bus(obj) # weird but only way to have graphical-API communication
-                # print('Block created')
 
     def wheelEvent(self, event):
         """
@@ -1764,6 +1706,12 @@ class EditorGraphicsView(QGraphicsView):
             self.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
     def add_bus(self, bus: Bus, explode_factor=1.0):
+        """
+        Add bus
+        Args:
+            bus: GridCal Bus object
+            explode_factor: factor to position the node
+        """
         elm = BusGraphicItem(diagramScene=self.scene(), name=bus.name, editor=self.editor, bus=bus)
         elm.setPos(self.mapToScene(QPoint(bus.x * explode_factor, bus.y * explode_factor)))
         self.scene_.addItem(elm)
@@ -1774,9 +1722,10 @@ class LibraryModel(QStandardItemModel):
     """
     Items model to host the draggable icons
     """
+
     def __init__(self, parent=None):
         """
-
+        Items model to host the draggable icons
         @param parent:
         """
         QStandardItemModel.__init__(self, parent)
@@ -1809,7 +1758,7 @@ class LibraryModel(QStandardItemModel):
 
 class DiagramScene(QGraphicsScene):
 
-    def __init__(self, parent=None, circuit: MultiCircuit=None):
+    def __init__(self, parent=None, circuit: MultiCircuit = None):
         """
 
         @param parent:
@@ -1953,7 +1902,7 @@ class GridEditor(QSplitter):
 
         self.setStretchFactor(1, 10)
 
-    def startConnection(self, port):
+    def startConnection(self, port: TerminalItem):
         """
         Start the branch creation
         @param port:
@@ -2007,9 +1956,6 @@ class GridEditor(QSplitter):
                 self.startedConnection.remove_()
 
         self.startedConnection = None
-
-        # print('Buses:', len(self.circuit.buses))
-        # print('Branches:', len(self.circuit.branches))
 
     def bigger_nodes(self):
         """

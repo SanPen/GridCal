@@ -852,16 +852,21 @@ class MainGUI(QMainWindow):
             graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
             bus.graphic_obj = graphic_obj
             bus.graphic_obj.create_children_icons()
+            bus.graphic_obj.arrange_children()
 
         for branch in self.circuit.branches:
-            terminal_from = branch.bus_from.graphic_obj.lower_terminals[0]
-            terminal_to = branch.bus_to.graphic_obj.lower_terminals[0]
+            terminal_from = branch.bus_from.graphic_obj.terminal
+            terminal_to = branch.bus_to.graphic_obj.terminal
             graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
             graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
             branch.graphic_obj = graphic_obj
+
+        # Align lines
+        for bus in self.circuit.buses:
+            bus.graphic_obj.arrange_children()
 
         #  center the view
         self.grid_editor.center_nodes()
