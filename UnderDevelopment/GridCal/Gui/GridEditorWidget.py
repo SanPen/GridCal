@@ -1911,6 +1911,7 @@ class GridEditor(QSplitter):
         self.startedConnection = BranchGraphicItem(port, None, self.diagramScene)
         self.startedConnection.bus_from = port.parent
         port.setZValue(0)
+        port.process_callbacks(port.parent.pos() + port.pos())
 
     def sceneMouseMoveEvent(self, event):
         """
@@ -1951,6 +1952,7 @@ class GridEditor(QSplitter):
                         obj.graphic_obj = self.startedConnection
                         self.startedConnection.api_object = obj
                         self.circuit.add_branch(obj)
+                        item.process_callbacks(item.parent.pos() + item.pos())
 
             if self.startedConnection.toPort is None:
                 self.startedConnection.remove_()
