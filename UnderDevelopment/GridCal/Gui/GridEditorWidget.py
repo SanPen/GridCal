@@ -414,7 +414,7 @@ class TerminalItem(QGraphicsRectItem):
 
         """
         self.editor.startConnection(self)
-        self.hosting_connections.append(self.editor.startedConnection)
+        self.hosting_connections.append(self.editor.started_branch)
 
     def remove_all_connections(self):
         """
@@ -1898,7 +1898,7 @@ class GridEditor(QSplitter):
         self.addWidget(self.diagramView)
         splitter2.setStretchFactor(1, 6)
 
-        self.startedConnection = None
+        self.started_branch = None
 
         self.setStretchFactor(1, 10)
 
@@ -1908,8 +1908,8 @@ class GridEditor(QSplitter):
         @param port:
         @return:
         """
-        self.startedConnection = BranchGraphicItem(port, None, self.diagramScene)
-        self.startedConnection.bus_from = port.parent
+        self.started_branch = BranchGraphicItem(port, None, self.diagramScene)
+        self.started_branch.bus_from = port.parent
         port.setZValue(0)
         port.process_callbacks(port.parent.pos() + port.pos())
 
@@ -1919,9 +1919,9 @@ class GridEditor(QSplitter):
         @param event:
         @return:
         """
-        if self.startedConnection:
+        if self.started_branch:
             pos = event.scenePos()
-            self.startedConnection.setEndPos(pos)
+            self.started_branch.setEndPos(pos)
 
     def sceneMouseReleaseEvent(self, event):
         """
@@ -1930,34 +1930,34 @@ class GridEditor(QSplitter):
         @return:
         """
         # Clear or finnish the started connection:
-        if self.startedConnection:
+        if self.started_branch:
             pos = event.scenePos()
             items = self.diagramScene.items(pos)  # get the item (the terminal) at the mouse position
 
             for item in items:
                 if type(item) is TerminalItem:  # connect only to terminals
-                    if item.parent is not self.startedConnection.fromPort.parent:  # forbid connecting to itself
+                    if item.parent is not self.started_branch.fromPort.parent:  # forbid connecting to itself
 
                         # if type(item.parent) is not type(self.startedConnection.fromPort.parent):
                         #  forbid same type connections
 
-                        self.startedConnection.setToPort(item)
-                        item.hosting_connections.append(self.startedConnection)
-                        self.startedConnection.setZValue(1000)
-                        self.startedConnection.bus_to = item.parent
+                        self.started_branch.setToPort(item)
+                        item.hosting_connections.append(self.started_branch)
+                        self.started_branch.setZValue(1000)
+                        self.started_branch.bus_to = item.parent
                         name = 'Branch ' + str(self.branch_editor_count)
-                        obj = Branch(bus_from=self.startedConnection.bus_from.api_object,
-                                     bus_to=self.startedConnection.bus_to.api_object,
+                        obj = Branch(bus_from=self.started_branch.bus_from.api_object,
+                                     bus_to=self.started_branch.bus_to.api_object,
                                      name=name)
-                        obj.graphic_obj = self.startedConnection
-                        self.startedConnection.api_object = obj
+                        obj.graphic_obj = self.started_branch
+                        self.started_branch.api_object = obj
                         self.circuit.add_branch(obj)
                         item.process_callbacks(item.parent.pos() + item.pos())
 
-            if self.startedConnection.toPort is None:
-                self.startedConnection.remove_()
+            if self.started_branch.toPort is None:
+                self.started_branch.remove_()
 
-        self.startedConnection = None
+        self.started_branch = None
 
     def bigger_nodes(self):
         """
