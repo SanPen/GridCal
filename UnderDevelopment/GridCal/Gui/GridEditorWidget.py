@@ -74,10 +74,10 @@ class GeneralItem(object):
     def contextMenuEvent(self, event):
         menu = QMenu()
 
-        ra1 = menu.addAction('Rotate +90')
-        ra1.triggered.connect(self.rotate_clockwise)
-        ra2 = menu.addAction('Rotate -90')
-        ra2.triggered.connect(self.rotate_counterclockwise)
+        # ra1 = menu.addAction('Rotate +90')
+        # ra1.triggered.connect(self.rotate_clockwise)
+        # ra2 = menu.addAction('Rotate -90')
+        # ra2.triggered.connect(self.rotate_counterclockwise)
 
         ra3 = menu.addAction('Delete all the connections')
         ra3.triggered.connect(self.delete_all_connections)
@@ -1436,10 +1436,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         pl = menu.addAction('Plot profiles')
         pl.triggered.connect(self.plot_profiles)
 
-        ra1 = menu.addAction('Rotate +90')
-        ra1.triggered.connect(self.rotate_clockwise)
-        ra2 = menu.addAction('Rotate -90')
-        ra2.triggered.connect(self.rotate_counterclockwise)
+        # ra1 = menu.addAction('Rotate +90')
+        # ra1.triggered.connect(self.rotate_clockwise)
+        # ra2 = menu.addAction('Rotate -90')
+        # ra2.triggered.connect(self.rotate_counterclockwise)
 
         menu.addSeparator()
 
@@ -1498,7 +1498,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         if self.api_object is not None:
             self.api_object.active = not self.api_object.active
-            print('Enabled:', self.api_object.active)
+            # print('Enabled:', self.api_object.active)
 
             if self.api_object.active:
 
@@ -1507,9 +1507,8 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
                 # self.color = ACTIVE['color']
                 # self.style = ACTIVE['style']
 
-                for term in self.terminals:
-                    for host in term.hosting_connections:
-                        host.set_enable(val=True)
+                for host in self.terminal.hosting_connections:
+                    host.set_enable(val=True)
             else:
                 self.setBrush(QBrush(DEACTIVATED['color']))
                 self.setPen(QPen(ACTIVE['style']))
@@ -1517,9 +1516,8 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
                 # self.color = DEACTIVATED['color']
                 # self.style = DEACTIVATED['style']
 
-                for term in self.terminals:
-                    for host in term.hosting_connections:
-                        host.set_enable(val=False)
+                for host in self.terminal.hosting_connections:
+                    host.set_enable(val=False)
 
     def enable_disable_sc(self):
         """
