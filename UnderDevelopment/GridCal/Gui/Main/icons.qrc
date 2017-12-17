@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>white_icons/rate_br.svg</file>
+    <file>white_icons/detect_tr.svg</file>
     <file>white_icons/new2c.svg</file>
     <file>white_icons/loadc.svg</file>
     <file>white_icons/savec.svg</file>

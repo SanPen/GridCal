@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.CalculationEngine import __GridCal_VERSION__
-from GridCal.Gui.Main.gui import *
+from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
@@ -278,6 +278,10 @@ class MainGUI(QMainWindow):
         self.ui.actionAbout.triggered.connect(self.about_box)
 
         self.ui.actionExport.triggered.connect(self.export_diagram)
+
+        self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
+
+        self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
 
         # Buttons
 
@@ -816,12 +820,16 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.grid_editor is not None:
+
             # declare the allowed file types
             files_types = "Png (*.png)"
+
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', self.project_directory, files_types)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',
+                                                                  self.project_directory, files_types)
 
             if filename is not "":
+
                 name, file_extension = os.path.splitext(filename)
 
                 extension = dict()
@@ -831,9 +839,10 @@ class MainGUI(QMainWindow):
                 if file_extension == '':
                     filename = name + extension[type_selected]
 
-                # save in 10K
-                w = 1920 * 10
-                h = 1080 * 10
+                # save in factor * K
+                factor = self.ui.resolution_factor_spinBox.value()
+                w = 1920 * factor
+                h = 1080 * factor
                 self.grid_editor.export(filename, w, h)
 
     def create_schematic_from_api(self, explode_factor=1):
@@ -870,6 +879,32 @@ class MainGUI(QMainWindow):
 
         #  center the view
         self.grid_editor.center_nodes()
+
+    def auto_rate_branches(self):
+        """
+        Rate the branches that do not have rate
+        """
+
+        if len(self.circuit.branches) > 0:
+
+            if self.power_flow is not None:
+                factor = self.ui.branch_rating_doubleSpinBox.value()
+            else:
+                self.msg('Run a power flow simulation first.\nThe results are needed in this function.')
+
+        else:
+            self.msg('There are no branches!')
+
+    def detect_transformers(self):
+        """
+        Detect which branches are transformers
+        """
+        if len(self.circuit.branches) > 0:
+
+            pass
+
+        else:
+            self.msg('There are no branches!')
 
     def view_objects_data(self):
         """

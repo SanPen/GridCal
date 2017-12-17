@@ -645,6 +645,9 @@
               </item>
               <item row="1" column="1">
                <widget class="QSpinBox" name="tolerance_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="minimum">
                  <number>1</number>
                 </property>
@@ -665,6 +668,9 @@
               </item>
               <item row="2" column="1">
                <widget class="QSpinBox" name="max_iterations_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="minimum">
                  <number>10</number>
                 </property>
@@ -1008,6 +1014,9 @@ last solution</string>
               </item>
               <item>
                <widget class="QSpinBox" name="lhs_samples_number_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of power flows to run with Latin-Hypercube.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="minimum">
                  <number>1</number>
                 </property>
@@ -1103,12 +1112,83 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="automatic_layout_comboBox"/>
+            <widget class="QComboBox" name="automatic_layout_comboBox">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Algorithm to use for the automatic &lt;/p&gt;&lt;p&gt;layout of the grid nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="Line" name="line_9">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_32">
+             <property name="text">
+              <string>Export resolution (K)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="resolution_factor_spinBox">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Resolution factor.&lt;/p&gt;&lt;p&gt;1K = 1920 x 1080 pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>10</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_16">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_33">
+             <property name="text">
+              <string>Graphics</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_17">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_34">
+             <property name="text">
+              <string>Branch rating factor</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="branch_rating_doubleSpinBox">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Factor to aply to the branch calculated poower to use as rating&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>100.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.200000000000000</double>
              </property>
             </widget>
            </item>
@@ -1726,6 +1806,8 @@ last solution</string>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
    <addaction name="separator"/>
+   <addaction name="actionDetect_transformers"/>
+   <addaction name="actionAuto_rate_branches"/>
   </widget>
   <action name="actionLine">
    <property name="text">
@@ -1792,6 +1874,10 @@ last solution</string>
    </property>
   </action>
   <action name="actionExport">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/white_icons/save.svg</normaloff>:/Icons/white_icons/save.svg</iconset>
+   </property>
    <property name="text">
     <string>Export</string>
    </property>
@@ -2099,6 +2185,30 @@ last solution</string>
    </property>
    <property name="toolTip">
     <string>Optimal power flow time series</string>
+   </property>
+  </action>
+  <action name="actionDetect_transformers">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/white_icons/detect_tr.svg</normaloff>:/Icons/white_icons/detect_tr.svg</iconset>
+   </property>
+   <property name="text">
+    <string>q</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detect transformers.&lt;/p&gt;&lt;p&gt;Use the nodes nominal voltage to determine which branches should be a transformer.&lt;/p&gt;&lt;p&gt;If a branch joins two nodes with different voltage levels, the branch should be a transformer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionAuto_rate_branches">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/white_icons/rate_br.svg</normaloff>:/Icons/white_icons/rate_br.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Auto rate branches</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
  </widget>
