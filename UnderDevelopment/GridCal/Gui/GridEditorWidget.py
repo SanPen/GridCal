@@ -98,8 +98,8 @@ class GeneralItem(object):
         pass
 
     def delete_all_connections(self):
-        for term in self.terminals:
-            term.remove_all_connections()
+
+        self.terminal.remove_all_connections()
 
     def remove_(self):
         """
