@@ -889,6 +889,16 @@ class MainGUI(QMainWindow):
 
             if self.power_flow is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()
+
+                for i, branch in enumerate(self.circuit.branches):
+
+                    S = self.circuit.power_flow_results.Sbranch[i]
+
+                    if branch.rate < 1e-3:
+                        branch.rate = abs(S) * factor
+                    else:
+                        pass  # the rate is ok
+
             else:
                 self.msg('Run a power flow simulation first.\nThe results are needed in this function.')
 
@@ -901,7 +911,18 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.branches) > 0:
 
-            pass
+            for branch in self.circuit.branches:
+
+                v1 = branch.bus_from.Vnom
+                v2 = branch.bus_to.Vnom
+
+                if abs(v1-v2) > 1.0:
+
+                    branch.is_transformer = True
+
+                else:
+
+                    pass   # is a line
 
         else:
             self.msg('There are no branches!')
