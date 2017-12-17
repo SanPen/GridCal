@@ -93,6 +93,10 @@ class GeneralItem(object):
     def rotate_counterclockwise(self):
         self.rotate(-90)
 
+    def rotate(self, angle):
+
+        pass
+
     def delete_all_connections(self):
         for term in self.terminals:
             term.remove_all_connections()
