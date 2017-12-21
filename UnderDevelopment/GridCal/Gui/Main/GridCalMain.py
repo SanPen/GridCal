@@ -494,6 +494,7 @@ class MainGUI(QMainWindow):
         vabs = abs(voltages)
         vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
+        Sbase = self.circuit.Sbase
 
         '''
         class NodeType(Enum):
@@ -512,11 +513,11 @@ class MainGUI(QMainWindow):
                 # QColor(r, g, b, alpha)
                 bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
 
-                tooltip = bus.name + '\n' \
+                tooltip = str(i) + ': ' + bus.name + '\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
                 if s_bus is not None:
-                    tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * self.circuit.Sbase) + ' [MVA]'
+                    tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * Sbase) + ' [MVA]'
                 if types is not None:
                     tooltip += '\nType: ' + bus_types[types[i]]
                 bus.graphic_obj.setToolTip(tooltip)
@@ -540,7 +541,7 @@ class MainGUI(QMainWindow):
                     style = Qt.DashLine
                     color = Qt.gray
 
-                tooltip = branch.name
+                tooltip = str(i) + ': ' + branch.name
                 tooltip += '\nloading: ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
                 if s_branch is not None:
                     tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'

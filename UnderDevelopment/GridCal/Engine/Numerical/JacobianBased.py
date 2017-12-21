@@ -268,7 +268,6 @@ if NUMBA_DETECTED:
             # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
             Jp[r + npvpq + 1] = nnz - nnzStart + Jp[r + npvpq]
 
-
     # @jit(Tuple((c16[:], c16[:]))(c16[:], i4[:], i4[:], c16[:], c16[:]), nopython=True, cache=True)
     @jit(nopython=True, cache=True)
     def dSbus_dV_numba_sparse(Yx, Yp, Yj, V, Vnorm, Ibus):  # pragma: no cover
@@ -452,7 +451,10 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
 
         # update voltage
         if robust:
-            mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
+            if not (dV == 0.0).any():  # if dV contains zeros will crash the second Jacobian drivative
+                mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
+            else:
+                mu_ = 1.0
         else:
             mu_ = 1.0
 

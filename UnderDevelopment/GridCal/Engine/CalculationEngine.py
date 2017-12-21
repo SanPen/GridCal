@@ -4164,25 +4164,39 @@ class PowerFlow(QRunnable):
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
         @param V: Voltage solution array for the circuit buses
-        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA)
+        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
         Sbus = circuit.power_flow_input.Sbus
-        vdpv = r_[circuit.power_flow_input.ref, circuit.power_flow_input.pv]
-        Sbus[vdpv] = V[vdpv] * conj(circuit.power_flow_input.Ybus[vdpv, :][:, :].dot(V))
+
+        vd = circuit.power_flow_input.ref
+        pv = circuit.power_flow_input.pv
+
+        # power at the slack nodes
+        Sbus[vd] = V[vd] * conj(circuit.power_flow_input.Ybus[vd, :][:, :].dot(V))
+
+        # Reactive power at the pv nodes
+        P = Sbus[pv].real
+        Q = (V[pv] * conj(circuit.power_flow_input.Ybus[pv, :][:, :].dot(V))).imag
+        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
         # Branches current, loading, etc
         If = circuit.power_flow_input.Yf * V
         It = circuit.power_flow_input.Yt * V
         Sf = V[circuit.power_flow_input.F] * conj(If)
         St = V[circuit.power_flow_input.T] * conj(It)
-        losses = (Sf + St) * circuit.Sbase  # Branch losses in MVA
-        Ibranch = maximum(If, It)  # Branch current in p.u.
-        Sbranch = maximum(Sf, St) * circuit.Sbase  # Branch power in MVA
-        loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)  # Branch loading in p.u.
 
-        # idx = where(abs(loading) == inf)[0]
-        # loading[idx] = 9999
+        # Branch losses in MVA
+        losses = (Sf + St) * circuit.Sbase
+
+        # Branch current in p.u.
+        Ibranch = maximum(If, It)
+
+        # Branch power in MVA
+        Sbranch = maximum(Sf, St) * circuit.Sbase
+
+        # Branch loading in p.u.
+        loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)
 
         return Sbranch, Ibranch, loading, losses, Sbus
 
@@ -6642,6 +6656,8 @@ class DcOpf:
         """
 
         if t_idx is None:
+
+            # use the default loads
             for k, i in enumerate(self.pqpv):
 
                 # these restrictions come from the build step to be fulfilled with the load now
@@ -6652,13 +6668,15 @@ class DcOpf:
                 for load in self.circuit.buses[i].loads:
                     self.loads[i] += load.S.real / self.Sbase
 
-                # print(k)
-                if calculated_node_power == 0 and node_power_injection == 0:  # nodes without injection or generation
+                if calculated_node_power is 0 and node_power_injection is 0:
+                    # nodes without injection or generation
                     pass
-                else:  # desired situation
-                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(k))
+                else:
+                    # add the restriction
+                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
         else:
-
+            # Use the load profile values at index=t_idx
             for k, i in enumerate(self.pqpv):
 
                 # these restrictions come from the build step to be fulfilled with the load now
@@ -6669,7 +6687,9 @@ class DcOpf:
                 for load in self.circuit.buses[i].loads:
                     self.loads[i] += load.S_prof.values[t_idx].real / self.Sbase
 
-                self.problem.add(calculated_node_power == node_power_injection - self.loads[i], 'ct_node_mismatch_' + str(i))
+                # add the restriction
+                self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                 self.circuit.buses[i].name + 'ct_node_mismatch_' + str(i))
 
     def solve(self):
         """
@@ -6722,16 +6742,22 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
-    def get_results(self):
+    def get_results(self, save_lp_file=True):
         """
         Return the optimization results
         Returns:
             OptimalPowerFlowResults instance
         """
+
+        # initialize results object
         n = len(self.circuit.buses)
         m = len(self.circuit.branches)
         res = OptimalPowerFlowResults()
         res.initialize(n, m)
+
+        if save_lp_file:
+            # export the problem formulation to an LP file
+            self.problem.writeLP('dcopf.lp')
 
         if self.solved:
 
@@ -6742,17 +6768,22 @@ class DcOpf:
                 # Sum the slack generators
                 for gen in self.circuit.buses[i].controlled_generators:
                     g += gen.LPVar_P.value()
+                    # print(gen.name, gen.LPVar_P.value())
 
                 # Set the results
-                res.Sbus[i] = g - self.loads[i]
+                res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
 
                 # Set the voltage
                 res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
             # Add branches
             for k, branch in enumerate(self.circuit.branches):
+
+                # get the from and to nodal indices of the branch
                 i = self.circuit.buses_dict[branch.bus_from]
                 j = self.circuit.buses_dict[branch.bus_to]
+
+                # compute the power flowing
                 if self.theta[i].value() is not None and self.theta[j].value() is not None:
                     F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
                 else:
@@ -6763,6 +6794,7 @@ class DcOpf:
                 res.loading[k] = abs(F / branch.rate)
 
         else:
+            # the problem did not solve, pass
             pass
 
         return res
@@ -6885,13 +6917,13 @@ class OptimalPowerFlowResults:
                 title = 'Bus voltage '
 
             elif result_type == 'Branch power':
-                y = self.Sbranch[indices]
-                ylabel = '(MVA)'
+                y = self.Sbranch[indices].real
+                ylabel = '(MW)'
                 title = 'Branch power '
 
             elif result_type == 'Bus power':
-                y = self.Sbus[indices]
-                ylabel = '(p.u.)'
+                y = self.Sbus[indices].real
+                ylabel = '(MW)'
                 title = 'Bus power '
 
             elif result_type == 'Branch_loading':
@@ -6900,8 +6932,8 @@ class OptimalPowerFlowResults:
                 title = 'Branch loading '
 
             elif result_type == 'Branch losses':
-                y = self.losses[indices]
-                ylabel = '(MVA)'
+                y = self.losses[indices].real
+                ylabel = '(MW)'
                 title = 'Branch losses '
 
             else:
