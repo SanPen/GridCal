@@ -2164,8 +2164,8 @@ class Circuit:
 
             power_flow_input.Vmin[i] = self.buses[i].Vmin
             power_flow_input.Vmax[i] = self.buses[i].Vmax
-            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum / self.Sbase
-            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum / self.Sbase
+            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum
+            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum
 
             # compute the time series arrays  ##############################################
 
@@ -2383,6 +2383,30 @@ class Circuit:
             return J
         else:
             return J.todense()
+
+    def get_bus_pf_results_df(self):
+        """
+        Returns a Pandas DataFrame with the bus results
+        :return: DataFrame
+        """
+
+        cols = ['|V| (p.u.)', 'angle (rad)', 'P (p.u.)', 'Q (p.u.)', 'Qmin', 'Qmax', 'Q ok?']
+
+        if self.power_flow_results is not None:
+            q_l = self.power_flow_input.Qmin < self.power_flow_results.Sbus.imag
+            q_h = self.power_flow_results.Sbus.imag < self.power_flow_input.Qmax
+            q_ok = q_l * q_h
+            data = c_[np.abs(self.power_flow_results.voltage),
+                      np.angle(self.power_flow_results.voltage),
+                      self.power_flow_results.Sbus.real,
+                      self.power_flow_results.Sbus.imag,
+                      self.power_flow_input.Qmin,
+                      self.power_flow_input.Qmax,
+                      q_ok.astype(np.bool)]
+        else:
+            data = [0, 0, 0, 0, 0, 0]
+
+        return pd.DataFrame(data=data, index=self.power_flow_input.bus_names, columns=cols)
 
 
 class MultiCircuit(Circuit):
@@ -3580,6 +3604,8 @@ class PowerFlowInput:
             raise Exception('PF input: structure type not found')
 
         return df
+
+
 
 
 class PowerFlowResults:
@@ -6742,7 +6768,7 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
-    def get_results(self, save_lp_file=True):
+    def get_results(self, save_lp_file=False):
         """
         Return the optimization results
         Returns:
