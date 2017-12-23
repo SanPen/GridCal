@@ -2164,8 +2164,8 @@ class Circuit:
 
             power_flow_input.Vmin[i] = self.buses[i].Vmin
             power_flow_input.Vmax[i] = self.buses[i].Vmax
-            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum
-            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum
+            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum  # in MVAr
+            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum  # in MVAr
 
             # compute the time series arrays  ##############################################
 

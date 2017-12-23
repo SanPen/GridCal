@@ -20,8 +20,8 @@
    <string>GridCal</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/Program/GridCal_icon.svg</normaloff>:/Program/GridCal_icon.svg</iconset>
+   <iconset resource="icons.qrc">
+    <normaloff>:/Program icon/GridCal_icon.svg</normaloff>:/Program icon/GridCal_icon.svg</iconset>
   </property>
   <property name="iconSize">
    <size>
@@ -597,10 +597,10 @@
         <item>
          <widget class="QFrame" name="frame_7">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Plain</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">
            <item>
@@ -612,20 +612,53 @@
            </item>
            <item>
             <widget class="Line" name="line">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Solver</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="solver_comboBox"/>
            </item>
            <item>
             <widget class="QFrame" name="frame_13">
@@ -636,14 +669,14 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
-              <item row="1" column="0">
+              <item row="3" column="0">
                <widget class="QLabel" name="label_5">
                 <property name="text">
                  <string>Precision</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
+              <item row="3" column="1">
                <widget class="QSpinBox" name="tolerance_spinBox">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -659,14 +692,14 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item row="4" column="0">
                <widget class="QLabel" name="label_6">
                 <property name="text">
                  <string>Max. Iterations</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="4" column="1">
                <widget class="QSpinBox" name="max_iterations_spinBox">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -682,7 +715,7 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="0" colspan="2">
+              <item row="6" column="0" colspan="2">
                <widget class="QCheckBox" name="helm_retry_checkBox">
                 <property name="text">
                  <string>Retry with</string>
@@ -692,7 +725,7 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="0" colspan="2">
+              <item row="9" column="0" colspan="2">
                <widget class="QCheckBox" name="control_Q_checkBox">
                 <property name="text">
                  <string>Control reactive power</string>
@@ -702,17 +735,17 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="0" colspan="2">
+              <item row="2" column="0" colspan="2">
                <widget class="QCheckBox" name="auto_precision_checkBox">
                 <property name="text">
                  <string>Automatic precision</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0" colspan="2">
+              <item row="7" column="0" colspan="2">
                <widget class="QComboBox" name="retry_solver_comboBox"/>
               </item>
-              <item row="6" column="0" colspan="2">
+              <item row="8" column="0" colspan="2">
                <widget class="QCheckBox" name="remember_last_solution_checkBox">
                 <property name="text">
                  <string>Initialize with the 
@@ -723,21 +756,24 @@ last solution</string>
                 </property>
                </widget>
               </item>
-              <item row="8" column="0">
+              <item row="10" column="0">
                <widget class="QCheckBox" name="dispatch_storage_checkBox">
                 <property name="text">
                  <string>Dispatch storage</string>
                 </property>
                </widget>
               </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Solver</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" colspan="2">
+               <widget class="QComboBox" name="solver_comboBox"/>
+              </item>
              </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="line_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
             </widget>
            </item>
            <item>
@@ -759,10 +795,10 @@ last solution</string>
         <item>
          <widget class="QFrame" name="frame_17">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Plain</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_19">
            <item>
@@ -773,102 +809,236 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_11">
+            <widget class="Line" name="line_3">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_29">
-             <property name="text">
-              <string>Max. Iterations</string>
+            <widget class="QFrame" name="frame_21">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="vs_max_iterations_spinBox">
-             <property name="minimum">
-              <number>1</number>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
              </property>
-             <property name="maximum">
-              <number>300</number>
-             </property>
-             <property name="value">
-              <number>20</number>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="start_vs_from_default_radioButton">
-             <property name="text">
-              <string>Use alpha target from current situation</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_18">
-             <property name="text">
-              <string>Alpha (Increase the power 'alpha' times)</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="alpha_doubleSpinBox">
-             <property name="value">
-              <double>2.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="start_vs_from_selected_radioButton">
-             <property name="text">
-              <string>Use departure and target points from time series</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_19">
-             <property name="text">
-              <string>Now</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="vs_departure_comboBox"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_20">
-             <property name="text">
-              <string>Target</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="vs_target_comboBox"/>
-           </item>
-           <item>
-            <widget class="Line" name="line_12">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_23">
-             <property name="text">
-              <string>Time series power flow</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="line_15">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
+              <item>
+               <widget class="QLabel" name="label_29">
+                <property name="text">
+                 <string>Max. Iterations</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="vs_max_iterations_spinBox">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>300</number>
+                </property>
+                <property name="value">
+                 <number>20</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Line" name="line_12">
+                <property name="palette">
+                 <palette>
+                  <active>
+                   <colorrole role="WindowText">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>186</red>
+                      <green>189</green>
+                      <blue>182</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </active>
+                  <inactive>
+                   <colorrole role="WindowText">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>186</red>
+                      <green>189</green>
+                      <blue>182</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </inactive>
+                  <disabled>
+                   <colorrole role="WindowText">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>190</red>
+                      <green>190</green>
+                      <blue>190</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </disabled>
+                 </palette>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="lineWidth">
+                 <number>4</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="start_vs_from_default_radioButton">
+                <property name="text">
+                 <string>Use alpha target from current situation</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>Alpha (Increase the power 'alpha' times)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="alpha_doubleSpinBox">
+                <property name="value">
+                 <double>2.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Line" name="line_11">
+                <property name="palette">
+                 <palette>
+                  <active>
+                   <colorrole role="WindowText">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>186</red>
+                      <green>189</green>
+                      <blue>182</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </active>
+                  <inactive>
+                   <colorrole role="WindowText">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>186</red>
+                      <green>189</green>
+                      <blue>182</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </inactive>
+                  <disabled>
+                   <colorrole role="WindowText">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>190</red>
+                      <green>190</green>
+                      <blue>190</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </disabled>
+                 </palette>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="lineWidth">
+                 <number>4</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="start_vs_from_selected_radioButton">
+                <property name="text">
+                 <string>Use departure and target points from time series</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_19">
+                <property name="text">
+                 <string>Now</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="vs_departure_comboBox"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_20">
+                <property name="text">
+                 <string>Target</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="vs_target_comboBox"/>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
@@ -890,10 +1060,10 @@ last solution</string>
         <item>
          <widget class="QFrame" name="frame_16">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Plain</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_13">
            <item>
@@ -904,19 +1074,52 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_10">
+            <widget class="Line" name="line_4">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="montecarlo_radioButton">
-             <property name="text">
-              <string>Monte Carlo</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -983,7 +1186,50 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_13">
+            <widget class="Line" name="line_9">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1032,7 +1278,50 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_14">
+            <widget class="Line" name="line_10">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1046,23 +1335,35 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_28">
-             <property name="text">
-              <string>Aditional islands until stop</string>
+            <widget class="QFrame" name="frame_22">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="cascading_islands_spinBox">
-             <property name="minimum">
-              <number>1</number>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
              </property>
-             <property name="maximum">
-              <number>999999</number>
-             </property>
-             <property name="value">
-              <number>1</number>
-             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_11">
+              <item>
+               <widget class="QLabel" name="label_28">
+                <property name="text">
+                 <string>Aditional islands until stop</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="cascading_islands_spinBox">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>999999</number>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
@@ -1084,21 +1385,64 @@ last solution</string>
         <item>
          <widget class="QFrame" name="frame_14">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Plain</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_12">
            <item>
             <widget class="QLabel" name="label_11">
              <property name="text">
-              <string>Graphics</string>
+              <string>Graphics &amp; Fx</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_8">
+            <widget class="Line" name="line_5">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1112,14 +1456,69 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="automatic_layout_comboBox">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Algorithm to use for the automatic &lt;/p&gt;&lt;p&gt;layout of the grid nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <widget class="QFrame" name="frame_25">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_17">
+              <item>
+               <widget class="QComboBox" name="automatic_layout_comboBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Algorithm to use for the automatic &lt;/p&gt;&lt;p&gt;layout of the grid nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_9">
+            <widget class="Line" name="line_6">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1133,37 +1532,78 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="resolution_factor_spinBox">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Resolution factor.&lt;/p&gt;&lt;p&gt;1K = 1920 x 1080 pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <widget class="QFrame" name="frame_24">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="minimum">
-              <number>1</number>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
              </property>
-             <property name="maximum">
-              <number>100</number>
-             </property>
-             <property name="value">
-              <number>10</number>
-             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_16">
+              <item>
+               <widget class="QSpinBox" name="resolution_factor_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Resolution factor.&lt;/p&gt;&lt;p&gt;1K = 1920 x 1080 pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>10</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_16">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+            <widget class="Line" name="line_8">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_33">
-             <property name="text">
-              <string>Graphics</string>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="line_17">
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1177,19 +1617,38 @@ last solution</string>
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="branch_rating_doubleSpinBox">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Factor to aply to the branch calculated poower to use as rating&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <widget class="QFrame" name="frame_23">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="minimum">
-              <double>1.000000000000000</double>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
              </property>
-             <property name="maximum">
-              <double>100.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>1.200000000000000</double>
-             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_15">
+              <item>
+               <widget class="QDoubleSpinBox" name="branch_rating_doubleSpinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Factor to aply to the branch calculated poower to use as rating&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="minimum">
+                 <double>1.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>100.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.200000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="rating_override_checkBox">
+                <property name="text">
+                 <string>override values</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
@@ -1750,7 +2209,7 @@ last solution</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -2189,7 +2648,7 @@ last solution</string>
   </action>
   <action name="actionDetect_transformers">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/Icons/white_icons/detect_tr.svg</normaloff>:/Icons/white_icons/detect_tr.svg</iconset>
    </property>
    <property name="text">
@@ -2201,7 +2660,7 @@ last solution</string>
   </action>
   <action name="actionAuto_rate_branches">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/Icons/white_icons/rate_br.svg</normaloff>:/Icons/white_icons/rate_br.svg</iconset>
    </property>
    <property name="text">
