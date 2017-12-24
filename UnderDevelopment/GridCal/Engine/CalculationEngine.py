@@ -3829,31 +3829,31 @@ class PowerFlowResults:
 
         if len(indices) > 0:
             labels = names[indices]
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage':
                 y = self.voltage[indices]
-                ylabel = '(p.u.)'
+                y_label = '(p.u.)'
                 title = 'Bus voltage '
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices]
-                ylabel = '(MVA)'
+                y_label = '(MVA)'
                 title = 'Branch power '
 
             elif result_type == 'Branch current':
                 y = self.Ibranch[indices]
-                ylabel = '(p.u.)'
+                y_label = '(p.u.)'
                 title = 'Branch current '
 
             elif result_type == 'Branch_loading':
                 y = self.loading[indices] * 100
-                ylabel = '(%)'
+                y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == 'Branch losses':
                 y = self.losses[indices]
-                ylabel = '(MVA)'
+                y_label = '(MVA)'
                 title = 'Branch losses '
 
             else:
@@ -3864,7 +3864,7 @@ class PowerFlowResults:
                 df.abs().plot(ax=ax, kind='bar')
             else:
                 df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(ylabel)
+            ax.set_ylabel(y_label)
             ax.set_title(title)
 
             return df

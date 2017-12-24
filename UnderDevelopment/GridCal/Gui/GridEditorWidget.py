@@ -30,6 +30,216 @@ EMERGENCY = {'style': Qt.SolidLine, 'color': QtCore.Qt.yellow}
 OTHER = ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
 
 
+class LineEditor(QDialog):
+
+    def __init__(self, branch: Branch, Sbase=100):
+        """
+        Line Editor constructor
+        :param branch: Branch object to update
+        :param Sbase: Base power in MVA
+        """
+        super(LineEditor, self).__init__()
+
+        # keep pointer to the line object
+        self.branch = branch
+
+        self.Sbase = Sbase
+
+        self.setObjectName("self")
+        # self.resize(200, 71)
+        # self.setMinimumSize(QtCore.QSize(200, 71))
+        # self.setMaximumSize(QtCore.QSize(200, 71))
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        # icon = QtGui.QIcon()
+        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.setWindowIcon(icon)
+        self.layout = QVBoxLayout(self)
+
+        # R
+        self.r_spinner = QSpinBox()
+        self.r_spinner.setMinimum(0)
+        self.r_spinner.setMaximum(9999999)
+        self.r_spinner.setValue(1e-20)
+
+        # X
+        self.x_spinner = QSpinBox()
+        self.x_spinner.setMinimum(0)
+        self.x_spinner.setMaximum(9999999)
+        self.x_spinner.setValue(1e-20)
+
+        # G
+        self.g_spinner = QSpinBox()
+        self.g_spinner.setMinimum(0)
+        self.g_spinner.setMaximum(9999999)
+        self.g_spinner.setValue(1e-20)
+
+        # B
+        self.b_spinner = QSpinBox()
+        self.b_spinner.setMinimum(0)
+        self.b_spinner.setMaximum(9999999)
+        self.b_spinner.setValue(1e-20)
+
+        # accept button
+        self.accept_btn = QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # labels
+
+        # add all to the GUI
+        self.layout.addWidget(QLabel("R: Resistance [Ohm]"))
+        self.layout.addWidget(self.r_spinner)
+
+        self.layout.addWidget(QLabel("X: Inductance [Ohm]"))
+        self.layout.addWidget(self.x_spinner)
+
+        self.layout.addWidget(QLabel("G: Conductance [S]"))
+        self.layout.addWidget(self.g_spinner)
+
+        self.layout.addWidget(QLabel("B: Susceptance [S]"))
+        self.layout.addWidget(self.b_spinner)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle('Line editor')
+
+    def accept_click(self):
+        """
+        Set the values
+        :return:
+        """
+        R = self.r_spinner.value()
+        X = self.x_spinner.value()
+        G = self.g_spinner.value()
+        B = self.b_spinner.value()
+
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
+
+        assert (Vf == Vt)
+
+        Zbase = self.Sbase / (Vf * Vf)
+        Ybase = 1 / Zbase
+
+        self.branch.R = R / Zbase
+        self.branch.X = X / Zbase
+        self.branch.G = G / Ybase
+        self.branch.B = B / Ybase
+
+        self.accept()
+
+
+class TransformerEditor(QDialog):
+
+    def __init__(self, branch: Branch, Sbase=100):
+        super(TransformerEditor, self).__init__()
+
+        # keep pointer to the line object
+        self.branch = branch
+
+        self.Sbase = Sbase
+
+        self.setObjectName("self")
+        # self.resize(200, 71)
+        # self.setMinimumSize(QtCore.QSize(200, 71))
+        # self.setMaximumSize(QtCore.QSize(200, 71))
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        # icon = QtGui.QIcon()
+        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.setWindowIcon(icon)
+        self.layout = QVBoxLayout(self)
+
+        # R
+        self.sn_spinner = QSpinBox()
+        self.sn_spinner.setMinimum(0)
+        self.sn_spinner.setMaximum(9999999)
+        self.sn_spinner.setValue(1e-20)
+
+        # X
+        self.pcu_spinner = QSpinBox()
+        self.pcu_spinner.setMinimum(0)
+        self.pcu_spinner.setMaximum(9999999)
+        self.pcu_spinner.setValue(1e-20)
+
+        # G
+        self.pfe_spinner = QSpinBox()
+        self.pfe_spinner.setMinimum(0)
+        self.pfe_spinner.setMaximum(9999999)
+        self.pfe_spinner.setValue(1e-20)
+
+        # I0
+        self.I0_spinner = QSpinBox()
+        self.I0_spinner.setMinimum(0)
+        self.I0_spinner.setMaximum(9999999)
+        self.I0_spinner.setValue(1e-20)
+
+        # Vsc
+        self.vsc_spinner = QSpinBox()
+        self.vsc_spinner.setMinimum(0)
+        self.vsc_spinner.setMaximum(9999999)
+        self.vsc_spinner.setValue(1e-20)
+
+        # accept button
+        self.accept_btn = QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # labels
+
+        # add all to the GUI
+        self.layout.addWidget(QLabel("Sn: Nominal power [MVA]"))
+        self.layout.addWidget(self.sn_spinner)
+
+        self.layout.addWidget(QLabel("Pcu: Copper losses [kW]"))
+        self.layout.addWidget(self.pcu_spinner)
+
+        self.layout.addWidget(QLabel("Pfe: Iron losses [kW]"))
+        self.layout.addWidget(self.pfe_spinner)
+
+        self.layout.addWidget(QLabel("I0: No load current [%]"))
+        self.layout.addWidget(self.I0_spinner)
+
+        self.layout.addWidget(QLabel("Vsc: Short circuit voltage [%]"))
+        self.layout.addWidget(self.vsc_spinner)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle('Transformer editor')
+
+    def accept_click(self):
+        """
+        Create transformer type and get the impedances
+        :return:
+        """
+
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
+
+        Sn = self.sn_spinner.value()  # MVA
+        Pcu = self.pcu_spinner.value()  # kW
+        Pfe = self.pfe_spinner.value()  # kW
+        I0 = self.I0_spinner.value()  # %
+        Vsc = self.vsc_spinner.value()  # %
+
+        tpe = TransformerType(HV_nominal_voltage=Vf,
+                              LV_nominal_voltage=Vt,
+                              Nominal_power=Sn,
+                              Copper_losses=Pcu,
+                              Iron_losses=Pfe,
+                              No_load_current=I0,
+                              Short_circuit_voltage=Vsc,
+                              GR_hv1=0.5,
+                              GX_hv1=0.5)
+
+        self.branch.apply_transformer_type(tpe)
+
+        self.accept()
+
+
 class LineUpdateMixin(object):
 
     def __init__(self, parent):
@@ -193,6 +403,9 @@ class BranchGraphicItem(QGraphicsLineItem):
         ra2 = menu.addAction('Delete')
         ra2.triggered.connect(self.remove)
 
+        ra3 = menu.addAction('Edit')
+        ra3.triggered.connect(self.edit)
+
         menu.exec_(event.screenPos())
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
@@ -328,6 +541,19 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.c1.setPen(pen)
             self.c2.setPen(pen)
 
+    def edit(self):
+        """
+        Open the apropiate editor dialogue
+        :return:
+        """
+        Sbase = self.diagramScene.circuit.Sbase
+        if self.api_object.is_transformer:
+            dlg = TransformerEditor(self.api_object, Sbase)
+        else:
+            dlg = LineEditor(self.api_object, Sbase)
+
+        if dlg.exec_():
+            pass
 
 class ParameterDialog(QDialog):
 
