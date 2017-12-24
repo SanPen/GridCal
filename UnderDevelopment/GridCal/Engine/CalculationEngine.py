@@ -4599,7 +4599,7 @@ class ShortCircuitResults(PowerFlowResults):
                 pass
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
-            df.plot(ax=ax, kind='bar', linewidth=LINEWIDTH)
+            df.abs().plot(ax=ax, kind='bar', linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
             ax.set_title(title)
 
@@ -5117,9 +5117,9 @@ class TimeSeriesResults(PowerFlowResults):
                 df = pd.DataFrame(data=data, columns=labels)
 
             if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
             ax.set_ylabel(ylabel)
@@ -5391,9 +5391,9 @@ class VoltageCollapseResults:
             df = pd.DataFrame(data=y, index=x, columns=indices)
             df.columns = labels
             if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
             ax.set_ylabel(ylabel)
@@ -5961,14 +5961,14 @@ class MonteCarloResults:
                 title = 'Branch loading standard \ndeviation convergence'
 
             elif result_type == 'Bus voltage CDF':
-                cdf = CDF(self.V_points.real[:, indices])
+                cdf = CDF(np.abs(self.V_points[:, indices]))
                 cdf.plot(ax=ax)
                 ylabel = '(p.u.)'
                 xlabel = 'Probability $P(X \leq x)$'
                 title = 'Bus voltage'
 
             elif result_type == 'Branch loading CDF':
-                cdf = CDF(self.loading_points.real[:, indices])
+                cdf = CDF(np.abs(self.loading_points.real[:, indices]))
                 cdf.plot(ax=ax)
                 ylabel = '(p.u.)'
                 xlabel = 'Probability $P(X \leq x)$'
@@ -5981,9 +5981,9 @@ class MonteCarloResults:
                 df = pd.DataFrame(data=y, columns=labels)
 
                 if len(df.columns) > 10:
-                    df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
                 else:
-                    df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
             else:
                 df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 
@@ -6954,9 +6954,9 @@ class OptimalPowerFlowResults:
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
             if len(df.columns) < self.plot_bars_limit:
-                df.plot(ax=ax, kind='bar')
+                df.abs().plot(ax=ax, kind='bar')
             else:
-                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+                df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
             ax.set_title(title)
 

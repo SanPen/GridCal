@@ -1548,12 +1548,16 @@ class MainGUI(QMainWindow):
         # print('Ibr:\n', abs(self.monte_carlo.results.current))
         # print('ld:\n', abs(self.monte_carlo.results.loading))
 
-        self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
-                               loadings=self.monte_carlo.results.loading,
-                               s_branch=self.monte_carlo.results.sbranch,
-                               types=self.circuit.power_flow_input.types,
-                               s_bus=None)
-        self.update_available_results()
+        if not self.monte_carlo.__cancel__:
+            self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
+                                   loadings=self.monte_carlo.results.loading,
+                                   s_branch=self.monte_carlo.results.sbranch,
+                                   types=self.circuit.power_flow_input.types,
+                                   s_bus=None)
+            self.update_available_results()
+
+        else:
+            pass
 
     def run_lhs(self):
         """
@@ -1599,13 +1603,16 @@ class MainGUI(QMainWindow):
         # print('Vbus:\n', abs(self.latin_hypercube_sampling.results.voltage))
         # print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
         # print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
+        if not self.latin_hypercube_sampling.__cancel__:
+            self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
+                                   loadings=self.latin_hypercube_sampling.results.loading,
+                                   types=self.circuit.power_flow_input.types,
+                                   s_branch=self.latin_hypercube_sampling.results.sbranch,
+                                   s_bus=None)
+            self.update_available_results()
 
-        self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
-                               loadings=self.latin_hypercube_sampling.results.loading,
-                               types=self.circuit.power_flow_input.types,
-                               s_branch=self.latin_hypercube_sampling.results.sbranch,
-                               s_bus=None)
-        self.update_available_results()
+        else:
+            pass
 
     def clear_cascade(self):
         """
@@ -1942,13 +1949,21 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.results_df is not None:
+
             file = QFileDialog.getSaveFileName(self, "Save to Excel", '', filter="Excel files (*.xlsx)")
+
             if file[0] != '':
+
                 if not file[0].endswith('.xlsx'):
                     f = file[0] + '.xlsx'
                 else:
                     f = file[0]
+
+                # Saving file
                 self.results_df.astype(str).to_excel(f)
+
+            else:
+                print('Not saving file...')
 
     def item_results_plot(self):
         """
