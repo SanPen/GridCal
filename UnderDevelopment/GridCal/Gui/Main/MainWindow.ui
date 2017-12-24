@@ -2648,7 +2648,7 @@ last solution</string>
   </action>
   <action name="actionDetect_transformers">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/white_icons/detect_tr.svg</normaloff>:/Icons/white_icons/detect_tr.svg</iconset>
    </property>
    <property name="text">
@@ -2660,7 +2660,7 @@ last solution</string>
   </action>
   <action name="actionAuto_rate_branches">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/white_icons/rate_br.svg</normaloff>:/Icons/white_icons/rate_br.svg</iconset>
    </property>
    <property name="text">

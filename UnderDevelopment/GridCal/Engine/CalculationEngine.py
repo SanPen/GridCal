@@ -3861,9 +3861,9 @@ class PowerFlowResults:
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
             if len(df.columns) < self.plot_bars_limit:
-                df.plot(ax=ax, kind='bar')
+                df.abs().plot(ax=ax, kind='bar')
             else:
-                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+                df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
             ax.set_title(title)
 
