@@ -216,9 +216,8 @@ class TransformerEditor(QDialog):
         :return:
         """
 
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
+        Vf = self.branch.bus_from.Vnom  # kV
+        Vt = self.branch.bus_to.Vnom  # kV
         Sn = self.sn_spinner.value()  # MVA
         Pcu = self.pcu_spinner.value()  # kW
         Pfe = self.pfe_spinner.value()  # kW

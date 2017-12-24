@@ -935,50 +935,37 @@ class TransformerType:
 
         Usc = self.Short_circuit_voltage
 
-        # Nominal impedance HV (Ohm)
-        Zn_hv = Uhv * Uhv / Sn
+        # GRhv = self.GR_hv1
+        # GXhv = self.GX_hv1
 
-        # Nominal impedance LV (Ohm)
-        Zn_lv = Ulv * Ulv / Sn
+        Zn_hv = (Uhv ** 2) / Sn
+        Zn_lv = (Ulv ** 2) / Sn
+        zsc = Usc / 100.0
+        rsc = (Pcu / 1000.0) / Sn
+        xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
 
-        # Short circuit impedance (p.u.)
-        zsc = Usc / 100
-
-        # Short circuit resistance (p.u.)
-        rsc = (Pcu / 1000) / Sn
-
-        # Short circuit reactance (p.u.)
-        xsc = sqrt(zsc * zsc - rsc * rsc)
-
-        # HV resistance (p.u.)
         rcu_hv = rsc * self.GR_hv1
-
-        # LV resistance (p.u.)
         rcu_lv = rsc * (1 - self.GR_hv1)
-
-        # HV shunt reactance (p.u.)
         xs_hv = xsc * self.GX_hv1
-
-        # LV shunt reactance (p.u.)
         xs_lv = xsc * (1 - self.GX_hv1)
 
-        # Shunt resistance (p.u.)
-        rfe = Sn / (Pfe / 1000)
+        rfe = Sn / (Pfe / 1000.0)
 
-        # Magnetization impedance (p.u.)
-        zm = 1 / (I0 / 100)
+        zm = 1.0 / (I0 / 100.0)
 
-        # Magnetization reactance (p.u.)
-        if rfe > zm:
-            xm = 1 / sqrt(1 / (zm * zm) - 1 / (rfe * rfe))
-        else:
-            xm = 0  # the square root cannot be computed
+        xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
 
-        # Calculated parameters in per unit
-        leakage_impedance = rsc + 1j * xsc
-        magnetizing_impedance = rfe + 1j * xm
+        # series impedance
+        z_series = rsc + 1j * xsc
 
-        return leakage_impedance, magnetizing_impedance
+        # y_series = 1.0 / z_series
+
+        # shunt impedance
+        zl = rfe + 1j * xm
+
+        # y_shunt = 1.0 / zl
+
+        return z_series, zl
 
     def __str__(self):
         return self.name
