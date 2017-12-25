@@ -1487,20 +1487,16 @@ class MainGUI(QMainWindow):
         """
 
         if self.circuit.time_series_results is not None:
-            # print('\n\nVoltages:\n')
-            # print(self.circuit.time_series_results.voltage)
-            # print(self.circuit.time_series_results.converged)
-            # print(self.circuit.time_series_results.error)
 
-            # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-            # show()
-            # ts_analysis = TimeSeriesResultsAnalysis(self.circuit.circuits[0].time_series_results)
             voltage = self.circuit.time_series_results.voltage.max(axis=0)
             loading = self.circuit.time_series_results.loading.max(axis=0)
             Sbranch = self.circuit.time_series_results.Sbranch.max(axis=0)
+
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
                                    types=self.circuit.power_flow_input.types)
+
             self.update_available_results()
+
         else:
             print('No results for the time series simulation.')
 

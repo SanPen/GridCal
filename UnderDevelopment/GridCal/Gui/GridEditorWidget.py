@@ -513,8 +513,12 @@ class BranchGraphicItem(QGraphicsLineItem):
         @return:
         """
         if self.pos1 is not None and self.pos2 is not None:
+
+            # Set position
             self.setLine(QLineF(self.pos1, self.pos2))
-            self.setZValue(0)
+
+            # set Z-Order (to the back)
+            self.setZValue(-1)
 
             if self.api_object is not None:
                 if self.api_object.is_transformer:
@@ -2170,7 +2174,7 @@ class GridEditor(QSplitter):
 
                         self.started_branch.setToPort(item)
                         item.hosting_connections.append(self.started_branch)
-                        self.started_branch.setZValue(1000)
+                        # self.started_branch.setZValue(-1)
                         self.started_branch.bus_to = item.parent
                         name = 'Branch ' + str(self.branch_editor_count)
                         obj = Branch(bus_from=self.started_branch.bus_from.api_object,
@@ -2181,9 +2185,12 @@ class GridEditor(QSplitter):
                         self.circuit.add_branch(obj)
                         item.process_callbacks(item.parent.pos() + item.pos())
 
+                        self.started_branch.setZValue(-1)
+
             if self.started_branch.toPort is None:
                 self.started_branch.remove_()
 
+        # release this pointer
         self.started_branch = None
 
     def bigger_nodes(self):
