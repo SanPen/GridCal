@@ -2193,13 +2193,22 @@ class Circuit:
             Icdf_[i] = Icdf
             Ycdf_[i] = Ycdf
 
+        # Compute the base magnitudes
+        # (not needed since I and Y are given in MVA, you can demonstrate that only Sbase is needed to pass to p.u.)
+        # Ibase = self.Sbase / (Vbase * sqrt3)
+        # Ybase = self.Sbase / (Vbase * Vbase)
+
+        # set the nominal voltages array in the power flow inputs
+        # power_flow_input.Vnom[i] = Vbase
+
         # normalize_string the power array
         power_flow_input.Sbus /= self.Sbase
 
         # normalize_string the currents array (I was given in MVA at v=1 p.u.)
         power_flow_input.Ibus /= self.Sbase
 
-        # normalize_string the admittances array (Y was given in MVA at v=1 p.u.)
+        # normalize the admittances array (Y was given in MVA at v=1 p.u.)
+        # At this point only the shunt and load related values are added here
         power_flow_input.Ybus /= self.Sbase
         power_flow_input.Yshunt /= self.Sbase
 
@@ -2212,11 +2221,11 @@ class Circuit:
             Sprofile.columns = ['Sprof@Bus' + str(i) for i in range(Sprofile.shape[1])]
 
         if Iprofile is not None:
-            Iprofile /= self.Sbase
+            Iprofile /= self.Sbase  # normalize_string the currents array (I was given in MVA at v=1 p.u.)
             Iprofile.columns = ['Iprof@Bus' + str(i) for i in range(Iprofile.shape[1])]
 
         if Yprofile is not None:
-            Yprofile /= self.Sbase
+            Yprofile /= self.Sbase  # normalize the admittances array (Y was given in MVA at v=1 p.u.)
             Yprofile.columns = ['Yprof@Bus' + str(i) for i in range(Yprofile.shape[1])]
 
         time_series_input = TimeSeriesInput(Sprofile, Iprofile, Yprofile)
