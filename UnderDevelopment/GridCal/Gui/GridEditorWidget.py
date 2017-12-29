@@ -55,29 +55,51 @@ class LineEditor(QDialog):
         # self.setWindowIcon(icon)
         self.layout = QVBoxLayout(self)
 
+        # ------------------------------------------------------------------------------------------
+        # Set the object values
+        # ------------------------------------------------------------------------------------------
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
+
+        # assert (Vf == Vt)
+
+        Zbase = self.Sbase / (Vf * Vf)
+        Ybase = 1 / Zbase
+
+        R = self.branch.R * Zbase
+        X = self.branch.X * Zbase
+        G = self.branch.R * Ybase
+        B = self.branch.R * Ybase
+
+        # ------------------------------------------------------------------------------------------
+
         # R
-        self.r_spinner = QSpinBox()
+        self.r_spinner = QDoubleSpinBox()
         self.r_spinner.setMinimum(0)
         self.r_spinner.setMaximum(9999999)
-        self.r_spinner.setValue(1e-20)
+        self.r_spinner.setDecimals(6)
+        self.r_spinner.setValue(R)
 
         # X
-        self.x_spinner = QSpinBox()
+        self.x_spinner = QDoubleSpinBox()
         self.x_spinner.setMinimum(0)
         self.x_spinner.setMaximum(9999999)
-        self.x_spinner.setValue(1e-20)
+        self.x_spinner.setDecimals(6)
+        self.x_spinner.setValue(X)
 
         # G
-        self.g_spinner = QSpinBox()
+        self.g_spinner = QDoubleSpinBox()
         self.g_spinner.setMinimum(0)
         self.g_spinner.setMaximum(9999999)
-        self.g_spinner.setValue(1e-20)
+        self.g_spinner.setDecimals(6)
+        self.g_spinner.setValue(G)
 
         # B
-        self.b_spinner = QSpinBox()
+        self.b_spinner = QDoubleSpinBox()
         self.b_spinner.setMinimum(0)
         self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setValue(1e-20)
+        self.b_spinner.setDecimals(6)
+        self.b_spinner.setValue(B)
 
         # accept button
         self.accept_btn = QPushButton()
@@ -118,7 +140,7 @@ class LineEditor(QDialog):
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
 
-        assert (Vf == Vt)
+        # assert (Vf == Vt)
 
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1 / Zbase
@@ -150,6 +172,8 @@ class TransformerEditor(QDialog):
         # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         # self.setWindowIcon(icon)
         self.layout = QVBoxLayout(self)
+
+
 
         # R
         self.sn_spinner = QSpinBox()
