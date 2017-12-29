@@ -921,9 +921,9 @@ class TransformerType:
             leakage_impedance: Series impedance
             magnetizing_impedance: Shunt impedance
         """
-        Uhv = self.HV_nominal_voltage
+        Vhv = self.HV_nominal_voltage
 
-        Ulv = self.LV_nominal_voltage
+        Vlv = self.LV_nominal_voltage
 
         Sn = self.Nominal_power
 
@@ -933,27 +933,34 @@ class TransformerType:
 
         I0 = self.No_load_current
 
-        Usc = self.Short_circuit_voltage
+        Vsc = self.Short_circuit_voltage
 
         # GRhv = self.GR_hv1
         # GXhv = self.GX_hv1
 
-        Zn_hv = (Uhv ** 2) / Sn
-        Zn_lv = (Ulv ** 2) / Sn
-        zsc = Usc / 100.0
+        # Zn_hv = (Vhv ** 2) / Sn
+        # Zn_lv = (Vlv ** 2) / Sn
+
+        zsc = Vsc / 100.0
         rsc = (Pcu / 1000.0) / Sn
         xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
 
-        rcu_hv = rsc * self.GR_hv1
-        rcu_lv = rsc * (1 - self.GR_hv1)
-        xs_hv = xsc * self.GX_hv1
-        xs_lv = xsc * (1 - self.GX_hv1)
+        # rcu_hv = rsc * self.GR_hv1
+        # rcu_lv = rsc * (1 - self.GR_hv1)
+        # xs_hv = xsc * self.GX_hv1
+        # xs_lv = xsc * (1 - self.GX_hv1)
 
-        rfe = Sn / (Pfe / 1000.0)
+        if Pfe > 0.0 and I0 > 0.0:
+            rfe = Sn / (Pfe / 1000.0)
 
-        zm = 1.0 / (I0 / 100.0)
+            zm = 1.0 / (I0 / 100.0)
 
-        xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
+            xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
+
+        else:
+
+            rfe = 0.0
+            xm = 0.0
 
         # series impedance
         z_series = rsc + 1j * xsc
@@ -1184,15 +1191,15 @@ class Branch:
         Returns:
 
         """
-        leakage_impedance, magnetizing_impedance = obj.get_impedances()
+        zseries, zsh = obj.get_impedances()
 
-        z_series = magnetizing_impedance
-        y_shunt = 1 / leakage_impedance
+        z_series = zseries
+        y_shunt = 1 / zsh
 
-        self.R = z_series.real
-        self.X = z_series.imag
-        self.G = y_shunt.real
-        self.B = y_shunt.imag
+        self.R = np.round(z_series.real, 6)
+        self.X = np.round(z_series.imag, 6)
+        self.G = np.round(y_shunt.real, 6)
+        self.B = np.round(y_shunt.imag, 6)
 
         self.type_obj = obj
 

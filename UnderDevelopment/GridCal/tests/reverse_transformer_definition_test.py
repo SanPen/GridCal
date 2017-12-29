@@ -2,45 +2,17 @@ from GridCal.Engine.CalculationEngine import *
 
 if __name__ == '__main__':
 
-    Vf = 20.0  # kV
-    Vt = 0.4  # kV
-    Sn = 0.5  # MVA
-    Vsc_ = 6.0  # %
-    Pcu_ = 6.0  # kW
-    # Pfe_ = 1.4  # kW
-    # I0_ = 0.28  # %
-    Pfe_ = 0.0  # kW
-    I0_ = 0.0  # %
-
-    tpe = TransformerType(HV_nominal_voltage=Vf,
-                          LV_nominal_voltage=Vt,
-                          Nominal_power=Sn,
-                          Copper_losses=Pcu_,
-                          Iron_losses=Pfe_,
-                          No_load_current=I0_,
-                          Short_circuit_voltage=Vsc_,
-                          GR_hv1=0.5,
-                          GX_hv1=0.5)
-
-    z, zl = tpe.get_impedances()
-    print(z)
-    print(zl)
-
     # ------------------------------------------------------------------------------------------------------------------
     # Revert the calcs
     # ------------------------------------------------------------------------------------------------------------------
-    if zl.real > 0 and zl.imag > 0:
-        yl = 1.0 / zl
-        G = yl.real
-        B = yl.imag
-    else:
-        G = 0
-        B = 0
+    Vf = 11
+    Vt = 132
+    G = 0
+    B = 0
+    R = 0
+    X = 0.115
 
-    R = z.real
-    X = z.imag
-
-    Sn = Sn
+    Sn = 30
 
     print()
     print('R', R)
@@ -62,13 +34,13 @@ if __name__ == '__main__':
         k = 1 / (rfe * rfe) + 1 / (xm * xm)
         I0 = 100.0 * sqrt(k)
     else:
-        Pfe = 1e20
-        I0 = 1e20
+        Pfe = 1e-20
+        I0 = 1e-20
 
-    print('Vsc', Vsc, Vsc_)
-    print('Pcu', Pcu, Pcu_)
-    print('I0', I0, I0_)
-    print('Pfe', Pfe, Pfe_)
+    print('Vsc', Vsc)
+    print('Pcu', Pcu)
+    print('I0', I0)
+    print('Pfe', Pfe)
 
     tpe2 = TransformerType(HV_nominal_voltage=Vf,
                            LV_nominal_voltage=Vt,
@@ -81,5 +53,12 @@ if __name__ == '__main__':
                            GX_hv1=0.5)
 
     z2, zl2 = tpe2.get_impedances()
-    print(z2)
-    print(zl2)
+    # print(z2)
+    # print(1/zl2)
+    yl = 1/zl2
+
+    print()
+    print('R', z2.real)
+    print('X', z2.imag)
+    print('G', yl.real)
+    print('B', yl.imag)

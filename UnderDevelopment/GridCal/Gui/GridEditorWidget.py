@@ -68,8 +68,8 @@ class LineEditor(QDialog):
 
         R = self.branch.R * Zbase
         X = self.branch.X * Zbase
-        G = self.branch.R * Ybase
-        B = self.branch.R * Ybase
+        G = self.branch.G * Ybase
+        B = self.branch.B * Ybase
 
         # ------------------------------------------------------------------------------------------
 
@@ -132,10 +132,10 @@ class LineEditor(QDialog):
         Set the values
         :return:
         """
-        R = self.r_spinner.value()
-        X = self.x_spinner.value()
-        G = self.g_spinner.value()
-        B = self.b_spinner.value()
+        R = np.round(self.r_spinner.value(), 6)
+        X = np.round(self.x_spinner.value(), 6)
+        G = np.round(self.g_spinner.value(), 6)
+        B = np.round(self.b_spinner.value(), 6)
 
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
@@ -145,10 +145,10 @@ class LineEditor(QDialog):
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1 / Zbase
 
-        self.branch.R = R / Zbase
-        self.branch.X = X / Zbase
-        self.branch.G = G / Ybase
-        self.branch.B = B / Ybase
+        self.branch.R = np.round(R / Zbase, 6)
+        self.branch.X = np.round(X / Zbase, 6)
+        self.branch.G = np.round(G / Ybase, 6)
+        self.branch.B = np.round(B / Ybase, 6)
 
         self.accept()
 
@@ -156,6 +156,11 @@ class LineEditor(QDialog):
 class TransformerEditor(QDialog):
 
     def __init__(self, branch: Branch, Sbase=100):
+        """
+        Transformer
+        :param branch:
+        :param Sbase:
+        """
         super(TransformerEditor, self).__init__()
 
         # keep pointer to the line object
@@ -173,37 +178,73 @@ class TransformerEditor(QDialog):
         # self.setWindowIcon(icon)
         self.layout = QVBoxLayout(self)
 
+        # ------------------------------------------------------------------------------------------
+        # Set the object values
+        # ------------------------------------------------------------------------------------------
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
 
+        # assert (Vf == Vt)
 
-        # R
-        self.sn_spinner = QSpinBox()
+        R = self.branch.R
+        X = self.branch.X
+        G = self.branch.G
+        B = self.branch.B
+        Sn = self.branch.rate
+
+        zsc = sqrt(R * R + 1 / (X * X))
+        Vsc = 100.0 * zsc
+        Pcu = R * Sn * 1000.0
+
+        if abs(G) > 0.0 and abs(B) > 0.0:
+            zl = 1.0 / complex(G, B)
+            rfe = zl.real
+            xm = zl.imag
+
+            Pfe = 1000.0 * Sn / rfe
+
+            k = 1 / (rfe * rfe) + 1 / (xm * xm)
+            I0 = 100.0 * sqrt(k)
+        else:
+            Pfe = 0
+            I0 = 0
+
+        # ------------------------------------------------------------------------------------------
+
+        # Sn
+        self.sn_spinner = QDoubleSpinBox()
         self.sn_spinner.setMinimum(0)
         self.sn_spinner.setMaximum(9999999)
-        self.sn_spinner.setValue(1e-20)
+        self.sn_spinner.setDecimals(6)
+        self.sn_spinner.setValue(Sn)
 
-        # X
-        self.pcu_spinner = QSpinBox()
+        # Pcu
+        self.pcu_spinner = QDoubleSpinBox()
         self.pcu_spinner.setMinimum(0)
         self.pcu_spinner.setMaximum(9999999)
-        self.pcu_spinner.setValue(1e-20)
+        self.pcu_spinner.setDecimals(6)
+        self.pcu_spinner.setValue(Pcu)
 
-        # G
-        self.pfe_spinner = QSpinBox()
+        # Pfe
+        self.pfe_spinner = QDoubleSpinBox()
         self.pfe_spinner.setMinimum(0)
         self.pfe_spinner.setMaximum(9999999)
-        self.pfe_spinner.setValue(1e-20)
+        self.pfe_spinner.setDecimals(6)
+        self.pfe_spinner.setValue(Pfe)
 
         # I0
-        self.I0_spinner = QSpinBox()
+        self.I0_spinner = QDoubleSpinBox()
         self.I0_spinner.setMinimum(0)
         self.I0_spinner.setMaximum(9999999)
-        self.I0_spinner.setValue(1e-20)
+        self.I0_spinner.setDecimals(6)
+        self.I0_spinner.setValue(I0)
 
         # Vsc
-        self.vsc_spinner = QSpinBox()
+        self.vsc_spinner = QDoubleSpinBox()
         self.vsc_spinner.setMinimum(0)
         self.vsc_spinner.setMaximum(9999999)
-        self.vsc_spinner.setValue(1e-20)
+        self.vsc_spinner.setDecimals(6)
+        self.vsc_spinner.setValue(Vsc)
 
         # accept button
         self.accept_btn = QPushButton()
@@ -248,6 +289,13 @@ class TransformerEditor(QDialog):
         I0 = self.I0_spinner.value()  # %
         Vsc = self.vsc_spinner.value()  # %
 
+        eps = 1e-20
+
+        # Vsc = eps if Vsc == 0.0 else Vsc
+        # Pcu = eps if Pcu == 0.0 else Pcu
+        Pfe = eps if Pfe == 0.0 else Pfe
+        I0 = eps if I0 == 0.0 else I0
+
         tpe = TransformerType(HV_nominal_voltage=Vf,
                               LV_nominal_voltage=Vt,
                               Nominal_power=Sn,
@@ -257,6 +305,11 @@ class TransformerEditor(QDialog):
                               Short_circuit_voltage=Vsc,
                               GR_hv1=0.5,
                               GX_hv1=0.5)
+
+        leakage_impedance, magnetizing_impedance = tpe.get_impedances()
+
+        z_series = leakage_impedance
+        y_shunt = 1 / magnetizing_impedance
 
         self.branch.apply_transformer_type(tpe)
 
