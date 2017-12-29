@@ -541,6 +541,8 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         self.setPen(pen)
         if self.api_object.is_transformer:
+            if self.c1 is None:
+                self.redraw()
             self.c1.setPen(pen)
             self.c2.setPen(pen)
 

@@ -355,7 +355,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             idx_s = 0
             for source in self.profile_names:
 
-                if self.normalize_string(source) in self.normalize_string(objective) or source in objective:
+                if self.normalize_string(source) in self.normalize_string(objective.name) or source in objective:
                     self.make_association(idx_s, idx_o, mult)
 
                 idx_s += 1
