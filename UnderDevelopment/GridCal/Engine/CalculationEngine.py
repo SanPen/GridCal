@@ -2037,7 +2037,7 @@ class Circuit:
         self.name = name
 
         # Base power (MVA)
-        self.Sbase = 100
+        self.Sbase = 100.0
 
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
@@ -2089,7 +2089,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self):
+    def compile(self, time_profile=None):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -2097,18 +2097,29 @@ class Circuit:
             - Vbus vector
             - etc...
         """
+
+        # declare length of arrays
         n = len(self.buses)
         m = len(self.branches)
 
+        if time_profile is None:
+            t = 0
+        else:
+            t = len(time_profile)
+
+        # declare a graph
         self.graph = nx.Graph()
 
         # declare power flow results
         power_flow_input = PowerFlowInput(n, m)
 
         # time series inputs
-        Sprofile = pd.DataFrame()
-        Iprofile = pd.DataFrame()
-        Yprofile = pd.DataFrame()
+        S_profile_data = zeros((t, n), dtype=complex)
+        I_profile_data = zeros((t, n), dtype=complex)
+        Y_profile_data = zeros((t, n), dtype=complex)
+        S_prof_names = [None] * n
+        I_prof_names = [None] * n
+        Y_prof_names = [None] * n
         Scdf_ = [None] * n
         Icdf_ = [None] * n
         Ycdf_ = [None] * n
@@ -2119,9 +2130,6 @@ class Circuit:
 
         # Dictionary that helps referencing the nodes
         self.buses_dict = dict()
-
-        # declare the square root of 3 to do it only once
-        sqrt3 = sqrt(3.0)
 
         # Compile the buses
         for i in range(n):
@@ -2139,7 +2147,9 @@ class Circuit:
             self.buses[i].determine_bus_type()
 
             # compute the bus magnitudes
-            Y, I, S, V, Yprof, Iprof, Sprof, Ycdf, Icdf, Scdf = self.buses[i].get_YISV()
+            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV()
+
+            # Assign the values to the simulation objects
             power_flow_input.Vbus[i] = V  # set the bus voltages
             power_flow_input.Sbus[i] += S  # set the bus power
             power_flow_input.Ibus[i] += I  # set the bus currents
@@ -2149,57 +2159,48 @@ class Circuit:
 
             power_flow_input.types[i] = self.buses[i].type.value[0]  # set type
 
-            power_flow_input.Vmin[i] = self.buses[i].Vmin
-            power_flow_input.Vmax[i] = self.buses[i].Vmax
+            power_flow_input.Vmin[i] = self.buses[i].Vmin  # in p.u.
+            power_flow_input.Vmax[i] = self.buses[i].Vmax  # in p.u.
             power_flow_input.Qmin[i] = self.buses[i].Qmin_sum  # in MVAr
             power_flow_input.Qmax[i] = self.buses[i].Qmax_sum  # in MVAr
 
+            # Compile all the time related variables
+
             # compute the time series arrays  ##############################################
 
-            # merge the individual profiles. The profiles are Pandas DataFrames
-            # ttt, nnn = Sprof.shape
             if Sprof is not None:
-                k = where(Sprof.values == nan)
-                Sprofile = pd.concat([Sprofile, Sprof], axis=1)
-            else:
-                nn = len(Sprofile)
-                Sprofile['Sprof@Bus' + str(i)] = pd.Series(ones(nn) * S, index=Sprofile.index)  # append column of zeros
-
+                S_profile_data[:, i] = Sprof.data
             if Iprof is not None:
-                Iprofile = pd.concat([Iprofile, Iprof], axis=1)
-            else:
-                Iprofile['Iprof@Bus' + str(i)] = pd.Series(ones(len(Iprofile)) * I, index=Iprofile.index)
-
+                I_profile_data[:, i] = Iprof.data
             if Yprof is not None:
-                Yprofile = pd.concat([Yprofile, Yprof], axis=1)
-            else:
-                Yprofile['Iprof@Bus' + str(i)] = pd.Series(ones(len(Yprofile)) * Y, index=Yprofile.index)
+                Y_profile_data[:, i] = Yprof.data
 
-            # Store the CDF's form Monte Carlo ##############################################
+            S_prof_names[i] = 'Sprof@Bus' + str(i)
+            I_prof_names[i] = 'Iprof@Bus' + str(i)
+            Y_prof_names[i] = 'Yprof@Bus' + str(i)
 
-            if Scdf is None and S != complex(0, 0):
-                Scdf = CDF(array([S]))
+            # Store the CDF's for Monte Carlo ##############################################
 
-            if Icdf is None and I != complex(0, 0):
-                Icdf = CDF(array([I]))
+            if S_cdf is None and S != complex(0, 0):
+                S_cdf = CDF(array([S]))
 
-            if Ycdf is None and Y != complex(0, 0):
-                Ycdf = CDF(array([Y]))
+            if I_cdf is None and I != complex(0, 0):
+                I_cdf = CDF(array([I]))
 
-            if Scdf is not None or Icdf is not None or Ycdf is not None:
+            if Y_cdf is None and Y != complex(0, 0):
+                Y_cdf = CDF(array([Y]))
+
+            if S_cdf is not None or I_cdf is not None or Y_cdf is not None:
                 are_cdfs = True
 
-            Scdf_[i] = Scdf
-            Icdf_[i] = Icdf
-            Ycdf_[i] = Ycdf
+            Scdf_[i] = S_cdf
+            Icdf_[i] = I_cdf
+            Ycdf_[i] = Y_cdf
 
         # Compute the base magnitudes
         # (not needed since I and Y are given in MVA, you can demonstrate that only Sbase is needed to pass to p.u.)
         # Ibase = self.Sbase / (Vbase * sqrt3)
         # Ybase = self.Sbase / (Vbase * Vbase)
-
-        # set the nominal voltages array in the power flow inputs
-        # power_flow_input.Vnom[i] = Vbase
 
         # normalize_string the power array
         power_flow_input.Sbus /= self.Sbase
@@ -2216,19 +2217,12 @@ class Circuit:
         power_flow_input.Qmax /= self.Sbase
         power_flow_input.Qmin /= self.Sbase
 
-        if Sprofile is not None:
-            Sprofile /= self.Sbase
-            Sprofile.columns = ['Sprof@Bus' + str(i) for i in range(Sprofile.shape[1])]
+        # make the profiles as DataFrames
+        S_profile = pd.DataFrame(data=S_profile_data / self.Sbase, columns=S_prof_names, index=time_profile)
+        I_profile = pd.DataFrame(data=I_profile_data / self.Sbase, columns=I_prof_names, index=time_profile)
+        Y_profile = pd.DataFrame(data=Y_profile_data / self.Sbase, columns=Y_prof_names, index=time_profile)
 
-        if Iprofile is not None:
-            Iprofile /= self.Sbase  # normalize_string the currents array (I was given in MVA at v=1 p.u.)
-            Iprofile.columns = ['Iprof@Bus' + str(i) for i in range(Iprofile.shape[1])]
-
-        if Yprofile is not None:
-            Yprofile /= self.Sbase  # normalize the admittances array (Y was given in MVA at v=1 p.u.)
-            Yprofile.columns = ['Yprof@Bus' + str(i) for i in range(Yprofile.shape[1])]
-
-        time_series_input = TimeSeriesInput(Sprofile, Iprofile, Yprofile)
+        time_series_input = TimeSeriesInput(S_profile, I_profile, Y_profile)
         time_series_input.compile()
 
         if are_cdfs:
@@ -2238,11 +2232,12 @@ class Circuit:
         for i in range(m):
 
             if self.branches[i].active:
-                # Set the branch impedance
 
+                # get the from and to bus indices
                 f = self.buses_dict[self.branches[i].bus_from]
                 t = self.buses_dict[self.branches[i].bus_to]
 
+                # apply the brach properties to the circuit matrices
                 f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
                                                  Yseries=power_flow_input.Yseries,
                                                  Yshunt=power_flow_input.Yshunt,
@@ -2251,9 +2246,6 @@ class Circuit:
                                                  B1=power_flow_input.B1,
                                                  B2=power_flow_input.B2,
                                                  i=i, f=f, t=t)
-                # add the bus shunts
-                # power_flow_input.Yf[i, f] += power_flow_input.Yshunt[f, f]
-                # power_flow_input.Yt[i, t] += power_flow_input.Yshunt[t, t]
 
                 # Add graph edge (automatically adds the vertices)
                 self.graph.add_edge(f, t)
@@ -2953,7 +2945,7 @@ class MultiCircuit(Circuit):
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
-            circuit.compile()
+            circuit.compile(self.time_profile)
 
             # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
@@ -4841,7 +4833,7 @@ class TimeSeriesInput:
     def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):
         """
 
-        :param res:
+        :param res: TimeSeriesInput
         :param bus_original_idx:
         :param branch_original_idx:
         :param nbus_full:
@@ -4849,16 +4841,17 @@ class TimeSeriesInput:
         :return:
         """
 
-        if self.Sprof is None:
-            self.time_array = res.time_array
-            t = len(self.time_array)
-            self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
-            self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
-            self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+        if res is not None:
+            if self.Sprof is None:
+                self.time_array = res.time_array
+                # t = len(self.time_array)
+                self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+                self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
+                self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
 
-        self.Sprof[res.Sprof.columns.values] = res.Sprof
-        self.Iprof[res.Iprof.columns.values] = res.Iprof
-        self.Yprof[res.Yprof.columns.values] = res.Yprof
+            self.Sprof[res.Sprof.columns.values] = res.Sprof
+            self.Iprof[res.Iprof.columns.values] = res.Iprof
+            self.Yprof[res.Yprof.columns.values] = res.Yprof
 
 
 class TimeSeriesResults(PowerFlowResults):
