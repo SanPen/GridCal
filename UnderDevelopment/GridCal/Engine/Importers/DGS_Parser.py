@@ -934,7 +934,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
 
                 status = 1 - transformers['outserv'][i]
 
-                trafo = Branch(bus_from=bus_from, bus_to=bus_to,
+                trafo = Branch(bus_from=bus_from,
+                               bus_to=bus_to,
                                name=transformers['loc_name'][i].decode(codification),
                                r=Zs.real,
                                x=Zs.imag,
@@ -943,7 +944,10 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                                rate=Smax,
                                tap=1,
                                shift_angle=0,
-                               active=status, mttf=0, mttr=0)
+                               active=status,
+                               mttf=0,
+                               mttr=0,
+                               is_transformer=True)
 
                 circuit.add_branch(trafo)
 
