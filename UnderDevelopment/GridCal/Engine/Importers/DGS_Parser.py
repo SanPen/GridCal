@@ -30,75 +30,75 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
-def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_hv1=0.5):
-    """
-    Get the transformer series and shunt equivalent impedances from the short circuit values
-    @param Uhv: Nominal voltage at the high side (kV)
-    @param Ulv: Nominal voltage at the low side (kV)
-    @param Sn: Nominal power (MVA)
-    @param Pcu: Copper losses (kW) (Losses due to the Joule effect)
-    @param Pfe: Iron-losses (kW)  (Losses in the magnetic circuit)
-    @param I0: No-load current (%)
-    @param Usc: Short-circuit voltage (%)
-    @param GR_hv1: Resistive short circuit contribution to the HV side. It is a value from 0 to 1.
-    @param GX_hv1: Reactive short circuit contribution to the HV side. It is a value from 0 to 1.
-    @return:
-    """
-
-    # Nominal impedance HV (Ohm)
-    Zn_hv = Uhv * Uhv / Sn
-
-    # Nominal impedance LV (Ohm)
-    Zn_lv = Ulv * Ulv / Sn
-
-    # Short circuit impedance (p.u.)
-    zsc = Usc / 100.0
-
-    # Short circuit resistance (p.u.)
-    rsc = (Pcu / 1000.0) / Sn
-
-    # Short circuit reactance (p.u.)
-    xsc = np.sqrt(zsc * zsc - rsc * rsc)
-
-    # HV resistance (p.u.)
-    rcu_hv = rsc * GR_hv1
-
-    # LV resistance (p.u.)
-    rcu_lv = rsc * (1.0 - GR_hv1)
-
-    # HV shunt reactance (p.u.)
-    xs_hv = xsc * GX_hv1
-
-    # LV shunt reactance (p.u.)
-    xs_lv = xsc * (1.0 - GX_hv1)
-
-    # Shunt resistance (p.u.)
-    if Pfe > 0:
-        rfe = Sn / (Pfe / 1000.0)
-    else:
-        rfe = 1e-20
-
-    # Magnetization impedance (p.u.)
-    if I0 > 0:
-        zm = 1.0 / (I0 / 100.0)
-    else:
-        zm = 1e-20
-
-    # Magnetization reactance (p.u.)
-    xm = 0.0
-    if rfe > zm:
-        xm = 1.0 / np.sqrt(1.0 / (zm * zm) - 1.0 / (rfe * rfe))
-    else:
-        xm = 0.0  # the square root cannot be computed
-
-    # Calculated parameters in per unit
-    # leakage_impedance = rsc + 1j * xsc
-    # magnetizing_impedance = rfe + 1j * xm
-
-    leakage_impedance = (rcu_hv + rcu_lv) + 1j * (xs_hv + xs_lv)
-    magnetizing_impedance = rfe + 1j * xm
-
-    return leakage_impedance, magnetizing_impedance
+# def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_hv1=0.5):
+#     """
+#     Get the transformer series and shunt equivalent impedances from the short circuit values
+#     @param Uhv: Nominal voltage at the high side (kV)
+#     @param Ulv: Nominal voltage at the low side (kV)
+#     @param Sn: Nominal power (MVA)
+#     @param Pcu: Copper losses (kW) (Losses due to the Joule effect)
+#     @param Pfe: Iron-losses (kW)  (Losses in the magnetic circuit)
+#     @param I0: No-load current (%)
+#     @param Usc: Short-circuit voltage (%)
+#     @param GR_hv1: Resistive short circuit contribution to the HV side. It is a value from 0 to 1.
+#     @param GX_hv1: Reactive short circuit contribution to the HV side. It is a value from 0 to 1.
+#     @return:
+#     """
+#
+#     # Nominal impedance HV (Ohm)
+#     Zn_hv = Uhv * Uhv / Sn
+#
+#     # Nominal impedance LV (Ohm)
+#     Zn_lv = Ulv * Ulv / Sn
+#
+#     # Short circuit impedance (p.u.)
+#     zsc = Usc / 100.0
+#
+#     # Short circuit resistance (p.u.)
+#     rsc = (Pcu / 1000.0) / Sn
+#
+#     # Short circuit reactance (p.u.)
+#     xsc = np.sqrt(zsc * zsc - rsc * rsc)
+#
+#     # HV resistance (p.u.)
+#     rcu_hv = rsc * GR_hv1
+#
+#     # LV resistance (p.u.)
+#     rcu_lv = rsc * (1.0 - GR_hv1)
+#
+#     # HV shunt reactance (p.u.)
+#     xs_hv = xsc * GX_hv1
+#
+#     # LV shunt reactance (p.u.)
+#     xs_lv = xsc * (1.0 - GX_hv1)
+#
+#     # Shunt resistance (p.u.)
+#     if Pfe > 0:
+#         rfe = Sn / (Pfe / 1000.0)
+#     else:
+#         rfe = 1e-20
+#
+#     # Magnetization impedance (p.u.)
+#     if I0 > 0:
+#         zm = 1.0 / (I0 / 100.0)
+#     else:
+#         zm = 1e-20
+#
+#     # Magnetization reactance (p.u.)
+#     xm = 0.0
+#     if rfe > zm:
+#         xm = 1.0 / np.sqrt(1.0 / (zm * zm) - 1.0 / (rfe * rfe))
+#     else:
+#         xm = 0.0  # the square root cannot be computed
+#
+#     # Calculated parameters in per unit
+#     # leakage_impedance = rsc + 1j * xsc
+#     # magnetizing_impedance = rfe + 1j * xm
+#
+#     leakage_impedance = (rcu_hv + rcu_lv) + 1j * (xs_hv + xs_lv)
+#     magnetizing_impedance = rfe + 1j * xm
+#
+#     return leakage_impedance, magnetizing_impedance
 
 
 def read_DGS(filename):
@@ -919,15 +919,18 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                 Smax = Nominal_power[type_idx]
 
                 # Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc
-                Zs, Zsh = get_transformer_impedances(Uhv=HV_nominal_voltage[type_idx],
-                                                     Ulv=LV_nominal_voltage[type_idx],
-                                                     Sn=Smax,
-                                                     Pcu=Copper_losses[type_idx],
-                                                     Pfe=Iron_losses[type_idx],
-                                                     I0=No_load_current[type_idx],
-                                                     Usc=Short_circuit_voltage[type_idx],
-                                                     GR_hv1=0.5,
-                                                     GX_hv1=0.5)
+                tpe = TransformerType(HV_nominal_voltage=HV_nominal_voltage[type_idx],
+                                      LV_nominal_voltage=LV_nominal_voltage[type_idx],
+                                      Nominal_power=Smax,
+                                      Copper_losses=Copper_losses[type_idx],
+                                      Iron_losses=Iron_losses[type_idx],
+                                      No_load_current=No_load_current[type_idx],
+                                      Short_circuit_voltage=Short_circuit_voltage[type_idx],
+                                      GR_hv1=0.5,
+                                      GX_hv1=0.5)
+
+                Zs, Zsh = tpe.get_impedances()
+                Ysh = 1.0 / Zsh
 
                 status = 1 - transformers['outserv'][i]
 
@@ -935,8 +938,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                                name=transformers['loc_name'][i].decode(codification),
                                r=Zs.real,
                                x=Zs.imag,
-                               g=0,  # Zsh.real,
-                               b=0,  # Zsh.imag,
+                               g=Ysh.real,
+                               b=Ysh.imag,
                                rate=Smax,
                                tap=1,
                                shift_angle=0,

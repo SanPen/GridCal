@@ -3597,8 +3597,6 @@ class PowerFlowInput:
         return df
 
 
-
-
 class PowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
