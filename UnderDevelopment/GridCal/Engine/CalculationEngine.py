@@ -3813,7 +3813,7 @@ class PowerFlowResults:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        if indices is None:
+        if indices is None and names is not None:
             indices = array(range(len(names)))
 
         if len(indices) > 0:
@@ -6943,7 +6943,7 @@ class OptimalPowerFlowResults:
                 title = 'Bus power '
 
             elif result_type == 'Branch_loading':
-                y = self.loading[indices] * 100
+                y = np.abs(self.loading[indices] * 100.0)
                 ylabel = '(%)'
                 title = 'Branch loading '
 
@@ -6957,9 +6957,9 @@ class OptimalPowerFlowResults:
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
             if len(df.columns) < self.plot_bars_limit:
-                df.abs().plot(ax=ax, kind='bar')
+                df.plot(ax=ax, kind='bar')
             else:
-                df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
             ax.set_title(title)
 
