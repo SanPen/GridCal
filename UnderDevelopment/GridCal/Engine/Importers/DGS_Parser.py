@@ -946,8 +946,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
 
             else:
                 warn('Transformer type not found!')
-        else:
-            warn('Transformer types are empty')
+    else:
+        warn('Transformer types are empty')
 
     ####################################################################################################################
     # Loads (nodes)

@@ -1186,14 +1186,10 @@ class Branch:
         """
         Apply a transformer type definition to this object
         Args:
-            obj:
-
-        Returns:
-
+            obj: TransformerType object
         """
-        zseries, zsh = obj.get_impedances()
+        z_series, zsh = obj.get_impedances()
 
-        z_series = zseries
         y_shunt = 1 / zsh
 
         self.R = np.round(z_series.real, 6)
