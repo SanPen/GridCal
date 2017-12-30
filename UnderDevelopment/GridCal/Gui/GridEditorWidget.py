@@ -1719,6 +1719,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
 
+        # Move the sizer
+        # self.sizer.setPos(self.w, self.h)
+
         # rearrange children
         self.arrange_children()
 
@@ -1894,6 +1897,22 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
                            self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        Mouse double click
+        :param event: event object
+        """
+        self.adapt()
+
+    def adapt(self):
+        """
+        Set the bus width according to the label text
+        """
+        h = self.h
+        w = len(self.api_object.name) * 8 + 10
+        self.change_size(w=w, h=h)
+        self.sizer.setPos(w, h)
 
     def add_load(self, api_obj=None):
         """
