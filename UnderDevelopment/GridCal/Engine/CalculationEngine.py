@@ -1199,6 +1199,8 @@ class Branch:
 
         self.type_obj = obj
 
+        self.rate = obj.Nominal_power
+
         self.is_transformer = True
 
     def get_save_data(self):

@@ -590,7 +590,12 @@ class MainGUI(QMainWindow):
         This function compiles the circuit and updates the UI accordingly
         :return:
         """
-        self.circuit.compile()
+
+        try:
+            self.circuit.compile()
+        except Exception as ex:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
 
         if self.circuit.time_profile is not None:
             mdl = get_list_model(self.circuit.time_profile)

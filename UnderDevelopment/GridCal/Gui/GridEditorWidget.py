@@ -71,7 +71,23 @@ class LineEditor(QDialog):
         G = self.branch.G * Ybase
         B = self.branch.B * Ybase
 
+        I = self.branch.rate / Vf  # current in kA
+
         # ------------------------------------------------------------------------------------------
+
+        # line length
+        self.l_spinner = QDoubleSpinBox()
+        self.l_spinner.setMinimum(0)
+        self.l_spinner.setMaximum(9999999)
+        self.l_spinner.setDecimals(6)
+        self.l_spinner.setValue(1)
+
+        # Max current
+        self.i_spinner = QDoubleSpinBox()
+        self.i_spinner.setMinimum(0)
+        self.i_spinner.setMaximum(9999999)
+        self.i_spinner.setDecimals(2)
+        self.i_spinner.setValue(I)
 
         # R
         self.r_spinner = QDoubleSpinBox()
@@ -109,16 +125,22 @@ class LineEditor(QDialog):
         # labels
 
         # add all to the GUI
-        self.layout.addWidget(QLabel("R: Resistance [Ohm]"))
+        self.layout.addWidget(QLabel("L: Line length [Km]"))
+        self.layout.addWidget(self.l_spinner)
+
+        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
+        self.layout.addWidget(self.i_spinner)
+
+        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
         self.layout.addWidget(self.r_spinner)
 
-        self.layout.addWidget(QLabel("X: Inductance [Ohm]"))
+        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
         self.layout.addWidget(self.x_spinner)
 
-        self.layout.addWidget(QLabel("G: Conductance [S]"))
+        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
         self.layout.addWidget(self.g_spinner)
 
-        self.layout.addWidget(QLabel("B: Susceptance [S]"))
+        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
         self.layout.addWidget(self.b_spinner)
 
         self.layout.addWidget(self.accept_btn)
@@ -132,23 +154,28 @@ class LineEditor(QDialog):
         Set the values
         :return:
         """
-        R = np.round(self.r_spinner.value(), 6)
-        X = np.round(self.x_spinner.value(), 6)
-        G = np.round(self.g_spinner.value(), 6)
-        B = np.round(self.b_spinner.value(), 6)
+        l = self.l_spinner.value()
+        I = self.i_spinner.value()
+        R = self.r_spinner.value() * l
+        X = self.x_spinner.value() * l
+        G = self.g_spinner.value() * l
+        B = self.b_spinner.value() * l
 
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
 
+        Sn = np.round(I * Vf, 2)  # nominal power in MVA (kA * kV)
+
         # assert (Vf == Vt)
 
         Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1 / Zbase
+        Ybase = 1.0 / Zbase
 
         self.branch.R = np.round(R / Zbase, 6)
         self.branch.X = np.round(X / Zbase, 6)
         self.branch.G = np.round(G / Ybase, 6)
         self.branch.B = np.round(B / Ybase, 6)
+        self.branch.rate = Sn
 
         self.accept()
 
@@ -308,8 +335,8 @@ class TransformerEditor(QDialog):
 
         leakage_impedance, magnetizing_impedance = tpe.get_impedances()
 
-        z_series = leakage_impedance
-        y_shunt = 1 / magnetizing_impedance
+        # z_series = leakage_impedance
+        # y_shunt = 1 / magnetizing_impedance
 
         self.branch.apply_transformer_type(tpe)
 
@@ -496,6 +523,14 @@ class BranchGraphicItem(QGraphicsLineItem):
                            non_editable_indices=[1, 2])
 
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        On double click, edit
+        :param event:
+        :return:
+        """
+        self.edit()
 
     def remove(self):
         """
