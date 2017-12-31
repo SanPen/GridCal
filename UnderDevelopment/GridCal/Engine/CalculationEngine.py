@@ -4652,8 +4652,8 @@ class ShortCircuit(QRunnable):
 
         # compute Zbus if needed
         if circuit.power_flow_input.Zbus is None:
-            circuit.power_flow_input.Zbus = inv(
-                circuit.power_flow_input.Ybus).toarray()  # is dense, so no need to store it as sparse
+            # is dense, so no need to store it as sparse
+            circuit.power_flow_input.Zbus = inv(circuit.power_flow_input.Ybus).toarray()
 
         # Compute the short circuit
         V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,

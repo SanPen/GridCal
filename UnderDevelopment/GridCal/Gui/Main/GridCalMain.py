@@ -1291,12 +1291,21 @@ class MainGUI(QMainWindow):
                     # get the power flow options from the GUI
                     sc_options = ShortCircuitOptions(bus_index=sel_buses)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options)
-                    self.short_circuit.run()
 
-                    # self.power_flow.start()
-                    self.threadpool.start(self.short_circuit)
-                    self.threadpool.waitForDone()
-                    self.post_short_circuit()
+                    try:
+                        self.short_circuit.run()
+
+                        # self.power_flow.start()
+                        self.threadpool.start(self.short_circuit)
+                        self.threadpool.waitForDone()
+                        self.post_short_circuit()
+
+                    except Exception as ex:
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
+                        self.short_circuit = None
+                        self.UNLOCK()
+
             else:
                 self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
         else:

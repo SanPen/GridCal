@@ -91,30 +91,30 @@ class LineEditor(QDialog):
 
         # R
         self.r_spinner = QDoubleSpinBox()
-        self.r_spinner.setMinimum(0)
-        self.r_spinner.setMaximum(9999999)
-        self.r_spinner.setDecimals(6)
+        # self.r_spinner.setMinimum(0)
+        # self.r_spinner.setMaximum(9999999)
+        # self.r_spinner.setDecimals(6)
         self.r_spinner.setValue(R)
 
         # X
         self.x_spinner = QDoubleSpinBox()
-        self.x_spinner.setMinimum(0)
-        self.x_spinner.setMaximum(9999999)
-        self.x_spinner.setDecimals(6)
+        # self.x_spinner.setMinimum(0)
+        # self.x_spinner.setMaximum(9999999)
+        # self.x_spinner.setDecimals(6)
         self.x_spinner.setValue(X)
 
         # G
         self.g_spinner = QDoubleSpinBox()
-        self.g_spinner.setMinimum(0)
-        self.g_spinner.setMaximum(9999999)
-        self.g_spinner.setDecimals(6)
+        # self.g_spinner.setMinimum(0)
+        # self.g_spinner.setMaximum(9999999)
+        # self.g_spinner.setDecimals(6)
         self.g_spinner.setValue(G)
 
         # B
         self.b_spinner = QDoubleSpinBox()
-        self.b_spinner.setMinimum(0)
-        self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setDecimals(6)
+        # self.b_spinner.setMinimum(0)
+        # self.b_spinner.setMaximum(9999999)
+        # self.b_spinner.setDecimals(6)
         self.b_spinner.setValue(B)
 
         # accept button
@@ -164,7 +164,7 @@ class LineEditor(QDialog):
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
 
-        Sn = np.round(I * Vf, 2)  # nominal power in MVA (kA * kV)
+        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
 
         # assert (Vf == Vt)
 
