@@ -253,18 +253,17 @@ def pade_approximation(n, an, s=1):
 
 def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     """
-    Args:
-        Vbus:
-        Sbus:
-        Ibus:
-        Ybus:
-        Yserie:
-        Ysh:
-        pq:
-        pv:
-        ref:
-        pqpv:
-    Returns:
+    Helm Method
+    :param Vbus: voltages array
+    :param Sbus: Power injections array
+    :param Ibus: Currents injection array
+    :param Ybus: System admittance matrix
+    :param pq: list of pq node indices
+    :param pv: list of pv node indices
+    :param ref: list of slack node indices
+    :param pqpv: list of pq and pv node indices sorted
+    :param tol: tolerance
+    :return: Voltage array and the power mismatch
     """
 
     nbus = len(Vbus)
