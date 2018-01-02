@@ -4462,7 +4462,7 @@ class ShortCircuitResults(PowerFlowResults):
         PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
                                   loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
 
-        self.Scpower = SCpower
+        self.short_circuit_power = SCpower
 
         self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses',
                                   'Bus short circuit power']
@@ -4474,7 +4474,7 @@ class ShortCircuitResults(PowerFlowResults):
         """
         return ShortCircuitResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
                                    Ibranch=self.Ibranch, loading=self.loading,
-                                   losses=self.losses, SCpower=self.Scpower, error=self.error,
+                                   losses=self.losses, SCpower=self.short_circuit_power, error=self.error,
                                    converged=self.converged, Qpv=self.Qpv)
 
     def initialize(self, n, m):
@@ -4488,7 +4488,7 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.voltage = zeros(n, dtype=complex)
 
-        self.Scpower = zeros(n, dtype=float)
+        self.short_circuit_power = zeros(n, dtype=complex)
 
         self.overvoltage = zeros(n, dtype=complex)
 
@@ -4522,7 +4522,7 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.voltage[b_idx] = results.voltage
 
-        self.Scpower[b_idx] = results.Scpower
+        self.short_circuit_power[b_idx] = results.short_circuit_power
 
         self.overvoltage[b_idx] = results.overvoltage
 
@@ -4596,7 +4596,7 @@ class ShortCircuitResults(PowerFlowResults):
                 title = 'Branch losses '
 
             elif result_type == 'Bus short circuit power':
-                y = self.Scpower[indices]
+                y = self.short_circuit_power[indices]
                 ylabel = '(MVA)'
                 title = 'Bus short circuit power'
             else:

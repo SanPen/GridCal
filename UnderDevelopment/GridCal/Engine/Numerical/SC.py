@@ -20,7 +20,7 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
     I_kI[bus_idx] = -1 * Vbus[bus_idx] / (Z[bus_idx] + Zf[bus_idx])
 
     # Current source contribution
-    # I_kII = -1 * Zbus.dot(I_kC / Zbus[bus_idx, bus_idx])
+    # I_kII = -1 * Zbus.dot(I_kC / Z[bus_idx])
 
     # Total current contribution
     # I_k = I_kI + I_kII
@@ -28,13 +28,13 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
     # print(I_k)
 
     # voltage increment due to these currents
-    incV = Zbus.dot(I_k)
+    incV = Zbus.dot(I_k) / len(bus_idx)
 
     V = Vbus + incV
 
     # Short circuit power in MVA
     # SCC = zeros(n, dtype=float)
-    # SCC[bus_idx] = abs(Vbus[bus_idx]) * baseMVA / abs(Zbus[bus_idx, bus_idx])
+    # SCC[bus_idx] = abs(Vbus[bus_idx]) * baseMVA / abs(Z[bus_idx])
     SCC = -I_k * Vbus * baseMVA
 
     return V, SCC
