@@ -152,38 +152,28 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Pbus, nsys, nbus2, pv, pvpos):
     :return: right hand side vector to solve the coefficients of order n
     """
     rhs = zeros(nsys)
-    l = array(range(1, n), dtype=int)
+    m = array(range(1, n), dtype=int)
 
     # Compute convolutions
-    QW = (Q[l, :] * W[n - l, :].conjugate()).sum(axis=0)
-    WV = (W[l, :] * V[n - l, :][:, pv]).sum(axis=0)
-    VV = (V[l, :][:, pv] * V[n - l, :][:, pv].conjugate()).sum(axis=0)
+    QW_convolution = (Q[n - m, :] * W[m, :].conjugate()).sum(axis=0)
+    WV_convolution = (W[n - m, :] * V[m, :][:, pv]).sum(axis=0)
+    VV_convolution = (V[m, :][:, pv] * V[n - m, :][:, pv].conjugate()).sum(axis=0)
 
-    f1 = Pbus[pv] * W[n - 1, :] + QW
+    # compute the formulas
+    f1 = Pbus[pv] * W[n - 1, :] + QW_convolution
 
-    epsilon = - 0.5 * VV
+    epsilon = -0.5 * VV_convolution
     if n == 1:
         epsilon += 0.5 * (abs(Vbus[pv]) ** 2 - abs(Vst[pv]) ** 2)
 
-    # for i, a in enumerate(pv):
-    #
-    #     rhs[2 * a + 0] = f1[i].real
-    #     rhs[2 * a + 1] = f1[i].imag
-    #
-    #     rhs[3 * i + nbus2 + 0] = -WV[i].real
-    #     rhs[3 * i + nbus2 + 1] = -WV[i].imag
-    #     rhs[3 * i + nbus2 + 2] = epsilon[i].real
-
     # Assign the values to the right hand side vector
-
     idx1 = 2 * pv
     idx2 = 3 * pvpos + nbus2
 
     rhs[idx1 + 0] = f1.real
     rhs[idx1 + 1] = f1.imag
-
-    rhs[idx2 + 0] = -WV.real
-    rhs[idx2 + 1] = -WV.imag
+    rhs[idx2 + 0] = -WV_convolution.real
+    rhs[idx2 + 1] = -WV_convolution.imag
     rhs[idx2 + 2] = epsilon.real
 
     return rhs
@@ -289,8 +279,10 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     # Prepare system matrices
     Asys, Vst, Wst = prepare_system_matrices(Ybus, Vbus, pqpv, pq, pv, ref)
 
+    # Factorize the system matrix
     Afact = factorized(Asys)
 
+    # get the shape
     nsys = Asys.shape[0]
 
     # print('Vst:\n', abs(Vst))
@@ -307,7 +299,7 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     W = zeros((1, npv), dtype=complex_type)
 
     # Reactive power coefficients on the PV nodes: [order, pv bus index]
-    Q = zeros((1, npv), dtype=complex_type)
+    Q = zeros((1, npv), dtype=double)
 
     # Assign the initial values
     V[0, :] = Vst
@@ -319,24 +311,28 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         # Reserve coefficients memory space
         V = np.vstack((V, np.zeros((1, nbus), dtype=complex_type)))
         W = np.vstack((W, np.zeros((1, npv), dtype=complex_type)))
-        Q = np.vstack((Q, np.zeros((1, npv), dtype=complex_type)))
+        Q = np.vstack((Q, np.zeros((1, npv), dtype=double)))
 
         # Compute the free terms
-        rhs = get_rhs(n=n, V=V, W=W, Q=Q, Vbus=Vbus, Vst=Vst, Pbus=Pbus, nsys=nsys, nbus2=2 * nbus, pv=pv, pvpos=pvpos)
+        rhs = get_rhs(n=n, V=V, W=W, Q=Q,
+                      Vbus=Vbus, Vst=Vst,
+                      Pbus=Pbus, nsys=nsys,
+                      nbus2=2 * nbus, pv=pv,
+                      pvpos=pvpos)
 
-        # Solve the linear system
-        x = Afact(rhs)
+        # Solve the linear system Asys x res = rhs
+        res = Afact(rhs)
 
         # Assign solution to the coefficients
-        V[n, :], W[n, :], Q[n, :] = assign_solution(x=x, bus_idx=bus_idx, nbus2=2 * nbus, pvpos=pvpos)
+        V[n, :], W[n, :], Q[n, :] = assign_solution(x=res, bus_idx=bus_idx, nbus2=2 * nbus, pvpos=pvpos)
 
-        # print('\nn:', n)
-        # print('RHS:\n', rhs)
-        # print('X:\n', x)
+        print('\nn:', n)
+        print('RHS:\n', rhs)
+        print('X:\n', res)
 
-    print('V:\n', V)
-    print('W:\n', W)
-    print('Q:\n', Q)
+        print('V:\n', V)
+        print('W:\n', W)
+        print('Q:\n', Q)
 
     # Perform the Padè approximation
     # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
@@ -348,8 +344,8 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
 
     # Calculate the error and check the convergence
     Scalc = voltage * conj(Ybus * voltage)
-    power_mismatch = Scalc - Sbus  # complex power mismatch
-    power_mismatch_ = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+    mismatch = Scalc - Sbus  # complex power mismatch
+    power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
 
     # check for convergence
     normF = linalg.norm(power_mismatch_, Inf)
