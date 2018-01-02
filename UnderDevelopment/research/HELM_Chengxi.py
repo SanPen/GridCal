@@ -3,7 +3,7 @@ Method implemented from the article:
 Online voltage stability assessment for load areas based on the holomorphic embedding method
 by Chengxi Liu, Bin Wang, Fengkai Hu, Kai Sun and Claus Leth Bak
 
-Implemented by Santiago Peñate Vera 2017
+Implemented by Santiago Peñate Vera 2018
 """
 import numpy as np
 np.set_printoptions(linewidth=32000, suppress=False)
@@ -33,7 +33,7 @@ def getWst(Vst_expanded, nbus):
 
 def prepare_system_matrices(Ybus, Vbus, pqpv, pq, pv, ref):
     """
-
+    Prepare the system matrices
     :param Ybus:
     :param Vbus:
     :param pqpv:
@@ -111,28 +111,6 @@ def prepare_system_matrices(Ybus, Vbus, pqpv, pq, pv, ref):
                     ], format="csc")
 
     return Asys, Vst, Wst
-
-
-def convolution(n, k, A, B):
-    """
-    Convolution coefficient
-
-    Args:
-        n: Order of the coefficients
-
-        k: Index of the bus
-
-        C: Voltage coefficients (Ncoeff x nbus elements)
-
-    Output:
-        Convolution coefficient of order n for the bus k
-    """
-
-    result = complex_type(0)
-    for l in range(n+1):
-        result += A[l, k] * B[n-l, k].conjugate()
-
-    return result
 
 
 def get_rhs(n, V, W, Q, Vbus, Vst, Pbus, nsys, nbus2, pv, pvpos):
@@ -285,10 +263,6 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     # get the shape
     nsys = Asys.shape[0]
 
-    # print('Vst:\n', abs(Vst))
-    # print('Wst:\n', abs(Wst))
-    # print('Asys:\n', Asys.todense())
-
     # declare the active power injections
     Pbus = Sbus.real
 
@@ -326,13 +300,13 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         # Assign solution to the coefficients
         V[n, :], W[n, :], Q[n, :] = assign_solution(x=res, bus_idx=bus_idx, nbus2=2 * nbus, pvpos=pvpos)
 
-        print('\nn:', n)
-        print('RHS:\n', rhs)
-        print('X:\n', res)
+        # print('\nn:', n)
+        # print('RHS:\n', rhs)
+        # print('X:\n', res)
 
-        print('V:\n', V)
-        print('W:\n', W)
-        print('Q:\n', Q)
+    print('V:\n', V)
+    print('W:\n', W)
+    print('Q:\n', Q)
 
     # Perform the Padè approximation
     # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
