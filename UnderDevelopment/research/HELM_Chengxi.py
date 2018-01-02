@@ -150,9 +150,17 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Pbus, nsys, nbus2, pv, pvpos):
 
     rhs[idx1 + 0] = f1.real
     rhs[idx1 + 1] = f1.imag
-    rhs[idx2 + 0] = -WV_convolution.real
-    rhs[idx2 + 1] = -WV_convolution.imag
-    rhs[idx2 + 2] = epsilon.real
+
+    if len(idx2) > 0:
+
+        rhs[idx2 + 0] = -WV_convolution.real
+        rhs[idx2 + 1] = -WV_convolution.imag
+        rhs[idx2 + 2] = epsilon.real
+
+    else:
+
+        # No PV nodes
+        pass
 
     return rhs
 
@@ -173,9 +181,19 @@ def assign_solution(x, bus_idx, nbus2, pvpos):
 
     v = x[2 * bus_idx] + 1j * x[2 * bus_idx + 1]
 
-    w = x[nbus2 + 3 * pvpos] + 1j * x[nbus2 + 3 * pvpos + 1]
+    if len(pvpos) > 0:
 
-    q = x[nbus2 + 3 * pvpos + 2]
+        w = x[nbus2 + 3 * pvpos] + 1j * x[nbus2 + 3 * pvpos + 1]
+
+        q = x[nbus2 + 3 * pvpos + 2]
+
+    else:
+
+        # No PV nodes
+
+        w = zeros(0)
+
+        q = zeros(0)
 
     return v, w, q
 
@@ -331,23 +349,25 @@ if __name__ == '__main__':
     from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
+    # grid.load_file('lynn5buspq.xlsx')
     grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
 
     grid.compile()
 
     circuit = grid.circuits[0]
 
     print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    # print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    # print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    # print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    # print('\ntypes:\n', circuit.power_flow_input.types)
-    # print('\npq:\n', circuit.power_flow_input.pq)
-    # print('\npv:\n', circuit.power_flow_input.pv)
-    # print('\nvd:\n', circuit.power_flow_input.ref)
+    print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    print('\ntypes:\n', circuit.power_flow_input.types)
+    print('\npq:\n', circuit.power_flow_input.pq)
+    print('\npv:\n', circuit.power_flow_input.pv)
+    print('\nvd:\n', circuit.power_flow_input.ref)
 
     v, err = helm_(Vbus=circuit.power_flow_input.Vbus,
                    Sbus=circuit.power_flow_input.Sbus,
