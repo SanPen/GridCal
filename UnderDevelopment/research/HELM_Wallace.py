@@ -1,6 +1,6 @@
 
 import numpy as np
-from numpy import where, zeros, ones, mod, conj, array, dot, complex128, linspace  # , complex256
+from numpy import where, zeros, ones, mod, conj, array, dot, complex128, linspace, angle  # , complex256
 from scipy.linalg import solve
 from scipy.sparse import dia_matrix, coo_matrix, csc_matrix, hstack as sp_hstack, vstack as sp_vstack
 from scipy.sparse.linalg import factorized
@@ -331,8 +331,8 @@ if __name__ == "__main__":
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('lynn5buspv.xlsx')
-    # grid.load_file('IEEE30.xlsx')
+    # grid.load_file('lynn5buspv.xlsx')
+    grid.load_file('IEEE30.xlsx')
 
     grid.compile()
 

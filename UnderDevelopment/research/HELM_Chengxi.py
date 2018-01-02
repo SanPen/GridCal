@@ -7,7 +7,7 @@ Implemented by Santiago Peñate Vera 2018
 """
 import numpy as np
 np.set_printoptions(linewidth=32000, suppress=False)
-from numpy import zeros, ones, mod, conj, array, c_, r_, linalg, Inf, complex128
+from numpy import zeros, ones, mod, angle, conj, array, c_, r_, linalg, Inf, complex128
 from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
 from scipy.sparse import lil_matrix
@@ -113,7 +113,7 @@ def prepare_system_matrices(Ybus, Vbus, pqpv, pq, pv, ref):
     return Asys, Vst, Wst
 
 
-def get_rhs(n, V, W, Q, Vbus, Vst, Pbus, nsys, nbus2, pv, pvpos):
+def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     """
     Right hand side
     :param n: order of the coefficients
@@ -131,31 +131,42 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Pbus, nsys, nbus2, pv, pvpos):
     """
     rhs = zeros(nsys)
     m = array(range(1, n), dtype=int)
+    # ##################################################################################################################
+    # PQ nodes
+    # ##################################################################################################################
 
+    # f1 = conj(Sbus[pq]) * W[n - 1, :]
+    # idx1 = 2 * pq
+    # rhs[idx1 + 0] = f1.real
+    # rhs[idx1 + 1] = f1.imag
+
+    # ##################################################################################################################
+    # PV nodes
+    # ##################################################################################################################
     # Compute convolutions
     QW_convolution = (Q[n - m, :] * W[m, :].conjugate()).sum(axis=0)
     WV_convolution = (W[n - m, :] * V[m, :][:, pv]).sum(axis=0)
     VV_convolution = (V[m, :][:, pv] * V[n - m, :][:, pv].conjugate()).sum(axis=0)
 
     # compute the formulas
-    f1 = Pbus[pv] * W[n - 1, :] + QW_convolution
+    f2 = Pbus[pv] * W[n - 1, :] + QW_convolution
 
     epsilon = -0.5 * VV_convolution
     if n == 1:
         epsilon += 0.5 * (abs(Vbus[pv]) ** 2 - abs(Vst[pv]) ** 2)
 
     # Assign the values to the right hand side vector
-    idx1 = 2 * pv
-    idx2 = 3 * pvpos + nbus2
+    idx2 = 2 * pv
+    idx3 = 3 * pvpos + nbus2
 
-    rhs[idx1 + 0] = f1.real
-    rhs[idx1 + 1] = f1.imag
+    rhs[idx2 + 0] = f2.real
+    rhs[idx2 + 1] = f2.imag
 
-    if len(idx2) > 0:
+    if len(idx3) > 0:
 
-        rhs[idx2 + 0] = -WV_convolution.real
-        rhs[idx2 + 1] = -WV_convolution.imag
-        rhs[idx2 + 2] = epsilon.real
+        rhs[idx3 + 0] = -WV_convolution.real
+        rhs[idx3 + 1] = -WV_convolution.imag
+        rhs[idx3 + 2] = epsilon.real
 
     else:
 
@@ -307,8 +318,10 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
                       Vbus=Vbus, Vst=Vst,
+                      Sbus=Sbus,
                       Pbus=Pbus, nsys=nsys,
-                      nbus2=2 * nbus, pv=pv,
+                      nbus2=2 * nbus,
+                      pv=pv, pq=pq,
                       pvpos=pvpos)
 
         # Solve the linear system Asys x res = rhs
@@ -368,6 +381,8 @@ if __name__ == '__main__':
     print('\npv:\n', circuit.power_flow_input.pv)
     print('\nvd:\n', circuit.power_flow_input.ref)
 
+    start_time = time.time()
+
     v, err = helm_(Vbus=circuit.power_flow_input.Vbus,
                    Sbus=circuit.power_flow_input.Sbus,
                    Ibus=circuit.power_flow_input.Ibus,
@@ -377,6 +392,25 @@ if __name__ == '__main__':
                    ref=circuit.power_flow_input.ref,
                    pqpv=circuit.power_flow_input.pqpv)
 
-    print('Voltage:\n', v, '\n', abs(v))
+    print('HEM:')
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print('V module:\t', abs(v))
+    print('V angle: \t', angle(v))
+    print('error: \t', err)
 
-    print('Error:', err)
+    # check the HELM solution: v against the NR power flow
+    print('\nNR')
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
+    power_flow = PowerFlow(grid, options)
+
+    start_time = time.time()
+    power_flow.run()
+    print("--- %s seconds ---" % (time.time() - start_time))
+    vnr = circuit.power_flow_results.voltage
+
+    print('V module:\t', abs(vnr))
+    print('V angle: \t', angle(vnr))
+    print('error: \t', circuit.power_flow_results.error)
+
+    # check
+    print('\ndiff:\t', v - vnr)
