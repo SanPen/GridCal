@@ -136,7 +136,7 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     # PQ nodes
     # ##################################################################################################################
 
-    f1 = conj(Sbus[pq]) * W[:, pq][n - 1, :]
+    f1 = conj(Sbus[pq] * W[:, pq][n - 1, :])
     idx1 = 2 * pq
     rhs[idx1 + 0] = f1.real
     rhs[idx1 + 1] = f1.imag
@@ -339,13 +339,13 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         W = np.vstack((W, w))
         Q = np.vstack((Q, q))
 
-        print('\nn:', n)
-        print('RHS:\n', rhs)
-        print('X:\n', res)
-
-    print('V:\n', V)
-    print('W:\n', W)
-    print('Q:\n', Q)
+    #     print('\nn:', n)
+    #     print('RHS:\n', rhs)
+    #     print('X:\n', res)
+    #
+    # print('V:\n', V)
+    # print('W:\n', W)
+    # print('Q:\n', Q)
 
     # Perform the Padè approximation
     # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!

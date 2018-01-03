@@ -4,6 +4,7 @@ Online voltage stability assessment for load areas based on the holomorphic embe
 by Chengxi Liu, Bin Wang, Fengkai Hu, Kai Sun and Claus Leth Bak
 
 Implemented by Santiago Peñate Vera 2018
+This implementation computes W[n] for all the buses outside the system matrix leading to better results
 """
 import numpy as np
 np.set_printoptions(linewidth=32000, suppress=False)
@@ -133,7 +134,7 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     # PQ nodes
     # ##################################################################################################################
 
-    f1 = conj(Sbus[pq]) * W[:, pq][n - 1, :]
+    f1 = conj(Sbus[pq] * W[:, pq][n - 1, :])
     idx1 = 2 * pq
     rhs[idx1 + 0] = f1.real
     rhs[idx1 + 1] = f1.imag
@@ -143,7 +144,6 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     # ##################################################################################################################
     # Compute convolutions
     QW_convolution = (Q[n - m, :] * W[m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
-    WV_convolution = (W[n - m, :] * V[m, :]).sum(axis=0)  # all nodes
     VV_convolution = (V[m, :][:, pv] * V[n - m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
 
     # compute the formulas
@@ -300,9 +300,12 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     # Assign the initial values
     V[0, :] = Vst
     W[0, :] = Wst
-    Q[0, :] = zeros(npv)
 
-    for n in range(1, 5):
+    # Compute the reactive power matching the initial solution Vst, then assign it as initial reactive power
+    Scalc = Vst * conj(Ybus * Vst)
+    Q[0, :] = Scalc[pv].imag
+
+    for n in range(1, 25):
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
@@ -327,24 +330,24 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         w = calc_W(n, V, W)
         W = np.vstack((W, w))
 
-        print()
-        print('-' * 160)
-        print('n:', n)
-        print('-' * 160)
-
-        print('rhs:\n', rhs)
-        print('x:\n', res)
-
-        print('V:\n', V)
-        print('W:\n', W)
-        print('Q:\n', Q)
+        # print()
+        # print('-' * 160)
+        # print('n:', n)
+        # print('-' * 160)
+        #
+        # print('rhs:\n', rhs)
+        # print('x:\n', res)
+        #
+        # print('V:\n', V)
+        # print('W:\n', W)
+        # print('Q:\n', Q)
 
     # Perform the Padè approximation
     # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
     # voltage = zeros(nbus, dtype=complex_type)
     # for i in range(nbus):
     #     voltage[i], _, _ = pade_approximation(n, V[:, i])
-
+    #
     voltage = V.sum(axis=0)
 
     # Calculate the error and check the convergence
@@ -387,8 +390,8 @@ if __name__ == '__main__':
     # grid.load_file('lynn5buspq.xlsx')
     # grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
+    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
 
     grid.compile()
