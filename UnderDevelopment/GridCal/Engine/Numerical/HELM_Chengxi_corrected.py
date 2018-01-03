@@ -60,7 +60,6 @@ def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
 
     # Solve starting point voltages
     Vst_expanded = factorized(A.tocsc())(Vslack)
-    print('Vst_expanded:\n', Vst_expanded)
 
     # Invert the voltages obtained: Get the complex voltage and voltage inverse vectors
     Vst = Vst_expanded[2 * bus_idx] + 1j * Vst_expanded[2 * bus_idx + 1]
