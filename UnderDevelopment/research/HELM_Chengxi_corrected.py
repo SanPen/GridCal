@@ -17,20 +17,6 @@ from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 complex_type = complex128
 
 
-def getWst(Vst_expanded, nbus):
-    """
-    Inverse voltage
-    :param Vst_expanded: expanded vector of start voltages
-    :param i: index in the non reduced scheme
-    :return: Voltages complex vector, Inverse voltages complex vector
-    """
-    v = zeros(nbus, dtype=complex_type)
-    for i in range(nbus):
-        v[i] = complex_type(Vst_expanded[i] + 1j * Vst_expanded[i + 1])
-    w = 1.0 / v
-    return v, w
-
-
 def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
     """
     Prepare the system matrices
@@ -73,6 +59,7 @@ def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
 
     # Solve starting point voltages
     Vst_expanded = factorized(A.tocsc())(Vslack)
+    print('Vst_expanded:\n', Vst_expanded)
 
     # Invert the voltages obtained: Get the complex voltage and voltage inverse vectors
     Vst = Vst_expanded[2 * bus_idx] + 1j * Vst_expanded[2 * bus_idx + 1]
@@ -83,35 +70,45 @@ def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
     # ##################################################################################################################
 
     # System matrices
-    B = lil_matrix((n_bus2, 3 * npv))
-    C = lil_matrix((3 * npv, n_bus2))
-    D = lil_matrix((3 * npv, 3 * npv))
+    B = lil_matrix((n_bus2, npv))
+    C = lil_matrix((npv, n_bus2 + npv))
 
     for i, a in enumerate(pv):
         # "a" is the actual bus index
         # "i" is the number of the pv bus in the pv buses list
 
-        B[2 * a + 0, 3 * i + 2] = Wst[a].imag
-        B[2 * a + 1, 3 * i + 2] = Wst[a].real
+        B[2 * a + 0, i + 0] = Wst[a].imag
+        B[2 * a + 1, i + 0] = Wst[a].real
 
-        C[3 * i + 0, 2 * a + 0] = Wst[a].real
-        C[3 * i + 0, 2 * a + 1] = -Wst[a].imag
-        C[3 * i + 1, 2 * a + 0] = Wst[a].real
-        C[3 * i + 1, 2 * a + 1] = Wst[a].imag
-        C[3 * i + 2, 2 * a + 0] = Vst[a].real
-        C[3 * i + 2, 2 * a + 1] = Vst[a].imag
-
-        D[3 * i + 0, 3 * i + 0] = Vst[a].real
-        D[3 * i + 0, 3 * i + 1] = -Vst[a].imag
-        D[3 * i + 1, 3 * i + 0] = Vst[a].imag
-        D[3 * i + 1, 3 * i + 1] = Vst[a].real
+        C[i + 0, 2 * a + 0] = Vst[a].real
+        C[i + 0, 2 * a + 1] = Vst[a].imag
 
     Asys = vstack_s([
                     hstack_s([A, B]),
-                    hstack_s([C, D])
+                    C
                     ], format="csc")
 
     return Asys, Vst, Wst
+
+
+def calc_W(n, V, W):
+    """
+    Calculation of the inverse coefficients W.
+    @param n: Order of the coefficients
+    @param V: Structure of voltage coefficients (Ncoeff x nbus elements)
+    @param W: Structure of inverse voltage coefficients (Ncoeff x nbus elements)
+    @return: Array of inverse voltage coefficients for the order n
+    """
+
+    if n == 0:
+        res = 1.0 / conj(V[0, :])
+    else:
+        l = array(range(n))
+        res = -(W[l, :] * V[n - l, :]).sum(axis=0)
+
+        res /= conj(V[0, :])
+
+    return res
 
 
 def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
@@ -158,16 +155,13 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
 
     # Assign the values to the right hand side vector
     idx2 = 2 * pv
-    idx3 = 3 * pvpos + nbus2
+    idx3 = pvpos + nbus2
 
     rhs[idx2 + 0] = f2.real
     rhs[idx2 + 1] = f2.imag
 
     if len(idx3) > 0:
-
-        rhs[idx3 + 0] = -WV_convolution.real[pv]
-        rhs[idx3 + 1] = -WV_convolution.imag[pv]
-        rhs[idx3 + 2] = epsilon.real
+        rhs[idx3] = epsilon.real
 
     else:
 
@@ -186,36 +180,27 @@ def assign_solution(x, bus_idx, pvpos, pv, nbus):
     :param pvpos: array from 0..npv
     :return: Array of:
             - voltage coefficients
-            - voltage inverse coefficients
             - reactive power
             of order n
     """
 
     nbus2 = 2 * nbus
 
-    # declare a row of inverse voltage coefficients
-    w = np.zeros(nbus, dtype=complex_type)
-
     # assign the voltage coefficients
     v = x[2 * bus_idx] + 1j * x[2 * bus_idx + 1]
 
     if len(pvpos) > 0:
 
-        # assign the inverse voltage coefficients of the PV nodes
-        w[pv] = x[nbus2 + 3 * pvpos] + 1j * x[nbus2 + 3 * pvpos + 1]
-
         # assign the reactive power coefficients of the PV nodes
-        q = x[nbus2 + 3 * pvpos + 2]
+        q = x[nbus2 + pvpos]
 
     else:
 
         # No PV nodes
 
-        w = zeros(0)
-
         q = zeros(0)
 
-    return v, w, q
+    return v, q
 
 
 def pade_approximation(n, an, s=1):
@@ -317,7 +302,7 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     W[0, :] = Wst
     Q[0, :] = zeros(npv)
 
-    for n in range(1, 15):
+    for n in range(1, 5):
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
@@ -332,20 +317,27 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         res = Afact(rhs)
 
         # get the new rows of coefficients
-        v, w, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
+        v, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
 
         # Add coefficients row
         V = np.vstack((V, v))
-        W = np.vstack((W, w))
         Q = np.vstack((Q, q))
 
-        print('\nn:', n)
-        print('RHS:\n', rhs)
-        print('X:\n', res)
+        # Calculate W[n] and add it to the coefficients structure
+        w = calc_W(n, V, W)
+        W = np.vstack((W, w))
 
-    print('V:\n', V)
-    print('W:\n', W)
-    print('Q:\n', Q)
+        print()
+        print('-' * 160)
+        print('n:', n)
+        print('-' * 160)
+
+        print('rhs:\n', rhs)
+        print('x:\n', res)
+
+        print('V:\n', V)
+        print('W:\n', W)
+        print('Q:\n', Q)
 
     # Perform the Padè approximation
     # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
@@ -364,6 +356,7 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     normF = linalg.norm(power_mismatch_, Inf)
 
     return voltage, normF
+    # return zeros(nbus), 0
 
 
 def res_2_df(V, Sbus, tpe):

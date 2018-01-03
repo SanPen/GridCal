@@ -559,14 +559,25 @@ class Bus:
         Infer the bus type from the devices attached to it
         @return: Nothing
         """
-        if len(self.controlled_generators) > 0:
+
+        gen_on = 0
+        for elm in self.controlled_generators:
+            if elm.active:
+                gen_on += 1
+
+        batt_on = 0
+        for elm in self.batteries:
+            if elm.active:
+                batt_on += 1
+
+        if gen_on > 0:
 
             if self.is_slack:  # If contains generators and is marked as REF, then set it as REF
                 self.type = NodeType.REF
             else:  # Otherwise set as PV
                 self.type = NodeType.PV
 
-        elif len(self.batteries) > 0:
+        elif batt_on > 0:
 
             if self.dispatch_storage:
                 # If there are storage devices and the dispatchable flag is on, set the bus as dispatchable
