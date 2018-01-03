@@ -26,7 +26,7 @@ import pandas as pd
 import pulp
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.Numerical.DCPF import dcpf
-from GridCal.Engine.Numerical.HelmVect import helm
+from GridCal.Engine.Numerical.HELM_Chengxi_corrected import helm
 from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 
@@ -4009,16 +4009,15 @@ class PowerFlow(QRunnable):
                 # type HELM
                 if self.options.solver_type == SolverType.HELM:
                     methods.append(SolverType.HELM)
-                    V, converged, normF, Scalc, it, el = helm(Y=circuit.power_flow_input.Ybus,
-                                                              Ys=circuit.power_flow_input.Yseries,
-                                                              Ysh=circuit.power_flow_input.Yshunt,
-                                                              max_coefficient_count=30,
-                                                              S=circuit.power_flow_input.Sbus,
-                                                              voltage_set_points=V,
+                    V, converged, normF, Scalc, it, el = helm(Vbus=V,
+                                                              Sbus=Sbus,
+                                                              Ybus=circuit.power_flow_input.Ybus,
                                                               pq=circuit.power_flow_input.pq,
                                                               pv=circuit.power_flow_input.pv,
-                                                              vd=circuit.power_flow_input.ref,
-                                                              eps=self.options.tolerance)
+                                                              ref=circuit.power_flow_input.ref,
+                                                              pqpv=circuit.power_flow_input.pqpv,
+                                                              tol=self.options.tolerance,
+                                                              max_coefficient_count=self.options.max_iter)
 
                 # type DC
                 elif self.options.solver_type == SolverType.DC:
