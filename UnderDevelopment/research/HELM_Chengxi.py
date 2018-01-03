@@ -20,11 +20,11 @@ complex_type = complex128
 def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
     """
     Prepare the system matrices
-    :param Ybus:
-    :param Vbus:
-    :param pqpv:
-    :param ref:
-    :return:
+    :param Ybus: Admittanche matrix
+    :param Vbus: Node complex voltage vector (initial set voltages)
+    :param pqpv: list of pq and pv bus indices
+    :param ref: list of slack node indices
+    :return: System matrix, initial voltage seed, initial inverse voltage seed
     """
     n_bus = len(Vbus)
     n_bus2 = 2 * n_bus
