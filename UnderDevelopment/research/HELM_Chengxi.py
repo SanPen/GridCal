@@ -17,20 +17,6 @@ from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 complex_type = complex128
 
 
-def getWst(Vst_expanded, nbus):
-    """
-    Inverse voltage
-    :param Vst_expanded: expanded vector of start voltages
-    :param i: index in the non reduced scheme
-    :return: Voltages complex vector, Inverse voltages complex vector
-    """
-    v = zeros(nbus, dtype=complex_type)
-    for i in range(nbus):
-        v[i] = complex_type(Vst_expanded[i] + 1j * Vst_expanded[i + 1])
-    w = 1.0 / v
-    return v, w
-
-
 def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
     """
     Prepare the system matrices
