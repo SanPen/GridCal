@@ -1686,7 +1686,11 @@ class MainGUI(QMainWindow):
             # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
 
             max_isl = self.ui.cascading_islands_spinBox.value()
-            self.cascade = Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
+            n_lsh_samples = self.ui.lhs_samples_number_spinBox.value()
+
+            self.cascade = Cascading(self.circuit.copy(), options,
+                                     max_additional_islands=max_isl,
+                                     n_lhs_samples_=n_lsh_samples)
 
             # connect signals
             self.cascade.progress_signal.connect(self.ui.progressBar.setValue)

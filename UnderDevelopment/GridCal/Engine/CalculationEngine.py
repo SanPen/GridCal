@@ -3246,6 +3246,8 @@ class MultiCircuit(Circuit):
         for branch in self.branches:
             cpy.add_branch(branch.copy(bus_dict))
 
+        cpy.time_profile = self.time_profile
+
         return cpy
 
     def dispatch(self):
@@ -6052,7 +6054,7 @@ class LatinHypercubeSampling(QThread):
         self.__cancel__ = False
 
         # initialize the power flow
-        powerflow = PowerFlow(self.grid, self.options)
+        power_flow = PowerFlow(self.grid, self.options)
 
         # initialize the grid time series results
         # we will append the island results with another function
@@ -6074,16 +6076,19 @@ class LatinHypercubeSampling(QThread):
         for c in self.grid.circuits:
 
             try:
-                # set the time series as sampled
+                # set the time series as sampled in the circuit
                 c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
 
                 # run the time series
                 for t in range(batch_size):
 
-                    # set the power values
+                    # set the power values from a Monte carlo point at 't'
                     Y, I, S = c.mc_time_series.get_at(t)
 
-                    res = powerflow.run_at(t, mc=True)
+                    # Run the set monte carlo point at 't'
+                    res = power_flow.run_at(t, mc=True)
+
+                    # Gather the results
                     lhs_results.S_points[t, c.bus_original_idx] = S
                     lhs_results.V_points[t, c.bus_original_idx] = res.voltage[c.bus_original_idx]
                     lhs_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
@@ -6091,6 +6096,7 @@ class LatinHypercubeSampling(QThread):
 
                     it += 1
                     self.progress_signal.emit(it / max_iter * 100)
+                    print(it / max_iter * 100)
 
                     if self.__cancel__:
                         break
@@ -6106,7 +6112,7 @@ class LatinHypercubeSampling(QThread):
 
         # lhs_results the averaged branch magnitudes
         lhs_results.sbranch, Ibranch, \
-        loading, lhs_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, lhs_results.voltage)
+        loading, lhs_results.losses, Sbus = power_flow.power_flow_post_process(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
 
@@ -6255,7 +6261,7 @@ class Cascading(QThread):
             model_simulator = PowerFlow(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
-            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=1000)
+            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
 
         else:
             model_simulator = PowerFlow(self.grid, self.options)
@@ -6292,6 +6298,9 @@ class Cascading(QThread):
             self.grid.compile()
 
             it += 1
+
+            prog = max(len(self.grid.circuits) / (n_grids+1), it/(n_grids+1))
+            self.progress_signal.emit(prog * 100.0)
 
             if self.__cancel__:
                 break
