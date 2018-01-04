@@ -2411,6 +2411,9 @@ class Circuit:
 
         return pd.DataFrame(data=data, index=self.power_flow_input.bus_names, columns=cols)
 
+    def __str__(self):
+        return self.name
+
 
 class MultiCircuit(Circuit):
 

@@ -492,6 +492,16 @@
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_27">
                    <item>
+                    <widget class="QLabel" name="label_23">
+                     <property name="text">
+                      <string>Island</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="simulation_data_island_comboBox"/>
+                   </item>
+                   <item>
                     <widget class="QLabel" name="label_30">
                      <property name="text">
                       <string>Data structures</string>

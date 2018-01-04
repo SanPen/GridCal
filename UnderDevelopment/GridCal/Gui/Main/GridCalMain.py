@@ -985,16 +985,22 @@ class MainGUI(QMainWindow):
         Simulation data structure clicked
         """
 
-        if self.circuit.graph is None:
-            self.circuit.compile()
+        i = self.ui.simulation_data_island_comboBox.currentIndex()
 
-        elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
+        if i > -1:
+            if self.circuit.graph is None:
+                self.circuit.compile()
 
-        df = self.circuit.circuits[0].power_flow_input.get_structure(elm_type)
+            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
 
-        mdl = PandasModel(df)
+            df = self.circuit.circuits[i].power_flow_input.get_structure(elm_type)
 
-        self.ui.simulationDataStructureTableView.setModel(mdl)
+            mdl = PandasModel(df)
+
+            self.ui.simulationDataStructureTableView.setModel(mdl)
+
+        else:
+            pass
 
     def profile_device_type_changed(self):
         """
@@ -1854,11 +1860,15 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
 
+        # update the list of islands
+        self.ui.simulation_data_island_comboBox.clear()
+        self.ui.simulation_data_island_comboBox.addItems([str(circuit) for circuit in self.circuit.circuits])
+        if len(self.circuit.circuits) > 0:
+            self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
+
     def clear_results(self):
         """
         Clear the results tab
-        Returns:
-
         """
         self.power_flow = None
         self.short_circuit = None
@@ -1868,6 +1878,7 @@ class MainGUI(QMainWindow):
 
         self.available_results_dict = dict()
         self.ui.result_listView.setModel(None)
+        self.ui.resultsTableView.setModel(None)
         self.ui.result_type_listView.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
         self.ui.resultsPlot.clear(force=True)
