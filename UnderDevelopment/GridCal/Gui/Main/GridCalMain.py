@@ -1882,6 +1882,7 @@ class MainGUI(QMainWindow):
         self.ui.result_type_listView.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
         self.ui.resultsPlot.clear(force=True)
+        self.ui.simulationDataStructureTableView.setModel(None)
 
     def update_available_results_in_the_study(self):
         """

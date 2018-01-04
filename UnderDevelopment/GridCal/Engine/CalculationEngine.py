@@ -34,7 +34,7 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
 from poap.controller import SerialController
 from pyDOE import lhs
 from pySOT import *
-from scipy.sparse import csc_matrix as sparse
+from scipy.sparse import csc_matrix, lil_matrix
 from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
 
@@ -465,6 +465,9 @@ def load_from_xls(filename):
                 # just pick the DataFrame
                 df = xl.parse(name, index_col=0)
                 data[name] = df
+
+    else:
+        raise Exception('This excel file is not in GridCal Format')
 
     return data
 
@@ -2169,8 +2172,8 @@ class Circuit:
             power_flow_input.Sbus[i] += S  # set the bus power
             power_flow_input.Ibus[i] += I  # set the bus currents
 
-            power_flow_input.Ybus[i, i] += Y  # set the bus shunt impedance in per unit
-            power_flow_input.Yshunt[i] += Y  # copy the shunt impedance
+            power_flow_input.Ybus[i, i] += Y / self.Sbase  # set the bus shunt impedance in per unit
+            power_flow_input.Yshunt[i] += Y / self.Sbase  # copy the shunt impedance
 
             power_flow_input.types[i] = self.buses[i].type.value[0]  # set type
 
@@ -2225,8 +2228,8 @@ class Circuit:
 
         # normalize the admittances array (Y was given in MVA at v=1 p.u.)
         # At this point only the shunt and load related values are added here
-        power_flow_input.Ybus /= self.Sbase
-        power_flow_input.Yshunt /= self.Sbase
+        # power_flow_input.Ybus /= self.Sbase
+        # power_flow_input.Yshunt /= self.Sbase
 
         # normalize_string the reactive power limits array (Q was given in MVAr)
         power_flow_input.Qmax /= self.Sbase
@@ -2465,6 +2468,7 @@ class MultiCircuit(Circuit):
             name, file_extension = os.path.splitext(filename)
             # print(name, file_extension)
             if file_extension == '.xls' or file_extension == '.xlsx':
+
                 ppc = load_from_xls(filename)
 
                 # Pass the table-like data dictionary to objects in this circuit
@@ -3368,10 +3372,10 @@ class PowerFlowInput:
         self.pqpv = None
 
         # Branch admittance matrix with the from buses
-        self.Yf = zeros((m, n), dtype=complex)
+        self.Yf = lil_matrix((m, n), dtype=complex)
 
         # Branch admittance matrix with the to buses
-        self.Yt = zeros((m, n), dtype=complex)
+        self.Yt = lil_matrix((m, n), dtype=complex)
 
         # Array with the 'from' index of the from bus of each branch
         self.F = zeros(m, dtype=int)
@@ -3383,22 +3387,22 @@ class PowerFlowInput:
         self.active_branches = zeros(m, dtype=int)
 
         # Full admittance matrix (will be converted to sparse)
-        self.Ybus = zeros((n, n), dtype=complex)
+        self.Ybus = lil_matrix((n, n), dtype=complex)
 
         # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
         self.Zbus = None
 
         # Admittance matrix of the series elements (will be converted to sparse)
-        self.Yseries = zeros((n, n), dtype=complex)
+        self.Yseries = lil_matrix((n, n), dtype=complex)
 
         # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
         self.Yshunt = zeros(n, dtype=complex)
 
         # Jacobian matrix 1 for the fast-decoupled power flow
-        self.B1 = zeros((n, n), dtype=double)
+        self.B1 = lil_matrix((n, n), dtype=double)
 
         # Jacobian matrix 2 for the fast-decoupled power flow
-        self.B2 = zeros((n, n), dtype=double)
+        self.B2 = lil_matrix((n, n), dtype=double)
 
         # Array of line-line nominal voltages of the buses
         self.Vnom = zeros(n)
@@ -3432,12 +3436,12 @@ class PowerFlowInput:
         Create the ref, pv and pq lists
         @return:
         """
-        self.Yf = sparse(self.Yf)
-        self.Yt = sparse(self.Yt)
-        self.Ybus = sparse(self.Ybus)
-        self.Yseries = sparse(self.Yseries)
-        self.B1 = sparse(self.B1)
-        self.B2 = sparse(self.B2)
+        self.Yf = csc_matrix(self.Yf)
+        self.Yt = csc_matrix(self.Yt)
+        self.Ybus = csc_matrix(self.Ybus)
+        self.Yseries = csc_matrix(self.Yseries)
+        self.B1 = csc_matrix(self.B1)
+        self.B2 = csc_matrix(self.B2)
         # self.Yshunt = sparse(self.Yshunt)  No need to make it sparse, it is a vector already
         # compile the types lists from the types vector
         self.compile_types()
