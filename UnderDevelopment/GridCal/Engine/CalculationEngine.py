@@ -24,12 +24,6 @@ from warnings import warn
 import networkx as nx
 import pandas as pd
 import pulp
-from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
-from GridCal.Engine.Numerical.DCPF import dcpf
-from GridCal.Engine.Numerical.HELM_Chengxi_corrected import helm
-from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
-from GridCal.Engine.Numerical.SC import short_circuit_3p
-
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
@@ -44,7 +38,12 @@ from scipy.sparse import csc_matrix as sparse
 from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
 
+from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
+from GridCal.Engine.Numerical.DCPF import dcpf
+from GridCal.Engine.Numerical.HELM import helm
+from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
+from GridCal.Engine.Numerical.SC import short_circuit_3p
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -116,7 +115,7 @@ class CascadeType(Enum):
 
 class CDF(object):
     """
-    Inverse Cumulative density function of a given array f data
+    Inverse Cumulative density function of a given array of data
     """
 
     def __init__(self, data):
