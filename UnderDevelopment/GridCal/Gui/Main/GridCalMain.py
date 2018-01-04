@@ -1712,7 +1712,7 @@ class MainGUI(QMainWindow):
         # print('post_lhs')
         # update the results in the circuit structures
 
-        n = len(self.cascade.report)
+        n = len(self.cascade.results.events)
 
         if n > 0:
 
@@ -1721,8 +1721,8 @@ class MainGUI(QMainWindow):
 
             br_idx = zeros(0, dtype=int)
             for i in range(idx):
-                br_idx = r_[br_idx, self.cascade.report[i].removed_idx]
-            results = self.cascade.report[idx].pf_results  # MonteCarloResults object
+                br_idx = r_[br_idx, self.cascade.results.events[i].removed_idx]
+            results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
 
             # print('Vbus:\n', abs(results.voltage))
             # print('ld:\n', abs(results.loading))

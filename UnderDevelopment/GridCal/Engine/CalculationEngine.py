@@ -6140,6 +6140,45 @@ class CascadingReportElement:
         self.pf_results = pf_results
 
 
+class CascadingResults:
+
+    def __init__(self, cascade_type: CascadeType):
+
+        self.cascade_type = cascade_type
+
+        self.events = list()
+
+    def get_failed_idx(self):
+        """
+        Return the array of all failed branches
+        Returns:
+            array of all failed branches
+        """
+        res = None
+        for i in range(len(self.events)):
+            if i == 0:
+                res = self.events[i][0]
+            else:
+                res = r_[res, self.events[i][0]]
+
+        return res
+
+    def get_table(self):
+        """
+        Get DataFrame of the failed elements
+        :return: DataFrame
+        """
+        dta = list()
+        for i in range(len(self.events)):
+            dta.append(['Step ' + str(i + 1), len(self.events[i].removed_idx)])
+
+        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed'])
+
+    def plot(self):
+
+        pass
+
+
 class Cascading(QThread):
     progress_signal = pyqtSignal(float)
     progress_text = pyqtSignal(str)
@@ -6165,8 +6204,6 @@ class Cascading(QThread):
 
         self.__cancel__ = False
 
-        self.report = list()
-
         self.current_step = 0
 
         self.max_additional_islands = max_additional_islands
@@ -6175,8 +6212,10 @@ class Cascading(QThread):
 
         self.n_lhs_samples = n_lhs_samples_
 
+        self.results = CascadingResults(self.cascade_type)
+
     @staticmethod
-    def remove_elements(circuit: Circuit, idx=None):
+    def remove_elements(circuit: Circuit, loading_vector, idx=None):
         """
         Remove branches based on loading
         Returns:
@@ -6184,7 +6223,7 @@ class Cascading(QThread):
         """
 
         if idx is None:
-            load = abs(circuit.power_flow_results.loading)
+            load = abs(loading_vector)
             idx = where(load > 1.0)[0]
 
             if len(idx) == 0:
@@ -6231,7 +6270,7 @@ class Cascading(QThread):
 
         # store the removed indices and the results
         entry = CascadingReportElement(idx, model_simulator.results)
-        self.report.append(entry)
+        self.results.events.append(entry)
 
         # increase the step number
         self.current_step += 1
@@ -6251,7 +6290,7 @@ class Cascading(QThread):
 
         self.__cancel__ = False
 
-        self.report = list()
+        self.results = CascadingResults(self.cascade_type)
 
         if len(self.grid.circuits) == 0:
             self.grid.compile()
@@ -6285,14 +6324,14 @@ class Cascading(QThread):
 
             if it == 0:
                 # the first iteration try to trigger the selected indices, if any
-                idx = self.remove_elements(self.grid, idx=self.triggering_idx)
+                idx = self.remove_elements(self.grid, model_simulator.results.loading, idx=self.triggering_idx)
             else:
                 # for the next indices, just cascade normally
-                idx = self.remove_elements(self.grid)
+                idx = self.remove_elements(self.grid, model_simulator.results.loading)
 
             # store the removed indices and the results
             entry = CascadingReportElement(idx, model_simulator.results)
-            self.report.append(entry)
+            self.results.events.append(entry)
 
             # recompile grid
             self.grid.compile()
@@ -6318,22 +6357,14 @@ class Cascading(QThread):
         Returns:
             array of all failed branches
         """
-        res = None
-        for i in range(len(self.report)):
-            if i == 0:
-                res = self.report[i][0]
-            else:
-                res = r_[res, self.report[i][0]]
-
-        return res
+        return self.results.get_failed_idx()
 
     def get_table(self):
-
-        dta = list()
-        for i in range(len(self.report)):
-            dta.append(['Step ' + str(i + 1), len(self.report[i].removed_idx)])
-
-        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed'])
+        """
+        Get DataFrame of the failed elements
+        :return: DataFrame
+        """
+        return self.results.get_table()
 
     def cancel(self):
         self.__cancel__ = True
