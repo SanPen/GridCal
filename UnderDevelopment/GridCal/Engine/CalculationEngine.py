@@ -7081,9 +7081,9 @@ class OptimalPowerFlowResults:
             ylabel = ''
             title = ''
             if result_type == 'Bus voltage':
-                y = self.voltage[indices]
-                ylabel = '(p.u.)'
-                title = 'Bus voltage '
+                y = np.angle(self.voltage[indices])
+                ylabel = '(rad)'
+                title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices].real
@@ -7312,9 +7312,9 @@ class OptimalPowerFlowTimeSeriesResults:
             ylabel = ''
             title = ''
             if result_type == 'Bus voltage':
-                y = self.voltage[:, indices]
-                ylabel = '(p.u.)'
-                title = 'Bus voltage '
+                y = np.angle(self.voltage[:, indices])
+                ylabel = '(rad)'
+                title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[:, indices].real
@@ -7354,10 +7354,12 @@ class OptimalPowerFlowTimeSeriesResults:
             else:
                 df = pd.DataFrame(data=y, columns=labels)
 
+            df.fillna(0, inplace=True)
+
             if len(df.columns) > 10:
-                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
             ax.set_ylabel(ylabel)
