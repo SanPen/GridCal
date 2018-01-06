@@ -221,6 +221,7 @@ class MainGUI(QMainWindow):
         self.latin_hypercube_sampling = None
         self.cascade = None
         self.optimal_power_flow = None
+        self.optimal_power_flow_time_series = None
 
         self.results_df = None
 
@@ -274,6 +275,8 @@ class MainGUI(QMainWindow):
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
         self.ui.actionOPF.triggered.connect(self.run_opf)
+
+        self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -1805,6 +1808,57 @@ class MainGUI(QMainWindow):
 
         self.UNLOCK()
 
+    def run_opf_time_series(self):
+        """
+        OPF Time Series run
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.circuit.time_profile is not None:
+
+                self.LOCK()
+
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+                self.compile()
+
+                options = OptimalPowerFlowOptions()
+                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)
+
+                # Set the time series run options
+                self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
+                self.optimal_power_flow_time_series.done_signal.connect(self.UNLOCK)
+                self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
+
+                self.optimal_power_flow_time_series.start()
+
+            else:
+                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+        else:
+            pass
+
+    def post_opf_time_series(self):
+        """
+        Post OPF Time Series
+        :return:
+        """
+        if self.optimal_power_flow_time_series is not None:
+
+            voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
+            loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
+            Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
+
+            self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                   types=self.circuit.power_flow_input.types)
+
+            self.update_available_results()
+
+        else:
+
+            pass
+
     def set_cancel_state(self):
         """
         Cancel whatever's going on that can be cancelled
@@ -1860,6 +1914,10 @@ class MainGUI(QMainWindow):
         if self.optimal_power_flow is not None:
             lst.append("Optimal power flow")
             self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
+
+        if self.optimal_power_flow_time_series is not None:
+            lst.append("Optimal power flow time series")
+            self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
@@ -1952,6 +2010,9 @@ class MainGUI(QMainWindow):
 
             elif study == 'Optimal power flow':
                 self.results_df = self.optimal_power_flow.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+
+            elif study == 'Optimal power flow time series':
+                self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
             if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)

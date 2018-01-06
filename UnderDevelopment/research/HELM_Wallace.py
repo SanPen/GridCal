@@ -289,6 +289,9 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
     # declare the voltages coefficient matrix
     V = ones((maxcoefficientCount, nbus), dtype=complex_type)
 
+    error = list()
+    npv = len(pv)
+
     for n in range(1, maxcoefficientCount):
 
         # compute the right hand side of the linear system
@@ -307,32 +310,47 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
         # stack the coefficients solution
         V[n, pqpv] = vn
 
-    # compute the voltages with Padè
-    print('\nVoltage coeff: \n', V)
-    voltages = voltageSetPoints.copy()
-    for j in pqpv:
-        voltages[j], _, _ = pade_approximation(n, j, V)
+        # compute the voltages with Padè
+        # print('\nVoltage coeff: \n', V)
+        voltages = voltageSetPoints.copy()
+        for j in pqpv:
+            voltages[j], _, _ = pade_approximation(n, j, V)
 
-    # print('\nVoltage coeff: \n', V)
-    print('\nVoltage values: \n', voltages)
+        # print('\nVoltage coeff: \n', V)
+        # print('\nVoltage values: \n', voltages)
 
-    # evaluate the solution error F(x0)
-    Scalc = voltages * conj(Y_series * voltages)
-    mis = Scalc - Sbus  # compute the mismatch
-    dx = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
-    normF = np.linalg.norm(dx, np.Inf)
+        # evaluate the solution error F(x0)
+        Scalc = voltages * conj(Y_series * voltages)
+        mis = Scalc - Sbus  # compute the mismatch
+        dx = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+        normF = np.linalg.norm(dx, np.Inf)
+
+        if npv > 0:
+            a = linalg.norm(mis[pv].real, Inf)
+        else:
+            a = 0
+        b = linalg.norm(mis[pq].real, Inf)
+        c = linalg.norm(mis[pq].imag, Inf)
+        error.append([a, b, c])
+
+    err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
+    err_df.plot(logy=True)
 
     return voltages, normF
 
 
 if __name__ == "__main__":
     from GridCal.Engine.CalculationEngine import *
+    from matplotlib import pyplot as plt
     np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
 
     grid = MultiCircuit()
-    # grid.load_file('lynn5buspq.xlsx')
+    grid.load_file('lynn5buspq.xlsx')
     # grid.load_file('lynn5buspv.xlsx')
-    grid.load_file('IEEE30.xlsx')
+    # grid.load_file('IEEE30.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
 
     grid.compile()
 
@@ -387,3 +405,5 @@ if __name__ == "__main__":
 
     # check
     print('\ndiff:\t', V1 - vnr)
+
+    plt.show()

@@ -6553,6 +6553,7 @@ class DcOpf:
         self.Sbase = circuit.Sbase
         self.B = circuit.power_flow_input.Ybus.imag.tocsr()
         self.nbus = self.B.shape[0]
+        self.nbranch = len(self.circuit.branches)
 
         # node sets
         self.pqpv = circuit.power_flow_input.pqpv
@@ -6563,7 +6564,18 @@ class DcOpf:
         # declare the voltage angles
         self.theta = [None] * self.nbus
         for i in range(self.nbus):
-            self.theta[i] = pulp.LpVariable("Theta" + str(i), -0.5, 0.5)
+            self.theta[i] = pulp.LpVariable("Theta_" + str(i), -0.5, 0.5)
+
+        # declare the slack vars for branch loading
+        self.slack_loading_ij_p = [None] * self.nbranch
+        self.slack_loading_ji_p = [None] * self.nbranch
+        self.slack_loading_ij_n = [None] * self.nbranch
+        self.slack_loading_ji_n = [None] * self.nbranch
+        for i in range(self.nbranch):
+            self.slack_loading_ij_p[i] = pulp.LpVariable("LoadingSlack_ij_p_" + str(i), 0, 10000)
+            self.slack_loading_ji_p[i] = pulp.LpVariable("LoadingSlack_ji_p_" + str(i), 0, 10000)
+            self.slack_loading_ij_n[i] = pulp.LpVariable("LoadingSlack_ij_n_" + str(i), 0, 10000)
+            self.slack_loading_ji_n[i] = pulp.LpVariable("LoadingSlack_ji_n_" + str(i), 0, 10000)
 
         # declare the generation
         self.PG = list()
@@ -6639,6 +6651,11 @@ class DcOpf:
 
                 self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
 
+        # Minimize the branch overload slacks
+        for k, branch in enumerate(self.circuit.branches):
+            fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
+            fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
+
         # Add the objective function to the problem
         prob += fobj
 
@@ -6708,8 +6725,8 @@ class DcOpf:
             Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
             Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
             # constraints
-            prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-            prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+            prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+            prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
 
             if branch.rate <= 1e-6:
                 any_rate_zero = True
@@ -6759,7 +6776,7 @@ class DcOpf:
 
                 # add the nodal demand
                 for load in self.circuit.buses[i].loads:
-                    self.loads[i] += load.S_prof.values[t_idx].real / self.Sbase
+                    self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
 
                 # add the restriction
                 self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
@@ -6864,6 +6881,11 @@ class DcOpf:
                     F = -1
 
                 # Set the results
+                if self.slack_loading_ij_p[k] is not None:
+                    res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                        + self.slack_loading_ji_p[k].value()
+                                        - self.slack_loading_ij_n[k].value()
+                                        - self.slack_loading_ji_n[k].value()) * self.Sbase
                 res.Sbranch[k] = F
                 res.loading[k] = abs(F / branch.rate)
 
@@ -6885,7 +6907,7 @@ class OptimalPowerFlowOptions:
 
 class OptimalPowerFlowResults:
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, loading=None, losses=None, converged=None):
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, overloads=None, loading=None, losses=None, converged=None):
         """
 
         Args:
@@ -6902,13 +6924,15 @@ class OptimalPowerFlowResults:
 
         self.Sbranch = Sbranch
 
+        self.overloads = overloads
+
         self.loading = loading
 
         self.losses = losses
 
         self.converged = converged
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch_loading']
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch loading', 'Branch overloads']
 
         self.plot_bars_limit = 100
 
@@ -6918,6 +6942,7 @@ class OptimalPowerFlowResults:
         @return:
         """
         return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
+                                overloads=self.overloads,
                                 loading=self.loading, losses=self.losses, converged=self.converged)
 
     def initialize(self, n, m):
@@ -6934,6 +6959,8 @@ class OptimalPowerFlowResults:
         self.Sbranch = zeros(m, dtype=complex)
 
         self.loading = zeros(m, dtype=complex)
+
+        self.overloads = zeros(m, dtype=complex)
 
         self.losses = zeros(m, dtype=complex)
 
@@ -6956,6 +6983,8 @@ class OptimalPowerFlowResults:
         self.Sbranch[br_idx] = results.Sbranch
 
         self.loading[br_idx] = results.loading
+
+        self.overloads[br_idx] = results.overloads
 
         self.losses[br_idx] = results.losses
 
@@ -7000,10 +7029,15 @@ class OptimalPowerFlowResults:
                 ylabel = '(MW)'
                 title = 'Bus power '
 
-            elif result_type == 'Branch_loading':
+            elif result_type == 'Branch loading':
                 y = np.abs(self.loading[indices] * 100.0)
                 ylabel = '(%)'
                 title = 'Branch loading '
+
+            elif result_type == 'Branch overloads':
+                y = np.abs(self.overloads[indices])
+                ylabel = '(MW)'
+                title = 'Branch overloads '
 
             elif result_type == 'Branch losses':
                 y = self.losses[indices].real
@@ -7123,6 +7157,192 @@ class OptimalPowerFlow(QRunnable):
         res = self.opf(t)
 
         return res
+
+    def cancel(self):
+        self.__cancel__ = True
+
+
+class OptimalPowerFlowTimeSeriesResults:
+
+    def __init__(self, n, m, nt, time=None):
+        """
+        OPF Time Series results constructor
+        :param n: number of buses
+        :param m: number of branches
+        :param nt: number of time steps
+        :param time: Time array (optional)
+        """
+        self.n = n
+
+        self.m = m
+
+        self.nt = nt
+
+        self.time = time
+
+        self.voltage = zeros((nt, n), dtype=complex)
+
+        self.loading = zeros((nt, m), dtype=float)
+
+        self.losses = zeros((nt, m), dtype=float)
+
+        self.overloads = zeros((nt, m), dtype=float)
+
+        self.Sbus = zeros((nt, n), dtype=complex)
+
+        self.Sbranch = zeros((nt, m), dtype=complex)
+
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch loading', 'Branch overloads']
+
+        # self.generators_power = zeros((ng, nt), dtype=complex)
+
+    def set_at(self, t, res: OptimalPowerFlowResults):
+        """
+        Set the results
+        :param t: time index
+        :param res: OptimalPowerFlowResults instance
+        """
+
+        self.voltage[t, :] = res.voltage
+
+        self.loading[t, :] = res.loading
+
+        self.overloads[t, :] = res.overloads
+
+        self.losses[t, :] = res.losses
+
+        self.Sbus[t, :] = res.Sbus
+
+        self.Sbranch[t, :] = res.Sbranch
+
+    def plot(self, result_type, ax=None, indices=None, names=None):
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            ylabel = ''
+            title = ''
+            if result_type == 'Bus voltage':
+                y = self.voltage[:, indices]
+                ylabel = '(p.u.)'
+                title = 'Bus voltage '
+
+            elif result_type == 'Branch power':
+                y = self.Sbranch[:, indices].real
+                ylabel = '(MW)'
+                title = 'Branch power '
+
+            elif result_type == 'Bus power':
+                y = self.Sbus[:, indices].real
+                ylabel = '(MW)'
+                title = 'Bus power '
+
+            elif result_type == 'Branch loading':
+                y = np.abs(self.loading[:, indices] * 100.0)
+                ylabel = '(%)'
+                title = 'Branch loading '
+
+            elif result_type == 'Branch overloads':
+                y = np.abs(self.overloads[:, indices])
+                ylabel = '(MW)'
+                title = 'Branch overloads '
+
+            elif result_type == 'Branch losses':
+                y = self.losses[:, indices].real
+                ylabel = '(MW)'
+                title = 'Branch losses '
+
+            else:
+                pass
+
+            if self.time is not None:
+                df = pd.DataFrame(data=y, columns=labels, index=self.time)
+            else:
+                df = pd.DataFrame(data=y, columns=labels)
+
+            if len(df.columns) > 10:
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+            else:
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+
+            ax.set_title(title)
+            ax.set_ylabel(ylabel)
+            ax.set_xlabel('Time')
+
+            return df
+
+        else:
+            return None
+
+
+class OptimalPowerFlowTimeSeries(QThread):
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
+        """
+        OPF time series constructor
+        :param grid: MultiCircuit instance
+        :param options: OPF options instance
+        """
+        QThread.__init__(self)
+
+        self.options = options
+
+        self.grid = grid
+
+        self.results = None
+
+        self.__cancel__ = False
+
+    def run(self):
+        """
+        Run the time series simulation
+        @return:
+        """
+        # initialize the power flow
+        opf = OptimalPowerFlow(self.grid, self.options)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+
+        if self.grid.time_profile is not None:
+
+            n = len(self.grid.buses)
+            m = len(self.grid.branches)
+            nt = len(self.grid.time_profile)
+            self.results = OptimalPowerFlowTimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+
+            self.progress_text.emit('Running OPF time series...')
+
+            t = 0
+            while t < nt and not self.__cancel__:
+                print(t + 1, ' / ', nt)
+                # set the power values
+                # Y, I, S = self.grid.time_series_input.get_at(t)
+
+                res = opf.run_at(t)
+                self.results.set_at(t, res)
+
+                progress = ((t + 1) / nt) * 100
+                self.progress_signal.emit(progress)
+                t += 1
+
+        else:
+            print('There are no profiles')
+            self.progress_text.emit('There are no profiles')
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
 
     def cancel(self):
         self.__cancel__ = True

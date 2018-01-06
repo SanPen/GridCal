@@ -305,7 +305,10 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     Scalc = Vst * conj(Ybus * Vst)
     Q[0, :] = Scalc[pv].imag
 
-    for n in range(1, 25):
+    error = list()
+    voltage = Vst
+
+    for n in range(1, 30):
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
@@ -342,21 +345,34 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         # print('W:\n', W)
         # print('Q:\n', Q)
 
-    # Perform the Padè approximation
-    # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
-    # voltage = zeros(nbus, dtype=complex_type)
-    # for i in range(nbus):
-    #     voltage[i], _, _ = pade_approximation(n, V[:, i])
-    #
-    voltage = V.sum(axis=0)
+        # Perform the Padè approximation
+        # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
 
-    # Calculate the error and check the convergence
-    Scalc = voltage * conj(Ybus * voltage)
-    mismatch = Scalc - Sbus  # complex power mismatch
-    power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
+        if n > 1:
+            for i in range(nbus):
+                voltage[i], _, _ = pade_approximation(n, V[:, i])
+        #
+        # voltage = V.sum(axis=0)
 
-    # check for convergence
-    normF = linalg.norm(power_mismatch_, Inf)
+        # Calculate the error and check the convergence
+        Scalc = voltage * conj(Ybus * voltage)
+        mismatch = Scalc - Sbus  # complex power mismatch
+
+        power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
+
+        # check for convergence
+        normF = linalg.norm(power_mismatch_, Inf)
+
+        if npv > 0:
+            a = linalg.norm(mismatch[pv].real, Inf)
+        else:
+            a = 0
+        b = linalg.norm(mismatch[pq].real, Inf)
+        c = linalg.norm(mismatch[pq].imag, Inf)
+        error.append([a, b, c])
+
+    err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
+    err_df.plot(logy=True)
 
     return voltage, normF
     # return zeros(nbus), 0
@@ -385,12 +401,13 @@ def res_2_df(V, Sbus, tpe):
 
 if __name__ == '__main__':
     from GridCal.Engine.CalculationEngine import *
+    from matplotlib import pyplot as plt
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('lynn5buspv.xlsx')
+    grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
 
@@ -438,3 +455,5 @@ if __name__ == '__main__':
 
     # check
     print('\ndiff:\t', v - vnr)
+
+    plt.show()

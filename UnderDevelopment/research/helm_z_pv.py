@@ -486,6 +486,8 @@ def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, volta
     voltages_vector = zeros(n_original, dtype=complex_type)
     voltages_vector[slackIndices] = Vslack
 
+    error = list()
+
     while n <= maxcoefficientCount and not converged and inside_precission:
 
         # Reserve coefficients memory space
@@ -557,31 +559,39 @@ def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, volta
         mis = calc_error(admittances, voltages_vector, S)
 
         # check for convergence
+        # Calculate the error and check the convergence
+        Scalc = voltages_vector * conj(admittances * voltages_vector)
 
-        if inherited_pv is None:
-            missF = r_[mis[pv_idx_all].real, mis[pq_idx_all].real, mis[pq_idx_all].imag]
-            errors_PV_P.append(abs(mis[pv_idx_all].real))
-            errors_PV_Q.append(abs(mis[pv_idx_all].imag))
-        else:
-            miss_pv = powerInjections[inherited_pv] - S[inherited_pv]
-            missF = r_[miss_pv.real, mis[pq_idx_all].real, mis[pq_idx_all].imag]
-            errors_PV_P.append(abs(miss_pv.real))
-            errors_PV_Q.append(abs(miss_pv.imag))
+        # complex power mismatch
+        power_mismatch = Scalc - S
 
-        errors_PQ_P.append(abs(mis[pq_idx_all].real))
-        errors_PQ_Q.append(abs(mis[pq_idx_all].imag))
+        # concatenate error by type
+        mismatch = r_[power_mismatch[pv_idx_all].real, power_mismatch[pq_idx_all].real, power_mismatch[pq_idx_all].imag]
 
-        normF = linalg.norm(missF, Inf)
+        # check for convergence
+        normF = linalg.norm(mismatch, Inf)
         errors.append(normF)
+
         if normF < last_err:
             last_err = normF
             best_V = voltages_vector
 
         converged = (normF < eps)
 
+        if npv > 0:
+            a = linalg.norm(mismatch[pv_idx_all].real, Inf)
+        else:
+            a = 0
+        b = linalg.norm(mismatch[pq_idx_all].real, Inf)
+        c = linalg.norm(mismatch[pq_idx_all].imag, Inf)
+        error.append([a, b, c])
+
         n += 1
 
     errors_lst = [array(errors), array(errors_PV_P), array(errors_PV_Q), array(errors_PQ_P), array(errors_PQ_Q)]
+
+    err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
+    err_df.plot(logy=True)
 
     return best_V, C, W, X, R, H, Yred, errors_lst, converged, last_err, S, voltages
 
@@ -701,12 +711,14 @@ def plot_full_convergence(err, powerInjections, S, title, ext='.eps', save=True)
     # else:
     #     plt.show()
 
+
 if __name__ == "__main__":
     from GridCal.Engine.CalculationEngine import *
+    from matplotlib import pyplot as plt
 
     grid = MultiCircuit()
-    grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('IEEE30.xlsx')
+    # grid.load_file('lynn5buspq.xlsx')
+    grid.load_file('IEEE30.xlsx')
 
     grid.compile()
 
@@ -726,7 +738,7 @@ if __name__ == "__main__":
     import time
     print('HELM-Z')
     start_time = time.time()
-    cmax = 250
+    cmax = 25
     V1, C, W, X, R, H, Yred, err, converged_, \
     best_err, S, Vlst = helmz(admittances=circuit.power_flow_input.Ybus,
                               slackIndices=circuit.power_flow_input.ref,
@@ -742,7 +754,7 @@ if __name__ == "__main__":
     # print_coeffs(C, W, R, X, H)
 
     print('V module:\t', abs(V1))
-    print('V angle: \t', angle(V1))
+    print('V angle: \t', np.angle(V1))
     print('error: \t', best_err)
 
     # check the HELM solution: v against the NR power flow
@@ -756,8 +768,10 @@ if __name__ == "__main__":
     vnr = circuit.power_flow_results.voltage
 
     print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
+    print('V angle: \t', np.angle(vnr))
     print('error: \t', circuit.power_flow_results.error)
 
     # check
     print('\ndiff:\t', V1 - vnr)
+
+    plt.show()
