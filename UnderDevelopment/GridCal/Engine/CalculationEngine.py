@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.93
+__GridCal_VERSION__ = 1.94
 
 import os
 import pickle as pkl
@@ -6542,13 +6542,16 @@ class Optimize(QThread):
 
 class DcOpf:
 
-    def __init__(self, circuit):
+    def __init__(self, circuit, options):
         """
         OPF simple dispatch problem
         :param circuit: GridCal Circuit instance (remember this must be a connected island)
+        :param options: OptimalPowerFlowOptions instance
         """
 
         self.circuit = circuit
+
+        self.load_shedding = options.load_shedding
 
         self.Sbase = circuit.Sbase
         self.B = circuit.power_flow_input.Ybus.imag.tocsr()
@@ -6561,21 +6564,29 @@ class DcOpf:
         self.vd = circuit.power_flow_input.ref
         self.pq = circuit.power_flow_input.pq
 
-        # declare the voltage angles
+        # declare the voltage angles and the possible load shed values
         self.theta = [None] * self.nbus
+        self.load_shed = [None] * self.nbus
         for i in range(self.nbus):
             self.theta[i] = pulp.LpVariable("Theta_" + str(i), -0.5, 0.5)
+            self.load_shed[i] = pulp.LpVariable("LoadShed_" + str(i), 0.0, 1e20)
 
-        # declare the slack vars for branch loading
+        # declare the slack vars
         self.slack_loading_ij_p = [None] * self.nbranch
         self.slack_loading_ji_p = [None] * self.nbranch
         self.slack_loading_ij_n = [None] * self.nbranch
         self.slack_loading_ji_n = [None] * self.nbranch
-        for i in range(self.nbranch):
-            self.slack_loading_ij_p[i] = pulp.LpVariable("LoadingSlack_ij_p_" + str(i), 0, 10000)
-            self.slack_loading_ji_p[i] = pulp.LpVariable("LoadingSlack_ji_p_" + str(i), 0, 10000)
-            self.slack_loading_ij_n[i] = pulp.LpVariable("LoadingSlack_ij_n_" + str(i), 0, 10000)
-            self.slack_loading_ji_n[i] = pulp.LpVariable("LoadingSlack_ji_n_" + str(i), 0, 10000)
+
+        if self.load_shedding:
+            pass
+
+        else:
+
+            for i in range(self.nbranch):
+                self.slack_loading_ij_p[i] = pulp.LpVariable("LoadingSlack_ij_p_" + str(i), 0, 1e20)
+                self.slack_loading_ji_p[i] = pulp.LpVariable("LoadingSlack_ji_p_" + str(i), 0, 1e20)
+                self.slack_loading_ij_n[i] = pulp.LpVariable("LoadingSlack_ij_n_" + str(i), 0, 1e20)
+                self.slack_loading_ji_n[i] = pulp.LpVariable("LoadingSlack_ji_n_" + str(i), 0, 1e20)
 
         # declare the generation
         self.PG = list()
@@ -6633,7 +6644,7 @@ class DcOpf:
             fobj += self.theta[j] * 0.0
 
         # Add the generators cost
-        for bus in self.circuit.buses:
+        for k, bus in enumerate(self.circuit.buses):
 
             # check that there are at least one generator at the slack node
             if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
@@ -6651,10 +6662,16 @@ class DcOpf:
 
                 self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
 
-        # Minimize the branch overload slacks
-        for k, branch in enumerate(self.circuit.branches):
-            fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
-            fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
+            # minimize the load shedding if activated
+            if self.load_shedding:
+                fobj += self.load_shed[k]
+
+        # minimize the branch loading slack if not load shedding
+        if not self.load_shedding:
+            # Minimize the branch overload slacks
+            for k, branch in enumerate(self.circuit.branches):
+                fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
+                fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
 
         # Add the objective function to the problem
         prob += fobj
@@ -6683,7 +6700,7 @@ class DcOpf:
             self.s_restrictions.append(calculated_node_power)
             self.p_restrictions.append(node_power_injection)
 
-            # # add the nodal demand
+            # # add the nodal demand: See 'set_loads()'
             # for load in self.circuit.buses[i].loads:
             #     node_power_injection -= load.S.real / self.Sbase
             #
@@ -6721,12 +6738,20 @@ class DcOpf:
         for k, branch in enumerate(self.circuit.branches):
             i = self.circuit.buses_dict[branch.bus_from]
             j = self.circuit.buses_dict[branch.bus_to]
+
             # branch flow
             Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
             Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+
             # constraints
-            prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-            prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+            if not self.load_shedding:
+                # Add slacks
+                prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+            else:
+                # THe slacks are in the form of load shedding
+                prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
 
             if branch.rate <= 1e-6:
                 any_rate_zero = True
@@ -6764,8 +6789,18 @@ class DcOpf:
                     pass
                 else:
                     # add the restriction
-                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+                    if self.load_shedding:
+
+                        self.problem.add(calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
+                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+                        # if there is no load at the node, do not allow load shedding
+                        if len(self.circuit.buses[i].loads) == 0:
+                            self.problem.add(self.load_shed[i] == 0.0, self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+
+                    else:
+                        self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
         else:
             # Use the load profile values at index=t_idx
             for k, i in enumerate(self.pqpv):
@@ -6779,8 +6814,20 @@ class DcOpf:
                     self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
 
                 # add the restriction
-                self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                 self.circuit.buses[i].name + 'ct_node_mismatch_' + str(i))
+                if self.load_shedding:
+
+                    self.problem.add(
+                        calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
+                        self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+                    # if there is no load at the node, do not allow load shedding
+                    if len(self.circuit.buses[i].loads) == 0:
+                        self.problem.add(self.load_shed[i] == 0.0,
+                                         self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+
+                else:
+                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
 
     def solve(self):
         """
@@ -6794,6 +6841,7 @@ class DcOpf:
                 self.build()
 
             print('Solving LP')
+            print('Load shedding:', self.load_shedding)
             self.problem.solve()  # solve with CBC
             # prob.solve(CPLEX())
 
@@ -6867,6 +6915,9 @@ class DcOpf:
                 # Set the voltage
                 res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
+                if self.load_shed is not None:
+                    res.load_shedding[i] = self.load_shed[i].value()
+
             # Add branches
             for k, branch in enumerate(self.circuit.branches):
 
@@ -6898,16 +6949,19 @@ class DcOpf:
 
 class OptimalPowerFlowOptions:
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, load_shedding=False):
         """
 
         """
         self.verbose = verbose
 
+        self.load_shedding = load_shedding
+
 
 class OptimalPowerFlowResults:
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, overloads=None, loading=None, losses=None, converged=None):
+    def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
+                 loading=None, losses=None, converged=None):
         """
 
         Args:
@@ -6922,6 +6976,8 @@ class OptimalPowerFlowResults:
 
         self.voltage = voltage
 
+        self.load_shedding = load_shedding
+
         self.Sbranch = Sbranch
 
         self.overloads = overloads
@@ -6932,7 +6988,8 @@ class OptimalPowerFlowResults:
 
         self.converged = converged
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch loading', 'Branch overloads']
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch loading',
+                                  'Branch overloads', 'Load shedding']
 
         self.plot_bars_limit = 100
 
@@ -6941,9 +6998,14 @@ class OptimalPowerFlowResults:
         Return a copy of this
         @return:
         """
-        return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
+        return PowerFlowResults(Sbus=self.Sbus,
+                                voltage=self.voltage,
+                                load_shedding=self.load_shedding,
+                                Sbranch=self.Sbranch,
                                 overloads=self.overloads,
-                                loading=self.loading, losses=self.losses, converged=self.converged)
+                                loading=self.loading,
+                                losses=self.losses,
+                                converged=self.converged)
 
     def initialize(self, n, m):
         """
@@ -6955,6 +7017,8 @@ class OptimalPowerFlowResults:
         self.Sbus = zeros(n, dtype=complex)
 
         self.voltage = zeros(n, dtype=complex)
+
+        self.load_shedding = zeros(n, dtype=float)
 
         self.Sbranch = zeros(m, dtype=complex)
 
@@ -6979,6 +7043,8 @@ class OptimalPowerFlowResults:
         self.Sbus[b_idx] = results.Sbus
 
         self.voltage[b_idx] = results.voltage
+
+        self.load_shedding[b_idx] = results.load_shedding
 
         self.Sbranch[br_idx] = results.Sbranch
 
@@ -7044,6 +7110,11 @@ class OptimalPowerFlowResults:
                 ylabel = '(MW)'
                 title = 'Branch losses '
 
+            elif result_type == 'Load shedding':
+                y = self.load_shedding[indices]
+                ylabel = '(MW)'
+                title = 'Load shedding'
+
             else:
                 pass
 
@@ -7087,17 +7158,17 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
-    @staticmethod
-    def single_optimal_power_flow(circuit: Circuit, t_idx=None):
+    def single_optimal_power_flow(self, circuit: Circuit, t_idx=None):
         """
         Run a power flow simulation for a single circuit
         @param circuit: Single island circuit
+        @param options: Optimal Power Flow options
         @param t_idx: time index, if none the default values are taken
         @return: OptimalPowerFlowResults object
         """
 
         # declare LP problem
-        problem = DcOpf(circuit)
+        problem = DcOpf(circuit, self.options)
         problem.build()
         problem.set_loads(t_idx=t_idx)
         problem.solve()
@@ -7182,6 +7253,8 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.voltage = zeros((nt, n), dtype=complex)
 
+        self.load_shedding = zeros((nt, n), dtype=float)
+
         self.loading = zeros((nt, m), dtype=float)
 
         self.losses = zeros((nt, m), dtype=float)
@@ -7192,7 +7265,8 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbranch = zeros((nt, m), dtype=complex)
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch loading', 'Branch overloads']
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
+                                  'Branch loading', 'Branch overloads', 'Load shedding']
 
         # self.generators_power = zeros((ng, nt), dtype=complex)
 
@@ -7205,6 +7279,8 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.voltage[t, :] = res.voltage
 
+        self.load_shedding[t, :] = res.load_shedding
+
         self.loading[t, :] = res.loading
 
         self.overloads[t, :] = res.overloads
@@ -7216,7 +7292,14 @@ class OptimalPowerFlowTimeSeriesResults:
         self.Sbranch[t, :] = res.Sbranch
 
     def plot(self, result_type, ax=None, indices=None, names=None):
-
+        """
+        Plot the results
+        :param result_type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
@@ -7257,6 +7340,11 @@ class OptimalPowerFlowTimeSeriesResults:
                 y = self.losses[:, indices].real
                 ylabel = '(MW)'
                 title = 'Branch losses '
+
+            elif result_type == 'Load shedding':
+                y = self.load_shedding[:, indices]
+                ylabel = '(MW)'
+                title = 'Load shedding'
 
             else:
                 pass

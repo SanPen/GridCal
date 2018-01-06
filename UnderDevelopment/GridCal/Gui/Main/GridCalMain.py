@@ -1764,7 +1764,8 @@ class MainGUI(QMainWindow):
             self.compile()
 
             # get the power flow options from the GUI
-            options = OptimalPowerFlowOptions()
+            load_shedding = self.ui.load_shedding_checkBox.isChecked()
+            options = OptimalPowerFlowOptions(load_shedding=load_shedding)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -1819,11 +1820,16 @@ class MainGUI(QMainWindow):
 
                 self.LOCK()
 
+                # Compile the grid
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
                 self.compile()
 
-                options = OptimalPowerFlowOptions()
+                # gather the simulation options
+                load_shedding = self.ui.load_shedding_checkBox.isChecked()
+                options = OptimalPowerFlowOptions(load_shedding=load_shedding)
+
+                # create the OPF time series instance
                 self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)
 
                 # Set the time series run options
@@ -1937,6 +1943,8 @@ class MainGUI(QMainWindow):
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
+        self.optimal_power_flow = None
+        self.optimal_power_flow_time_series = None
 
         self.available_results_dict = dict()
         self.ui.result_listView.setModel(None)
@@ -1975,6 +1983,8 @@ class MainGUI(QMainWindow):
                 names = self.circuit.bus_names
             elif 'Branch' in study_type:
                 names = self.circuit.branch_names
+            elif 'Load' in study_type:
+                names = self.circuit.bus_names
             else:
                 names = None
 
