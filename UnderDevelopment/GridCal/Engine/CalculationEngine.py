@@ -5917,6 +5917,32 @@ class MonteCarloResults:
 
         return y_pred[:, :int(d / 2)] + 1j * y_pred[:, int(d / 2):d]
 
+    def get_index_loading_cdf(self, max_val=1.0):
+        """
+        Find the elements where the CDF is greater or equal to a velue
+        :param max_val: value to compare
+        :return: indices, associated probability
+        """
+
+        # turn the loading real values into CDF
+        cdf = CDF(np.abs(self.loading_points.real[:, :]))
+
+        n = cdf.arr.shape[1]
+        idx = list()
+        val = list()
+        prob = list()
+        for i in range(n):
+            # Find the indices that surpass max_val
+            many_idx = np.where(cdf.arr[:, i] > max_val)[0]
+
+            # if there are indices, pick the first; store it and its associated probability
+            if len(many_idx) > 0:
+                idx.append(i)
+                val.append(cdf.arr[many_idx[0], i])
+                prob.append(1 - cdf.prob[many_idx[0]])  # the CDF stores the chance of beign leq than the value, hence the overload is the complementary
+
+        return idx, val, prob, cdf.arr[-1, :]
+
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
@@ -6096,7 +6122,7 @@ class LatinHypercubeSampling(QThread):
 
                     it += 1
                     self.progress_signal.emit(it / max_iter * 100)
-                    print(it / max_iter * 100)
+                    # print(it / max_iter * 100)
 
                     if self.__cancel__:
                         break
@@ -6135,9 +6161,10 @@ class LatinHypercubeSampling(QThread):
 
 class CascadingReportElement:
 
-    def __init__(self, removed_idx, pf_results):
+    def __init__(self, removed_idx, pf_results, criteria):
         self.removed_idx = removed_idx
         self.pf_results = pf_results
+        self.criteria = criteria
 
 
 class CascadingResults:
@@ -6170,9 +6197,9 @@ class CascadingResults:
         """
         dta = list()
         for i in range(len(self.events)):
-            dta.append(['Step ' + str(i + 1), len(self.events[i].removed_idx)])
+            dta.append(['Step ' + str(i + 1), len(self.events[i].removed_idx), self.events[i].criteria])
 
-        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed'])
+        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed', 'Criteria'])
 
     def plot(self):
 
@@ -6236,6 +6263,49 @@ class Cascading(QThread):
             circuit.branches[i].active = False
 
         return idx
+
+    def remove_probability_based(self, circuit: Circuit, results: MonteCarloResults, max_val, min_prob):
+        """
+        Remove branches based on their chance of overload
+        :param circuit:
+        :param results:
+        :param max_val:
+        :param min_prob:
+        :return: list of indices actually removed
+        """
+        idx, val, prob, loading = results.get_index_loading_cdf(max_val=max_val)
+
+        any_removed = False
+        indices = list()
+        criteria = 'None'
+
+        for i, idx_val in enumerate(idx):
+            if prob[i] >= min_prob:
+                any_removed = True
+                circuit.branches[idx_val].active = False
+                indices.append(idx_val)
+                criteria = 'Overload probability > ' + str(min_prob)
+
+        if not any_removed:
+
+            if len(loading) > 0:
+                if len(idx) > 0:
+                    # pick a random value
+                    idx_val = np.random.randint(0, len(idx))
+                    criteria = 'Random with overloads'
+
+                else:
+                    # pick the most loaded
+                    idx_val = int(np.where(loading == max(loading))[0][0])
+                    criteria = 'Max loading, Overloads not seen'
+
+                circuit.branches[idx_val].active = False
+                indices.append(idx_val)
+            else:
+                indices = []
+                criteria = 'No branches'
+
+        return indices, criteria
 
     def perform_step_run(self):
         """
@@ -6322,15 +6392,18 @@ class Cascading(QThread):
             model_simulator.run()
             # print(model_simulator.results.get_convergence_report())
 
-            if it == 0:
-                # the first iteration try to trigger the selected indices, if any
-                idx = self.remove_elements(self.grid, model_simulator.results.loading, idx=self.triggering_idx)
-            else:
-                # for the next indices, just cascade normally
-                idx = self.remove_elements(self.grid, model_simulator.results.loading)
+            # if it == 0:
+            #     # the first iteration try to trigger the selected indices, if any
+            #     idx = self.remove_elements(self.grid, model_simulator.results.loading, idx=self.triggering_idx)
+            # else:
+            #     # for the next indices, just cascade normally
+            #     idx = self.remove_elements(self.grid, model_simulator.results.loading)
+
+            idx, criteria = self.remove_probability_based(self.grid, model_simulator.results,
+                                                          max_val=1.0, min_prob=0.1)
 
             # store the removed indices and the results
-            entry = CascadingReportElement(idx, model_simulator.results)
+            entry = CascadingReportElement(idx, model_simulator.results, criteria)
             self.results.events.append(entry)
 
             # recompile grid
@@ -7078,52 +7151,54 @@ class OptimalPowerFlowResults:
 
         if len(indices) > 0:
             labels = names[indices]
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage':
                 y = np.angle(self.voltage[indices])
-                ylabel = '(rad)'
+                y_label = '(rad)'
                 title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch power '
 
             elif result_type == 'Bus power':
                 y = self.Sbus[indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Bus power '
 
             elif result_type == 'Branch loading':
                 y = np.abs(self.loading[indices] * 100.0)
-                ylabel = '(%)'
+                y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == 'Branch overloads':
                 y = np.abs(self.overloads[indices])
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch overloads '
 
             elif result_type == 'Branch losses':
                 y = self.losses[indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch losses '
 
             elif result_type == 'Load shedding':
                 y = self.load_shedding[indices]
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Load shedding'
 
             else:
                 pass
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            df.fillna(0, inplace=True)
+
             if len(df.columns) < self.plot_bars_limit:
                 df.plot(ax=ax, kind='bar')
             else:
                 df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(ylabel)
+            ax.set_ylabel(y_label)
             ax.set_title(title)
 
             return df
@@ -7309,41 +7384,41 @@ class OptimalPowerFlowTimeSeriesResults:
 
         if len(indices) > 0:
             labels = names[indices]
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage':
                 y = np.angle(self.voltage[:, indices])
-                ylabel = '(rad)'
+                y_label = '(rad)'
                 title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[:, indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch power '
 
             elif result_type == 'Bus power':
                 y = self.Sbus[:, indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Bus power '
 
             elif result_type == 'Branch loading':
                 y = np.abs(self.loading[:, indices] * 100.0)
-                ylabel = '(%)'
+                y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == 'Branch overloads':
                 y = np.abs(self.overloads[:, indices])
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch overloads '
 
             elif result_type == 'Branch losses':
                 y = self.losses[:, indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch losses '
 
             elif result_type == 'Load shedding':
                 y = self.load_shedding[:, indices]
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Load shedding'
 
             else:
@@ -7362,7 +7437,7 @@ class OptimalPowerFlowTimeSeriesResults:
                 df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
-            ax.set_ylabel(ylabel)
+            ax.set_ylabel(y_label)
             ax.set_xlabel('Time')
 
             return df

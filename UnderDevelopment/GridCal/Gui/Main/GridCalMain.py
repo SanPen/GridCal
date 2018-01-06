@@ -1710,27 +1710,27 @@ class MainGUI(QMainWindow):
     def post_cascade(self, idx=None):
         """
         Actions to perform after the Monte Carlo simulation is finished
-        @return:
         """
-        # print('post_lhs')
+
         # update the results in the circuit structures
 
         n = len(self.cascade.results.events)
 
         if n > 0:
 
+            # display the last event, if none is selected
             if idx is None:
                 idx = n-1
 
+            # Accumulate all the failed branches
             br_idx = zeros(0, dtype=int)
             for i in range(idx):
                 br_idx = r_[br_idx, self.cascade.results.events[i].removed_idx]
+
+            # pick the results at the designated cascade step
             results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
 
-            # print('Vbus:\n', abs(results.voltage))
-            # print('ld:\n', abs(results.loading))
-            # print('Removed at ', idx, ':\n', br_idx)
-
+            # print grid
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
                                    types=self.circuit.power_flow_input.types,
@@ -1738,8 +1738,10 @@ class MainGUI(QMainWindow):
                                    s_bus=None,
                                    failed_br_idx=br_idx)
 
+            # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
 
+            # Update results
             self.update_available_results()
 
     def cascade_table_click(self):
