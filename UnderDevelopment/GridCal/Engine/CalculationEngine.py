@@ -6804,7 +6804,8 @@ class OptimalPowerFlowOptions:
 
     def __init__(self, verbose=False):
         """
-
+        
+        :param verbose: 
         """
         self.verbose = verbose
 
