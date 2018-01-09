@@ -1803,7 +1803,7 @@ class MainGUI(QMainWindow):
                                        loadings=self.optimal_power_flow.results.loading,
                                        types=self.circuit.power_flow_input.types,
                                        s_branch=self.optimal_power_flow.results.Sbranch,
-                                       s_bus=self.optimal_power_flow.results.Sbus)
+                                       s_bus=self.optimal_power_flow.results.Sbus / self.circuit.Sbase)
                 self.update_available_results()
 
             else:
