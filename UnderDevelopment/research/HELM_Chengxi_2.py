@@ -2,6 +2,7 @@
 Method implemented from the article:
 Online voltage stability assessment for load areas based on the holomorphic embedding method
 by Chengxi Liu, Bin Wang, Fengkai Hu, Kai Sun and Claus Leth Bak
+
 Implemented by Santiago Peñate Vera 2018
 """
 import numpy as np
@@ -99,6 +100,25 @@ def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
     return Asys, Vst, Wst
 
 
+def calc_W(n, V, W, pq):
+    """
+    Calculation of the inverse coefficients W.
+    @param n: Order of the coefficients
+    @param V: Structure of voltage coefficients (Ncoeff x nbus elements)
+    @param W: Structure of inverse voltage coefficients (Ncoeff x nbus elements)
+    @return: Array of inverse voltage coefficients for the order n
+    """
+
+    if n == 0:
+        res = 1.0 / conj(V[0, :][pq])
+    else:
+        l = array(range(n))
+        res = -(W[l, :][:, pq] * V[n - l, :][:, pq]).sum(axis=0)
+        res /= conj(V[0, :][pq])
+
+    return res
+
+
 def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     """
     Right hand side
@@ -162,7 +182,7 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     return rhs
 
 
-def assign_solution(x, bus_idx, pvpos, pv, nbus):
+def assign_solution(x, bus_idx, pvpos, pq, pv, nbus):
     """
     Assign the solution vector to the appropriate coefficients
     :param x: solution vector
@@ -196,7 +216,7 @@ def assign_solution(x, bus_idx, pvpos, pv, nbus):
 
         # No PV nodes
 
-        w = zeros(0)
+        w = zeros(nbus, dtype=complex_type)
 
         q = zeros(0)
 
@@ -207,10 +227,12 @@ def pade_approximation(n, an, s=1):
     """
     Computes the n/2 pade approximant of the series an at the approximation
     point s
+
     Arguments:
         an: coefficient matrix, (number of coefficients, number of series)
         n:  order of the series
         s: point of approximation
+
     Returns:
         pade approximation at s
     """
@@ -302,7 +324,7 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
 
     error = list()
 
-    for n in range(1, 15):
+    for n in range(1, 20):
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
@@ -317,12 +339,15 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         res = Afact(rhs)
 
         # get the new rows of coefficients
-        v, w, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
+        v, w, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pq=pq, pv=pv, nbus=nbus)
 
         # Add coefficients row
         V = np.vstack((V, v))
-        W = np.vstack((W, w))
         Q = np.vstack((Q, q))
+
+        # compute the W coefficients for the PQ Nodes and update the whole W structure
+        w[pq] = calc_W(n, V, W, pq)
+        W = np.vstack((W, w))
 
         #     print('\nn:', n)
         #     print('RHS:\n', rhs)
@@ -355,6 +380,10 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
         b = linalg.norm(mismatch[pq].real, Inf)
         c = linalg.norm(mismatch[pq].imag, Inf)
         error.append([a, b, c])
+
+    print('V:\n', V)
+    print('W:\n', W)
+    print('Q:\n', Q)
 
     err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
     err_df.plot(logy=True)
@@ -389,10 +418,10 @@ if __name__ == '__main__':
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('lynn5buspv.xlsx')
+    # grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
+    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
 
     grid.compile()
