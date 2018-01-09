@@ -221,6 +221,7 @@ class MainGUI(QMainWindow):
         self.latin_hypercube_sampling = None
         self.cascade = None
         self.optimal_power_flow = None
+        self.optimal_power_flow_time_series = None
 
         self.results_df = None
 
@@ -274,6 +275,8 @@ class MainGUI(QMainWindow):
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
         self.ui.actionOPF.triggered.connect(self.run_opf)
+
+        self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -590,7 +593,12 @@ class MainGUI(QMainWindow):
         This function compiles the circuit and updates the UI accordingly
         :return:
         """
-        self.circuit.compile()
+
+        try:
+            self.circuit.compile()
+        except Exception as ex:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
 
         if self.circuit.time_profile is not None:
             mdl = get_list_model(self.circuit.time_profile)
@@ -895,8 +903,8 @@ class MainGUI(QMainWindow):
 
                     S = self.circuit.power_flow_results.Sbranch[i]
 
-                    if branch.rate < 1e-3:
-                        branch.rate = abs(S) * factor
+                    if branch.rate < 1e-3 or self.ui.rating_override_checkBox.isChecked():
+                        branch.rate = np.round(abs(S) * factor, 1)
                     else:
                         pass  # the rate is ok
 
@@ -980,16 +988,22 @@ class MainGUI(QMainWindow):
         Simulation data structure clicked
         """
 
-        if self.circuit.graph is None:
-            self.circuit.compile()
+        i = self.ui.simulation_data_island_comboBox.currentIndex()
 
-        elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
+        if i > -1:
+            if self.circuit.graph is None:
+                self.circuit.compile()
 
-        df = self.circuit.circuits[0].power_flow_input.get_structure(elm_type)
+            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
 
-        mdl = PandasModel(df)
+            df = self.circuit.circuits[i].power_flow_input.get_structure(elm_type)
 
-        self.ui.simulationDataStructureTableView.setModel(mdl)
+            mdl = PandasModel(df)
+
+            self.ui.simulationDataStructureTableView.setModel(mdl)
+
+        else:
+            pass
 
     def profile_device_type_changed(self):
         """
@@ -1286,12 +1300,21 @@ class MainGUI(QMainWindow):
                     # get the power flow options from the GUI
                     sc_options = ShortCircuitOptions(bus_index=sel_buses)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options)
-                    self.short_circuit.run()
 
-                    # self.power_flow.start()
-                    self.threadpool.start(self.short_circuit)
-                    self.threadpool.waitForDone()
-                    self.post_short_circuit()
+                    try:
+                        self.short_circuit.run()
+
+                        # self.power_flow.start()
+                        self.threadpool.start(self.short_circuit)
+                        self.threadpool.waitForDone()
+                        self.post_short_circuit()
+
+                    except Exception as ex:
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
+                        self.short_circuit = None
+                        self.UNLOCK()
+
             else:
                 self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
         else:
@@ -1487,20 +1510,16 @@ class MainGUI(QMainWindow):
         """
 
         if self.circuit.time_series_results is not None:
-            # print('\n\nVoltages:\n')
-            # print(self.circuit.time_series_results.voltage)
-            # print(self.circuit.time_series_results.converged)
-            # print(self.circuit.time_series_results.error)
 
-            # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-            # show()
-            # ts_analysis = TimeSeriesResultsAnalysis(self.circuit.circuits[0].time_series_results)
             voltage = self.circuit.time_series_results.voltage.max(axis=0)
             loading = self.circuit.time_series_results.loading.max(axis=0)
             Sbranch = self.circuit.time_series_results.Sbranch.max(axis=0)
+
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
                                    types=self.circuit.power_flow_input.types)
+
             self.update_available_results()
+
         else:
             print('No results for the time series simulation.')
 
@@ -1548,12 +1567,16 @@ class MainGUI(QMainWindow):
         # print('Ibr:\n', abs(self.monte_carlo.results.current))
         # print('ld:\n', abs(self.monte_carlo.results.loading))
 
-        self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
-                               loadings=self.monte_carlo.results.loading,
-                               s_branch=self.monte_carlo.results.sbranch,
-                               types=self.circuit.power_flow_input.types,
-                               s_bus=None)
-        self.update_available_results()
+        if not self.monte_carlo.__cancel__:
+            self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
+                                   loadings=self.monte_carlo.results.loading,
+                                   s_branch=self.monte_carlo.results.sbranch,
+                                   types=self.circuit.power_flow_input.types,
+                                   s_bus=None)
+            self.update_available_results()
+
+        else:
+            pass
 
     def run_lhs(self):
         """
@@ -1599,13 +1622,16 @@ class MainGUI(QMainWindow):
         # print('Vbus:\n', abs(self.latin_hypercube_sampling.results.voltage))
         # print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
         # print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
+        if not self.latin_hypercube_sampling.__cancel__:
+            self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
+                                   loadings=self.latin_hypercube_sampling.results.loading,
+                                   types=self.circuit.power_flow_input.types,
+                                   s_branch=self.latin_hypercube_sampling.results.sbranch,
+                                   s_bus=None)
+            self.update_available_results()
 
-        self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
-                               loadings=self.latin_hypercube_sampling.results.loading,
-                               types=self.circuit.power_flow_input.types,
-                               s_branch=self.latin_hypercube_sampling.results.sbranch,
-                               s_bus=None)
-        self.update_available_results()
+        else:
+            pass
 
     def clear_cascade(self):
         """
@@ -1663,7 +1689,11 @@ class MainGUI(QMainWindow):
             # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
 
             max_isl = self.ui.cascading_islands_spinBox.value()
-            self.cascade = Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
+            n_lsh_samples = self.ui.lhs_samples_number_spinBox.value()
+
+            self.cascade = Cascading(self.circuit.copy(), options,
+                                     max_additional_islands=max_isl,
+                                     n_lhs_samples_=n_lsh_samples)
 
             # connect signals
             self.cascade.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1680,27 +1710,27 @@ class MainGUI(QMainWindow):
     def post_cascade(self, idx=None):
         """
         Actions to perform after the Monte Carlo simulation is finished
-        @return:
         """
-        # print('post_lhs')
+
         # update the results in the circuit structures
 
-        n = len(self.cascade.report)
+        n = len(self.cascade.results.events)
 
         if n > 0:
 
+            # display the last event, if none is selected
             if idx is None:
                 idx = n-1
 
+            # Accumulate all the failed branches
             br_idx = zeros(0, dtype=int)
             for i in range(idx):
-                br_idx = r_[br_idx, self.cascade.report[i].removed_idx]
-            results = self.cascade.report[idx].pf_results  # MonteCarloResults object
+                br_idx = r_[br_idx, self.cascade.results.events[i].removed_idx]
 
-            # print('Vbus:\n', abs(results.voltage))
-            # print('ld:\n', abs(results.loading))
-            # print('Removed at ', idx, ':\n', br_idx)
+            # pick the results at the designated cascade step
+            results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
 
+            # print grid
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
                                    types=self.circuit.power_flow_input.types,
@@ -1708,8 +1738,10 @@ class MainGUI(QMainWindow):
                                    s_bus=None,
                                    failed_br_idx=br_idx)
 
+            # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
 
+            # Update results
             self.update_available_results()
 
     def cascade_table_click(self):
@@ -1734,7 +1766,8 @@ class MainGUI(QMainWindow):
             self.compile()
 
             # get the power flow options from the GUI
-            options = OptimalPowerFlowOptions()
+            load_shedding = self.ui.load_shedding_checkBox.isChecked()
+            options = OptimalPowerFlowOptions(load_shedding=load_shedding)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -1777,6 +1810,62 @@ class MainGUI(QMainWindow):
                          'that there is a generator at the slack node.', 'OPF')
 
         self.UNLOCK()
+
+    def run_opf_time_series(self):
+        """
+        OPF Time Series run
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.circuit.time_profile is not None:
+
+                self.LOCK()
+
+                # Compile the grid
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+                self.compile()
+
+                # gather the simulation options
+                load_shedding = self.ui.load_shedding_checkBox.isChecked()
+                options = OptimalPowerFlowOptions(load_shedding=load_shedding)
+
+                # create the OPF time series instance
+                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)
+
+                # Set the time series run options
+                self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
+                self.optimal_power_flow_time_series.done_signal.connect(self.UNLOCK)
+                self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
+
+                self.optimal_power_flow_time_series.start()
+
+            else:
+                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+        else:
+            pass
+
+    def post_opf_time_series(self):
+        """
+        Post OPF Time Series
+        :return:
+        """
+        if self.optimal_power_flow_time_series is not None:
+
+            voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
+            loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
+            Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
+
+            self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                   types=self.circuit.power_flow_input.types)
+
+            self.update_available_results()
+
+        else:
+
+            pass
 
     def set_cancel_state(self):
         """
@@ -1834,26 +1923,38 @@ class MainGUI(QMainWindow):
             lst.append("Optimal power flow")
             self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
 
+        if self.optimal_power_flow_time_series is not None:
+            lst.append("Optimal power flow time series")
+            self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
+
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
+
+        # update the list of islands
+        self.ui.simulation_data_island_comboBox.clear()
+        self.ui.simulation_data_island_comboBox.addItems([str(circuit) for circuit in self.circuit.circuits])
+        if len(self.circuit.circuits) > 0:
+            self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
 
     def clear_results(self):
         """
         Clear the results tab
-        Returns:
-
         """
         self.power_flow = None
         self.short_circuit = None
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
+        self.optimal_power_flow = None
+        self.optimal_power_flow_time_series = None
 
         self.available_results_dict = dict()
         self.ui.result_listView.setModel(None)
+        self.ui.resultsTableView.setModel(None)
         self.ui.result_type_listView.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
         self.ui.resultsPlot.clear(force=True)
+        self.ui.simulationDataStructureTableView.setModel(None)
 
     def update_available_results_in_the_study(self):
         """
@@ -1884,6 +1985,8 @@ class MainGUI(QMainWindow):
                 names = self.circuit.bus_names
             elif 'Branch' in study_type:
                 names = self.circuit.branch_names
+            elif 'Load' in study_type:
+                names = self.circuit.bus_names
             else:
                 names = None
 
@@ -1920,6 +2023,9 @@ class MainGUI(QMainWindow):
             elif study == 'Optimal power flow':
                 self.results_df = self.optimal_power_flow.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
 
+            elif study == 'Optimal power flow time series':
+                self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+
             if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)
 
@@ -1942,13 +2048,21 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.results_df is not None:
+
             file = QFileDialog.getSaveFileName(self, "Save to Excel", '', filter="Excel files (*.xlsx)")
+
             if file[0] != '':
+
                 if not file[0].endswith('.xlsx'):
                     f = file[0] + '.xlsx'
                 else:
                     f = file[0]
+
+                # Saving file
                 self.results_df.astype(str).to_excel(f)
+
+            else:
+                print('Not saving file...')
 
     def item_results_plot(self):
         """

@@ -30,6 +30,319 @@ EMERGENCY = {'style': Qt.SolidLine, 'color': QtCore.Qt.yellow}
 OTHER = ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
 
 
+class LineEditor(QDialog):
+
+    def __init__(self, branch: Branch, Sbase=100):
+        """
+        Line Editor constructor
+        :param branch: Branch object to update
+        :param Sbase: Base power in MVA
+        """
+        super(LineEditor, self).__init__()
+
+        # keep pointer to the line object
+        self.branch = branch
+
+        self.Sbase = Sbase
+
+        self.setObjectName("self")
+        # self.resize(200, 71)
+        # self.setMinimumSize(QtCore.QSize(200, 71))
+        # self.setMaximumSize(QtCore.QSize(200, 71))
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        # icon = QtGui.QIcon()
+        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.setWindowIcon(icon)
+        self.layout = QVBoxLayout(self)
+
+        # ------------------------------------------------------------------------------------------
+        # Set the object values
+        # ------------------------------------------------------------------------------------------
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
+
+        # assert (Vf == Vt)
+
+        Zbase = self.Sbase / (Vf * Vf)
+        Ybase = 1 / Zbase
+
+        R = self.branch.R * Zbase
+        X = self.branch.X * Zbase
+        G = self.branch.G * Ybase
+        B = self.branch.B * Ybase
+
+        I = self.branch.rate / Vf  # current in kA
+
+        # ------------------------------------------------------------------------------------------
+
+        # line length
+        self.l_spinner = QDoubleSpinBox()
+        self.l_spinner.setMinimum(0)
+        self.l_spinner.setMaximum(9999999)
+        self.l_spinner.setDecimals(6)
+        self.l_spinner.setValue(1)
+
+        # Max current
+        self.i_spinner = QDoubleSpinBox()
+        self.i_spinner.setMinimum(0)
+        self.i_spinner.setMaximum(9999999)
+        self.i_spinner.setDecimals(2)
+        self.i_spinner.setValue(I)
+
+        # R
+        self.r_spinner = QDoubleSpinBox()
+        # self.r_spinner.setMinimum(0)
+        # self.r_spinner.setMaximum(9999999)
+        # self.r_spinner.setDecimals(6)
+        self.r_spinner.setValue(R)
+
+        # X
+        self.x_spinner = QDoubleSpinBox()
+        # self.x_spinner.setMinimum(0)
+        # self.x_spinner.setMaximum(9999999)
+        # self.x_spinner.setDecimals(6)
+        self.x_spinner.setValue(X)
+
+        # G
+        self.g_spinner = QDoubleSpinBox()
+        # self.g_spinner.setMinimum(0)
+        # self.g_spinner.setMaximum(9999999)
+        # self.g_spinner.setDecimals(6)
+        self.g_spinner.setValue(G)
+
+        # B
+        self.b_spinner = QDoubleSpinBox()
+        # self.b_spinner.setMinimum(0)
+        # self.b_spinner.setMaximum(9999999)
+        # self.b_spinner.setDecimals(6)
+        self.b_spinner.setValue(B)
+
+        # accept button
+        self.accept_btn = QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # labels
+
+        # add all to the GUI
+        self.layout.addWidget(QLabel("L: Line length [Km]"))
+        self.layout.addWidget(self.l_spinner)
+
+        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
+        self.layout.addWidget(self.i_spinner)
+
+        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
+        self.layout.addWidget(self.r_spinner)
+
+        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
+        self.layout.addWidget(self.x_spinner)
+
+        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
+        self.layout.addWidget(self.g_spinner)
+
+        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
+        self.layout.addWidget(self.b_spinner)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle('Line editor')
+
+    def accept_click(self):
+        """
+        Set the values
+        :return:
+        """
+        l = self.l_spinner.value()
+        I = self.i_spinner.value()
+        R = self.r_spinner.value() * l
+        X = self.x_spinner.value() * l
+        G = self.g_spinner.value() * l
+        B = self.b_spinner.value() * l
+
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
+
+        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
+
+        # assert (Vf == Vt)
+
+        Zbase = self.Sbase / (Vf * Vf)
+        Ybase = 1.0 / Zbase
+
+        self.branch.R = np.round(R / Zbase, 6)
+        self.branch.X = np.round(X / Zbase, 6)
+        self.branch.G = np.round(G / Ybase, 6)
+        self.branch.B = np.round(B / Ybase, 6)
+        self.branch.rate = Sn
+
+        self.accept()
+
+
+class TransformerEditor(QDialog):
+
+    def __init__(self, branch: Branch, Sbase=100):
+        """
+        Transformer
+        :param branch:
+        :param Sbase:
+        """
+        super(TransformerEditor, self).__init__()
+
+        # keep pointer to the line object
+        self.branch = branch
+
+        self.Sbase = Sbase
+
+        self.setObjectName("self")
+        # self.resize(200, 71)
+        # self.setMinimumSize(QtCore.QSize(200, 71))
+        # self.setMaximumSize(QtCore.QSize(200, 71))
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        # icon = QtGui.QIcon()
+        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.setWindowIcon(icon)
+        self.layout = QVBoxLayout(self)
+
+        # ------------------------------------------------------------------------------------------
+        # Set the object values
+        # ------------------------------------------------------------------------------------------
+        Vf = self.branch.bus_from.Vnom
+        Vt = self.branch.bus_to.Vnom
+
+        # assert (Vf == Vt)
+
+        R = self.branch.R
+        X = self.branch.X
+        G = self.branch.G
+        B = self.branch.B
+        Sn = self.branch.rate
+
+        zsc = sqrt(R * R + 1 / (X * X))
+        Vsc = 100.0 * zsc
+        Pcu = R * Sn * 1000.0
+
+        if abs(G) > 0.0 and abs(B) > 0.0:
+            zl = 1.0 / complex(G, B)
+            rfe = zl.real
+            xm = zl.imag
+
+            Pfe = 1000.0 * Sn / rfe
+
+            k = 1 / (rfe * rfe) + 1 / (xm * xm)
+            I0 = 100.0 * sqrt(k)
+        else:
+            Pfe = 0
+            I0 = 0
+
+        # ------------------------------------------------------------------------------------------
+
+        # Sn
+        self.sn_spinner = QDoubleSpinBox()
+        self.sn_spinner.setMinimum(0)
+        self.sn_spinner.setMaximum(9999999)
+        self.sn_spinner.setDecimals(6)
+        self.sn_spinner.setValue(Sn)
+
+        # Pcu
+        self.pcu_spinner = QDoubleSpinBox()
+        self.pcu_spinner.setMinimum(0)
+        self.pcu_spinner.setMaximum(9999999)
+        self.pcu_spinner.setDecimals(6)
+        self.pcu_spinner.setValue(Pcu)
+
+        # Pfe
+        self.pfe_spinner = QDoubleSpinBox()
+        self.pfe_spinner.setMinimum(0)
+        self.pfe_spinner.setMaximum(9999999)
+        self.pfe_spinner.setDecimals(6)
+        self.pfe_spinner.setValue(Pfe)
+
+        # I0
+        self.I0_spinner = QDoubleSpinBox()
+        self.I0_spinner.setMinimum(0)
+        self.I0_spinner.setMaximum(9999999)
+        self.I0_spinner.setDecimals(6)
+        self.I0_spinner.setValue(I0)
+
+        # Vsc
+        self.vsc_spinner = QDoubleSpinBox()
+        self.vsc_spinner.setMinimum(0)
+        self.vsc_spinner.setMaximum(9999999)
+        self.vsc_spinner.setDecimals(6)
+        self.vsc_spinner.setValue(Vsc)
+
+        # accept button
+        self.accept_btn = QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # labels
+
+        # add all to the GUI
+        self.layout.addWidget(QLabel("Sn: Nominal power [MVA]"))
+        self.layout.addWidget(self.sn_spinner)
+
+        self.layout.addWidget(QLabel("Pcu: Copper losses [kW]"))
+        self.layout.addWidget(self.pcu_spinner)
+
+        self.layout.addWidget(QLabel("Pfe: Iron losses [kW]"))
+        self.layout.addWidget(self.pfe_spinner)
+
+        self.layout.addWidget(QLabel("I0: No load current [%]"))
+        self.layout.addWidget(self.I0_spinner)
+
+        self.layout.addWidget(QLabel("Vsc: Short circuit voltage [%]"))
+        self.layout.addWidget(self.vsc_spinner)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle('Transformer editor')
+
+    def accept_click(self):
+        """
+        Create transformer type and get the impedances
+        :return:
+        """
+
+        Vf = self.branch.bus_from.Vnom  # kV
+        Vt = self.branch.bus_to.Vnom  # kV
+        Sn = self.sn_spinner.value()  # MVA
+        Pcu = self.pcu_spinner.value()  # kW
+        Pfe = self.pfe_spinner.value()  # kW
+        I0 = self.I0_spinner.value()  # %
+        Vsc = self.vsc_spinner.value()  # %
+
+        eps = 1e-20
+
+        # Vsc = eps if Vsc == 0.0 else Vsc
+        # Pcu = eps if Pcu == 0.0 else Pcu
+        Pfe = eps if Pfe == 0.0 else Pfe
+        I0 = eps if I0 == 0.0 else I0
+
+        tpe = TransformerType(HV_nominal_voltage=Vf,
+                              LV_nominal_voltage=Vt,
+                              Nominal_power=Sn,
+                              Copper_losses=Pcu,
+                              Iron_losses=Pfe,
+                              No_load_current=I0,
+                              Short_circuit_voltage=Vsc,
+                              GR_hv1=0.5,
+                              GX_hv1=0.5)
+
+        leakage_impedance, magnetizing_impedance = tpe.get_impedances()
+
+        # z_series = leakage_impedance
+        # y_shunt = 1 / magnetizing_impedance
+
+        self.branch.apply_transformer_type(tpe)
+
+        self.accept()
+
+
 class LineUpdateMixin(object):
 
     def __init__(self, parent):
@@ -193,6 +506,9 @@ class BranchGraphicItem(QGraphicsLineItem):
         ra2 = menu.addAction('Delete')
         ra2.triggered.connect(self.remove)
 
+        ra3 = menu.addAction('Edit')
+        ra3.triggered.connect(self.edit)
+
         menu.exec_(event.screenPos())
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
@@ -207,6 +523,14 @@ class BranchGraphicItem(QGraphicsLineItem):
                            non_editable_indices=[1, 2])
 
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        On double click, edit
+        :param event:
+        :return:
+        """
+        self.edit()
 
     def remove(self):
         """
@@ -301,8 +625,12 @@ class BranchGraphicItem(QGraphicsLineItem):
         @return:
         """
         if self.pos1 is not None and self.pos2 is not None:
+
+            # Set position
             self.setLine(QLineF(self.pos1, self.pos2))
-            self.setZValue(0)
+
+            # set Z-Order (to the back)
+            self.setZValue(-1)
 
             if self.api_object is not None:
                 if self.api_object.is_transformer:
@@ -325,9 +653,24 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         self.setPen(pen)
         if self.api_object.is_transformer:
+            if self.c1 is None:
+                self.redraw()
             self.c1.setPen(pen)
             self.c2.setPen(pen)
 
+    def edit(self):
+        """
+        Open the apropiate editor dialogue
+        :return:
+        """
+        Sbase = self.diagramScene.circuit.Sbase
+        if self.api_object.is_transformer:
+            dlg = TransformerEditor(self.api_object, Sbase)
+        else:
+            dlg = LineEditor(self.api_object, Sbase)
+
+        if dlg.exec_():
+            pass
 
 class ParameterDialog(QDialog):
 
@@ -522,13 +865,20 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def update_line(self, pos):
+        """
+        Update the line that joins the parent and this object
+        :param pos: position of this object
+        """
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w / 2, pos.y() + 0,
+            pos.x() + self.w / 2,
+            pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + rect.height(),
+            parent.y() + parent.terminal.y(),
         )
+        self.setZValue(-1)
+        self.nexus.setZValue(-1)
 
     def contextMenuEvent(self, event):
         """
@@ -686,14 +1036,20 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def update_line(self, pos):
+        """
+        Update the line that joins the parent and this object
+        :param pos: position of this object
+        """
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + rect.height(),
+            parent.y() + parent.terminal.y(),
         )
+        self.setZValue(-1)
+        self.nexus.setZValue(-1)
 
     def contextMenuEvent(self, event):
         """
@@ -848,13 +1204,20 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def update_line(self, pos):
+        """
+        Update the line that joins the parent and this object
+        :param pos: position of this object
+        """
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w / 2, pos.y() + 0,
+            pos.x() + self.w / 2,
+            pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + rect.height(),
+            parent.y() + parent.terminal.y(),
         )
+        self.setZValue(-1)
+        self.nexus.setZValue(-1)
 
     def contextMenuEvent(self, event):
         """
@@ -1007,13 +1370,20 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def update_line(self, pos):
+        """
+        Update the line that joins the parent and this object
+        :param pos: position of this object
+        """
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w / 2, pos.y() + 0,
+            pos.x() + self.w / 2,
+            pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + rect.height(),
+            parent.y() + parent.terminal.y(),
         )
+        self.setZValue(-1)
+        self.nexus.setZValue(-1)
 
     def contextMenuEvent(self, event):
         """
@@ -1158,13 +1528,20 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def update_line(self, pos):
+        """
+        Update the line that joins the parent and this object
+        :param pos: position of this object
+        """
         parent = self.parentItem()
         rect = parent.rect()
         self.nexus.setLine(
-            pos.x() + self.w / 2, pos.y() + 0,
+            pos.x() + self.w / 2,
+            pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + rect.height(),
+            parent.y() + parent.terminal.y(),
         )
+        self.setZValue(-1)
+        self.nexus.setZValue(-1)
 
     def contextMenuEvent(self, event):
         """
@@ -1377,6 +1754,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
 
+        # Move the sizer
+        # self.sizer.setPos(self.w, self.h)
+
         # rearrange children
         self.arrange_children()
 
@@ -1552,6 +1932,22 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
                            self.api_object.edit_types,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        Mouse double click
+        :param event: event object
+        """
+        self.adapt()
+
+    def adapt(self):
+        """
+        Set the bus width according to the label text
+        """
+        h = self.h
+        w = len(self.api_object.name) * 8 + 10
+        self.change_size(w=w, h=h)
+        self.sizer.setPos(w, h)
 
     def add_load(self, api_obj=None):
         """
@@ -1945,7 +2341,7 @@ class GridEditor(QSplitter):
 
                         self.started_branch.setToPort(item)
                         item.hosting_connections.append(self.started_branch)
-                        self.started_branch.setZValue(1000)
+                        # self.started_branch.setZValue(-1)
                         self.started_branch.bus_to = item.parent
                         name = 'Branch ' + str(self.branch_editor_count)
                         obj = Branch(bus_from=self.started_branch.bus_from.api_object,
@@ -1956,9 +2352,12 @@ class GridEditor(QSplitter):
                         self.circuit.add_branch(obj)
                         item.process_callbacks(item.parent.pos() + item.pos())
 
+                        self.started_branch.setZValue(-1)
+
             if self.started_branch.toPort is None:
                 self.started_branch.remove_()
 
+        # release this pointer
         self.started_branch = None
 
     def bigger_nodes(self):

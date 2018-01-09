@@ -31,6 +31,18 @@ Windows: `pip install GridCal-x.xx.tar.gz`
 
 OSX/Linux: `pip3 install GridCal-x.xx.tar.gz`
 
+## Installation from GitHub
+
+Although the actual `GridCal` package lives under `UnderDevelopment`, `pip` can still install it:
+
+    python3 -m pip install -e 'git+git://github.com/SanPen/GridCal.git#egg=GridCal&subdirectory=UnderDevelopment'
+
+Installing `GridCal` from GitHub, `pip` can still freeze the version using a commit hash:
+
+    python -m pip install -e 'git+git://github.com/SanPen/GridCal.git@5c4dcb96998ae882412b5fee977cf0cff7a40d3c#egg=GridCal&subdirectory=UnderDevelopment'
+
+This way, you can install the latest developments.
+
 # Run with user interface
 
 From a Python console:

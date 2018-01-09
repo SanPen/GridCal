@@ -578,7 +578,11 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         f = 0.5 * dz.dot(dz)
 
         # decision function
-        rho = (f_prev - f) / (0.5 * dx.dot(lbmda * dx + rhs))
+        val = dx.dot(lbmda * dx + rhs)
+        if val > 0:
+            rho = (f_prev - f) / (0.5 * val)
+        else:
+            rho = -1
 
         # lambda update
         if rho > 0:

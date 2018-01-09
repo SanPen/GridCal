@@ -190,7 +190,7 @@ To run GridCal with GUI directly from a system console, type:\newline
 
 You can use the calculation engine directly or from other applications: \newline
 
-\verb|from GridCal.grid.CircuitOO import *| \newline
+\verb|from GridCal.Engine.CalculationEngine import *| \newline
 
 This will provide access to all the objects in the calculation engine of GridCal.
 
@@ -387,19 +387,6 @@ Implements the model at \ref{Universal_branch_model}.
 
 Implements the model at \ref{Transformer_definition}.
 
-
-
-
-
-\section{element}
-
-\begin{itemize}
-	\item 
-	\item 
-	\item 
-	\item 
-	\item 
-\end{itemize}
 
 
 \section{Class diagram}
@@ -647,6 +634,58 @@ Leakage impedance (or shunt impedance): $Z_l = r_{sc} + j \cdot x_{sc}$
 
 Shunt admittance: $y_{shunt} = 1 / Z_l$
 
+
+\subsection{Inverse definition of short-circuit values from the $\Pi$ model}
+
+In GridCal I found the need to find the short circuit values ($P_{cu}$, $V_{sc}$, $r_{fe}$, $I0$) from the branch values ($R$, $X$, $G$, $B$). Hence the following formulas:
+
+%zsc = sqrt(R * R + 1 / (X * X))
+%Vsc = 100.0 * zsc
+%Pcu = R * Sn * 1000.0
+%
+%if abs(G) > 0.0 and abs(B) > 0.0:
+%zl = 1.0 / complex(G, B)
+%rfe = zl.real
+%xm = zl.imag
+%
+%Pfe = 1000.0 * Sn / rfe
+%
+%k = 1 / (rfe * rfe) + 1 / (xm * xm)
+%I0 = 100.0 * sqrt(k)
+%else:
+%Pfe = 0
+%I0 = 0
+
+\begin{equation}
+z_{sc} = \sqrt{R^2 + 1 / X^2}
+\end{equation}
+
+
+\begin{equation}
+V_{sc} = 100 \cdot z_{sc}
+\end{equation}
+
+\begin{equation}
+P_{cu} = R \cdot S_n \cdot 1000
+\end{equation}
+
+\begin{equation}
+zl = 1 / (G + j B)
+\end{equation}
+
+\begin{equation}
+r_{fe} = zl.real
+\end{equation}
+
+\begin{equation}
+xm = zl.imag
+\end{equation}
+
+\begin{equation}
+I0 = 100 \cdot \sqrt{1 / r_{fe}^2 + 1 / xm^2}
+\end{equation}
+
+
 %----------------------------------------------------------------------------------------
 %	CHAPTER 4
 %----------------------------------------------------------------------------------------
@@ -843,13 +882,13 @@ The new voltage is then:
 This solution does usually produces a large power mismatch. That is to be expected because the method is an oversimplification with no iterative convergence criteria, just a straight forward set of operations.
 
 \newpage
-\section{Holomorphic Embedding (ASU)}
+\section{Holomorphic Embedding}
 
 First introduced by Antonio Trias in 2012 \cite{TriasHELM}, promises to be a non-divergent power flow method. Trias originally developed a version with no voltage controlled nodes (PV), in which the convergence properties are excellent (With this software try to solve any grid without PV nodes to check this affirmation). 
 
-The version programmed in the file \verb|HelmVect.py| has been adapted from the master thesis of Muthu Kumar Subramanian at the Arizona State University (ASU) \cite{subramanian2014application}. This version includes a formulation of the voltage controlled nodes. My experience indicates that the introduction of the PV control deteriorates the convergence properties of the holomorphic embedding method. However, in many cases, it is the best approximation to a solution. especially when Newton-Raphson does not provide one.
+The version programmed in the file \verb|HELM.py| has been adapted from the master thesis of Muthu Kumar Subramanian at the Arizona State University (ASU) \cite{subramanian2014application}. This version includes a formulation of the voltage controlled nodes. My experience indicates that the introduction of the PV control deteriorates the convergence properties of the holomorphic embedding method. However, in many cases, it is the best approximation to a solution. especially when Newton-Raphson does not provide one.
 
-The \verb|HelmVect.py|  file contains a vectorized version of the algorithm. This means that the execution in python is much faster than a previous version that uses loops.
+The file \verb|HELM.py| contains a vectorized version of the algorithm. This means that the execution in python is much faster than a previous version that uses loops.
 
 \subsection{Concepts}
 
@@ -867,7 +906,7 @@ All this sounds very strange, but it works ;)\newline
 
 If you want to get familiar with this concept, you should read about the homotopy concept. In practice the continuation power flow does the same as the HELM algorithm, it takes a known solution and changes the loading factors until a solution for another state is reached.
 
-\subsection{Fundamentals}
+\subsection{Fundamentals} \label{helm_fundamentals}
 
 The fundamental equation that defines the power flow problem is:
 \begin{equation}
@@ -951,7 +990,7 @@ Expanding the series and identifying terms of $\alpha$ we obtain the expression 
 \left\{
 	\begin{array}{ll}
 		\mathlarger{\frac{1}{\textbf{V}_0}}, \quad n=0\\
-		\mathlarger{\frac{\mathlarger{\sum_{k=0}^{n-1}\textbf{W}_k \textbf{V}_{n-k}}}{\textbf{V}_0}}, \quad n>0
+		\mathlarger{-\frac{\mathlarger{\sum_{k=0}^{n}\textbf{W}_k \textbf{V}_{n-k}}}{\textbf{V}_0}}, \quad n>0
 	\end{array}
 \right.
 \end{equation}
@@ -1069,9 +1108,195 @@ On top of that my experience shows that the canonical implementation provides a 
 Anyway, both implementations are there to be used in the code.
 
 
-\subsection{PV nodes formulation}
 
-To be done.
+
+\subsection{Formulation with PV nodes}
+
+The section \ref{helm_fundamentals} introduces the canonical HELM algorithm. That algorithm does not include the formulation of PV nodes.
+Other articles published on the subject feature PV formulations that work more or less to some degree. The formulation below is a formulation corrected by myself from a formulation contained here \cite{liu2017online}, which does not work as published, hence the correction.
+
+
+
+\subsubsection{Embedding}
+
+The following embedding equations are proposed instead of the canonical HELM equations from section \ref{helm_fundamentals}.
+
+For Slack nodes:
+\begin{equation}
+V(\alpha) = V^{SP} \quad \forall \alpha=0
+\end{equation}
+
+For PQ nodes:
+\begin{equation}
+\left\{
+\begin{array}{ll}
+\textbf{Y} \times \textbf{V}(\alpha) = 0 \quad \quad \quad \quad \forall \alpha=0\\
+\mathlarger{\textbf{Y} \times \textbf{V}(\alpha) = \frac{\alpha \textbf{S}}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha>0
+\end{array}
+\right.
+\end{equation}
+
+For PV nodes:
+
+\begin{equation}
+\left\{
+\begin{array}{ll}
+\mathlarger{\textbf{Y} \times \textbf{V}(\alpha) = \frac{ \textbf{S}}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha=0\\
+\mathlarger{\textbf{Y} \times \textbf{V}(\alpha) = \frac{ \textbf{S} - j \textbf{Q}(\alpha)}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha>0
+\end{array}
+\right.
+\end{equation}
+
+\begin{equation}
+\left\{
+\begin{array}{ll}
+V(\alpha)V^*(\alpha^*) = |V_0|^2\quad \quad \quad \quad \forall \alpha=0\\
+V(\alpha)V^*(\alpha^*) = |V_0|^2 + (|V^{SP}|^2-|V_0|^2) \quad \forall \alpha>0
+\end{array}
+\right.
+\end{equation}
+
+
+
+
+This embedding translates into the following formulation:
+
+\subsubsection{Step 1}
+
+The formulas are adapted to exemplify a 3-bus system where the bus1 is a slack, the bus 2 is PV and the bus 3 is PQ. This follows the example of the Appendix A of \cite{liu2017online}.
+\newline\newline
+Compute the initial no-load solution ($n=0$):
+
+\begin{equation}
+\begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0\\
+0 & 1 & 0 & 0 & 0 & 0\\
+G_{21} & -B_{21} & G_{22} & -B_{22} & G_{23} & -B_{23}\\
+B_{21} & G_{21}  & B_{22} & G_{22}  & B_{23} & G_{23}\\
+G_{31} & -B_{31} & G_{32} & -B_{32} & G_{33} & -B_{33}\\
+B_{31} & G_{31}  & B_{32} & G_{32}  & B_{33} & G_{33}\\
+\end{bmatrix}
+\times
+\begin{bmatrix}
+V[n]_{re, 1}\\
+V[n]_{im, 1}\\
+V[n]_{re, 2}\\
+V[n]_{im, 2}\\
+V[n]_{re, 3}\\
+V[n]_{im, 3}\\
+\end{bmatrix}
+=
+\begin{bmatrix}
+V^{SP}_{re, 1}\\
+V^{SP}_{im, 1}\\
+0\\
+0\\
+0\\
+0\\
+\end{bmatrix}
+\quad \forall n = 0
+\end{equation}
+
+Form the solution vector $\textbf{V}[n]$ you can compute the buses calculated power and then get the reactive power at the PV nodes to initialize $\textbf{Q}[0]$:
+
+\begin{equation}
+\textbf{S} = \textbf{V}[0] \cdot (\textbf{Y}_{bus} \times \textbf{V}[0])^*
+\label{Scalc}
+\end{equation}
+
+\begin{equation}
+\textbf{Q}_i[0] = imag(\textbf{S}_{i}) \quad \forall i \in PV
+\end{equation}
+
+The initial inverse voltage coefficients $\textbf{W}[0]$ are obtained by:
+
+\begin{equation}
+W_i[0] = \frac{1}{V_i[0]}  \quad \forall i \in N
+\end{equation}
+
+This step is entirely equivalent to find the no load solution using the Z-Matrix reduction.
+
+\subsubsection{Step 2}
+
+Construct the system of equations to solve the coefficients of order greater than zero ($n>0$). Note that the matrix is the same as constructed for the previous step, but adding a column and a row for each PV node to account for the reactive power coefficients. In our 3-bus example, there is only one PV node, so we add only one column and one row.
+
+\begin{equation}
+\begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 & 0\\
+0 & 1 & 0 & 0 & 0 & 0 & 0\\
+G_{21} & -B_{21} & G_{22} & -B_{22} & G_{23} & -B_{23} & W[0]_{im}\\
+B_{21} & G_{21}  & B_{22} & G_{22}  & B_{23} & G_{23} & W[0]_{re}\\
+G_{31} & -B_{31} & G_{32} & -B_{32} & G_{33} & -B_{33} & 0\\
+B_{31} & G_{31}  & B_{32} & G_{32}  & B_{33} & G_{33} & 0\\
+0 & 0 & V[0]_{re} & V[0]_{im} & 0 & 0 & 0\\
+\end{bmatrix}
+\times
+\begin{bmatrix}
+V[n]_{re, 1}\\
+V[n]_{im, 1}\\
+V[n]_{re, 2}\\
+V[n]_{im, 2}\\
+V[n]_{re, 3}\\
+V[n]_{im, 3}\\
+Q_2[n]\\
+\end{bmatrix}
+=
+\begin{bmatrix}
+0\\
+0\\
+f2_{re}\\
+f2_{im}\\
+f1_{re}\\
+f1_{im}\\
+\epsilon[n]\\
+\end{bmatrix}
+\quad \forall n > 0
+\label{lin_sys_2}
+\end{equation}
+
+Where:
+
+\begin{equation}
+f1 = S^*_i \cdot W^*_i[n-1] \quad \forall i \in PQ
+\end{equation}
+
+\begin{equation}
+f2 = P_i \cdot W^*_i[n-1] + conv(n, Q_i, W^*_i) \quad \forall i \in PV
+\end{equation}
+
+\begin{equation}
+\epsilon[n] = \delta_{n1} \cdot \frac{1}{2} \left(|V_i^SP|^2 - |V_i[0]|^2\right) - \frac{1}{2} conv(n, V_i, V_i^*)  \quad \forall i \in PV, n > 0
+\end{equation}
+
+The convolution $conv$ is defined as:
+
+\begin{equation}
+conv(n, A, B) = \sum_{m=0}^{n-1} A[m] \cdot B[n-m]
+\end{equation}
+
+The system matrix ($A_{sys}$) is the same for all the orders of $n>0$, therefore we only build it once, and we factorize it to solve the subsequent coefficients.
+
+After the voltages $\textbf{V}[n]$ and the reactive power at the PV nodes $Q[n]$ is obtained solving the linear system (eq \ref{lin_sys_2}), we must solve the inverse voltage coefficients of order $n$ for all the buses:
+
+\begin{equation}
+W_i[n] = \frac{- \mathlarger{\sum_{m=0}^{n}W_i[m] \cdot V_i[n-m]} }{V_i[0]} \quad  \forall i \in N, n>0
+\end{equation}
+
+
+\subsubsection{Step 3}
+
+Repeat step 2 until a sufficiently low error is achieved or a maximum number of iterations (coefficients).
+
+
+The error is computed by comparing the calculated power $\textbf{S}$ (eq \ref{Scalc}) with the specified power injections $\textbf{S}^{SP}$:
+
+\begin{equation}
+mismatch = \textbf{S} - \textbf{S}^{SP}
+\end{equation}
+
+\begin{equation}
+error = |mismatch|_\infty = max(abs(mismatch))
+\end{equation}
 
 \newpage
 \section{Post power flow (loading and losses)}
@@ -1183,8 +1408,8 @@ Magnitudes:
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.98\linewidth]{grid_data.png}
-	\caption{GridCal user interface representing the 200-bus Illinois grid.}
+	\includegraphics[width=0.98\linewidth]{GridData.png}
+	\caption{GridCal user interface representing the IEEE 39 bus grid split in three islands.}
 	\label{fig:main_gui}
 \end{figure}
 
@@ -1192,7 +1417,7 @@ Magnitudes:
 % 	BIBLIOGRAPHY
 % ----------------------------------------------------------------------------------------
 %\chapter*{Bibliography}
-\bibliographystyle{abbrv}
+\bibliographystyle{unsrt}
 \bibliography{bibliography}
 
 \end{document}

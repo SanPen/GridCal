@@ -1,27 +1,18 @@
-# -*- coding: utf-8 -*-
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+"""
+This helm version is implemented from the thesis of Muthu Subramanian
+
+Implementation by Santiago Peñate Vera 2017
+"""
 
 import time
 import numpy as np
 np.set_printoptions(linewidth=320)
-from numpy import zeros, ones, mod, conj, array, r_, linalg, Inf, complex128
+from numpy import zeros, ones, mod, conj, array, r_, linalg, Inf, complex128, c_, r_, angle
 from itertools import product
 from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
 from scipy.sparse import issparse, csc_matrix as sparse
+import pandas as pd
 
 # Set the complex precision to use
 complex_type = complex128
@@ -518,7 +509,7 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
     n = 0
     converged = False
     inside_precision = True
-    errors = list()
+    error = list()
     errors_PV_P = list()
     errors_PV_Q = list()
     errors_PQ_P= list()
@@ -604,15 +595,19 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
         # complex power mismatch
         power_mismatch = Scalc - S
         # concatenate error by type
-        power_mismatch_ = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+        mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
 
         # check for convergence
-        normF = linalg.norm(power_mismatch_, Inf)
-        errors.append(normF)
-        errors_PV_P.append(power_mismatch[pv].real)
-        errors_PV_Q.append(power_mismatch[pv].imag)
-        errors_PQ_P.append(power_mismatch[pq].real)
-        errors_PQ_Q.append(power_mismatch[pq].imag)
+        normF = linalg.norm(mismatch, Inf)
+
+        if npv > 0:
+            a = linalg.norm(mismatch[pv].real, Inf)
+        else:
+            a = 0
+        b = linalg.norm(mismatch[pq].real, Inf)
+        c = linalg.norm(mismatch[pq].imag, Inf)
+        error.append([a, b, c])
+
         if normF < eps:
             converged = True
         else:
@@ -625,7 +620,11 @@ def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, e
     end = time.time()
     elapsed = end - start
 
-    return Vred_last, converged, normF, Scalc, n, elapsed
+    err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
+    err_df.plot(logy=True)
+    print('Err df:\n', err_df)
+
+    return Vred_last, normF
 
 
 def bifurcation_point(C, pqpv):
@@ -667,3 +666,86 @@ def bifurcation_point(C, pqpv):
 
     return V, L
 
+
+def res_2_df(V, Sbus, tpe):
+    """
+    Create dataframe to display the results nicely
+    :param V: Voltage complex vector
+    :param Sbus: Power complex vector
+    :param tpe: Types
+    :return: Pandas DataFrame
+    """
+    vm = abs(V)
+    va = np.angle(V)
+
+    d = {1: 'PQ', 2: 'PV', 3: 'VD'}
+
+    tpe_str = array([d[i] for i in tpe], dtype=object)
+    data = c_[tpe_str, Sbus.real, Sbus.imag, vm, va]
+    cols = ['Type', 'P', 'Q', '|V|', 'angle']
+    df = pd.DataFrame(data=data, columns=cols)
+
+    return df
+
+
+if __name__ == '__main__':
+    from GridCal.Engine.CalculationEngine import MultiCircuit, PowerFlowOptions, PowerFlow, SolverType
+    from matplotlib import pyplot as plt
+
+    grid = MultiCircuit()
+    # grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('lynn5buspv.xlsx')
+    # grid.load_file('IEEE30.xlsx')
+    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
+
+    grid.compile()
+
+    circuit = grid.circuits[0]
+
+    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+    print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    print('\ntypes:\n', circuit.power_flow_input.types)
+    print('\npq:\n', circuit.power_flow_input.pq)
+    print('\npv:\n', circuit.power_flow_input.pv)
+    print('\nvd:\n', circuit.power_flow_input.ref)
+
+    start_time = time.time()
+
+    # Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd
+    v, err = helm(Y=circuit.power_flow_input.Ybus,
+                  Ys= circuit.power_flow_input.Yseries,
+                  Ysh=circuit.power_flow_input.Yshunt,
+                  max_coefficient_count=30,
+                  S=circuit.power_flow_input.Sbus,
+                  voltage_set_points=circuit.power_flow_input.Vbus,
+                  pq=circuit.power_flow_input.pq,
+                  pv=circuit.power_flow_input.pv,
+                  vd=circuit.power_flow_input.ref,
+                  eps=1e-15)
+
+    print('HEM:')
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print('Results:\n', res_2_df(v, circuit.power_flow_input.Sbus, circuit.power_flow_input.types))
+    print('error: \t', err)
+
+    # check the HELM solution: v against the NR power flow
+    print('\nNR')
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9, control_q=False)
+    power_flow = PowerFlow(grid, options)
+
+    start_time = time.time()
+    power_flow.run()
+    print("--- %s seconds ---" % (time.time() - start_time))
+    vnr = circuit.power_flow_results.voltage
+
+    print('Results:\n', res_2_df(vnr, circuit.power_flow_input.Sbus, circuit.power_flow_input.types))
+    print('error: \t', circuit.power_flow_results.error)
+
+    # check
+    print('\ndiff:\t', v - vnr)
+
+    plt.show()

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.92
+__GridCal_VERSION__ = 1.94
 
 import os
 import pickle as pkl
@@ -24,12 +24,6 @@ from warnings import warn
 import networkx as nx
 import pandas as pd
 import pulp
-from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
-from GridCal.Engine.Numerical.DCPF import dcpf
-from GridCal.Engine.Numerical.HelmVect import helm
-from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
-from GridCal.Engine.Numerical.SC import short_circuit_3p
-
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
@@ -40,11 +34,16 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
 from poap.controller import SerialController
 from pyDOE import lhs
 from pySOT import *
-from scipy.sparse import csc_matrix as sparse
+from scipy.sparse import csc_matrix, lil_matrix
 from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
 
+from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
+from GridCal.Engine.Numerical.DCPF import dcpf
+from GridCal.Engine.Numerical.HELM import helm
+from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
+from GridCal.Engine.Numerical.SC import short_circuit_3p
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -116,7 +115,7 @@ class CascadeType(Enum):
 
 class CDF(object):
     """
-    Inverse Cumulative density function of a given array f data
+    Inverse Cumulative density function of a given array of data
     """
 
     def __init__(self, data):
@@ -467,6 +466,9 @@ def load_from_xls(filename):
                 df = xl.parse(name, index_col=0)
                 data[name] = df
 
+    else:
+        raise Exception('This excel file is not in GridCal Format')
+
     return data
 
 
@@ -559,14 +561,25 @@ class Bus:
         Infer the bus type from the devices attached to it
         @return: Nothing
         """
-        if len(self.controlled_generators) > 0:
+
+        gen_on = 0
+        for elm in self.controlled_generators:
+            if elm.active:
+                gen_on += 1
+
+        batt_on = 0
+        for elm in self.batteries:
+            if elm.active:
+                batt_on += 1
+
+        if gen_on > 0:
 
             if self.is_slack:  # If contains generators and is marked as REF, then set it as REF
                 self.type = NodeType.REF
             else:  # Otherwise set as PV
                 self.type = NodeType.PV
 
-        elif len(self.batteries) > 0:
+        elif batt_on > 0:
 
             if self.dispatch_storage:
                 # If there are storage devices and the dispatchable flag is on, set the bus as dispatchable
@@ -921,9 +934,9 @@ class TransformerType:
             leakage_impedance: Series impedance
             magnetizing_impedance: Shunt impedance
         """
-        Uhv = self.HV_nominal_voltage
+        Vhv = self.HV_nominal_voltage
 
-        Ulv = self.LV_nominal_voltage
+        Vlv = self.LV_nominal_voltage
 
         Sn = self.Nominal_power
 
@@ -933,52 +946,46 @@ class TransformerType:
 
         I0 = self.No_load_current
 
-        Usc = self.Short_circuit_voltage
+        Vsc = self.Short_circuit_voltage
 
-        # Nominal impedance HV (Ohm)
-        Zn_hv = Uhv * Uhv / Sn
+        # GRhv = self.GR_hv1
+        # GXhv = self.GX_hv1
 
-        # Nominal impedance LV (Ohm)
-        Zn_lv = Ulv * Ulv / Sn
+        # Zn_hv = (Vhv ** 2) / Sn
+        # Zn_lv = (Vlv ** 2) / Sn
 
-        # Short circuit impedance (p.u.)
-        zsc = Usc / 100
+        zsc = Vsc / 100.0
+        rsc = (Pcu / 1000.0) / Sn
+        xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
 
-        # Short circuit resistance (p.u.)
-        rsc = (Pcu / 1000) / Sn
+        # rcu_hv = rsc * self.GR_hv1
+        # rcu_lv = rsc * (1 - self.GR_hv1)
+        # xs_hv = xsc * self.GX_hv1
+        # xs_lv = xsc * (1 - self.GX_hv1)
 
-        # Short circuit reactance (p.u.)
-        xsc = sqrt(zsc * zsc - rsc * rsc)
+        if Pfe > 0.0 and I0 > 0.0:
+            rfe = Sn / (Pfe / 1000.0)
 
-        # HV resistance (p.u.)
-        rcu_hv = rsc * self.GR_hv1
+            zm = 1.0 / (I0 / 100.0)
 
-        # LV resistance (p.u.)
-        rcu_lv = rsc * (1 - self.GR_hv1)
+            xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
 
-        # HV shunt reactance (p.u.)
-        xs_hv = xsc * self.GX_hv1
-
-        # LV shunt reactance (p.u.)
-        xs_lv = xsc * (1 - self.GX_hv1)
-
-        # Shunt resistance (p.u.)
-        rfe = Sn / (Pfe / 1000)
-
-        # Magnetization impedance (p.u.)
-        zm = 1 / (I0 / 100)
-
-        # Magnetization reactance (p.u.)
-        if rfe > zm:
-            xm = 1 / sqrt(1 / (zm * zm) - 1 / (rfe * rfe))
         else:
-            xm = 0  # the square root cannot be computed
 
-        # Calculated parameters in per unit
-        leakage_impedance = rsc + 1j * xsc
-        magnetizing_impedance = rfe + 1j * xm
+            rfe = 0.0
+            xm = 0.0
 
-        return leakage_impedance, magnetizing_impedance
+        # series impedance
+        z_series = rsc + 1j * xsc
+
+        # y_series = 1.0 / z_series
+
+        # shunt impedance
+        zl = rfe + 1j * xm
+
+        # y_shunt = 1.0 / zl
+
+        return z_series, zl
 
     def __str__(self):
         return self.name
@@ -1192,22 +1199,20 @@ class Branch:
         """
         Apply a transformer type definition to this object
         Args:
-            obj:
-
-        Returns:
-
+            obj: TransformerType object
         """
-        leakage_impedance, magnetizing_impedance = obj.get_impedances()
+        z_series, zsh = obj.get_impedances()
 
-        z_series = magnetizing_impedance
-        y_shunt = 1 / leakage_impedance
+        y_shunt = 1 / zsh
 
-        self.R = z_series.real
-        self.X = z_series.imag
-        self.G = y_shunt.real
-        self.B = y_shunt.imag
+        self.R = np.round(z_series.real, 6)
+        self.X = np.round(z_series.imag, 6)
+        self.G = np.round(y_shunt.real, 6)
+        self.B = np.round(y_shunt.imag, 6)
 
         self.type_obj = obj
+
+        self.rate = obj.Nominal_power
 
         self.is_transformer = True
 
@@ -2050,7 +2055,7 @@ class Circuit:
         self.name = name
 
         # Base power (MVA)
-        self.Sbase = 100
+        self.Sbase = 100.0
 
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
@@ -2102,7 +2107,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self):
+    def compile(self, time_profile=None):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -2110,18 +2115,29 @@ class Circuit:
             - Vbus vector
             - etc...
         """
+
+        # declare length of arrays
         n = len(self.buses)
         m = len(self.branches)
 
+        if time_profile is None:
+            t = 0
+        else:
+            t = len(time_profile)
+
+        # declare a graph
         self.graph = nx.Graph()
 
         # declare power flow results
         power_flow_input = PowerFlowInput(n, m)
 
         # time series inputs
-        Sprofile = pd.DataFrame()
-        Iprofile = pd.DataFrame()
-        Yprofile = pd.DataFrame()
+        S_profile_data = zeros((t, n), dtype=complex)
+        I_profile_data = zeros((t, n), dtype=complex)
+        Y_profile_data = zeros((t, n), dtype=complex)
+        S_prof_names = [None] * n
+        I_prof_names = [None] * n
+        Y_prof_names = [None] * n
         Scdf_ = [None] * n
         Icdf_ = [None] * n
         Ycdf_ = [None] * n
@@ -2132,9 +2148,6 @@ class Circuit:
 
         # Dictionary that helps referencing the nodes
         self.buses_dict = dict()
-
-        # declare the square root of 3 to do it only once
-        sqrt3 = sqrt(3.0)
 
         # Compile the buses
         for i in range(n):
@@ -2152,59 +2165,60 @@ class Circuit:
             self.buses[i].determine_bus_type()
 
             # compute the bus magnitudes
-            Y, I, S, V, Yprof, Iprof, Sprof, Ycdf, Icdf, Scdf = self.buses[i].get_YISV()
+            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV()
+
+            # Assign the values to the simulation objects
             power_flow_input.Vbus[i] = V  # set the bus voltages
             power_flow_input.Sbus[i] += S  # set the bus power
             power_flow_input.Ibus[i] += I  # set the bus currents
 
-            power_flow_input.Ybus[i, i] += Y  # set the bus shunt impedance in per unit
-            power_flow_input.Yshunt[i] += Y  # copy the shunt impedance
+            power_flow_input.Ybus[i, i] += Y / self.Sbase  # set the bus shunt impedance in per unit
+            power_flow_input.Yshunt[i] += Y / self.Sbase  # copy the shunt impedance
 
             power_flow_input.types[i] = self.buses[i].type.value[0]  # set type
 
-            power_flow_input.Vmin[i] = self.buses[i].Vmin
-            power_flow_input.Vmax[i] = self.buses[i].Vmax
-            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum / self.Sbase
-            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum / self.Sbase
+            power_flow_input.Vmin[i] = self.buses[i].Vmin  # in p.u.
+            power_flow_input.Vmax[i] = self.buses[i].Vmax  # in p.u.
+            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum  # in MVAr
+            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum  # in MVAr
+
+            # Compile all the time related variables
 
             # compute the time series arrays  ##############################################
 
-            # merge the individual profiles. The profiles are Pandas DataFrames
-            # ttt, nnn = Sprof.shape
             if Sprof is not None:
-                k = where(Sprof.values == nan)
-                Sprofile = pd.concat([Sprofile, Sprof], axis=1)
-            else:
-                nn = len(Sprofile)
-                Sprofile['Sprof@Bus' + str(i)] = pd.Series(ones(nn) * S, index=Sprofile.index)  # append column of zeros
-
+                S_profile_data[:, i] = Sprof.data
             if Iprof is not None:
-                Iprofile = pd.concat([Iprofile, Iprof], axis=1)
-            else:
-                Iprofile['Iprof@Bus' + str(i)] = pd.Series(ones(len(Iprofile)) * I, index=Iprofile.index)
-
+                I_profile_data[:, i] = Iprof.data
             if Yprof is not None:
-                Yprofile = pd.concat([Yprofile, Yprof], axis=1)
-            else:
-                Yprofile['Iprof@Bus' + str(i)] = pd.Series(ones(len(Yprofile)) * Y, index=Yprofile.index)
+                Y_profile_data[:, i] = Yprof.data
 
-            # Store the CDF's form Monte Carlo ##############################################
+            S_prof_names[i] = 'Sprof@Bus' + str(i)
+            I_prof_names[i] = 'Iprof@Bus' + str(i)
+            Y_prof_names[i] = 'Yprof@Bus' + str(i)
 
-            if Scdf is None and S != complex(0, 0):
-                Scdf = CDF(array([S]))
+            # Store the CDF's for Monte Carlo ##############################################
 
-            if Icdf is None and I != complex(0, 0):
-                Icdf = CDF(array([I]))
+            if S_cdf is None and S != complex(0, 0):
+                S_cdf = CDF(array([S]))
 
-            if Ycdf is None and Y != complex(0, 0):
-                Ycdf = CDF(array([Y]))
+            if I_cdf is None and I != complex(0, 0):
+                I_cdf = CDF(array([I]))
 
-            if Scdf is not None or Icdf is not None or Ycdf is not None:
+            if Y_cdf is None and Y != complex(0, 0):
+                Y_cdf = CDF(array([Y]))
+
+            if S_cdf is not None or I_cdf is not None or Y_cdf is not None:
                 are_cdfs = True
 
-            Scdf_[i] = Scdf
-            Icdf_[i] = Icdf
-            Ycdf_[i] = Ycdf
+            Scdf_[i] = S_cdf
+            Icdf_[i] = I_cdf
+            Ycdf_[i] = Y_cdf
+
+        # Compute the base magnitudes
+        # (not needed since I and Y are given in MVA, you can demonstrate that only Sbase is needed to pass to p.u.)
+        # Ibase = self.Sbase / (Vbase * sqrt3)
+        # Ybase = self.Sbase / (Vbase * Vbase)
 
         # normalize_string the power array
         power_flow_input.Sbus /= self.Sbase
@@ -2212,27 +2226,21 @@ class Circuit:
         # normalize_string the currents array (I was given in MVA at v=1 p.u.)
         power_flow_input.Ibus /= self.Sbase
 
-        # normalize_string the admittances array (Y was given in MVA at v=1 p.u.)
-        power_flow_input.Ybus /= self.Sbase
-        power_flow_input.Yshunt /= self.Sbase
+        # normalize the admittances array (Y was given in MVA at v=1 p.u.)
+        # At this point only the shunt and load related values are added here
+        # power_flow_input.Ybus /= self.Sbase
+        # power_flow_input.Yshunt /= self.Sbase
 
         # normalize_string the reactive power limits array (Q was given in MVAr)
         power_flow_input.Qmax /= self.Sbase
         power_flow_input.Qmin /= self.Sbase
 
-        if Sprofile is not None:
-            Sprofile /= self.Sbase
-            Sprofile.columns = ['Sprof@Bus' + str(i) for i in range(Sprofile.shape[1])]
+        # make the profiles as DataFrames
+        S_profile = pd.DataFrame(data=S_profile_data / self.Sbase, columns=S_prof_names, index=time_profile)
+        I_profile = pd.DataFrame(data=I_profile_data / self.Sbase, columns=I_prof_names, index=time_profile)
+        Y_profile = pd.DataFrame(data=Y_profile_data / self.Sbase, columns=Y_prof_names, index=time_profile)
 
-        if Iprofile is not None:
-            Iprofile /= self.Sbase
-            Iprofile.columns = ['Iprof@Bus' + str(i) for i in range(Iprofile.shape[1])]
-
-        if Yprofile is not None:
-            Yprofile /= self.Sbase
-            Yprofile.columns = ['Yprof@Bus' + str(i) for i in range(Yprofile.shape[1])]
-
-        time_series_input = TimeSeriesInput(Sprofile, Iprofile, Yprofile)
+        time_series_input = TimeSeriesInput(S_profile, I_profile, Y_profile)
         time_series_input.compile()
 
         if are_cdfs:
@@ -2242,11 +2250,12 @@ class Circuit:
         for i in range(m):
 
             if self.branches[i].active:
-                # Set the branch impedance
 
+                # get the from and to bus indices
                 f = self.buses_dict[self.branches[i].bus_from]
                 t = self.buses_dict[self.branches[i].bus_to]
 
+                # apply the brach properties to the circuit matrices
                 f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
                                                  Yseries=power_flow_input.Yseries,
                                                  Yshunt=power_flow_input.Yshunt,
@@ -2255,9 +2264,6 @@ class Circuit:
                                                  B1=power_flow_input.B1,
                                                  B2=power_flow_input.B2,
                                                  i=i, f=f, t=t)
-                # add the bus shunts
-                # power_flow_input.Yf[i, f] += power_flow_input.Yshunt[f, f]
-                # power_flow_input.Yt[i, t] += power_flow_input.Yshunt[t, t]
 
                 # Add graph edge (automatically adds the vertices)
                 self.graph.add_edge(f, t)
@@ -2384,6 +2390,33 @@ class Circuit:
         else:
             return J.todense()
 
+    def get_bus_pf_results_df(self):
+        """
+        Returns a Pandas DataFrame with the bus results
+        :return: DataFrame
+        """
+
+        cols = ['|V| (p.u.)', 'angle (rad)', 'P (p.u.)', 'Q (p.u.)', 'Qmin', 'Qmax', 'Q ok?']
+
+        if self.power_flow_results is not None:
+            q_l = self.power_flow_input.Qmin < self.power_flow_results.Sbus.imag
+            q_h = self.power_flow_results.Sbus.imag < self.power_flow_input.Qmax
+            q_ok = q_l * q_h
+            data = c_[np.abs(self.power_flow_results.voltage),
+                      np.angle(self.power_flow_results.voltage),
+                      self.power_flow_results.Sbus.real,
+                      self.power_flow_results.Sbus.imag,
+                      self.power_flow_input.Qmin,
+                      self.power_flow_input.Qmax,
+                      q_ok.astype(np.bool)]
+        else:
+            data = [0, 0, 0, 0, 0, 0]
+
+        return pd.DataFrame(data=data, index=self.power_flow_input.bus_names, columns=cols)
+
+    def __str__(self):
+        return self.name
+
 
 class MultiCircuit(Circuit):
 
@@ -2435,6 +2468,7 @@ class MultiCircuit(Circuit):
             name, file_extension = os.path.splitext(filename)
             # print(name, file_extension)
             if file_extension == '.xls' or file_extension == '.xlsx':
+
                 ppc = load_from_xls(filename)
 
                 # Pass the table-like data dictionary to objects in this circuit
@@ -2933,7 +2967,7 @@ class MultiCircuit(Circuit):
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
-            circuit.compile()
+            circuit.compile(self.time_profile)
 
             # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
@@ -3212,6 +3246,8 @@ class MultiCircuit(Circuit):
         for branch in self.branches:
             cpy.add_branch(branch.copy(bus_dict))
 
+        cpy.time_profile = self.time_profile
+
         return cpy
 
     def dispatch(self):
@@ -3338,10 +3374,10 @@ class PowerFlowInput:
         self.pqpv = None
 
         # Branch admittance matrix with the from buses
-        self.Yf = zeros((m, n), dtype=complex)
+        self.Yf = lil_matrix((m, n), dtype=complex)
 
         # Branch admittance matrix with the to buses
-        self.Yt = zeros((m, n), dtype=complex)
+        self.Yt = lil_matrix((m, n), dtype=complex)
 
         # Array with the 'from' index of the from bus of each branch
         self.F = zeros(m, dtype=int)
@@ -3353,22 +3389,22 @@ class PowerFlowInput:
         self.active_branches = zeros(m, dtype=int)
 
         # Full admittance matrix (will be converted to sparse)
-        self.Ybus = zeros((n, n), dtype=complex)
+        self.Ybus = lil_matrix((n, n), dtype=complex)
 
         # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
         self.Zbus = None
 
         # Admittance matrix of the series elements (will be converted to sparse)
-        self.Yseries = zeros((n, n), dtype=complex)
+        self.Yseries = lil_matrix((n, n), dtype=complex)
 
         # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
         self.Yshunt = zeros(n, dtype=complex)
 
         # Jacobian matrix 1 for the fast-decoupled power flow
-        self.B1 = zeros((n, n), dtype=double)
+        self.B1 = lil_matrix((n, n), dtype=double)
 
         # Jacobian matrix 2 for the fast-decoupled power flow
-        self.B2 = zeros((n, n), dtype=double)
+        self.B2 = lil_matrix((n, n), dtype=double)
 
         # Array of line-line nominal voltages of the buses
         self.Vnom = zeros(n)
@@ -3402,12 +3438,12 @@ class PowerFlowInput:
         Create the ref, pv and pq lists
         @return:
         """
-        self.Yf = sparse(self.Yf)
-        self.Yt = sparse(self.Yt)
-        self.Ybus = sparse(self.Ybus)
-        self.Yseries = sparse(self.Yseries)
-        self.B1 = sparse(self.B1)
-        self.B2 = sparse(self.B2)
+        self.Yf = csc_matrix(self.Yf)
+        self.Yt = csc_matrix(self.Yt)
+        self.Ybus = csc_matrix(self.Ybus)
+        self.Yseries = csc_matrix(self.Yseries)
+        self.B1 = csc_matrix(self.B1)
+        self.B2 = csc_matrix(self.B2)
         # self.Yshunt = sparse(self.Yshunt)  No need to make it sparse, it is a vector already
         # compile the types lists from the types vector
         self.compile_types()
@@ -3798,36 +3834,36 @@ class PowerFlowResults:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        if indices is None:
+        if indices is None and names is not None:
             indices = array(range(len(names)))
 
         if len(indices) > 0:
             labels = names[indices]
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage':
                 y = self.voltage[indices]
-                ylabel = '(p.u.)'
+                y_label = '(p.u.)'
                 title = 'Bus voltage '
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices]
-                ylabel = '(MVA)'
+                y_label = '(MVA)'
                 title = 'Branch power '
 
             elif result_type == 'Branch current':
                 y = self.Ibranch[indices]
-                ylabel = '(p.u.)'
+                y_label = '(p.u.)'
                 title = 'Branch current '
 
             elif result_type == 'Branch_loading':
                 y = self.loading[indices] * 100
-                ylabel = '(%)'
+                y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == 'Branch losses':
                 y = self.losses[indices]
-                ylabel = '(MVA)'
+                y_label = '(MVA)'
                 title = 'Branch losses '
 
             else:
@@ -3835,10 +3871,10 @@ class PowerFlowResults:
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
             if len(df.columns) < self.plot_bars_limit:
-                df.plot(ax=ax, kind='bar')
+                df.abs().plot(ax=ax, kind='bar')
             else:
-                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(ylabel)
+                df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+            ax.set_ylabel(y_label)
             ax.set_title(title)
 
             return df
@@ -3981,16 +4017,15 @@ class PowerFlow(QRunnable):
                 # type HELM
                 if self.options.solver_type == SolverType.HELM:
                     methods.append(SolverType.HELM)
-                    V, converged, normF, Scalc, it, el = helm(Y=circuit.power_flow_input.Ybus,
-                                                              Ys=circuit.power_flow_input.Yseries,
-                                                              Ysh=circuit.power_flow_input.Yshunt,
-                                                              max_coefficient_count=30,
-                                                              S=circuit.power_flow_input.Sbus,
-                                                              voltage_set_points=V,
+                    V, converged, normF, Scalc, it, el = helm(Vbus=V,
+                                                              Sbus=Sbus,
+                                                              Ybus=circuit.power_flow_input.Ybus,
                                                               pq=circuit.power_flow_input.pq,
                                                               pv=circuit.power_flow_input.pv,
-                                                              vd=circuit.power_flow_input.ref,
-                                                              eps=self.options.tolerance)
+                                                              ref=circuit.power_flow_input.ref,
+                                                              pqpv=circuit.power_flow_input.pqpv,
+                                                              tol=self.options.tolerance,
+                                                              max_coefficient_count=self.options.max_iter)
 
                 # type DC
                 elif self.options.solver_type == SolverType.DC:
@@ -4445,7 +4480,7 @@ class ShortCircuitResults(PowerFlowResults):
         PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
                                   loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
 
-        self.Scpower = SCpower
+        self.short_circuit_power = SCpower
 
         self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses',
                                   'Bus short circuit power']
@@ -4457,7 +4492,7 @@ class ShortCircuitResults(PowerFlowResults):
         """
         return ShortCircuitResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
                                    Ibranch=self.Ibranch, loading=self.loading,
-                                   losses=self.losses, SCpower=self.Scpower, error=self.error,
+                                   losses=self.losses, SCpower=self.short_circuit_power, error=self.error,
                                    converged=self.converged, Qpv=self.Qpv)
 
     def initialize(self, n, m):
@@ -4471,7 +4506,7 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.voltage = zeros(n, dtype=complex)
 
-        self.Scpower = zeros(n, dtype=float)
+        self.short_circuit_power = zeros(n, dtype=complex)
 
         self.overvoltage = zeros(n, dtype=complex)
 
@@ -4505,7 +4540,7 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.voltage[b_idx] = results.voltage
 
-        self.Scpower[b_idx] = results.Scpower
+        self.short_circuit_power[b_idx] = results.short_circuit_power
 
         self.overvoltage[b_idx] = results.overvoltage
 
@@ -4579,14 +4614,14 @@ class ShortCircuitResults(PowerFlowResults):
                 title = 'Branch losses '
 
             elif result_type == 'Bus short circuit power':
-                y = self.Scpower[indices]
+                y = self.short_circuit_power[indices]
                 ylabel = '(MVA)'
                 title = 'Bus short circuit power'
             else:
                 pass
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
-            df.plot(ax=ax, kind='bar', linewidth=LINEWIDTH)
+            df.abs().plot(ax=ax, kind='bar', linewidth=LINEWIDTH)
             ax.set_ylabel(ylabel)
             ax.set_title(title)
 
@@ -4635,8 +4670,8 @@ class ShortCircuit(QRunnable):
 
         # compute Zbus if needed
         if circuit.power_flow_input.Zbus is None:
-            circuit.power_flow_input.Zbus = inv(
-                circuit.power_flow_input.Ybus).toarray()  # is dense, so no need to store it as sparse
+            # is dense, so no need to store it as sparse
+            circuit.power_flow_input.Zbus = inv(circuit.power_flow_input.Ybus).toarray()
 
         # Compute the short circuit
         V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
@@ -4819,7 +4854,7 @@ class TimeSeriesInput:
     def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):
         """
 
-        :param res:
+        :param res: TimeSeriesInput
         :param bus_original_idx:
         :param branch_original_idx:
         :param nbus_full:
@@ -4827,16 +4862,17 @@ class TimeSeriesInput:
         :return:
         """
 
-        if self.Sprof is None:
-            self.time_array = res.time_array
-            t = len(self.time_array)
-            self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
-            self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
-            self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+        if res is not None:
+            if self.Sprof is None:
+                self.time_array = res.time_array
+                # t = len(self.time_array)
+                self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+                self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
+                self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
 
-        self.Sprof[res.Sprof.columns.values] = res.Sprof
-        self.Iprof[res.Iprof.columns.values] = res.Iprof
-        self.Yprof[res.Yprof.columns.values] = res.Yprof
+            self.Sprof[res.Sprof.columns.values] = res.Sprof
+            self.Iprof[res.Iprof.columns.values] = res.Iprof
+            self.Yprof[res.Yprof.columns.values] = res.Yprof
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -5104,9 +5140,9 @@ class TimeSeriesResults(PowerFlowResults):
                 df = pd.DataFrame(data=data, columns=labels)
 
             if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
             ax.set_ylabel(ylabel)
@@ -5378,9 +5414,9 @@ class VoltageCollapseResults:
             df = pd.DataFrame(data=y, index=x, columns=indices)
             df.columns = labels
             if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
             else:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
             ax.set_ylabel(ylabel)
@@ -5881,6 +5917,32 @@ class MonteCarloResults:
 
         return y_pred[:, :int(d / 2)] + 1j * y_pred[:, int(d / 2):d]
 
+    def get_index_loading_cdf(self, max_val=1.0):
+        """
+        Find the elements where the CDF is greater or equal to a velue
+        :param max_val: value to compare
+        :return: indices, associated probability
+        """
+
+        # turn the loading real values into CDF
+        cdf = CDF(np.abs(self.loading_points.real[:, :]))
+
+        n = cdf.arr.shape[1]
+        idx = list()
+        val = list()
+        prob = list()
+        for i in range(n):
+            # Find the indices that surpass max_val
+            many_idx = np.where(cdf.arr[:, i] > max_val)[0]
+
+            # if there are indices, pick the first; store it and its associated probability
+            if len(many_idx) > 0:
+                idx.append(i)
+                val.append(cdf.arr[many_idx[0], i])
+                prob.append(1 - cdf.prob[many_idx[0]])  # the CDF stores the chance of beign leq than the value, hence the overload is the complementary
+
+        return idx, val, prob, cdf.arr[-1, :]
+
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
@@ -5948,14 +6010,14 @@ class MonteCarloResults:
                 title = 'Branch loading standard \ndeviation convergence'
 
             elif result_type == 'Bus voltage CDF':
-                cdf = CDF(self.V_points.real[:, indices])
+                cdf = CDF(np.abs(self.V_points[:, indices]))
                 cdf.plot(ax=ax)
                 ylabel = '(p.u.)'
                 xlabel = 'Probability $P(X \leq x)$'
                 title = 'Bus voltage'
 
             elif result_type == 'Branch loading CDF':
-                cdf = CDF(self.loading_points.real[:, indices])
+                cdf = CDF(np.abs(self.loading_points.real[:, indices]))
                 cdf.plot(ax=ax)
                 ylabel = '(p.u.)'
                 xlabel = 'Probability $P(X \leq x)$'
@@ -5968,9 +6030,9 @@ class MonteCarloResults:
                 df = pd.DataFrame(data=y, columns=labels)
 
                 if len(df.columns) > 10:
-                    df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
                 else:
-                    df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
             else:
                 df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 
@@ -6018,7 +6080,7 @@ class LatinHypercubeSampling(QThread):
         self.__cancel__ = False
 
         # initialize the power flow
-        powerflow = PowerFlow(self.grid, self.options)
+        power_flow = PowerFlow(self.grid, self.options)
 
         # initialize the grid time series results
         # we will append the island results with another function
@@ -6040,16 +6102,19 @@ class LatinHypercubeSampling(QThread):
         for c in self.grid.circuits:
 
             try:
-                # set the time series as sampled
+                # set the time series as sampled in the circuit
                 c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
 
                 # run the time series
                 for t in range(batch_size):
 
-                    # set the power values
+                    # set the power values from a Monte carlo point at 't'
                     Y, I, S = c.mc_time_series.get_at(t)
 
-                    res = powerflow.run_at(t, mc=True)
+                    # Run the set monte carlo point at 't'
+                    res = power_flow.run_at(t, mc=True)
+
+                    # Gather the results
                     lhs_results.S_points[t, c.bus_original_idx] = S
                     lhs_results.V_points[t, c.bus_original_idx] = res.voltage[c.bus_original_idx]
                     lhs_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
@@ -6057,6 +6122,7 @@ class LatinHypercubeSampling(QThread):
 
                     it += 1
                     self.progress_signal.emit(it / max_iter * 100)
+                    # print(it / max_iter * 100)
 
                     if self.__cancel__:
                         break
@@ -6072,7 +6138,7 @@ class LatinHypercubeSampling(QThread):
 
         # lhs_results the averaged branch magnitudes
         lhs_results.sbranch, Ibranch, \
-        loading, lhs_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, lhs_results.voltage)
+        loading, lhs_results.losses, Sbus = power_flow.power_flow_post_process(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
 
@@ -6095,9 +6161,49 @@ class LatinHypercubeSampling(QThread):
 
 class CascadingReportElement:
 
-    def __init__(self, removed_idx, pf_results):
+    def __init__(self, removed_idx, pf_results, criteria):
         self.removed_idx = removed_idx
         self.pf_results = pf_results
+        self.criteria = criteria
+
+
+class CascadingResults:
+
+    def __init__(self, cascade_type: CascadeType):
+
+        self.cascade_type = cascade_type
+
+        self.events = list()
+
+    def get_failed_idx(self):
+        """
+        Return the array of all failed branches
+        Returns:
+            array of all failed branches
+        """
+        res = None
+        for i in range(len(self.events)):
+            if i == 0:
+                res = self.events[i][0]
+            else:
+                res = r_[res, self.events[i][0]]
+
+        return res
+
+    def get_table(self):
+        """
+        Get DataFrame of the failed elements
+        :return: DataFrame
+        """
+        dta = list()
+        for i in range(len(self.events)):
+            dta.append(['Step ' + str(i + 1), len(self.events[i].removed_idx), self.events[i].criteria])
+
+        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed', 'Criteria'])
+
+    def plot(self):
+
+        pass
 
 
 class Cascading(QThread):
@@ -6125,8 +6231,6 @@ class Cascading(QThread):
 
         self.__cancel__ = False
 
-        self.report = list()
-
         self.current_step = 0
 
         self.max_additional_islands = max_additional_islands
@@ -6135,8 +6239,10 @@ class Cascading(QThread):
 
         self.n_lhs_samples = n_lhs_samples_
 
+        self.results = CascadingResults(self.cascade_type)
+
     @staticmethod
-    def remove_elements(circuit: Circuit, idx=None):
+    def remove_elements(circuit: Circuit, loading_vector, idx=None):
         """
         Remove branches based on loading
         Returns:
@@ -6144,7 +6250,7 @@ class Cascading(QThread):
         """
 
         if idx is None:
-            load = abs(circuit.power_flow_results.loading)
+            load = abs(loading_vector)
             idx = where(load > 1.0)[0]
 
             if len(idx) == 0:
@@ -6157,6 +6263,49 @@ class Cascading(QThread):
             circuit.branches[i].active = False
 
         return idx
+
+    def remove_probability_based(self, circuit: Circuit, results: MonteCarloResults, max_val, min_prob):
+        """
+        Remove branches based on their chance of overload
+        :param circuit:
+        :param results:
+        :param max_val:
+        :param min_prob:
+        :return: list of indices actually removed
+        """
+        idx, val, prob, loading = results.get_index_loading_cdf(max_val=max_val)
+
+        any_removed = False
+        indices = list()
+        criteria = 'None'
+
+        for i, idx_val in enumerate(idx):
+            if prob[i] >= min_prob:
+                any_removed = True
+                circuit.branches[idx_val].active = False
+                indices.append(idx_val)
+                criteria = 'Overload probability > ' + str(min_prob)
+
+        if not any_removed:
+
+            if len(loading) > 0:
+                if len(idx) > 0:
+                    # pick a random value
+                    idx_val = np.random.randint(0, len(idx))
+                    criteria = 'Random with overloads'
+
+                else:
+                    # pick the most loaded
+                    idx_val = int(np.where(loading == max(loading))[0][0])
+                    criteria = 'Max loading, Overloads not seen'
+
+                circuit.branches[idx_val].active = False
+                indices.append(idx_val)
+            else:
+                indices = []
+                criteria = 'No branches'
+
+        return indices, criteria
 
     def perform_step_run(self):
         """
@@ -6191,7 +6340,7 @@ class Cascading(QThread):
 
         # store the removed indices and the results
         entry = CascadingReportElement(idx, model_simulator.results)
-        self.report.append(entry)
+        self.results.events.append(entry)
 
         # increase the step number
         self.current_step += 1
@@ -6211,7 +6360,7 @@ class Cascading(QThread):
 
         self.__cancel__ = False
 
-        self.report = list()
+        self.results = CascadingResults(self.cascade_type)
 
         if len(self.grid.circuits) == 0:
             self.grid.compile()
@@ -6221,7 +6370,7 @@ class Cascading(QThread):
             model_simulator = PowerFlow(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
-            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=1000)
+            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
 
         else:
             model_simulator = PowerFlow(self.grid, self.options)
@@ -6243,21 +6392,27 @@ class Cascading(QThread):
             model_simulator.run()
             # print(model_simulator.results.get_convergence_report())
 
-            if it == 0:
-                # the first iteration try to trigger the selected indices, if any
-                idx = self.remove_elements(self.grid, idx=self.triggering_idx)
-            else:
-                # for the next indices, just cascade normally
-                idx = self.remove_elements(self.grid)
+            # if it == 0:
+            #     # the first iteration try to trigger the selected indices, if any
+            #     idx = self.remove_elements(self.grid, model_simulator.results.loading, idx=self.triggering_idx)
+            # else:
+            #     # for the next indices, just cascade normally
+            #     idx = self.remove_elements(self.grid, model_simulator.results.loading)
+
+            idx, criteria = self.remove_probability_based(self.grid, model_simulator.results,
+                                                          max_val=1.0, min_prob=0.1)
 
             # store the removed indices and the results
-            entry = CascadingReportElement(idx, model_simulator.results)
-            self.report.append(entry)
+            entry = CascadingReportElement(idx, model_simulator.results, criteria)
+            self.results.events.append(entry)
 
             # recompile grid
             self.grid.compile()
 
             it += 1
+
+            prog = max(len(self.grid.circuits) / (n_grids+1), it/(n_grids+1))
+            self.progress_signal.emit(prog * 100.0)
 
             if self.__cancel__:
                 break
@@ -6275,22 +6430,14 @@ class Cascading(QThread):
         Returns:
             array of all failed branches
         """
-        res = None
-        for i in range(len(self.report)):
-            if i == 0:
-                res = self.report[i][0]
-            else:
-                res = r_[res, self.report[i][0]]
-
-        return res
+        return self.results.get_failed_idx()
 
     def get_table(self):
-
-        dta = list()
-        for i in range(len(self.report)):
-            dta.append(['Step ' + str(i + 1), len(self.report[i].removed_idx)])
-
-        return pd.DataFrame(data=dta, columns=['Cascade step', 'Elements failed'])
+        """
+        Get DataFrame of the failed elements
+        :return: DataFrame
+        """
+        return self.results.get_table()
 
     def cancel(self):
         self.__cancel__ = True
@@ -6468,17 +6615,21 @@ class Optimize(QThread):
 
 class DcOpf:
 
-    def __init__(self, circuit):
+    def __init__(self, circuit, options):
         """
         OPF simple dispatch problem
         :param circuit: GridCal Circuit instance (remember this must be a connected island)
+        :param options: OptimalPowerFlowOptions instance
         """
 
         self.circuit = circuit
 
+        self.load_shedding = options.load_shedding
+
         self.Sbase = circuit.Sbase
         self.B = circuit.power_flow_input.Ybus.imag.tocsr()
         self.nbus = self.B.shape[0]
+        self.nbranch = len(self.circuit.branches)
 
         # node sets
         self.pqpv = circuit.power_flow_input.pqpv
@@ -6486,10 +6637,29 @@ class DcOpf:
         self.vd = circuit.power_flow_input.ref
         self.pq = circuit.power_flow_input.pq
 
-        # declare the voltage angles
+        # declare the voltage angles and the possible load shed values
         self.theta = [None] * self.nbus
+        self.load_shed = [None] * self.nbus
         for i in range(self.nbus):
-            self.theta[i] = pulp.LpVariable("Theta" + str(i), -0.5, 0.5)
+            self.theta[i] = pulp.LpVariable("Theta_" + str(i), -0.5, 0.5)
+            self.load_shed[i] = pulp.LpVariable("LoadShed_" + str(i), 0.0, 1e20)
+
+        # declare the slack vars
+        self.slack_loading_ij_p = [None] * self.nbranch
+        self.slack_loading_ji_p = [None] * self.nbranch
+        self.slack_loading_ij_n = [None] * self.nbranch
+        self.slack_loading_ji_n = [None] * self.nbranch
+
+        if self.load_shedding:
+            pass
+
+        else:
+
+            for i in range(self.nbranch):
+                self.slack_loading_ij_p[i] = pulp.LpVariable("LoadingSlack_ij_p_" + str(i), 0, 1e20)
+                self.slack_loading_ji_p[i] = pulp.LpVariable("LoadingSlack_ji_p_" + str(i), 0, 1e20)
+                self.slack_loading_ij_n[i] = pulp.LpVariable("LoadingSlack_ij_n_" + str(i), 0, 1e20)
+                self.slack_loading_ji_n[i] = pulp.LpVariable("LoadingSlack_ji_n_" + str(i), 0, 1e20)
 
         # declare the generation
         self.PG = list()
@@ -6547,7 +6717,7 @@ class DcOpf:
             fobj += self.theta[j] * 0.0
 
         # Add the generators cost
-        for bus in self.circuit.buses:
+        for k, bus in enumerate(self.circuit.buses):
 
             # check that there are at least one generator at the slack node
             if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
@@ -6564,6 +6734,17 @@ class DcOpf:
                 fobj += gen.LPVar_P * gen.Cost
 
                 self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
+
+            # minimize the load shedding if activated
+            if self.load_shedding:
+                fobj += self.load_shed[k]
+
+        # minimize the branch loading slack if not load shedding
+        if not self.load_shedding:
+            # Minimize the branch overload slacks
+            for k, branch in enumerate(self.circuit.branches):
+                fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
+                fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
 
         # Add the objective function to the problem
         prob += fobj
@@ -6592,7 +6773,7 @@ class DcOpf:
             self.s_restrictions.append(calculated_node_power)
             self.p_restrictions.append(node_power_injection)
 
-            # # add the nodal demand
+            # # add the nodal demand: See 'set_loads()'
             # for load in self.circuit.buses[i].loads:
             #     node_power_injection -= load.S.real / self.Sbase
             #
@@ -6630,12 +6811,20 @@ class DcOpf:
         for k, branch in enumerate(self.circuit.branches):
             i = self.circuit.buses_dict[branch.bus_from]
             j = self.circuit.buses_dict[branch.bus_to]
+
             # branch flow
             Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
             Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+
             # constraints
-            prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-            prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+            if not self.load_shedding:
+                # Add slacks
+                prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+            else:
+                # THe slacks are in the form of load shedding
+                prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
 
             if branch.rate <= 1e-6:
                 any_rate_zero = True
@@ -6673,8 +6862,18 @@ class DcOpf:
                     pass
                 else:
                     # add the restriction
-                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+                    if self.load_shedding:
+
+                        self.problem.add(calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
+                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+                        # if there is no load at the node, do not allow load shedding
+                        if len(self.circuit.buses[i].loads) == 0:
+                            self.problem.add(self.load_shed[i] == 0.0, self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+
+                    else:
+                        self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
         else:
             # Use the load profile values at index=t_idx
             for k, i in enumerate(self.pqpv):
@@ -6685,11 +6884,23 @@ class DcOpf:
 
                 # add the nodal demand
                 for load in self.circuit.buses[i].loads:
-                    self.loads[i] += load.S_prof.values[t_idx].real / self.Sbase
+                    self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
 
                 # add the restriction
-                self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                 self.circuit.buses[i].name + 'ct_node_mismatch_' + str(i))
+                if self.load_shedding:
+
+                    self.problem.add(
+                        calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
+                        self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+                    # if there is no load at the node, do not allow load shedding
+                    if len(self.circuit.buses[i].loads) == 0:
+                        self.problem.add(self.load_shed[i] == 0.0,
+                                         self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+
+                else:
+                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
 
     def solve(self):
         """
@@ -6703,6 +6914,7 @@ class DcOpf:
                 self.build()
 
             print('Solving LP')
+            print('Load shedding:', self.load_shedding)
             self.problem.solve()  # solve with CBC
             # prob.solve(CPLEX())
 
@@ -6742,7 +6954,7 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
-    def get_results(self, save_lp_file=True):
+    def get_results(self, save_lp_file=False):
         """
         Return the optimization results
         Returns:
@@ -6776,6 +6988,9 @@ class DcOpf:
                 # Set the voltage
                 res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
+                if self.load_shed is not None:
+                    res.load_shedding[i] = self.load_shed[i].value()
+
             # Add branches
             for k, branch in enumerate(self.circuit.branches):
 
@@ -6790,6 +7005,11 @@ class DcOpf:
                     F = -1
 
                 # Set the results
+                if self.slack_loading_ij_p[k] is not None:
+                    res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                        + self.slack_loading_ji_p[k].value()
+                                        - self.slack_loading_ij_n[k].value()
+                                        - self.slack_loading_ji_n[k].value()) * self.Sbase
                 res.Sbranch[k] = F
                 res.loading[k] = abs(F / branch.rate)
 
@@ -6802,17 +7022,20 @@ class DcOpf:
 
 class OptimalPowerFlowOptions:
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, load_shedding=False):
         """
         
         :param verbose: 
         """
         self.verbose = verbose
 
+        self.load_shedding = load_shedding
+
 
 class OptimalPowerFlowResults:
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, loading=None, losses=None, converged=None):
+    def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
+                 loading=None, losses=None, converged=None):
         """
 
         Args:
@@ -6827,7 +7050,11 @@ class OptimalPowerFlowResults:
 
         self.voltage = voltage
 
+        self.load_shedding = load_shedding
+
         self.Sbranch = Sbranch
+
+        self.overloads = overloads
 
         self.loading = loading
 
@@ -6835,7 +7062,8 @@ class OptimalPowerFlowResults:
 
         self.converged = converged
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch_loading']
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power', 'Branch loading',
+                                  'Branch overloads', 'Load shedding']
 
         self.plot_bars_limit = 100
 
@@ -6844,8 +7072,14 @@ class OptimalPowerFlowResults:
         Return a copy of this
         @return:
         """
-        return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
-                                loading=self.loading, losses=self.losses, converged=self.converged)
+        return PowerFlowResults(Sbus=self.Sbus,
+                                voltage=self.voltage,
+                                load_shedding=self.load_shedding,
+                                Sbranch=self.Sbranch,
+                                overloads=self.overloads,
+                                loading=self.loading,
+                                losses=self.losses,
+                                converged=self.converged)
 
     def initialize(self, n, m):
         """
@@ -6858,9 +7092,13 @@ class OptimalPowerFlowResults:
 
         self.voltage = zeros(n, dtype=complex)
 
+        self.load_shedding = zeros(n, dtype=float)
+
         self.Sbranch = zeros(m, dtype=complex)
 
         self.loading = zeros(m, dtype=complex)
+
+        self.overloads = zeros(m, dtype=complex)
 
         self.losses = zeros(m, dtype=complex)
 
@@ -6880,9 +7118,13 @@ class OptimalPowerFlowResults:
 
         self.voltage[b_idx] = results.voltage
 
+        self.load_shedding[b_idx] = results.load_shedding
+
         self.Sbranch[br_idx] = results.Sbranch
 
         self.loading[br_idx] = results.loading
+
+        self.overloads[br_idx] = results.overloads
 
         self.losses[br_idx] = results.losses
 
@@ -6910,42 +7152,54 @@ class OptimalPowerFlowResults:
 
         if len(indices) > 0:
             labels = names[indices]
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage':
-                y = self.voltage[indices]
-                ylabel = '(p.u.)'
-                title = 'Bus voltage '
+                y = np.angle(self.voltage[indices])
+                y_label = '(rad)'
+                title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch power '
 
             elif result_type == 'Bus power':
                 y = self.Sbus[indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Bus power '
 
-            elif result_type == 'Branch_loading':
-                y = self.loading[indices] * 100
-                ylabel = '(%)'
+            elif result_type == 'Branch loading':
+                y = np.abs(self.loading[indices] * 100.0)
+                y_label = '(%)'
                 title = 'Branch loading '
+
+            elif result_type == 'Branch overloads':
+                y = np.abs(self.overloads[indices])
+                y_label = '(MW)'
+                title = 'Branch overloads '
 
             elif result_type == 'Branch losses':
                 y = self.losses[indices].real
-                ylabel = '(MW)'
+                y_label = '(MW)'
                 title = 'Branch losses '
+
+            elif result_type == 'Load shedding':
+                y = self.load_shedding[indices]
+                y_label = '(MW)'
+                title = 'Load shedding'
 
             else:
                 pass
 
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            df.fillna(0, inplace=True)
+
             if len(df.columns) < self.plot_bars_limit:
                 df.plot(ax=ax, kind='bar')
             else:
                 df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(ylabel)
+            ax.set_ylabel(y_label)
             ax.set_title(title)
 
             return df
@@ -6980,17 +7234,17 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
-    @staticmethod
-    def single_optimal_power_flow(circuit: Circuit, t_idx=None):
+    def single_optimal_power_flow(self, circuit: Circuit, t_idx=None):
         """
         Run a power flow simulation for a single circuit
         @param circuit: Single island circuit
+        @param options: Optimal Power Flow options
         @param t_idx: time index, if none the default values are taken
         @return: OptimalPowerFlowResults object
         """
 
         # declare LP problem
-        problem = DcOpf(circuit)
+        problem = DcOpf(circuit, self.options)
         problem.build()
         problem.set_loads(t_idx=t_idx)
         problem.solve()
@@ -7050,6 +7304,211 @@ class OptimalPowerFlow(QRunnable):
         res = self.opf(t)
 
         return res
+
+    def cancel(self):
+        self.__cancel__ = True
+
+
+class OptimalPowerFlowTimeSeriesResults:
+
+    def __init__(self, n, m, nt, time=None):
+        """
+        OPF Time Series results constructor
+        :param n: number of buses
+        :param m: number of branches
+        :param nt: number of time steps
+        :param time: Time array (optional)
+        """
+        self.n = n
+
+        self.m = m
+
+        self.nt = nt
+
+        self.time = time
+
+        self.voltage = zeros((nt, n), dtype=complex)
+
+        self.load_shedding = zeros((nt, n), dtype=float)
+
+        self.loading = zeros((nt, m), dtype=float)
+
+        self.losses = zeros((nt, m), dtype=float)
+
+        self.overloads = zeros((nt, m), dtype=float)
+
+        self.Sbus = zeros((nt, n), dtype=complex)
+
+        self.Sbranch = zeros((nt, m), dtype=complex)
+
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
+                                  'Branch loading', 'Branch overloads', 'Load shedding']
+
+        # self.generators_power = zeros((ng, nt), dtype=complex)
+
+    def set_at(self, t, res: OptimalPowerFlowResults):
+        """
+        Set the results
+        :param t: time index
+        :param res: OptimalPowerFlowResults instance
+        """
+
+        self.voltage[t, :] = res.voltage
+
+        self.load_shedding[t, :] = res.load_shedding
+
+        self.loading[t, :] = res.loading
+
+        self.overloads[t, :] = res.overloads
+
+        self.losses[t, :] = res.losses
+
+        self.Sbus[t, :] = res.Sbus
+
+        self.Sbranch[t, :] = res.Sbranch
+
+    def plot(self, result_type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        :param result_type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            y_label = ''
+            title = ''
+            if result_type == 'Bus voltage':
+                y = np.angle(self.voltage[:, indices])
+                y_label = '(rad)'
+                title = 'Bus voltage angle'
+
+            elif result_type == 'Branch power':
+                y = self.Sbranch[:, indices].real
+                y_label = '(MW)'
+                title = 'Branch power '
+
+            elif result_type == 'Bus power':
+                y = self.Sbus[:, indices].real
+                y_label = '(MW)'
+                title = 'Bus power '
+
+            elif result_type == 'Branch loading':
+                y = np.abs(self.loading[:, indices] * 100.0)
+                y_label = '(%)'
+                title = 'Branch loading '
+
+            elif result_type == 'Branch overloads':
+                y = np.abs(self.overloads[:, indices])
+                y_label = '(MW)'
+                title = 'Branch overloads '
+
+            elif result_type == 'Branch losses':
+                y = self.losses[:, indices].real
+                y_label = '(MW)'
+                title = 'Branch losses '
+
+            elif result_type == 'Load shedding':
+                y = self.load_shedding[:, indices]
+                y_label = '(MW)'
+                title = 'Load shedding'
+
+            else:
+                pass
+
+            if self.time is not None:
+                df = pd.DataFrame(data=y, columns=labels, index=self.time)
+            else:
+                df = pd.DataFrame(data=y, columns=labels)
+
+            df.fillna(0, inplace=True)
+
+            if len(df.columns) > 10:
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+            else:
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+
+            ax.set_title(title)
+            ax.set_ylabel(y_label)
+            ax.set_xlabel('Time')
+
+            return df
+
+        else:
+            return None
+
+
+class OptimalPowerFlowTimeSeries(QThread):
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
+        """
+        OPF time series constructor
+        :param grid: MultiCircuit instance
+        :param options: OPF options instance
+        """
+        QThread.__init__(self)
+
+        self.options = options
+
+        self.grid = grid
+
+        self.results = None
+
+        self.__cancel__ = False
+
+    def run(self):
+        """
+        Run the time series simulation
+        @return:
+        """
+        # initialize the power flow
+        opf = OptimalPowerFlow(self.grid, self.options)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+
+        if self.grid.time_profile is not None:
+
+            n = len(self.grid.buses)
+            m = len(self.grid.branches)
+            nt = len(self.grid.time_profile)
+            self.results = OptimalPowerFlowTimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+
+            self.progress_text.emit('Running OPF time series...')
+
+            t = 0
+            while t < nt and not self.__cancel__:
+                print(t + 1, ' / ', nt)
+                # set the power values
+                # Y, I, S = self.grid.time_series_input.get_at(t)
+
+                res = opf.run_at(t)
+                self.results.set_at(t, res)
+
+                progress = ((t + 1) / nt) * 100
+                self.progress_signal.emit(progress)
+                t += 1
+
+        else:
+            print('There are no profiles')
+            self.progress_text.emit('There are no profiles')
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
 
     def cancel(self):
         self.__cancel__ = True
