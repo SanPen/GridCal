@@ -930,7 +930,11 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                                       GX_hv1=0.5)
 
                 Zs, Zsh = tpe.get_impedances()
-                Ysh = 1.0 / Zsh
+
+                if Zsh != 0:
+                    Ysh = 1.0 / Zsh
+                else:
+                    Ysh = 0j
 
                 status = 1 - transformers['outserv'][i]
 
