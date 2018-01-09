@@ -956,7 +956,8 @@ class TransformerType:
 
         zsc = Vsc / 100.0
         rsc = (Pcu / 1000.0) / Sn
-        xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
+        # xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
+        xsc = sqrt(zsc ** 2 - rsc ** 2)
 
         # rcu_hv = rsc * self.GR_hv1
         # rcu_lv = rsc * (1 - self.GR_hv1)
