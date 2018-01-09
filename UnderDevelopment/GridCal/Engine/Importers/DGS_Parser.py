@@ -1131,7 +1131,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         gen = ControlledGenerator(name=name,
                                   active_power=synchronous_machine['pgini'][i] * num_machines,
                                   voltage_module=vnom,
-                                  Qmin=-synchronous_machine['q_min'][i] * num_machines * snom,
+                                  Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
                                   Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
                                   Snom=snom,
                                   power_prof=None,
