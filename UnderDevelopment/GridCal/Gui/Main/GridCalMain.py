@@ -372,9 +372,6 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-        # fname = 'IEEE_30BUS_profiles.xls'
-        # self.circuit.load_file(fname)
-        # self.create_schematic_from_api(explode_factor=50)
 
         self.view_cascade_menu()
 
@@ -426,8 +423,6 @@ class MainGUI(QMainWindow):
         msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
 
         msg += "Gridcal version " + str(__GridCal_VERSION__) + '\n\n'
-
-
 
         QMessageBox.about(self, "About GridCal", msg)
 
