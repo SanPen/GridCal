@@ -2344,9 +2344,18 @@ class GridEditor(QSplitter):
                         # self.started_branch.setZValue(-1)
                         self.started_branch.bus_to = item.parent
                         name = 'Branch ' + str(self.branch_editor_count)
+                        v1 = self.started_branch.bus_from.api_object.Vnom
+                        v2 = self.started_branch.bus_to.api_object.Vnom
+
+                        if abs(v1 - v2) > 1.0:
+                            is_transformer = True
+                        else:
+                            is_transformer = False
+
                         obj = Branch(bus_from=self.started_branch.bus_from.api_object,
                                      bus_to=self.started_branch.bus_to.api_object,
-                                     name=name)
+                                     name=name,
+                                     is_transformer=is_transformer)
                         obj.graphic_obj = self.started_branch
                         self.started_branch.api_object = obj
                         self.circuit.add_branch(obj)
