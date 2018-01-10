@@ -2105,9 +2105,14 @@ class MainGUI(QMainWindow):
 
         if idx > -1:
             self.circuit.set_state(t=idx)
+        else:
+            self.msg('No time state selected', 'Set state')
 
     def set_value_to_column(self):
-
+        """
+        Set the value to all the column
+        :return: Nothing
+        """
         idx = self.ui.dataStructureTableView.currentIndex()
         mdl = self.ui.dataStructureTableView.model()  # is of type ObjectsModel
         col = idx.column()
@@ -2118,10 +2123,13 @@ class MainGUI(QMainWindow):
 
 
 def run():
-
+    """
+    Main function to run the GUI
+    :return: 
+    """
     app = QApplication(sys.argv)
     window = MainGUI()
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio
+    window.resize(1.61 * 700.0, 700.0)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())
 
