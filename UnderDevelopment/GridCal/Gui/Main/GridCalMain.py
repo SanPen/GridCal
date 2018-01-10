@@ -364,8 +364,8 @@ class MainGUI(QMainWindow):
         self.voltage_cmap = LinearSegmentedColormap.from_list('vcolors', seq)
         load_max = 1.5
         seq = [(0.0 / load_max, 'gray'),
-               (0.5 / load_max, 'green'),
-               (1.0 / load_max, 'orange'),
+               (0.8 / load_max, 'green'),
+               (1.2 / load_max, 'orange'),
                (1.5 / load_max, 'red')]
         self.loading_cmap = LinearSegmentedColormap.from_list('lcolors', seq)
 
@@ -1792,8 +1792,6 @@ class MainGUI(QMainWindow):
     def post_opf(self):
         """
         Actions to run after the OPF simulation
-        Returns:
-
         """
         if self.optimal_power_flow is not None:
 
@@ -1837,12 +1835,13 @@ class MainGUI(QMainWindow):
                 # create the OPF time series instance
                 self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)
 
-                # Set the time series run options
+                # make the thread connections to the GUI
                 self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
                 self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
                 self.optimal_power_flow_time_series.done_signal.connect(self.UNLOCK)
                 self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
 
+                # Run
                 self.optimal_power_flow_time_series.start()
 
             else:

@@ -3228,6 +3228,22 @@ class MultiCircuit(Circuit):
 
         nx.draw_spring(self.graph, ax=ax)
 
+    def export_pf(self, file_name):
+        """
+        Export power flow results to file
+        :param file_name: Excel file name
+        :return: Nothing
+        """
+        df_bus, df_branch = self.power_flow_results.export_all()
+
+        df_bus.index = self.bus_names
+        df_branch.index = self.branch_names
+
+        writer = pd.ExcelWriter(file_name)
+        df_bus.to_excel(writer, 'Bus results')
+        df_branch.to_excel(writer, 'Branch results')
+        writer.save()
+
     def copy(self):
         """
         Returns a deep (true) copy of this circuit
@@ -3882,6 +3898,34 @@ class PowerFlowResults:
 
         else:
             return None
+
+    def export_all(self):
+        """
+        Exports all the results to DataFrames
+        :return: Bus results, Branch reuslts
+        """
+
+        # buses results
+        vm = np.abs(self.voltage)
+        va = np.angle(self.voltage)
+        vr = self.voltage.real
+        vi = self.voltage.imag
+        bus_data = c_[vr, vi, vm, va]
+        bus_cols = ['Real voltage (p.u.)', 'Imag Voltage (p.u.)', 'Voltage module (p.u.)', 'Voltage angle (rad)']
+        df_bus = pd.DataFrame(data=bus_data, columns=bus_cols)
+
+        # branch results
+        sr = self.Sbranch.real
+        si = self.Sbranch.imag
+        sm = np.abs(self.Sbranch)
+        ld = np.abs(self.loading)
+        ls = np.abs(self.losses)
+
+        branch_data = c_[sr, si, sm, ld, ls]
+        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)', 'Losses (MVA)']
+        df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
+
+        return df_bus, df_branch
 
 
 class PowerFlow(QRunnable):
@@ -4630,6 +4674,7 @@ class ShortCircuitResults(PowerFlowResults):
 
         else:
             return None
+
 
 
 class ShortCircuit(QRunnable):
