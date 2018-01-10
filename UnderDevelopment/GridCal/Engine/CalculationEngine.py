@@ -3234,15 +3234,19 @@ class MultiCircuit(Circuit):
         :param file_name: Excel file name
         :return: Nothing
         """
-        df_bus, df_branch = self.power_flow_results.export_all()
 
-        df_bus.index = self.bus_names
-        df_branch.index = self.branch_names
+        if self.power_flow_results is not None:
+            df_bus, df_branch = self.power_flow_results.export_all()
 
-        writer = pd.ExcelWriter(file_name)
-        df_bus.to_excel(writer, 'Bus results')
-        df_branch.to_excel(writer, 'Branch results')
-        writer.save()
+            df_bus.index = self.bus_names
+            df_branch.index = self.branch_names
+
+            writer = pd.ExcelWriter(file_name)
+            df_bus.to_excel(writer, 'Bus results')
+            df_branch.to_excel(writer, 'Branch results')
+            writer.save()
+        else:
+            raise Exception('There are no power flow results!')
 
     def copy(self):
         """

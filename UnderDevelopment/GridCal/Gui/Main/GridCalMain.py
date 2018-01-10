@@ -447,10 +447,10 @@ class MainGUI(QMainWindow):
         # self.optimal_power_flow = None
         # self.optimal_power_flow_time_series = None
 
-        print('\n\nCircuit commands:')
+        print('\n\nCircuit functions:')
         print('app.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
 
-        print('\n\nPower flow commands:')
+        print('\n\nPower flow results:')
         print('\tapp.power_flow.voltage:\t the nodal voltages in per unit')
         print('\tapp.power_flow.current:\t the branch currents in per unit')
         print('\tapp.power_flow.loading:\t the branch loading in %')
@@ -459,7 +459,7 @@ class MainGUI(QMainWindow):
         print('\tapp.power_flow.power_from:\t the branch power injections in per unit at the "from" side')
         print('\tapp.power_flow.power_to:\t the branch power injections in per unit at the "to" side')
 
-        print('\n\nTime series power flow commands:')
+        print('\n\nTime series power flow results:')
         print('\tapp.time_series.time:\t Profiles time index (pandas DateTimeIndex object)')
         print('\tapp.time_series.load_profiles:\t Load profiles matrix (row: time, col: node)')
         print('\tapp.time_series.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
@@ -468,12 +468,12 @@ class MainGUI(QMainWindow):
         print('\tapp.time_series.loadings:\t branches loadings results matrix (row: time, col: branch)')
         print('\tapp.time_series.losses:\t branches losses results matrix (row: time, col: branch)')
 
-        print('\n\nVoltage stability power flow commands:')
+        print('\n\nVoltage stability power flow results:')
         print('\tapp.voltage_stability.continuation_voltage:\t Voltage values for every power multiplication factor.')
         print('\tapp.voltage_stability.continuation_lambda:\t Value of power multiplication factor applied')
         print('\tapp.voltage_stability.continuation_power:\t Power values for every power multiplication factor.')
 
-        print('\n\nMonte Carlo power flow commands:')
+        print('\n\nMonte Carlo power flow results:')
         print('\tapp.monte_carlo.V_avg:\t nodal voltage average result.')
         print('\tapp.monte_carlo.I_avg:\t branch current average result.')
         print('\tapp.monte_carlo.Loading_avg:\t branch loading average result.')
