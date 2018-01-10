@@ -717,8 +717,8 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     grid = MultiCircuit()
-    # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('IEEE30.xlsx')
+    grid.load_file('lynn5buspv.xlsx')
+    # grid.load_file('IEEE30.xlsx')
 
     grid.compile()
 
