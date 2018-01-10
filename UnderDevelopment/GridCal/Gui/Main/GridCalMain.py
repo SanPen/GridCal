@@ -437,43 +437,55 @@ class MainGUI(QMainWindow):
 
         print('\n\nclc():\tclear the console.')
 
+        # self.power_flow = None
+        # self.short_circuit = None
+        # self.monte_carlo = None
+        # self.time_series = None
+        # self.voltage_stability = None
+        # self.latin_hypercube_sampling = None
+        # self.cascade = None
+        # self.optimal_power_flow = None
+        # self.optimal_power_flow_time_series = None
+
+        print('\n\nCircuit commands:')
+        print('app.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
+
         print('\n\nPower flow commands:')
-        print('\tpowerflow.voltage:\t the nodal voltages in per unit')
-        print('\tpowerflow.current:\t the branch currents in per unit')
-        print('\tpowerflow.loading:\t the branch loading in %')
-        print('\tpowerflow.losses:\t the branch losses in per unit')
-        print('\tpowerflow.power:\t the nodal power injections in per unit')
-        print('\tpowerflow.power_from:\t the branch power injections in per unit at the "from" side')
-        print('\tpowerflow.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.power_flow.voltage:\t the nodal voltages in per unit')
+        print('\tapp.power_flow.current:\t the branch currents in per unit')
+        print('\tapp.power_flow.loading:\t the branch loading in %')
+        print('\tapp.power_flow.losses:\t the branch losses in per unit')
+        print('\tapp.power_flow.power:\t the nodal power injections in per unit')
+        print('\tapp.power_flow.power_from:\t the branch power injections in per unit at the "from" side')
+        print('\tapp.power_flow.power_to:\t the branch power injections in per unit at the "to" side')
 
         print('\n\nTime series power flow commands:')
-        print('\ttimeseries.time:\t Profiles time index (pandas DateTimeIndex object)')
-        print('\ttimeseries.load_profiles:\t Load profiles matrix (row: time, col: node)')
-        print('\ttimeseries.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
-        print('\ttimeseries.voltages:\t nodal voltages results matrix (row: time, col: node)')
-        print('\ttimeseries.currents:\t branches currents results matrix (row: time, col: branch)')
-        print('\ttimeseries.loadings:\t branches loadings results matrix (row: time, col: branch)')
-        print('\ttimeseries.losses:\t branches losses results matrix (row: time, col: branch)')
+        print('\tapp.time_series.time:\t Profiles time index (pandas DateTimeIndex object)')
+        print('\tapp.time_series.load_profiles:\t Load profiles matrix (row: time, col: node)')
+        print('\tapp.time_series.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
+        print('\tapp.time_series.voltages:\t nodal voltages results matrix (row: time, col: node)')
+        print('\tapp.time_series.currents:\t branches currents results matrix (row: time, col: branch)')
+        print('\tapp.time_series.loadings:\t branches loadings results matrix (row: time, col: branch)')
+        print('\tapp.time_series.losses:\t branches losses results matrix (row: time, col: branch)')
 
         print('\n\nVoltage stability power flow commands:')
-        print('\tvoltagestability.continuation_voltage:\t Voltage values for every power multiplication factor.')
-        print('\tvoltagestability.continuation_lambda:\t Value of power multiplication factor applied')
-        print('\tvoltagestability.continuation_power:\t Power values for every power multiplication factor.')
+        print('\tapp.voltage_stability.continuation_voltage:\t Voltage values for every power multiplication factor.')
+        print('\tapp.voltage_stability.continuation_lambda:\t Value of power multiplication factor applied')
+        print('\tapp.voltage_stability.continuation_power:\t Power values for every power multiplication factor.')
 
         print('\n\nMonte Carlo power flow commands:')
-        print('\tstochastic.V_avg:\t nodal voltage average result.')
-        print('\tstochastic.I_avg:\t branch current average result.')
-        print('\tstochastic.Loading_avg:\t branch loading average result.')
-        print('\tstochastic.Losses_avg:\t branch losses average result.')
-
-        print('\tstochastic.V_std:\t nodal voltage standard deviation result.')
-        print('\tstochastic.I_std:\t branch current standard deviation result.')
-        print('\tstochastic.Loading_std:\t branch loading standard deviation result.')
-        print('\tstochastic.Losses_std:\t branch losses standard deviation result.')
-
-        print('\tstochastic.V_avg_series:\t nodal voltage average series.')
-        print('\tstochastic.V_std_series:\t branch current standard deviation series.')
-        print('\tstochastic.error_series:\t Monte Carlo error series (the convergence value).')
+        print('\tapp.monte_carlo.V_avg:\t nodal voltage average result.')
+        print('\tapp.monte_carlo.I_avg:\t branch current average result.')
+        print('\tapp.monte_carlo.Loading_avg:\t branch loading average result.')
+        print('\tapp.monte_carlo.Losses_avg:\t branch losses average result.')
+        print('\tapp.monte_carlo.V_std:\t nodal voltage standard deviation result.')
+        print('\tapp.monte_carlo.I_std:\t branch current standard deviation result.')
+        print('\tapp.monte_carlo.Loading_std:\t branch loading standard deviation result.')
+        print('\tapp.monte_carlo.Losses_std:\t branch losses standard deviation result.')
+        print('\tapp.monte_carlo.V_avg_series:\t nodal voltage average series.')
+        print('\tapp.monte_carlo.V_std_series:\t branch current standard deviation series.')
+        print('\tapp.monte_carlo.error_series:\t Monte Carlo error series (the convergence value).')
+        print('The same for app.latin_hypercube_sampling')
 
     def clc(self):
         """
