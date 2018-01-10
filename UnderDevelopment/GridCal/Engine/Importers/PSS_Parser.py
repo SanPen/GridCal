@@ -191,11 +191,16 @@ class PSSeBus:
         bustype = {1: NodeType.PQ, 2: NodeType.PV, 3: NodeType.REF, 4: NodeType.PQ}
 
         if version == 33:
+            n = len(data[0])
+            dta = zeros(13, dtype=object)
+            dta[0:n] = data[0]
+
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, \
-             self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = data[0]
+             self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = dta
 
             # create bus
-            name = str(self.I) + '_' + self.NAME
+            name = self.NAME
+            # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True)
 
         elif version == 32:
@@ -203,7 +208,8 @@ class PSSeBus:
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, self.OWNER, self.VM, self.VA = data[0]
 
             # create bus
-            name = str(self.I) + '_' + self.NAME
+            name = self.NAME
+            # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True)
 
@@ -213,7 +219,8 @@ class PSSeBus:
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
             # create bus
-            name = str(self.I) + '_' + self.NAME
+            name = self.NAME
+            # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True)
 
@@ -272,8 +279,13 @@ class PSSeLoad:
         """
 
         if version == 33:
+
+            n = len(data[0])
+            dta = zeros(14, dtype=object)
+            dta[0:n] = data[0]
+
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
-             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT = data[0]
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT = dta
 
         elif version == 32:
 
@@ -1041,9 +1053,15 @@ class PSSeTransformer:
             # Line 1: for both types
 
             if len(data[0]) == 20:
+
+                n = len(data[0])
+                dta = zeros(21, dtype=object)
+                dta[0:n] = data[0]
+
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
                  self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
-                 self.VECGRP = data[0]
+                 self.VECGRP = dta
+
             elif len(data[0]) == 18:
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
                  self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.VECGRP = data[0]
@@ -1069,8 +1087,12 @@ class PSSeTransformer:
                  self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
             # line 3: for both types
+            n = len(data[2])
+            dta = zeros(17, dtype=object)
+            dta[0:n] = data[2]
+
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
 
             # line 4
             if len(data[3]) == 2:
@@ -1098,21 +1120,27 @@ class PSSeTransformer:
             '''
 
             # Line 1: for both types
-            if len(data[0]) == 20:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
-            elif len(data[0]) == 18:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            elif len(data[0]) == 16:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
-            elif len(data[0]) == 14:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1 = data[0]
-            elif len(data[0]) == 12:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT = data[0]
+
+            n = len(data[0])
+            dta = zeros(20, dtype=object)
+            dta[0:n] = data[0]
+
+            # if len(data[0]) == 20:
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+             self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = dta
+
+            # elif len(data[0]) == 18:
+            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+            #      self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            # elif len(data[0]) == 16:
+            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+            #      self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
+            # elif len(data[0]) == 14:
+            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+            #      self.NAME, self.STAT, self.O1, self.F1 = data[0]
+            # elif len(data[0]) == 12:
+            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+            #      self.NAME, self.STAT = data[0]
 
             # line 2
             if len(data[1]) == 3:
@@ -1126,8 +1154,11 @@ class PSSeTransformer:
                  self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
             # line 3: for both types
+            n = len(data[2])
+            dta = zeros(17, dtype=object)
+            dta[0:n] = data[2]
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
 
             # line 4
             if len(data[3]) == 2:
