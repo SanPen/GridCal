@@ -405,20 +405,18 @@ class MainGUI(QMainWindow):
         """
         url = 'https://github.com/SanPen/GridCal'
 
-        msg = 'GridCal   \n'
-        msg += 'Copyright (C) 2018 Santiago Peñate Vera \n'
+        msg = 'GridCal\n\n'
+        msg += 'Copyright (C) 2018 Santiago Peñate Vera.\n'
         msg += 'This program comes with ABSOLUTELY NO WARRANTY. \n'
-        msg += 'This is free software, and you are welcome to \n'
-        msg += 'redistribute it under certain conditions; \n'
+        msg += 'This is free software, and you are welcome to redistribute it under certain conditions; \n\n'
 
         msg += "GridCal is licensed under the GNU general public license V.3 "
         msg += 'See the license file for more details. \n\n'
 
-        msg += "GridCal is a research oriented electrical grid calculation software.\n"
-        msg += "GridCal has been designed by Santiago Peñate Vera since 2015.\n"
-        msg += "The calculation engine has been designed in an object oriented fashion. " \
-               "The power flow routines have been adapted from MatPower, enhancing them to run fast in " \
-               "the object oriented scheme.\n\n"
+        msg += "GridCal has been carefully crafted since 2015 to serve as a platform for research and consultancy." \
+               "The calculation engine has been designed in an object oriented fashion. " \
+               "The Newton-Raphson power flow has been adapted from MatPower, and many other methods have been added, " \
+               "enhancing them to run fast in the object oriented scheme.\n\n"
 
         msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
 

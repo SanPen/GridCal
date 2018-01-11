@@ -2294,7 +2294,7 @@ class GridEditor(QSplitter):
         splitter2.setOrientation(Qt.Vertical)
         self.addWidget(splitter2)
         self.addWidget(self.diagramView)
-        splitter2.setStretchFactor(1, 6)
+        splitter2.setStretchFactor(1, 10)
 
         self.started_branch = None
 
