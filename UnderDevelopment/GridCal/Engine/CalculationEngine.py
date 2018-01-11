@@ -4025,21 +4025,23 @@ class PowerFlow(QRunnable):
         norm = circuit.power_flow_input.mismatch(V, Sbus)
         return res.fun, norm
 
-    def single_power_flow(self, circuit: Circuit, solver_type: SolverType):
+    def single_power_flow(self, circuit: Circuit, solver_type: SolverType, voltage_solution, Sbus):
         """
         Run a power flow simulation for a single circuit
         @param circuit:
+        @param solver_type
+        @param voltage_solution
         @return:
         """
         # print('Single grid PF')
         optimize = False
 
         # Initial magnitudes
-        if self.options.initialize_with_existing_solution and self.last_V is not None:
-            V = self.last_V[circuit.bus_original_idx]
-        else:
-            V = circuit.power_flow_input.Vbus
-        Sbus = circuit.power_flow_input.Sbus
+        # if self.options.initialize_with_existing_solution and self.last_V is not None:
+        #     V = self.last_V[circuit.bus_original_idx]
+        # else:
+        #     V = circuit.power_flow_input.Vbus
+
         original_types = circuit.power_flow_input.types.copy()
 
         any_control_issue = True  # guilty assumption...
@@ -4056,7 +4058,7 @@ class PowerFlow(QRunnable):
         while any_control_issue and outer_it < control_max_iter:
 
             if len(circuit.power_flow_input.ref) == 0:
-                V = zeros(len(Sbus), dtype=complex)
+                voltage_solution = zeros(len(Sbus), dtype=complex)
                 normF = 0
                 Scalc = Sbus.copy()
                 any_control_issue = False
@@ -4066,93 +4068,93 @@ class PowerFlow(QRunnable):
                 # type HELM
                 if solver_type == SolverType.HELM:
                     methods.append(SolverType.HELM)
-                    V, converged, normF, Scalc, it, el = helm(Vbus=V,
-                                                              Sbus=Sbus,
-                                                              Ybus=circuit.power_flow_input.Ybus,
-                                                              pq=circuit.power_flow_input.pq,
-                                                              pv=circuit.power_flow_input.pv,
-                                                              ref=circuit.power_flow_input.ref,
-                                                              pqpv=circuit.power_flow_input.pqpv,
-                                                              tol=self.options.tolerance,
-                                                              max_coefficient_count=self.options.max_iter)
+                    voltage_solution, converged, normF, Scalc, it, el = helm(Vbus=voltage_solution,
+                                                                             Sbus=Sbus,
+                                                                             Ybus=circuit.power_flow_input.Ybus,
+                                                                             pq=circuit.power_flow_input.pq,
+                                                                             pv=circuit.power_flow_input.pv,
+                                                                             ref=circuit.power_flow_input.ref,
+                                                                             pqpv=circuit.power_flow_input.pqpv,
+                                                                             tol=self.options.tolerance,
+                                                                             max_coefficient_count=self.options.max_iter)
 
                 # type DC
                 elif solver_type == SolverType.DC:
                     methods.append(SolverType.DC)
-                    V, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.power_flow_input.Ybus,
-                                                              Sbus=Sbus,
-                                                              Ibus=circuit.power_flow_input.Ibus,
-                                                              V0=V,
-                                                              ref=circuit.power_flow_input.ref,
-                                                              pvpq=circuit.power_flow_input.pqpv,
-                                                              pq=circuit.power_flow_input.pq,
-                                                              pv=circuit.power_flow_input.pv)
+                    voltage_solution, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.power_flow_input.Ybus,
+                                                                             Sbus=Sbus,
+                                                                             Ibus=circuit.power_flow_input.Ibus,
+                                                                             V0=voltage_solution,
+                                                                             ref=circuit.power_flow_input.ref,
+                                                                             pvpq=circuit.power_flow_input.pqpv,
+                                                                             pq=circuit.power_flow_input.pq,
+                                                                             pv=circuit.power_flow_input.pv)
 
                 # Levenberg-Marquardt
                 elif solver_type == SolverType.LM:
                     methods.append(SolverType.LM)
-                    V, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
-                                                                              Sbus=Sbus,
-                                                                              V0=V,
-                                                                              Ibus=circuit.power_flow_input.Ibus,
-                                                                              pv=circuit.power_flow_input.pv,
-                                                                              pq=circuit.power_flow_input.pq,
-                                                                              tol=self.options.tolerance,
-                                                                              max_it=self.options.max_iter)
+                    voltage_solution, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
+                                                                                             Sbus=Sbus,
+                                                                                             V0=voltage_solution,
+                                                                                             Ibus=circuit.power_flow_input.Ibus,
+                                                                                             pv=circuit.power_flow_input.pv,
+                                                                                             pq=circuit.power_flow_input.pq,
+                                                                                             tol=self.options.tolerance,
+                                                                                             max_it=self.options.max_iter)
 
                 # Fast decoupled
                 elif solver_type == SolverType.FASTDECOUPLED:
                     methods.append(SolverType.FASTDECOUPLED)
-                    V, converged, normF, Scalc, it, el = FDPF(Vbus=circuit.power_flow_input.Vbus,
-                                                              Sbus=circuit.power_flow_input.Sbus,
-                                                              Ibus=circuit.power_flow_input.Ibus,
-                                                              Ybus=circuit.power_flow_input.Ybus,
-                                                              B1=circuit.power_flow_input.B1,
-                                                              B2=circuit.power_flow_input.B2,
-                                                              pq=circuit.power_flow_input.pq,
-                                                              pv=circuit.power_flow_input.pv,
-                                                              pqpv=circuit.power_flow_input.pqpv,
-                                                              tol=self.options.tolerance,
-                                                              max_it=self.options.max_iter)
+                    voltage_solution, converged, normF, Scalc, it, el = FDPF(Vbus=circuit.power_flow_input.Vbus,
+                                                                             Sbus=circuit.power_flow_input.Sbus,
+                                                                             Ibus=circuit.power_flow_input.Ibus,
+                                                                             Ybus=circuit.power_flow_input.Ybus,
+                                                                             B1=circuit.power_flow_input.B1,
+                                                                             B2=circuit.power_flow_input.B2,
+                                                                             pq=circuit.power_flow_input.pq,
+                                                                             pv=circuit.power_flow_input.pv,
+                                                                             pqpv=circuit.power_flow_input.pqpv,
+                                                                             tol=self.options.tolerance,
+                                                                             max_it=self.options.max_iter)
 
                 # Newton-Raphson
                 elif solver_type == SolverType.NR:
                     methods.append(SolverType.NR)
-                    V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                                   Sbus=Sbus,
-                                                                   V0=V,
-                                                                   Ibus=circuit.power_flow_input.Ibus,
-                                                                   pv=circuit.power_flow_input.pv,
-                                                                   pq=circuit.power_flow_input.pq,
-                                                                   tol=self.options.tolerance,
-                                                                   max_it=self.options.max_iter,
-                                                                   robust=False)
+                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                                  Sbus=Sbus,
+                                                                                  V0=voltage_solution,
+                                                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                                                  pv=circuit.power_flow_input.pv,
+                                                                                  pq=circuit.power_flow_input.pq,
+                                                                                  tol=self.options.tolerance,
+                                                                                  max_it=self.options.max_iter,
+                                                                                  robust=False)
 
                 # Newton-Raphson-Iwamoto
                 elif solver_type == SolverType.IWAMOTO:
                     methods.append(SolverType.IWAMOTO)
-                    V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                                   Sbus=Sbus,
-                                                                   V0=V,
-                                                                   Ibus=circuit.power_flow_input.Ibus,
-                                                                   pv=circuit.power_flow_input.pv,
-                                                                   pq=circuit.power_flow_input.pq,
-                                                                   tol=self.options.tolerance,
-                                                                   max_it=self.options.max_iter,
-                                                                   robust=True)
+                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                                  Sbus=Sbus,
+                                                                                  V0=voltage_solution,
+                                                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                                                  pv=circuit.power_flow_input.pv,
+                                                                                  pq=circuit.power_flow_input.pq,
+                                                                                  tol=self.options.tolerance,
+                                                                                  max_it=self.options.max_iter,
+                                                                                  robust=True)
 
                 # for any other method, for now, do a LM
                 else:
                     methods.append(SolverType.LM)
-                    V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                                   Sbus=Sbus,
-                                                                   V0=V,
-                                                                   Ibus=circuit.power_flow_input.Ibus,
-                                                                   pv=circuit.power_flow_input.pv,
-                                                                   pq=circuit.power_flow_input.pq,
-                                                                   tol=self.options.tolerance,
-                                                                   max_it=self.options.max_iter,
-                                                                   robust=self.options.robust)
+                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                                                                                  Sbus=Sbus,
+                                                                                  V0=voltage_solution,
+                                                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                                                  pv=circuit.power_flow_input.pv,
+                                                                                  pq=circuit.power_flow_input.pq,
+                                                                                  tol=self.options.tolerance,
+                                                                                  max_it=self.options.max_iter,
+                                                                                  robust=self.options.robust)
 
                     # if not converged:
                     #     # Try with HELM
@@ -4188,8 +4190,8 @@ class PowerFlow(QRunnable):
 
                 # Check controls
                 if self.options.control_Q:
-                    Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=V,
-                                                                                 Vset=abs(V),
+                    Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=voltage_solution,
+                                                                                 Vset=abs(voltage_solution),
                                                                                  Q=Scalc.imag,
                                                                                  Qmax=circuit.power_flow_input.Qmax,
                                                                                  Qmin=circuit.power_flow_input.Qmin,
@@ -4197,7 +4199,7 @@ class PowerFlow(QRunnable):
                                                                                  original_types=original_types,
                                                                                  verbose=self.options.verbose)
                     if any_control_issue:
-                        V = Vnew
+                        voltage_solution = Vnew
                         Sbus = Sbus.real + 1j * Qnew
                         circuit.power_flow_input.compile_types(types_new)
                     else:
@@ -4221,14 +4223,11 @@ class PowerFlow(QRunnable):
         circuit.power_flow_input.compile_types(original_types)
 
         # Compute the branches power and the slack buses power
-        Sbranch, Ibranch, loading, losses, Sbus = self.power_flow_post_process(circuit=circuit, V=V)
-
-        # Store the last voltage value
-        self.last_V = V
+        Sbranch, Ibranch, loading, losses, Sbus = self.power_flow_post_process(circuit=circuit, V=voltage_solution)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
-                                   voltage=V,
+                                   voltage=voltage_solution,
                                    Sbranch=Sbranch,
                                    Ibranch=Ibranch,
                                    loading=loading,
@@ -4433,18 +4432,33 @@ class PowerFlow(QRunnable):
                 print('Solving ' + circuit.name)
 
             # Run the power flow
-            circuit.power_flow_results = self.single_power_flow(circuit, self.options.solver_type)
+            circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+                                                                solver_type=self.options.solver_type,
+                                                                voltage_solution=circuit.power_flow_input.Vbus,
+                                                                Sbus=circuit.power_flow_input.Sbus)
 
             # Retry with another solver
             if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
-                circuit.power_flow_results = self.single_power_flow(circuit, self.options.auxiliary_solver_type)
 
-            results.apply_from_island(circuit.power_flow_results, circuit.bus_original_idx, circuit.branch_original_idx)
+                if not np.isnan(circuit.power_flow_results.voltage).any():
+                    warn('Corrupt voltage, using flat solution in retry')
+                    voltage = ones(n, dtype=complex)
+                else:
+                    voltage = circuit.power_flow_results.voltage
+
+                circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+                                                                    solver_type=self.options.auxiliary_solver_type,
+                                                                    voltage_solution=voltage,
+                                                                    Sbus=circuit.power_flow_input.Sbus)
+            # merge the results from this island
+            results.apply_from_island(circuit.power_flow_results,
+                                      circuit.bus_original_idx,
+                                      circuit.branch_original_idx)
 
             # self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
         # remember the solution for later
-        self.last_V = results.voltage
+        self.last_V = results.voltage  # done inside single_power_flow
 
         # check the limits
         sum_dev = results.check_limits(self.grid.power_flow_input)
@@ -4472,15 +4486,30 @@ class PowerFlow(QRunnable):
             if self.options.verbose:
                 print('Solving ' + circuit.name)
 
-            # Set the profile values
+            # Set the profile values (changes circuit.power_flow_input.Sbus)
             circuit.set_at(t, mc)
-            # run
-            circuit.power_flow_results = self.single_power_flow(circuit, self.options.solver_type)
+
+            # Run the power flow
+            circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+                                                                solver_type=self.options.solver_type,
+                                                                voltage_solution=circuit.power_flow_input.Vbus,
+                                                                Sbus=circuit.power_flow_input.Sbus)
 
             # Retry with another solver
             if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
-                circuit.power_flow_results = self.single_power_flow(circuit, self.options.auxiliary_solver_type)
+                # check the voltage to use
+                if not np.isnan(circuit.power_flow_results.voltage).any():
+                    warn('Corrupt voltage, using flat solution in retry')
+                    voltage = ones(n, dtype=complex)
+                else:
+                    voltage = circuit.power_flow_results.voltage
 
+                circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+                                                                    solver_type=self.options.auxiliary_solver_type,
+                                                                    voltage_solution=voltage,
+                                                                    Sbus=circuit.power_flow_input.Sbus)
+
+            # merge the results from this circuit
             self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
                                                            circuit.bus_original_idx,
                                                            circuit.branch_original_idx)
