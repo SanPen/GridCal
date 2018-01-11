@@ -448,7 +448,11 @@ class MainGUI(QMainWindow):
         # self.optimal_power_flow_time_series = None
 
         print('\n\nCircuit functions:')
-        print('app.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
+        print('\tapp.circuit.compile(): Compile the grid(s)')
+        print('\tapp.circuit.plot_graph(): Plot a graph in a Matplotlib window. Call plt.show() after.')
+        print('\tapp.circuit.load_file("file_name.xlsx/.m/.raw/.dgs"): Load GridCal compatible file')
+        print('\tapp.circuit.save_file("file_name.xlsx"): Save GridCal file')
+        print('\tapp.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
 
         print('\n\nPower flow results:')
         print('\tapp.power_flow.voltage:\t the nodal voltages in per unit')
@@ -458,6 +462,25 @@ class MainGUI(QMainWindow):
         print('\tapp.power_flow.power:\t the nodal power injections in per unit')
         print('\tapp.power_flow.power_from:\t the branch power injections in per unit at the "from" side')
         print('\tapp.power_flow.power_to:\t the branch power injections in per unit at the "to" side')
+
+        print('\n\nShort circuit results:')
+        print('\tapp.short_circuit.voltage:\t the nodal voltages in per unit')
+        print('\tapp.short_circuit.current:\t the branch currents in per unit')
+        print('\tapp.short_circuit.loading:\t the branch loading in %')
+        print('\tapp.short_circuit.losses:\t the branch losses in per unit')
+        print('\tapp.short_circuit.power:\t the nodal power injections in per unit')
+        print('\tapp.short_circuit.power_from:\t the branch power injections in per unit at the "from" side')
+        print('\tapp.short_circuit.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.short_circuit.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
+
+        print('\n\nOptimal power flow results:')
+        print('\tapp.optimal_power_flow.voltage:\t the nodal voltages angles in rad')
+        print('\tapp.optimal_power_flow.load_shedding:\t the branch loading in %')
+        print('\tapp.optimal_power_flow.losses:\t the branch losses in per unit')
+        print('\tapp.optimal_power_flow.Sbus:\t the nodal power injections in MW')
+        print('\tapp.optimal_power_flow.Sbranch:\t the branch power flows')
+        print('\tapp.optimal_power_flow.losses:\t the branch losses in MVA')
+        print('\tapp.optimal_power_flow.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
         print('\n\nTime series power flow results:')
         print('\tapp.time_series.time:\t Profiles time index (pandas DateTimeIndex object)')
@@ -490,7 +513,6 @@ class MainGUI(QMainWindow):
     def clc(self):
         """
         Clear the console
-        @return:
         """
         self.console.clear()
 
@@ -579,9 +601,8 @@ class MainGUI(QMainWindow):
     def msg(self, text, title="Warning"):
         """
         Message box
-        :param text:
-        :param title:
-        :return:
+        :param text: Text to display
+        :param title: Name of the window
         """
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
@@ -596,10 +617,7 @@ class MainGUI(QMainWindow):
         """
         Print in the console some message
         Args:
-            msg_:
-
-        Returns:
-
+            msg_: Test message
         """
         dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
@@ -607,7 +625,6 @@ class MainGUI(QMainWindow):
     def compile(self):
         """
         This function compiles the circuit and updates the UI accordingly
-        :return:
         """
 
         try:
@@ -655,27 +672,21 @@ class MainGUI(QMainWindow):
 
     def bigger_nodes(self):
         """
-
-        Returns:
-
+        Move the nodes more separated
         """
         if self.grid_editor is not None:
             self.grid_editor.bigger_nodes()
 
     def smaller_nodes(self):
         """
-
-        Returns:
-
+        Move the nodes closer
         """
         if self.grid_editor is not None:
             self.grid_editor.smaller_nodes()
 
     def center_nodes(self):
         """
-
-        Returns:
-
+        Center the nodes in the screen
         """
         if self.grid_editor is not None:
             # self.grid_editor.center_nodes()
@@ -750,13 +761,13 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Loading file...')
             QtGui.QGuiApplication.processEvents()
 
-            # try:
-            #     self.circuit.load_file(filename=filename)
-            # except Exception as ex:
-            #     exc_type, exc_value, exc_traceback = sys.exc_info()
-            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
+            try:
+                self.circuit.load_file(filename=filename)
+            except Exception as ex:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
 
-            self.circuit.load_file(filename=filename)
+            # self.circuit.load_file(filename=filename)
 
             self.ui.progress_label.setText('Creating schematic...')
             QtGui.QGuiApplication.processEvents()
