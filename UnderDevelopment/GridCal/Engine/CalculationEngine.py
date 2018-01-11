@@ -4025,7 +4025,7 @@ class PowerFlow(QRunnable):
         norm = circuit.power_flow_input.mismatch(V, Sbus)
         return res.fun, norm
 
-    def single_power_flow(self, circuit: Circuit, solver_type: SolverType, voltage_solution, Sbus):
+    def single_power_flow(self, circuit: Circuit, solver_type: SolverType, voltage_solution, Sbus, Ibus):
         """
         Run a power flow simulation for a single circuit
         @param circuit:
@@ -4052,6 +4052,8 @@ class PowerFlow(QRunnable):
         outer_it = 0
         elapsed = list()
         methods = list()
+        converged_lst = list()
+        errors = list()
         it = list()
         el = list()
 
@@ -4083,7 +4085,7 @@ class PowerFlow(QRunnable):
                     methods.append(SolverType.DC)
                     voltage_solution, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.power_flow_input.Ybus,
                                                                              Sbus=Sbus,
-                                                                             Ibus=circuit.power_flow_input.Ibus,
+                                                                             Ibus=Ibus,
                                                                              V0=voltage_solution,
                                                                              ref=circuit.power_flow_input.ref,
                                                                              pvpq=circuit.power_flow_input.pqpv,
@@ -4096,7 +4098,7 @@ class PowerFlow(QRunnable):
                     voltage_solution, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
                                                                                              Sbus=Sbus,
                                                                                              V0=voltage_solution,
-                                                                                             Ibus=circuit.power_flow_input.Ibus,
+                                                                                             Ibus=Ibus,
                                                                                              pv=circuit.power_flow_input.pv,
                                                                                              pq=circuit.power_flow_input.pq,
                                                                                              tol=self.options.tolerance,
@@ -4106,8 +4108,8 @@ class PowerFlow(QRunnable):
                 elif solver_type == SolverType.FASTDECOUPLED:
                     methods.append(SolverType.FASTDECOUPLED)
                     voltage_solution, converged, normF, Scalc, it, el = FDPF(Vbus=circuit.power_flow_input.Vbus,
-                                                                             Sbus=circuit.power_flow_input.Sbus,
-                                                                             Ibus=circuit.power_flow_input.Ibus,
+                                                                             Sbus=Sbus,
+                                                                             Ibus=Ibus,
                                                                              Ybus=circuit.power_flow_input.Ybus,
                                                                              B1=circuit.power_flow_input.B1,
                                                                              B2=circuit.power_flow_input.B2,
@@ -4123,7 +4125,7 @@ class PowerFlow(QRunnable):
                     voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
-                                                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                                                  Ibus=Ibus,
                                                                                   pv=circuit.power_flow_input.pv,
                                                                                   pq=circuit.power_flow_input.pq,
                                                                                   tol=self.options.tolerance,
@@ -4136,7 +4138,7 @@ class PowerFlow(QRunnable):
                     voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
-                                                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                                                  Ibus=Ibus,
                                                                                   pv=circuit.power_flow_input.pv,
                                                                                   pq=circuit.power_flow_input.pq,
                                                                                   tol=self.options.tolerance,
@@ -4149,7 +4151,7 @@ class PowerFlow(QRunnable):
                     voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
-                                                                                  Ibus=circuit.power_flow_input.Ibus,
+                                                                                  Ibus=Ibus,
                                                                                   pv=circuit.power_flow_input.pv,
                                                                                   pq=circuit.power_flow_input.pq,
                                                                                   tol=self.options.tolerance,
@@ -4219,6 +4221,12 @@ class PowerFlow(QRunnable):
             # add the time taken by the solver in this iteration
             elapsed.append(el)
 
+            # append loop error
+            errors.append(normF)
+
+            # append converged
+            converged_lst.append(bool(converged))
+
         # revert the types to the original
         circuit.power_flow_input.compile_types(original_types)
 
@@ -4232,8 +4240,8 @@ class PowerFlow(QRunnable):
                                    Ibranch=Ibranch,
                                    loading=loading,
                                    losses=losses,
-                                   error=normF,
-                                   converged=bool(converged),
+                                   error=errors,
+                                   converged=converged_lst,
                                    Qpv=None,
                                    inner_it=inner_it,
                                    outer_it=outer_it,
@@ -4415,8 +4423,8 @@ class PowerFlow(QRunnable):
 
     def run(self):
         """
-        Run a power flow for every circuit
-        @return:
+        Pack run_pf for the QThread
+        :return: 
         """
         # print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
@@ -4425,104 +4433,150 @@ class PowerFlow(QRunnable):
         results.initialize(n, m)
         # self.progress_signal.emit(0.0)
 
-        k = 0
+        Vbus = self.grid.power_flow_input.Vbus
+        Sbus = self.grid.power_flow_input.Sbus
+        Ibus = self.grid.power_flow_input.Ibus
+
         for circuit in self.grid.circuits:
 
-            if self.options.verbose:
-                print('Solving ' + circuit.name)
+            # run circuit power flow
+            res = self.run_pf(circuit, Vbus, Sbus, Ibus)
 
-            # Run the power flow
-            circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-                                                                solver_type=self.options.solver_type,
-                                                                voltage_solution=circuit.power_flow_input.Vbus,
-                                                                Sbus=circuit.power_flow_input.Sbus)
-
-            # Retry with another solver
-            if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
-
-                if not np.isnan(circuit.power_flow_results.voltage).any():
-                    warn('Corrupt voltage, using flat solution in retry')
-                    voltage = ones(n, dtype=complex)
-                else:
-                    voltage = circuit.power_flow_results.voltage
-
-                circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-                                                                    solver_type=self.options.auxiliary_solver_type,
-                                                                    voltage_solution=voltage,
-                                                                    Sbus=circuit.power_flow_input.Sbus)
             # merge the results from this island
-            results.apply_from_island(circuit.power_flow_results,
+            results.apply_from_island(res,
                                       circuit.bus_original_idx,
                                       circuit.branch_original_idx)
 
-            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
-            k += 1
-        # remember the solution for later
         self.last_V = results.voltage  # done inside single_power_flow
 
         # check the limits
-        sum_dev = results.check_limits(self.grid.power_flow_input)
+        # sum_dev = results.check_limits(self.grid.power_flow_input)
 
         self.results = results
         self.grid.power_flow_results = results
 
-        # self.progress_signal.emit(0.0)
-        # self.done_signal.emit()
-
-    def run_at(self, t, mc=False):
+    def run_pf(self, circuit: Circuit, Vbus, Sbus, Ibus):
         """
-        Run power flow at the time series object index t
-        @param t:
+        Run a power flow for every circuit
         @return:
         """
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
-        if self.grid.power_flow_results is None:
-            self.grid.power_flow_results = PowerFlowResults()
-        self.grid.power_flow_results.initialize(n, m)
-        i = 1
-        # self.progress_signal.emit(0.0)
-        for circuit in self.grid.circuits:
-            if self.options.verbose:
-                print('Solving ' + circuit.name)
+        # print('PowerFlow at ', self.grid.name)
+        n = len(circuit.buses)
+        m = len(circuit.branches)
+        results = PowerFlowResults()
+        results.initialize(n, m)
 
-            # Set the profile values (changes circuit.power_flow_input.Sbus)
-            circuit.set_at(t, mc)
+        # Run the power flow
+        circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+                                                            solver_type=self.options.solver_type,
+                                                            voltage_solution=Vbus[circuit.bus_original_idx],
+                                                            Sbus=Sbus[circuit.bus_original_idx],
+                                                            Ibus=Ibus[circuit.bus_original_idx])
 
-            # Run the power flow
+        # Retry with another solver
+        if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
+
+            # compose a voltage array that makes sense
+            if not np.isnan(circuit.power_flow_results.voltage).any():
+                warn('Corrupt voltage, using flat solution in retry')
+                voltage = ones(len(circuit.buses), dtype=complex)
+            else:
+                voltage = circuit.power_flow_results.voltage
+
+            # re-run power flow
             circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-                                                                solver_type=self.options.solver_type,
-                                                                voltage_solution=circuit.power_flow_input.Vbus,
-                                                                Sbus=circuit.power_flow_input.Sbus)
+                                                                solver_type=self.options.auxiliary_solver_type,
+                                                                voltage_solution=voltage,
+                                                                Sbus=Sbus[circuit.bus_original_idx],
+                                                                Ibus=Ibus[circuit.bus_original_idx])
+        else:
+            pass
 
-            # Retry with another solver
-            if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
-                # check the voltage to use
-                if not np.isnan(circuit.power_flow_results.voltage).any():
-                    warn('Corrupt voltage, using flat solution in retry')
-                    voltage = ones(n, dtype=complex)
-                else:
-                    voltage = circuit.power_flow_results.voltage
+        # check the power flow limits
+        circuit.power_flow_results.check_limits(circuit.power_flow_input)
 
-                circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-                                                                    solver_type=self.options.auxiliary_solver_type,
-                                                                    voltage_solution=voltage,
-                                                                    Sbus=circuit.power_flow_input.Sbus)
+        return circuit.power_flow_results
 
-            # merge the results from this circuit
-            self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
-                                                           circuit.bus_original_idx,
-                                                           circuit.branch_original_idx)
-
-            i += 1
-
-        # check the limits
-        sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
-
-        # self.progress_signal.emit(0.0)
-        # self.done_signal.emit()
-
-        return self.grid.power_flow_results
+    # def run_at(self, t, mc=False):
+    #     """
+    #     Run power flow at the time series object index t
+    #     @param t:
+    #     @return:
+    #     """
+    #
+    #     '''
+    #     set_at ::
+    #
+    #     """
+    #     Set the current values given by the profile step of index t
+    #     @param t: index of the profiles
+    #     @param mc: Is this being run from MonteCarlo?
+    #     @return: Nothing
+    #     """
+    #
+    #     if self.time_series_input is not None:
+    #         if mc:
+    #
+    #             if self.mc_time_series is None:
+    #                 warn('No monte carlo inputs in island!!!')
+    #             else:
+    #                 self.power_flow_input.Sbus = self.mc_time_series.S[t, :] / self.Sbase
+    #         else:
+    #             self.power_flow_input.Sbus = self.time_series_input.S[t, :] / self.Sbase
+    #     else:
+    #         warn('No time series values')
+    #
+    #     '''
+    #
+    #
+    #     n = len(self.grid.buses)
+    #     m = len(self.grid.branches)
+    #     if self.grid.power_flow_results is None:
+    #         self.grid.power_flow_results = PowerFlowResults()
+    #     self.grid.power_flow_results.initialize(n, m)
+    #     i = 1
+    #     # self.progress_signal.emit(0.0)
+    #     for circuit in self.grid.circuits:
+    #         if self.options.verbose:
+    #             print('Solving ' + circuit.name)
+    #
+    #         # Set the profile values (changes circuit.power_flow_input.Sbus)
+    #         circuit.set_at(t, mc)
+    #
+    #         # Run the power flow
+    #         circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+    #                                                             solver_type=self.options.solver_type,
+    #                                                             voltage_solution=circuit.power_flow_input.Vbus,
+    #                                                             Sbus=circuit.power_flow_input.Sbus)
+    #
+    #         # Retry with another solver
+    #         if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
+    #             # check the voltage to use
+    #             if not np.isnan(circuit.power_flow_results.voltage).any():
+    #                 warn('Corrupt voltage, using flat solution in retry')
+    #                 voltage = ones(n, dtype=complex)
+    #             else:
+    #                 voltage = circuit.power_flow_results.voltage
+    #
+    #             circuit.power_flow_results = self.single_power_flow(circuit=circuit,
+    #                                                                 solver_type=self.options.auxiliary_solver_type,
+    #                                                                 voltage_solution=voltage,
+    #                                                                 Sbus=circuit.power_flow_input.Sbus)
+    #
+    #         # merge the results from this circuit
+    #         self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
+    #                                                        circuit.bus_original_idx,
+    #                                                        circuit.branch_original_idx)
+    #
+    #         i += 1
+    #
+    #     # check the limits
+    #     sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
+    #
+    #     # self.progress_signal.emit(0.0)
+    #     # self.done_signal.emit()
+    #
+    #     return self.grid.power_flow_results
 
     def cancel(self):
         self.__cancel__ = True
@@ -5332,16 +5386,19 @@ class TimeSeries(QThread):
                 n = len(c.buses)
                 m = len(c.branches)
                 results = TimeSeriesResults(n, m, nt)
+                Vbus = c.power_flow_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
                 t = 0
                 while t < nt and not self.__cancel__:
-                    print(t + 1, ' / ', nt)
+
                     # set the power values
                     Y, I, S = c.time_series_input.get_at(t)
 
-                    res = powerflow.run_at(t)
+                    # res = powerflow.run_at(t)
+                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+
                     results.set_at(t, res, c.bus_original_idx, c.branch_original_idx)
 
                     progress = ((t + 1) / nt) * 100
@@ -5750,6 +5807,7 @@ class MonteCarlo(QThread):
         mc_results = MonteCarloResults(n, m)
 
         Vsum = zeros(n, dtype=complex)
+
         self.progress_signal.emit(0.0)
 
         while (std_dev_progress < 100.0) and (it < max_mc_iter) and not self.__cancel__:
@@ -5762,14 +5820,18 @@ class MonteCarlo(QThread):
             for c in self.grid.circuits:
 
                 # set the time series as sampled
-                c.sample_monte_carlo_batch(batch_size)
+                # c.sample_monte_carlo_batch(batch_size)
+                mc_time_series = c.monte_carlo_input(batch_size, use_latin_hypercube=False)
+                Vbus = c.power_flow_input.Vbus
 
                 # run the time series
                 for t in range(batch_size):
                     # set the power values
-                    Y, I, S = c.mc_time_series.get_at(t)
+                    Y, I, S = mc_time_series.get_at(t)
 
-                    res = powerflow.run_at(t, mc=True)
+                    # res = powerflow.run_at(t, mc=True)
+                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+
                     batch_results.S_points[t, c.bus_original_idx] = S
                     batch_results.V_points[t, c.bus_original_idx] = res.voltage[c.bus_original_idx]
                     batch_results.I_points[t, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
@@ -6186,6 +6248,7 @@ class LatinHypercubeSampling(QThread):
         lhs_results = MonteCarloResults(n, m, batch_size)
 
         max_iter = batch_size * len(self.grid.circuits)
+
         it = 0
 
         # For every circuit, run the time series
@@ -6193,16 +6256,19 @@ class LatinHypercubeSampling(QThread):
 
             try:
                 # set the time series as sampled in the circuit
-                c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
+                # c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
+                mc_time_series = c.monte_carlo_input(batch_size, use_latin_hypercube=True)
+                Vbus = c.power_flow_input.Vbus
 
                 # run the time series
                 for t in range(batch_size):
 
                     # set the power values from a Monte carlo point at 't'
-                    Y, I, S = c.mc_time_series.get_at(t)
+                    Y, I, S = mc_time_series.get_at(t)
 
                     # Run the set monte carlo point at 't'
-                    res = power_flow.run_at(t, mc=True)
+                    # res = power_flow.run_at(t, mc=True)
+                    res = power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
 
                     # Gather the results
                     lhs_results.S_points[t, c.bus_original_idx] = S
@@ -6588,13 +6654,20 @@ class Optimize(QThread):
 
     def objfunction(self, x):
 
+
+        Vbus = self.grid.power_flow_input.Vbus
+
         # For every circuit, run the time series
         for c in self.grid.circuits:
             # sample from the CDF give the vector x of values in [0, 1]
-            c.sample_at(x)
+            # c.sample_at(x)
+            mc_time_series = c.monte_carlo_input.get_at(x)
+
+            Y, I, S = mc_time_series.get_at(t=0)
 
             #  run the sampled values
-            res = self.power_flow.run_at(0, mc=True)
+            # res = self.power_flow.run_at(0, mc=True)
+            res = self.power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
 
             Y, I, S = c.mc_time_series.get_at(0)
             self.results.S_points[self.it, c.bus_original_idx] = S
