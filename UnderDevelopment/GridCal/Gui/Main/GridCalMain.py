@@ -176,20 +176,20 @@ class MainGUI(QMainWindow):
         self.ui.solver_comboBox.setModel(mdl)
         self.ui.retry_solver_comboBox.setModel(mdl)
 
-        self.ui.solver_comboBox.setCurrentIndex(0)
-        self.ui.retry_solver_comboBox.setCurrentIndex(2)
+        self.ui.solver_comboBox.setCurrentIndex(1)
+        self.ui.retry_solver_comboBox.setCurrentIndex(0)
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)
         self.profile_device_type_changed()
 
         # Automatic layout modes
-        mdl = get_list_model(['spectral_layout',
+        mdl = get_list_model(['fruchterman_reingold_layout',
+                              'spectral_layout',
                               'circular_layout',
                               'random_layout',
                               'shell_layout',
-                              'spring_layout',
-                              'fruchterman_reingold_layout'])
+                              'spring_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         ################################################################################################################
@@ -446,6 +446,14 @@ class MainGUI(QMainWindow):
         # self.cascade = None
         # self.optimal_power_flow = None
         # self.optimal_power_flow_time_series = None
+
+        print('\n\nApp functions:')
+        print('\tapp.new_project(): Clear all.')
+        print('\tapp.open_file(): Prompt to load GridCal compatible file')
+        print('\tapp.save_file(): Prompt to save GridCal file')
+        print('\tapp.export_diagram(): Prompt to export the diagram in png.')
+        print('\tapp.create_schematic_from_api(): Create the schematic from the circuit information.')
+        print('\tapp.adjust_all_node_width(): Adjust the width of all the nodes according to their name.')
 
         print('\n\nCircuit functions:')
         print('\tapp.circuit.compile(): Compile the grid(s)')
@@ -2147,6 +2155,14 @@ class MainGUI(QMainWindow):
             if col > -1:
                 # print(idx.row(), idx.column())
                 mdl.copy_to_column(idx)
+
+    def adjust_all_node_width(self):
+        """
+        Adapt the width of all the nodes to their names
+        """
+
+        for bus in self.circuit.buses:
+            bus.graphic_obj.adapt()
 
 
 def run():
