@@ -5379,6 +5379,7 @@ class TimeSeries(QThread):
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
         self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+        Sbase = self.grid.Sbase
 
         # For every circuit, run the time series
         for nc, circuit in enumerate(self.grid.circuits):
@@ -5402,7 +5403,7 @@ class TimeSeries(QThread):
                     Y, I, S = circuit.time_series_input.get_at(t)
 
                     # run power flow at the circuit
-                    res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
+                    res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S / Sbase, Ibus=I / Sbase)
 
                     # Recycle voltage solution
                     Vlast = res.voltage
@@ -5822,6 +5823,7 @@ class MonteCarlo(QThread):
         mc_results = MonteCarloResults(n, m)
 
         Vsum = zeros(n, dtype=complex)
+        Sbase = self.grid.Sbase
 
         self.progress_signal.emit(0.0)
 
@@ -5845,7 +5847,7 @@ class MonteCarlo(QThread):
                     Y, I, S = mc_time_series.get_at(t)
 
                     # res = powerflow.run_at(t, mc=True)
-                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
 
                     batch_results.S_points[t, c.bus_original_idx] = res.Sbus
                     batch_results.V_points[t, c.bus_original_idx] = res.voltage
@@ -6263,7 +6265,7 @@ class LatinHypercubeSampling(QThread):
         lhs_results = MonteCarloResults(n, m, batch_size)
 
         max_iter = batch_size * len(self.grid.circuits)
-
+        Sbase = self.grid.Sbase
         it = 0
 
         # For every circuit, run the time series
@@ -6283,7 +6285,7 @@ class LatinHypercubeSampling(QThread):
 
                 # Run the set monte carlo point at 't'
                 # res = power_flow.run_at(t, mc=True)
-                res = power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+                res = power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
 
                 # Gather the results
                 lhs_results.S_points[t, c.bus_original_idx] = res.Sbus
