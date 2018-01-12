@@ -2072,7 +2072,10 @@ class Shunt:
         self.profile_attr = {'Y': 'Yprof'}
 
     def copy(self):
-
+        """
+        Copy of this object
+        :return: a copy of this object
+        """
         shu = Shunt()
 
         shu.name = self.name
@@ -2101,7 +2104,7 @@ class Shunt:
             arr: values array
             mag: String with the magnitude to assign
         """
-        if mag =='Y':
+        if mag == 'Y':
             self.create_profiles(index, arr)
         else:
             raise Exception('Magnitude ' + mag + ' not supported')
@@ -2110,11 +2113,9 @@ class Shunt:
         """
         Create the load object default profiles
         Args:
-            index:
-            steps:
-
-        Returns:
-
+            index: time index to use
+            Y: admittance values
+        Returns: Nothing
         """
         self.create_Y_profile(index, Y)
 
@@ -2122,10 +2123,8 @@ class Shunt:
         """
         Create power profile based on index
         Args:
-            index:
-
-        Returns:
-
+            index: time index to use
+        Returns: Nothing
         """
         if arr_in_pu:
             dta = arr * self.Y

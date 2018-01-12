@@ -1067,7 +1067,7 @@ class MainGUI(QMainWindow):
     def delete_profiles_structure(self):
         """
         Delete all profiles
-        :return: 
+        :return: Nothing
         """
 
         if self.circuit.time_profile is not None:
@@ -1086,7 +1086,10 @@ class MainGUI(QMainWindow):
             self.msg('There are no profiles', 'Delete profiles')
 
     def set_profiles_state_to_grid(self):
-
+        """
+        Set the profiles scenario at the selected time index to the main values of the grid
+        :return: Nothing
+        """
         if self.circuit.time_profile is not None:
             t = self.ui.profile_time_selection_comboBox.currentIndex()
 
@@ -1372,10 +1375,11 @@ class MainGUI(QMainWindow):
                     sc_options = ShortCircuitOptions(bus_index=sel_buses)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options)
 
-                    try:
-                        self.short_circuit.run()
+                    # self.threadpool.start(self.short_circuit)
+                    # self.threadpool.waitForDone()
+                    # self.post_short_circuit()
 
-                        # self.power_flow.start()
+                    try:
                         self.threadpool.start(self.short_circuit)
                         self.threadpool.waitForDone()
                         self.post_short_circuit()
@@ -1706,9 +1710,7 @@ class MainGUI(QMainWindow):
 
     def clear_cascade(self):
         """
-
-        Returns:
-
+        Clear cascade simulation
         """
         self.cascade = None
         self.ui.cascade_tableView.setModel(None)
@@ -1716,8 +1718,6 @@ class MainGUI(QMainWindow):
     def run_cascade_step(self):
         """
         Run cascade step
-        Returns:
-
         """
         if len(self.circuit.buses) > 0:
 
@@ -1741,8 +1741,7 @@ class MainGUI(QMainWindow):
 
     def run_cascade(self):
         """
-        Run a Monte Carlo simulation
-        @return:
+        Run a cascading to blackout simulation
         """
         # print('run_cascade')
 
@@ -1780,7 +1779,7 @@ class MainGUI(QMainWindow):
 
     def post_cascade(self, idx=None):
         """
-        Actions to perform after the Monte Carlo simulation is finished
+        Actions to perform after the cascade simulation is finished
         """
 
         # update the results in the circuit structures
