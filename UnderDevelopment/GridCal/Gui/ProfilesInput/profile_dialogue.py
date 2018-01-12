@@ -59,8 +59,12 @@ class PandasModel(QtCore.QAbstractTableModel):
 
 
 def get_list_model(iterable):
+    """
+    get Qt list model from a simple iterable
+    :param iterable: 
+    :return: List model
+    """
     list_model = QtGui.QStandardItemModel()
-    i = 0
     if iterable is not None:
         for val in iterable:
             # for the list model

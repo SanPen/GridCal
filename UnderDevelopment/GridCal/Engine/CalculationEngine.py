@@ -596,7 +596,7 @@ class Bus:
 
         pass
 
-    def get_YISV(self, index=None):
+    def get_YISV(self, index=None, with_profiles=True):
         """
         Compose the
             - Z: Impedance attached to the bus
@@ -619,6 +619,8 @@ class Bus:
         i_cdf = None  # Positive Generates, negative consumes
         s_cdf = None  # Positive Generates, negative consumes
 
+        eps = 1e-20
+
         self.Qmin_sum = 0
         self.Qmax_sum = 0
 
@@ -635,36 +637,30 @@ class Bus:
                 S -= elm.S  # Reverse sign convention in the load
 
                 # Add the profiles
-                elm_s_prof, elm_i_prof, elm_z_prof = elm.get_profiles(index)
-                if elm_z_prof is not None:
-                    if elm_z_prof.values.sum(axis=0) != complex(0):
+                if with_profiles:
+
+                    elm_s_prof, elm_i_prof, elm_z_prof = elm.get_profiles(index)
+
+                    if elm_z_prof is not None:
                         if y_profile is None:
-                            y_profile = 1 / elm_z_prof
-                            y_cdf = CDF(y_profile)
+                            y_profile = 1.0 / (elm_z_prof.values + eps)
                         else:
-                            pr = 1 / elm_z_prof
-                            y_profile = y_profile.add(pr, fill_value=0)
-                            y_cdf = y_cdf + CDF(pr)
+                            y_profile += 1.0 / (elm_z_prof.values + eps)
 
-                if elm_i_prof is not None:
-                    if elm_i_prof.values.sum(axis=0) != complex(0):
+                    if elm_i_prof is not None:
                         if i_profile is None:
-                            i_profile = -elm_i_prof  # Reverse sign convention in the load
-                            i_cdf = CDF(i_profile)
+                            i_profile = -elm_i_prof.values  # Reverse sign convention in the load
                         else:
-                            pr = -elm_i_prof
-                            i_profile = i_profile.add(pr, fill_value=0)  # Reverse sign convention in the load
-                            i_cdf = i_cdf + CDF(pr)
+                            i_profile -= elm_i_prof.values  # Reverse sign convention in the load
 
-                if elm_s_prof is not None:
-                    if elm_s_prof.values.sum(axis=0) != complex(0):
+                    if elm_s_prof is not None:
                         if s_profile is None:
-                            s_profile = -elm_s_prof  # Reverse sign convention in the load
-                            s_cdf = CDF(s_profile)
+                            s_profile = -elm_s_prof.values  # Reverse sign convention in the load
                         else:
-                            pr = -elm_s_prof
-                            s_profile = s_profile.add(pr, fill_value=0)  # Reverse sign convention in the load
-                            s_cdf = s_cdf + CDF(pr)
+                            s_profile -= elm_s_prof.values  # Reverse sign convention in the load
+
+                else:
+                    pass
             else:
                 warn(elm.name + ' is not active')
 
@@ -690,14 +686,15 @@ class Bus:
                         pass
 
                 # add the power profile
-                elm_p_prof, elm_vset_prof = elm.get_profiles(index)
-                if elm_p_prof is not None:
-                    if s_profile is None:
-                        s_profile = elm_p_prof  # Reverse sign convention in the load
-                        s_cdf = CDF(s_profile)
-                    else:
-                        s_profile = s_profile.add(elm_p_prof, fill_value=0)
-                        s_cdf = s_cdf + CDF(elm_p_prof)
+                if with_profiles:
+                    elm_p_prof, elm_vset_prof = elm.get_profiles(index)
+                    if elm_p_prof is not None:
+                        if s_profile is None:
+                            s_profile = elm_p_prof.values  # Reverse sign convention in the load
+                        else:
+                            s_profile += elm_p_prof.values
+                else:
+                    pass
             else:
                 warn(elm.name + ' is not active')
 
@@ -711,6 +708,16 @@ class Bus:
         for elm in self.shunts:
             if elm.active:
                 Y += elm.Y
+
+                # add profiles
+                if with_profiles:
+                    if elm.Yprof is not None:
+                        if y_profile is None:
+                            y_profile = elm.Yprof.values  # Reverse sign convention in the load
+                        else:
+                            y_profile += elm.Yprof.values
+                else:
+                    pass
             else:
                 warn(elm.name + ' is not active')
 
@@ -720,25 +727,30 @@ class Bus:
             if elm.active:
                 S += elm.S
 
-                if elm.Sprof is not None:
-                    if s_profile is None:
-                        s_profile = elm.Sprof  # Reverse sign convention in the load
-                        s_cdf = CDF(s_profile)
-                    else:
-                        s_profile = s_profile.add(elm.Sprof, fill_value=0)
-                        s_cdf = s_cdf + CDF(elm.Pprof)
+                # add profiles
+                if with_profiles:
+                    if elm.Sprof is not None:
+                        if s_profile is None:
+                            s_profile = elm.Sprof.values  # Reverse sign convention in the load
+                        else:
+                            s_profile += elm.Sprof.values
+                else:
+                    pass
             else:
                 warn(elm.name + ' is not active')
 
         # Align profiles into a common column sum based on the time axis
         if s_profile is not None:
             s_profile = s_profile.sum(axis=1)
+            s_cdf = CDF(s_profile)
 
         if i_profile is not None:
             i_profile = i_profile.sum(axis=1)
+            i_cdf = CDF(i_profile)
 
         if y_profile is not None:
             y_profile = y_profile.sum(axis=1)
+            y_cdf = CDF(y_profile)
 
         return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
 
@@ -2227,7 +2239,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self, time_profile=None):
+    def compile(self, time_profile=None, with_profiles=True):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -4594,7 +4606,7 @@ class PowerFlow(QRunnable):
 
         # Retry with another solver
         if not np.all(circuit.power_flow_results.converged) and self.options.auxiliary_solver_type is not None:
-            print('Retying power flow with' + str(self.options.auxiliary_solver_type))
+            # print('Retying power flow with' + str(self.options.auxiliary_solver_type))
             # compose a voltage array that makes sense
             # if np.isnan(circuit.power_flow_results.voltage).any():
             #     print('Corrupt voltage, using flat solution in retry')
@@ -4612,8 +4624,7 @@ class PowerFlow(QRunnable):
                                                                 Ibus=Ibus)
 
             if not np.all(circuit.power_flow_results.converged):
-                print('Did not converge, even after retry!')
-            print('Error:', circuit.power_flow_results.error)
+                print('Did not converge, even after retry!, Error:', circuit.power_flow_results.error)
         else:
             pass
 
