@@ -1322,8 +1322,9 @@ class Load:
         if arr_in_pu:
             dta = arr * self.S
         else:
-            dta = ones(len(index)) * self.S if arr is None else arr
-        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.S
+            nt = len(index)
+            dta = ones(nt) * self.S if arr is None else arr
+        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def create_I_profile(self, index, arr, arr_in_pu=False):
         """
@@ -1337,7 +1338,7 @@ class Load:
             dta = arr * self.I
         else:
             dta = ones(len(index)) * self.I if arr is None else arr
-        self.Iprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.I
+        self.Iprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def create_Z_profile(self, index, arr, arr_in_pu=False):
         """
@@ -1353,7 +1354,7 @@ class Load:
             dta = arr * self.Z
         else:
             dta = ones(len(index)) * self.Z if arr is None else arr
-        self.Zprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Z
+        self.Zprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None):
         """
@@ -1492,7 +1493,7 @@ class StaticGenerator:
             dta = arr * self.S
         else:
             dta = ones(len(index)) * self.S if arr is None else arr
-        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.S
+        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None):
         """
@@ -1654,7 +1655,7 @@ class Battery:
             dta = arr * self.P
         else:
             dta = ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.P
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
@@ -1669,7 +1670,7 @@ class Battery:
             dta = arr * self.Vset
         else:
             dta = ones(len(index)) * self.Vset if arr is None else arr
-        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Vset
+        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None):
         """
@@ -1861,7 +1862,7 @@ class ControlledGenerator:
             dta = arr * self.P
         else:
             dta = ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.P
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
@@ -1876,7 +1877,7 @@ class ControlledGenerator:
             dta = arr * self.Vset
         else:
             dta = ones(len(index)) * self.Vset if arr is None else arr
-        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Vset
+        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None):
         """
@@ -2025,7 +2026,7 @@ class Shunt:
             dta = arr * self.Y
         else:
             dta = ones(len(index)) * self.Y if arr is None else arr
-        self.Yprof = pd.DataFrame(data=dta, index=index, columns=[self.name]) * self.Y
+        self.Yprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None):
         """
@@ -4432,6 +4433,7 @@ class PowerFlow(QRunnable):
         results = PowerFlowResults()
         results.initialize(n, m)
         # self.progress_signal.emit(0.0)
+        Sbase = self.grid.Sbase
 
         for circuit in self.grid.circuits:
             Vbus = circuit.power_flow_input.Vbus
@@ -5379,7 +5381,6 @@ class TimeSeries(QThread):
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
         self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
-        Sbase = self.grid.Sbase
 
         # For every circuit, run the time series
         for nc, circuit in enumerate(self.grid.circuits):
@@ -5403,7 +5404,7 @@ class TimeSeries(QThread):
                     Y, I, S = circuit.time_series_input.get_at(t)
 
                     # run power flow at the circuit
-                    res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S / Sbase, Ibus=I / Sbase)
+                    res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
 
                     # Recycle voltage solution
                     Vlast = res.voltage
@@ -5815,21 +5816,20 @@ class MonteCarlo(QThread):
         it = 0
         variance_sum = 0.0
         std_dev_progress = 0
-        Vvariance = 0
+        v_variance = 0
 
         n = len(self.grid.buses)
         m = len(self.grid.branches)
 
         mc_results = MonteCarloResults(n, m)
 
-        Vsum = zeros(n, dtype=complex)
-        Sbase = self.grid.Sbase
+        v_sum = zeros(n, dtype=complex)
 
         self.progress_signal.emit(0.0)
 
         while (std_dev_progress < 100.0) and (it < max_mc_iter) and not self.__cancel__:
 
-            self.progress_text.emit('Running Monte Carlo: Variance: ' + str(Vvariance))
+            self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
             batch_results = MonteCarloResults(n, m, batch_size)
 
@@ -5847,7 +5847,7 @@ class MonteCarlo(QThread):
                     Y, I, S = mc_time_series.get_at(t)
 
                     # res = powerflow.run_at(t, mc=True)
-                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
+                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
 
                     batch_results.S_points[t, c.bus_original_idx] = res.Sbus
                     batch_results.V_points[t, c.bus_original_idx] = res.voltage
@@ -5857,12 +5857,12 @@ class MonteCarlo(QThread):
             # Compute the Monte Carlo values
             it += batch_size
             mc_results.append_batch(batch_results)
-            Vsum += batch_results.get_voltage_sum()
-            Vavg = Vsum / it
-            Vvariance = abs((power(mc_results.V_points - Vavg, 2.0) / (it - 1)).min())
+            v_sum += batch_results.get_voltage_sum()
+            v_avg = v_sum / it
+            v_variance = abs((power(mc_results.V_points - v_avg, 2.0) / (it - 1)).min())
 
             # progress
-            variance_sum += Vvariance
+            variance_sum += v_variance
             err = variance_sum / it
             if err == 0:
                 err = 1e-200  # to avoid division by zeros
