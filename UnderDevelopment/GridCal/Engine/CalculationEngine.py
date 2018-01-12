@@ -2991,7 +2991,7 @@ class MultiCircuit(Circuit):
         dfs['shunt'] = pd.DataFrame(data=obj, columns=Shunt().edit_headers)
 
         if y_profiles is not None:
-            dfs['shunt_Y_profiles'] = pd.DataFrame(data=y_profiles, columns=hdr, index=T)
+            dfs['shunt_Y_profiles'] = pd.DataFrame(data=y_profiles.astype(str), columns=hdr, index=T)
 
         # flush-save
         writer = pd.ExcelWriter(file_path)
