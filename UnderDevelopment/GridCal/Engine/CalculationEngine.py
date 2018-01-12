@@ -631,7 +631,8 @@ class Bus:
 
             if elm.active:
 
-                Y += 1 / (elm.Z + eps)
+                if elm.Z != complex(0.0, 0.0):
+                    Y += 1 / elm.Z  # Do not touch this one!!!!! it will break the Ybus matrix
                 I -= elm.I  # Reverse sign convention in the load
                 S -= elm.S  # Reverse sign convention in the load
 
@@ -740,15 +741,12 @@ class Bus:
 
         # Align profiles into a common column sum based on the time axis
         if s_profile is not None:
-            s_profile = s_profile.reshape(-1)
             s_cdf = CDF(s_profile)
 
         if i_profile is not None:
-            i_profile = i_profile.reshape(-1)
             i_cdf = CDF(i_profile)
 
         if y_profile is not None:
-            y_profile = y_profile.reshape(-1)
             y_cdf = CDF(y_profile)
 
         return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
@@ -2318,11 +2316,11 @@ class Circuit:
             # compute the time series arrays  ##############################################
 
             if Sprof is not None:
-                S_profile_data[:, i] = Sprof.data
+                S_profile_data[:, i] = Sprof.reshape(-1)
             if Iprof is not None:
-                I_profile_data[:, i] = Iprof.data
+                I_profile_data[:, i] = Iprof.reshape(-1)
             if Yprof is not None:
-                Y_profile_data[:, i] = Yprof.data
+                Y_profile_data[:, i] = Yprof.reshape(-1)
 
             S_prof_names[i] = 'Sprof@Bus' + str(i)
             I_prof_names[i] = 'Iprof@Bus' + str(i)
@@ -4288,58 +4286,32 @@ class PowerFlow(QRunnable):
                                                                                   max_it=self.options.max_iter,
                                                                                   robust=self.options.robust)
 
-                    # if not converged:
-                    #     # Try with HELM
-                    #     methods.append(SolverType.HELM)
-                    #     V, converged, normF, Scalc, it, el = helm(Y=circuit.power_flow_input.Ybus,
-                    #                                               Ys=circuit.power_flow_input.Yseries,
-                    #                                               Ysh=circuit.power_flow_input.Yshunt,
-                    #                                               max_coefficient_count=30,
-                    #                                               S=circuit.power_flow_input.Sbus,
-                    #                                               voltage_set_points=circuit.power_flow_input.Vbus,
-                    #                                               pq=circuit.power_flow_input.pq,
-                    #                                               pv=circuit.power_flow_input.pv,
-                    #                                               vd=circuit.power_flow_input.ref,
-                    #                                               eps=self.options.tolerance)
-                    #     Vhelm = V.copy()
-                    #
-                    #     # Retry NR using the HELM solution as starting point
-                    #     if not converged:
-                    #         methods.append(SolverType.IWAMOTO)
-                    #         V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                    #                                                        Sbus=Sbus,
-                    #                                                        V0=V,
-                    #                                                        Ibus=circuit.power_flow_input.Ibus,
-                    #                                                        pv=circuit.power_flow_input.pv,
-                    #                                                        pq=circuit.power_flow_input.pq,
-                    #                                                        tol=self.options.tolerance,
-                    #                                                        max_it=self.options.max_iter,
-                    #                                                        robust=self.options.robust)
-                    #
-                    #         # if it still did not converge, just use the helm voltage approximation
-                    #         if not converged:
-                    #             V = Vhelm
+                if converged:
+                    # Check controls
+                    if self.options.control_Q:
+                        voltage_solution, \
+                        Qnew, \
+                        types_new, \
+                        any_control_issue = self.switch_logic(V=voltage_solution,
+                                                              Vset=abs(voltage_solution),
+                                                              Q=Scalc.imag,
+                                                              Qmax=circuit.power_flow_input.Qmax,
+                                                              Qmin=circuit.power_flow_input.Qmin,
+                                                              types=circuit.power_flow_input.types,
+                                                              original_types=original_types,
+                                                              verbose=self.options.verbose)
+                        if any_control_issue:
+                            # voltage_solution = Vnew
+                            Sbus = Sbus.real + 1j * Qnew
+                            circuit.power_flow_input.compile_types(types_new)
+                        else:
+                            if self.options.verbose:
+                                print('Controls Ok')
 
-                # Check controls
-                if self.options.control_Q:
-                    Vnew, Qnew, types_new, any_control_issue = self.switch_logic(V=voltage_solution,
-                                                                                 Vset=abs(voltage_solution),
-                                                                                 Q=Scalc.imag,
-                                                                                 Qmax=circuit.power_flow_input.Qmax,
-                                                                                 Qmin=circuit.power_flow_input.Qmin,
-                                                                                 types=circuit.power_flow_input.types,
-                                                                                 original_types=original_types,
-                                                                                 verbose=self.options.verbose)
-                    if any_control_issue:
-                        voltage_solution = Vnew
-                        Sbus = Sbus.real + 1j * Qnew
-                        circuit.power_flow_input.compile_types(types_new)
                     else:
-                        if self.options.verbose:
-                            print('Controls Ok')
-
+                        # did not check Q limits
+                        any_control_issue = False
                 else:
-                    # did not check Q limits
                     any_control_issue = False
 
             # increment the inner iterations counter

@@ -585,7 +585,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
             rho = -1
 
         # lambda update
-        if rho > 0:
+        if rho >= 0:
             update_jacobian = True
             lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
             nu = 2.0
