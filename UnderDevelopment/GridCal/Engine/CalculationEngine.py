@@ -631,8 +631,7 @@ class Bus:
 
             if elm.active:
 
-                if elm.Z != 0:
-                    Y += 1 / elm.Z
+                Y += 1 / (elm.Z + eps)
                 I -= elm.I  # Reverse sign convention in the load
                 S -= elm.S  # Reverse sign convention in the load
 
@@ -741,15 +740,15 @@ class Bus:
 
         # Align profiles into a common column sum based on the time axis
         if s_profile is not None:
-            s_profile = s_profile.sum(axis=1)
+            s_profile = s_profile.reshape(-1)
             s_cdf = CDF(s_profile)
 
         if i_profile is not None:
-            i_profile = i_profile.sum(axis=1)
+            i_profile = i_profile.reshape(-1)
             i_cdf = CDF(i_profile)
 
         if y_profile is not None:
-            y_profile = y_profile.sum(axis=1)
+            y_profile = y_profile.reshape(-1)
             y_cdf = CDF(y_profile)
 
         return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
