@@ -741,13 +741,13 @@ class Bus:
 
         # Align profiles into a common column sum based on the time axis
         if s_profile is not None:
-            s_cdf = CDF(s_profile)
+            s_cdf = CDF(s_profile[:, 0])
 
         if i_profile is not None:
-            i_cdf = CDF(i_profile)
+            i_cdf = CDF(i_profile[:, 0])
 
         if y_profile is not None:
-            y_cdf = CDF(y_profile)
+            y_cdf = CDF(y_profile[:, 0])
 
         return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
 
