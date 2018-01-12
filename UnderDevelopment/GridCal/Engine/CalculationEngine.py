@@ -881,6 +881,47 @@ class Bus:
             self.y = self.graphic_obj.pos().y()
             self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
 
+    def delete_profiles(self):
+        """
+        Delete all profiles
+        :return: 
+        """
+        for elm in self.loads:
+            elm.delete_profiles()
+
+        for elm in self.static_generators:
+            elm.delete_profiles()
+
+        for elm in self.batteries:
+            elm.delete_profiles()
+
+        for elm in self.controlled_generators:
+            elm.delete_profiles()
+
+        for elm in self.shunts:
+            elm.delete_profiles()
+
+    def set_profile_values(self, t):
+        """
+        Set the default values from the profiles at time index t
+        :param t: profile time index
+        """
+
+        for elm in self.loads:
+            elm.set_profile_values(t)
+
+        for elm in self.static_generators:
+            elm.set_profile_values(t)
+
+        for elm in self.batteries:
+            elm.set_profile_values(t)
+
+        for elm in self.controlled_generators:
+            elm.set_profile_values(t)
+
+        for elm in self.shunts:
+            elm.set_profile_values(t)
+
     def __str__(self):
         return self.name
 
@@ -1374,6 +1415,24 @@ class Load:
                 self.create_Z_profile(index)
         return self.Sprof, self.Iprof, self.Zprof
 
+    def delete_profiles(self):
+        """
+        Delete the object profiles
+        :return: 
+        """
+        self.Sprof = None
+        self.Iprof = None
+        self.Zprof = None
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index
+        """
+        self.S = self.Sprof.values[t]
+        self.I = self.Iprof.values[t]
+        self.Z = self.Zprof.values[t]
+
     def copy(self):
 
         load = Load()
@@ -1508,6 +1567,20 @@ class StaticGenerator:
             if self.Sprof is None:
                 self.create_S_profile(index)
         return self.Sprof
+
+    def delete_profiles(self):
+        """
+        Delete the object profiles
+        :return: 
+        """
+        self.Sprof = None
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index
+        """
+        self.S = self.Sprof.values[t]
 
     def __str__(self):
         return self.name
@@ -1687,6 +1760,22 @@ class Battery:
             if self.Vsetprof is None:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
+
+    def delete_profiles(self):
+        """
+        Delete the object profiles
+        :return: 
+        """
+        self.Pprof = None
+        self.Vsetprof = None
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index
+        """
+        self.P = self.Pprof.values[t]
+        self.Vset = self.Vsetprof.values[t]
 
     def __str__(self):
         return self.name
@@ -1895,6 +1984,22 @@ class ControlledGenerator:
                 self.create_vset_profile(index)
         return self.Pprof, self.Vsetprof
 
+    def delete_profiles(self):
+        """
+        Delete the object profiles
+        :return: 
+        """
+        self.Pprof = None
+        self.Vsetprof = None
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index
+        """
+        self.P = self.Pprof.values[t]
+        self.Vset = self.Vsetprof.values[t]
+
     def make_lp_vars(self, name, Sbase):
         """
         Create all the necessary LP variables
@@ -2041,6 +2146,20 @@ class Shunt:
             if self.Yprof is None:
                 self.create_Y_profile(index)
         return self.Yprof
+
+    def delete_profiles(self):
+        """
+        Delete the object profiles
+        :return: 
+        """
+        self.Yprof = None
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index
+        """
+        self.Y = self.Yprof.values[t]
 
     def __str__(self):
         return self.name

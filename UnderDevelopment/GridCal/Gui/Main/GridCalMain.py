@@ -1065,10 +1065,45 @@ class MainGUI(QMainWindow):
             self.compile()
 
     def delete_profiles_structure(self):
-        print('delete_profiles_structure')
+        """
+        Delete all profiles
+        :return: 
+        """
+
+        if self.circuit.time_profile is not None:
+            quit_msg = "Are you sure you want to remove the profiles?"
+            reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                for bus in self.circuit.buses:
+                    bus.delete_profiles()
+                self.circuit.time_profile = None
+                self.circuit.has_time_series = False
+                self.ui.tableView.setModel(None)
+            else:
+                pass
+        else:
+            self.msg('There are no profiles', 'Delete profiles')
 
     def set_profiles_state_to_grid(self):
-        print('set_profiles_state_to_grid')
+
+        if self.circuit.time_profile is not None:
+            t = self.ui.profile_time_selection_comboBox.currentIndex()
+
+            if t > -1:
+                name_t = self.ui.profile_time_selection_comboBox.currentText()
+                quit_msg = "Replace the grid values by the scenario at " + name_t
+                reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    for bus in self.circuit.buses:
+                        bus.set_profile_values(t)
+                else:
+                    pass
+            else:
+                self.msg('No profile time selected', 'Set profile values')
+        else:
+            self.msg('There are no profiles', 'Set profile values')
 
     def import_profiles(self):
         """
