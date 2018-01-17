@@ -632,7 +632,7 @@ class Bus:
             if elm.active:
 
                 if elm.Z != complex(0.0, 0.0):
-                    Y += 1 / elm.Z  # Do not touch this one!!!!! it will break the Ybus matrix
+                    Y += 1 / elm.Z  # Do not touch this one!!!!! it will break the Ybus matrix, when Z=0 -> Y=0 not inf.
                 I -= elm.I  # Reverse sign convention in the load
                 S -= elm.S  # Reverse sign convention in the load
 

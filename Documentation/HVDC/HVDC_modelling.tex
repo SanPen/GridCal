@@ -1,0 +1,238 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  My documentation report
+%  Objetive: Explain what I did and how, so someone can continue with the investigation
+%
+% Important note:
+% Chapter heading images should have a 2:1 width:height ratio,
+% e.g. 920px width and 460px height.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[11pt,fleqn]{book} % Default font size and left-justified equations
+
+\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry} % Page margins
+
+\usepackage{xcolor,lipsum} % Required for specifying colors by name
+\definecolor{ocre}{RGB}{73,73,73} 
+\definecolor{lightgray}{RGB}{229,229,229} 
+% Font Settings
+\usepackage{avant} % Use the Avantgarde font for headings
+%\usepackage{times} % Use the Times font for headings
+\usepackage{mathptmx} % Use the Adobe Times Roman as the default text font together with math symbols from the Sym­bol, Chancery and Com­puter Modern fonts
+
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+
+
+% MATHS PACKAGE
+\usepackage{amsmath,tikz}
+\usetikzlibrary{matrix}
+\usetikzlibrary{calc}
+\usetikzlibrary{shapes}
+\usetikzlibrary{backgrounds,fit,shapes}
+\usetikzlibrary{positioning}
+\usepackage{relsize}
+
+\newcommand*{\horzbar}{\rule[0.05ex]{2.5ex}{0.5pt}}
+\usepackage{calc}
+
+\setcounter{MaxMatrixCols}{20}
+
+% VERBATIM PACKAGE
+\usepackage{verbatim}
+
+% Bibliography
+%\usepackage[style=alphabetic,sorting=nyt,sortcites=true,autopunct=true,babel=hyphen,hyperref=true,abbreviate=false,backref=true,backend=biber]{ieeetran}
+
+%\addbibresource{bibliography.bib} % BibTeX bibliography file
+%\defbibheading{bibempty}{}
+
+\input{structure} % Insert the commands.tex file which contains the majority of the structure behind the template
+
+\begin{document}
+
+\let\cleardoublepage\clearpage
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\begingroup
+\thispagestyle{empty}
+
+\AddToShipoutPicture*{\put(0,0){\includegraphics[scale=4.2]{frontpage}}} % Image background
+
+\begin{tikzpicture}[remember picture, overlay]
+\node[fill=white, fill opacity=0.6, anchor=north,minimum height=6cm, minimum width=\paperwidth] (names) at ([yshift=19cm]current page.south){};
+\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont] at ([yshift=17cm]current page.south) {GridCal};
+\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont \Huge] at ([yshift=15cm]current page.south) {Santiago Peñate Vera};
+\end{tikzpicture}
+
+
+
+%\centering
+%%\vspace{5cm}
+%\par\normalfont\fontsize{35}{35}\sffamily\selectfont
+%\textbf{GridCal Manual }\\
+%{\LARGE }\par % Book title
+%\vspace*{1cm}
+%{\Huge Santiago Peñate Vera}\par % Author name
+%\endgroup
+
+%----------------------------------------------------------------------------------------
+%	COPYRIGHT PAGE
+%----------------------------------------------------------------------------------------
+
+\newpage
+~\vfill
+\thispagestyle{empty}
+
+%\noindent Copyright \copyright\ 2014 Andrea Hidalgo\\ % Copyright notice
+
+\noindent \textsc{HVDC modelling}\\
+
+\noindent Research oriented power systems software.\\ % License information
+
+\noindent \textit{Started writing this document in Madrid the 9th of October of 2016} % Printing/edition date
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % heading image
+
+\pagestyle{empty} % No headers
+
+\renewcommand\contentsname{Table of content}
+%\renewcommand{\bibname}{Bibliography}
+\tableofcontents% Print the table of contents itself
+
+%\cleardoublepage % Forces the first chapter to start on an odd page so it's on the right
+
+\pagestyle{fancy} % Print headers again
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 1
+%----------------------------------------------------------------------------------------
+
+\chapterimage{chapterhdr1.jpg} % Chapter heading image
+
+\chapter{HVDC modelling}
+
+In this section a general HVDC converter model is presented along with the power flow equations to simulate HVDC grids.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\linewidth]{GeneralConverterModel.png}
+	\caption{HVDC general converter model}
+	\label{fig:GeneralHVDCConverterModel}
+\end{figure}
+
+Newton-Raphson system of equations to solve the HVDC grid power flow.
+
+\begin{equation}
+\begin{bmatrix}
+%F3
+\frac{\partial f_3}{\partial V_g} & \frac{\partial f_3}{\partial \theta_g} & 0 & 0 & 0 & 0 & -1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F4
+\frac{\partial f_4}{\partial V_g} & \frac{\partial f_4}{\partial \theta_g} & 0 & 0 & 0 & 0 & 0 & -1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F5
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & -1 & 0 & -1 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F6
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & -1 & 0 & -1 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F7
+\frac{\partial f_7}{\partial V_g} & \frac{\partial f_7}{\partial \theta_g} & \frac{\partial f_7}{\partial V^p} & \frac{\partial f_7}{\partial \theta^p} & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F8
+\frac{\partial f_8}{\partial V_g} & \frac{\partial f_8}{\partial \theta_g} & \frac{\partial f_8}{\partial V^p} & \frac{\partial f_8}{\partial \theta^p} & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F9
+\frac{\partial f_9}{\partial V_g} & \frac{\partial f_9}{\partial \theta_g} & 0 & 0 &  \frac{\partial f_9}{\partial V^n} & \frac{\partial f_9}{\partial \theta^n} & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F10
+\frac{\partial f_{10}}{\partial V_g} & \frac{\partial f_{10}}{\partial \theta_g} & 0 & 0 & \frac{\partial f_{10}}{\partial V^n} & \frac{\partial f_{10}}{\partial \theta^n} & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F11
+\frac{\partial f_{11}}{\partial V_g} & \frac{\partial f_{11}}{\partial \theta_g} & \frac{\partial f_{11}}{\partial V^p} & \frac{\partial f_{11}}{\partial \theta^p} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \frac{\partial f_{11}}{\partial V_{dc}^p} & 0 & \frac{\partial f_{11}}{\partial I_{dc}^p} & 0\\ 
+
+%F12
+\frac{\partial f_{12}}{\partial V_g} & \frac{\partial f_{12}}{\partial \theta_g} & 0 & 0 & \frac{\partial f_{12}}{\partial V^n} & \frac{\partial f_{12}}{\partial \theta^n} & 0 & 1 & 0 & 0 & 0 & 0 & 0 & \frac{\partial f_{12}}{\partial V_{dc}^n} & 0 & \frac{\partial f_{12}}{\partial I_{dc}^n}\\ 
+
+%F13
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \frac{\partial f_{13}}{\partial V_{dc}^p} & \frac{\partial f_{13}}{\partial V_{dc}^n} & 1 & 0\\ 
+
+%F14
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \frac{\partial f_{14}}{\partial V_{dc}^p} & \frac{\partial f_{14}}{\partial V_{dc}^n} & 0 & 1\\ 
+
+%F15
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & A & 0 & 0 & 0 & B & 0 & 0 & 0\\ 
+
+%F16
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & C & 0 & 0 & D & 0 & 0\\ 
+
+%F17
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & E & 0 & 0 & 0 & 0 & 0 & 0\\ 
+
+%F18
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & F & 0 & 0 & 0 & 0
+\end{bmatrix}^{(k}
+\times
+\begin{bmatrix}
+V_g\\ 
+\theta_g\\ 
+V^p\\ 
+\theta^p\\ 
+V^n\\ 
+\theta^n\\ 
+P_g\\ 
+Q_g\\ 
+P^p\\ 
+Q^p\\ 
+P^n\\ 
+Q^n\\ 
+V_{dc}^p\\ 
+V_{dc}^n\\ 
+I_{dc}^p\\ 
+I_{dc}^n
+\end{bmatrix}^{(k}
+=
+\begin{bmatrix}
+\Delta f_3\\ 
+\Delta f_4\\ 
+\Delta f_5\\ 
+\Delta f_6\\ 
+\Delta f_7\\ 
+\Delta f_8\\ 
+\Delta f_9\\ 
+\Delta f_{10}\\ 
+\Delta f_{11}\\ 
+\Delta f_{12}\\ 
+\Delta f_{13}\\ 
+\Delta f_{14}\\ 
+\Delta f_{15}\\ 
+\Delta f_{16}\\ 
+\Delta f_{17}\\ 
+\Delta f_{18}
+\end{bmatrix}^{(k}
+\end{equation}
+
+Each element of the matrix is a $N \times N$ matrix, where $N$ is the number of converters in the HVDC grid. The sub-matrices $A$, $B$, $C$, $D$, $E$ and $F$ depend of the converter control mode.
+
+
+% ----------------------------------------------------------------------------------------
+% 	BIBLIOGRAPHY
+% ----------------------------------------------------------------------------------------
+%\chapter*{Bibliography}
+\bibliographystyle{unsrt}
+\bibliography{bibliography}
+
+\end{document}
