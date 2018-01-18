@@ -463,15 +463,12 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.setToPort(toPort)
 
         # add transformer circles
+        self.symbol = None
         self.c1 = None
         self.c2 = None
-        self.t_diam = 40
-        self.c1_offset = QPointF(self.t_diam * 3 / 4, self.t_diam / 2)
-        self.c2_offset = QPointF(self.t_diam / 4, self.t_diam / 2)
         if self.api_object is not None:
             if self.api_object.is_transformer:
                 self.make_transformer_signs()
-                # self.diagramScene.addItem(self.c2)
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
@@ -481,14 +478,22 @@ class BranchGraphicItem(QGraphicsLineItem):
 
     def make_transformer_signs(self):
         """
-
+        create the transformer simbol
         :return:
         """
-        self.c1 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
-        self.c2 = QGraphicsEllipseItem(0, 0, self.t_diam, self.t_diam, parent=self)
+        h = 80.0
+        w = h
+        d = w/2
+        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+        self.symbol.setPen(Qt.transparent)
+        # self.symbol.setBrush(Qt.gray)
+        # self.symbol = QGraphicsItemGroup(parent=self)
+        self.c1 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
+        self.c2 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
         self.c1.setPen(QPen(self.color, self.width, self.style))
-        # self.diagramScene.addItem(self.c1)
         self.c2.setPen(QPen(self.color, self.width, self.style))
+        self.c1.setPos(w * 0.65 - d/2, h * 0.5 - d/2)
+        self.c2.setPos(w * 0.35 - d/2, h * 0.5 - d/2)
 
     def contextMenuEvent(self, event):
         """
@@ -638,12 +643,24 @@ class BranchGraphicItem(QGraphicsLineItem):
                     if self.c1 is None:
                         self.make_transformer_signs()
 
-                    # pos = self.pos1 - ((self.pos1 - self.pos2) / 2.0)
-                    pos1 = (self.pos1 + self.pos2) / 2.0 - self.c1_offset
-                    pos2 = (self.pos1 + self.pos2) / 2.0 - self.c2_offset
-                    self.c1.setPos(pos1)
-                    self.c2.setPos(pos2)
-                    # self.c1.setPos(self.pos1)
+                    try:
+                        h = self.pos2.y() - self.pos1.y()
+                        b = self.pos2.x() - self.pos1.x()
+                        ang = np.arctan2(h, b)
+                        h2 = self.symbol.rect().height() / 2.0
+                        w2 = self.symbol.rect().width() / 2.0
+                        a = h2 * np.cos(ang) - w2 * np.sin(ang)
+                        b = w2 * np.sin(ang) + h2 * np.cos(ang)
+
+                        center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
+
+                        transform = QTransform()
+                        transform.translate(center.x(), center.y())
+                        transform.rotate(np.rad2deg(ang))
+                        self.symbol.setTransform(transform)
+
+                    except Exception as ex:
+                        print(ex)
 
     def set_pen(self, pen):
         """
