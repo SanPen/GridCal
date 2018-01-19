@@ -27,6 +27,8 @@ import pulp
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
+import matplotlib
+matplotlib.use('Qt5Agg')
 from matplotlib import pyplot as plt
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
