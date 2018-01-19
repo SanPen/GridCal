@@ -689,6 +689,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         if dlg.exec_():
             pass
 
+
 class ParameterDialog(QDialog):
 
     def __init__(self, parent=None):
