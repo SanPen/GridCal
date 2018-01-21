@@ -507,8 +507,6 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1.setZValue(2)
         self.c2.setZValue(1)
 
-        # self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
-        self.symbol.c
     def contextMenuEvent(self, event):
         """
         Show context menu
