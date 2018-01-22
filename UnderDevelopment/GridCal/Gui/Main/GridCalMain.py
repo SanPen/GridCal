@@ -940,7 +940,8 @@ class MainGUI(QMainWindow):
                     S = self.circuit.power_flow_results.Sbranch[i]
 
                     if branch.rate < 1e-3 or self.ui.rating_override_checkBox.isChecked():
-                        branch.rate = np.round(abs(S) * factor, 1)
+                        r = np.round(abs(S) * factor, 1)
+                        branch.rate = r if r > 0.0 else 1.0
                     else:
                         pass  # the rate is ok
 

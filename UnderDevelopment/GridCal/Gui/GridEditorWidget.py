@@ -464,6 +464,7 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         # add transformer circles
         self.symbol = None
+        self.c0 = None
         self.c1 = None
         self.c2 = None
         if self.api_object is not None:
@@ -486,14 +487,25 @@ class BranchGraphicItem(QGraphicsLineItem):
         d = w/2
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
         self.symbol.setPen(Qt.transparent)
-        # self.symbol.setBrush(Qt.gray)
-        # self.symbol = QGraphicsItemGroup(parent=self)
+
+        self.c0 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
         self.c1 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
         self.c2 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
-        self.c1.setPen(QPen(self.color, self.width, self.style))
+
+        self.c0.setPen(QPen(Qt.transparent, self.width, self.style))
         self.c2.setPen(QPen(self.color, self.width, self.style))
-        self.c1.setPos(w * 0.65 - d/2, h * 0.5 - d/2)
-        self.c2.setPos(w * 0.35 - d/2, h * 0.5 - d/2)
+        self.c1.setPen(QPen(self.color, self.width, self.style))
+
+        self.c0.setBrush(Qt.white)
+        self.c2.setBrush(Qt.white)
+
+        self.c0.setPos(w * 0.35 - d / 2, h * 0.5 - d / 2)
+        self.c1.setPos(w * 0.35 - d / 2, h * 0.5 - d / 2)
+        self.c2.setPos(w * 0.65 - d / 2, h * 0.5 - d / 2)
+
+        self.c0.setZValue(0)
+        self.c1.setZValue(2)
+        self.c2.setZValue(1)
 
     def contextMenuEvent(self, event):
         """
