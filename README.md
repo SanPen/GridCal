@@ -13,7 +13,7 @@ This software aims to be a complete platform for power systems research and simu
 
 Yes, you can now install GridCal as a separated standalone and forget about python if you wish.
 
-[GridCal](https://mega.nz/#!Dl5m0b7T)
+[GridCal](https://mega.nz/#!Dl5m0b7T!brD9O0ejs2Ih6rOLVaCjQm3-JZttH-ksrp5xXrrX3BU)
 
 # Package Installation
 
