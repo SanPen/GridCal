@@ -9,7 +9,13 @@ This software aims to be a complete platform for power systems research and simu
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/results_vstability.png)
 
-# Installation
+# Windows Standalone
+
+Yes, you can now install GridCal as a separated standalone and forget about python if you wish.
+
+![GridCal](https://mega.nz/#!Dl5m0b7T)
+
+# Package Installation
 
 Open a console and type:
 
