@@ -1239,17 +1239,41 @@ class PSSeTransformer:
             Gridcal Branch object
         """
 
-        if self.CZ != 1:
-            warn('Transformer impedance is not in p.u.')
+        '''
+        R1-2, X1-2 The measured impedance of the transformer between the buses to which its first
+            and second windings are connected.
+            
+            When CZ is 1, they are the resistance and reactance, respectively, in pu on system
+            MVA base and winding voltage base.
+            
+            When CZ is 2, they are the resistance and reactance, respectively, in pu on Winding
+            1 to 2 MVA base (SBASE1-2) and winding voltage base.
+            
+            When CZ is 3, R1-2 is the load loss in watts, and X1-2 is the impedance magnitude
+            in pu on Winding 1 to 2 MVA base (SBASE1-2) and winding voltage base. For
+            three-phase transformers or three-phase banks of single phase transformers, R1-2
+            should specify the three-phase load loss.
+            
+            R1-2 = 0.0 by default, but no default is allowed for X1-2.
+        '''
 
         if self.windings == 2:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
 
-            r = self.R1_2
-            x = self.X1_2
-            g = self.MAG1
-            b = self.MAG2
+            if self.CZ == 1:
+                r = self.R1_2
+                x = self.X1_2
+                g = self.MAG1
+                b = self.MAG2
+
+            else:
+                r = self.R1_2
+                x = self.X1_2
+                g = self.MAG1
+                b = self.MAG2
+
+                warn('Transformer impedance is not in p.u.')
 
             object = Branch(bus_from=bus_from, bus_to=bus_to,
                             name=self.NAME.replace("'", "").strip(),

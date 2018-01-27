@@ -176,7 +176,7 @@ class MainGUI(QMainWindow):
         self.ui.solver_comboBox.setModel(mdl)
         self.ui.retry_solver_comboBox.setModel(mdl)
 
-        self.ui.solver_comboBox.setCurrentIndex(1)
+        self.ui.solver_comboBox.setCurrentIndex(0)
         self.ui.retry_solver_comboBox.setCurrentIndex(0)
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
@@ -594,7 +594,7 @@ class MainGUI(QMainWindow):
                     tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
                 if losses is not None:
                     tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-                branch.graphic_obj.setToolTip(tooltip)
+                branch.graphic_obj.setToolTipText(tooltip)
                 branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
         if failed_br_idx is not None:
