@@ -134,6 +134,7 @@ Some of the features you'll find already are:
   - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
+  - Linear AC approximation.
 
 - ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/dcopf.svg) DC Optimal power flow
  
