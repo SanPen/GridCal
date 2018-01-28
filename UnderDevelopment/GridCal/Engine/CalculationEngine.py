@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 1.99
+__GridCal_VERSION__ = 2.00
 
 import os
 import pickle as pkl
@@ -463,6 +463,12 @@ def load_from_xls(filename):
                     data["name"] = df.values[idx[0], 1]
                 else:
                     data["name"] = 'Grid'
+
+                idx = df['Property'][df['Property'] == 'Comments'].index
+                if len(idx) > 0:
+                    data["Comments"] = df.values[idx[0], 1]
+                else:
+                    data["Comments"] = ''
 
             else:
                 # just pick the DataFrame
@@ -2560,6 +2566,8 @@ class MultiCircuit(Circuit):
 
         self.name = 'Grid'
 
+        self.comments = ''
+
         # List of circuits contained within this circuit
         self.circuits = list()
 
@@ -2656,6 +2664,9 @@ class MultiCircuit(Circuit):
 
         # set the base magnitudes
         self.Sbase = data['baseMVA']
+
+        # Set comments
+        self.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
         self.time_profile = None
 
@@ -2876,6 +2887,7 @@ class MultiCircuit(Circuit):
         obj.append(['BaseMVA', self.Sbase])
         obj.append(['Version', 2])
         obj.append(['Name', self.name])
+        obj.append(['Comments', self.comments])
         dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
 
         # get the master time profile
@@ -4264,6 +4276,16 @@ class PowerFlow(QRunnable):
                 # Newton-Raphson
                 elif solver_type == SolverType.NR:
                     methods.append(SolverType.NR)
+
+                    # presolve linear system
+                    voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.power_flow_input.Ybus,
+                                                                              Ys=circuit.power_flow_input.Yseries,
+                                                                              S=Sbus,
+                                                                              I=Ibus,
+                                                                              Vset=voltage_solution,
+                                                                              pq=circuit.power_flow_input.pq,
+                                                                              pv=circuit.power_flow_input.pv)
+                    # Solve NR with the linear AC solution
                     voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
@@ -4290,15 +4312,15 @@ class PowerFlow(QRunnable):
                 # for any other method, for now, do a LM
                 else:
                     methods.append(SolverType.LM)
-                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                                                  Sbus=Sbus,
-                                                                                  V0=voltage_solution,
-                                                                                  Ibus=Ibus,
-                                                                                  pv=circuit.power_flow_input.pv,
-                                                                                  pq=circuit.power_flow_input.pq,
-                                                                                  tol=self.options.tolerance,
-                                                                                  max_it=self.options.max_iter,
-                                                                                  robust=self.options.robust)
+                    voltage_solution, converged, \
+                    normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
+                                                                Sbus=Sbus,
+                                                                V0=voltage_solution,
+                                                                Ibus=Ibus,
+                                                                pv=circuit.power_flow_input.pv,
+                                                                pq=circuit.power_flow_input.pq,
+                                                                tol=self.options.tolerance,
+                                                                max_it=self.options.max_iter)
 
                 if converged:
                     # Check controls

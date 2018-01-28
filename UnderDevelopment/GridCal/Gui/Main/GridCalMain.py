@@ -780,6 +780,7 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
             self.create_schematic_from_api(explode_factor=1)
             self.grid_editor.name_label.setText(self.circuit.name)
+            self.ui.comments_textEdit.setText(self.circuit.comments)
 
             self.ui.progress_label.setText('Compiling grid...')
             QtGui.QGuiApplication.processEvents()
@@ -811,6 +812,8 @@ class MainGUI(QMainWindow):
 
         # set grid name
         self.circuit.name = self.grid_editor.name_label.text()
+
+        self.circuit.comments = self.ui.comments_textEdit.toPlainText()
 
         fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 

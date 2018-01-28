@@ -108,15 +108,15 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     npv = len(pv)
 
     # compose the system matrix
-    G = Y.real
-    B = Y.imag
-    Gp = Ys.real
-    Bp = Ys.imag
+    # G = Y.real
+    # B = Y.imag
+    # Gp = Ys.real
+    # Bp = Ys.imag
 
-    A11 = -Bp[pvpq, :][:, pvpq]
-    A12 = G[pvpq, :][:, pq]
-    A21 = -Gp[pq, :][:, pvpq]
-    A22 = -B[pq, :][:, pq]
+    A11 = -Ys.imag[pvpq, :][:, pvpq]
+    A12 = Y.real[pvpq, :][:, pq]
+    A21 = -Ys.real[pq, :][:, pvpq]
+    A22 = -Y.imag[pq, :][:, pq]
 
     Asys = vstack_s([hstack_s([A11, A12]),
                      hstack_s([A21, A22])], format="csc")
@@ -141,17 +141,17 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     voltages_vector[pq] = vm_pq * exp(1j * va_pq)
 
     # Calculate the error and check the convergence
-    Scalc = voltages_vector * conj(Y * voltages_vector)
+    s_calc = voltages_vector * conj(Y * voltages_vector)
     # complex power mismatch
-    power_mismatch = Scalc - S
+    power_mismatch = s_calc - S
     # concatenate error by type
     mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
 
     # check for convergence
-    normF = linalg.norm(mismatch, Inf)
+    norm_f = linalg.norm(mismatch, Inf)
 
     end = time.time()
     elapsed = end - start
 
-    return voltages_vector, True, normF, Scalc, 1, elapsed
+    return voltages_vector, True, norm_f, s_calc, 1, elapsed
 
