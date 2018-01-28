@@ -169,6 +169,7 @@ class MainGUI(QMainWindow):
         self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
         # self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
         # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
+        self.solvers_dict['Linear AC approximation'] = SolverType.LACPF
         self.solvers_dict['DC approximation'] = SolverType.DC
 
         lst = list(self.solvers_dict.keys())

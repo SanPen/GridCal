@@ -41,7 +41,7 @@ from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
 
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
-from GridCal.Engine.Numerical.DCPF import dcpf
+from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
 from GridCal.Engine.Numerical.HELM import helm
 from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
@@ -97,6 +97,7 @@ class SolverType(Enum):
     HELMZ = 10,
     LM = 11  # Levenberg-Marquardt
     FASTDECOUPLED = 12,
+    LACPF = 13,
 
 
 class TimeGroups(Enum):
@@ -4221,6 +4222,17 @@ class PowerFlow(QRunnable):
                                                                              pvpq=circuit.power_flow_input.pqpv,
                                                                              pq=circuit.power_flow_input.pq,
                                                                              pv=circuit.power_flow_input.pv)
+
+                elif solver_type == SolverType.LACPF:
+                    methods.append(SolverType.LACPF)
+
+                    voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.power_flow_input.Ybus,
+                                                                              Ys=circuit.power_flow_input.Yseries,
+                                                                              S=Sbus,
+                                                                              I=Ibus,
+                                                                              Vset=voltage_solution,
+                                                                              pq=circuit.power_flow_input.pq,
+                                                                              pv=circuit.power_flow_input.pv)
 
                 # Levenberg-Marquardt
                 elif solver_type == SolverType.LM:
