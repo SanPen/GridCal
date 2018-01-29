@@ -959,8 +959,8 @@ A_{21} & A_{22} \\
 \end{bmatrix}
 \times
 \begin{bmatrix}
-\theta\\
-|V|\\
+\Delta \theta\\
+\Delta |V|\\
 \end{bmatrix}
 =
 \begin{bmatrix}
@@ -981,7 +981,7 @@ Where:
 
 Here, $Y_{bus}$ is the normal circuit admittance matrix and $Y_{series}$ is the admittance matrix formed with only series elements of the $\pi$ model, this is neglecting all the shunt admittances.
 
-Solving the vector $[\theta, |V|]$ we get $\theta$ for the pq and pv nodes and $|V|$ for the pq nodes.\newline
+Solving the vector $[\Delta \theta + 0, \Delta |V| + 1]$ we get $\theta$ for the pq and pv nodes and $|V|$ for the pq nodes.\newline
 
 For equivalence with the paper:\newline
 
