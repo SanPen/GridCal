@@ -591,6 +591,24 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/white_icons/edit.svg</normaloff>:/Icons/white_icons/edit.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>Comments</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_18">
+            <item>
+             <widget class="QTextEdit" name="comments_textEdit">
+              <property name="toolTip">
+               <string>Write here some comments about the grid</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -2642,7 +2660,7 @@ last solution</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

@@ -507,6 +507,19 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1.setZValue(2)
         self.c2.setZValue(1)
 
+    def setToolTipText(self, toolTip: str):
+        """
+        Set branch tool tip text
+        Args:
+            toolTip: text
+        """
+        self.setToolTip(toolTip)
+        if self.symbol is not None:
+            self.symbol.setToolTip(toolTip)
+            self.c0.setToolTip(toolTip)
+            self.c1.setToolTip(toolTip)
+            self.c2.setToolTip(toolTip)
+
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -869,11 +882,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
-
-        self.width = 2
+        self.width = 4
 
         if self.api_object is not None:
             if self.api_object.active:
@@ -886,6 +895,12 @@ class LoadGraphicItem(QGraphicsItemGroup):
             self.style = OTHER['style']
             self.color = OTHER['color']
 
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        self.nexus.setPen(QPen(self.color, self.width, self.style))
+        parent.scene().addItem(self.nexus)
+
+        # triangle
         self.glyph = Polygon(self)
         self.glyph.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
         self.glyph.setPen(QPen(self.color, self.width, self.style))
@@ -905,7 +920,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y(),
+            parent.y() + parent.terminal.y() + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)
@@ -1024,7 +1039,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        self.width = 2
+        self.width = 4
 
         if self.api_object is not None:
             if self.api_object.active:
@@ -1046,6 +1061,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
 
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
+        self.nexus.setPen(QPen(self.color, self.width, self.style))
         parent.scene().addItem(self.nexus)
 
         self.lines = list()
@@ -1076,7 +1092,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y(),
+            parent.y() + parent.terminal.y() + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)
@@ -1203,11 +1219,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         # self.installSceneEventFilter(self)
 
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
-
-        self.width = 2
+        self.width = 4
         if self.api_object is not None:
             if self.api_object.active:
                 self.style = ACTIVE['style']
@@ -1219,6 +1231,11 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
             self.style = OTHER['style']
             self.color = OTHER['color']
 
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        self.nexus.setPen(QPen(self.color, self.width, self.style))
+        parent.scene().addItem(self.nexus)
+
         pen = QPen(self.color, self.width, self.style)
 
         self.glyph = Circle(self)
@@ -1228,7 +1245,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.label = QGraphicsTextItem('G', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 4)
+        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -1244,7 +1261,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y(),
+            parent.y() + parent.terminal.y() + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)
@@ -1366,15 +1383,11 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
-
         # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
         # l1.setPen(pen)
         # self.addToGroup(l1)
 
-        self.width = 2
+        self.width = 4
         if self.api_object is not None:
             if self.api_object.active:
                 self.style = ACTIVE['style']
@@ -1385,6 +1398,12 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
+
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        self.nexus.setPen(QPen(self.color, self.width, self.style))
+        parent.scene().addItem(self.nexus)
+
         pen = QPen(self.color, self.width, self.style)
 
         self.glyph = Square(parent)
@@ -1394,7 +1413,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.label = QGraphicsTextItem('S', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 4)
+        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -1410,7 +1429,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y(),
+            parent.y() + parent.terminal.y() + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)
@@ -1528,11 +1547,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        parent.scene().addItem(self.nexus)
-
-        self.width = 2
+        self.width = 4
         if self.api_object is not None:
             if self.api_object.active:
                 self.style = ACTIVE['style']
@@ -1543,6 +1558,12 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
+
+        # line to tie this object with the original bus (the parent)
+        self.nexus = QGraphicsLineItem()
+        self.nexus.setPen(QPen(self.color, self.width, self.style))
+        parent.scene().addItem(self.nexus)
+
         pen = QPen(self.color, self.width, self.style)
 
         self.glyph = Square(self)
@@ -1552,7 +1573,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.label = QGraphicsTextItem('B', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 4)
+        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -1568,7 +1589,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y(),
+            parent.y() + parent.terminal.y() + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)

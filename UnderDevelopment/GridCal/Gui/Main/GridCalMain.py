@@ -169,6 +169,7 @@ class MainGUI(QMainWindow):
         self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
         # self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
         # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
+        self.solvers_dict['Linear AC approximation'] = SolverType.LACPF
         self.solvers_dict['DC approximation'] = SolverType.DC
 
         lst = list(self.solvers_dict.keys())
@@ -176,7 +177,7 @@ class MainGUI(QMainWindow):
         self.ui.solver_comboBox.setModel(mdl)
         self.ui.retry_solver_comboBox.setModel(mdl)
 
-        self.ui.solver_comboBox.setCurrentIndex(1)
+        self.ui.solver_comboBox.setCurrentIndex(0)
         self.ui.retry_solver_comboBox.setCurrentIndex(0)
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
@@ -594,7 +595,7 @@ class MainGUI(QMainWindow):
                     tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
                 if losses is not None:
                     tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-                branch.graphic_obj.setToolTip(tooltip)
+                branch.graphic_obj.setToolTipText(tooltip)
                 branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
         if failed_br_idx is not None:
@@ -779,6 +780,7 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
             self.create_schematic_from_api(explode_factor=1)
             self.grid_editor.name_label.setText(self.circuit.name)
+            self.ui.comments_textEdit.setText(self.circuit.comments)
 
             self.ui.progress_label.setText('Compiling grid...')
             QtGui.QGuiApplication.processEvents()
@@ -810,6 +812,8 @@ class MainGUI(QMainWindow):
 
         # set grid name
         self.circuit.name = self.grid_editor.name_label.text()
+
+        self.circuit.comments = self.ui.comments_textEdit.toPlainText()
 
         fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 

@@ -16,7 +16,9 @@
 
 import time
 from scipy.sparse.linalg import spsolve
-from numpy import linalg, Inf, exp, r_, conj, angle, matrix, empty, abs as npabs
+from scipy.sparse.linalg import factorized
+from scipy.sparse import hstack as hstack_s, vstack as vstack_s
+from numpy import linalg, Inf, exp, r_, conj, angle, matrix, empty, ones, abs as npabs
 
 
 def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
@@ -78,4 +80,78 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     elapsed = end - start
 
     return V, True, normF, Scalc, 1, elapsed
+
+
+def lacpf(Y, Ys, S, I, Vset, pq, pv):
+    """
+    Linearized AC Load Flow
+
+    form the article:
+
+    Linearized AC Load Flow Applied to Analysis in Electric Power Systems
+        by: P. Rossoni, W. M da Rosa and E. A. Belati
+    Args:
+        Y: Admittance matrix
+        Ys: Admittance matrix of the series elements
+        S: Power injections vector of all the nodes
+        Vset: Set voltages of all the nodes (used for the slack and PV nodes)
+        pq: list of indices of the pq nodes
+        pv: list of indices of the pv nodes
+
+    Returns: Voltage vector, converged?, error, calculated power and elapsed time
+    """
+
+    start = time.time()
+
+    pvpq = r_[pv, pq]
+    npq = len(pq)
+    npv = len(pv)
+
+    # compose the system matrix
+    # G = Y.real
+    # B = Y.imag
+    # Gp = Ys.real
+    # Bp = Ys.imag
+
+    A11 = -Ys.imag[pvpq, :][:, pvpq]
+    A12 = Y.real[pvpq, :][:, pq]
+    A21 = -Ys.real[pq, :][:, pvpq]
+    A22 = -Y.imag[pq, :][:, pq]
+
+    Asys = vstack_s([hstack_s([A11, A12]),
+                     hstack_s([A21, A22])], format="csc")
+
+    # compose the right hand side (power vectors)
+    rhs = r_[S.real[pvpq], S.imag[pq]]
+
+    # solve the linear system
+    x = factorized(Asys)(rhs)
+
+    # compose the results vector
+    voltages_vector = Vset.copy()
+
+    #  set the pv voltages
+    va_pv = x[0:npv]
+    vm_pv = npabs(Vset[pv])
+    voltages_vector[pv] = vm_pv * exp(1j * va_pv)
+
+    # set the PQ voltages
+    va_pq = x[npv:npv+npq]
+    vm_pq = ones(npq) + x[npv+npq::]
+    voltages_vector[pq] = vm_pq * exp(1j * va_pq)
+
+    # Calculate the error and check the convergence
+    s_calc = voltages_vector * conj(Y * voltages_vector)
+    # complex power mismatch
+    power_mismatch = s_calc - S
+    # concatenate error by type
+    mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+
+    # check for convergence
+    norm_f = linalg.norm(mismatch, Inf)
+
+    end = time.time()
+    elapsed = end - start
+
+    return voltages_vector, True, norm_f, s_calc, 1, elapsed
 

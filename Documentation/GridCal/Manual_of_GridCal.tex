@@ -712,7 +712,33 @@ Where:
 	\item $\textbf{S}_{calc}$: Calculated power vector using $\textbf{V}_t$.\newline
 \end{itemize}
 
-The formulation implemented in GridCal is the following:
+In matrix form we get:
+
+%J11 = dS_dVa[array([pvpq]).T, pvpq].real
+%J12 = dS_dVm[array([pvpq]).T, pq].real
+%J21 = dS_dVa[array([pq]).T, pvpq].imag
+%J22 = dS_dVm[array([pq]).T, pq].imag
+
+\begin{equation}
+\begin{bmatrix}
+J_{11} & J_{12} \\
+J_{21} & J_{22} \\
+\end{bmatrix}
+\times
+\begin{bmatrix}
+\Delta\theta\\
+\Delta|V|\\
+\end{bmatrix}
+=
+\begin{bmatrix}
+\Delta P\\
+\Delta Q\\
+\end{bmatrix}
+\end{equation}
+
+
+
+The formulation implemented in GridCal includes the optimal acceleration parameter $\mu$:
 
 \begin{equation}
 \textbf{V}_{t+1} = \textbf{V}_t + \mu \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
@@ -744,6 +770,46 @@ There will be three solutions to the polynomial $G(x)$. Only the last solution w
 The polynomial can be solved numerically using $1$ as the seed.
 
 The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment $\textbf{dV}= \textbf{V}_{t} - \textbf{V}_{t-1}$ (voltage difference between the current and the previous iteration).  
+
+\newpage
+\subsection{Jacobian}
+
+The Jacobian matrix is the derivative of the power flow equation for a given voltage set of values.
+
+\begin{equation}
+J =
+\begin{bmatrix}
+J_{11} & J_{12} \\
+J_{21} & J_{22} \\
+\end{bmatrix}
+\end{equation}
+
+Where:
+
+\begin{itemize}
+	\item $J11 = Re(\frac{\partial S}{\partial \theta}[pvpq, pvpq])$  
+	\item $J12 = Re(\frac{\partial S}{\partial |V|}[pvpq, pq])$
+	\item $J21 = Im(\frac{\partial S}{\partial \theta}[pq, pvpq])$
+	\item $J22 = Im(\frac{\partial S}{\partial |V|}[pq pq])$\newline
+\end{itemize}
+
+Here we introduced two complex-valued derivatives:\newline
+
+\begin{itemize}
+	\item $\frac{\partial S}{\partial \theta} = V_{diag} \cdot (Y_{bus} \times V_{diag,norm})^* + I_{diag}^* \cdot V_{diag,norm}$ 
+	\item $\frac{\partial S}{\partial |V|} =  1j \cdot V_{diag} \cdot (I_{diag} - Y_{bus} \times V_{diag})^*$\newline
+\end{itemize}
+
+Where:
+
+\begin{itemize}
+	\item $V_{diag}$: Diagonal matrix formed by a voltage solution.
+	\item $V_{diag,norm}$: Diagonal matrix formed by a voltage solution, where every voltage is divided by its module.
+	\item $I_{diag}$: Diagonal matrix formed by the current injections.
+	\item $Y_{bus}$: And of course, this is the circuit full admittance matrix. \newline
+\end{itemize}
+
+This Jacobian form can be used for other methods.
 
 \section{Levenberg-Marquardt}
 
@@ -880,6 +946,51 @@ The new voltage is then:
 \end{equation}
 
 This solution does usually produces a large power mismatch. That is to be expected because the method is an oversimplification with no iterative convergence criteria, just a straight forward set of operations.
+
+\newpage
+\section{Linear AC power flow}
+
+Following the formulation presented in \cite{rossoni2016linearized}, we obtain a way to solve circuits in one shot (without iterations) and quite positive results for a linear approximation.
+
+\begin{equation}
+\begin{bmatrix}
+A_{11} & A_{12} \\
+A_{21} & A_{22} \\
+\end{bmatrix}
+\times
+\begin{bmatrix}
+\theta\\
+|V|\\
+\end{bmatrix}
+=
+\begin{bmatrix}
+Rhs_1\\
+Rhs_2\\
+\end{bmatrix}
+\end{equation}
+
+Where:
+\begin{itemize}
+	\item $A_{11} = -Im(Y_{series}[pqpv, pqpv])$
+	\item $A_{12} = Re(Y_{bus}[pqpv, pq])$
+	\item $A_{21} = -Im(Y_{series}[pq, pqpv])$
+	\item $A_{22} = -Re(Y_{bus}[pq, pq])$
+	\item $Rhs_1 = P[pqpv]$
+	\item $Rhs_2 = Q[pq]$\newline
+\end{itemize}
+
+Here, $Y_{bus}$ is the normal circuit admittance matrix and $Y_{series}$ is the admittance matrix formed with only series elements of the $\pi$ model, this is neglecting all the shunt admittances.
+
+Solving the vector $[\theta, |V|]$ we get $\theta$ for the pq and pv nodes and $|V|$ for the pq nodes.\newline
+
+For equivalence with the paper:\newline
+
+\begin{itemize}
+	\item $-B' = -Im(Y_{series}[pqpv, pqpv])$
+	\item $G = Re(Y_{bus}[pqpv, pq])$
+	\item $-G' = -Im(Y_{series}[pq, pqpv])$
+	\item $-B = -Re(Y_{bus}[pq, pq])$\newline
+\end{itemize}
 
 \newpage
 \section{Holomorphic Embedding}

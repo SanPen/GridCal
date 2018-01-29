@@ -9,9 +9,17 @@ This software aims to be a complete platform for power systems research and simu
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/results_vstability.png)
 
-# Installation
+# Windows standalone setup
 
-Open a console and type:
+Yes, you can now install GridCal as a separated standalone program without having to bother about setting up python.
+
+[Download GridCal](https://mega.nz/#!Dl5m0b7T!brD9O0ejs2Ih6rOLVaCjQm3-JZttH-ksrp5xXrrX3BU)
+
++ This setup is a minimal python distribution with GridCal installed and shorcuts to make it run ;)
+
+# Package Installation
+
+Still, GridCal is multiplatform and it will work in Linux, Windows and OSX. Open a console and type:
 
 `pip install GridCal` (windows)
 
@@ -33,7 +41,7 @@ OSX/Linux: `pip3 install GridCal-x.xx.tar.gz`
 
 ## Installation from GitHub
 
-Although the actual `GridCal` package lives under `UnderDevelopment`, `pip` can still install it:
+To install the development version of `GridCal` that lives under `UnderDevelopment`, open a console and type:
 
     python3 -m pip install -e 'git+git://github.com/SanPen/GridCal.git#egg=GridCal&subdirectory=UnderDevelopment'
 
@@ -41,7 +49,7 @@ Installing `GridCal` from GitHub, `pip` can still freeze the version using a com
 
     python -m pip install -e 'git+git://github.com/SanPen/GridCal.git@5c4dcb96998ae882412b5fee977cf0cff7a40d3c#egg=GridCal&subdirectory=UnderDevelopment'
 
-This way, you can install the latest developments.
+Here `5c4dcb96998ae882412b5fee977cf0cff7a40d3c` is the git version.
 
 # Run with user interface
 
@@ -126,6 +134,7 @@ Some of the features you'll find already are:
   - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
+  - Linear AC approximation.
 
 - ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/dcopf.svg) DC Optimal power flow
  
