@@ -491,6 +491,16 @@ class Bus:
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0, active=True):
         """
         Bus  constructor
+        Args:
+            name:
+            vnom:
+            vmin:
+            vmax:
+            xpos:
+            ypos:
+            height:
+            width:
+            active:
         """
 
         self.name = name
