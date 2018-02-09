@@ -721,8 +721,8 @@ In matrix form we get:
 
 \begin{equation}
 \begin{bmatrix}
-J_{11} & J_{12} \\
-J_{21} & J_{22} \\
+\textbf{J}_{11} & \textbf{J}_{12} \\
+\textbf{J}_{21} & \textbf{J}_{22} \\
 \end{bmatrix}
 \times
 \begin{bmatrix}
@@ -731,8 +731,8 @@ J_{21} & J_{22} \\
 \end{bmatrix}
 =
 \begin{bmatrix}
-\Delta P\\
-\Delta Q\\
+\Delta \textbf{P}\\
+\Delta \textbf{Q}\\
 \end{bmatrix}
 \end{equation}
 
@@ -777,21 +777,26 @@ The matrix $\textbf{J'}$ is the Jacobian matrix computed using the voltage deriv
 The Jacobian matrix is the derivative of the power flow equation for a given voltage set of values.
 
 \begin{equation}
-J =
+\textbf{J} =
 \begin{bmatrix}
-J_{11} & J_{12} \\
-J_{21} & J_{22} \\
+\textbf{J}_{11} & \textbf{J}_{12} \\
+\textbf{J}_{21} & \textbf{J}_{22} \\
 \end{bmatrix}
 \end{equation}
 
 Where:
 
 \begin{itemize}
-	\item $J11 = Re(\frac{\partial S}{\partial \theta}[pvpq, pvpq])$  
-	\item $J12 = Re(\frac{\partial S}{\partial |V|}[pvpq, pq])$
-	\item $J21 = Im(\frac{\partial S}{\partial \theta}[pq, pvpq])$
-	\item $J22 = Im(\frac{\partial S}{\partial |V|}[pq pq])$\newline
+	\item $J11 = Re\left(\frac{\partial \textbf{S}}{\partial \theta}[pvpq, pvpq]\right)$  
+	\item $J12 = Re\left(\frac{\partial \textbf{S}}{\partial |V|}[pvpq, pq]\right)$
+	\item $J21 = Im\left(\frac{\partial \textbf{S}}{\partial \theta}[pq, pvpq]\right)$
+	\item $J22 = Im\left(\frac{\partial \textbf{S}}{\partial |V|}[pq pq]\right)$\newline
 \end{itemize}
+
+Where
+$
+\textbf{S} = \textbf{V} \cdot (\textbf{I} + \textbf{Y}_{bus} \times \textbf{V})^*
+$.
 
 Here we introduced two complex-valued derivatives:\newline
 
@@ -971,10 +976,10 @@ Rhs_2\\
 
 Where:
 \begin{itemize}
-	\item $A_{11} = -Im(Y_{series}[pqpv, pqpv])$
-	\item $A_{12} = Re(Y_{bus}[pqpv, pq])$
-	\item $A_{21} = -Im(Y_{series}[pq, pqpv])$
-	\item $A_{22} = -Re(Y_{bus}[pq, pq])$
+	\item $A_{11} = -Im\left(Y_{series}[pqpv, pqpv]\right)$
+	\item $A_{12} = Re\left(Y_{bus}[pqpv, pq]\right)$
+	\item $A_{21} = -Im\left(Y_{series}[pq, pqpv]\right)$
+	\item $A_{22} = -Re\left(Y_{bus}[pq, pq]\right)$
 	\item $Rhs_1 = P[pqpv]$
 	\item $Rhs_2 = Q[pq]$\newline
 \end{itemize}
