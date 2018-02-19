@@ -779,9 +779,8 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Creating schematic...')
             QtGui.QGuiApplication.processEvents()
             self.create_schematic_from_api(explode_factor=1)
-            self.grid_editor.name_label.setText(self.circuit.name)
-            if not np.isnan(self.circuit.comments):
-                self.ui.comments_textEdit.setText(self.circuit.comments)
+            self.grid_editor.name_label.setText(str(self.circuit.name))
+            self.ui.comments_textEdit.setText(str(self.circuit.comments))
 
             self.ui.progress_label.setText('Compiling grid...')
             QtGui.QGuiApplication.processEvents()
