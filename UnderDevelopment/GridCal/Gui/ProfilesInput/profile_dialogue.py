@@ -216,7 +216,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     self.original_data_frame = pd.read_csv(filename, index_col=0)
 
                 elif file_extension in ['.xlsx', '.xls']:
-                    self.original_data_frame = pd.read_excel(filename, sheetname=sheet_index, index_col=0)
+                    self.original_data_frame = pd.read_excel(filename, sheet_name=sheet_index, index_col=0)
 
                 # set the profile names list
                 self.profile_names = self.original_data_frame.columns
@@ -452,12 +452,14 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     profile_name = self.associations[i][magnitude_idx + 1]
 
                     if magnitude_idx == self.Q_idx and self.ui.setQ_on_cosfi_checkbox.isChecked():
+
                         # create Q profile based on P and cosfi
                         profile_name = self.associations[i][self.P_idx]
                         vals = self.original_data_frame[profile_name].values * scale * mult
                         fi = np.arccos(cosfi)
                         vals *= np.tan(fi)
                     else:
+
                         # pick the profile in the cell
                         if profile_name != '':
                             vals = self.original_data_frame[profile_name].values * scale * mult
