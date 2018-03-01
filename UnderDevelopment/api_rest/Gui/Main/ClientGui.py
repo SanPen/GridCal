@@ -80,9 +80,28 @@ class MainGUI(QMainWindow):
 
         # call action
         self.ui.url_lineEdit.setText(self.url)
-        self.get_grid_name()
-        self.update()
-        self.update_voltages()
+
+        try:
+            self.get_grid_name()
+            self.update()
+            self.update_voltages()
+        except:
+            self.msg('Could not connect to ' + self.url, 'Connection')
+
+    def msg(self, text, title="Warning"):
+        """
+        Message box
+        :param text: Text to display
+        :param title: Name of the window
+        """
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(text)
+        # msg.setInformativeText("This is additional information")
+        msg.setWindowTitle(title)
+        # msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        retval = msg.exec_()
 
     def get_grid_name(self):
         """
@@ -187,7 +206,7 @@ def run():
     :return: 
     """
     app = QApplication(sys.argv)
-    window = MainGUI()
+    window = MainGUI(url='http://192.168.1.103:5000')
     window.resize(1.61 * 700.0, 700.0)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())
