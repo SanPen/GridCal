@@ -200,13 +200,16 @@ class MainGUI(QMainWindow):
         else:
             print('error', response)
 
+
 def run():
     """
     Main function to run the GUI
     :return: 
     """
     app = QApplication(sys.argv)
-    window = MainGUI(url='http://192.168.1.103:5000')
+    # url = 'http://192.168.1.103:5000'
+    url = 'http://0.0.0.0:5000'
+    window = MainGUI(url=url)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())

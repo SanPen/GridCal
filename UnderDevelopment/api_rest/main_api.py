@@ -1,6 +1,7 @@
 """
 This is the API-REST server that allows to access the multi circuit object
 """
+import os
 from uuid import uuid4
 
 from flask import Flask, jsonify, request
@@ -21,8 +22,9 @@ node_identifier = str(uuid4()).replace('-', '')
 # Instantiate the multi-circuit
 grid = MultiCircuit()
 
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
+# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
+fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE_14.xlsx')
 grid.load_file(fname)
 grid.compile()
 
