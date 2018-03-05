@@ -111,7 +111,7 @@ class MainGUI(QMainWindow):
         """
         response = requests.get(self.url + '/grid_name')
         if response.status_code == 200:
-            jData = json.loads(response.content)
+            jData = json.loads(response.content.decode('UTF-8'))
             print(jData)
             self.ui.status_label.setText(str(jData))
         else:
@@ -129,7 +129,7 @@ class MainGUI(QMainWindow):
 
         response = requests.get(self.url + '/loads_list')
         if response.status_code == 200:
-            jData = json.loads(response.content)
+            jData = json.loads(response.content.decode('UTF-8'))
 
             lst = jData['loads']
 
@@ -158,7 +158,7 @@ class MainGUI(QMainWindow):
             data = {'idx': idx, 'P': P, 'Q': Q}
             response = requests.post(self.url + '/set_load', json=data)
             if response.status_code == 200:
-                jData = json.loads(response.content)
+                jData = json.loads(response.content.decode('UTF-8'))
 
                 self.ui.status_label.setText(str(jData))
 
@@ -177,7 +177,7 @@ class MainGUI(QMainWindow):
         """
         response = requests.get(self.url + '/voltages')
         if response.status_code == 200:
-            jData = json.loads(response.content)
+            jData = json.loads(response.content.decode('UTF-8'))
 
             voltages = jData['val']
 
