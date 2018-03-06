@@ -23,8 +23,15 @@ import os.path
 import pandas as pd
 import sys
 from matplotlib import pyplot as plt
+import os
+os.environ['no_proxy'] = '127.0.0.1,localhost'
 
 __author__ = 'Santiago Peñate Vera'
+
+
+# shit to be done for this to work in windows
+proxyDict = {'no': 'pass',}
+
 
 """
 This class is the handler of the main gui of GridCal.
@@ -109,7 +116,7 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        response = requests.get(self.url + '/grid_name')
+        response = requests.get(self.url + '/grid_name', proxies=proxyDict)
         if response.status_code == 200:
             jData = json.loads(response.content.decode('UTF-8'))
             print(jData)
@@ -127,7 +134,7 @@ class MainGUI(QMainWindow):
         # pick URL from GUI
         self.url = self.ui.url_lineEdit.text().strip()
 
-        response = requests.get(self.url + '/loads_list')
+        response = requests.get(self.url + '/loads_list', proxies=proxyDict)
         if response.status_code == 200:
             jData = json.loads(response.content.decode('UTF-8'))
 
@@ -156,7 +163,7 @@ class MainGUI(QMainWindow):
             Q = 0.8 * P
 
             data = {'idx': idx, 'P': P, 'Q': Q}
-            response = requests.post(self.url + '/set_load', json=data)
+            response = requests.post(self.url + '/set_load', json=data, proxies=proxyDict)
             if response.status_code == 200:
                 jData = json.loads(response.content.decode('UTF-8'))
 
@@ -175,7 +182,7 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        response = requests.get(self.url + '/voltages')
+        response = requests.get(self.url + '/voltages', proxies=proxyDict)
         if response.status_code == 200:
             jData = json.loads(response.content.decode('UTF-8'))
 
@@ -208,7 +215,7 @@ def run():
     """
     app = QApplication(sys.argv)
     # url = 'http://192.168.1.103:5000'
-    url = 'http://0.0.0.0:5000'
+    url = 'http://127.0.0.1:5000'
     window = MainGUI(url=url)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio :)
     window.show()
