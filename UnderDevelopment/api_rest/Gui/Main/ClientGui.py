@@ -174,7 +174,8 @@ class MainGUI(QMainWindow):
                 self.update_voltages()
             else:
                 print('error', response)
-                self.ui.status_label.setText(str(response))
+
+            self.ui.status_label.setText('Response: ' + str(response))
 
     def update_voltages(self):
         """
