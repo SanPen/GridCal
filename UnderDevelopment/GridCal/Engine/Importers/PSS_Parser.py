@@ -504,7 +504,7 @@ class PSSeGenerator:
         object = ControlledGenerator(name='Gen_' + str(self.ID),
                                      active_power=self.PG,
                                      voltage_module=self.VS,
-                                     Qmin=-self.QB,
+                                     Qmin=self.QB,
                                      Qmax=self.QT,
                                      Snom=self.MBASE,
                                      power_prof=None,
