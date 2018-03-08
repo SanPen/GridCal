@@ -882,14 +882,15 @@ class Bus:
         """
         return {'id': id,
                 'type': 'bus',
+                'phases': 'ps',
                 'name': self.name,
                 'active': self.active,
                 'is_slack': self.is_slack,
                 'Vnom': self.Vnom,
-                'Vmin': self.Vmin,
-                'Vmax': self.Vmax,
-                'Rf': self.Zf.real,
-                'Xf': self.Zf.imag,
+                'vmin': self.Vmin,
+                'vmax': self.Vmax,
+                'rf': self.Zf.real,
+                'xf': self.Zf.imag,
                 'x': self.x,
                 'y': self.y,
                 'h': self.h,
@@ -1324,6 +1325,7 @@ class Branch:
         """
         return {'id': id,
                 'type': 'branch',
+                'phases': 'ps',
                 'name': self.name,
                 'from': bus_dict[self.bus_from],
                 'to': bus_dict[self.bus_to],
@@ -1548,15 +1550,16 @@ class Load:
         """
         return {'id': id,
                 'type': 'load',
+                'phases': 'ps',
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
-                'zr': self.Z.real,
-                'zi': self.Z.imag,
-                'ir': self.I.real,
-                'ii': self.I.imag,
-                'sr': self.S.real,
-                'si': self.S.imag}
+                'Zr': self.Z.real,
+                'Zi': self.Z.imag,
+                'Ir': self.I.real,
+                'Ii': self.I.imag,
+                'P': self.S.real,
+                'Q': self.S.imag}
 
     def __str__(self):
         return self.name
@@ -1626,11 +1629,12 @@ class StaticGenerator:
         """
         return {'id': id,
                 'type': 'static_gen',
+                'phases': 'ps',
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
-                'sr': self.S.real,
-                'si': self.S.imag}
+                'P': self.S.real,
+                'Q': self.S.imag}
 
     def create_profiles(self, index, S=None):
         """
@@ -1816,6 +1820,7 @@ class Battery:
         """
         return {'id': id,
                 'type': 'battery',
+                'phases': 'ps',
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
@@ -2043,11 +2048,12 @@ class ControlledGenerator:
         """
         return {'id': id,
                 'type': 'controlled_gen',
+                'phases': 'ps',
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
                 'P': self.P,
-                'Vset': self.Vset,
+                'vset': self.Vset,
                 'Snom': self.Snom,
                 'qmin': self.Qmin,
                 'qmax': self.Qmax}
@@ -2247,6 +2253,7 @@ class Shunt:
         """
         return {'id': id,
                 'type': 'shunt',
+                'phases': 'ps',
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
@@ -2744,6 +2751,7 @@ class MultiCircuit(Circuit):
         """
         return {'id': id,
                 'type': 'circuit',
+                'phases': 'ps',
                 'name': self.name,
                 'Sbase': self.Sbase,
                 'comments': self.comments}
