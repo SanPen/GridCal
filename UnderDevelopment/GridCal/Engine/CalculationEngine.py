@@ -13,23 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.02
+__GridCal_VERSION__ = 2.03
 
 import os
 import pickle as pkl
 from datetime import datetime, timedelta
 from enum import Enum
 from warnings import warn
-
 import networkx as nx
 import pandas as pd
 import pulp
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox
-
-import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib import pyplot as plt
+import json
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
@@ -39,6 +33,13 @@ from pySOT import *
 from scipy.sparse import csc_matrix, lil_matrix
 from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
+
+import matplotlib
+matplotlib.use('Qt5Agg')
+from matplotlib import pyplot as plt
+
+from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
 
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
@@ -874,6 +875,26 @@ class Bus:
         return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
                 self.x, self.y, self.h, self.w]
 
+    def get_json_dict(self, id):
+        """
+        Return Json-like dictionary
+        :return: 
+        """
+        return {'id': id,
+                'type': 'bus',
+                'name': self.name,
+                'active': self.active,
+                'is_slack': self.is_slack,
+                'Vnom': self.Vnom,
+                'Vmin': self.Vmin,
+                'Vmax': self.Vmax,
+                'Rf': self.Zf.real,
+                'Xf': self.Zf.imag,
+                'x': self.x,
+                'y': self.y,
+                'h': self.h,
+                'w': self.w}
+
     def set_state(self, t):
         """
         Set the profiles state of the objects in this bus to the value given in the profiles at the index t
@@ -1294,6 +1315,28 @@ class Branch:
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.tap_module, self.angle, self.is_transformer]
 
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'branch',
+                'name': self.name,
+                'from': bus_dict[self.bus_from],
+                'to': bus_dict[self.bus_to],
+                'active': self.active,
+                'rate': self.rate,
+                'r': self.R,
+                'x': self.X,
+                'g': self.G,
+                'b': self.B,
+                'tap_mod': self.tap_module,
+                'tap_angle': self.angle,
+                'is_transformer': self.is_transformer}
+
     def __str__(self):
         return self.name
 
@@ -1496,6 +1539,25 @@ class Load:
         """
         return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S)]
 
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'load',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'zr': self.Z.real,
+                'zi': self.Z.imag,
+                'ir': self.I.real,
+                'ii': self.I.imag,
+                'sr': self.S.real,
+                'si': self.S.imag}
+
     def __str__(self):
         return self.name
 
@@ -1554,6 +1616,21 @@ class StaticGenerator:
         :return:
         """
         return [self.name, self.bus.name, self.active, str(self.S)]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'static_gen',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'sr': self.S.real,
+                'si': self.S.imag}
 
     def create_profiles(self, index, S=None):
         """
@@ -1729,6 +1806,25 @@ class Battery:
         :return:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'battery',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'P': self.P,
+                'Vset': self.Vset,
+                'Snom': self.Snom,
+                'Enom': self.Enom,
+                'qmin': self.Qmin,
+                'qmax': self.Qmax}
 
     def create_profiles(self, index, P=None, V=None):
         """
@@ -1938,6 +2034,24 @@ class ControlledGenerator:
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
                 self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost]
 
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'controlled_gen',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'P': self.P,
+                'Vset': self.Vset,
+                'Snom': self.Snom,
+                'qmin': self.Qmin,
+                'qmax': self.Qmax}
+
     def create_profiles_maginitude(self, index, arr, mag):
         """
         Create profiles from magnitude
@@ -2123,6 +2237,21 @@ class Shunt:
         :return:
         """
         return [self.name, self.bus.name, self.active, str(self.Y)]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'shunt',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'g': self.Y.real,
+                'b': self.Y.imag}
 
     def create_profiles_maginitude(self, index, arr, mag):
         """
@@ -2608,6 +2737,17 @@ class MultiCircuit(Circuit):
             if dev.properties_with_profile is not None:
                 self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
 
+    def get_json_dict(self, id):
+        """
+        Get json dictionary
+        :return: 
+        """
+        return {'id': id,
+                'type': 'circuit',
+                'name': self.name,
+                'Sbase': self.Sbase,
+                'comments': self.comments}
+
     def load_file(self, filename):
         """
         Load GridCal compatible file
@@ -2886,6 +3026,19 @@ class MultiCircuit(Circuit):
 
     def save_file(self, file_path):
         """
+        Save File
+        :param file_path: 
+        :return: 
+        """
+        if file_path.endswith('.xlsx'):
+            self.save_excel(file_path)
+        elif file_path.endswith('.json'):
+            self.save_json(file_path)
+        else:
+            raise Exception('File path extension not understood\n' + file_path)
+
+    def save_excel(self, file_path):
+        """
         Save the circuit information
         :param file_path: file path to save
         :return:
@@ -3033,6 +3186,51 @@ class MultiCircuit(Circuit):
             dfs[key].to_excel(writer, key)
 
         writer.save()
+
+    def save_json(self, file_path):
+        """
+        
+        :param file_path: 
+        :return: 
+        """
+
+        elements = list()  # list of
+        key = 0
+        bus_key_dict = dict()
+
+        # add the circuit
+        elements.append(self.get_json_dict(key))
+        key += 1
+
+        for bus in self.buses:
+
+            # pack the bus data into a dictionary
+            dictionary = bus.get_json_dict(key)
+            elements.append(dictionary)
+            bus_key_dict[bus] = key
+            key += 1
+
+            # pack all the elements within the bus
+            for device in bus.loads + bus.controlled_generators + bus.static_generators + bus.batteries + bus.shunts:
+                dictionary = device.get_json_dict(key, bus_key_dict)
+                elements.append(dictionary)
+                key += 1
+
+        # branches
+        for branch in self.branches:
+
+            # pack the branch data into a dictionary
+            dictionary = branch.get_json_dict(key, bus_key_dict)
+            elements.append(dictionary)
+            key += 1
+
+        # convert the list of dictionaries to json
+        json_str = json.dumps(elements, indent=True)
+
+        # Save json to a text file file
+        text_file = open(file_path, "w")
+        text_file.write(json_str)
+        text_file.close()
 
     def save_calculation_objects(self, file_path):
         """

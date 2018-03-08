@@ -807,7 +807,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "Excel (*.xlsx)"
+        files_types = "Excel (*.xlsx);;JSON (*.json)"
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -827,6 +827,7 @@ class MainGUI(QMainWindow):
 
             extension = dict()
             extension['Excel (*.xlsx)'] = '.xlsx'
+            extension['JSON (*.json)'] = '.json'
             # extension['Numpy Case (*.npz)'] = '.npz'
 
             if file_extension == '':
