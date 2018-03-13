@@ -31,13 +31,14 @@ def parse_json_data(data):
 
     for element in data:
 
-        if element["type"] == 'ps':
+        if element["phases"] == 'ps':
 
             if element["type"] == "circuit":
 
                 circuit = MultiCircuit()
                 circuit.name = element["name"]
                 circuit.Sbase = element["Sbase"]
+                circuit.comments = element['comments']
 
             elif element["type"] == "bus":
 
@@ -182,3 +183,50 @@ def parse_json(file_name):
     data = json.load(open(file_name))
 
     return parse_json_data(data)
+
+
+def save_json_file(file_path, circuit: MultiCircuit):
+    """
+    Save JSON file
+    :param file_path: file path 
+    :param circuit: GridCal MultiCircuit element
+    """
+    elements = list()  # list of
+    key = 0
+    bus_key_dict = dict()
+
+    # add the circuit
+    circuit_dict = circuit.get_json_dict(key)
+    elements.append(circuit_dict)
+    key += 1
+
+    # add the buses
+    for bus in circuit.buses:
+
+        # pack the bus data into a dictionary
+        dictionary = bus.get_json_dict(key)
+        dictionary['circuit'] = circuit_dict['id']  # add the circuit id on each bus
+        elements.append(dictionary)
+        bus_key_dict[bus] = key
+        key += 1
+
+        # pack all the elements within the bus
+        for device in bus.loads + bus.controlled_generators + bus.static_generators + bus.batteries + bus.shunts:
+            dictionary = device.get_json_dict(key, bus_key_dict)
+            elements.append(dictionary)
+            key += 1
+
+    # branches
+    for branch in circuit.branches:
+        # pack the branch data into a dictionary
+        dictionary = branch.get_json_dict(key, bus_key_dict)
+        elements.append(dictionary)
+        key += 1
+
+    # convert the list of dictionaries to json
+    json_str = json.dumps(elements, indent=True)
+
+    # Save json to a text file file
+    text_file = open(file_path, "w")
+    text_file.write(json_str)
+    text_file.close()
