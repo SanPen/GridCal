@@ -749,7 +749,7 @@ class MainGUI(QMainWindow):
         # declare the allowed file types
         # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.json)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',

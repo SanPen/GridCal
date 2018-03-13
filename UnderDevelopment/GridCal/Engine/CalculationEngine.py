@@ -1335,7 +1335,7 @@ class Branch:
                 'x': self.X,
                 'g': self.G,
                 'b': self.B,
-                'tap_mod': self.tap_module,
+                'tap_module': self.tap_module,
                 'tap_angle': self.angle,
                 'is_transformer': self.is_transformer}
 
@@ -2507,10 +2507,10 @@ class Circuit:
         # normalize_string the power array
         power_flow_input.Sbus /= self.Sbase
 
-        # normalize_string the currents array (I was given in MVA at v=1 p.u.)
+        # normalize_string the currents array (the I vector was given in MVA at v=1 p.u.)
         power_flow_input.Ibus /= self.Sbase
 
-        # normalize the admittances array (Y was given in MVA at v=1 p.u.)
+        # normalize the admittances array (the Y vector was given in MVA at v=1 p.u.)
         # At this point only the shunt and load related values are added here
         # power_flow_input.Ybus /= self.Sbase
         # power_flow_input.Yshunt /= self.Sbase
@@ -2765,7 +2765,7 @@ class MultiCircuit(Circuit):
         if os.path.exists(filename):
             name, file_extension = os.path.splitext(filename)
             # print(name, file_extension)
-            if file_extension == '.xls' or file_extension == '.xlsx':
+            if file_extension.lower() in ['.xls', '.xlsx']:
 
                 ppc = load_from_xls(filename)
 
@@ -2781,19 +2781,25 @@ class MultiCircuit(Circuit):
                     warn('The file could not be processed')
                     return False
 
-            elif file_extension == '.dgs':
+            elif file_extension.lower() == '.dgs':
                 from GridCal.Engine.Importers.DGS_Parser import dgs_to_circuit
                 circ = dgs_to_circuit(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
 
-            elif file_extension == '.m':
+            elif file_extension.lower() == '.m':
                 from GridCal.Engine.Importers.matpower_parser import parse_matpower_file
                 circ = parse_matpower_file(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
 
-            elif file_extension in ['.raw', '.RAW', '.Raw']:
+            elif file_extension.lower() == '.json':
+                from GridCal.Engine.Importers.JSON_parser import parse_json
+                circ = parse_json(filename)
+                self.buses = circ.buses
+                self.branches = circ.branches
+
+            elif file_extension.lower() == '.raw':
                 from GridCal.Engine.Importers.PSS_Parser import PSSeParser
                 parser = PSSeParser(filename)
                 circ = parser.circuit
@@ -3207,13 +3213,15 @@ class MultiCircuit(Circuit):
         bus_key_dict = dict()
 
         # add the circuit
-        elements.append(self.get_json_dict(key))
+        circuit_dict = self.get_json_dict(key)
+        elements.append(circuit_dict)
         key += 1
 
         for bus in self.buses:
 
             # pack the bus data into a dictionary
             dictionary = bus.get_json_dict(key)
+            dictionary['circuit'] = circuit_dict['id']  # add the circuit id on each bus
             elements.append(dictionary)
             bus_key_dict[bus] = key
             key += 1
