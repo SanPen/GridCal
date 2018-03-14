@@ -1697,20 +1697,23 @@ class StaticGenerator:
 
 class Battery:
 
-    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
+    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
+                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999,
                  power_prof=None, vset_prof=None, active=True):
         """
         Batery (Voltage controlled and dispatchable)
-        @param name:
-        @param active_power:
-        @param voltage_module:
-        @param Qmin:
-        @param Qmax:
-        @param Snom:
-        @param Enom:
-        @param power_prof:
-        @param vset_prof:
-        @param active:
+        :param name: 
+        :param active_power: 
+        :param voltage_module: 
+        :param Qmin: 
+        :param Qmax: 
+        :param Snom: 
+        :param Enom: 
+        :param p_min: 
+        :param p_max: 
+        :param power_prof: 
+        :param vset_prof: 
+        :param active: 
         """
 
         self.name = name
@@ -1729,6 +1732,12 @@ class Battery:
         # Power (MVA)
         # MVA = kV * kA
         self.P = active_power
+
+        # Minimum dispatched power in MW
+        self.Pmin = p_min
+
+        # Maximum dispatched power in MW
+        self.Pmax = p_max
 
         # power profile for this load
         self.Pprof = power_prof
@@ -1751,9 +1760,9 @@ class Battery:
         # Nominal energy MWh
         self.Enom = Enom
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax', 'Pmin', 'Pmax']
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1763,13 +1772,15 @@ class Battery:
                            'Snom': float,
                            'Enom': float,
                            'Qmin': float,
-                           'Qmax': float}
+                           'Qmax': float,
+                           'Pmin': float,
+                           'Pmax': float}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
 
         self.profile_attr = {'P': 'Pprof',
-                           'Vset': 'Vsetprof'}
+                             'Vset': 'Vsetprof'}
 
     def copy(self):
 
@@ -1780,6 +1791,10 @@ class Battery:
         # Power (MVA)
         # MVA = kV * kA
         batt.P = self.P
+
+        batt.Pmax = self.Pmax
+
+        batt.Pmin = self.Pmin
 
         # power profile for this load
         batt.Pprof = self.Pprof
@@ -1809,7 +1824,8 @@ class Battery:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1829,17 +1845,17 @@ class Battery:
                 'Snom': self.Snom,
                 'Enom': self.Enom,
                 'qmin': self.Qmin,
-                'qmax': self.Qmax}
+                'qmax': self.Qmax,
+                'Pmin': self.Pmin,
+                'Pmax': self.Pmax}
 
     def create_profiles(self, index, P=None, V=None):
         """
         Create the load object default profiles
-        Args:
-            index:
-            steps:
-
-        Returns:
-
+        :param index: 
+        :param P: 
+        :param V: 
+        :return: 
         """
         self.create_P_profile(index, P)
         self.create_Vset_profile(index, V)
@@ -1847,11 +1863,10 @@ class Battery:
     def create_P_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
-        Args:
-            index:
-
-        Returns:
-
+        :param index: 
+        :param arr: 
+        :param arr_in_pu: 
+        :return: 
         """
         if arr_in_pu:
             dta = arr * self.P
@@ -1862,11 +1877,10 @@ class Battery:
     def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
-        Args:
-            index:
-
-        Returns:
-
+        :param index: 
+        :param arr: 
+        :param arr_in_pu: 
+        :return: 
         """
         if arr_in_pu:
             dta = arr * self.Vset
@@ -1907,6 +1921,10 @@ class Battery:
         self.Vset = self.Vsetprof.values[t]
 
     def __str__(self):
+        """
+        string representation
+        :return: 
+        """
         return self.name
 
 
@@ -7529,6 +7547,7 @@ class OptimalPowerFlowOptions:
         """
         
         :param verbose: 
+        :param load_shedding: 
         """
         self.verbose = verbose
 
@@ -7540,14 +7559,15 @@ class OptimalPowerFlowResults:
     def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
                  loading=None, losses=None, converged=None):
         """
-
-        Args:
-            Sbus:
-            voltage:
-            Sbranch:
-            loading:
-            losses:
-            converged:
+        
+        :param Sbus: 
+        :param voltage: 
+        :param load_shedding: 
+        :param Sbranch: 
+        :param overloads: 
+        :param loading: 
+        :param losses: 
+        :param converged: 
         """
         self.Sbus = Sbus
 
@@ -7636,14 +7656,11 @@ class OptimalPowerFlowResults:
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
-        Args:
-            result_type:
-            ax:
-            indices:
-            names:
-
-        Returns:
-
+        :param result_type: 
+        :param ax: 
+        :param indices: 
+        :param names: 
+        :return: 
         """
 
         if ax is None:
@@ -7794,7 +7811,10 @@ class OptimalPowerFlow(QRunnable):
         return self.results
 
     def run(self):
-
+        """
+        
+        :return: 
+        """
         self.opf()
 
     def run_at(self, t):
@@ -8014,4 +8034,7 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Set the cancel state
+        """
         self.__cancel__ = True
