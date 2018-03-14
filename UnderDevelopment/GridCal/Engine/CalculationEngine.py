@@ -1753,7 +1753,7 @@ class Battery:
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1887,7 +1887,7 @@ class Battery:
             if self.Pprof is None:
                 self.create_P_profile(index)
             if self.Vsetprof is None:
-                self.create_vset_profile(index)
+                self.create_Vset_profile(index)
         return self.Pprof, self.Vsetprof
 
     def delete_profiles(self):
@@ -2129,7 +2129,7 @@ class ControlledGenerator:
             if self.Pprof is None:
                 self.create_P_profile(index)
             if self.Vsetprof is None:
-                self.create_vset_profile(index)
+                self.create_Vset_profile(index)
         return self.Pprof, self.Vsetprof
 
     def delete_profiles(self):
