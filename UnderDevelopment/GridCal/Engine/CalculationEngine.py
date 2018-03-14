@@ -685,7 +685,7 @@ class Bus:
                 warn(elm.name + ' is not active')
 
         # controlled gen and batteries
-        for elm in self.controlled_generators + self.batteries:
+        for elm in (self.controlled_generators + self.batteries):
 
             if elm.active:
                 # Add the generator active power
@@ -1832,7 +1832,7 @@ class Battery:
         :return:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax]
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -3884,14 +3884,24 @@ class PowerFlowInput:
         if len(self.ref) == 0:  # there is no slack!
 
             if len(self.pv) == 0:  # there are no pv neither -> blackout grid
+
                 warn('There are no slack nodes selected')
 
             else:  # select the first PV generator as the slack
+
                 mx = max(self.Sbus[self.pv])
-                i = where(self.Sbus == mx)[0][0]
-                # print('Setting the bus ' + str(i) + ' as slack instead of pv')
+                if mx > 0:
+                    # find the generator that is injecting the most
+                    i = where(self.Sbus == mx)[0][0]
+
+                else:
+                    # all the generators are injecting zero, pick the first pv
+                    i = self.pv[0]
+
                 self.pv = delete(self.pv, where(self.pv == i)[0])
                 self.ref = [i]
+                # print('Setting bus', i, 'as slack')
+
             self.ref = ndarray.flatten(array(self.ref))
             self.types[self.ref] = NodeType.REF.value[0]
         else:
@@ -7265,7 +7275,7 @@ class DcOpf:
         ################################################################################################################
         # Add the objective function
         ################################################################################################################
-        fobj = 0
+        fobj = 0.0
 
         # add the voltage angles multiplied by zero (trick)
         for j in self.pqpv:
@@ -7275,7 +7285,7 @@ class DcOpf:
         for k, bus in enumerate(self.circuit.buses):
 
             # check that there are at least one generator at the slack node
-            if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
+            if len(bus.controlled_generators) == 0 and len(bus.batteries) == 0 and bus.type == NodeType.REF:
                 self.potential_errors = True
                 warn('There is no generator at the Slack node ' + bus.name + '!!!')
 
@@ -7288,7 +7298,8 @@ class DcOpf:
                 # add the variable to the objective function
                 fobj += gen.LPVar_P * gen.Cost
 
-                self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
+                # add the var reference just to print later...
+                self.PG.append(gen.LPVar_P)
 
             # minimize the load shedding if activated
             if self.load_shedding:
