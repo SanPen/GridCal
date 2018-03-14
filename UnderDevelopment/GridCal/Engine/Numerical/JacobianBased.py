@@ -12,7 +12,9 @@
 
 # The file has been modified from Pypower.
 # The function mu() has been added to the solver in order to provide an optimal iteration control
-# Copyright (c) 2016 Santiago Peñate Vera
+#
+# Copyright (c) 2018 Santiago Peñate Vera
+#
 # This file retains the BSD-Style license
 
 
