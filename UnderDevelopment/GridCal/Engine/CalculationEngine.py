@@ -1698,7 +1698,7 @@ class StaticGenerator:
 class Battery:
 
     def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
-                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999,
+                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
                  power_prof=None, vset_prof=None, active=True):
         """
         Batery (Voltage controlled and dispatchable)
@@ -1760,9 +1760,15 @@ class Battery:
         # Nominal energy MWh
         self.Enom = Enom
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax', 'Pmin', 'Pmax']
+        # operational cost (€/MWh)
+        self.Cost = op_cost
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW']
+        # Linear problem generator dispatch power variable (in p.u.)
+        self.LPVar_P = None
+
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
+
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW', '€/MWh']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1774,7 +1780,8 @@ class Battery:
                            'Qmin': float,
                            'Qmax': float,
                            'Pmin': float,
-                           'Pmax': float}
+                           'Pmax': float,
+                           'Cost': float}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
@@ -1847,7 +1854,8 @@ class Battery:
                 'qmin': self.Qmin,
                 'qmax': self.Qmax,
                 'Pmin': self.Pmin,
-                'Pmax': self.Pmax}
+                'Pmax': self.Pmax,
+                'Cost': self.Cost}
 
     def create_profiles(self, index, P=None, V=None):
         """
@@ -1919,6 +1927,29 @@ class Battery:
         """
         self.P = self.Pprof.values[t]
         self.Vset = self.Vsetprof.values[t]
+
+    def make_lp_vars(self, name, Sbase):
+        """
+        Create all the necessary LP variables
+        Args:
+            name: base name of the variables to make them unique
+            Sbase: Base system power in MVA
+
+        Returns:
+            nothing
+        """
+
+        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
+
+    def apply_lp_vars(self, at=None):
+        """
+        Set the LP vars to the main value or the profile
+        """
+        if self.LPVar_P is not None:
+            if at is None:
+                self.P = self.LPVar_P.value()
+            else:
+                self.Pprof.values[at] = self.LPVar_P.value()
 
     def __str__(self):
         """
@@ -2074,7 +2105,10 @@ class ControlledGenerator:
                 'vset': self.Vset,
                 'Snom': self.Snom,
                 'qmin': self.Qmin,
-                'qmax': self.Qmax}
+                'qmax': self.Qmax,
+                'Pmin': self.Pmin,
+                'Pmax': self.Pmax,
+                'Cost': self.Cost}
 
     def create_profiles_maginitude(self, index, arr, mag):
         """
@@ -7246,10 +7280,10 @@ class DcOpf:
                 warn('There is no generator at the Slack node ' + bus.name + '!!!')
 
             # Add the bus LP vars
-            for gen in bus.controlled_generators:
+            for i, gen in enumerate(bus.controlled_generators + bus.batteries):
 
                 # create the generation variable
-                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name, self.Sbase)
+                gen.make_lp_vars(gen.type_name + '_' + gen.name + '_' + bus.name + '_' + str(i), self.Sbase)
 
                 # add the variable to the objective function
                 fobj += gen.LPVar_P * gen.Cost
@@ -7286,7 +7320,7 @@ class DcOpf:
                     calculated_node_power += self.B.data[ii] * self.theta[j]
 
             # add the generation LP vars
-            for gen in self.circuit.buses[i].controlled_generators:
+            for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
                 node_power_injection += gen.LPVar_P
 
             # Store the terms for adding the load later.
@@ -7319,7 +7353,7 @@ class DcOpf:
                 val += self.B.data[ii] * self.theta[j]
 
             # Sum the slack generators
-            for gen in self.circuit.buses[i].controlled_generators:
+            for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
                 g += gen.LPVar_P
 
             # the sum of the slack node generators must be equal to the slack node power
@@ -7595,14 +7629,14 @@ class OptimalPowerFlowResults:
         Return a copy of this
         @return:
         """
-        return PowerFlowResults(Sbus=self.Sbus,
-                                voltage=self.voltage,
-                                load_shedding=self.load_shedding,
-                                Sbranch=self.Sbranch,
-                                overloads=self.overloads,
-                                loading=self.loading,
-                                losses=self.losses,
-                                converged=self.converged)
+        return OptimalPowerFlowResults(Sbus=self.Sbus,
+                                       voltage=self.voltage,
+                                       load_shedding=self.load_shedding,
+                                       Sbranch=self.Sbranch,
+                                       overloads=self.overloads,
+                                       loading=self.loading,
+                                       losses=self.losses,
+                                       converged=self.converged)
 
     def initialize(self, n, m):
         """
