@@ -3898,6 +3898,7 @@ class PowerFlowInput:
                     # all the generators are injecting zero, pick the first pv
                     i = self.pv[0]
 
+                # delete the selected pv bus from the pv list and put it in the slack list
                 self.pv = delete(self.pv, where(self.pv == i)[0])
                 self.ref = [i]
                 # print('Setting bus', i, 'as slack')
