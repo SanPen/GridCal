@@ -20,7 +20,7 @@ grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
-fname = 'IEEE_30BUS_profiles.xls'
+fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 grid.load_file(fname)
@@ -44,10 +44,11 @@ print('\tConv:', grid.power_flow_results.converged)
 
 
 def caller0(i):  # function to create a copy of the grid and a power flow associated
-    grd = grid.copy()
-    grd.name = 'grid ' + str(i)
-    grd.compile()
-    return PowerFlow(grd, options)
+    # grd = grid.copy()
+    # grd.name = 'grid ' + str(i)
+    # grd.compile()
+    # return PowerFlow(grd, options)
+    return PowerFlowMP(grid, options)
 
 
 def caller1(worker: PowerFlow):  # function to run the instance
@@ -57,7 +58,7 @@ def caller1(worker: PowerFlow):  # function to run the instance
 
 def run():
     pool = Pool()
-    batch_size = 1000
+    batch_size = 10000
 
     # create copies of the grid to run asynchronously
     print('cloning...')
@@ -71,6 +72,7 @@ def run():
     for grid_item in grids:
         print('\n\n' + grid_item.name)
         print('\t|V|:', abs(grid_item.power_flow_results.voltage))
+
 
 if __name__ == '__main__':
     run()

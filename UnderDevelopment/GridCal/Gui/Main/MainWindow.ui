@@ -1845,7 +1845,7 @@ last solution</string>
               </font>
              </property>
              <property name="text">
-              <string>Graphics &amp; Fx</string>
+              <string>General settings</string>
              </property>
             </widget>
            </item>
@@ -2103,6 +2103,63 @@ last solution</string>
             </widget>
            </item>
            <item>
+            <widget class="Line" name="line_13">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>186</red>
+                   <green>189</green>
+                   <blue>182</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="WindowText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>190</red>
+                   <green>190</green>
+                   <blue>190</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>4</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="use_multiprocessing_checkBox">
+             <property name="text">
+              <string>use multiprocessing</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <spacer name="verticalSpacer_3">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -2179,7 +2236,31 @@ last solution</string>
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_5">
-               <item row="1" column="5" colspan="2">
+               <item row="1" column="3">
+                <widget class="QPushButton" name="edit_profiles_pushButton">
+                 <property name="text">
+                  <string>Edit</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/white_icons/edit.svg</normaloff>:/Icons/white_icons/edit.svg</iconset>
+                 </property>
+                 <property name="flat">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="6">
+                <widget class="QComboBox" name="comboBox"/>
+               </item>
+               <item row="1" column="10">
+                <widget class="Line" name="line_7">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="7" colspan="2">
                 <widget class="QComboBox" name="profile_time_selection_comboBox">
                  <property name="minimumSize">
                   <size>
@@ -2189,10 +2270,10 @@ last solution</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="10">
+               <item row="1" column="12">
                 <widget class="QComboBox" name="profile_device_type_comboBox"/>
                </item>
-               <item row="1" column="12">
+               <item row="1" column="14">
                 <widget class="QComboBox" name="device_type_magnitude_comboBox"/>
                </item>
                <item row="0" column="1" colspan="2">
@@ -2226,10 +2307,17 @@ last solution</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="7">
+               <item row="1" column="9">
                 <widget class="QPushButton" name="set_profile_state_button">
                  <property name="text">
                   <string>set state</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="12">
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>Device type</string>
                  </property>
                 </widget>
                </item>
@@ -2244,28 +2332,14 @@ last solution</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="10">
-                <widget class="QLabel" name="label_9">
-                 <property name="text">
-                  <string>Device type</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="12">
+               <item row="0" column="14">
                 <widget class="QLabel" name="label_21">
                  <property name="text">
                   <string>Magnitude</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="8">
-                <widget class="Line" name="line_7">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="13">
+               <item row="1" column="15">
                 <widget class="QPushButton" name="profile_display_pushButton">
                  <property name="text">
                   <string>Display</string>
@@ -2276,24 +2350,27 @@ last solution</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="3">
-                <widget class="QPushButton" name="edit_profiles_pushButton">
-                 <property name="text">
-                  <string>Edit</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/white_icons/edit.svg</normaloff>:/Icons/white_icons/edit.svg</iconset>
-                 </property>
-                 <property name="flat">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="5" colspan="3">
+               <item row="0" column="7" colspan="3">
                 <widget class="QLabel" name="label_10">
                  <property name="text">
                   <string>Time step</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="5">
+                <widget class="QComboBox" name="comboBox_2"/>
+               </item>
+               <item row="0" column="6">
+                <widget class="QLabel" name="label_35">
+                 <property name="text">
+                  <string>End</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string>Start</string>
                  </property>
                 </widget>
                </item>
@@ -2660,7 +2737,7 @@ last solution</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
