@@ -20,7 +20,8 @@ grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE_30_new.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 grid.load_file(fname)
@@ -43,7 +44,7 @@ print('\terr:', grid.power_flow_results.error)
 print('\tConv:', grid.power_flow_results.converged)
 
 
-def caller0(i):  # function to create a copy of the grid and a power flow associated
+def simulation_constructor(i):  # function to create a copy of the grid and a power flow associated
     # grd = grid.copy()
     # grd.name = 'grid ' + str(i)
     # grd.compile()
@@ -51,22 +52,22 @@ def caller0(i):  # function to create a copy of the grid and a power flow associ
     return PowerFlowMP(grid, options)
 
 
-def caller1(worker: PowerFlow):  # function to run the instance
-    worker.run()
-    return worker.grid
+def instance_executor(instance: PowerFlow):  # function to run the instance
+    instance.run()
+    return instance.grid
 
 
 def run():
     pool = Pool()
     batch_size = 10000
 
-    # create copies of the grid to run asynchronously
+    # create instances of the of the power flow simulation given the grid
     print('cloning...')
-    workers = pool.map(caller0, range(batch_size))
+    instances = pool.map(simulation_constructor, range(batch_size))
 
-    # run asynchronous power flows on the created copies
+    # run asynchronous power flows on the created instances
     print('running...')
-    grids = pool.map(caller1, workers)
+    grids = pool.map(instance_executor, instances)
 
     # display the collected results
     for grid_item in grids:
