@@ -453,7 +453,7 @@ if __name__ == '__main__':
                   Yt=circuit.power_flow_input.Yt,
                   f=circuit.power_flow_input.F,
                   t=circuit.power_flow_input.T,
-                  se_input=se.se_input,
+                  se_input=se,
                   ref=circuit.power_flow_input.ref,
                   pq=circuit.power_flow_input.pq,
                   pv=circuit.power_flow_input.pv)

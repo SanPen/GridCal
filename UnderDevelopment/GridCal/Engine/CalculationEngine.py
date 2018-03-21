@@ -8707,7 +8707,7 @@ class StateEstimation(QRunnable):
 
         QRunnable.__init__(self)
 
-        self.circuit = circuit
+        self.grid = circuit
 
         self.se_results = None
 
@@ -8767,29 +8767,39 @@ class StateEstimation(QRunnable):
         Run state estimation
         :return: 
         """
-        n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
         self.se_results = StateEstimationResults()
         self.se_results.initialize(n, m)
 
-        for circuit in self.circuit.circuits:
+        for circuit in self.grid.circuits:
 
             # collect inputs
             se_input = self.collect_measurements(circuit=circuit)
 
             # run solver
-            v_sol = solve_se_lm(Ybus=self.circuit.power_flow_input.Ybus,
-                                Yf=self.circuit.power_flow_input.Yf,
-                                Yt=self.circuit.power_flow_input.Yt,
-                                f=self.circuit.power_flow_input.F,
-                                t=self.circuit.power_flow_input.T,
-                                se_input=se_input,
-                                ref=self.circuit.power_flow_input.ref,
-                                pq=self.circuit.power_flow_input.pq,
-                                pv=self.circuit.power_flow_input.pv)
+            v_sol, err, converged = solve_se_lm(Ybus=circuit.power_flow_input.Ybus,
+                                                Yf=circuit.power_flow_input.Yf,
+                                                Yt=circuit.power_flow_input.Yt,
+                                                f=circuit.power_flow_input.F,
+                                                t=circuit.power_flow_input.T,
+                                                se_input=se_input,
+                                                ref=circuit.power_flow_input.ref,
+                                                pq=circuit.power_flow_input.pq,
+                                                pv=circuit.power_flow_input.pv)
 
-            res = StateEstimationResults()
+            # Compute the branches power and the slack buses power
+            Sbranch, Ibranch, loading, losses, Sbus = PowerFlowMP.power_flow_post_process(circuit=circuit, V=v_sol)
 
-            res.voltage = v_sol
+            # pack results into a SE results object
+            results = StateEstimationResults(Sbus=Sbus,
+                                             voltage=v_sol,
+                                             Sbranch=Sbranch,
+                                             Ibranch=Ibranch,
+                                             loading=loading,
+                                             losses=losses,
+                                             error=[err],
+                                             converged=[converged],
+                                             Qpv=None)
 
-            self.se_results.apply_from_island(res, circuit.bus_original_idx, circuit.branch_original_idx)
+            self.se_results.apply_from_island(results, circuit.bus_original_idx, circuit.branch_original_idx)

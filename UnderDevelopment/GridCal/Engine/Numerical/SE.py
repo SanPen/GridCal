@@ -390,13 +390,14 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
             converged = False
 
         # compute the convergence
-        converged = np.linalg.norm(dx, np.Inf) < tol
+        err = np.linalg.norm(dx, np.Inf)
+        converged = err < tol
 
         # update loops
         f_obj_prev = f_obj
         iter_ += 1
 
-    return V
+    return V, err, converged
 
 if __name__ == '__main__':
 
