@@ -47,6 +47,7 @@ from GridCal.Engine.Numerical.HELM import helm
 from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
+from GridCal.Engine.Numerical.SE import solve_se_lm
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -84,6 +85,14 @@ class NodeType(Enum):
     NONE = 4,
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
 
+
+class MeasurementType(Enum):
+    Pinj = 1,
+    Qinj = 2,
+    Vmag = 3,
+    Pflow = 4,
+    Qflow = 5,
+    Iflow = 6
 
 class SolverType(Enum):
     NR = 1
@@ -481,6 +490,24 @@ def load_from_xls(filename):
 
     return data
 
+########################################################################################################################
+# Circuit classes
+########################################################################################################################
+
+
+class Measurement:
+
+    def __init__(self, value, uncertainty, mtype: MeasurementType):
+        """
+        Constructor
+        :param value: value 
+        :param uncertainty: uncertainty (standard deviation) 
+        :param mtype: type of measurement
+        """
+        self.val = value
+        self.sigma = uncertainty
+        self.measurement_type = mtype
+
 
 ########################################################################################################################
 # Circuit classes
@@ -489,7 +516,7 @@ def load_from_xls(filename):
 
 class Bus:
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0, active=True):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False):
         """
         Bus  constructor
         Args:
@@ -540,11 +567,14 @@ class Bus:
         # List of static generators attached tot this bus
         self.static_generators = list()
 
+        # List of measurements
+        self.measurements = list()
+
         # Bus type
         self.type = NodeType.NONE
 
         # Flag to determine if the bus is a slack bus or not
-        self.is_slack = False
+        self.is_slack = is_slack
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed
@@ -624,8 +654,11 @@ class Bus:
             - S: Power attached to the bus
             - V: Voltage of the bus
         All in complex values
-        @return: Y, I, S, V, Yprof, Iprof, Sprof
+        :param index: index of the Pandas DataFrame
+        :param with_profiles: also fill the profiles
+        :return: Y, I, S, V, Yprof, Iprof, Sprof
         """
+
         Y = complex(0, 0)
         I = complex(0, 0)  # Positive Generates, negative consumes
         S = complex(0, 0)  # Positive Generates, negative consumes
@@ -861,6 +894,8 @@ class Bus:
         bus.h = self.h
 
         bus.w = self.w
+
+        bus.measurements = self.measurements
 
         # self.graphic_obj = None
 
@@ -1113,8 +1148,8 @@ class Branch:
 
         self.active = active
 
-        # self.z_series = zserie  # R + jX
-        # self.y_shunt = yshunt  # G + jB
+        # List of measurements
+        self.measurements = list()
 
         self.R = r
         self.X = x
@@ -1188,6 +1223,8 @@ class Branch:
                    mttf=self.mttf,
                    mttr=self.mttr,
                    is_transformer=self.is_transformer)
+
+        b.measurements = self.measurements
 
         return b
 
@@ -8006,3 +8043,216 @@ class OptimalPowerFlowTimeSeries(QThread):
         Set the cancel state
         """
         self.__cancel__ = True
+
+
+########################################################################################################################
+# State Estimation classes
+########################################################################################################################
+
+class StateEstimationInput:
+
+    def __init__(self):
+
+        # Node active power measurements vector of pointers
+        self.p_inj =list()
+
+        # Node  reactive power measurements vector of pointers
+        self.q_inj = list()
+
+        # Branch active power measurements vector of pointers
+        self.p_flow = list()
+
+        # Branch reactive power measurements vector of pointers
+        self.q_flow = list()
+
+        # Branch current module measurements vector of pointers
+        self.i_flow = list()
+
+        # Node voltage module measurements vector of pointers
+        self.vm_m = list()
+
+        # nodes without power injection measurements
+        self.p_inj_idx = list()
+
+        # branches without power measurements
+        self.p_flow_idx = list()
+
+        # nodes without reactive power injection measurements
+        self.q_inj_idx = list()
+
+        # branches without reactive power measurements
+        self.q_flow_idx = list()
+
+        # branches without current measurements
+        self.i_flow_idx = list()
+
+        # nodes without voltage module measurements
+        self.vm_m_idx = list()
+
+    def clear(self):
+        """
+        Clear
+        :return: 
+        """
+        self.p_inj.clear()
+        self.p_flow.clear()
+        self.q_inj.clear()
+        self.q_flow.clear()
+        self.i_flow.clear()
+        self.vm_m.clear()
+
+        self.p_inj_idx.clear()
+        self.p_flow_idx.clear()
+        self.q_inj_idx.clear()
+        self.q_flow_idx.clear()
+        self.i_flow_idx.clear()
+        self.vm_m_idx.clear()
+
+    def consolidate(self):
+        """
+        consolidate the measurements into "measurements" and "sigma"
+        :return: measurements, sigma
+        """
+
+        nz = len(self.p_inj) + len(self.p_flow) + len(self.q_inj) + len(self.q_flow) + len(self.i_flow) + len(self.vm_m)
+
+        magnitudes = np.zeros(nz)
+        sigma = np.zeros(nz)
+
+        # go through the measurements in order and form the vectors
+        k = 0
+        for m in self.p_flow + self.p_inj + self.q_flow + self.q_inj + self.i_flow + self.vm_m:
+            magnitudes[k] = m.val
+            sigma[k] = m.sigma
+            k += 1
+
+        return magnitudes, sigma
+
+
+class StateEstimationResults(PowerFlowResults):
+
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None,
+                 error=None, converged=None, Qpv=None):
+        """
+        Constructor
+        :param Sbus: 
+        :param voltage: 
+        :param Sbranch: 
+        :param Ibranch: 
+        :param loading: 
+        :param losses: 
+        :param error: 
+        :param converged: 
+        :param Qpv: 
+        """
+        # initialize the
+        PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
+                                  loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
+
+
+class StateEstimation(QRunnable):
+
+    def __init__(self, circuit: MultiCircuit):
+        """
+        Constructor
+        :param circuit: circuit object 
+        """
+
+        QRunnable.__init__(self)
+
+        self.grid = circuit
+
+        self.se_results = None
+
+    @staticmethod
+    def collect_measurements(circuit: Circuit):
+        """
+        Form the input from the circuit measurements
+        :return: nothing, the input object is stored in this class
+        """
+        se_input = StateEstimationInput()
+
+        # collect the bus measurements
+        for i, bus in enumerate(circuit.buses):
+
+            for m in bus.measurements:
+
+                if m.measurement_type == MeasurementType.Pinj:
+                    se_input.p_inj_idx.append(i)
+                    se_input.p_inj.append(m)
+
+                elif m.measurement_type == MeasurementType.Qinj:
+                    se_input.q_inj_idx.append(i)
+                    se_input.q_inj.append(m)
+
+                elif m.measurement_type == MeasurementType.Vmag:
+                    se_input.vm_m_idx.append(i)
+                    se_input.vm_m.append(m)
+
+                else:
+                    raise Exception('The bus ' + str(bus) + ' contains a measurement of type ' + str(m.measurement_type))
+
+        # collect the branch measurements
+        for i, branch in enumerate(circuit.branches):
+
+            for m in branch.measurements:
+
+                if m.measurement_type == MeasurementType.Pflow:
+                    se_input.p_flow_idx.append(i)
+                    se_input.p_flow.append(m)
+
+                elif m.measurement_type == MeasurementType.Qflow:
+                    se_input.q_flow_idx.append(i)
+                    se_input.q_flow.append(m)
+
+                elif m.measurement_type == MeasurementType.Iflow:
+                    se_input.i_flow_idx.append(i)
+                    se_input.i_flow.append(m)
+
+                else:
+                    raise Exception(
+                        'The branch ' + str(branch) + ' contains a measurement of type ' + str(m.measurement_type))
+
+        return se_input
+
+    def run(self):
+        """
+        Run state estimation
+        :return: 
+        """
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        self.se_results = StateEstimationResults()
+        self.se_results.initialize(n, m)
+
+        for circuit in self.grid.circuits:
+
+            # collect inputs
+            se_input = self.collect_measurements(circuit=circuit)
+
+            # run solver
+            v_sol, err, converged = solve_se_lm(Ybus=circuit.power_flow_input.Ybus,
+                                                Yf=circuit.power_flow_input.Yf,
+                                                Yt=circuit.power_flow_input.Yt,
+                                                f=circuit.power_flow_input.F,
+                                                t=circuit.power_flow_input.T,
+                                                se_input=se_input,
+                                                ref=circuit.power_flow_input.ref,
+                                                pq=circuit.power_flow_input.pq,
+                                                pv=circuit.power_flow_input.pv)
+
+            # Compute the branches power and the slack buses power
+            Sbranch, Ibranch, loading, losses, Sbus = PowerFlowMP.power_flow_post_process(circuit=circuit, V=v_sol)
+
+            # pack results into a SE results object
+            results = StateEstimationResults(Sbus=Sbus,
+                                             voltage=v_sol,
+                                             Sbranch=Sbranch,
+                                             Ibranch=Ibranch,
+                                             loading=loading,
+                                             losses=losses,
+                                             error=[err],
+                                             converged=[converged],
+                                             Qpv=None)
+
+            self.se_results.apply_from_island(results, circuit.bus_original_idx, circuit.branch_original_idx)
