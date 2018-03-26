@@ -1263,6 +1263,8 @@ class MainGUI(QMainWindow):
 
         dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
 
+        mp = self.ui.use_multiprocessing_checkBox.isChecked()
+
         ops = PowerFlowOptions(solver_type=solver_type,
                                aux_solver_type=solver_to_retry_with,
                                verbose=False,
@@ -1271,7 +1273,8 @@ class MainGUI(QMainWindow):
                                dispatch_storage=dispatch_storage,
                                tolerance=tolerance,
                                max_iter=max_iter,
-                               control_q=enforce_q_limits)
+                               control_q=enforce_q_limits,
+                               multi_core=mp)
 
         return ops
 

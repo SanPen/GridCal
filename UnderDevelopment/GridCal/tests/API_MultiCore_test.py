@@ -69,12 +69,22 @@ def run():
 
     # run asynchronous power flows on the created instances
     print('running...')
-    grids = pool.map(instance_executor, instances)
+    instances = pool.map_async(instance_executor, instances)
+
+    # monitor progress
+    while True:
+        if instances.ready():
+            break
+        remaining = instances._number_left
+        progress = ((batch_size - remaining + 1) / batch_size) * 100
+        print("Waiting for", remaining, "tasks to complete...", progress, '%')
+
+        time.sleep(0.5)
 
     # display the collected results
-    for grid_item in grids:
-        print('\n\n' + grid_item.name)
-        print('\t|V|:', abs(grid_item.power_flow_results.voltage))
+    for instance in instances:
+        print('\n\n' + instance.name)
+        print('\t|V|:', abs(instance.power_flow_results.voltage))
 
 
 if __name__ == '__main__':

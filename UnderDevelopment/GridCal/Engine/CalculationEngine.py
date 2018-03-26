@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.05
+__GridCal_VERSION__ = 2.10
 
 import os
 import pickle as pkl
@@ -24,6 +24,7 @@ import networkx as nx
 import pandas as pd
 import pulp
 import json
+import multiprocessing
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
@@ -3758,7 +3759,7 @@ class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True, dispatch_storage=True,
-                 tolerance=1e-6, max_iter=25, control_q=True):
+                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True):
         """
         Power flow execution options
         @param solver_type:
@@ -3790,6 +3791,8 @@ class PowerFlowOptions:
         self.initialize_with_existing_solution = initialize_with_existing_solution
 
         self.dispatch_storage = dispatch_storage
+
+        self.multi_thread = multi_core
 
 
 class PowerFlowInput:
@@ -4850,7 +4853,7 @@ class PowerFlowMP:
 
     def run_pf(self, circuit: Circuit, Vbus, Sbus, Ibus):
         """
-        Run a power flow for every circuit
+        Run a power flow for a circuit
         @return:
         """
 
@@ -4892,6 +4895,23 @@ class PowerFlowMP:
 
     def cancel(self):
         self.__cancel__ = True
+
+
+def power_flow_worker(t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict):
+    """
+    Power flow worker to schedule parallel power flows
+    :param t: execution index
+    :param options: power flow options
+    :param circuit: circuit
+    :param Vbus: Voltages to initialize
+    :param Sbus: Power injections
+    :param Ibus: Current injections
+    :param return_dict: parallel module dictionary in wich to return the values
+    :return:
+    """
+
+    instance = PowerFlowMP(None, options)
+    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
 
 
 class PowerFlow(QRunnable):
@@ -5717,10 +5737,10 @@ class TimeSeries(QThread):
 
         self.__cancel__ = False
 
-    def run(self):
+    def run_single_thread(self):
         """
-        Run the time series simulation
-        @return:
+        Run single thread time series
+        :return:
         """
         # initialize the power flow
         powerflow = PowerFlowMP(self.grid, self.options)
@@ -5749,7 +5769,6 @@ class TimeSeries(QThread):
 
                 t = 0
                 while t < nt and not self.__cancel__:
-
                     # set the power values
                     Y, I, S = circuit.time_series_input.get_at(t)
 
@@ -5779,7 +5798,87 @@ class TimeSeries(QThread):
                 print('There are no profiles')
                 self.progress_text.emit('There are no profiles')
 
-        self.results = self.grid.time_series_results
+        return self.grid.time_series_results
+
+    def run_multi_thread(self):
+        """
+        Run multi thread time series
+        :return:
+        """
+
+        # initialize the power flow
+        powerflow = PowerFlowMP(self.grid, self.options)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        nt = len(self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+
+        # For every circuit, run the time series
+        for nc, circuit in enumerate(self.grid.circuits):
+
+            self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
+
+            if circuit.time_series_input.valid:
+
+                nt = len(circuit.time_series_input.time_array)
+                n = len(circuit.buses)
+                m = len(circuit.branches)
+                results = TimeSeriesResults(n, m, nt)
+                Vlast = circuit.power_flow_input.Vbus
+
+                self.progress_signal.emit(0.0)
+
+                # Start jobs
+                manager = multiprocessing.Manager()
+                return_dict = manager.dict()
+                jobs = []
+                for t in range(nt):
+
+                    # set the power values
+                    Y, I, S = circuit.time_series_input.get_at(t)
+
+                    # run power flow at the circuit
+                    p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, circuit, Vlast, S, I, return_dict))
+                    jobs.append(p)
+                    p.start()
+
+                # resume jobs
+                for proc in jobs:
+                    proc.join()
+
+                # collect results
+                for t in range(nt):
+                    # store circuit results at the time index 't'
+                    results.set_at(t, return_dict[t])
+
+                # store at circuit level
+                circuit.time_series_results = results
+
+                # merge  the circuit's results
+                self.grid.time_series_results.apply_from_island(results,
+                                                                circuit.bus_original_idx,
+                                                                circuit.branch_original_idx,
+                                                                circuit.time_series_input.time_array,
+                                                                circuit.name)
+            else:
+                print('There are no profiles')
+                self.progress_text.emit('There are no profiles')
+
+        return self.grid.time_series_results
+
+    def run(self):
+        """
+        Run the time series simulation
+        @return:
+        """
+
+        if self.options.multi_thread:
+            self.results = self.run_multi_thread()
+        else:
+            self.results = self.run_single_thread()
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
