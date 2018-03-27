@@ -4914,6 +4914,27 @@ def power_flow_worker(t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus
     return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
 
 
+def power_flow_worker_args(args):
+    """
+    Power flow worker to schedule parallel power flows
+
+    args -> t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict
+
+
+    :param t: execution index
+    :param options: power flow options
+    :param circuit: circuit
+    :param Vbus: Voltages to initialize
+    :param Sbus: Power injections
+    :param Ibus: Current injections
+    :param return_dict: parallel module dictionary in wich to return the values
+    :return:
+    """
+    t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
+    instance = PowerFlowMP(None, options)
+    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
+
+
 class PowerFlow(QRunnable):
     """
     Power flow wrapper to use with Qt
@@ -5806,9 +5827,6 @@ class TimeSeries(QThread):
         :return:
         """
 
-        # initialize the power flow
-        powerflow = PowerFlowMP(self.grid, self.options)
-
         # initialize the grid time series results
         # we will append the island results with another function
         n = len(self.grid.buses)
@@ -5816,10 +5834,12 @@ class TimeSeries(QThread):
         nt = len(self.grid.time_profile)
         self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
 
+        n_cores = multiprocessing.cpu_count()
+
         # For every circuit, run the time series
         for nc, circuit in enumerate(self.grid.circuits):
 
-            self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
+            self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
 
             if circuit.time_series_input.valid:
 
@@ -5834,23 +5854,118 @@ class TimeSeries(QThread):
                 # Start jobs
                 manager = multiprocessing.Manager()
                 return_dict = manager.dict()
-                jobs = []
-                for t in range(nt):
+
+                t = 0
+                while t < nt and not self.__cancel__:
+
+                    k = 0
+                    jobs = list()
+
+                    # launch only n_cores jobs at the time
+                    while k < n_cores+2 and (t+k) < nt:
+                        # set the power values
+                        Y, I, S = circuit.time_series_input.get_at(t)
+
+                        # run power flow at the circuit
+                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, circuit, Vlast, S, I, return_dict))
+                        jobs.append(p)
+                        p.start()
+                        k += 1
+                        t += 1
+
+                    # wait for all jobs to complete
+                    for proc in jobs:
+                        proc.join()
+
+                    progress = ((t + 1) / nt) * 100
+                    self.progress_signal.emit(progress)
+
+                # collect results
+                self.progress_text.emit('Collecting results...')
+                for t in return_dict.keys():
+                    # store circuit results at the time index 't'
+                    results.set_at(t, return_dict[t])
+
+                # store at circuit level
+                circuit.time_series_results = results
+
+                # merge  the circuit's results
+                self.grid.time_series_results.apply_from_island(results,
+                                                                circuit.bus_original_idx,
+                                                                circuit.branch_original_idx,
+                                                                circuit.time_series_input.time_array,
+                                                                circuit.name)
+            else:
+                print('There are no profiles')
+                self.progress_text.emit('There are no profiles')
+
+        return self.grid.time_series_results
+
+    def run_multi_thread_map(self):
+        """
+        Run multi thread time series
+        :return:
+        """
+
+        results_ = list()
+        self.completed_processes = 0
+        total_processes = 1
+        def complete(result):
+            results_.append(result)
+            self.completed_processes += 1
+            # print('Progress:', (self.completed_processes / total_processes) * 100)
+            progress = (self.completed_processes / total_processes) * 100
+            self.progress_signal.emit(progress)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        nt = len(self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+
+        n_cores = multiprocessing.cpu_count()
+        total_processes=nt
+
+        pool = multiprocessing.Pool()
+
+        # For every circuit, run the time series
+        for nc, circuit in enumerate(self.grid.circuits):
+
+            self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
+
+            if circuit.time_series_input.valid:
+
+                nt = len(circuit.time_series_input.time_array)
+                n = len(circuit.buses)
+                m = len(circuit.branches)
+                results = TimeSeriesResults(n, m, nt)
+                Vlast = circuit.power_flow_input.Vbus
+
+                self.progress_signal.emit(0.0)
+
+                # Start jobs
+                manager = multiprocessing.Manager()
+                return_dict = manager.dict()
+
+                t = 0
+                while t < nt and not self.__cancel__:
 
                     # set the power values
                     Y, I, S = circuit.time_series_input.get_at(t)
 
                     # run power flow at the circuit
-                    p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, circuit, Vlast, S, I, return_dict))
-                    jobs.append(p)
-                    p.start()
+                    pool.apply_async(func=power_flow_worker,
+                                     args=(t, self.options, circuit, Vlast, S, I, return_dict),
+                                     callback=complete)
+                    t += 1
 
-                # resume jobs
-                for proc in jobs:
-                    proc.join()
+                pool.close()
+                pool.join()
 
                 # collect results
-                for t in range(nt):
+                self.progress_text.emit('Collecting results...')
+                for t in return_dict.keys():
                     # store circuit results at the time index 't'
                     results.set_at(t, return_dict[t])
 
@@ -6689,7 +6804,108 @@ class LatinHypercubeSampling(QThread):
 
         self.__cancel__ = False
 
-    def run(self):
+    def run_multi_thread(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        # print('LHS run')
+        self.__cancel__ = False
+
+        # initialize the power flow
+        power_flow = PowerFlowMP(self.grid, self.options)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+
+        batch_size = self.sampling_points
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        n_cores = multiprocessing.cpu_count()
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running Latin Hypercube Sampling in parallel using ' + str(n_cores) + ' cores ...')
+
+        lhs_results = MonteCarloResults(n, m, batch_size)
+
+        max_iter = batch_size * len(self.grid.circuits)
+        Sbase = self.grid.Sbase
+        it = 0
+
+        # For every circuit, run the time series
+        for circuit in self.grid.circuits:
+
+            # try:
+            # set the time series as sampled in the circuit
+            # c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
+            mc_time_series = circuit.monte_carlo_input(batch_size, use_latin_hypercube=True)
+            Vbus = circuit.power_flow_input.Vbus
+
+            manager = multiprocessing.Manager()
+            return_dict = manager.dict()
+
+            t = 0
+            while t < batch_size and not self.__cancel__:
+
+                k = 0
+                jobs = list()
+
+                # launch only n_cores jobs at the time
+                while k < n_cores + 2 and (t + k) < batch_size:
+                    # set the power values
+                    Y, I, S = mc_time_series.get_at(t)
+
+                    # run power flow at the circuit
+                    p = multiprocessing.Process(target=power_flow_worker,
+                                                args=(t, self.options, circuit, Vbus, S/Sbase, I/Sbase, return_dict))
+                    jobs.append(p)
+                    p.start()
+                    k += 1
+                    t += 1
+
+                # wait for all jobs to complete
+                for proc in jobs:
+                    proc.join()
+
+                progress = ((t + 1) / batch_size) * 100
+                self.progress_signal.emit(progress)
+
+            # collect results
+            self.progress_text.emit('Collecting results...')
+            for t in return_dict.keys():
+                # store circuit results at the time index 't'
+                res = return_dict[t]
+
+                lhs_results.S_points[t, circuit.bus_original_idx] = res.Sbus
+                lhs_results.V_points[t, circuit.bus_original_idx] = res.voltage
+                lhs_results.I_points[t, circuit.branch_original_idx] = res.Ibranch
+                lhs_results.loading_points[t, circuit.branch_original_idx] = res.loading
+
+            # except Exception as ex:
+            #     print(c.name, ex)
+
+            if self.__cancel__:
+                break
+
+        # compile MC results
+        self.progress_text.emit('Compiling results...')
+        lhs_results.compile()
+
+        # lhs_results the averaged branch magnitudes
+        lhs_results.sbranch, Ibranch, \
+        loading, lhs_results.losses, Sbus = power_flow.power_flow_post_process(self.grid, lhs_results.voltage)
+
+        self.results = lhs_results
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+        return lhs_results
+
+    def run_single_thread(self):
         """
         Run the monte carlo simulation
         @return:
@@ -6763,6 +6979,26 @@ class LatinHypercubeSampling(QThread):
         loading, lhs_results.losses, Sbus = power_flow.power_flow_post_process(self.grid, lhs_results.voltage)
 
         self.results = lhs_results
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+        return lhs_results
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        # print('LHS run')
+        self.__cancel__ = False
+
+        if self.options.multi_thread:
+            lhs_results = self.run_multi_thread()
+        else:
+            lhs_results = self.run_single_thread()
 
         # send the finnish signal
         self.progress_signal.emit(0.0)

@@ -31,7 +31,8 @@ print('Reading...')
 grid.load_file(fname)
 grid.compile()
 
-options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, initialize_with_existing_solution=False)
+options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
+                           initialize_with_existing_solution=False, multi_core=True)
 
 ####################################################################################################################
 # PowerFlow
@@ -88,6 +89,9 @@ if grid.time_series_results is not None:
     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
     # show()
 ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+lst = np.array(list(range(ts.results.n)), dtype=int)
+ts.results.plot('Bus voltage', indices=lst, names=lst)
+plt.show()
 
 ####################################################################################################################
 # Voltage collapse
