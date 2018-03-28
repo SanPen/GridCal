@@ -1627,7 +1627,9 @@ class MainGUI(QMainWindow):
 
                 options = self.get_selected_power_flow_options()
 
-                self.monte_carlo = MonteCarlo(self.circuit, options)
+                tol = 10**(-1*self.ui.tolerance_stochastic_spinBox.value())
+                max_iter = self.ui.max_iterations_stochastic_spinBox.value()
+                self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100, max_mc_iter=max_iter)
 
                 self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
                 self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)

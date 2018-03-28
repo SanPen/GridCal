@@ -22,8 +22,8 @@ grid = MultiCircuit()
 # fname = 'Illinois200Bus.xlsx'
 # fname = 'IEEE_30_new.xlsx'
 # fname = 'lynn5buspq.xlsx'
-# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
+fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 
@@ -75,23 +75,23 @@ options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
 ####################################################################################################################
 # Time Series
 ####################################################################################################################
-print('Running TS...'
-      '')
-ts = TimeSeries(grid=grid, options=options)
-ts.run()
-
-if grid.time_series_results is not None:
-    print('\n\nVoltages:\n')
-    print(grid.time_series_results.voltage)
-    print(grid.time_series_results.converged)
-    print(grid.time_series_results.error)
-
-    # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-    # show()
-ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
-lst = np.array(list(range(ts.results.n)), dtype=int)
-ts.results.plot('Bus voltage', indices=lst, names=lst)
-plt.show()
+# print('Running TS...'
+#       '')
+# ts = TimeSeries(grid=grid, options=options)
+# ts.run()
+#
+# if grid.time_series_results is not None:
+#     print('\n\nVoltages:\n')
+#     print(grid.time_series_results.voltage)
+#     print(grid.time_series_results.converged)
+#     print(grid.time_series_results.error)
+#
+#     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
+#     # show()
+# ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+# lst = np.array(list(range(ts.results.n)), dtype=int)
+# ts.results.plot('Bus voltage', indices=lst, names=lst)
+# plt.show()
 
 ####################################################################################################################
 # Voltage collapse
@@ -114,9 +114,12 @@ plt.show()
 ####################################################################################################################
 # Monte Carlo
 ####################################################################################################################
-
-# mc_sim = MonteCarlo(grid, options)
-# mc_sim.run()
+print('Running MC...')
+mc_sim = MonteCarlo(grid, options, mc_tol=1e-5, max_mc_iter=1000000)
+mc_sim.run()
+lst = np.array(list(range(mc_sim.results.n)), dtype=int)
+mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
+plt.show()
 
 ####################################################################################################################
 # Latin Hypercube
