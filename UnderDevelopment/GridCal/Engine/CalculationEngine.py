@@ -3810,7 +3810,7 @@ class MultiCircuit(Circuit):
 class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
-                 verbose=False, robust=False, initialize_with_existing_solution=True, dispatch_storage=True,
+                 verbose=False, robust=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, control_q=True, multi_core=True):
         """
         Power flow execution options
@@ -3834,15 +3834,11 @@ class PowerFlowOptions:
 
         self.control_Q = control_q
 
-        self.dispatch_storage = dispatch_storage
-
         self.verbose = verbose
 
         self.robust = robust
 
         self.initialize_with_existing_solution = initialize_with_existing_solution
-
-        self.dispatch_storage = dispatch_storage
 
         self.multi_thread = multi_core
 

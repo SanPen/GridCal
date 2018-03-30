@@ -1,9 +1,12 @@
+import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+import smopy
+from PIL.ImageQt import ImageQt, Image
 from GridCal.Engine.CalculationEngine import *
 from GridCal.Gui.GuiFunctions import *
-import sys
+
 
 '''
 Dependencies:
@@ -2071,6 +2074,88 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.arrange_children()
 
 
+class MapWidget(QGraphicsRectItem):
+
+    def __init__(self, scene, view, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+        super(MapWidget, self).__init__(None)
+
+        self.scene = scene
+        self.view = view
+
+        self.setRect(self.scene.sceneRect())
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.image = None
+        self.img = None
+
+        self.pen_width = 4
+        # Properties of the rectangle:
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
+        self.setBrush(QBrush(Qt.darkGray))
+        self.setPen(QPen(self.color, self.pen_width, self.style))
+        self.setBrush(self.color)
+
+        self.scene.addItem(self)
+
+        self.lat0 = lat0
+        self.lat1 = lat1
+        self.lon0 = lon0
+        self.lon1 = lon1
+        self.zoom = zoom
+
+        self.load_map()
+
+    def load_map(self, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+        """
+        Load a map image into the widget
+        :param lat0:
+        :param lat1:
+        :param lon0:
+        :param lon1:
+        :param zoom: 1~14
+        """
+        # store coordinates
+        self.lat0 = lat0
+        self.lat1 = lat1
+        self.lon0 = lon0
+        self.lon1 = lon1
+        self.zoom = zoom
+
+        # get map
+        # try:
+        map = smopy.Map((lat0, lat1, lon0, lon1), z=zoom)
+
+        w, h = map.img.size
+        self.img = ImageQt(map.img)
+        self.image = QPixmap.fromImage(self.img)
+
+        # h = self.scene.sceneRect().height()
+        # w = self.scene.sceneRect().width()
+
+        # resize widget
+        self.setRect(0.0, 0.0, w, h)
+        self.setPos(0, 0)
+        # except:
+        #     warn('Could not download map')
+
+    def repaint(self):
+        """
+        Reload with the last parameters
+        """
+        self.load_map(self.lat0, self.lat1, self.lon0, self.lon1, self.zoom)
+
+    def paint(self, painter, option, widget=None):
+        """
+        Action that happens on widget repaint
+        :param painter:
+        :param option:
+        :param widget:
+        """
+        if self.image is not None:
+            painter.drawPixmap(QPoint(0, 0), self.image)
+            self.scene.update()
+
+
 class EditorGraphicsView(QGraphicsView):
 
     def __init__(self, scene, parent=None, editor=None):
@@ -2092,6 +2177,16 @@ class EditorGraphicsView(QGraphicsView):
         self.editor = editor
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
+
+        self.map = MapWidget(self.scene_, self)
+
+    def view_map(self, flag=True):
+        """
+
+        :param flag:
+        :return:
+        """
+        self.map.setVisible(flag)
 
     def dragEnterEvent(self, event):
         """
@@ -2360,6 +2455,7 @@ class GridEditor(QSplitter):
         self.started_branch = BranchGraphicItem(port, None, self.diagramScene)
         self.started_branch.bus_from = port.parent
         port.setZValue(0)
+        self.diagramView.map.setZValue(-1)
         port.process_callbacks(port.parent.pos() + port.pos())
 
     def sceneMouseMoveEvent(self, event):
@@ -2413,6 +2509,7 @@ class GridEditor(QSplitter):
                         item.process_callbacks(item.parent.pos() + item.pos())
 
                         self.started_branch.setZValue(-1)
+                        self.diagramView.map.setZValue(-1)
 
             if self.started_branch.toPort is None:
                 self.started_branch.remove_()

@@ -275,6 +275,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
+        self.ui.actionShow_map.triggered.connect(self.show_map)
+
         self.ui.actionOPF.triggered.connect(self.run_opf)
 
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
@@ -373,7 +375,7 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-
+        self.show_map()
         self.view_cascade_menu()
 
     def LOCK(self, val=True):
@@ -398,6 +400,12 @@ class MainGUI(QMainWindow):
         """
         self.ui.cascade_menu.setVisible(self.ui.actionBlackout_cascade.isChecked())
         self.ui.cascade_grid_splitter.setStretchFactor(1, 4)
+
+    def show_map(self):
+        """
+        show/hide the cascade simulation menu
+        """
+        self.ui.map_frame.setVisible(self.ui.actionShow_map.isChecked())
 
     def about_box(self):
         """
@@ -1261,8 +1269,6 @@ class MainGUI(QMainWindow):
         else:
             solver_to_retry_with = None
 
-        dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
-
         mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
         ops = PowerFlowOptions(solver_type=solver_type,
@@ -1270,7 +1276,6 @@ class MainGUI(QMainWindow):
                                verbose=False,
                                robust=False,
                                initialize_with_existing_solution=True,
-                               dispatch_storage=dispatch_storage,
                                tolerance=tolerance,
                                max_iter=max_iter,
                                control_q=enforce_q_limits,
