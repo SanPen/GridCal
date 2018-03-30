@@ -2606,7 +2606,25 @@ last solution</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuActions">
+    <property name="title">
+     <string>Actions</string>
+    </property>
+    <addaction name="actionPower_flow"/>
+    <addaction name="actionPower_Flow_Time_series"/>
+    <addaction name="separator"/>
+    <addaction name="actionShort_Circuit"/>
+    <addaction name="separator"/>
+    <addaction name="actionVoltage_stability"/>
+    <addaction name="separator"/>
+    <addaction name="actionOPF"/>
+    <addaction name="actionOPF_time_series"/>
+    <addaction name="separator"/>
+    <addaction name="actionPower_flow_Stochastic"/>
+    <addaction name="actionLatin_Hypercube_Sampling"/>
+   </widget>
    <addaction name="menuProject"/>
+   <addaction name="menuActions"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
@@ -2632,6 +2650,7 @@ last solution</string>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
+   <addaction name="actionUse_OPF_in_TS"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionLatin_Hypercube_Sampling"/>
@@ -2865,7 +2884,7 @@ last solution</string>
      <normaloff>:/Icons/white_icons/stochastic_power_flow.svg</normaloff>:/Icons/white_icons/stochastic_power_flow.svg</iconset>
    </property>
    <property name="text">
-    <string>Power flow: Stochastic</string>
+    <string>Stochastic power flow: Monte Carlo</string>
    </property>
    <property name="toolTip">
     <string>Monte Carlo stochastic power flow</string>
@@ -2952,7 +2971,7 @@ last solution</string>
      <normaloff>:/Icons/white_icons/latin_hypercube2.svg</normaloff>:/Icons/white_icons/latin_hypercube2.svg</iconset>
    </property>
    <property name="text">
-    <string>Latin Hypercube Sampling</string>
+    <string>Stochastic power flow: Latin Hypercube</string>
    </property>
    <property name="toolTip">
     <string>Latin Hypercube stochastic power flow</string>
@@ -3046,6 +3065,21 @@ last solution</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionUse_OPF_in_TS">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/white_icons/dcopf2ts.svg</normaloff>:/Icons/white_icons/dcopf2ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use OPF results into Time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Use OPF results into Time series</string>
    </property>
   </action>
  </widget>

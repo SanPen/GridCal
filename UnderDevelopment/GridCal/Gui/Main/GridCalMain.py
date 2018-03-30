@@ -629,13 +629,13 @@ class MainGUI(QMainWindow):
         dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
-    def compile(self):
+    def compile(self, use_opf_vals=False):
         """
         This function compiles the circuit and updates the UI accordingly
         """
 
         try:
-            self.circuit.compile()
+            self.circuit.compile(use_opf_vals)
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
@@ -1571,7 +1571,14 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                self.compile()
+
+                use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
+                if self.optimal_power_flow_time_series is None and use_opf_vals:
+                    use_opf_vals = False
+                    self.msg('There are not OPF time series, therefore this operation will continue with the profile stored values.')
+                    self.ui.actionUse_OPF_in_TS.setChecked(False)
+
+                self.compile(use_opf_vals=use_opf_vals)
 
                 options = self.get_selected_power_flow_options()
                 self.time_series = TimeSeries(grid=self.circuit, options=options)
@@ -1947,6 +1954,27 @@ class MainGUI(QMainWindow):
 
         else:
 
+            pass
+
+    def copy_opf_to_time_series(self):
+        """
+        Copy the OPF generation values to the Time series object and execute a time series simulation
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.circuit.time_profile is not None:
+
+                if self.optimal_power_flow_time_series is not None:
+
+                    pass
+
+                else:
+                    self.msg('There are no OPF time series execution.\nRun OPF time series to be able to copy the value to the time series object.')
+
+            else:
+                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+        else:
             pass
 
     def set_cancel_state(self):

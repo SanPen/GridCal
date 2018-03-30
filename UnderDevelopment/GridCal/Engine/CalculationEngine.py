@@ -647,7 +647,7 @@ class Bus:
 
         pass
 
-    def get_YISV(self, index=None, with_profiles=True):
+    def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False):
         """
         Compose the
             - Z: Impedance attached to the bus
@@ -741,7 +741,7 @@ class Bus:
 
                 # add the power profile
                 if with_profiles:
-                    elm_p_prof, elm_vset_prof = elm.get_profiles(index)
+                    elm_p_prof, elm_vset_prof = elm.get_profiles(index, use_opf_vals=use_opf_vals)
                     if elm_p_prof is not None:
                         if s_profile is None:
                             s_profile = elm_p_prof.values  # Reverse sign convention in the load
@@ -804,6 +804,14 @@ class Bus:
             y_cdf = CDF(y_profile[:, 0])
 
         return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
+
+    def initialize_lp_profiles(self):
+        """
+        Dimention the LP var profiles
+        :return:
+        """
+        for elm in (self.controlled_generators + self.batteries):
+            elm.initialize_lp_vars()
 
     def plot_profiles(self, ax=None):
         """
@@ -1737,7 +1745,7 @@ class Battery:
 
     def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
                  Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
-                 power_prof=None, vset_prof=None, active=True):
+                 power_prof=None, vset_prof=None, active=True, Sbase=100):
         """
         Batery (Voltage controlled and dispatchable)
         :param name: 
@@ -1801,8 +1809,13 @@ class Battery:
         # operational cost (€/MWh)
         self.Cost = op_cost
 
+        self.Sbase = Sbase
+
         # Linear problem generator dispatch power variable (in p.u.)
-        self.LPVar_P = None
+        self.lp_name = self.type_name + '_' + self.name + str(id(self))
+        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+
+        self.LPVar_P_prof = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
 
@@ -1909,10 +1922,11 @@ class Battery:
     def create_P_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
-        :param index: 
-        :param arr: 
-        :param arr_in_pu: 
-        :return: 
+        Args:
+            index:
+
+        Returns:
+
         """
         if arr_in_pu:
             dta = arr * self.P
@@ -1920,13 +1934,33 @@ class Battery:
             dta = ones(len(index)) * self.P if arr is None else arr
         self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
+    def initialize_lp_vars(self):
+        """
+        Initialize the LP variables
+        :return:
+        """
+        self.lp_name = self.type_name + '_' + self.name + str(id(self))
+        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+        self.LPVar_P_prof = [
+            pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
+
+    def get_lp_var_profile(self, index):
+        """
+        Get the profile
+        :param index:
+        :return:
+        """
+        dta = [x.value() for x in self.LPVar_P_prof]
+        return pd.DataFrame(data=dta, index=index, columns=[self.name])
+
     def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
-        :param index: 
-        :param arr: 
-        :param arr_in_pu: 
-        :return: 
+        Args:
+            index:
+
+        Returns:
+
         """
         if arr_in_pu:
             dta = arr * self.Vset
@@ -1934,7 +1968,7 @@ class Battery:
             dta = ones(len(index)) * self.Vset if arr is None else arr
         self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
-    def get_profiles(self, index=None):
+    def get_profiles(self, index=None, use_opf_vals=False):
         """
         Get profiles and if the index is passed, create the profiles if needed
         Args:
@@ -1948,7 +1982,11 @@ class Battery:
                 self.create_P_profile(index)
             if self.Vsetprof is None:
                 self.create_Vset_profile(index)
-        return self.Pprof, self.Vsetprof
+
+        if use_opf_vals:
+            return self.get_lp_var_profile(index), self.Vsetprof
+        else:
+            return self.Pprof, self.Vsetprof
 
     def delete_profiles(self):
         """
@@ -1966,18 +2004,17 @@ class Battery:
         self.P = self.Pprof.values[t]
         self.Vset = self.Vsetprof.values[t]
 
-    def make_lp_vars(self, name, Sbase):
+    def make_lp_vars(self, name):
         """
         Create all the necessary LP variables
         Args:
             name: base name of the variables to make them unique
-            Sbase: Base system power in MVA
 
         Returns:
             nothing
         """
 
-        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
+        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/self.Sbase, self.Pmax/self.Sbase)
 
     def apply_lp_vars(self, at=None):
         """
@@ -2000,7 +2037,7 @@ class Battery:
 class ControlledGenerator:
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0):
+                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100):
         """
         Voltage controlled generator
         @param name:
@@ -2061,8 +2098,13 @@ class ControlledGenerator:
         # Cost of operation
         self.Cost = op_cost
 
+        self.Sbase = Sbase
+
         # Linear problem generator dispatch power variable (in p.u.)
-        self.LPVar_P = None
+        self.lp_name = self.type_name + '_' + self.name + str(id(self))
+        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+
+        self.LPVar_P_prof = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
 
@@ -2191,6 +2233,25 @@ class ControlledGenerator:
             dta = ones(len(index)) * self.P if arr is None else arr
         self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
+    def initialize_lp_vars(self):
+        """
+        Initialize the LP variables
+        :return:
+        """
+        self.lp_name = self.type_name + '_' + self.name + str(id(self))
+        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+        self.LPVar_P_prof = [
+            pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
+
+    def get_lp_var_profile(self, index):
+        """
+        Get the profile
+        :param index:
+        :return:
+        """
+        dta = [x.value() for x in self.LPVar_P_prof]
+        return pd.DataFrame(data=dta, index=index, columns=[self.name])
+
     def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
@@ -2206,7 +2267,7 @@ class ControlledGenerator:
             dta = ones(len(index)) * self.Vset if arr is None else arr
         self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
-    def get_profiles(self, index=None):
+    def get_profiles(self, index=None, use_opf_vals=False):
         """
         Get profiles and if the index is passed, create the profiles if needed
         Args:
@@ -2220,7 +2281,11 @@ class ControlledGenerator:
                 self.create_P_profile(index)
             if self.Vsetprof is None:
                 self.create_Vset_profile(index)
-        return self.Pprof, self.Vsetprof
+
+        if use_opf_vals:
+            return self.get_lp_var_profile(index), self.Vsetprof
+        else:
+            return self.Pprof, self.Vsetprof
 
     def delete_profiles(self):
         """
@@ -2237,19 +2302,6 @@ class ControlledGenerator:
         """
         self.P = self.Pprof.values[t]
         self.Vset = self.Vsetprof.values[t]
-
-    def make_lp_vars(self, name, Sbase):
-        """
-        Create all the necessary LP variables
-        Args:
-            name: base name of the variables to make them unique
-            Sbase: Base system power in MVA
-
-        Returns:
-            nothing
-        """
-
-        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
 
     def apply_lp_vars(self, at=None):
         """
@@ -2481,7 +2533,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self, time_profile=None, with_profiles=True):
+    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -2539,7 +2591,7 @@ class Circuit:
             self.buses[i].determine_bus_type()
 
             # compute the bus magnitudes
-            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV()
+            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV(use_opf_vals=use_opf_vals)
 
             # Assign the values to the simulation objects
             power_flow_input.Vbus[i] = V  # set the bus voltages
@@ -3322,7 +3374,7 @@ class MultiCircuit(Circuit):
 
         writer.save()
 
-    def compile(self):
+    def compile(self, use_opf_vals=False):
         """
         Divide the grid into the different possible grids
         @return:
@@ -3388,7 +3440,7 @@ class MultiCircuit(Circuit):
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
-            circuit.compile(self.time_profile)
+            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals)
 
             # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
@@ -6181,7 +6233,7 @@ class VoltageCollapse(QThread):
     def progress_callback(self, l):
         """
         Send progress report
-        :param l: lambda values
+        :param l: lambda value
         :return: None
         """
         self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
@@ -7712,7 +7764,7 @@ class DcOpf:
 
         self.loads = np.zeros(self.nbus)
 
-    def build(self):
+    def build(self, t_idx=None):
         """
         Build the OPF problem using the sparse formulation
         In this step, the circuit loads are not included
@@ -7760,14 +7812,15 @@ class DcOpf:
             # Add the bus LP vars
             for i, gen in enumerate(bus.controlled_generators + bus.batteries):
 
-                # create the generation variable
-                gen.make_lp_vars(gen.type_name + '_' + gen.name + '_' + bus.name + '_' + str(i), self.Sbase)
-
                 # add the variable to the objective function
-                fobj += gen.LPVar_P * gen.Cost
-
-                # add the var reference just to print later...
-                self.PG.append(gen.LPVar_P)
+                if t_idx is None:
+                    fobj += gen.LPVar_P * gen.Cost
+                    # add the var reference just to print later...
+                    self.PG.append(gen.LPVar_P)
+                else:
+                    fobj += gen.LPVar_P_prof[t_idx] * gen.Cost
+                    # add the var reference just to print later...
+                    self.PG.append(gen.LPVar_P_prof[t_idx])
 
             # minimize the load shedding if activated
             if self.load_shedding:
@@ -7799,8 +7852,12 @@ class DcOpf:
                     calculated_node_power += self.B.data[ii] * self.theta[j]
 
             # add the generation LP vars
-            for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
-                node_power_injection += gen.LPVar_P
+            if t_idx is None:
+                for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
+                    node_power_injection += gen.LPVar_P
+            else:
+                for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
+                    node_power_injection += gen.LPVar_P_prof[t_idx]
 
             # Store the terms for adding the load later.
             # This allows faster problem compilation in case of recurrent runs
@@ -7832,8 +7889,12 @@ class DcOpf:
                 val += self.B.data[ii] * self.theta[j]
 
             # Sum the slack generators
-            for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
-                g += gen.LPVar_P
+            if t_idx is None:
+                for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
+                    g += gen.LPVar_P
+            else:
+                for gen in (self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries):
+                    g += gen.LPVar_P_prof[t_idx]
 
             # the sum of the slack node generators must be equal to the slack node power
             prob.add(g == val, 'ct_slack_power_' + str(i))
@@ -7988,7 +8049,7 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
-    def get_results(self, save_lp_file=False):
+    def get_results(self, save_lp_file=False, t_idx=None):
         """
         Return the optimization results
         Returns:
@@ -8012,9 +8073,12 @@ class DcOpf:
                 g = 0.0
 
                 # Sum the slack generators
-                for gen in self.circuit.buses[i].controlled_generators:
-                    g += gen.LPVar_P.value()
-                    # print(gen.name, gen.LPVar_P.value())
+                if t_idx is None:
+                    for gen in self.circuit.buses[i].controlled_generators:
+                        g += gen.LPVar_P.value()
+                else:
+                    for gen in self.circuit.buses[i].controlled_generators:
+                        g += gen.LPVar_P_prof[t_idx].value()
 
                 # Set the results
                 res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
@@ -8278,12 +8342,12 @@ class OptimalPowerFlow(QRunnable):
 
         # declare LP problem
         problem = DcOpf(circuit, self.options)
-        problem.build()
+        problem.build(t_idx=t_idx)
         problem.set_loads(t_idx=t_idx)
         problem.solve()
 
         # results
-        res = problem.get_results()
+        res = problem.get_results(t_idx=t_idx)
 
         return res, problem.solved
 
@@ -8504,6 +8568,14 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         self.__cancel__ = False
 
+    def initialize_lp_vars(self):
+        """
+        initialize all the bus LP profiles
+        :return:
+        """
+        for bus in self.grid.buses:
+            bus.initialize_lp_profiles()
+
     def run(self):
         """
         Run the time series simulation
@@ -8511,6 +8583,9 @@ class OptimalPowerFlowTimeSeries(QThread):
         """
         # initialize the power flow
         opf = OptimalPowerFlow(self.grid, self.options)
+
+        # initilize OPF time series LP var profiles
+        self.initialize_lp_vars()
 
         # initialize the grid time series results
         # we will append the island results with another function

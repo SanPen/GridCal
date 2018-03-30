@@ -85,7 +85,7 @@ class DcOpf:
             for gen in bus.controlled_generators:
 
                 # create the generation variable
-                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name, self.Sbase)
+                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name)
 
                 # add the variable to the objective function
                 fobj += gen.LPVar_P * gen.Cost
