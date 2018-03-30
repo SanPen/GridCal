@@ -484,7 +484,7 @@ def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, param
 
 def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv, pq, step, approximation_order,
                     adapt_step, step_min, step_max,
-                    error_tol=1e-3, tol=1e-6, max_it=20, stop_at='NOSE', verbose=False):
+                    error_tol=1e-3, tol=1e-6, max_it=20, stop_at='NOSE', verbose=False, call_back_fx=None):
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
@@ -506,6 +506,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         max_it: Maximum iterations
         stop_at: Value of Lambda to stop at. It can be a number or {'NOSE', 'FULL'}
         verbose: Display additional intermediate information?
+        call_back_fx: Function to call on every iteration passing the lambda parameter
 
     Returns:
         Voltage_series: List of all the voltage solutions from the base to the target
@@ -542,11 +543,8 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
     z[2 * nb] = 1.0
 
     # result arrays
-    Voltage_series = list()
-    Lambda_series = list()
-
-    # Voltage_series.append(V)
-    # Lambda_series.append(lam)
+    voltage_series = list()
+    lambda_series = list()
 
     # Simulation
     while continuation:
@@ -556,7 +554,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         V0, lam0, z = cpf_predictor(V, Ibus_base, lam, Ybus, Sxfr, pv, pq, step, z, V_prev, lam_prev, approximation_order)
 
         # save previous voltage, lambda before updating
-        V_prev = V
+        V_prev = V.copy()
         lam_prev = lam
 
         # correction
@@ -571,8 +569,8 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         if verbose:
             print('Step: ', cont_steps, ' Lambda prev: ', lam_prev, ' Lambda: ', lam)
             print(V)
-        Voltage_series.append(V)
-        Lambda_series.append(lam)
+        voltage_series.append(V)
+        lambda_series.append(lam)
 
         if verbose > 2:
             print('step ', cont_steps, ' : lambda = ', lam)
@@ -634,4 +632,8 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                 if step < step_min:
                     step = step_min
 
-    return Voltage_series, Lambda_series, normF, success
+        # call callback function
+        if call_back_fx is not None:
+            call_back_fx(lam)
+
+    return voltage_series, lambda_series, normF, success

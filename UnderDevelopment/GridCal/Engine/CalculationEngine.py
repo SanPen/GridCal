@@ -6178,6 +6178,14 @@ class VoltageCollapse(QThread):
 
         self.__cancel__ = False
 
+    def progress_callback(self, l):
+        """
+        Send progress report
+        :param l: lambda values
+        :return: None
+        """
+        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
+
     def run(self):
         """
         run the voltage collapse simulation
@@ -6229,7 +6237,8 @@ class VoltageCollapse(QThread):
                                              tol=1e-6,
                                              max_it=20,
                                              stop_at='NOSE',
-                                             verbose=False)
+                                             verbose=False,
+                                             call_back_fx=self.progress_callback)
 
             res = VoltageCollapseResults(nbus=0)  # nbus can be zero, because all the arrays are going to be overwritten
             res.voltages = array(Voltage_series)
