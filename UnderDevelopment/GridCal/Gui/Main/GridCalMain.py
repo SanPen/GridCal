@@ -198,7 +198,18 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         # create diagram editor object
-        self.grid_editor = GridEditor(self.circuit)
+        self.ui.lat1_doubleSpinBox.setValue(60)
+        self.ui.lat2_doubleSpinBox.setValue(0)
+        self.ui.lon1_doubleSpinBox.setValue(30)
+        self.ui.lon2_doubleSpinBox.setValue(30)
+        self.ui.zoom_spinBox.setValue(5)
+
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lat1 = self.ui.lat2_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        lon1 = self.ui.lon2_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -323,6 +334,8 @@ class MainGUI(QMainWindow):
 
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
 
+        self.ui.view_map_pushButton.clicked.connect(self.update_map)
+
         self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
 
         self.ui.profile_subtract_pushButton.clicked.connect(lambda: self.modify_profiles('-'))
@@ -375,6 +388,7 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
+        self.ui.actionShow_map.setVisible(False)
         self.show_map()
         self.view_cascade_menu()
 
@@ -721,7 +735,13 @@ class MainGUI(QMainWindow):
                 # print('New')
                 self.circuit = MultiCircuit()
 
-                self.grid_editor = GridEditor(self.circuit)
+                lat0 = self.ui.lat1_doubleSpinBox.value()
+                lat1 = self.ui.lat2_doubleSpinBox.value()
+                lon0 = self.ui.lon1_doubleSpinBox.value()
+                lon1 = self.ui.lon2_doubleSpinBox.value()
+                zoom = self.ui.zoom_spinBox.value()
+
+                self.grid_editor = GridEditor(self.circuit, lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
                 self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
@@ -939,6 +959,18 @@ class MainGUI(QMainWindow):
 
         #  center the view
         self.grid_editor.center_nodes()
+
+    def update_map(self):
+        """
+        Update map
+        :return:
+        """
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lat1 = self.ui.lat2_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        lon1 = self.ui.lon2_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+        self.grid_editor.diagramView.map.load_map(lat0, lat1, lon0, lon1, zoom)
 
     def auto_rate_branches(self):
         """

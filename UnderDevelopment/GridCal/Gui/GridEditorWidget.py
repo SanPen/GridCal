@@ -1742,7 +1742,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        self.setBrush(QBrush(Qt.darkGray))
+        # self.setBrush(QBrush(Qt.darkGray))
         self.setPen(QPen(self.color, self.pen_width, self.style))
         self.setBrush(self.color)
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
@@ -2076,14 +2076,15 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
 class MapWidget(QGraphicsRectItem):
 
-    def __init__(self, scene, view, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+    def __init__(self, scene: QGraphicsScene, view: QGraphicsView, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
         super(MapWidget, self).__init__(None)
 
         self.scene = scene
         self.view = view
 
-        self.setRect(self.scene.sceneRect())
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        # self.setRect(self.scene.sceneRect())
+        # self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setFlags(self.ItemIsMovable)
         self.image = None
         self.img = None
 
@@ -2097,13 +2098,40 @@ class MapWidget(QGraphicsRectItem):
 
         self.scene.addItem(self)
 
+        self.h = view.size().height()
+        self.w = view.size().width()
+
         self.lat0 = lat0
         self.lat1 = lat1
         self.lon0 = lon0
         self.lon1 = lon1
         self.zoom = zoom
 
+        # Create corner for resize:
+        self.sizer = HandleItem(self)
+        self.sizer.setPos(self.w, self.h)
+        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
+        # self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
+
+        self.change_size(self.w, self.h)
+        self.setPos(0, self.h)
+
         self.load_map()
+
+    def change_size(self, w, h):
+        """
+        Resize block function
+        @param w:
+        @param h:
+        @return:
+        """
+
+        self.setRect(0.0, 0.0, w, h)
+        self.h = h
+        self.w = w
+        self.repaint()
+
+        return w, h
 
     def load_map(self, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
         """
@@ -2121,22 +2149,16 @@ class MapWidget(QGraphicsRectItem):
         self.lon1 = lon1
         self.zoom = zoom
 
+        print('map:', lat0, lat1, lon0, lon1, zoom)
+
         # get map
         # try:
         map = smopy.Map((lat0, lat1, lon0, lon1), z=zoom)
 
-        w, h = map.img.size
+        # w, h = map.img.size
         self.img = ImageQt(map.img)
         self.image = QPixmap.fromImage(self.img)
-
-        # h = self.scene.sceneRect().height()
-        # w = self.scene.sceneRect().width()
-
-        # resize widget
-        self.setRect(0.0, 0.0, w, h)
-        self.setPos(0, 0)
-        # except:
-        #     warn('Could not download map')
+        self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
 
     def repaint(self):
         """
@@ -2144,21 +2166,21 @@ class MapWidget(QGraphicsRectItem):
         """
         self.load_map(self.lat0, self.lat1, self.lon0, self.lon1, self.zoom)
 
-    def paint(self, painter, option, widget=None):
-        """
-        Action that happens on widget repaint
-        :param painter:
-        :param option:
-        :param widget:
-        """
-        if self.image is not None:
-            painter.drawPixmap(QPoint(0, 0), self.image)
-            self.scene.update()
+    # def paint(self, painter, option, widget=None):
+    #     """
+    #     Action that happens on widget repaint
+    #     :param painter:
+    #     :param option:
+    #     :param widget:
+    #     """
+    #     if self.image is not None:
+    #         painter.drawPixmap(QPoint(0, 0), self.image)
+    #         self.scene.update()
 
 
 class EditorGraphicsView(QGraphicsView):
 
-    def __init__(self, scene, parent=None, editor=None):
+    def __init__(self, scene, parent=None, editor=None, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
         """
         Editor where the diagram is displayed
         @param scene: DiagramScene object
@@ -2178,7 +2200,8 @@ class EditorGraphicsView(QGraphicsView):
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
 
-        self.map = MapWidget(self.scene_, self)
+        # self.map = MapWidget(self.scene_, self, lat0, lat1, lon0, lon1, zoom)
+        # self.view_map(False)
 
     def view_map(self, flag=True):
         """
@@ -2370,7 +2393,7 @@ class ObjectFactory(object):
 
 class GridEditor(QSplitter):
 
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit: MultiCircuit, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
         """
         Creates the Diagram Editor
         Args:
@@ -2413,7 +2436,8 @@ class GridEditor(QSplitter):
 
         # create all the schematic objects and replace the existing ones
         self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView
-        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
+        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self,
+                                              lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
 
         # create the grid name editor
         self.frame1 = QFrame()
