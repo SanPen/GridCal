@@ -21,37 +21,42 @@ grid = MultiCircuit()
 # fname = 'Pegasus 89 Bus.xlsx'
 # fname = 'Illinois200Bus.xlsx'
 # fname = 'IEEE_30_new.xlsx'
-fname = 'lynn5buspq.xlsx'
+# fname = 'lynn5buspq.xlsx'
+fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
+
+print('Reading...')
 grid.load_file(fname)
 grid.compile()
 
-options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, initialize_with_existing_solution=False)
+options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
+                           initialize_with_existing_solution=False, multi_core=True)
 
 ####################################################################################################################
 # PowerFlow
 ####################################################################################################################
-print('\n\n')
-power_flow = PowerFlow(grid, options)
-power_flow.run()
-
-for c in grid.circuits:
-    print(c.name)
-    # print(pd.DataFrame(circuit.power_flow_input.Ybus.todense()))
-    # print('\tV:', c.power_flow_results.voltage)
-    print('\t|V|:', abs(c.power_flow_results.voltage))
-    print('\t|Sbranch|:', abs(c.power_flow_results.Sbranch))
-    print('\t|loading|:', abs(c.power_flow_results.loading) * 100)
-    print('\terr:', c.power_flow_results.error)
-    print('\tConv:', c.power_flow_results.converged)
-
-print('\n\n', grid.name)
-print('\t|V|:', abs(grid.power_flow_results.voltage))
-print('\t|Sbranch|:', abs(grid.power_flow_results.Sbranch))
-print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
-print('\terr:', grid.power_flow_results.error)
-print('\tConv:', grid.power_flow_results.converged)
+# print('\n\n')
+# power_flow = PowerFlow(grid, options)
+# power_flow.run()
+#
+# for c in grid.circuits:
+#     print(c.name)
+#     # print(pd.DataFrame(circuit.power_flow_input.Ybus.todense()))
+#     # print('\tV:', c.power_flow_results.voltage)
+#     print('\t|V|:', abs(c.power_flow_results.voltage))
+#     print('\t|Sbranch|:', abs(c.power_flow_results.Sbranch))
+#     print('\t|loading|:', abs(c.power_flow_results.loading) * 100)
+#     print('\terr:', c.power_flow_results.error)
+#     print('\tConv:', c.power_flow_results.converged)
+#
+# print('\n\n', grid.name)
+# print('\t|V|:', abs(grid.power_flow_results.voltage))
+# print('\t|Sbranch|:', abs(grid.power_flow_results.Sbranch))
+# print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
+# print('\terr:', grid.power_flow_results.error)
+# print('\tConv:', grid.power_flow_results.converged)
 
 ####################################################################################################################
 # Short circuit
@@ -70,6 +75,8 @@ print('\tConv:', grid.power_flow_results.converged)
 ####################################################################################################################
 # Time Series
 ####################################################################################################################
+# print('Running TS...'
+#       '')
 # ts = TimeSeries(grid=grid, options=options)
 # ts.run()
 #
@@ -82,6 +89,9 @@ print('\tConv:', grid.power_flow_results.converged)
 #     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
 #     # show()
 # ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+# lst = np.array(list(range(ts.results.n)), dtype=int)
+# ts.results.plot('Bus voltage', indices=lst, names=lst)
+# plt.show()
 
 ####################################################################################################################
 # Voltage collapse
@@ -104,9 +114,12 @@ print('\tConv:', grid.power_flow_results.converged)
 ####################################################################################################################
 # Monte Carlo
 ####################################################################################################################
-
-# mc_sim = MonteCarlo(grid, options)
-# mc_sim.run()
+print('Running MC...')
+mc_sim = MonteCarlo(grid, options, mc_tol=1e-5, max_mc_iter=1000000)
+mc_sim.run()
+lst = np.array(list(range(mc_sim.results.n)), dtype=int)
+mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
+plt.show()
 
 ####################################################################################################################
 # Latin Hypercube

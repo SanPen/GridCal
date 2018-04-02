@@ -198,7 +198,18 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         # create diagram editor object
-        self.grid_editor = GridEditor(self.circuit)
+        self.ui.lat1_doubleSpinBox.setValue(60)
+        self.ui.lat2_doubleSpinBox.setValue(0)
+        self.ui.lon1_doubleSpinBox.setValue(30)
+        self.ui.lon2_doubleSpinBox.setValue(30)
+        self.ui.zoom_spinBox.setValue(5)
+
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lat1 = self.ui.lat2_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        lon1 = self.ui.lon2_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -275,6 +286,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
+        self.ui.actionShow_map.triggered.connect(self.show_map)
+
         self.ui.actionOPF.triggered.connect(self.run_opf)
 
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
@@ -320,6 +333,8 @@ class MainGUI(QMainWindow):
         self.ui.run_cascade_step_pushButton.clicked.connect(self.run_cascade_step)
 
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
+
+        self.ui.view_map_pushButton.clicked.connect(self.update_map)
 
         self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
 
@@ -373,7 +388,8 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-
+        self.ui.actionShow_map.setVisible(False)
+        self.show_map()
         self.view_cascade_menu()
 
     def LOCK(self, val=True):
@@ -398,6 +414,12 @@ class MainGUI(QMainWindow):
         """
         self.ui.cascade_menu.setVisible(self.ui.actionBlackout_cascade.isChecked())
         self.ui.cascade_grid_splitter.setStretchFactor(1, 4)
+
+    def show_map(self):
+        """
+        show/hide the cascade simulation menu
+        """
+        self.ui.map_frame.setVisible(self.ui.actionShow_map.isChecked())
 
     def about_box(self):
         """
@@ -629,13 +651,13 @@ class MainGUI(QMainWindow):
         dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
-    def compile(self):
+    def compile(self, use_opf_vals=False):
         """
         This function compiles the circuit and updates the UI accordingly
         """
 
         try:
-            self.circuit.compile()
+            self.circuit.compile(use_opf_vals)
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
@@ -713,7 +735,13 @@ class MainGUI(QMainWindow):
                 # print('New')
                 self.circuit = MultiCircuit()
 
-                self.grid_editor = GridEditor(self.circuit)
+                lat0 = self.ui.lat1_doubleSpinBox.value()
+                lat1 = self.ui.lat2_doubleSpinBox.value()
+                lon0 = self.ui.lon1_doubleSpinBox.value()
+                lon1 = self.ui.lon2_doubleSpinBox.value()
+                zoom = self.ui.zoom_spinBox.value()
+
+                self.grid_editor = GridEditor(self.circuit, lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
                 self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
@@ -931,6 +959,18 @@ class MainGUI(QMainWindow):
 
         #  center the view
         self.grid_editor.center_nodes()
+
+    def update_map(self):
+        """
+        Update map
+        :return:
+        """
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lat1 = self.ui.lat2_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        lon1 = self.ui.lon2_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+        self.grid_editor.diagramView.map.load_map(lat0, lat1, lon0, lon1, zoom)
 
     def auto_rate_branches(self):
         """
@@ -1261,17 +1301,17 @@ class MainGUI(QMainWindow):
         else:
             solver_to_retry_with = None
 
-        dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
+        mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
         ops = PowerFlowOptions(solver_type=solver_type,
                                aux_solver_type=solver_to_retry_with,
                                verbose=False,
                                robust=False,
                                initialize_with_existing_solution=True,
-                               dispatch_storage=dispatch_storage,
                                tolerance=tolerance,
                                max_iter=max_iter,
-                               control_q=enforce_q_limits)
+                               control_q=enforce_q_limits,
+                               multi_core=mp)
 
         return ops
 
@@ -1539,7 +1579,7 @@ class MainGUI(QMainWindow):
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
                 # Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
-                Sbranch, Ibranch, loading, losses, Sbus = self.power_flow.power_flow_post_process(self.circuit, V)
+                Sbranch, Ibranch, loading, losses, Sbus = self.power_flow.pf.power_flow_post_process(self.circuit, V)
 
                 self.color_based_of_pf(s_bus=Sbus,
                                        s_branch=Sbranch,
@@ -1568,7 +1608,14 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                self.compile()
+
+                use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
+                if self.optimal_power_flow_time_series is None and use_opf_vals:
+                    use_opf_vals = False
+                    self.msg('There are not OPF time series, therefore this operation will continue with the profile stored values.')
+                    self.ui.actionUse_OPF_in_TS.setChecked(False)
+
+                self.compile(use_opf_vals=use_opf_vals)
 
                 options = self.get_selected_power_flow_options()
                 self.time_series = TimeSeries(grid=self.circuit, options=options)
@@ -1624,7 +1671,9 @@ class MainGUI(QMainWindow):
 
                 options = self.get_selected_power_flow_options()
 
-                self.monte_carlo = MonteCarlo(self.circuit, options)
+                tol = 10**(-1*self.ui.tolerance_stochastic_spinBox.value())
+                max_iter = self.ui.max_iterations_stochastic_spinBox.value()
+                self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100, max_mc_iter=max_iter)
 
                 self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
                 self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
@@ -1942,6 +1991,27 @@ class MainGUI(QMainWindow):
 
         else:
 
+            pass
+
+    def copy_opf_to_time_series(self):
+        """
+        Copy the OPF generation values to the Time series object and execute a time series simulation
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.circuit.time_profile is not None:
+
+                if self.optimal_power_flow_time_series is not None:
+
+                    pass
+
+                else:
+                    self.msg('There are no OPF time series execution.\nRun OPF time series to be able to copy the value to the time series object.')
+
+            else:
+                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+        else:
             pass
 
     def set_cancel_state(self):
