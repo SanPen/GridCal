@@ -6,6 +6,8 @@ from numpy.linalg import solve, inv
 from scipy.sparse.linalg import factorized
 from scipy.sparse import issparse, csc_matrix as sparse
 
+np.set_printoptions(linewidth=1000000, )
+
 # Set the complex precision to use
 complex_type = complex128
 
@@ -33,10 +35,11 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
 
     # slack currents
     Ivd = Ybus[pqpv, :][:, ref].dot(Vbus[ref])
+    print('Ivd', np.vstack(Ivd))
 
     # slack voltages influence
     Ck = Zred(Ivd)
-
+    print('Ck', np.vstack(Ck))
     # make a copy of the voltage for convergence control
     Vprev = Vbus[pqpv].copy()
 
@@ -48,9 +51,12 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
 
     # approximate the currents with the current voltage solution
     Ik = conj(Sbus[pqpv] / Vprev) + Ibus[pqpv]
+    print('Sred', np.vstack(Sbus[pqpv]))
+    print('Ik', np.vstack(Ik))
 
     # compute the new voltage solution
     Vk = Zred(Ik) - Ck
+    print('Vk', np.vstack(Vk))
 
     # compute the voltage solution maximum difference
     diff = max(abs(Vprev - Vk))
@@ -66,7 +72,8 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
 
         # compute the new voltage solution
         Vk = Zred(Ik) - Ck
-
+        print(iter, 'Vk', Vk)
+        print()
         # tune PV nodes
         #  ****** USE A reduced pv, pv, pqpv mapping!
         # Vk[pv] *= Vpv / abs(Vk[pv])
@@ -90,6 +97,9 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
     voltage = Vbus.copy()  # the slack voltages are kept
     voltage[pqpv] = Vk
 
+    print(iter, 'voltage:\n', np.vstack(voltage))
+    print()
+
     # compute the power mismatch: this is the true equation solution check
     Scalc = voltage * conj(Ybus * voltage - Ibus)
     mis = Scalc - Sbus  # complex power mismatch
@@ -101,12 +111,13 @@ def zpf(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=100):
 
 
 if __name__ == '__main__':
-    from GridCal.grid.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('IEEE30.xlsx')
-
+    # grid.load_file('IEEE30.xlsx')
+    # grid.load_file('C:\\Users\\spenate\Documents\\PROYECTOS\\Monash\\phase0\\Grid\\Monash University.xlsx')
+    grid.load_file('D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_14.xlsx')
     grid.compile()
 
     circuit = grid.circuits[0]
@@ -138,8 +149,8 @@ if __name__ == '__main__':
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    print('V module:\t', abs(v))
-    print('V angle: \t', angle(v))
+    print('V module:\t', np.abs(v))
+    print('V angle: \t', np.angle(v))
     print('error: \t', err)
 
     # check the HELM solution: v against the NR power flow
@@ -152,8 +163,8 @@ if __name__ == '__main__':
     print("--- %s seconds ---" % (time.time() - start_time))
     vnr = circuit.power_flow_results.voltage
 
-    print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
+    print('V module:\t', np.abs(vnr))
+    print('V angle: \t', np.angle(vnr))
     print('error: \t', circuit.power_flow_results.error)
 
     # check
