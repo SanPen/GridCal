@@ -14,43 +14,11 @@
 
 \documentclass[11pt,fleqn]{book} % Default font size and left-justified equations
 
-\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry} % Page margins
 
-\usepackage{xcolor,lipsum} % Required for specifying colors by name
-\definecolor{ocre}{RGB}{73,73,73} 
-\definecolor{lightgray}{RGB}{229,229,229} 
-% Font Settings
-\usepackage{avant} % Use the Avantgarde font for headings
-%\usepackage{times} % Use the Times font for headings
-\usepackage{mathptmx} % Use the Adobe Times Roman as the default text font together with math symbols from the Sym­bol, Chancery and Com­puter Modern fonts
-
-\usepackage{microtype} % Slightly tweak font spacing for aesthetics
-\usepackage[utf8]{inputenc} % Required for including letters with accents
-\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\input{structureB} % Insert the commands.tex file which contains the majority of the structure behind the template
 
 
-% MATHS PACKAGE
-\usepackage{amsmath,tikz}
-\usetikzlibrary{matrix}
-\usetikzlibrary{calc}
-\usetikzlibrary{shapes}
-\usetikzlibrary{backgrounds,fit,shapes}
-\usetikzlibrary{positioning}
-\usepackage{relsize}
 
-\newcommand*{\horzbar}{\rule[0.05ex]{2.5ex}{0.5pt}}
-\usepackage{calc}
-
-% VERBATIM PACKAGE
-\usepackage{verbatim}
-
-% Bibliography
-%\usepackage[style=alphabetic,sorting=nyt,sortcites=true,autopunct=true,babel=hyphen,hyperref=true,abbreviate=false,backref=true,backend=biber]{ieeetran}
-
-%\addbibresource{bibliography.bib} % BibTeX bibliography file
-%\defbibheading{bibempty}{}
-
-\input{structure} % Insert the commands.tex file which contains the majority of the structure behind the template
 
 \begin{document}
 
@@ -63,12 +31,17 @@
 \begingroup
 \thispagestyle{empty}
 
-\AddToShipoutPicture*{\put(0,0){\includegraphics[scale=4.2]{frontpage}}} % Image background
+%\AddToShipoutPicture*{\put(0,0){\includegraphics[scale=4.2]{frontpage}}} % Image background
 
 \begin{tikzpicture}[remember picture, overlay]
-\node[fill=white, fill opacity=0.6, anchor=north,minimum height=6cm, minimum width=\paperwidth] (names) at ([yshift=19cm]current page.south){};
-\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont] at ([yshift=17cm]current page.south) {GridCal};
-\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont \Huge] at ([yshift=15cm]current page.south) {Santiago Peñate Vera};
+
+\draw[fill=maincolor] (current page.north west) rectangle (current page.south east);
+
+%\node[fill=white, fill opacity=0.6, anchor=north,minimum height=6cm, minimum width=\paperwidth] (names) at ([yshift=19cm]current page.south){};
+
+\node[font=\normalfont\fontsize{70}{70}\sffamily\selectfont, color=white] at ([yshift=17cm]current page.south) {GridCal};
+
+\node[font=\normalfont\fontsize{35}{35}\sffamily\selectfont \Huge, color=white] at ([yshift=15cm]current page.south) {Santiago Peñate Vera};
 \end{tikzpicture}
 
 
@@ -1532,8 +1505,9 @@ Magnitudes:
 % ----------------------------------------------------------------------------------------
 % 	BIBLIOGRAPHY
 % ----------------------------------------------------------------------------------------
-%\chapter*{Bibliography}
-\bibliographystyle{unsrt}
-\bibliography{bibliography}
+\chapter*{Bibliography}
+%\bibliographystyle{unsrt}
+%\bibliography{bibliography}
+\printbibliography
 
 \end{document}
