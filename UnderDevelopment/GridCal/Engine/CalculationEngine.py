@@ -149,11 +149,11 @@ class CDF(object):
         self.iscomplex = iscomplexobj(self.arr)
 
         # calculate the proportional values of samples
-        l = len(data)
-        if l > 1:
-            self.prob = 1. * arange(l) / (l - 1)
+        n = len(data)
+        if n > 1:
+            self.prob = 1. * arange(n) / (n - 1)
         else:
-            self.prob = 1. * arange(l)
+            self.prob = 1. * arange(n)
 
         # iterator index
         self.idx = 0
@@ -197,7 +197,7 @@ class CDF(object):
 
     def __sub__(self, other):
         """
-        Rest of two CDF
+        Subtract of two CDF
         @param other:
         @return: A CDF object with the subtraction a a CDF to this CDF
         """
@@ -7225,8 +7225,6 @@ class LatinHypercubeSampling(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-        return self.results
 
     def cancel(self):
         self.__cancel__ = True
