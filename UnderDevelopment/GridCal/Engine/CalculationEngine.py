@@ -7807,6 +7807,7 @@ class DcOpf:
             for i, gen in enumerate(bus.controlled_generators + bus.batteries):
 
                 # add the variable to the objective function
+
                 if t_idx is None:
                     fobj += gen.LPVar_P * gen.Cost
                     # add the var reference just to print later...
@@ -7815,6 +7816,7 @@ class DcOpf:
                     fobj += gen.LPVar_P_prof[t_idx] * gen.Cost
                     # add the var reference just to print later...
                     self.PG.append(gen.LPVar_P_prof[t_idx])
+
 
             # minimize the load shedding if activated
             if self.load_shedding:
@@ -7898,25 +7900,29 @@ class DcOpf:
         ################################################################################################################
         any_rate_zero = False
         for k, branch in enumerate(self.circuit.branches):
-            i = self.circuit.buses_dict[branch.bus_from]
-            j = self.circuit.buses_dict[branch.bus_to]
 
-            # branch flow
-            Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
-            Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+            if branch.active:
+                i = self.circuit.buses_dict[branch.bus_from]
+                j = self.circuit.buses_dict[branch.bus_to]
 
-            # constraints
-            if not self.load_shedding:
-                # Add slacks
-                prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-                prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+                # branch flow
+                Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
+                Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+
+                # constraints
+                if not self.load_shedding:
+                    # Add slacks
+                    prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                    prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+                else:
+                    # THe slacks are in the form of load shedding
+                    prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                    prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+
+                if branch.rate <= 1e-6:
+                    any_rate_zero = True
             else:
-                # THe slacks are in the form of load shedding
-                prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-                prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
-
-            if branch.rate <= 1e-6:
-                any_rate_zero = True
+                pass  # the branch is not active...
 
         # No branch can have rate = 0, otherwise the problem fails
         if any_rate_zero:
@@ -8006,6 +8012,8 @@ class DcOpf:
             print('Load shedding:', self.load_shedding)
             self.problem.solve()  # solve with CBC
             # prob.solve(CPLEX())
+
+            self.problem.writeLP('dcopf.lp')
 
             # The status of the solution is printed to the screen
             print("Status:", pulp.LpStatus[self.problem.status])
