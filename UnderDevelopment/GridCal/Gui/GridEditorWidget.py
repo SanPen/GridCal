@@ -2116,7 +2116,7 @@ class MapWidget(QGraphicsRectItem):
         self.change_size(self.w, self.h)
         self.setPos(0, self.h)
 
-        self.load_map()
+        # self.load_map()
 
     def change_size(self, w, h):
         """
@@ -2479,7 +2479,8 @@ class GridEditor(QSplitter):
         self.started_branch = BranchGraphicItem(port, None, self.diagramScene)
         self.started_branch.bus_from = port.parent
         port.setZValue(0)
-        self.diagramView.map.setZValue(-1)
+        # if self.diagramView.map.isVisible():
+        #     self.diagramView.map.setZValue(-1)
         port.process_callbacks(port.parent.pos() + port.pos())
 
     def sceneMouseMoveEvent(self, event):
@@ -2533,7 +2534,8 @@ class GridEditor(QSplitter):
                         item.process_callbacks(item.parent.pos() + item.pos())
 
                         self.started_branch.setZValue(-1)
-                        self.diagramView.map.setZValue(-1)
+                        # if self.diagramView.map.isVisible():
+                        #     self.diagramView.map.setZValue(-1)
 
             if self.started_branch.toPort is None:
                 self.started_branch.remove_()

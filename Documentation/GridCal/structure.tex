@@ -2,6 +2,8 @@
 %	VARIOUS REQUIRED PACKAGES
 %----------------------------------------------------------------------------------------
 
+\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry} % Page margins
+
 \usepackage{titlesec} % Allows customization of titles
 
 \usepackage{graphicx} % Required for including pictures
@@ -20,6 +22,9 @@
 
 \usepackage{eso-pic} % Required for specifying an image background in the title page
 
+\usepackage{xcolor,lipsum} % Required for specifying colors by name
+\definecolor{gridcal_green}{RGB}{0,170,136}
+\definecolor{gridcal_green2}{RGB}{0,170,170}
 %----------------------------------------------------------------------------------------
 %	MAIN TABLE OF CONTENTS
 %----------------------------------------------------------------------------------------
@@ -297,21 +302,23 @@ innerbottommargin=5pt]{cBox}
 
 % The set-up below should be (sadly) manually adapted to the overall margin page septup controlled by the geometry package loaded in the main.tex document. It is possible to implement below the dimensions used in the goemetry package (top,bottom,left,right)... TO BE DONE
 
+% Command to use pictures
 \newcommand{\thechapterimage}{}
-\newcommand{\chapterimage}[1]{\renewcommand{\thechapterimage}{#1}}
+\newcommand{\chapterimage}{}
 
 % Numbered chapters with mini tableofcontents
 \def\thechapter{\arabic{chapter}}
 \def\@makechapterhead#1{
-\thispagestyle{empty}
-{\centering \normalfont\sffamily
-\ifnum \c@secnumdepth >\m@ne
-\if@mainmatter
-\startcontents
-\begin{tikzpicture}[remember picture,overlay]
-\node at (current page.north west)
-{\begin{tikzpicture}[remember picture,overlay]
-\node[anchor=north west,inner sep=0pt] at (0,0) {\includegraphics[width=\paperwidth]{\thechapterimage}};
+	\thispagestyle{empty}
+	{\centering \normalfont\sffamily
+		\ifnum \c@secnumdepth >\m@ne
+		\if@mainmatter
+		\startcontents
+		\begin{tikzpicture}[remember picture,overlay]
+		\node at (current page.north west)
+		{\begin{tikzpicture}[remember picture,overlay]
+%			\node[anchor=north west,inner sep=0pt] at (0,0) {\includegraphics[width=\paperwidth]{\thechapterimage}};
+%			\fill[gridcal_green] (-50mm,250mm) rectangle (180mm,200mm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Commenting the 3 lines below removes the small contents box in the chapter heading
 %\fill[color=ocre!10!white,opacity=.6] (1cm,0) rectangle (8cm,-7cm);
@@ -323,6 +330,34 @@ innerbottommargin=5pt]{cBox}
 \par\vspace*{230\p@}
 \fi
 \fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\newcommand{\chapterbox}[1]{}
+%
+%% Numbered chapters with mini tableofcontents
+%\def\thechapter{\arabic{chapter}}
+%\def\@makechapterhead#1{
+%	\thispagestyle{empty}
+%	{\centering \normalfont\sffamily
+%		\ifnum \c@secnumdepth >\m@ne
+%		\if@mainmatter
+%		\startcontents
+%		\begin{tikzpicture}[remember picture,overlay]
+%		\node at (current page.north west)
+%		{\begin{tikzpicture}[remember picture,overlay]
+%			\shade[top color=gridcal_green,bottom color=gridcal_green2] (-50mm,250mm) rectangle (180mm,200mm)
+%		};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Commenting the 3 lines below removes the small contents box in the chapter heading
+%%\fill[color=ocre!10!white,opacity=.6] (1cm,0) rectangle (8cm,-7cm);
+%%\node[anchor=north west] at (1.1cm,.35cm) {\parbox[t][8cm][t]{6.5cm}{\huge\bfseries\flushleft \printcontents{l}{1}{\setcounter{tocdepth}{2}}}};
+%\draw[anchor=west] (5cm,-9cm) node [rounded corners=20pt,fill=ocre!10!white,text opacity=1,draw=ocre,draw opacity=1,line width=1.5pt,fill opacity=.6,inner sep=12pt]{\huge\sffamily\bfseries\textcolor{black}{\thechapter. #1\strut\makebox[22cm]{}}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\end{tikzpicture}};
+
+
+
 
 % Unnumbered chapters without mini tableofcontents (could be added though) 
 \def\@makeschapterhead#1{

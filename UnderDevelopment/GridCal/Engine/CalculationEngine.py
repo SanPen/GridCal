@@ -8181,25 +8181,27 @@ class DcOpf:
             # Add branches
             for k, branch in enumerate(self.circuit.branches):
 
-                # get the from and to nodal indices of the branch
-                i = self.circuit.buses_dict[branch.bus_from]
-                j = self.circuit.buses_dict[branch.bus_to]
+                if branch.active:
+                    # get the from and to nodal indices of the branch
+                    i = self.circuit.buses_dict[branch.bus_from]
+                    j = self.circuit.buses_dict[branch.bus_to]
 
-                # compute the power flowing
-                if self.theta[i].value() is not None and self.theta[j].value() is not None:
-                    F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                    # compute the power flowing
+                    if self.theta[i].value() is not None and self.theta[j].value() is not None:
+                        F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                    else:
+                        F = -1
+
+                    # Set the results
+                    if self.slack_loading_ij_p[k] is not None:
+                        res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                            + self.slack_loading_ji_p[k].value()
+                                            - self.slack_loading_ij_n[k].value()
+                                            - self.slack_loading_ji_n[k].value()) * self.Sbase
+                    res.Sbranch[k] = F
+                    res.loading[k] = abs(F / branch.rate)
                 else:
-                    F = -1
-
-                # Set the results
-                if self.slack_loading_ij_p[k] is not None:
-                    res.overloads[k] = (self.slack_loading_ij_p[k].value()
-                                        + self.slack_loading_ji_p[k].value()
-                                        - self.slack_loading_ij_n[k].value()
-                                        - self.slack_loading_ji_n[k].value()) * self.Sbase
-                res.Sbranch[k] = F
-                res.loading[k] = abs(F / branch.rate)
-
+                    pass
         else:
             # the problem did not solve, pass
             pass
