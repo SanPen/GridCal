@@ -7817,7 +7817,6 @@ class DcOpf:
                     # add the var reference just to print later...
                     self.PG.append(gen.LPVar_P_prof[t_idx])
 
-
             # minimize the load shedding if activated
             if self.load_shedding:
                 fobj += self.load_shed[k]
@@ -7846,6 +7845,10 @@ class DcOpf:
                 j = self.B.indices[ii]
                 if j not in self.vd:
                     calculated_node_power += self.B.data[ii] * self.theta[j]
+                    if self.B.data[ii] < 1e-6:
+                        warn("There are susceptances close to zero. "
+                             "Do you have superconductor branches? "
+                             "I don't think so, check the grid!")
 
             # add the generation LP vars
             if t_idx is None:
@@ -7914,8 +7917,10 @@ class DcOpf:
                     # Add slacks
                     prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
                     prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+                    # prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                    # prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
                 else:
-                    # THe slacks are in the form of load shedding
+                    # The slacks are in the form of load shedding
                     prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
                     prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
 
@@ -8074,12 +8079,14 @@ class DcOpf:
             for i in range(n):
                 g = 0.0
 
+                generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+
                 # Sum the slack generators
                 if t_idx is None:
-                    for gen in self.circuit.buses[i].controlled_generators:
+                    for gen in generators:
                         g += gen.LPVar_P.value()
                 else:
-                    for gen in self.circuit.buses[i].controlled_generators:
+                    for gen in generators:
                         g += gen.LPVar_P_prof[t_idx].value()
 
                 # Set the results
