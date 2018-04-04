@@ -6190,11 +6190,14 @@ class MonteCarloInput:
 
     def __init__(self, n, Scdf, Icdf, Ycdf):
         """
-
+        Monte carlo input constructor
+        @param n: number of nodes
         @param Scdf: Power cumulative density function
         @param Icdf: Current cumulative density function
         @param Ycdf: Admittances cumulative density function
         """
+
+        # number of nodes
         self.n = n
 
         self.Scdf = Scdf
@@ -6204,7 +6207,12 @@ class MonteCarloInput:
         self.Ycdf = Ycdf
 
     def __call__(self, samples=0, use_latin_hypercube=False):
-
+        """
+        Call this object
+        :param samples: number of samples
+        :param use_latin_hypercube: use Latin Hypercube to sample
+        :return: Time series object
+        """
         if use_latin_hypercube:
 
             lhs_points = lhs(self.n, samples=samples, criterion='center')
@@ -6248,10 +6256,9 @@ class MonteCarloInput:
         """
         Get samples at x
         Args:
-            x: values in [0, 1+ to sample the CDF
+            x: values in [0, 1] to sample the CDF
 
-        Returns:
-
+        Returns: Time series object
         """
         S = zeros((1, self.n), dtype=complex)
         I = zeros((1, self.n), dtype=complex)
@@ -6277,12 +6284,12 @@ class MonteCarlo(QThread):
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, max_mc_iter=10000):
         """
-
-        :param grid:
-        :param options:
-        :param mc_tol:
-        :param batch_size:
-        :param max_mc_iter:
+        Monte Carlo simulation constructor
+        :param grid: MultiGrid instance
+        :param options: Power flow options
+        :param mc_tol: monte carlo std.dev tolerance
+        :param batch_size: size of the batch
+        :param max_mc_iter: maximum monte carlo iterations in case of not reach the precission
         """
         QThread.__init__(self)
 
@@ -6552,6 +6559,10 @@ class MonteCarlo(QThread):
         return self.results
 
     def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -6692,9 +6703,8 @@ class MonteCarloResults:
         """
         open pickle
         Args:
-            fname:
-
-        Returns:
+            fname: file name
+        Returns: true if succeeded, false otherwise
 
         """
         if os.path.exists(fname):
@@ -6803,56 +6813,56 @@ class MonteCarloResults:
 
         if len(indices) > 0:
 
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage avg':
                 y = self.v_avg_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus voltage \naverage convergence'
 
             elif result_type == 'Bus current avg':
                 y = self.c_avg_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus current \naverage convergence'
 
             elif result_type == 'Branch loading avg':
                 y = self.l_avg_conv[1:-1, indices]
-                ylabel = '(%)'
-                xlabel = 'Sampling points'
+                y_label = '(%)'
+                x_label = 'Sampling points'
                 title = 'Branch loading \naverage convergence'
 
             elif result_type == 'Bus voltage std':
                 y = self.v_std_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus voltage standard \ndeviation convergence'
 
             elif result_type == 'Bus current std':
                 y = self.c_std_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus current standard \ndeviation convergence'
 
             elif result_type == 'Branch loading std':
                 y = self.l_std_conv[1:-1, indices]
-                ylabel = '(%)'
-                xlabel = 'Sampling points'
+                y_label = '(%)'
+                x_label = 'Sampling points'
                 title = 'Branch loading standard \ndeviation convergence'
 
             elif result_type == 'Bus voltage CDF':
                 cdf = CDF(np.abs(self.V_points[:, indices]))
                 cdf.plot(ax=ax)
-                ylabel = '(p.u.)'
-                xlabel = 'Probability $P(X \leq x)$'
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
                 title = 'Bus voltage'
 
             elif result_type == 'Branch loading CDF':
                 cdf = CDF(np.abs(self.loading_points.real[:, indices]))
                 cdf.plot(ax=ax)
-                ylabel = '(p.u.)'
-                xlabel = 'Probability $P(X \leq x)$'
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
                 title = 'Branch loading'
 
             else:
@@ -6869,8 +6879,8 @@ class MonteCarloResults:
                 df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 
             ax.set_title(title)
-            ax.set_ylabel(ylabel)
-            ax.set_xlabel(xlabel)
+            ax.set_ylabel(y_label)
+            ax.set_xlabel(x_label)
 
             return df
 
@@ -6885,11 +6895,11 @@ class LatinHypercubeSampling(QThread):
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, sampling_points=1000):
         """
-
+        Latin Hypercube constructor
         Args:
-            grid:
-            options:
-            sampling_points:
+            grid: MultiCircuit instance
+            options: Power flow options
+            sampling_points: number of sampling points
         """
         QThread.__init__(self)
 
@@ -6911,13 +6921,7 @@ class LatinHypercubeSampling(QThread):
         # print('LHS run')
         self.__cancel__ = False
 
-        # initialize the power flow
-        # power_flow = PowerFlowMP(self.grid, self.options)
-
-        # initialize the grid time series results
-        # we will append the island results with another function
-        # self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
-
+        # initialize vars
         batch_size = self.sampling_points
         n = len(self.grid.buses)
         m = len(self.grid.branches)
@@ -7105,6 +7109,9 @@ class LatinHypercubeSampling(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Cancel the simulation
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -7119,6 +7126,12 @@ class LatinHypercubeSampling(QThread):
 class CascadingReportElement:
 
     def __init__(self, removed_idx, pf_results, criteria):
+        """
+        CascadingReportElement constructor
+        :param removed_idx: list of removed branch indices
+        :param pf_results: power flow results object
+        :param criteria: criteria used in the end
+        """
         self.removed_idx = removed_idx
         self.pf_results = pf_results
         self.criteria = criteria
@@ -7127,7 +7140,10 @@ class CascadingReportElement:
 class CascadingResults:
 
     def __init__(self, cascade_type: CascadeType):
-
+        """
+        Cascading results constructor
+        :param cascade_type: Cascade type
+        """
         self.cascade_type = cascade_type
 
         self.events = list()
@@ -7160,6 +7176,7 @@ class CascadingResults:
 
     def plot(self):
 
+        # TODO: implement cascading plot
         pass
 
 
@@ -7173,9 +7190,12 @@ class Cascading(QThread):
         """
         Constructor
         Args:
-            grid: Grid to cascade
+            grid: MultiCircuit instance to cascade
             options: Power flow Options
             triggering_idx: branch indices to trigger first
+            max_additional_islands: number of islands that shall be formed to consider a blackout
+            cascade_type_: Cascade simulation kind
+            n_lhs_samples_: number of latin hypercube samples if using LHS cascade
         """
 
         QThread.__init__(self)
@@ -7221,7 +7241,8 @@ class Cascading(QThread):
 
         return idx
 
-    def remove_probability_based(self, circuit: MultiCircuit, results: MonteCarloResults, max_val, min_prob):
+    @staticmethod
+    def remove_probability_based(circuit: MultiCircuit, results: MonteCarloResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
         :param circuit:
@@ -7390,6 +7411,10 @@ class Cascading(QThread):
         return self.results.get_table()
 
     def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -7412,7 +7437,7 @@ class Optimize(QThread):
         Args:
             grid: Grid to cascade
             options: Power flow Options
-            triggering_idx: branch indices to trigger first
+            max_iter: max iterations
         """
 
         QThread.__init__(self)
@@ -7447,8 +7472,11 @@ class Optimize(QThread):
         self.it = 0
 
     def objfunction(self, x):
-
-
+        """
+        Objective function to run
+        :param x: combinations of values between 0~1
+        :return: objective function value, the average voltage in this case
+        """
         Vbus = self.grid.power_flow_input.Vbus
 
         # For every circuit, run the time series
@@ -7480,8 +7508,8 @@ class Optimize(QThread):
 
     def run(self):
         """
-        Run the monte carlo simulation
-        @return:
+        Run the optimization
+        @return: Nothing
         """
         self.it = 0
         n = len(self.grid.buses)
@@ -7540,8 +7568,6 @@ class Optimize(QThread):
     def plot(self, ax=None):
         """
         Plot the optimization convergence
-        Returns:
-
         """
         clr = np.array(['#2200CC', '#D9007E', '#FF6600', '#FFCC00', '#ACE600', '#0099CC',
                         '#8900CC', '#FF0000', '#FF9900', '#FFFF00', '#00CC01', '#0055CC'])
@@ -7560,6 +7586,9 @@ class Optimize(QThread):
             ax.set_title('Optimization convergence')
 
     def cancel(self):
+        """
+        Cancel the simulation
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -8044,7 +8073,7 @@ class OptimalPowerFlowOptions:
 
     def __init__(self, verbose=False, load_shedding=False):
         """
-        
+        OPF options constructor
         :param verbose: 
         :param load_shedding: 
         """
@@ -8058,15 +8087,15 @@ class OptimalPowerFlowResults:
     def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
                  loading=None, losses=None, converged=None):
         """
-        
-        :param Sbus: 
-        :param voltage: 
-        :param load_shedding: 
-        :param Sbranch: 
-        :param overloads: 
-        :param loading: 
-        :param losses: 
-        :param converged: 
+        OPF results constructor
+        :param Sbus: bus power injections
+        :param voltage: bus voltages
+        :param load_shedding: load shedding values
+        :param Sbranch: branch power values
+        :param overloads: branch overloading values
+        :param loading: branch loading values
+        :param losses: branch losses
+        :param converged: converged?
         """
         self.Sbus = Sbus
 
@@ -8236,6 +8265,7 @@ class OptimalPowerFlow(QRunnable):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
+        @param options: OPF options
         """
         QRunnable.__init__(self)
 
@@ -8557,6 +8587,9 @@ class OptimalPowerFlowTimeSeries(QThread):
 class StateEstimationInput:
 
     def __init__(self):
+        """
+        State estimation inputs constructor
+        """
 
         # Node active power measurements vector of pointers
         self.p_inj =list()
@@ -8597,7 +8630,6 @@ class StateEstimationInput:
     def clear(self):
         """
         Clear
-        :return: 
         """
         self.p_inj.clear()
         self.p_flow.clear()
@@ -8640,15 +8672,15 @@ class StateEstimationResults(PowerFlowResults):
                  error=None, converged=None, Qpv=None):
         """
         Constructor
-        :param Sbus: 
-        :param voltage: 
-        :param Sbranch: 
-        :param Ibranch: 
-        :param loading: 
-        :param losses: 
-        :param error: 
-        :param converged: 
-        :param Qpv: 
+        :param Sbus: Bus power injections
+        :param voltage: Bus voltages
+        :param Sbranch: Branch power flow
+        :param Ibranch: Branch current flow
+        :param loading: Branch loading
+        :param losses: Branch losses
+        :param error: error
+        :param converged: converged?
+        :param Qpv: Reactive power at the PV nodes
         """
         # initialize the
         PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
