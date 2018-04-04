@@ -22,7 +22,8 @@ grid = MultiCircuit()
 # fname = 'Illinois200Bus.xlsx'
 # fname = 'IEEE_30_new.xlsx'
 # fname = 'lynn5buspq.xlsx'
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
@@ -31,7 +32,7 @@ print('Reading...')
 grid.load_file(fname)
 grid.compile()
 
-options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
+options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False,
                            initialize_with_existing_solution=False, multi_core=True)
 
 ####################################################################################################################
@@ -114,12 +115,12 @@ options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
 ####################################################################################################################
 # Monte Carlo
 ####################################################################################################################
-print('Running MC...')
-mc_sim = MonteCarlo(grid, options, mc_tol=1e-5, max_mc_iter=1000000)
-mc_sim.run()
-lst = np.array(list(range(mc_sim.results.n)), dtype=int)
-mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
-plt.show()
+# print('Running MC...')
+# mc_sim = MonteCarlo(grid, options, mc_tol=1e-5, max_mc_iter=1000000)
+# mc_sim.run()
+# lst = np.array(list(range(mc_sim.results.n)), dtype=int)
+# mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
+# plt.show()
 
 ####################################################################################################################
 # Latin Hypercube
@@ -150,9 +151,9 @@ plt.show()
 # Fuck up the voltage
 ####################################################################################################################
 
-# options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False, initialize_with_existing_solution=False)
-# opt = Optimize(grid, options, max_iter=10000)
-# opt.run()
-# opt.plot()
-#
-# plt.show()
+options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False, initialize_with_existing_solution=False)
+opt = Optimize(grid, options, max_iter=10000)
+opt.run()
+opt.plot()
+
+plt.show()

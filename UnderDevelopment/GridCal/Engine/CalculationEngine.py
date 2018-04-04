@@ -1757,19 +1757,19 @@ class ControlledGenerator:
                  enabled_dispatch=True):
         """
         Voltage controlled generator
-        @param name:
+        @param name: Name of the device
         @param active_power: Active power (MW)
         @param voltage_module: Voltage set point (p.u.)
-        @param Qmin:
-        @param Qmax:
-        @param Snom:
-        @param power_prof:
-        @param vset_prof
-        @param active
+        @param Qmin: minimum reactive power in MVAr
+        @param Qmax: maximum reactive power in MVAr
+        @param Snom: Nominal power in MVA
+        @param power_prof: active power profile (Pandas DataFrame)
+        @param vset_prof: voltage set point profile (Pandas DataFrame)
+        @param active: Is the generator active?
         @param p_min: minimum dispatchable power in MW
         @param p_max maximum dispatchable power in MW
         @param op_cost operational cost in Eur (or other currency) per MW
-        @:param enabled_dispatch is the generator enabled for OPF?
+        @param enabled_dispatch is the generator enabled for OPF?
         """
 
         self.name = name
@@ -2062,18 +2062,19 @@ class Battery(ControlledGenerator):
                  power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True):
         """
         Batery (Voltage controlled and dispatchable)
-        :param name:
-        :param active_power:
-        :param voltage_module:
-        :param Qmin:
-        :param Qmax:
-        :param Snom:
-        :param Enom:
-        :param p_min:
-        :param p_max:
-        :param power_prof:
-        :param vset_prof:
-        :param active:
+        @param name: Name of the device
+        @param active_power: Active power (MW)
+        @param voltage_module: Voltage set point (p.u.)
+        @param Qmin: minimum reactive power in MVAr
+        @param Qmax: maximum reactive power in MVAr
+        @param Snom: Nominal power in MVA
+        @param power_prof: active power profile (Pandas DataFrame)
+        @param vset_prof: voltage set point profile (Pandas DataFrame)
+        @param active: Is the generator active?
+        @param p_min: minimum dispatchable power in MW
+        @param p_max maximum dispatchable power in MW
+        @param op_cost operational cost in Eur (or other currency) per MW
+        @param enabled_dispatch is the generator enabled for OPF?
         """
         ControlledGenerator.__init__(self, name=name,
                                      active_power=active_power,
@@ -2184,140 +2185,6 @@ class Battery(ControlledGenerator):
                 'Pmin': self.Pmin,
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
-
-    # def create_profiles(self, index, P=None, V=None):
-    #     """
-    #     Create the load object default profiles
-    #     :param index:
-    #     :param P:
-    #     :param V:
-    #     :return:
-    #     """
-    #     self.create_P_profile(index, P)
-    #     self.create_Vset_profile(index, V)
-    #
-    # def create_P_profile(self, index, arr=None, arr_in_pu=False):
-    #     """
-    #     Create power profile based on index
-    #     Args:
-    #         index:
-    #
-    #     Returns:
-    #
-    #     """
-    #     if arr_in_pu:
-    #         dta = arr * self.P
-    #     else:
-    #         dta = ones(len(index)) * self.P if arr is None else arr
-    #     self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-    #
-    # def initialize_lp_vars(self):
-    #     """
-    #     Initialize the LP variables
-    #     :return:
-    #     """
-    #     self.lp_name = self.type_name + '_' + self.name + str(id(self))
-    #     self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
-    #     self.LPVar_P_prof = [
-    #         pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
-    #
-    # def get_lp_var_profile(self, index):
-    #     """
-    #     Get the profile
-    #     :param index:
-    #     :return:
-    #     """
-    #     dta = [x.value() for x in self.LPVar_P_prof]
-    #     return pd.DataFrame(data=dta, index=index, columns=[self.name])
-    #
-    # def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
-    #     """
-    #     Create power profile based on index
-    #     Args:
-    #         index:
-    #
-    #     Returns:
-    #
-    #     """
-    #     if arr_in_pu:
-    #         dta = arr * self.Vset
-    #     else:
-    #         dta = ones(len(index)) * self.Vset if arr is None else arr
-    #     self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-    #
-    # def get_profiles(self, index=None, use_opf_vals=False):
-    #     """
-    #     Get profiles and if the index is passed, create the profiles if needed
-    #     Args:
-    #         index: index of the Pandas DataFrame
-    #
-    #     Returns:
-    #         Power, Current and Impedance profiles
-    #     """
-    #     if index is not None:
-    #         if self.Pprof is None:
-    #             self.create_P_profile(index)
-    #         if self.Vsetprof is None:
-    #             self.create_Vset_profile(index)
-    #
-    #     if use_opf_vals:
-    #         return self.get_lp_var_profile(index), self.Vsetprof
-    #     else:
-    #         return self.Pprof, self.Vsetprof
-    #
-    # def delete_profiles(self):
-    #     """
-    #     Delete the object profiles
-    #     :return:
-    #     """
-    #     self.Pprof = None
-    #     self.Vsetprof = None
-    #
-    # def set_profile_values(self, t):
-    #     """
-    #     Set the profile values at t
-    #     :param t: time index
-    #     """
-    #     self.P = self.Pprof.values[t]
-    #     self.Vset = self.Vsetprof.values[t]
-    #
-    # def make_lp_vars(self, name):
-    #     """
-    #     Create all the necessary LP variables
-    #     Args:
-    #         name: base name of the variables to make them unique
-    #
-    #     Returns:
-    #         nothing
-    #     """
-    #
-    #     self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/self.Sbase, self.Pmax/self.Sbase)
-    #
-    # def apply_lp_vars(self, at=None):
-    #     """
-    #     Set the LP vars to the main value or the profile
-    #     """
-    #     if self.LPVar_P is not None:
-    #         if at is None:
-    #             self.P = self.LPVar_P.value()
-    #         else:
-    #             self.Pprof.values[at] = self.LPVar_P.value()
-    #
-    # def apply_lp_profile(self, Sbase):
-    #     """
-    #     Set LP profile to the regular profile
-    #     :return:
-    #     """
-    #     n = self.Pprof.shape[0]
-    #     for i in range(n):
-    #         self.Pprof.values[i] = self.LPVar_P_prof[i].value() * Sbase
-    #
-    # def __str__(self):
-    #     """
-    #     string representation
-    #     :return:
-    #     """
-    #     return self.name
 
 
 class Shunt:
@@ -5034,7 +4901,7 @@ class PowerFlow(QRunnable):
         @return:
         """
 
-        return self.pf.run_pf(Circuit, Vbus, Sbus, Ibus)
+        return self.pf.run_pf(circuit, Vbus, Sbus, Ibus)
 
     def cancel(self):
         self.__cancel__ = True
@@ -7585,22 +7452,22 @@ class Optimize(QThread):
         Vbus = self.grid.power_flow_input.Vbus
 
         # For every circuit, run the time series
-        for c in self.grid.circuits:
+        for circuit in self.grid.circuits:
             # sample from the CDF give the vector x of values in [0, 1]
             # c.sample_at(x)
-            mc_time_series = c.monte_carlo_input.get_at(x)
+            mc_time_series = circuit.monte_carlo_input.get_at(x)
 
             Y, I, S = mc_time_series.get_at(t=0)
 
             #  run the sampled values
             # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+            res = self.power_flow.run_pf(circuit=circuit, Vbus=Vbus, Sbus=S, Ibus=I)
 
-            Y, I, S = c.mc_time_series.get_at(0)
-            self.results.S_points[self.it, c.bus_original_idx] = S
-            self.results.V_points[self.it, c.bus_original_idx] = res.voltage[c.bus_original_idx]
-            self.results.I_points[self.it, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
-            self.results.loading_points[self.it, c.branch_original_idx] = res.loading[c.branch_original_idx]
+            # Y, I, S = circuit.mc_time_series.get_at(0)
+            self.results.S_points[self.it, circuit.bus_original_idx] = S
+            self.results.V_points[self.it, circuit.bus_original_idx] = res.voltage[circuit.bus_original_idx]
+            self.results.I_points[self.it, circuit.branch_original_idx] = res.Ibranch[circuit.branch_original_idx]
+            self.results.loading_points[self.it, circuit.branch_original_idx] = res.loading[circuit.branch_original_idx]
 
         self.it += 1
         prog = self.it / self.max_eval * 100
