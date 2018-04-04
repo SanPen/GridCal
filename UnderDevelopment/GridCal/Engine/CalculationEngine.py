@@ -8121,10 +8121,12 @@ class DcOpf:
                 # Sum the slack generators
                 if t_idx is None:
                     for gen in generators:
-                        g += gen.LPVar_P.value()
+                        if gen.active and gen.enabled_dispatch:
+                            g += gen.LPVar_P.value()
                 else:
                     for gen in generators:
-                        g += gen.LPVar_P_prof[t_idx].value()
+                        if gen.active and gen.enabled_dispatch:
+                            g += gen.LPVar_P_prof[t_idx].value()
 
                 # Set the results
                 res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase

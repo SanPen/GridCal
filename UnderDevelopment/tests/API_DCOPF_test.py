@@ -26,14 +26,21 @@ from matplotlib import pyplot as plt
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
-fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\3 node battery opf.xlsx'
+# fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\3 node battery opf.xlsx'
+# fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
+fname = 'C:\\Users\\spenate\\Documents\\PROYECTOS\\Monash\\phase0\\Grid\\Monash University Campus with profiles.xlsx'
 
+print('loading...')
 grid = MultiCircuit()
 grid.load_file(fname)
 grid.compile()
 
 opf_options = OptimalPowerFlowOptions(load_shedding=False)
 opf = OptimalPowerFlow(grid, opf_options)
-opf.run()
+# opf.run()
+
+print('Running ts...')
+opf_ts = OptimalPowerFlowTimeSeries(grid, opf_options)
+opf_ts.run()
 
 # opf.results
