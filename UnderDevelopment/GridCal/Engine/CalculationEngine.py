@@ -2043,8 +2043,13 @@ class ControlledGenerator:
         :return:
         """
         n = self.Pprof.shape[0]
-        for i in range(n):
-            self.Pprof.values[i] = self.LPVar_P_prof[i].value() * Sbase
+        if self.active and self.enabled_dispatch:
+            for i in range(n):
+                self.Pprof.values[i] = self.LPVar_P_prof[i].value() * Sbase
+        else:
+            # there are no values in the LP vars because this generator is deactivated,
+            # therefore fill the profiles with zeros when asked to copy the lp vars to the power profiles
+            self.Pprof.values = zeros(self.Pprof.shape[0])
 
     def __str__(self):
         return self.name
