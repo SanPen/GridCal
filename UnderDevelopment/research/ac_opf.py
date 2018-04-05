@@ -181,14 +181,13 @@ class AcOPf:
         # Matrix product
         for i in range(self.nn):
 
-            s = 0
             calculated_node_power = 0
             node_power_injection = 0
 
             # add the calculated node power
             for ii in range(self.H.indptr[i], self.H.indptr[i + 1]):
                 j = self.H.indices[ii]
-                s += self.H.data[ii] * self.dx_var[j]
+                calculated_node_power += self.H.data[ii] * self.dx_var[j]
 
             # Only for PV!
             if i < npv:
@@ -225,16 +224,15 @@ class AcOPf:
         # Add the matrix multiplication as constraints (slack)
         ################################################################################################################
 
-        for i in range(self.Hslack.shape[0]):
+        for i in range(self.Hslack.shape[0]):  # vd nodes
 
-            s = 0
             calculated_node_power = 0
             node_power_injection = 0
 
             # add the calculated node power
             for ii in range(self.Hslack.indptr[i], self.Hslack.indptr[i + 1]):
                 j = self.Hslack.indices[ii]
-                s += self.Hslack.data[ii] * self.dx_var[j]
+                calculated_node_power += self.Hslack.data[ii] * self.dx_var[j]
 
             # Only for PV!
             if i < npv:
@@ -260,7 +258,7 @@ class AcOPf:
                 pass  # it is a PQ node, no generators there
 
             # the sum of the slack node generators must be equal to the slack node power
-            prob.add(s == node_power_injection, 'ct_slack_power_' + str(i))
+            prob.add(calculated_node_power == node_power_injection, 'ct_slack_power_' + str(i))
 
         ################################################################################################################
         # control the voltage module between vm_low and vm_high
