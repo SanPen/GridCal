@@ -201,9 +201,9 @@ if __name__ == '__main__':
 
     grid = MultiCircuit()
 
-    # grid.load_file('lynn5buspv.xlsx')
+    grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
-    grid.load_file('Illinois200Bus.xlsx')
+    # grid.load_file('Illinois200Bus.xlsx')
 
     grid.compile()
 
