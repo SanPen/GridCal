@@ -193,6 +193,13 @@ class MainGUI(QMainWindow):
                               'spring_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
+        # solvers dictionary
+        self.lp_solvers_dict = OrderedDict()
+        self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
+        self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
+
+        self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
         ################################################################################################################
         # Declare the schematic editor
         ################################################################################################################
@@ -299,6 +306,10 @@ class MainGUI(QMainWindow):
         self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
 
         self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
+
+        self.ui.actionExport_all_power_flow_results.triggered.connect(self.export_pf_results)
+
+        self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
 
         # Buttons
 
@@ -867,6 +878,34 @@ class MainGUI(QMainWindow):
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+
+    def export_pf_results(self):
+        """
+        Export power flow results
+        """
+        if self.power_flow is not None:
+            if self.circuit.graph is None:
+                self.circuit.compile()
+
+            # declare the allowed file types
+            files_types = "Excel file (*.xlsx)"
+            # call dialog to select the file
+            if self.project_directory is None:
+                self.project_directory = ''
+
+            # set grid name
+            self.circuit.name = self.grid_editor.name_label.text()
+
+            fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+            if filename is not "":
+                if not filename.endswith('.xlsx'):
+                    filename += '.xlsx'
+                self.circuit.export_pf(file_name=filename)
+        else:
+            pass
 
     def export_simulation_data(self):
         """
@@ -1894,7 +1933,8 @@ class MainGUI(QMainWindow):
 
             # get the power flow options from the GUI
             load_shedding = self.ui.load_shedding_checkBox.isChecked()
-            options = OptimalPowerFlowOptions(load_shedding=load_shedding)
+            solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+            options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -1954,7 +1994,8 @@ class MainGUI(QMainWindow):
 
                 # gather the simulation options
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
-                options = OptimalPowerFlowOptions(load_shedding=load_shedding)
+                solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+                options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
 
                 # create the OPF time series instance
                 self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)

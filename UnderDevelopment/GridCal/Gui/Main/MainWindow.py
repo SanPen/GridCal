@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -464,6 +464,12 @@ class Ui_mainWindow(object):
         self.frame_30.setObjectName("frame_30")
         self.verticalLayout_20 = QtWidgets.QVBoxLayout(self.frame_30)
         self.verticalLayout_20.setObjectName("verticalLayout_20")
+        self.label_42 = QtWidgets.QLabel(self.frame_30)
+        self.label_42.setObjectName("label_42")
+        self.verticalLayout_20.addWidget(self.label_42)
+        self.lpf_solver_comboBox = QtWidgets.QComboBox(self.frame_30)
+        self.lpf_solver_comboBox.setObjectName("lpf_solver_comboBox")
+        self.verticalLayout_20.addWidget(self.lpf_solver_comboBox)
         self.load_shedding_checkBox = QtWidgets.QCheckBox(self.frame_30)
         self.load_shedding_checkBox.setObjectName("load_shedding_checkBox")
         self.verticalLayout_20.addWidget(self.load_shedding_checkBox)
@@ -1157,7 +1163,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1173, 25))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1173, 22))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -1338,6 +1344,12 @@ class Ui_mainWindow(object):
         self.actionShow_map.setCheckable(True)
         self.actionShow_map.setIcon(icon5)
         self.actionShow_map.setObjectName("actionShow_map")
+        self.actionCopy_OPF_profiles_to_Time_series = QtWidgets.QAction(mainWindow)
+        self.actionCopy_OPF_profiles_to_Time_series.setIcon(icon37)
+        self.actionCopy_OPF_profiles_to_Time_series.setObjectName("actionCopy_OPF_profiles_to_Time_series")
+        self.actionExport_all_power_flow_results = QtWidgets.QAction(mainWindow)
+        self.actionExport_all_power_flow_results.setIcon(icon8)
+        self.actionExport_all_power_flow_results.setObjectName("actionExport_all_power_flow_results")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -1346,6 +1358,7 @@ class Ui_mainWindow(object):
         self.menuAbout.addAction(self.actionAbout)
         self.menuActions.addAction(self.actionPower_flow)
         self.menuActions.addAction(self.actionPower_Flow_Time_series)
+        self.menuActions.addAction(self.actionExport_all_power_flow_results)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionShort_Circuit)
         self.menuActions.addSeparator()
@@ -1353,6 +1366,7 @@ class Ui_mainWindow(object):
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionOPF)
         self.menuActions.addAction(self.actionOPF_time_series)
+        self.menuActions.addAction(self.actionCopy_OPF_profiles_to_Time_series)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionPower_flow_Stochastic)
         self.menuActions.addAction(self.actionLatin_Hypercube_Sampling)
@@ -1433,13 +1447,16 @@ class Ui_mainWindow(object):
 "last solution"))
         self.label_2.setText(_translate("mainWindow", "Solver"))
         self.label_33.setText(_translate("mainWindow", "Optimal Power flow"))
+        self.label_42.setText(_translate("mainWindow", "Solver"))
         self.load_shedding_checkBox.setToolTip(_translate("mainWindow", "<html><head/><body><p>When activated, the loading is always below 100%.</p><p>This is achieved by decreasing the load amount.</p><p>This is also called load shedding.</p></body></html>"))
         self.load_shedding_checkBox.setText(_translate("mainWindow", "Load shedding"))
         self.label_17.setText(_translate("mainWindow", "Voltage stability"))
         self.label_29.setText(_translate("mainWindow", "Max. Iterations"))
-        self.start_vs_from_default_radioButton.setText(_translate("mainWindow", "Use alpha target from current situation"))
-        self.label_18.setText(_translate("mainWindow", "Alpha (Increase the power \'alpha\' times)"))
-        self.start_vs_from_selected_radioButton.setText(_translate("mainWindow", "Use departure and target points from time series"))
+        self.start_vs_from_default_radioButton.setText(_translate("mainWindow", "Use alpha target\n"
+"from current situation"))
+        self.label_18.setText(_translate("mainWindow", "<html><head/><body><p>Lambda factor</p></body></html>"))
+        self.start_vs_from_selected_radioButton.setText(_translate("mainWindow", "Use departure and target \n"
+"points from time series"))
         self.label_19.setText(_translate("mainWindow", "Now"))
         self.label_20.setText(_translate("mainWindow", "Target"))
         self.label_14.setText(_translate("mainWindow", "Monte Carlo Sampling"))
@@ -1570,6 +1587,9 @@ class Ui_mainWindow(object):
         self.actionUse_OPF_in_TS.setText(_translate("mainWindow", "Use OPF results into Time series"))
         self.actionUse_OPF_in_TS.setToolTip(_translate("mainWindow", "Use OPF results into Time series"))
         self.actionShow_map.setText(_translate("mainWindow", "Show map"))
+        self.actionCopy_OPF_profiles_to_Time_series.setText(_translate("mainWindow", "Set OPF results as Time events"))
+        self.actionCopy_OPF_profiles_to_Time_series.setToolTip(_translate("mainWindow", "Set OPF results as Time events"))
+        self.actionExport_all_power_flow_results.setText(_translate("mainWindow", "Export all power flow results"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
