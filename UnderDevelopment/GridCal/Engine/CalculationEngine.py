@@ -1827,7 +1827,7 @@ class ControlledGenerator:
         self.LPVar_P_prof = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'EnableDispatch']
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch']
 
         self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '']
 
@@ -1842,13 +1842,13 @@ class ControlledGenerator:
                            'Pmin': float,
                            'Pmax': float,
                            'Cost': float,
-                           'EnableDispatch': bool}
+                           'enabled_dispatch': bool}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
 
         self.profile_attr = {'P': 'Pprof',
-                           'Vset': 'Vsetprof'}
+                             'Vset': 'Vsetprof'}
 
     def copy(self):
 
@@ -1963,7 +1963,9 @@ class ControlledGenerator:
         :return:
         """
         self.lp_name = self.type_name + '_' + self.name + str(id(self))
+
         self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+
         self.LPVar_P_prof = [
             pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
 
@@ -1989,6 +1991,7 @@ class ControlledGenerator:
             dta = arr * self.Vset
         else:
             dta = ones(len(index)) * self.Vset if arr is None else arr
+
         self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None, use_opf_vals=False):
@@ -2094,7 +2097,7 @@ class Battery(ControlledGenerator):
         self.Enom = Enom
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'EnableDispatch']
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch']
 
         self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '']
 
@@ -7771,14 +7774,24 @@ class DcOpf:
             # add the generation LP vars
             if t_idx is None:
                 for gen in generators:
-                    if gen.active and gen.enabled_dispatch:
-                        node_power_injection += gen.LPVar_P
+                    if gen.active:
+                        if gen.enabled_dispatch:
+                            # add the dispatch variable
+                            node_power_injection += gen.LPVar_P
+                        else:
+                            # set the default value
+                            node_power_injection += gen.P / self.Sbase
                     else:
                         pass
             else:
                 for gen in generators:
-                    if gen.active and gen.enabled_dispatch:
-                        node_power_injection += gen.LPVar_P_prof[t_idx]
+                    if gen.active:
+                        if gen.enabled_dispatch:
+                            # add the dispatch variable
+                            node_power_injection += gen.LPVar_P_prof[t_idx]
+                        else:
+                            # set the default profile value
+                            node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
                     else:
                         pass
 

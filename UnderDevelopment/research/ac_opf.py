@@ -42,19 +42,19 @@ class AcOPf:
         A12 = Y.real[self.pvpq, :][:, self.pq]
         A21 = -Ys.real[self.pq, :][:, self.pvpq]
         A22 = -Y.imag[self.pq, :][:, self.pq]
-        self.H = vstack_s([hstack_s([A11, A12]),
-                           hstack_s([A21, A22])], format="csr")
+        self.sys_mat = vstack_s([hstack_s([A11, A12]),
+                                 hstack_s([A21, A22])], format="csr")
 
         # form the slack system matrix
         A11s = -Ys.imag[self.vd, :][:, self.pvpq]
         A12s = Y.real[self.vd, :][:, self.pq]
-        self.Hslack = hstack_s([A11s, A12s], format="csr")
+        self.sys_mat_slack = hstack_s([A11s, A12s], format="csr")
 
         # compose the right hand side (power vectors)
         self.rhs = r_[S.real[self.pvpq], S.imag[self.pq]]
 
         # declare the voltage increments dx
-        self.nn = self.H.shape[0]
+        self.nn = self.sys_mat.shape[0]
         self.nbranch = len(self.circuit.branches)
         self.nbus = len(self.circuit.buses)
         self.dx_var = [None] * self.nn
@@ -185,9 +185,9 @@ class AcOPf:
             node_power_injection = 0
 
             # add the calculated node power
-            for ii in range(self.H.indptr[i], self.H.indptr[i + 1]):
-                j = self.H.indices[ii]
-                calculated_node_power += self.H.data[ii] * self.dx_var[j]
+            for ii in range(self.sys_mat.indptr[i], self.sys_mat.indptr[i + 1]):
+                j = self.sys_mat.indices[ii]
+                calculated_node_power += self.sys_mat.data[ii] * self.dx_var[j]
 
             # Only for PV!
             if i < npv:
@@ -199,14 +199,24 @@ class AcOPf:
                 # add the generation LP vars
                 if t_idx is None:
                     for gen in generators:
-                        if gen.active and gen.enabled_dispatch:
-                            node_power_injection += gen.LPVar_P
+                        if gen.active:
+                            if gen.enabled_dispatch:
+                                # add the dispatch variable
+                                node_power_injection += gen.LPVar_P
+                            else:
+                                # set the default value
+                                node_power_injection += gen.P / self.Sbase
                         else:
                             pass
                 else:
                     for gen in generators:
-                        if gen.active and gen.enabled_dispatch:
-                            node_power_injection += gen.LPVar_P_prof[t_idx]
+                        if gen.active:
+                            if gen.enabled_dispatch:
+                                # add the dispatch variable
+                                node_power_injection += gen.LPVar_P_prof[t_idx]
+                            else:
+                                # set the default profile value
+                                node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
                         else:
                             pass
             else:
@@ -224,15 +234,15 @@ class AcOPf:
         # Add the matrix multiplication as constraints (slack)
         ################################################################################################################
 
-        for i in range(self.Hslack.shape[0]):  # vd nodes
+        for i in range(self.sys_mat_slack.shape[0]):  # vd nodes
 
             calculated_node_power = 0
             node_power_injection = 0
 
             # add the calculated node power
-            for ii in range(self.Hslack.indptr[i], self.Hslack.indptr[i + 1]):
-                j = self.Hslack.indices[ii]
-                calculated_node_power += self.Hslack.data[ii] * self.dx_var[j]
+            for ii in range(self.sys_mat_slack.indptr[i], self.sys_mat_slack.indptr[i + 1]):
+                j = self.sys_mat_slack.indices[ii]
+                calculated_node_power += self.sys_mat_slack.data[ii] * self.dx_var[j]
 
             # Only for PV!
             if i < npv:
@@ -293,10 +303,6 @@ class AcOPf:
             # branch flow
             self.flow_ij[k] = self.B[i, j] * (va_i - va_j)
             self.flow_ji[k] = self.B[i, j] * (va_j - va_i)
-
-            # constraints
-            # prob.add(self.flow_ij[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-            # prob.add(self.flow_ji[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
 
             # constraints
             if not self.load_shedding:
