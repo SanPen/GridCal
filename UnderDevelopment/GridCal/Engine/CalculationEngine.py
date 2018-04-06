@@ -1772,23 +1772,28 @@ class ControlledGenerator:
         @param enabled_dispatch is the generator enabled for OPF?
         """
 
+        # name of the device
         self.name = name
 
+        # is the device active for simulation?
         self.active = active
 
+        # is the device active active power dispatch?
         self.enabled_dispatch = enabled_dispatch
 
+        # type of device
         self.type_name = 'ControlledGenerator'
 
+        # graphical object associated to this object
         self.graphic_obj = None
 
+        # properties that hold a profile
         self.properties_with_profile = (['P', 'Vset'], [float, float])
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
         # Power (MVA)
-        # MVA = kV * kA
         self.P = active_power
 
         # Nominal power in MVA
@@ -1800,13 +1805,13 @@ class ControlledGenerator:
         # Maximum dispatched power in MW
         self.Pmax = p_max
 
-        # power profile for this load
+        # power profile for this load in MW
         self.Pprof = power_prof
 
         # Voltage module set point (p.u.)
         self.Vset = voltage_module
 
-        # voltage set profile for this load
+        # voltage set profile for this load in p.u.
         self.Vsetprof = vset_prof
 
         # minimum reactive power in MVAr
@@ -1815,15 +1820,19 @@ class ControlledGenerator:
         # Maximum reactive power in MVAr
         self.Qmax = Qmax
 
-        # Cost of operation
+        # Cost of operation €/MW
         self.Cost = op_cost
 
+        # base power MVA
         self.Sbase = Sbase
 
         # Linear problem generator dispatch power variable (in p.u.)
         self.lp_name = self.type_name + '_' + self.name + str(id(self))
+
+        # variable to dispatch the power in a Linear program
         self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
 
+        # list of variables of active power dispatch in a series of linear programs
         self.LPVar_P_prof = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom',
@@ -1851,7 +1860,12 @@ class ControlledGenerator:
                              'Vset': 'Vsetprof'}
 
     def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
 
+        # make a new instance (separated object in memory)
         gen = ControlledGenerator()
 
         gen.name = self.name
@@ -1860,6 +1874,7 @@ class ControlledGenerator:
         # MVA = kV * kA
         gen.P = self.P
 
+        # is the generator active?
         gen.active = self.active
 
         # power profile for this load
@@ -1880,6 +1895,7 @@ class ControlledGenerator:
         # Nominal power
         gen.Snom = self.Snom
 
+        # is the generator enabled for dispatch?
         gen.enabled_dispatch = self.enabled_dispatch
 
         return gen
@@ -1897,7 +1913,7 @@ class ControlledGenerator:
         Get json dictionary
         :param id: ID: Id for this object
         :param bus_dict: Dictionary of buses [object] -> ID 
-        :return: 
+        :return: json-compatible dictionary
         """
         return {'id': id,
                 'type': 'controlled_gen',
@@ -1922,7 +1938,7 @@ class ControlledGenerator:
             arr: values array
             mag: String with the magnitude to assign
         """
-        if mag =='P':
+        if mag == 'P':
             self.create_profiles(index, arr, None)
         elif mag == 'V':
             self.create_profiles(index, None, arr)
@@ -1933,11 +1949,9 @@ class ControlledGenerator:
         """
         Create the load object default profiles
         Args:
-            index:
-            steps:
-
-        Returns:
-
+            index: time index associated
+            P: Active power (MW)
+            V: voltage set points
         """
         self.create_P_profile(index, P)
         self.create_Vset_profile(index, V)
@@ -1946,10 +1960,9 @@ class ControlledGenerator:
         """
         Create power profile based on index
         Args:
-            index:
-
-        Returns:
-
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
         """
         if arr_in_pu:
             dta = arr * self.P
@@ -1960,7 +1973,6 @@ class ControlledGenerator:
     def initialize_lp_vars(self):
         """
         Initialize the LP variables
-        :return:
         """
         self.lp_name = self.type_name + '_' + self.name + str(id(self))
 
@@ -1971,9 +1983,9 @@ class ControlledGenerator:
 
     def get_lp_var_profile(self, index):
         """
-        Get the profile
-        :param index:
-        :return:
+        Get the profile of the LP solved values into a Pandas DataFrame
+        :param index: time index
+        :return: DataFrame with the LP values
         """
         dta = [x.value() for x in self.LPVar_P_prof]
         return pd.DataFrame(data=dta, index=index, columns=[self.name])
@@ -1982,10 +1994,9 @@ class ControlledGenerator:
         """
         Create power profile based on index
         Args:
-            index:
-
-        Returns:
-
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
         """
         if arr_in_pu:
             dta = arr * self.Vset
@@ -2071,6 +2082,7 @@ class Battery(ControlledGenerator):
         @param Qmin: minimum reactive power in MVAr
         @param Qmax: maximum reactive power in MVAr
         @param Snom: Nominal power in MVA
+        @param Enom: Nominal energy in MWh
         @param power_prof: active power profile (Pandas DataFrame)
         @param vset_prof: voltage set point profile (Pandas DataFrame)
         @param active: Is the generator active?
@@ -2091,6 +2103,7 @@ class Battery(ControlledGenerator):
                                      Sbase=Sbase,
                                      enabled_dispatch=enabled_dispatch)
 
+        # type of this device
         self.type_name = 'Battery'
 
         # Nominal energy MWh
@@ -2121,6 +2134,7 @@ class Battery(ControlledGenerator):
         Returns: Battery instance
         """
 
+        # create a new instance of the battery
         batt = Battery()
 
         batt.name = self.name
@@ -2154,6 +2168,7 @@ class Battery(ControlledGenerator):
         # Nominal energy MWh
         batt.Enom = self.Enom
 
+        # Enable for active power dispatch?
         batt.enabled_dispatch = self.enabled_dispatch
 
         return batt
@@ -2171,7 +2186,7 @@ class Battery(ControlledGenerator):
         Get json dictionary
         :param id: ID: Id for this object
         :param bus_dict: Dictionary of buses [object] -> ID
-        :return:
+        :return: json-compatible dictionary
         """
         return {'id': id,
                 'type': 'battery',
