@@ -20,6 +20,7 @@ from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 
 import os.path
+import platform
 import sys
 from collections import OrderedDict
 from enum import Enum
@@ -199,6 +200,10 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
+        # do not allow MP under windows because it crashes
+        if platform.system() == 'Windows':
+            self.ui.use_multiprocessing_checkBox.setEnabled(False)
 
         ################################################################################################################
         # Declare the schematic editor
@@ -1649,9 +1654,11 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
 
                 use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
+
                 if self.optimal_power_flow_time_series is None and use_opf_vals:
                     use_opf_vals = False
-                    self.msg('There are not OPF time series, therefore this operation will continue with the profile stored values.')
+                    self.msg('There are not OPF time series, '
+                             'therefore this operation will continue with the profile stored values.')
                     self.ui.actionUse_OPF_in_TS.setChecked(False)
 
                 self.compile(use_opf_vals=use_opf_vals)
