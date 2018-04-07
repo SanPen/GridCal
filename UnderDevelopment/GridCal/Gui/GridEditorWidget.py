@@ -542,6 +542,13 @@ class BranchGraphicItem(QGraphicsLineItem):
         ra3 = menu.addAction('Edit')
         ra3.triggered.connect(self.edit)
 
+        if self.api_object.is_transformer:
+            ra4 = menu.addAction('Tap up')
+            ra4.triggered.connect(self.tap_up)
+
+            ra5 = menu.addAction('Tap down')
+            ra5.triggered.connect(self.tap_down)
+
         menu.exec_(event.screenPos())
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
@@ -716,6 +723,18 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         if dlg.exec_():
             pass
+
+    def tap_up(self):
+        """
+        Set one tap up
+        """
+        self.api_object.tap_up()
+
+    def tap_down(self):
+        """
+        Set one tap down
+        """
+        self.api_object.tap_down()
 
 
 class ParameterDialog(QDialog):

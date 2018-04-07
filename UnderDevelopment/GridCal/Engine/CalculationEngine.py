@@ -1138,6 +1138,65 @@ class TransformerType:
         return self.name
 
 
+class TapChanger:
+
+    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
+        """
+        Tap changer
+        Args:
+            taps_up: Number of taps position up
+            taps_down: Number of tap positions down
+            max_reg: Maximum regulation up i.e 1.1 -> +10%
+            min_reg: Maximum regulation down i.e 0.9 -> -10%
+        """
+        self.max_tap = taps_up
+
+        self.min_tap = -taps_down
+
+        self.inc_reg_up = (max_reg - 1.0) / taps_up
+
+        self.inc_reg_down = (1.0 - min_reg) / taps_down
+
+        self.tap = 0
+
+    def tap_up(self):
+        """
+        Go to the next upper tap position
+        """
+        if self.tap + 1 <= self.max_tap:
+            self.tap += 1
+
+    def tap_down(self):
+        """
+        Go to the next upper tap position
+        """
+        if self.tap - 1 >= self.min_tap:
+            self.tap -= 1
+
+    def get_tap(self):
+        """
+        Get the tap voltage regulation module
+        """
+        if self.tap == 0:
+            return 1.0
+        elif self.tap > 0:
+            return 1.0 + self.tap * self.inc_reg_up
+        elif self.tap < 0:
+            return 1.0 + self.tap * self.inc_reg_down
+
+    def set_tap(self, tap_module):
+        """
+        Set the integer tap position corresponding to a tap vlaue
+        @param tap_module: value like 1.05
+        """
+        if tap_module == 1.0:
+            self.tap = 0
+        elif tap_module > 1:
+            self.tap = int(round(tap_module - 1.0) / self.inc_reg_up)
+        elif tap_module < 1:
+            self.tap = int(round(1.0 - tap_module) / self.inc_reg_down)
+
+
 class Branch:
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
@@ -1176,10 +1235,13 @@ class Branch:
         self.G = g
         self.B = b
 
+        self.tap_changer = TapChanger()
+
         if tap != 0:
             self.tap_module = tap
+            self.tap_changer.set_tap(self.tap_module)
         else:
-            self.tap_module = 1
+            self.tap_module = self.tap_changer.get_tap()
 
         self.angle = shift_angle
 
@@ -1248,12 +1310,19 @@ class Branch:
 
         return b
 
-    def get_tap(self):
+    def tap_up(self):
         """
-        Get the complex tap value
-        @return:
+        Move the tap changer one position up
         """
-        return self.tap_module * exp(-1j * self.angle)
+        self.tap_changer.tap_up()
+        self.tap_module = self.tap_changer.get_tap()
+
+    def tap_down(self):
+        """
+        Move the tap changer one position up
+        """
+        self.tap_changer.tap_down()
+        self.tap_module = self.tap_changer.get_tap()
 
     def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, i, f, t):
         """
@@ -1271,7 +1340,7 @@ class Branch:
         """
         z_series = complex(self.R, self.X)
         y_shunt = complex(self.G, self.B)
-        tap = self.get_tap()
+        tap = self.tap_module * exp(-1j * self.angle)
         Ysh = y_shunt / 2
         if abs(z_series) > 0:
             Ys = 1 / z_series
@@ -1298,45 +1367,23 @@ class Branch:
         Yt[i, f] += Ytf
         Yt[i, t] += Ytt
 
-        # Y shunt for HELM
+        # Y shunt
         Yshunt[f] += Yff_sh
         Yshunt[t] += Ytt_sh
 
-        # Y series for HELM
+        # Y series
         Yseries[f, f] += Ys / (tap * conj(tap))
         Yseries[f, t] += Yft
         Yseries[t, f] += Ytf
         Yseries[t, t] += Ys
 
         # B1 for FDPF (no shunts, no resistance, no tap module)
-        z_series = complex(0, self.X)
-        y_shunt = complex(0, 0)
-        tap = exp(-1j * self.angle)  # self.tap_module * exp(-1j * self.angle)
-        Ysh = y_shunt / 2
-        Ys = 1 / z_series
-
-        Ytt = Ys + Ysh
-        Yff = Ytt / (tap * conj(tap))
-        Yft = - Ys / conj(tap)
-        Ytf = - Ys / tap
-
         B1[f, f] -= Yff.imag
         B1[f, t] -= Yft.imag
         B1[t, f] -= Ytf.imag
         B1[t, t] -= Ytt.imag
 
         # B2 for FDPF (with shunts, only the tap module)
-        z_series = complex(self.R, self.X)
-        y_shunt = complex(self.G, self.B)
-        tap = self.tap_module  # self.tap_module * exp(-1j * self.angle)
-        Ysh = y_shunt / 2
-        Ys = 1 / z_series
-
-        Ytt = Ys + Ysh
-        Yff = Ytt / (tap * conj(tap))
-        Yft = - Ys / conj(tap)
-        Ytf = - Ys / tap
-
         B2[f, f] -= Yff.imag
         B2[f, t] -= Yft.imag
         B2[t, f] -= Ytf.imag
