@@ -1351,7 +1351,7 @@ class Ui_mainWindow(object):
         self.label_42.setText(_translate("mainWindow", "Solver"))
         self.load_shedding_checkBox.setToolTip(_translate("mainWindow", "<html><head/><body><p>When activated, the loading is always below 100%.</p><p>This is achieved by decreasing the load amount.</p><p>This is also called load shedding.</p></body></html>"))
         self.load_shedding_checkBox.setText(_translate("mainWindow", "Load shedding"))
-        self.show_real_values_for_lp_checkBox.setToolTip(_translate("mainWindow", "<html><head/><body><p>The linear program will produce a linearized solution for the loading</p><p>that might not be the real associated loading values that correspond</p><p>to the found voltage solution. This check allows you to see the real</p><p>associated values.</p></body></html>"))
+        self.show_real_values_for_lp_checkBox.setToolTip(_translate("mainWindow", "<html><head/><body><p>The linear program will produce a linearized solution for the loading that might not be the real associated loading values that correspond to the found voltage solution. This check allows you to see the real associated values.</p></body></html>"))
         self.show_real_values_for_lp_checkBox.setText(_translate("mainWindow", "Show the real associated values"))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_4), _translate("mainWindow", "OPF"))
         self.tabWidget_2.setTabToolTip(self.tabWidget_2.indexOf(self.tab_4), _translate("mainWindow", "Optimal power flow settings"))

@@ -960,7 +960,7 @@
                <item>
                 <widget class="QCheckBox" name="show_real_values_for_lp_checkBox">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The linear program will produce a linearized solution for the loading&lt;/p&gt;&lt;p&gt;that might not be the real associated loading values that correspond&lt;/p&gt;&lt;p&gt;to the found voltage solution. This check allows you to see the real&lt;/p&gt;&lt;p&gt;associated values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The linear program will produce a linearized solution for the loading that might not be the real associated loading values that correspond to the found voltage solution. This check allows you to see the real associated values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>Show the real associated values</string>

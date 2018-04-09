@@ -513,9 +513,57 @@ class Measurement:
         self.measurement_type = mtype
 
 
-########################################################################################################################
-# Circuit classes
-########################################################################################################################
+class ReliabilityDevice:
+
+    def __init__(self, mttf, mttr):
+        """
+        Class to provide reliability derived functionality
+        :param mttf: Mean Time To Failure (h)
+        :param mttr: Mean Time To Repair (h)
+        """
+        self.mttf = mttf
+
+        self.mttr = mttr
+
+    def get_failure_time(self, n_samples):
+        """
+        Get an array of possible failure times
+        :param n_samples: number of samples to draw
+        :return: Array of times in hours
+        """
+        return -1.0 * self.mttf * np.log(np.random.rand(n_samples))
+
+    def get_repair_time(self, n_samples):
+        """
+        Get an array of possible repair times
+        :param n_samples: number of samples to draw
+        :return: Array of times in hours
+        """
+        return -1.0 * self.mttr * np.log(np.random.rand(n_samples))
+
+    def get_reliability_events(self, horizon, n_samples):
+        """
+        Get random fail-repair events until a given time horizon in hours
+        :param horizon: maximum horizon in hours
+        :return: list of events
+        """
+        t = zeros(n_samples)
+        events = list()
+        while t.any() < horizon:  # if all event get to the horizon, finnish the sampling
+
+            # simulate failure
+            te = self.get_failure_time(n_samples)
+            if (t + te).any() <= horizon:
+                t += te
+                events.append(t)
+
+            # simulate repair
+            te = self.get_repair_time(n_samples)
+            if (t + te).any() <= horizon:
+                t += te
+                events.append(t)
+
+        return events
 
 
 class Bus:
@@ -1197,7 +1245,7 @@ class TapChanger:
             self.tap = int(round(1.0 - tap_module) / self.inc_reg_down)
 
 
-class Branch:
+class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1, tap=1, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
@@ -1215,6 +1263,8 @@ class Branch:
         @param mttr: Mean time to repair
         @param is_transformer: Is the branch a transformer?
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
 
         self.name = name
 
@@ -1247,9 +1297,9 @@ class Branch:
 
         self.rate = rate
 
-        self.mttf = mttf
+        # self.mttf = mttf
 
-        self.mttr = mttr
+        # self.mttr = mttr
 
         self.is_transformer = is_transformer
 
@@ -1447,10 +1497,10 @@ class Branch:
         return self.name
 
 
-class Load:
+class Load(ReliabilityDevice):
 
     def __init__(self, name='Load', impedance=complex(0, 0), current=complex(0, 0), power=complex(0, 0),
-                 impedance_prof=None, current_prof=None, power_prof=None, active=True):
+                 impedance_prof=None, current_prof=None, power_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
         Load model constructor
         This model implements the so-called ZIP model
@@ -1459,6 +1509,8 @@ class Load:
         @param current: Current complex (kA)
         @param power: Power complex (MVA)
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
 
         self.name = name
 
@@ -1495,16 +1547,18 @@ class Load:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
+        self.units = ['', '', '', 'MVA', 'MVA', 'MVA', 'h', 'h']  # ['', '', 'Ohm', 'kA', 'MVA']
 
         self.edit_types = {'name': str,
                            'bus': None,
                            'active': bool,
                            'Z': complex,
                            'I': complex,
-                           'S': complex}
+                           'S': complex,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'S': self.create_S_profile,
                           'I': self.create_I_profile,
@@ -1636,6 +1690,10 @@ class Load:
         # power profile for this load
         load.Sprof = self.Sprof
 
+        load.mttf = self.mttf
+
+        load.mttr = self.mttr
+
         return load
 
     def get_save_data(self):
@@ -1643,7 +1701,7 @@ class Load:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S)]
+        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S), self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1669,13 +1727,20 @@ class Load:
         return self.name
 
 
-class StaticGenerator:
+class StaticGenerator(ReliabilityDevice):
 
-    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True):
+    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
 
-        @param power:
+        :param name:
+        :param power:
+        :param power_prof:
+        :param active:
+        :param mttf:
+        :param mttr:
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
 
         self.name = name
 
@@ -1697,14 +1762,16 @@ class StaticGenerator:
         # power profile for this load
         self.Sprof = power_prof
 
-        self.edit_headers = ['name', 'bus', 'active', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'S', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA']
+        self.units = ['', '', '', 'MVA', 'h', 'h']
 
         self.edit_types = {'name': str,
                            'bus': None,
                            'active': bool,
-                           'S': complex}
+                           'S': complex,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'S': self.create_S_profile}
 
@@ -1722,7 +1789,7 @@ class StaticGenerator:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.S)]
+        return [self.name, self.bus.name, self.active, str(self.S), self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1799,11 +1866,11 @@ class StaticGenerator:
         return self.name
 
 
-class ControlledGenerator:
+class ControlledGenerator(ReliabilityDevice):
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
                  power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
-                 enabled_dispatch=True):
+                 enabled_dispatch=True, mttf=0.0, mttr=0.0):
         """
         Voltage controlled generator
         @param name: Name of the device
@@ -1819,7 +1886,11 @@ class ControlledGenerator:
         @param p_max maximum dispatchable power in MW
         @param op_cost operational cost in Eur (or other currency) per MW
         @param enabled_dispatch is the generator enabled for OPF?
+        @param mttf: Mean time to failure
+        @param mttr: Mean time to repair
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
 
         # name of the device
         self.name = name
@@ -1872,6 +1943,12 @@ class ControlledGenerator:
         # Cost of operation €/MW
         self.Cost = op_cost
 
+        # Mean time to failure
+        # self.mttf = mttf
+
+        # Mean time to repair
+        # self.mttr = mttr
+
         # base power MVA
         self.Sbase = Sbase
 
@@ -1885,9 +1962,9 @@ class ControlledGenerator:
         self.LPVar_P_prof = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch']
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1900,7 +1977,9 @@ class ControlledGenerator:
                            'Pmin': float,
                            'Pmax': float,
                            'Cost': float,
-                           'enabled_dispatch': bool}
+                           'enabled_dispatch': bool,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'P': self.create_P_profile,
                           'Vset': self.create_Vset_profile}
@@ -1947,6 +2026,10 @@ class ControlledGenerator:
         # is the generator enabled for dispatch?
         gen.enabled_dispatch = self.enabled_dispatch
 
+        gen.mttf = self.mttf
+
+        gen.mttr = self.mttr
+
         return gen
 
     def get_save_data(self):
@@ -1955,7 +2038,7 @@ class ControlledGenerator:
         :return:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch]
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -2122,7 +2205,7 @@ class Battery(ControlledGenerator):
 
     def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
                  Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
-                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True):
+                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True, mttf=0.0, mttr=0.0):
         """
         Batery (Voltage controlled and dispatchable)
         @param name: Name of the device
@@ -2139,6 +2222,8 @@ class Battery(ControlledGenerator):
         @param p_max maximum dispatchable power in MW
         @param op_cost operational cost in Eur (or other currency) per MW
         @param enabled_dispatch is the generator enabled for OPF?
+        @param mttf: Mean time to failure
+        @param mttr: Mean time to repair
         """
         ControlledGenerator.__init__(self, name=name,
                                      active_power=active_power,
@@ -2150,7 +2235,9 @@ class Battery(ControlledGenerator):
                                      p_min=p_min, p_max=p_max,
                                      op_cost=op_cost,
                                      Sbase=Sbase,
-                                     enabled_dispatch=enabled_dispatch)
+                                     enabled_dispatch=enabled_dispatch,
+                                     mttf=mttf,
+                                     mttr=mttr)
 
         # type of this device
         self.type_name = 'Battery'
@@ -2159,9 +2246,9 @@ class Battery(ControlledGenerator):
         self.Enom = Enom
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch']
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '']
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -2175,7 +2262,9 @@ class Battery(ControlledGenerator):
                            'Pmin': float,
                            'Pmax': float,
                            'Cost': float,
-                           'enabled_dispatch': bool}
+                           'enabled_dispatch': bool,
+                           'mttf': float,
+                           'mttr': float}
 
     def copy(self):
         """
@@ -2220,6 +2309,10 @@ class Battery(ControlledGenerator):
         # Enable for active power dispatch?
         batt.enabled_dispatch = self.enabled_dispatch
 
+        batt.mttf = self.mttf
+
+        batt.mttr = self.mttr
+
         return batt
 
     def get_save_data(self):
@@ -2228,7 +2321,7 @@ class Battery(ControlledGenerator):
         :return:
         """
         return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch]
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -2254,9 +2347,9 @@ class Battery(ControlledGenerator):
                 'Cost': self.Cost}
 
 
-class Shunt:
+class Shunt(ReliabilityDevice):
 
-    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True):
+    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
         Shunt object
         Args:
@@ -2265,6 +2358,9 @@ class Shunt:
             admittance_prof: Admittance profile in MVA at 1 p.u. voltage
             active: Is active True or False
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
+
         self.name = name
 
         self.active = active
@@ -2285,14 +2381,16 @@ class Shunt:
         # admittance profile
         self.Yprof = admittance_prof
 
-        self.edit_headers = ['name', 'bus', 'active', 'Y']
+        self.edit_headers = ['name', 'bus', 'active', 'Y', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA']  # MVA at 1 p.u.
+        self.units = ['', '', '', 'MVA', 'h', 'h']  # MVA at 1 p.u.
 
         self.edit_types = {'name': str,
                            'active': bool,
                            'bus': None,
-                           'Y': complex}
+                           'Y': complex,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'Y': self.create_Y_profile}
 
@@ -2314,6 +2412,10 @@ class Shunt:
         # admittance profile
         shu.Yprof = self.Yprof
 
+        shu.mttf = self.mttf
+
+        shu.mttr = self.mttr
+
         return shu
 
     def get_save_data(self):
@@ -2321,7 +2423,7 @@ class Shunt:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.Y)]
+        return [self.name, self.bus.name, self.active, str(self.Y), self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """

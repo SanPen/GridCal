@@ -2041,7 +2041,6 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
         else:
-
             pass
 
     def copy_opf_to_time_series(self):
