@@ -4639,11 +4639,12 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def power_flow_post_process(circuit: Circuit, V):
+    def power_flow_post_process(circuit: Circuit, V, only_power=False):
         """
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
         @param V: Voltage solution array for the circuit buses
+        @param only_power: compute only the power injection
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
@@ -4660,25 +4661,30 @@ class PowerFlowMP:
         Q = (V[pv] * conj(circuit.power_flow_input.Ybus[pv, :][:, :].dot(V))).imag
         Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
-        # Branches current, loading, etc
-        If = circuit.power_flow_input.Yf * V
-        It = circuit.power_flow_input.Yt * V
-        Sf = V[circuit.power_flow_input.F] * conj(If)
-        St = V[circuit.power_flow_input.T] * conj(It)
+        if not only_power:
+            # Branches current, loading, etc
+            If = circuit.power_flow_input.Yf * V
+            It = circuit.power_flow_input.Yt * V
+            Sf = V[circuit.power_flow_input.F] * conj(If)
+            St = V[circuit.power_flow_input.T] * conj(It)
 
-        # Branch losses in MVA
-        losses = (Sf + St) * circuit.Sbase
+            # Branch losses in MVA
+            losses = (Sf + St) * circuit.Sbase
 
-        # Branch current in p.u.
-        Ibranch = maximum(If, It)
+            # Branch current in p.u.
+            Ibranch = maximum(If, It)
 
-        # Branch power in MVA
-        Sbranch = maximum(Sf, St) * circuit.Sbase
+            # Branch power in MVA
+            Sbranch = maximum(Sf, St) * circuit.Sbase
 
-        # Branch loading in p.u.
-        loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)
+            # Branch loading in p.u.
+            loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)
 
-        return Sbranch, Ibranch, loading, losses, Sbus
+            return Sbranch, Ibranch, loading, losses, Sbus
+
+        else:
+            no_val = zeros(len(circuit.branches), dtype=complex)
+            return no_val, no_val, no_val, no_val, Sbus
 
     @staticmethod
     def switch_logic(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
@@ -8071,11 +8077,13 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
-    def get_results(self, save_lp_file=False, t_idx=None):
+    def get_results(self, save_lp_file=False, t_idx=None, realistic=False):
         """
         Return the optimization results
-        Returns:
-            OptimalPowerFlowResults instance
+        :param save_lp_file:
+        :param t_idx:
+        :param realistic:
+        :return: OptimalPowerFlowResults instance
         """
 
         # initialize results object
@@ -8090,55 +8098,75 @@ class DcOpf:
 
         if self.solved:
 
-            # Add buses
-            for i in range(n):
-                g = 0.0
+            if realistic:
 
-                generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+                # Add buses
+                for i in range(n):
+                    # Set the voltage
+                    res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
-                # Sum the slack generators
-                if t_idx is None:
-                    for gen in generators:
-                        if gen.active and gen.enabled_dispatch:
-                            g += gen.LPVar_P.value()
-                else:
-                    for gen in generators:
-                        if gen.active and gen.enabled_dispatch:
-                            g += gen.LPVar_P_prof[t_idx].value()
+                    if self.load_shed is not None:
+                        res.load_shedding[i] = self.load_shed[i].value()
 
-                # Set the results
-                res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, res.voltage)
 
-                # Set the voltage
-                res.voltage[i] = 1 * exp(1j * self.theta[i].value())
+            else:
+                # Add buses
+                for i in range(n):
+                    # g = 0.0
+                    #
+                    # generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+                    #
+                    # # Sum the slack generators
+                    # if t_idx is None:
+                    #     for gen in generators:
+                    #         if gen.active and gen.enabled_dispatch:
+                    #             g += gen.LPVar_P.value()
+                    # else:
+                    #     for gen in generators:
+                    #         if gen.active and gen.enabled_dispatch:
+                    #             g += gen.LPVar_P_prof[t_idx].value()
+                    #
+                    # # Set the results
+                    # res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
 
-                if self.load_shed is not None:
-                    res.load_shedding[i] = self.load_shed[i].value()
+                    # Set the voltage
+                    res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
-            # Add branches
-            for k, branch in enumerate(self.circuit.branches):
+                    if self.load_shed is not None:
+                        res.load_shedding[i] = self.load_shed[i].value()
 
-                if branch.active:
-                    # get the from and to nodal indices of the branch
-                    i = self.circuit.buses_dict[branch.bus_from]
-                    j = self.circuit.buses_dict[branch.bus_to]
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, res.voltage, only_power=True)
 
-                    # compute the power flowing
-                    if self.theta[i].value() is not None and self.theta[j].value() is not None:
-                        F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                # Add branches
+                for k, branch in enumerate(self.circuit.branches):
+
+                    if branch.active:
+                        # get the from and to nodal indices of the branch
+                        i = self.circuit.buses_dict[branch.bus_from]
+                        j = self.circuit.buses_dict[branch.bus_to]
+
+                        # compute the power flowing
+                        if self.theta[i].value() is not None and self.theta[j].value() is not None:
+                            F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                        else:
+                            F = -1
+
+                        # Set the results
+                        if self.slack_loading_ij_p[k] is not None:
+                            res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                                + self.slack_loading_ji_p[k].value()
+                                                - self.slack_loading_ij_n[k].value()
+                                                - self.slack_loading_ji_n[k].value()) * self.Sbase
+                        res.Sbranch[k] = F
+                        res.loading[k] = abs(F / branch.rate)
                     else:
-                        F = -1
+                        pass
 
-                    # Set the results
-                    if self.slack_loading_ij_p[k] is not None:
-                        res.overloads[k] = (self.slack_loading_ij_p[k].value()
-                                            + self.slack_loading_ji_p[k].value()
-                                            - self.slack_loading_ij_n[k].value()
-                                            - self.slack_loading_ji_n[k].value()) * self.Sbase
-                    res.Sbranch[k] = F
-                    res.loading[k] = abs(F / branch.rate)
-                else:
-                    pass
         else:
             # the problem did not solve, pass
             pass
@@ -8624,18 +8652,20 @@ class AcOpf:
         print(df_f)
         print(df_g)
 
-    def get_results(self, save_lp_file=False, t_idx=None):
+    def get_results(self, save_lp_file=False, t_idx=None, realistic=False):
         """
         Return the optimization results
-        Returns:
-            OptimalPowerFlowResults instance
+        :param save_lp_file:
+        :param t_idx:
+        :param realistic: compute the realistic values associated with the voltage solution
+        :return: OptimalPowerFlowResults instance
         """
 
         # initialize results object
-        n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        n_bus = len(self.circuit.buses)
+        n_branch = len(self.circuit.branches)
         res = OptimalPowerFlowResults(is_dc=False)
-        res.initialize(n, m)
+        res.initialize(n_bus, n_branch)
 
         if save_lp_file:
             # export the problem formulation to an LP file
@@ -8643,56 +8673,66 @@ class AcOpf:
 
         if self.solved:
 
-            # Add buses
-            for i in range(n):
-                g = 0.0
+            if realistic:
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, self.V)
+                res.voltage = self.V
+            else:
 
-                generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+                # Add buses
+                for i in range(n_bus):
 
-                # Sum the slack generators
-                if t_idx is None:
-                    for gen in generators:
-                        if gen.active and gen.enabled_dispatch:
-                            g += gen.LPVar_P.value()
-                else:
-                    for gen in generators:
-                        if gen.active and gen.enabled_dispatch:
-                            g += gen.LPVar_P_prof[t_idx].value()
+                    g = 0.0
+                    generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
 
-                # Set the results
-                res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
-
-                if self.load_shed is not None:
-                    res.load_shedding[i] = self.load_shed[i].value()
-
-            # Set the voltage
-            res.voltage = self.V
-            angles = np.angle(self.V)
-
-            # Add branches
-            for k, branch in enumerate(self.circuit.branches):
-
-                if branch.active:
-                    # get the from and to nodal indices of the branch
-                    i = self.circuit.buses_dict[branch.bus_from]
-                    j = self.circuit.buses_dict[branch.bus_to]
-
-                    # compute the power flowing
-                    if angles[i] is not None and angles[j] is not None:
-                        F = self.B[i, j] * (angles[i] - angles[j]) * self.Sbase
+                    # Sum the slack generators
+                    if t_idx is None:
+                        for gen in generators:
+                            if gen.active and gen.enabled_dispatch:
+                                g += gen.LPVar_P.value()
                     else:
-                        F = -1
+                        for gen in generators:
+                            if gen.active and gen.enabled_dispatch:
+                                g += gen.LPVar_P_prof[t_idx].value()
 
-                    # Set the results
-                    if self.slack_loading_ij_p[k] is not None:
-                        res.overloads[k] = (self.slack_loading_ij_p[k].value()
-                                            + self.slack_loading_ji_p[k].value()
-                                            - self.slack_loading_ij_n[k].value()
-                                            - self.slack_loading_ji_n[k].value()) * self.Sbase
-                    res.Sbranch[k] = F
-                    res.loading[k] = abs(F / branch.rate)
-                else:
-                    pass
+                    # Set the results (power, load shedding)
+                    res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
+
+                    if self.load_shed is not None:
+                        res.load_shedding[i] = self.load_shed[i].value()
+
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, self.V, only_power=True)
+                res.voltage = self.V
+                angles = np.angle(self.V)
+
+                # Add branches
+                for k, branch in enumerate(self.circuit.branches):
+
+                    if branch.active:
+                        # get the from and to nodal indices of the branch
+                        i = self.circuit.buses_dict[branch.bus_from]
+                        j = self.circuit.buses_dict[branch.bus_to]
+
+                        # compute the power flowing
+                        if angles[i] is not None and angles[j] is not None:
+                            F = self.B[i, j] * (angles[i] - angles[j]) * self.Sbase
+                        else:
+                            F = -1
+
+                        # Set the results
+                        if self.slack_loading_ij_p[k] is not None:
+                            res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                                + self.slack_loading_ji_p[k].value()
+                                                - self.slack_loading_ij_n[k].value()
+                                                - self.slack_loading_ji_n[k].value()) * self.Sbase
+                        res.Sbranch[k] = F
+                        res.loading[k] = abs(F / branch.rate)
+                    else:
+                        pass
+
         else:
             # the problem did not solve, pass
             pass
@@ -8702,17 +8742,21 @@ class AcOpf:
 
 class OptimalPowerFlowOptions:
 
-    def __init__(self, verbose=False, load_shedding=False, solver=SolverType.DC_OPF):
+    def __init__(self, verbose=False, load_shedding=False, solver=SolverType.DC_OPF, realistic_results=False):
         """
         OPF options constructor
-        :param verbose: 
-        :param load_shedding: 
+        :param verbose:
+        :param load_shedding:
+        :param solver:
+        :param realistic_results:
         """
         self.verbose = verbose
 
         self.load_shedding = load_shedding
 
         self.solver = solver
+
+        self.realistic_results = realistic_results
 
 
 class OptimalPowerFlowResults:
@@ -8942,7 +8986,7 @@ class OptimalPowerFlow(QRunnable):
         problem.solve()
 
         # results
-        res = problem.get_results(t_idx=t_idx)
+        res = problem.get_results(t_idx=t_idx, realistic=self.options.realistic_results)
 
         return res, problem.solved
 

@@ -957,6 +957,16 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="show_real_values_for_lp_checkBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The linear program will produce a linearized solution for the loading&lt;/p&gt;&lt;p&gt;that might not be the real associated loading values that correspond&lt;/p&gt;&lt;p&gt;to the found voltage solution. This check allows you to see the real&lt;/p&gt;&lt;p&gt;associated values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Show the real associated values</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1702,13 +1712,10 @@ points from time series</string>
            <item>
             <widget class="QLabel" name="label_24">
              <property name="text">
-              <string>Automatic grid layout</string>
+              <string>Automatic layout algorithm</string>
              </property>
              <property name="textFormat">
               <enum>Qt::PlainText</enum>
-             </property>
-             <property name="pixmap">
-              <pixmap resource="icons.qrc">:/Icons/white_icons/automatic_layout.svg</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -2558,7 +2565,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
