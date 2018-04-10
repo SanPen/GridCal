@@ -2600,7 +2600,7 @@ class GridEditor(QSplitter):
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-        print('(', min_x, min_y, ')(', max_x, max_y, ')')
+        # print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
         h = max_y - min_y + 100
         w = max_x - min_x + 100
@@ -2643,7 +2643,7 @@ class GridEditor(QSplitter):
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-        print('(', min_x, min_y, ')(', max_x, max_y, ')')
+        # print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
         h = max_y - min_y + 100
         w = max_x - min_x + 100

@@ -1678,7 +1678,7 @@ class MainGUI(QMainWindow):
 
                 options = self.get_selected_power_flow_options()
                 start = self.ui.profile_start_slider.value()
-                end = self.ui.profile_end_slider.value()
+                end = self.ui.profile_end_slider.value() + 1
 
                 self.time_series = TimeSeries(grid=self.circuit, options=options, start=start, end=end)
 
@@ -2023,7 +2023,7 @@ class MainGUI(QMainWindow):
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
                 start = self.ui.profile_start_slider.value()
-                end = self.ui.profile_end_slider.value()
+                end = self.ui.profile_end_slider.value() + 1
 
                 # create the OPF time series instance
                 self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
