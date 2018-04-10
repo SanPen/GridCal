@@ -384,6 +384,10 @@ class MainGUI(QMainWindow):
         # combobox
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
+        # sliders
+        self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
+        self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
+
         ################################################################################################################
         # Colormaps
         ################################################################################################################
@@ -835,6 +839,8 @@ class MainGUI(QMainWindow):
             if self.circuit.time_profile is not None:
                 # print('Profiles available')
                 mdl = get_list_model(self.circuit.time_profile)
+                # setup profile sliders
+                self.set_up_profile_sliders()
             else:
                 mdl = QStandardItemModel()
             self.ui.profile_time_selection_comboBox.setModel(mdl)
@@ -1152,9 +1158,12 @@ class MainGUI(QMainWindow):
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
             steps, step_length, step_unit, time_base = dlg.get_values()
-            # print(steps, step_length, step_unit, time_base)
+
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
+
             self.compile()
+
+            self.set_up_profile_sliders()
 
     def delete_profiles_structure(self):
         """
@@ -1172,6 +1181,7 @@ class MainGUI(QMainWindow):
                 self.circuit.time_profile = None
                 self.circuit.has_time_series = False
                 self.ui.tableView.setModel(None)
+                self.set_up_profile_sliders()
             else:
                 pass
         else:
@@ -1250,6 +1260,9 @@ class MainGUI(QMainWindow):
                 for i, elm in enumerate(objects):
                     if not dialogue.zeroed[i]:
                         elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+
+                # set up sliders
+                self.set_up_profile_sliders()
 
             else:
                 pass  # the dialogue was closed
@@ -1664,7 +1677,10 @@ class MainGUI(QMainWindow):
                 self.compile(use_opf_vals=use_opf_vals)
 
                 options = self.get_selected_power_flow_options()
-                self.time_series = TimeSeries(grid=self.circuit, options=options)
+                start = self.ui.profile_start_slider.value()
+                end = self.ui.profile_end_slider.value()
+
+                self.time_series = TimeSeries(grid=self.circuit, options=options, start=start, end=end)
 
                 # Set the time series run options
                 self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2006,9 +2022,14 @@ class MainGUI(QMainWindow):
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
+                start = self.ui.profile_start_slider.value()
+                end = self.ui.profile_end_slider.value()
 
                 # create the OPF time series instance
-                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)
+                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
+                                                                                 options=options,
+                                                                                 start_=start,
+                                                                                 end_=end)
 
                 # make the thread connections to the GUI
                 self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2323,6 +2344,41 @@ class MainGUI(QMainWindow):
 
         for bus in self.circuit.buses:
             bus.graphic_obj.adapt()
+
+    def set_up_profile_sliders(self):
+        """
+        Set up profiles
+        :return:
+        """
+        if self.circuit.time_profile is not None:
+            t = len(self.circuit.time_profile) - 1
+
+            self.ui.profile_start_slider.setMinimum(0)
+            self.ui.profile_start_slider.setMaximum(t)
+            self.ui.profile_start_slider.setValue(0)
+
+            self.ui.profile_end_slider.setMinimum(0)
+            self.ui.profile_end_slider.setMaximum(t)
+            self.ui.profile_end_slider.setValue(t)
+        else:
+            pass
+
+    def profile_sliders_changed(self):
+        """
+        Correct sliders if they change
+        :return:
+        """
+        start = self.ui.profile_start_slider.value()
+        end = self.ui.profile_end_slider.value()
+
+        if start > end:
+            self.ui.profile_end_slider.setValue(start)
+            end = start
+
+        if self.circuit.time_profile is not None:
+            t1 = self.circuit.time_profile[start]
+            t2 = self.circuit.time_profile[end]
+            self.ui.profile_label.setText(str(t1) + '->' + str(t2))
 
 
 def run():

@@ -2078,9 +2078,6 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="6">
-                <widget class="QComboBox" name="comboBox"/>
-               </item>
                <item row="1" column="10">
                 <widget class="Line" name="line_7">
                  <property name="orientation">
@@ -2186,21 +2183,24 @@ points from time series</string>
                 </widget>
                </item>
                <item row="1" column="5">
-                <widget class="QComboBox" name="comboBox_2"/>
-               </item>
-               <item row="0" column="6">
-                <widget class="QLabel" name="label_35">
+                <widget class="QLabel" name="profile_label">
                  <property name="text">
-                  <string>End</string>
+                  <string>...</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="5">
-                <widget class="QLabel" name="label_36">
-                 <property name="text">
-                  <string>Start</string>
+               <item row="1" column="6">
+                <spacer name="horizontalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
-                </widget>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </widget>
@@ -2295,6 +2295,34 @@ points from time series</string>
                   </size>
                  </property>
                 </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string>Start</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="profile_start_slider">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_35">
+                 <property name="text">
+                  <string>End</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="profile_end_slider">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>

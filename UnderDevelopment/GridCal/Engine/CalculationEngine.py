@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.21
+__GridCal_VERSION__ = 2.22
 
 import os
 import pickle as pkl
@@ -568,19 +568,20 @@ class ReliabilityDevice:
 
 class Bus:
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
+                 active=True, is_slack=False):
         """
         Bus  constructor
-        Args:
-            name:
-            vnom:
-            vmin:
-            vmax:
-            xpos:
-            ypos:
-            height:
-            width:
-            active:
+        :param name: name of the bus
+        :param vnom: nominal voltage in kV
+        :param vmin: minimum per unit voltage (i.e. 0.9)
+        :param vmax: maximum per unit voltage (i.e. 1.1)
+        :param xpos: x position in pixels
+        :param ypos: y position in pixels
+        :param height: height of the graphic object
+        :param width: width of the graphic object
+        :param active: is the bus active?
+        :param is_slack: is this bus a slack bus?
         """
 
         self.name = name
@@ -592,16 +593,22 @@ class Bus:
         # Nominal voltage (kV)
         self.Vnom = vnom
 
+        # minimum voltage limit
         self.Vmin = vmin
 
+        # maximum voltage limit
         self.Vmax = vmax
 
+        # summation of lower reactive power limits connected
         self.Qmin_sum = 0
 
+        # summation of upper reactive power limits connected
         self.Qmax_sum = 0
 
+        # short circuit impedance
         self.Zf = 0
 
+        # is the bus active?
         self.active = active
 
         # List of load s attached to this bus
@@ -632,14 +639,13 @@ class Bus:
         # So that P +jQ are computed
         self.dispatch_storage = False
 
+        # position and dimensions
         self.x = xpos
-
         self.y = ypos
-
         self.h = height
-
         self.w = width
 
+        # associated graphic object
         self.graphic_obj = None
 
         self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w']
@@ -5520,7 +5526,7 @@ class TimeSeriesInput:
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, nt, time=None):
+    def __init__(self, n, m, nt, start, end, time=None):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -5532,6 +5538,8 @@ class TimeSeriesResults(PowerFlowResults):
         self.nt = nt
         self.m = m
         self.n = n
+        self.start = start
+        self.end = end
 
         self.time = time
 
@@ -5825,7 +5833,7 @@ class TimeSeriesResultsAnalysis:
 
         self.buses_selected_for_storage_frequency = zeros(self.res.n)
 
-        for i in range(self.res.nt):
+        for i in range(self.res.start, self.res.end):
             self.branch_overload_frequency[self.res.overloads_idx[i]] += 1
             self.bus_undervoltage_frequency[self.res.undervoltage_idx[i]] += 1
             self.bus_overvoltage_frequency[self.res.overvoltage_idx[i]] += 1
@@ -5842,7 +5850,7 @@ class TimeSeries(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, start=0, end=None):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
@@ -5856,6 +5864,10 @@ class TimeSeries(QThread):
         self.options = options
 
         self.results = None
+
+        self.start_ = start
+
+        self.end_ = end
 
         self.__cancel__ = False
 
@@ -5872,7 +5884,9 @@ class TimeSeries(QThread):
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        if self.end_ is None:
+            self.end_ = nt
 
         # For every circuit, run the time series
         for nc, circuit in enumerate(self.grid.circuits):
@@ -5880,17 +5894,13 @@ class TimeSeries(QThread):
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
             if circuit.time_series_input.valid:
-
-                nt = len(circuit.time_series_input.time_array)
-                n = len(circuit.buses)
-                m = len(circuit.branches)
-                results = TimeSeriesResults(n, m, nt)
+                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
                 Vlast = circuit.power_flow_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
-                t = 0
-                while t < nt and not self.__cancel__:
+                t = self.start_
+                while t < self.end_ and not self.__cancel__:
                     # set the power values
                     Y, I, S = circuit.time_series_input.get_at(t)
 
@@ -5903,7 +5913,7 @@ class TimeSeries(QThread):
                     # store circuit results at the time index 't'
                     results.set_at(t, res)
 
-                    progress = ((t + 1) / nt) * 100
+                    progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
                     t += 1
 
@@ -5933,7 +5943,9 @@ class TimeSeries(QThread):
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        if self.end_ is None:
+            self.end_ = nt
 
         n_cores = multiprocessing.cpu_count()
 
@@ -5944,10 +5956,7 @@ class TimeSeries(QThread):
 
             if circuit.time_series_input.valid:
 
-                nt = len(circuit.time_series_input.time_array)
-                n = len(circuit.buses)
-                m = len(circuit.branches)
-                results = TimeSeriesResults(n, m, nt)
+                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
                 Vlast = circuit.power_flow_input.Vbus
 
                 self.progress_signal.emit(0.0)
@@ -5956,8 +5965,8 @@ class TimeSeries(QThread):
                 manager = multiprocessing.Manager()
                 return_dict = manager.dict()
 
-                t = 0
-                while t < nt and not self.__cancel__:
+                t = self.start_
+                while t < self.end_ and not self.__cancel__:
 
                     k = 0
                     jobs = list()
@@ -5978,7 +5987,7 @@ class TimeSeries(QThread):
                     for proc in jobs:
                         proc.join()
 
-                    progress = ((t + 1) / nt) * 100
+                    progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
 
                 # collect results
@@ -6023,10 +6032,10 @@ class TimeSeries(QThread):
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
 
         n_cores = multiprocessing.cpu_count()
-        total_processes=nt
+        total_processes = nt
 
         pool = multiprocessing.Pool()
 
@@ -6040,7 +6049,7 @@ class TimeSeries(QThread):
                 nt = len(circuit.time_series_input.time_array)
                 n = len(circuit.buses)
                 m = len(circuit.branches)
-                results = TimeSeriesResults(n, m, nt)
+                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
                 Vlast = circuit.power_flow_input.Vbus
 
                 self.progress_signal.emit(0.0)
@@ -6494,7 +6503,7 @@ class MonteCarlo(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
         Sbase = self.grid.Sbase
         n_cores = multiprocessing.cpu_count()
 
@@ -6632,7 +6641,7 @@ class MonteCarlo(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
         Sbase = self.grid.Sbase
 
         it = 0
@@ -7196,7 +7205,7 @@ class LatinHypercubeSampling(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
 
         batch_size = self.sampling_points
         n = len(self.grid.buses)
@@ -9301,7 +9310,7 @@ class OptimalPowerFlowTimeSeries(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
         """
         OPF time series constructor
         :param grid: MultiCircuit instance
@@ -9314,6 +9323,10 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.grid = grid
 
         self.results = None
+
+        self.start_ = start_
+
+        self.end_ = end_
 
         self.__cancel__ = False
 
@@ -9351,18 +9364,20 @@ class OptimalPowerFlowTimeSeries(QThread):
             n = len(self.grid.buses)
             m = len(self.grid.branches)
             nt = len(self.grid.time_profile)
+            if self.end_ is None:
+                self.end_ = nt
             self.results = OptimalPowerFlowTimeSeriesResults(n, m, nt, time=self.grid.time_profile, is_dc=is_dc)
 
-            t = 0
-            while t < nt and not self.__cancel__:
-                print(t + 1, ' / ', nt)
+            t = self.start_
+            while t < self.end_ and not self.__cancel__:
+                # print(t + 1, ' / ', nt)
                 # set the power values
                 # Y, I, S = self.grid.time_series_input.get_at(t)
 
                 res = opf.run_at(t)
                 self.results.set_at(t, res)
 
-                progress = ((t + 1) / nt) * 100
+                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
                 t += 1
 
