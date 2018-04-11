@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.22
+__GridCal_VERSION__ = 2.23
 
 import os
 import pickle as pkl
@@ -5894,6 +5894,10 @@ class TimeSeries(QThread):
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
             if circuit.time_series_input.valid:
+
+                nt = len(circuit.time_series_input.time_array)
+                n = len(circuit.buses)
+                m = len(circuit.branches)
                 results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
                 Vlast = circuit.power_flow_input.Vbus
 
@@ -5956,6 +5960,9 @@ class TimeSeries(QThread):
 
             if circuit.time_series_input.valid:
 
+                nt = len(circuit.time_series_input.time_array)
+                n = len(circuit.buses)
+                m = len(circuit.branches)
                 results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
                 Vlast = circuit.power_flow_input.Vbus
 
