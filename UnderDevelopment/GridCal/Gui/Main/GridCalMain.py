@@ -908,7 +908,6 @@ class MainGUI(QMainWindow):
             # no buses so exit
             event.accept()
 
-
     def export_pf_results(self):
         """
         Export power flow results
@@ -1163,7 +1162,6 @@ class MainGUI(QMainWindow):
 
         """
         dev_type = self.ui.profile_device_type_comboBox.currentText()
-
         mdl = get_list_model(self.circuit.profile_magnitudes[dev_type][0])
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
 
@@ -2203,9 +2201,7 @@ class MainGUI(QMainWindow):
 
     def update_available_results_in_the_study(self):
         """
-
-        Returns:
-
+        Update the available results
         """
         elm = self.ui.result_listView.selectedIndexes()[0].data()
         lst = self.available_results_dict[elm]
@@ -2368,7 +2364,6 @@ class MainGUI(QMainWindow):
         """
         Adapt the width of all the nodes to their names
         """
-
         for bus in self.circuit.buses:
             bus.graphic_obj.adapt()
 
@@ -2415,7 +2410,7 @@ def run():
     """
     app = QApplication(sys.argv)
     window = MainGUI()
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio :)
+    window.resize(int(1.61 * 700.0), 700)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())
 
