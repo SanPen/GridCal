@@ -890,6 +890,26 @@ class MainGUI(QMainWindow):
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
+    def closeEvent(self, event):
+        """
+        Close event
+        :param event:
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            quit_msg = "Are you sure you want to exit GridCal?"
+            reply = QtGui.QMessageBox.question(self, 'Message',
+                                               quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+            if reply == QtGui.QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            # no buses so exit
+            event.accept()
+
+
     def export_pf_results(self):
         """
         Export power flow results
@@ -2075,10 +2095,20 @@ class MainGUI(QMainWindow):
 
                 if self.optimal_power_flow_time_series is not None:
 
-                    pass
+                    quit_msg = "Are you sure you want overwrite the time events " \
+                               "with the simulated by the OPF time series?"
+                    reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                    if reply == QMessageBox.Yes:
+
+                        self.circuit.apply_lp_profiles()
+
+                    else:
+                        pass
 
                 else:
-                    self.msg('There are no OPF time series execution.\nRun OPF time series to be able to copy the value to the time series object.')
+                    self.msg('There are no OPF time series execution.'
+                             '\nRun OPF time series to be able to copy the value to the time series object.')
 
             else:
                 self.msg('There are no time series.\nLoad time series are needed for this simulation.')
@@ -2107,9 +2137,7 @@ class MainGUI(QMainWindow):
 
     def update_available_results(self):
         """
-
-        Returns:
-
+        Update the results that are displayed in the results tab
         """
         lst = list()
         self.available_results_dict = dict()
