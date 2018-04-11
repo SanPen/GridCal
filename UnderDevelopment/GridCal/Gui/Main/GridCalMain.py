@@ -898,10 +898,9 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             quit_msg = "Are you sure you want to exit GridCal?"
-            reply = QtGui.QMessageBox.question(self, 'Message',
-                                               quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            reply = QMessageBox.question(self, 'Close', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
-            if reply == QtGui.QMessageBox.Yes:
+            if reply == QMessageBox.Yes:
                 event.accept()
             else:
                 event.ignore()
