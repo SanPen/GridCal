@@ -1709,7 +1709,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
 
-class BusGraphicItem(QGraphicsRectItem, GeneralItem):
+class BusGraphicItem(QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -1732,8 +1732,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         super(BusGraphicItem, self).__init__(parent)
 
-        self.min_w = 60.0
-        self.min_h = 60.0
+        self.min_w = 180.0
+        self.min_h = 20.0
+        self.offset = 10
         self.h = bus.h if bus.h >= self.min_h else self.min_h
         self.w = bus.w if bus.w >= self.min_w else self.min_w
 
@@ -1749,7 +1750,14 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Enabled for short circuit
         self.sc_enabled = False
         self.pen_width = 4
-        # Properties of the rectangle:
+
+        # index
+        self.index = index
+
+        if pos is not None:
+            self.setPos(pos)
+
+        # color
         if self.api_object is not None:
             if self.api_object.active:
                 self.color = ACTIVE['color']
@@ -1761,36 +1769,47 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        # self.setBrush(QBrush(Qt.darkGray))
-        self.setPen(QPen(self.color, self.pen_width, self.style))
-        self.setBrush(self.color)
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
-        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-
-        # index
-        self.index = index
-
-        if pos is not None:
-            self.setPos(pos)
-
         # Label:
         self.label = QGraphicsTextItem(bus.name, self)
-        self.label.setDefaultTextColor(QtCore.Qt.white)
+        # self.label.setDefaultTextColor(QtCore.Qt.white)
+        self.label.setDefaultTextColor(QtCore.Qt.black)
 
-        # Create corner for resize:
-        self.sizer = HandleItem(self)
-        self.sizer.setPos(self.w, self.h)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
-
-        self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
+        # square
+        self.tile = QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
+        self.tile.setOpacity(0.7)
 
         # connection terminals the block
         self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-
+        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style))
         self.hosting_connections = list()
+
+        # Create corner for resize:
+        self.sizer = HandleItem(self.terminal)
+        self.sizer.setPos(self.w, self.h)
+        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
+        self.sizer.setFlag(self.ItemIsMovable)
+        self.adapt()
+
+        # self.setBrush(QBrush(Qt.darkGray))
+        # self.setPen(QPen(self.color, self.pen_width, self.style))
+        # self.setBrush(self.color)
+
+        self.set_tile_color(self.color)
+
+        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.transparent)
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
         # Update size:
         self.change_size(self.w, self.h)
+
+    # def setPen(self, pen):
+    #     self.tile.setPen(pen)
+    #
+    def set_tile_color(self, brush):
+        self.tile.setBrush(brush)
+        self.terminal.setBrush(brush)
 
     def change_size(self, w, h):
         """
@@ -1800,15 +1819,15 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @return:
         """
         # Limit the block size to the minimum size:
-        if h < self.min_h:
-            h = self.min_h
+        # if h < self.min_h:
+        #     h = self.min_h
+        h = self.min_h
         if w < self.min_w:
             w = self.min_w
 
         self.setRect(0.0, 0.0, w, h)
         self.h = h
         self.w = w
-        offset = 10
 
         # center label:
         rect = self.label.boundingRect()
@@ -1818,7 +1837,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.label.setPos(lx, ly)
 
         # lower
-        y0 = h + offset
+        y0 = h + self.offset
         x0 = 0
         self.terminal.setPos(x0, y0)
         self.terminal.setRect(0.0, 0.0, w, 10)
@@ -1826,9 +1845,6 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Set text
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
-
-        # Move the sizer
-        # self.sizer.setPos(self.w, self.h)
 
         # rearrange children
         self.arrange_children()
@@ -1931,6 +1947,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         menu.exec_(event.screenPos())
 
+    def delete_all_connections(self):
+
+        self.terminal.remove_all_connections()
+
     def remove(self):
         """
         Remove this element
@@ -1979,12 +1999,13 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if self.sc_enabled is True:
-            self.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
+            # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
+            self.tile.setPen(QPen(Qt.transparent, self.pen_width))
             self.sc_enabled = False
 
         else:
             self.sc_enabled = True
-            self.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
+            self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
 
     def plot_profiles(self):
         """
@@ -2017,10 +2038,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         Set the bus width according to the label text
         """
-        h = self.h
+        h = self.terminal.boundingRect().height()
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
-        self.sizer.setPos(w, h)
+        self.sizer.setPos(w, self.h)
 
     def add_load(self, api_obj=None):
         """

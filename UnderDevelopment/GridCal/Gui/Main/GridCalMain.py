@@ -601,7 +601,7 @@ class MainGUI(QMainWindow):
                 r, g, b, a = self.voltage_cmap(vnorm[i])
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
-                bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
+                bus.graphic_obj.set_tile_color(QColor(r*255, g*255, b*255, a*255))
 
                 tooltip = str(i) + ': ' + bus.name + '\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
@@ -613,7 +613,7 @@ class MainGUI(QMainWindow):
                 bus.graphic_obj.setToolTip(tooltip)
 
             else:
-                bus.graphic_obj.setBrush(Qt.gray)
+                bus.graphic_obj.set_tile_color(Qt.gray)
 
         # color branches
         if s_branch is not None:
