@@ -1876,7 +1876,9 @@ class ControlledGenerator(ReliabilityDevice):
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
                  power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
-                 enabled_dispatch=True, mttf=0.0, mttr=0.0):
+                 enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0,
+                 Xa=0.0, Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
+                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2):
         """
         Voltage controlled generator
         @param name: Name of the device
@@ -1949,11 +1951,20 @@ class ControlledGenerator(ReliabilityDevice):
         # Cost of operation €/MW
         self.Cost = op_cost
 
-        # Mean time to failure
-        # self.mttf = mttf
-
-        # Mean time to repair
-        # self.mttr = mttr
+        # Dynamic vars
+        self.Ra = Ra
+        self.Xa = Xa
+        self.Xd = Xd
+        self.Xq = Xq
+        self.Xdp = Xdp
+        self.Xqp = Xqp
+        self.Xdpp = Xdpp
+        self.Xqpp = Xqpp
+        self.Td0p = Td0p
+        self.Tq0p = Tq0p
+        self.Td0pp = Td0pp
+        self.Tq0pp = Tq0pp
+        self.H = H
 
         # base power MVA
         self.Sbase = Sbase
