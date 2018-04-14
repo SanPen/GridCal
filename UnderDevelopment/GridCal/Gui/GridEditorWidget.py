@@ -1790,7 +1790,8 @@ class BusGraphicItem(QGraphicsRectItem):
         self.sizer.setFlag(self.ItemIsMovable)
         self.adapt()
 
-        # self.setBrush(QBrush(Qt.darkGray))
+        # self.setBrush(QBrush(Qt.white))
+        # self.setOpacity(0.4)
         # self.setPen(QPen(self.color, self.pen_width, self.style))
         # self.setBrush(self.color)
 
