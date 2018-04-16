@@ -2904,6 +2904,37 @@ class Circuit:
         for bus in self.buses:
             bus.apply_lp_profiles(self.Sbase)
 
+    def copy(self):
+        """
+        Returns a deep (true) copy of this circuit
+        @return:
+        """
+
+        cpy = Circuit()
+
+        cpy.name = self.name
+
+        bus_dict = dict()
+        for bus in self.buses:
+            bus_cpy = bus.copy()
+            bus_dict[bus] = bus_cpy
+            cpy.buses.append(bus_cpy)
+
+        for branch in self.branches:
+            cpy.branches.append(branch.copy(bus_dict))
+
+        cpy.Sbase = self.Sbase
+
+        cpy.branch_original_idx = self.branch_original_idx.copy()
+
+        cpy.bus_original_idx = self.bus_original_idx.copy()
+
+        cpy.time_series_input = self.time_series_input.copy()
+
+        cpy.power_flow_input = self.power_flow_input.copy()
+
+        return cpy
+
     def __str__(self):
         return self.name
 
@@ -3915,6 +3946,10 @@ class PowerFlowInput:
         @param n: Number of buses
         @param m: Number of branches
         """
+        self.n = n
+
+        self.m = m
+
         # Array of integer values representing the buses types
         self.types = zeros(n, dtype=int)
 
@@ -4182,6 +4217,83 @@ class PowerFlowInput:
             raise Exception('PF input: structure type not found')
 
         return df
+
+    def copy(self):
+
+        cpy = PowerFlowInput(self.n, self.m)
+
+        cpy.types = self.types.copy()
+
+        cpy.ref = self.ref.copy()
+
+        cpy.pv = self.pv.copy()
+
+        cpy.pq = self.pq.copy()
+
+        cpy.sto = self.sto.copy()
+
+        cpy.pqpv = self.pqpv.copy()
+
+        # Branch admittance matrix with the from buses
+        cpy.Yf = self.Yf.copy()
+
+        # Branch admittance matrix with the to buses
+        cpy.Yt = self.Yt.copy()
+
+        # Array with the 'from' index of the from bus of each branch
+        cpy.F = self.F.copy()
+
+        # Array with the 'to' index of the from bus of each branch
+        cpy.T = self.T.copy()
+
+        # array to store a 1 for the active branches
+        cpy.active_branches = self.active_branches.copy()
+
+        # Full admittance matrix (will be converted to sparse)
+        cpy.Ybus = self.Ybus.copy()
+
+        # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
+        # self.Zbus = None
+
+        # Admittance matrix of the series elements (will be converted to sparse)
+        cpy.Yseries = self.Yseries.copy()
+
+        # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
+        cpy.Yshunt = self.Yshunt.copy()
+
+        # Jacobian matrix 1 for the fast-decoupled power flow
+        cpy.B1 = self.B1.copy()
+
+        # Jacobian matrix 2 for the fast-decoupled power flow
+        cpy.B2 = self.B2.copy()
+
+        # Array of line-line nominal voltages of the buses
+        cpy.Vnom = self.Vnom.copy()
+
+        # Currents at the buses array
+        cpy.Ibus = self.Ibus.copy()
+
+        # Powers at the buses array
+        cpy.Sbus = self.Sbus.copy()
+
+        # Voltages at the buses array
+        cpy.Vbus = self.Vbus.copy()
+
+        cpy.Vmin = self.Vmin.copy()
+
+        cpy.Vmax = self.Vmax.copy()
+
+        cpy.Qmin = self.Qmin.copy()
+
+        cpy.Qmax = self.Qmax.copy()
+
+        cpy.branch_rates = self.branch_rates.copy()
+
+        cpy.bus_names = self.bus_names.copy()
+
+        cpy.available_structures = self.available_structures.copy()
+
+        return cpy
 
 
 class PowerFlowResults:
@@ -5534,6 +5646,30 @@ class TimeSeriesInput:
             self.Iprof[res.Iprof.columns.values] = res.Iprof
             self.Yprof[res.Yprof.columns.values] = res.Yprof
 
+    def copy(self):
+
+        cpy = TimeSeriesInput()
+
+        # master time array. All the profiles must match its length
+        cpy.time_array = self.time_array
+
+        cpy.Sprof = self.Sprof.copy()
+        cpy.Iprof = self.Iprof.copy()
+        cpy.Yprof = self.Yprof.copy()
+
+        # Array of load admittances (shunt)
+        cpy.Y = self.Y.copy()
+
+        # Array of load currents
+        cpy.I = self.I.copy()
+
+        # Array of aggregated bus power (loads, generators, storage, etc...)
+        cpy.S = self.S.copy()
+
+        # is this timeSeriesInput valid? typically it is valid after compiling it
+        cpy.valid = self.valid
+
+        return cpy
 
 class TimeSeriesResults(PowerFlowResults):
 
@@ -5900,7 +6036,10 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         # For every circuit, run the time series
-        for nc, circuit in enumerate(self.grid.circuits):
+        for nc, circuit_orig in enumerate(self.grid.circuits):
+
+            # make a copy of the circuit to allow controls in place
+            circuit = circuit_orig.copy()
 
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
