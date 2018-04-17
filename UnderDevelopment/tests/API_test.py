@@ -25,7 +25,8 @@ if __name__ == '__main__':
     # fname = 'IEEE_30_new.xlsx'
     # fname = 'lynn5buspq.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
+    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
@@ -35,7 +36,11 @@ if __name__ == '__main__':
     grid.compile()
 
     options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False,
-                               initialize_with_existing_solution=False, multi_core=False)
+                               initialize_with_existing_solution=False,
+                               multi_core=False, dispatch_storage=True)
+
+    # grid.export_profiles('ppppppprrrrroooofiles.xlsx')
+    # exit()
 
     ####################################################################################################################
     # PowerFlow
@@ -94,6 +99,13 @@ if __name__ == '__main__':
     ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
     lst = np.array(list(range(ts.results.n)), dtype=int)
     ts.results.plot('Bus voltage', indices=lst, names=lst)
+
+    plt.figure()
+    batteries = grid.get_batteries()
+    batteries[0].power_array.plot(label='Battery power')
+    batteries[0].energy_array.plot(label='Battery energy')
+    plt.legend()
+
     plt.show()
 
     ####################################################################################################################

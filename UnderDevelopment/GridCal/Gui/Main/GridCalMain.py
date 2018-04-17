@@ -314,6 +314,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionExport_all_power_flow_results.triggered.connect(self.export_pf_results)
 
+        self.ui.actionExport_all_the_device_s_profiles.triggered.connect(self.export_object_profiles)
+
         self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
 
         # Buttons
@@ -671,13 +673,13 @@ class MainGUI(QMainWindow):
         dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
-    def compile(self, use_opf_vals=False):
+    def compile(self, use_opf_vals=False, dispatch_storage=False):
         """
         This function compiles the circuit and updates the UI accordingly
         """
 
         try:
-            self.circuit.compile(use_opf_vals)
+            self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage)
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
@@ -925,7 +927,7 @@ class MainGUI(QMainWindow):
             # set grid name
             self.circuit.name = self.grid_editor.name_label.text()
 
-            fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+            fname = os.path.join(self.project_directory, 'power flow results of ' + self.grid_editor.name_label.text())
 
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
@@ -935,6 +937,34 @@ class MainGUI(QMainWindow):
                 self.circuit.export_pf(file_name=filename)
         else:
             pass
+
+    def export_object_profiles(self):
+        """
+        Export object profiles
+        """
+        if self.circuit.time_profile is not None:
+            if self.circuit.graph is None:
+                self.circuit.compile()
+
+            # declare the allowed file types
+            files_types = "Excel file (*.xlsx)"
+            # call dialog to select the file
+            if self.project_directory is None:
+                self.project_directory = ''
+
+            # set grid name
+            self.circuit.name = self.grid_editor.name_label.text()
+
+            fname = os.path.join(self.project_directory, 'profiles of ' + self.grid_editor.name_label.text())
+
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+            if filename is not "":
+                if not filename.endswith('.xlsx'):
+                    filename += '.xlsx'
+                self.circuit.export_profiles(file_name=filename)
+        else:
+            self.msg('There are no profiles!')
 
     def export_simulation_data(self):
         """
@@ -1370,6 +1400,8 @@ class MainGUI(QMainWindow):
 
         set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
 
+        dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
+
         if self.ui.helm_retry_checkBox.isChecked():
             solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
         else:
@@ -1385,7 +1417,8 @@ class MainGUI(QMainWindow):
                                tolerance=tolerance,
                                max_iter=max_iter,
                                control_q=enforce_q_limits,
-                               multi_core=mp)
+                               multi_core=mp,
+                               dispatch_storage=dispatch_storage)
 
         return ops
 
@@ -1691,9 +1724,10 @@ class MainGUI(QMainWindow):
                              'therefore this operation will continue with the profile stored values.')
                     self.ui.actionUse_OPF_in_TS.setChecked(False)
 
-                self.compile(use_opf_vals=use_opf_vals)
-
                 options = self.get_selected_power_flow_options()
+
+                self.compile(use_opf_vals=use_opf_vals, dispatch_storage=options.dispatch_storage)
+
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1
 

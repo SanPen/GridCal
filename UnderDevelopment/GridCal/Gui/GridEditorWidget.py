@@ -1680,17 +1680,25 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         Plot API objects profiles
         """
         fig = plt.figure(figsize=(10, 8))
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        ax1 = fig.add_subplot(411)
+        ax2 = fig.add_subplot(412)
+        ax3 = fig.add_subplot(413)
+        ax4 = fig.add_subplot(414)
 
         self.api_object.Pprof.plot(ax=ax1, linewidth=1)
         self.api_object.Vsetprof.plot(ax=ax2, linewidth=1)
+        self.api_object.power_array.plot(ax=ax3, linewidth=1)
+        self.api_object.energy_array.plot(ax=ax4, linewidth=1)
 
         ax1.set_title('Active power profile')
         ax2.set_title('Set voltage profile')
+        ax3.set_title('Controlled active power profile')
+        ax4.set_title('Controlled energy profile')
 
         ax1.set_ylabel('MW')
         ax2.set_ylabel('V (p.u.)')
+        ax3.set_ylabel('MW')
+        ax4.set_ylabel('MWh')
 
         plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
 

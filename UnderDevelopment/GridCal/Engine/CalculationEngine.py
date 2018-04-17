@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.24
+__GridCal_VERSION__ = 2.25
 
 import os
 import pickle as pkl
@@ -704,7 +704,7 @@ class Bus:
 
         pass
 
-    def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False):
+    def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
         """
         Compose the
             - Z: Impedance attached to the bus
@@ -776,7 +776,12 @@ class Bus:
                 warn(elm.name + ' is not active')
 
         # controlled gen and batteries
-        for elm in (self.controlled_generators + self.batteries):
+        if dispatch_storage:
+            generators = self.controlled_generators  # do not include batteries
+        else:
+            generators = self.controlled_generators + self.batteries
+
+        for elm in generators:
 
             if elm.active:
                 # Add the generator active power
@@ -2218,7 +2223,113 @@ class ControlledGenerator(ReliabilityDevice):
         return self.name
 
 
-class Battery(ControlledGenerator):
+class BatteryController:
+
+    def __init__(self, nominal_energy=100000.0, charge_efficiency=0.9, discharge_efficiency=0.9,
+                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
+        """
+        Battery controller constructor
+        :param charge_efficiency: efficiency when charging
+        :param discharge_efficiency: efficiency when discharging
+        :param max_soc: maximum state of charge
+        :param min_soc: minimum state of charge
+        :param soc: current state of charge
+        :param nominal_energy: declared amount of energy in MWh
+        :param charge_per_cycle: per unit of power to take per cycle when charging
+        :param discharge_per_cycle: per unit of power to deliver per cycle when charging
+        """
+
+        self.charge_efficiency = charge_efficiency
+
+        self.discharge_efficiency = discharge_efficiency
+
+        self.max_soc = max_soc
+
+        self.min_soc = min_soc
+
+        self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
+
+        self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
+
+        self.discharge_per_cycle = discharge_per_cycle
+
+        self.min_energy = nominal_energy * self.min_soc
+
+        self.Enom = nominal_energy
+
+        self.soc_0 = soc
+
+        self.soc = soc
+
+        self.energy = self.Enom * self.soc
+
+
+    def reset(self):
+        """
+        Set he battery to its initial state
+        """
+        self.soc = self.soc_0
+        self.energy = self.Enom * self.soc
+        # self.energy_array = zeros(0)
+        # self.power_array = zeros(0)
+
+    def process(self, P, dt, charge_if_needed=False, store_values=True):
+        """
+        process a cycle in the battery
+        :param P: proposed power in MW
+        :param dt: time increment in hours
+        :param charge_if_needed: True / False
+        :param store_values: Store the values into the internal arrays?
+        :return: Amount of power actually processed in MW
+        """
+
+        # if self.Enom is None:
+        #     raise Exception('You need to set the battery nominal power!')
+
+        if np.isnan(P):
+            warn('NaN found!!!!!!')
+
+        # pick the right efficiency value
+        if P >= 0.0:
+            eff = self.discharge_efficiency
+            # energy_per_cycle = self.nominal_energy * self.discharge_per_cycle
+        else:
+            eff = self.charge_efficiency
+
+        # amount of energy that the battery can take in a cycle of 1 hour
+        energy_per_cycle = self.Enom * self.charge_per_cycle
+
+        # compute the proposed energy. Later we check how much is actually possible
+        proposed_energy = self.energy - P * dt * eff
+
+        # charge the battery from the grid if the SoC is too low and we are allowing this behaviour
+        if charge_if_needed and self.soc < self.min_soc_charge:
+            proposed_energy -= energy_per_cycle / dt  # negative is for charging
+
+        # Check the proposed energy
+        if proposed_energy > self.Enom * self.max_soc:  # Truncated, too high
+
+            energy_new = self.Enom * self.max_soc
+            power_new = (self.energy - energy_new) / (dt * eff)
+
+        elif proposed_energy < self.Enom * self.min_soc:  # Truncated, too low
+
+            energy_new = self.Enom * self.min_soc
+            power_new = (self.energy - energy_new) / (dt * eff)
+
+        else:  # everything is within boundaries
+
+            energy_new = proposed_energy
+            power_new = P
+
+        # Update the state of charge and the energy state
+        self.soc = energy_new / self.Enom
+        self.energy = energy_new
+
+        return power_new, self.energy
+
+
+class Battery(ControlledGenerator, BatteryController):
 
     def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
                  Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
@@ -2256,11 +2367,22 @@ class Battery(ControlledGenerator):
                                      mttf=mttf,
                                      mttr=mttr)
 
+        BatteryController.__init__(self,
+                                   nominal_energy=Enom,
+                                   charge_efficiency=0.9,
+                                   discharge_efficiency=0.9,
+                                   max_soc=0.99,
+                                   min_soc=0.3,
+                                   soc=0.8,
+                                   charge_per_cycle=0.1,
+                                   discharge_per_cycle=0.1)
+
         # type of this device
         self.type_name = 'Battery'
 
-        # Nominal energy MWh
-        self.Enom = Enom
+        self.energy_array = None
+
+        self.power_array = None
 
         self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
                              'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
@@ -2362,6 +2484,41 @@ class Battery(ControlledGenerator):
                 'Pmin': self.Pmin,
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
+
+    def create_P_profile(self, index, arr=None, arr_in_pu=False):
+        """
+        Create power profile based on index
+        Args:
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
+        """
+        if arr_in_pu:
+            dta = arr * self.P
+        else:
+            dta = ones(len(index)) * self.P if arr is None else arr
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+
+        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+
+    def get_processed_at(self, t, dt, store_values=True):
+        """
+        Get the processed power at the time index t
+        :param t: time index
+        :param dt: time step in hours
+        :param store_values: store the values?
+        :return: active power processed by the battery control in MW
+        """
+        power = self.Pprof.values[t]
+
+        processed_power, processed_energy = self.process(power, dt, store_values=store_values)
+
+        if store_values:
+            self.energy_array.values[t] = processed_energy
+            self.power_array.values[t] = processed_power
+
+        return processed_power
 
 
 class Shunt(ReliabilityDevice):
@@ -2589,7 +2746,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False):
+    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -2647,7 +2804,8 @@ class Circuit:
             self.buses[i].determine_bus_type()
 
             # compute the bus magnitudes
-            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV(use_opf_vals=use_opf_vals)
+            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV(use_opf_vals=use_opf_vals,
+                                                                                          dispatch_storage=dispatch_storage)
 
             # Assign the values to the simulation objects
             power_flow_input.Vbus[i] = V  # set the bus voltages
@@ -3172,7 +3330,8 @@ class MultiCircuit(Circuit):
             if 'CtrlGen_P_profiles' in data.keys():
                 val = data['CtrlGen_P_profiles'].values[:, i]
                 idx = data['CtrlGen_P_profiles'].index
-                obj.Pprof = pd.DataFrame(data=val, index=idx)
+                # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                obj.create_P_profile(index=idx, arr=val)
 
             if 'CtrlGen_Vset_profiles' in data.keys():
                 val = data['CtrlGen_Vset_profiles'].values[:, i]
@@ -3203,7 +3362,8 @@ class MultiCircuit(Circuit):
             if 'battery_P_profiles' in data.keys():
                 val = data['battery_P_profiles'].values[:, i]
                 idx = data['battery_P_profiles'].index
-                obj.Pprof = pd.DataFrame(data=val, index=idx)
+                # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                obj.create_P_profile(index=idx, arr=val)
 
             if 'battery_Vset_profiles' in data.keys():
                 val = data['battery_Vset_profiles'].values[:, i]
@@ -3469,7 +3629,7 @@ class MultiCircuit(Circuit):
 
         writer.save()
 
-    def compile(self, use_opf_vals=False):
+    def compile(self, use_opf_vals=False, dispatch_storage=False):
         """
         Divide the grid into the different possible grids
         @return:
@@ -3535,7 +3695,7 @@ class MultiCircuit(Circuit):
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
-            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals)
+            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals, dispatch_storage=dispatch_storage)
 
             # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
@@ -3815,6 +3975,85 @@ class MultiCircuit(Circuit):
         else:
             raise Exception('There are no power flow results!')
 
+    def export_profiles(self, file_name):
+        """
+        Export object profiles to file
+        :param file_name: Excel file name
+        :return: Nothing
+        """
+
+        if self.time_profile is not None:
+
+            # collect data
+            P = list()
+            Q = list()
+            Ir = list()
+            Ii = list()
+            G = list()
+            B = list()
+            P_gen = list()
+            V_gen = list()
+            E_batt = list()
+
+            load_names = list()
+            gen_names = list()
+            bat_names = list()
+
+            for bus in self.buses:
+
+                for elm in bus.loads:
+                    load_names.append(elm.name)
+                    P.append(elm.Sprof.values.real[:, 0])
+                    Q.append(elm.Sprof.values.imag[:, 0])
+
+                    Ir.append(elm.Iprof.values.real[:, 0])
+                    Ii.append(elm.Iprof.values.imag[:, 0])
+
+                    G.append(elm.Zprof.values.real[:, 0])
+                    B.append(elm.Zprof.values.imag[:, 0])
+
+                for elm in bus.controlled_generators:
+                    gen_names.append(elm.name)
+
+                    P_gen.append(elm.Pprof.values[:, 0])
+                    V_gen.append(elm.Vsetprof.values[:, 0])
+
+                for elm in bus.batteries:
+                    bat_names.append(elm.name)
+                    gen_names.append(elm.name)
+                    P_gen.append(elm.Pprof.values[:, 0])
+                    V_gen.append(elm.Vsetprof.values[:, 0])
+                    E_batt.append(elm.energy_array.values[:, 0])
+
+            # form DataFrames
+            P = pd.DataFrame(data=np.array(P).transpose(), index=self.time_profile, columns=load_names)
+            Q = pd.DataFrame(data=np.array(Q).transpose(), index=self.time_profile, columns=load_names)
+            Ir = pd.DataFrame(data=np.array(Ir).transpose(), index=self.time_profile, columns=load_names)
+            Ii = pd.DataFrame(data=np.array(Ii).transpose(), index=self.time_profile, columns=load_names)
+            G = pd.DataFrame(data=np.array(G).transpose(), index=self.time_profile, columns=load_names)
+            B = pd.DataFrame(data=np.array(B).transpose(), index=self.time_profile, columns=load_names)
+            P_gen = pd.DataFrame(data=np.array(P_gen).transpose(), index=self.time_profile, columns=gen_names)
+            V_gen = pd.DataFrame(data=np.array(V_gen).transpose(), index=self.time_profile, columns=gen_names)
+            E_batt = pd.DataFrame(data=np.array(E_batt).transpose(), index=self.time_profile, columns=bat_names)
+
+            writer = pd.ExcelWriter(file_name)
+            P.to_excel(writer, 'P loads')
+            Q.to_excel(writer, 'Q loads')
+
+            Ir.to_excel(writer, 'Ir loads')
+            Ii.to_excel(writer, 'Ii loads')
+
+            G.to_excel(writer, 'G loads')
+            B.to_excel(writer, 'B loads')
+
+            P_gen.to_excel(writer, 'P generators')
+            V_gen.to_excel(writer, 'V generators')
+
+            E_batt.to_excel(writer, 'Energy batteries')
+            writer.save()
+        else:
+            raise Exception('There are no time series!')
+
     def copy(self):
         """
         Returns a deep (true) copy of this circuit
@@ -3906,7 +4145,7 @@ class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True):
+                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True, dispatch_storage=False):
         """
         Power flow execution options
         @param solver_type:
@@ -3936,6 +4175,8 @@ class PowerFlowOptions:
         self.initialize_with_existing_solution = initialize_with_existing_solution
 
         self.multi_thread = multi_core
+
+        self.dispatch_storage = dispatch_storage
 
 
 class PowerFlowInput:
@@ -5671,6 +5912,7 @@ class TimeSeriesInput:
 
         return cpy
 
+
 class TimeSeriesResults(PowerFlowResults):
 
     def __init__(self, n, m, nt, start, end, time=None):
@@ -6036,10 +6278,19 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         # For every circuit, run the time series
-        for nc, circuit_orig in enumerate(self.grid.circuits):
+        for nc, circuit in enumerate(self.grid.circuits):
 
             # make a copy of the circuit to allow controls in place
-            circuit = circuit_orig.copy()
+            # circuit = circuit_orig.copy()
+
+            # are we dispatching storage? if so, generate a dictionary of battery -> bus index
+            if self.options.dispatch_storage:
+                batteries = list()
+                batteries_bus_idx = list()
+                for k, bus in enumerate(circuit.buses):
+                    for batt in bus.batteries:
+                        batteries.append(batt)
+                        batteries_bus_idx.append(k)
 
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
@@ -6054,9 +6305,24 @@ class TimeSeries(QThread):
                 self.progress_signal.emit(0.0)
 
                 t = self.start_
+                dt = 1.0  # default value in case of single-valued profile
                 while t < self.end_ and not self.__cancel__:
                     # set the power values
+                    # if the storage dispatch option is active, the batteries power was not included
+                    # it shall be included now, after processing
                     Y, I, S = circuit.time_series_input.get_at(t)
+
+                    # add the controlled storage power
+                    if self.options.dispatch_storage:
+                        if t < self.end_-1:
+                            # compute the time delta: the time values come in nanoseconds
+                            dt = int(circuit.time_series_input.time_array[t+1] - circuit.time_series_input.time_array[t]) * 1e-9 / 3600
+                        for k, batt in enumerate(batteries):
+                            P = batt.get_processed_at(t, dt=dt, store_values=True)
+                            bus_idx = batteries_bus_idx[k]
+                            S[bus_idx] += (P / circuit.Sbase)
+                        else:
+                            pass
 
                     # run power flow at the circuit
                     res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
@@ -6069,6 +6335,7 @@ class TimeSeries(QThread):
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
+                    self.progress_text.emit('Time series at ' + circuit.name + '...' + str(circuit.time_series_input.time_array[t]))
                     t += 1
 
                 # store at circuit level

@@ -412,9 +412,10 @@ def interpret_data_v1(circuit, data):
                                   Qmax=table[i, e.QMAX],
                                   Qmin=table[i, e.QMIN])
         if are_gen_prfiles:
-            gen.Pprof = pd.DataFrame(data=Gprof[:, i],
-                                     index=master_time_array,
-                                     columns=['Gen@' + names[i]])
+            gen.create_P_profile(index=master_time_array, arr=Gprof[:, i])
+            # gen.Pprof = pd.DataFrame(data=Gprof[:, i],
+            #                          index=master_time_array,
+            #                          columns=['Gen@' + names[i]])
 
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]
