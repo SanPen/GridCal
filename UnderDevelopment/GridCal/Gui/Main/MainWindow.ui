@@ -3323,7 +3323,6 @@ points from time series</string>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
-    <addaction name="actionExport"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -3357,6 +3356,7 @@ points from time series</string>
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionAuto_rate_branches"/>
+    <addaction name="actionExport"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -3472,7 +3472,7 @@ points from time series</string>
      <normaloff>:/Icons/white_icons/save.svg</normaloff>:/Icons/white_icons/save.svg</iconset>
    </property>
    <property name="text">
-    <string>Export</string>
+    <string>Export schematic picture</string>
    </property>
   </action>
   <action name="actionNew_project">

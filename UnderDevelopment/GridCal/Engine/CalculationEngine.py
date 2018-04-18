@@ -1901,6 +1901,19 @@ class ControlledGenerator(ReliabilityDevice):
         @param enabled_dispatch is the generator enabled for OPF?
         @param mttf: Mean time to failure
         @param mttr: Mean time to repair
+        @param Ra:
+        @param Xa:
+        @param Xd:
+        @param Xq:
+        @param Xdp:
+        @param Xqp:
+        @param Xdpp:
+        @param Xqpp:
+        @param Td0p:
+        @param Tq0p:
+        @param Td0pp
+        @param Tq0pp:
+        @param H:
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -2223,21 +2236,175 @@ class ControlledGenerator(ReliabilityDevice):
         return self.name
 
 
-class BatteryController:
+# class BatteryController:
+#
+#     def __init__(self, nominal_energy=100000.0, charge_efficiency=0.9, discharge_efficiency=0.9,
+#                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
+#         """
+#         Battery controller constructor
+#         :param charge_efficiency: efficiency when charging
+#         :param discharge_efficiency: efficiency when discharging
+#         :param max_soc: maximum state of charge
+#         :param min_soc: minimum state of charge
+#         :param soc: current state of charge
+#         :param nominal_energy: declared amount of energy in MWh
+#         :param charge_per_cycle: per unit of power to take per cycle when charging
+#         :param discharge_per_cycle: per unit of power to deliver per cycle when charging
+#         """
+#
+#         self.charge_efficiency = charge_efficiency
+#
+#         self.discharge_efficiency = discharge_efficiency
+#
+#         self.max_soc = max_soc
+#
+#         self.min_soc = min_soc
+#
+#         self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
+#
+#         self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
+#
+#         self.discharge_per_cycle = discharge_per_cycle
+#
+#         self.min_energy = nominal_energy * self.min_soc
+#
+#         self.Enom = nominal_energy
+#
+#         self.soc_0 = soc
+#
+#         self.soc = soc
+#
+#         self.energy = self.Enom * self.soc
+#
+#     def reset(self):
+#         """
+#         Set he battery to its initial state
+#         """
+#         self.soc = self.soc_0
+#         self.energy = self.Enom * self.soc
+#         # self.energy_array = zeros(0)
+#         # self.power_array = zeros(0)
+#
+#     def process(self, P, dt, charge_if_needed=False, store_values=True):
+#         """
+#         process a cycle in the battery
+#         :param P: proposed power in MW
+#         :param dt: time increment in hours
+#         :param charge_if_needed: True / False
+#         :param store_values: Store the values into the internal arrays?
+#         :return: Amount of power actually processed in MW
+#         """
+#
+#         # if self.Enom is None:
+#         #     raise Exception('You need to set the battery nominal power!')
+#
+#         if np.isnan(P):
+#             warn('NaN found!!!!!!')
+#
+#         # pick the right efficiency value
+#         if P >= 0.0:
+#             eff = self.discharge_efficiency
+#             # energy_per_cycle = self.nominal_energy * self.discharge_per_cycle
+#         else:
+#             eff = self.charge_efficiency
+#
+#         # amount of energy that the battery can take in a cycle of 1 hour
+#         energy_per_cycle = self.Enom * self.charge_per_cycle
+#
+#         # compute the proposed energy. Later we check how much is actually possible
+#         proposed_energy = self.energy - P * dt * eff
+#
+#         # charge the battery from the grid if the SoC is too low and we are allowing this behaviour
+#         if charge_if_needed and self.soc < self.min_soc_charge:
+#             proposed_energy -= energy_per_cycle / dt  # negative is for charging
+#
+#         # Check the proposed energy
+#         if proposed_energy > self.Enom * self.max_soc:  # Truncated, too high
+#
+#             energy_new = self.Enom * self.max_soc
+#             power_new = (self.energy - energy_new) / (dt * eff)
+#
+#         elif proposed_energy < self.Enom * self.min_soc:  # Truncated, too low
+#
+#             energy_new = self.Enom * self.min_soc
+#             power_new = (self.energy - energy_new) / (dt * eff)
+#
+#         else:  # everything is within boundaries
+#
+#             energy_new = proposed_energy
+#             power_new = P
+#
+#         # Update the state of charge and the energy state
+#         self.soc = energy_new / self.Enom
+#         self.energy = energy_new
+#
+#         return power_new, self.energy
 
-    def __init__(self, nominal_energy=100000.0, charge_efficiency=0.9, discharge_efficiency=0.9,
-                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
+
+class Battery(ControlledGenerator):
+
+    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
+                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
+                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True,
+                 mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
+                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
+                 Ra=0.0, Xa=0.0, Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
+                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2 ):
         """
-        Battery controller constructor
+        Battery (Voltage controlled and dispatchable)
+        :param name: Name of the device
+        :param active_power: Active power (MW)
+        :param voltage_module: Voltage set point (p.u.)
+        :param Qmin: minimum reactive power in MVAr
+        :param Qmax: maximum reactive power in MVAr
+        :param Snom: Nominal power in MVA
+        :param Enom: Nominal energy in MWh
+        :param power_prof: active power profile (Pandas DataFrame)
+        :param vset_prof: voltage set point profile (Pandas DataFrame)
+        :param active: Is the generator active?
+        :param p_min: minimum dispatchable power in MW
+        :param p_max maximum dispatchable power in MW
+        :param op_cost operational cost in Eur (or other currency) per MW
+        :param enabled_dispatch is the generator enabled for OPF?
+        :param mttf: Mean time to failure
+        :param mttr: Mean time to repair
         :param charge_efficiency: efficiency when charging
         :param discharge_efficiency: efficiency when discharging
         :param max_soc: maximum state of charge
         :param min_soc: minimum state of charge
         :param soc: current state of charge
-        :param nominal_energy: declared amount of energy in MWh
         :param charge_per_cycle: per unit of power to take per cycle when charging
         :param discharge_per_cycle: per unit of power to deliver per cycle when charging
         """
+        ControlledGenerator.__init__(self, name=name,
+                                     active_power=active_power,
+                                     voltage_module=voltage_module,
+                                     Qmin=Qmin, Qmax=Qmax, Snom=Snom,
+                                     power_prof=power_prof,
+                                     vset_prof=vset_prof,
+                                     active=active,
+                                     p_min=p_min, p_max=p_max,
+                                     op_cost=op_cost,
+                                     Sbase=Sbase,
+                                     enabled_dispatch=enabled_dispatch,
+                                     mttf=mttf,
+                                     mttr=mttr,
+                                     Ra=Ra,
+                                     Xa=Xa,
+                                     Xd=Xd,
+                                     Xq=Xq,
+                                     Xdp=Xdp,
+                                     Xqp=Xqp,
+                                     Xdpp=Xdpp,
+                                     Xqpp=Xqpp,
+                                     Td0p=Td0p,
+                                     Tq0p=Tq0p,
+                                     Td0pp=Td0pp,
+                                     Tq0pp=Tq0pp,
+                                     H=H)
+
+        # type of this device
+        self.type_name = 'Battery'
 
         self.charge_efficiency = charge_efficiency
 
@@ -2253,9 +2420,9 @@ class BatteryController:
 
         self.discharge_per_cycle = discharge_per_cycle
 
-        self.min_energy = nominal_energy * self.min_soc
+        self.min_energy = Enom * self.min_soc
 
-        self.Enom = nominal_energy
+        self.Enom = Enom
 
         self.soc_0 = soc
 
@@ -2263,6 +2430,162 @@ class BatteryController:
 
         self.energy = self.Enom * self.soc
 
+        self.energy_array = None
+
+        self.power_array = None
+
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
+                             'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency']
+
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh',
+                      'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h',
+                      '', '', '', '', '']
+
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'active': bool,
+                           'P': float,
+                           'Vset': float,
+                           'Snom': float,
+                           'Enom': float,
+                           'Qmin': float,
+                           'Qmax': float,
+                           'Pmin': float,
+                           'Pmax': float,
+                           'Cost': float,
+                           'enabled_dispatch': bool,
+                           'mttf': float,
+                           'mttr': float,
+                           'soc_0': float,
+                           'max_soc': float,
+                           'min_soc': float,
+                           'charge_efficiency': float,
+                           'discharge_efficiency': float}
+
+    def copy(self):
+        """
+        Make a copy of this object
+        Returns: Battery instance
+        """
+
+        # create a new instance of the battery
+        batt = Battery()
+
+        batt.name = self.name
+
+        # Power (MVA)
+        # MVA = kV * kA
+        batt.P = self.P
+
+        batt.Pmax = self.Pmax
+
+        batt.Pmin = self.Pmin
+
+        # power profile for this load
+        batt.Pprof = self.Pprof
+
+        # Voltage module set point (p.u.)
+        batt.Vset = self.Vset
+
+        # voltage set profile for this load
+        batt.Vsetprof = self.Vsetprof
+
+        # minimum reactive power in per unit
+        batt.Qmin = self.Qmin
+
+        # Maximum reactive power in per unit
+        batt.Qmax = self.Qmax
+
+        # Nominal power MVA
+        batt.Snom = self.Snom
+
+        # Nominal energy MWh
+        batt.Enom = self.Enom
+
+        # Enable for active power dispatch?
+        batt.enabled_dispatch = self.enabled_dispatch
+
+        batt.mttf = self.mttf
+
+        batt.mttr = self.mttr
+
+        batt.charge_efficiency = self.charge_efficiency
+
+        batt.discharge_efficiency = self.discharge_efficiency
+
+        batt.max_soc = self.max_soc
+
+        batt.min_soc = self.min_soc
+
+        batt.min_soc_charge = self.min_soc_charge  # SoC state to force the battery charge
+
+        batt.charge_per_cycle = self.charge_per_cycle  # charge 10% per cycle
+
+        batt.discharge_per_cycle = self.discharge_per_cycle
+
+        batt.min_energy = self.min_energy
+
+        batt.soc_0 = self.soc
+
+        batt.soc = self.soc
+
+        batt.energy = self.energy
+
+        batt.energy_array = self.energy_array
+
+        batt.power_array = self.power_array
+
+        return batt
+
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr,
+                self.soc_0, self.max_soc, self.min_soc, self.charge_efficiency, self.discharge_efficiency]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID
+        :return: json-compatible dictionary
+        """
+        return {'id': id,
+                'type': 'battery',
+                'phases': 'ps',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'P': self.P,
+                'Vset': self.Vset,
+                'Snom': self.Snom,
+                'Enom': self.Enom,
+                'qmin': self.Qmin,
+                'qmax': self.Qmax,
+                'Pmin': self.Pmin,
+                'Pmax': self.Pmax,
+                'Cost': self.Cost}
+
+    def create_P_profile(self, index, arr=None, arr_in_pu=False):
+        """
+        Create power profile based on index
+        Args:
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
+        """
+        if arr_in_pu:
+            dta = arr * self.P
+        else:
+            dta = ones(len(index)) * self.P if arr is None else arr
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+
+        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
 
     def reset(self):
         """
@@ -2270,10 +2593,12 @@ class BatteryController:
         """
         self.soc = self.soc_0
         self.energy = self.Enom * self.soc
-        # self.energy_array = zeros(0)
-        # self.power_array = zeros(0)
+        dta = self.Pprof.values.copy()
+        index = self.Pprof.index
+        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
 
-    def process(self, P, dt, charge_if_needed=False, store_values=True):
+    def process(self, P, dt, charge_if_needed=False):
         """
         process a cycle in the battery
         :param P: proposed power in MW
@@ -2328,180 +2653,6 @@ class BatteryController:
 
         return power_new, self.energy
 
-
-class Battery(ControlledGenerator, BatteryController):
-
-    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
-                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
-                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True, mttf=0.0, mttr=0.0):
-        """
-        Batery (Voltage controlled and dispatchable)
-        @param name: Name of the device
-        @param active_power: Active power (MW)
-        @param voltage_module: Voltage set point (p.u.)
-        @param Qmin: minimum reactive power in MVAr
-        @param Qmax: maximum reactive power in MVAr
-        @param Snom: Nominal power in MVA
-        @param Enom: Nominal energy in MWh
-        @param power_prof: active power profile (Pandas DataFrame)
-        @param vset_prof: voltage set point profile (Pandas DataFrame)
-        @param active: Is the generator active?
-        @param p_min: minimum dispatchable power in MW
-        @param p_max maximum dispatchable power in MW
-        @param op_cost operational cost in Eur (or other currency) per MW
-        @param enabled_dispatch is the generator enabled for OPF?
-        @param mttf: Mean time to failure
-        @param mttr: Mean time to repair
-        """
-        ControlledGenerator.__init__(self, name=name,
-                                     active_power=active_power,
-                                     voltage_module=voltage_module,
-                                     Qmin=Qmin, Qmax=Qmax, Snom=Snom,
-                                     power_prof=power_prof,
-                                     vset_prof=vset_prof,
-                                     active=active,
-                                     p_min=p_min, p_max=p_max,
-                                     op_cost=op_cost,
-                                     Sbase=Sbase,
-                                     enabled_dispatch=enabled_dispatch,
-                                     mttf=mttf,
-                                     mttr=mttr)
-
-        BatteryController.__init__(self,
-                                   nominal_energy=Enom,
-                                   charge_efficiency=0.9,
-                                   discharge_efficiency=0.9,
-                                   max_soc=0.99,
-                                   min_soc=0.3,
-                                   soc=0.8,
-                                   charge_per_cycle=0.1,
-                                   discharge_per_cycle=0.1)
-
-        # type of this device
-        self.type_name = 'Battery'
-
-        self.energy_array = None
-
-        self.power_array = None
-
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh', 'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'P': float,
-                           'Vset': float,
-                           'Snom': float,
-                           'Enom': float,
-                           'Qmin': float,
-                           'Qmax': float,
-                           'Pmin': float,
-                           'Pmax': float,
-                           'Cost': float,
-                           'enabled_dispatch': bool,
-                           'mttf': float,
-                           'mttr': float}
-
-    def copy(self):
-        """
-        Make a copy of this object
-        Returns: Battery instance
-        """
-
-        # create a new instance of the battery
-        batt = Battery()
-
-        batt.name = self.name
-
-        # Power (MVA)
-        # MVA = kV * kA
-        batt.P = self.P
-
-        batt.Pmax = self.Pmax
-
-        batt.Pmin = self.Pmin
-
-        # power profile for this load
-        batt.Pprof = self.Pprof
-
-        # Voltage module set point (p.u.)
-        batt.Vset = self.Vset
-
-        # voltage set profile for this load
-        batt.Vsetprof = self.Vsetprof
-
-        # minimum reactive power in per unit
-        batt.Qmin = self.Qmin
-
-        # Maximum reactive power in per unit
-        batt.Qmax = self.Qmax
-
-        # Nominal power MVA
-        batt.Snom = self.Snom
-
-        # Nominal energy MWh
-        batt.Enom = self.Enom
-
-        # Enable for active power dispatch?
-        batt.enabled_dispatch = self.enabled_dispatch
-
-        batt.mttf = self.mttf
-
-        batt.mttr = self.mttr
-
-        return batt
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
-        :return: json-compatible dictionary
-        """
-        return {'id': id,
-                'type': 'battery',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'P': self.P,
-                'Vset': self.Vset,
-                'Snom': self.Snom,
-                'Enom': self.Enom,
-                'qmin': self.Qmin,
-                'qmax': self.Qmax,
-                'Pmin': self.Pmin,
-                'Pmax': self.Pmax,
-                'Cost': self.Cost}
-
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.P
-        else:
-            dta = ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-
     def get_processed_at(self, t, dt, store_values=True):
         """
         Get the processed power at the time index t
@@ -2510,9 +2661,9 @@ class Battery(ControlledGenerator, BatteryController):
         :param store_values: store the values?
         :return: active power processed by the battery control in MW
         """
-        power = self.Pprof.values[t]
+        power_value = self.Pprof.values[t]
 
-        processed_power, processed_energy = self.process(power, dt, store_values=store_values)
+        processed_power, processed_energy = self.process(power_value, dt)
 
         if store_values:
             self.energy_array.values[t] = processed_energy
@@ -6284,16 +6435,19 @@ class TimeSeries(QThread):
             # circuit = circuit_orig.copy()
 
             # are we dispatching storage? if so, generate a dictionary of battery -> bus index
+            # to be able to set the batteries values into the vector S
             if self.options.dispatch_storage:
                 batteries = list()
                 batteries_bus_idx = list()
                 for k, bus in enumerate(circuit.buses):
                     for batt in bus.batteries:
+                        batt.reset()  # reset the calculation values
                         batteries.append(batt)
                         batteries_bus_idx.append(k)
 
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
+            # if there are valid profiles...
             if circuit.time_series_input.valid:
 
                 nt = len(circuit.time_series_input.time_array)
@@ -6306,18 +6460,24 @@ class TimeSeries(QThread):
 
                 t = self.start_
                 dt = 1.0  # default value in case of single-valued profile
+
+                # traverse the profiles time and simulate each time step
                 while t < self.end_ and not self.__cancel__:
                     # set the power values
                     # if the storage dispatch option is active, the batteries power was not included
                     # it shall be included now, after processing
                     Y, I, S = circuit.time_series_input.get_at(t)
 
-                    # add the controlled storage power
+                    # add the controlled storage power if controlling storage
                     if self.options.dispatch_storage:
+
                         if t < self.end_-1:
                             # compute the time delta: the time values come in nanoseconds
-                            dt = int(circuit.time_series_input.time_array[t+1] - circuit.time_series_input.time_array[t]) * 1e-9 / 3600
+                            dt = int(circuit.time_series_input.time_array[t+1]
+                                     - circuit.time_series_input.time_array[t]) * 1e-9 / 3600
+
                         for k, batt in enumerate(batteries):
+
                             P = batt.get_processed_at(t, dt=dt, store_values=True)
                             bus_idx = batteries_bus_idx[k]
                             S[bus_idx] += (P / circuit.Sbase)
@@ -6335,7 +6495,8 @@ class TimeSeries(QThread):
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
-                    self.progress_text.emit('Time series at ' + circuit.name + '...' + str(circuit.time_series_input.time_array[t]))
+                    self.progress_text.emit('Simulating ' + circuit.name + ' at '
+                                            + str(circuit.time_series_input.time_array[t]))
                     t += 1
 
                 # store at circuit level
