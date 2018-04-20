@@ -622,7 +622,7 @@ class SingleCageAsynchronousMotor:
 
     """
 
-    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, Sbase, MVA_Rating, fn=50):
+    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, MVA_Rating, Sbase, fn=50):
         """
         
         :param H: 
@@ -792,7 +792,7 @@ class DoubleCageAsynchronousMotor:
 
     """
 
-    def __init__(self,  H, Rr, Xr, Rs, Xs, a, Xm, Rr2, Xr2, Sbase, MVA_Rating, fn=50):
+    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, Rr2, Xr2, MVA_Rating, Sbase, fn=50):
         
         self.omega_n = 2 * np.pi * fn
 
@@ -847,43 +847,6 @@ class DoubleCageAsynchronousMotor:
         NOTE: currently only initialised at standstill
         """
 
-        # Initialisations for locked rotor machine
-        Id0 = 0
-        Iq0 = 0
-        Vd0 = 0
-        Vq0 = 0
-        Edp0 = 0
-        Eqp0 = 0
-        Edpp0 = 0
-        Eqpp0 = 0
-        slip0 = 1
-        p0 = 0
-        q0 = 0
-        Te0 = 0
-
-        """
-        # Placeholder code for initialising a running motor
-        Rs = self.Rs
-        X0 = self.X0
-        T0p = self.T0p
-        Xp = self.Xp
-
-        # Calculate initial armature current
-        Ia0 =  np.conj(S0 / vt0)
-        phi0 = np.angle(Ia0)
-
-        # Convert currents to rotor reference frame
-        Id0 = np.abs(Ia0) * np.sin(-np.pi/2 - phi0)
-        Iq0 = np.abs(Ia0) * np.cos(-np.pi/2 - phi0)
-
-        Vd0 = -np.abs(vt0) * np.sin(np.angle(vt0))
-        Vq0 = np.abs(vt0) * np.cos(np.angle(vt0))
-
-        # Calculate active and reactive power
-        p0 = -(Vd0 * Id0 + Vq0 * Iq0)             
-        q0 = -(Vq0 * Id0 - Vd0 * Iq0)
-        """
-
         # Initialise signals, states and parameters
         self.Id = 0
         self.Iq = 0
@@ -923,18 +886,6 @@ class DoubleCageAsynchronousMotor:
             self.Vq = np.abs(vt) * np.cos(np.angle(vt))
 
             # Calculate Id and Iq (Norton equivalent current injection in dq frame)
-            # Eqp = self.Eqp
-            # Edp = self.Edp
-            # Eqpp = self.Eqpp
-            # Edpp = self.Edpp
-            # s = self.slip
-            # Rs = self.Rs
-            # X0 = self.X0
-            # # Xp = self.Xp
-            # Xpp = self.Xpp
-            # # T0p = self.T0p
-            # T0pp = self.T0pp
-
             self.Iq = (self.Rs / self.Xpp * (self.Vq - self.Eqpp) - self.Vd + self.Edpp) / (self.Xpp + self.Rs ** 2 / self.Xpp)
             self.Id = (self.Vq - self.Eqpp - self.Rs * self.Iq) / self.Xpp
 
@@ -948,13 +899,6 @@ class DoubleCageAsynchronousMotor:
             self.Im = -self.In  # + self.Ym * vt
 
             # Update signals
-            # self.Id = Id
-            # self.Iq = Iq
-            # self.Vd = Vd
-            # self.Vq = Vq
-            # self.Te = Te
-            # self.P = p
-            # self.Q = q
             self.Vt = np.abs(vt)
             self.Vang = np.angle(vt)
             self.omega = 1 - self.slip
@@ -970,25 +914,6 @@ class DoubleCageAsynchronousMotor:
         """
 
         if self.start == 1:
-
-            # Initial state variables
-            # self.slip = self.slip
-            # Eqp_0 = self.Eqp
-            # Edp_0 = self.Edp
-            # Eqpp_0 = self.Eqpp
-            # Edpp_0 = self.Edpp
-            # 
-            # Rs = self.Rs
-            # X0 = self.X0
-            # Xp = self.Xp
-            # Xpp = self.Xpp
-            # T0p = self.T0p
-            # T0pp = self.T0pp
-            # H = self.H
-            # 
-            # Id = self.Id
-            # Iq = self.Iq
-            # Te = self.Te
 
             # Eq'
             f1 = (-self.omega_n * self.slip * Edp - (Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p) * self.base_mva / self.Sbase
@@ -1148,7 +1073,7 @@ def solve_time_step(n, h, machine_controllers, v_prev, Zbus, bus_indices, max_er
     return v_prev
 
 
-def dynamic_simulation(n, Vbus, Ybus, t_sim, h, machine_controllers=list(), bus_indices=list()):
+def dynamic_simulation(n, Vbus, Ybus, Sbase, t_sim, h, objects=list(), machine_types=list(), bus_indices=list()):
     """
     Dynamic transient simulation of a power system
     :param n:
@@ -1156,13 +1081,135 @@ def dynamic_simulation(n, Vbus, Ybus, t_sim, h, machine_controllers=list(), bus_
     :param Ybus:
     :param t_sim:
     :param h:
-    :param machine_controllers:
+    :param machine_types:
     :param bus_indices:
     :return:
     """
     time = np.linspace(h, int(t_sim/h) + 1, h)
     max_err = 1e-3
     max_iter = 20
+
+    # compose dynamic controllers
+    '''
+    class DynamicModels(Enum):
+    NoModel = 0,
+    SM4 = 1,
+    SM6b = 2,
+    VSC = 3,
+    EG = 4,
+    SAM = 5,
+    DAM = 6  
+    '''
+    sm4_idx = list()
+    sm6b_idx = list()
+    vsc_idx = list()
+    eg_idx = list()
+    sam_idx = list()
+    dam_idx = list()
+
+    n_obj = len(objects)
+    H = np.zeros(n_obj)
+    a = np.zeros(n_obj)
+    Xm = np.zeros(n_obj)
+    Ra = np.zeros(n_obj)
+    Rs = np.zeros(n_obj)
+    Xs = np.zeros(n_obj)
+    Xd = np.zeros(n_obj)
+    Xdp = np.zeros(n_obj)
+    Xdpp = np.zeros(n_obj)
+    Xq = np.zeros(n_obj)
+    Xqp = np.zeros(n_obj)
+    Xqpp = np.zeros(n_obj)
+    Td0p = np.zeros(n_obj)
+    Tq0p = np.zeros(n_obj)
+    Td0pp = np.zeros(n_obj)
+    Tq0pp = np.zeros(n_obj)
+    base_mva = np.zeros(n_obj)
+
+    Rr = np.zeros(n_obj)
+    Rr2 = np.zeros(n_obj)
+    Xr = np.zeros(n_obj)
+    Xr2 = np.zeros(n_obj)
+    speed_volt = np.zeros(n_obj, dtype=bool)
+
+    for k, tpe in enumerate(machine_types):
+
+        if tpe == DynamicModels.NoModel:  # no model
+            pass
+
+        elif tpe == DynamicModels.SM4:  # fourth order synchronous machine
+
+            H[k] = objects[k].H
+            Ra[k] = objects[k].Ra
+            Xd[k] = objects[k].Xd
+            Xdp[k] = objects[k].Xdp
+            Xdpp[k] = objects[k].Xdpp
+            Xq[k] = objects[k].Xq
+            Xqp[k] = objects[k].Xqp
+            Xqpp[k] = objects[k].Xqpp
+            Td0p[k] = objects[k].Td0p
+            Tq0p[k] = objects[k].Tq0p
+            base_mva[k] = objects[k].base_mva
+            speed_volt[k] = objects[k].speed_volt
+            sm4_idx.append(k)
+
+        elif tpe == DynamicModels.SM6b:  # sixth order synchronous machine
+
+            H[k] = objects[k].H
+            Ra[k] = objects[k].Ra
+            Xd[k] = objects[k].Xd
+            Xdp[k] = objects[k].Xdp
+            Xdpp[k] = objects[k].Xdpp
+            Xq[k] = objects[k].Xq
+            Xqp[k] = objects[k].Xqp
+            Xqpp[k] = objects[k].Xqpp
+            Td0p[k] = objects[k].Td0p
+            Tq0p[k] = objects[k].Tq0p
+            Td0pp[k] = objects[k].Td0pp
+            Tq0pp[k] = objects[k].Tq0pp
+            base_mva[k] = objects[k].base_mva
+            speed_volt[k] = objects[k].speed_volt
+            sm6b_idx.append(k)
+
+        elif tpe == DynamicModels.VSC:  # voltage source converter
+
+            # R1, X1, fn
+            Ra[k] = objects[k].R1
+            Xd[k] = objects[k].X1
+            vsc_idx.append(k)
+
+        elif tpe == DynamicModels.EG:  # external grid
+            # Xdp, H
+            H[k] = objects[k].H
+            Xdp[k] = objects[k].Xdp
+            eg_idx.append(k)
+
+        elif tpe == DynamicModels.SAM:  # single cage asynchronous motor
+            # H, Rr, Xr, Rs, Xs, a, Xm, Sbase, MVA_Rating
+            H[k] = objects[k].H
+            Rr[k] = objects[k].Rr
+            Xr[k] = objects[k].Xr
+            Rs[k] = objects[k].Rs
+            Xs[k] = objects[k].Xs
+            Xq[k] = objects[k].Xq
+            a[k] = objects[k].a
+            Xm[k] = objects[k].Xm
+            base_mva[k] = objects[k].MVA_Rating
+            sam_idx.append(k)
+
+        elif tpe == DynamicModels.DAM:  # double cage asynchronous motor
+            # H, Rr, Xr, Rs, Xs, a, Xm, Rr2, Xr2, MVA_Rating, Sbase
+            H[k] = objects[k].H
+            Rr[k] = objects[k].Rr
+            Xr[k] = objects[k].Xr
+            Rs[k] = objects[k].Rs
+            Xs[k] = objects[k].Xs
+            Rr2[k] = objects[k].Rr2
+            Xr2[k] = objects[k].Xr2
+            a[k] = objects[k].a
+            Xm[k] = objects[k].Xm
+            base_mva[k] = objects[k].MVA_Rating
+            dam_idx.append(k)
 
     # factorize the impedance matrix
     Zbus = splu(Ybus)
@@ -1172,4 +1219,4 @@ def dynamic_simulation(n, Vbus, Ybus, t_sim, h, machine_controllers=list(), bus_
 
     for t in time:
 
-        V = solve_time_step(n, h, machine_controllers, v_prev, Zbus, bus_indices, max_err, max_iter)
+        V = solve_time_step(n, h, machine_types, v_prev, Zbus, bus_indices, max_err, max_iter)
