@@ -1881,8 +1881,8 @@ class ControlledGenerator(ReliabilityDevice):
 
     def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
                  power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
-                 enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0,
-                 Xa=0.0, Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
+                 enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0, Xa=0.0,
+                 Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
                  Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2):
         """
         Voltage controlled generator
@@ -1901,19 +1901,19 @@ class ControlledGenerator(ReliabilityDevice):
         @param enabled_dispatch is the generator enabled for OPF?
         @param mttf: Mean time to failure
         @param mttr: Mean time to repair
-        @param Ra:
-        @param Xa:
-        @param Xd:
-        @param Xq:
-        @param Xdp:
-        @param Xqp:
-        @param Xdpp:
-        @param Xqpp:
-        @param Td0p:
-        @param Tq0p:
-        @param Td0pp
-        @param Tq0pp:
-        @param H:
+        @param Ra: armature resistance (pu)
+        @param Xa: armature reactance (pu)
+        @param Xd: d-axis reactance (p.u.)
+        @param Xq: q-axis reactance (p.u.)
+        @param Xdp: d-axis transient reactance (p.u.)
+        @param Xqp: q-axis transient reactance (p.u.)
+        @param Xdpp: d-axis subtransient reactance (pu)
+        @param Xqpp: q-axis subtransient reactance (pu)
+        @param Td0p: d-axis transient open loop time constant (s)
+        @param Tq0p: q-axis transient open loop time constant (s)
+        @param Td0pp: d-axis subtransient open loop time constant (s)
+        @param Tq0pp: q-axis subtransient open loop time constant (s)
+        @param H: machine inertia constant (MWs/MVA)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1942,7 +1942,7 @@ class ControlledGenerator(ReliabilityDevice):
         # Power (MVA)
         self.P = active_power
 
-        # Nominal power in MVA
+        # Nominal power in MVA (also the machine base)
         self.Snom = Snom
 
         # Minimum dispatched power in MW
@@ -1983,8 +1983,9 @@ class ControlledGenerator(ReliabilityDevice):
         self.Td0pp = Td0pp
         self.Tq0pp = Tq0pp
         self.H = H
+        # self.base_mva = base_mva  # machine base MVA
 
-        # base power MVA
+        # system base power MVA
         self.Sbase = Sbase
 
         # Linear problem generator dispatch power variable (in p.u.)
@@ -10195,3 +10196,26 @@ class StateEstimation(QRunnable):
                                              Qpv=None)
 
             self.se_results.apply_from_island(results, circuit.bus_original_idx, circuit.branch_original_idx)
+
+
+########################################################################################################################
+# Dynamic simulation
+########################################################################################################################
+
+
+class DynamicSimulationOptions:
+
+    def __init__(self, h=0.01, t_sim=5, max_err=0.0001, max_iter=25):
+
+        # step length (s)
+        self.h = h
+
+        # simulation time (s)
+        self.t_sim = t_sim
+
+        # Maximum error in network iteration (voltage mismatches)
+        self.max_err = max_err
+
+        # Maximum number of network iterations
+        self.max_iter = max_iter
+
