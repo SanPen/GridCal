@@ -1984,16 +1984,16 @@ class BusGraphicItem(QGraphicsRectItem):
 
             if self.api_object.active:
 
-                self.setBrush(QBrush(ACTIVE['color']))
-                self.setPen(QPen(ACTIVE['style']))
+                self.set_tile_color(QBrush(ACTIVE['color']))
+                # self.setPen(QPen(ACTIVE['style']))
                 # self.color = ACTIVE['color']
                 # self.style = ACTIVE['style']
 
                 for host in self.terminal.hosting_connections:
                     host.set_enable(val=True)
             else:
-                self.setBrush(QBrush(DEACTIVATED['color']))
-                self.setPen(QPen(ACTIVE['style']))
+                self.set_tile_color(QBrush(DEACTIVATED['color']))
+                # self.setPen(QPen(ACTIVE['style']))
 
                 # self.color = DEACTIVATED['color']
                 # self.style = DEACTIVATED['style']
