@@ -16,6 +16,7 @@
 
 import numpy as np
 from scipy.sparse.linalg import splu
+from scipy.sparse import csr_matrix as sparse
 from enum import Enum
 from warnings import warn
 
@@ -358,6 +359,13 @@ class SynchronousMachineOrder6SauerPai:
         self.In = 0
         self.Im = 0
 
+    def get_yg(self):
+        """
+        Get the generator admittance
+        :return: shunt admittance
+        """
+        return (self.Ra - 1j * 0.5 * (self.Xdp + self.Xqp)) / (self.Ra ** 2.0 + (self.Xdp * self.Xqp))
+
     def initialise(self, vt0, S0):
         """
         Initialise machine signals and states based on load flow voltage and complex power injection
@@ -635,6 +643,14 @@ class ExternalGrid:
         self.omega = 1
         self.delta = delta0
 
+    def get_yg(self):
+        """
+        Return the shunt admittance
+        Returns:
+
+        """
+        return 1 / (1j * self.Xdp)
+
     def calc_currents(self, vt):
         """
         Solve grid current injections (in network reference frame)
@@ -716,21 +732,28 @@ class SingleCageAsynchronousMotor:
         self.Ym = self.Rs - 1j * self.Xs
 
         # results
-        self.Id = 0
-        self.Iq = 0
-        self.Vd = 0
-        self.Vq = 0
-        self.Vt = 0
-        self.P = 0
-        self.Q = 0
-        self.Te = 0
-        self.slip = 0
-        self.Eqp = 0
-        self.Edp = 0
+        self.Id = np.zeros_like(H)
+        self.Iq = np.zeros_like(H)
+        self.Vd = np.zeros_like(H)
+        self.Vq = np.zeros_like(H)
+        self.Vt = np.zeros_like(H)
+        self.P = np.zeros_like(H)
+        self.Q = np.zeros_like(H)
+        self.Te = np.zeros_like(H)
+        self.slip = np.zeros_like(H)
+        self.Eqp = np.zeros_like(H)
+        self.Edp = np.zeros_like(H)
         self.omega = 1 - self.slip
-        self.Im = 0.0
-        self.In = 0.0
-        self.Vang = 0.0
+        self.Im = np.zeros_like(H)
+        self.In = np.zeros_like(H)
+        self.Vang = np.zeros_like(H)
+
+    def get_yg(self):
+        """
+        Get the generator admittance
+        :return: shunt admittance
+        """
+        return 1 / (self.Rr + 1j * self.Xr)
 
     def initialise(self, vt0, S0):
         """
@@ -835,7 +858,7 @@ class SingleCageAsynchronousMotor:
 
         if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or np.round(ds, 6).all() != 0:
             warn('Warning: differential equations not zero on initialisation...')
-            print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', ds = ' + str(ds))
+            print('dEdp = ', dEdp, ', dEqp = ', dEqp, ', ds = ', ds)
 
 
 class DoubleCageAsynchronousMotor:
@@ -898,6 +921,13 @@ class DoubleCageAsynchronousMotor:
         self.Im = 0.0
         self.In = 0.0
         self.Vang = 0.0
+
+    def get_yg(self):
+        """
+        Get the generator admittance
+        :return: shunt admittance
+        """
+        return 1 / (self.Rr + 1j * self.Xr)
 
     def initialise(self, vt0, S0):
         """
@@ -1033,109 +1063,11 @@ class DoubleCageAsynchronousMotor:
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', ds = ' + str(ds))
 
 
-def solve_network(n, Ybus_factorized, V0, machine_controllers=list(), bus_indices=list(), max_err=1e-3, max_iter=20):
-
-    v_err = 1000000
-    iter = 1
-    v_prev = V0.copy()
-
-    # Iterate until network voltages in successive iterations are within tolerance
-    while v_err > max_err and iter < max_iter:
-        # Update current injections for sources
-
-        # compute machine currents
-        I = np.zeros(n, dtype=complex)
-        for bus_idx, controller in zip(machine_controllers, bus_indices):
-            I[bus_idx] = controller.calc_currents(v_prev[bus_idx])
-
-        # solve voltages
-        V = Ybus_factorized.solve(I)
-        v_err = np.abs(np.dot((V - v_prev), np.transpose(V - v_prev)))
-        v_prev = V
-
-        iter = iter + 1
-
-    return v_prev
-
-
-def solve_time_step(n, h, machine_controllers, v_prev, Zbus, bus_indices, max_err, max_iter):
-    """
-    Solve all the runge kutta for all the machines at once
-    :param n:
-    :param h:
-    :param machine_controllers:
-    :param Zbus:
-    :param bus_indices:
-    :param max_err:
-    :param max_iter:
-    :return:
-    """
-    # declare the arrays of data
-    n_machines = len(machine_controllers)
-    Eqp = np.zeros(n_machines)
-    Edp = np.zeros(n_machines)
-    omega = np.zeros(n_machines)
-    delta = np.zeros(n_machines)
-    Pm = np.zeros(n_machines)
-
-    # form the vectors to solve the differential equations
-    for k, controller in enumerate(machine_controllers):
-        Eqp[k] = controller.Eqp
-        Edp[k] = controller.Edp
-        omega[k] = controller.omega
-        delta[k] = controller.delta
-        Pm[k] = controller.Pm
-
-    # step 1
-    Eqp_0 = Eqp.copy()
-    Edp_0 = Edp.copy()
-    omega_0 = omega.copy()
-    delta_0 = delta.copy()
-
-    k1_Eqp, k1_Edp, k1_omega, k1_delta = h * controller.function(Eqp, Edp, omega)
-
-    v_prev = solve_network(n, Zbus, v_prev, machine_controllers, bus_indices, max_err, max_iter)
-
-    # step 2
-    k2_Eqp, k2_Edp, k2_omega, k2_delta = h * controller.function(Eqp + 0.5 * k1_Eqp,
-                                                                 Edp + 0.5 * k1_Edp,
-                                                                 omega + 0.5 * k1_omega)
-
-    v_prev = solve_network(n, Zbus, v_prev, machine_controllers, bus_indices, max_err, max_iter)
-
-    # step 3
-    k3_Eqp, k3_Edp, k3_omega, k3_delta = h * controller.function(Eqp + 0.5 * k2_Eqp,
-                                                                 Edp + 0.5 * k2_Edp,
-                                                                 omega + 0.5 * k2_omega)
-
-    v_prev = solve_network(n, Zbus, v_prev, machine_controllers, bus_indices, max_err, max_iter)
-
-    # step 4
-    k4_Eqp, k4_Edp, k4_omega, k4_delta = h * controller.function(Eqp + 0.5 * k3_Eqp,
-                                                                 Edp + 0.5 * k3_Edp,
-                                                                 omega + 0.5 * k3_omega)
-    a = 1.0 / 6.0
-
-    Tm = Pm / omega
-
-    Eqp = Eqp_0 + a * (k1_Eqp + 2.0 * k2_Eqp + 2.0 * k3_Eqp + k4_Eqp)
-
-    Edp = Edp_0 + a * (k1_Edp + 2.0 * k2_Edp + 2.0 * k3_Edp + k4_Edp)
-
-    omega = omega_0 + a * (k1_omega + 2.0 * k2_omega + 2.0 * k3_omega + k4_omega)
-
-    delta = delta_0 + a * (k1_delta + 2.0 * k2_delta + 2.0 * k3_delta + k4_delta)
-
-    v_prev = solve_network(n, Zbus, v_prev, machine_controllers, bus_indices, max_err, max_iter)
-
-    return v_prev
-
-
 def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devices=list(), bus_indices=list()):
     """
     Dynamic transient simulation of a power system
     Args:
-        n:
+        n: number of nodes
         Vbus:
         Ybus:
         Sbase:
@@ -1202,7 +1134,7 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
     Xr2 = np.zeros(n_obj)
     speed_volt = np.zeros(n_obj, dtype=bool)
 
-    machine_types = [None] * n
+    machine_types = [None] * n_obj
 
     # extract the parameters from the objects into the arrays
     for k, machine in enumerate(dynamic_devices):
@@ -1361,8 +1293,24 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
                                       bus_idx=dam_bus_idx,
                                       fn=fBase)
 
+    # modify Ybus to add the admittances
+
+    Y_shunt = np.zeros(n, dtype=complex)
+    load_idx = np.where(Sbus > 0)[0]
+    Y_shunt[load_idx] = Sbus[load_idx] / np.power(Vbus[load_idx], 2)  # add loads as admittances
+
+    Y_shunt[sm4.bus_idx] += sm4.get_yg()
+    Y_shunt[sm6.bus_idx] += sm6.get_yg()
+    Y_shunt[vsc.bus_idx] += vsc.get_yg()
+    Y_shunt[exg.bus_idx] += exg.get_yg()
+    Y_shunt[sam.bus_idx] += sam.get_yg()
+    Y_shunt[dam.bus_idx] += dam.get_yg()
+
+    ib = range(n)
+    Ydiag = sparse((Y_shunt, (ib, ib)))
+
     # factorize the impedance matrix
-    Zbus = splu(Ybus)
+    Zbus = splu(Ybus + Ydiag)
 
     # copy the initial voltage
     V = Vbus.copy()
@@ -1391,7 +1339,7 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
         sm4.calc_currents(V, I)
 
         # solve voltages
-        V = Zbus.solve(I / Sbase)
+        V = Zbus.solve(I)
 
         voltages.append(V)
         omegas.append(sm4.omega)
@@ -1399,12 +1347,16 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
 
         t += h
 
-        pass
-
     voltages = np.array(voltages)
     omegas = np.array(omegas)
 
     from matplotlib import pyplot as plt
+
+    plt.figure()
     plt.plot(time, abs(voltages), linewidth=1)
-    # plt.plot(time, abs(omegas), linewidth=1)
+    plt.title('Generator voltages')
+
+    plt.figure()
+    plt.plot(time, abs(omegas), linewidth=1)
+    plt.title('Angular speeds')
     plt.show()
