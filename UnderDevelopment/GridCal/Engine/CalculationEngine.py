@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.25
+__GridCal_VERSION__ = 2.26
 
 import os
 import pickle as pkl
@@ -49,6 +49,7 @@ from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, Levenber
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
+from GridCal.Engine.Numerical.DynamicModels import DynamicModels
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -1883,7 +1884,8 @@ class ControlledGenerator(ReliabilityDevice):
                  power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0, Xa=0.0,
                  Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
-                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2):
+                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2, speed_volt=True,
+                 machine_model=DynamicModels.SynchronousGeneratorOrder4):
         """
         Voltage controlled generator
         @param name: Name of the device
@@ -1914,6 +1916,7 @@ class ControlledGenerator(ReliabilityDevice):
         @param Td0pp: d-axis subtransient open loop time constant (s)
         @param Tq0pp: q-axis subtransient open loop time constant (s)
         @param H: machine inertia constant (MWs/MVA)
+        @param machine_model: Type of machine represented
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1929,6 +1932,8 @@ class ControlledGenerator(ReliabilityDevice):
 
         # type of device
         self.type_name = 'ControlledGenerator'
+
+        self.machine_model = machine_model
 
         # graphical object associated to this object
         self.graphic_obj = None
@@ -1983,6 +1988,7 @@ class ControlledGenerator(ReliabilityDevice):
         self.Td0pp = Td0pp
         self.Tq0pp = Tq0pp
         self.H = H
+        self.speed_volt = speed_volt
         # self.base_mva = base_mva  # machine base MVA
 
         # system base power MVA
@@ -3037,6 +3043,8 @@ class Circuit:
 
         if are_cdfs:
             monte_carlo_input = MonteCarloInput(n, Scdf_, Icdf_, Ycdf_)
+        else:
+            monte_carlo_input = None
 
         # Compile the branches
         for i in range(m):
@@ -3047,7 +3055,7 @@ class Circuit:
                 f = self.buses_dict[self.branches[i].bus_from]
                 t = self.buses_dict[self.branches[i].bus_to]
 
-                # apply the brach properties to the circuit matrices
+                # apply the branch properties to the circuit matrices
                 f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
                                                  Yseries=power_flow_input.Yseries,
                                                  Yshunt=power_flow_input.Yshunt,

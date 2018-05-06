@@ -11,10 +11,11 @@ class MapWidget(QGraphicsPixmapItem):
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
 
         # get map
-        map = smopy.Map((42., -1., 53., 3.), z=11, tilesize=48)
+        map = smopy.Map((37, -3), z=11, tilesize=48)
         numpy_image = map.to_numpy()
         img = QImage(numpy_image.data, *numpy_image.shape[1::-1], QImage.Format_RGB888)
         self.setPixmap(QPixmap.fromImage(img))
+
 
 class Window(QDialog):
     def __init__(self):

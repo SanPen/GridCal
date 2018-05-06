@@ -27,12 +27,12 @@ class DiffEqSolver(Enum):
 
 class DynamicModels(Enum):
     NoModel = 0,
-    SM4 = 1,  # fourth order synchronous machine
-    SM6b = 2,  # sixth order synchronous machine
-    VSC = 3,  # voltage source converter
-    EG = 4,  # external grid
-    SAM = 5,  # single cage asynchronous motor
-    DAM = 6  # double cage asynchronous motor
+    SynchronousGeneratorOrder4 = 1,  # fourth order synchronous machine
+    SynchronousGeneratorOrder6 = 2,  # sixth order synchronous machine
+    VoltageSourceConverter = 3,  # voltage source converter
+    ExternalGrid = 4,  # external grid
+    AsynchronousSingleCageMotor = 5,  # single cage asynchronous motor
+    AsynchronousDoubleCageMotor = 6  # double cage asynchronous motor
 
 
 class SynchronousMachineOrder4:
@@ -56,7 +56,7 @@ class SynchronousMachineOrder4:
     Tq0pp = 0.0575
     H = 2
     """
-    def __init__(self, H, Ra, Xd, Xdp, Xdpp, Xq, Xqp, Xqpp, Td0p, Tq0p, base_mva, Sbase, fn=50,
+    def __init__(self, H, Ra, Xd, Xdp, Xdpp, Xq, Xqp, Xqpp, Td0p, Tq0p, base_mva, Sbase, bus_idx, fn=50,
                  speed_volt=False, solver=DiffEqSolver.RUNGE_KUTTA):
         """
 
@@ -78,6 +78,8 @@ class SynchronousMachineOrder4:
         """
 
         self.solver = solver
+
+        self.bus_idx = bus_idx
 
         self.Vfd = 0.0
 
@@ -120,7 +122,7 @@ class SynchronousMachineOrder4:
         self.Tq0p = Tq0p
 
         # angular speed (w = 2·pi·f)
-        self.omega_n = 2.0 * np.pi * fn
+        self.omega_n = 2.0 * np.ones_like(H) * np.pi * fn
 
         # Check for speed-voltage term option
         self.speed_volt = speed_volt  # True / False
@@ -158,7 +160,7 @@ class SynchronousMachineOrder4:
         phi0 = np.angle(Ia0)
 
         # Calculate steady state machine emf (i.e. voltage behind synchronous reactance)
-        Eq0 = vt0 + np.complex(self.Ra, self.Xq) * Ia0
+        Eq0 = vt0 + (self.Ra + 1j * self.Xq) * Ia0
         self.delta = np.angle(Eq0)
 
         # Convert currents to rotor reference frame
@@ -185,21 +187,23 @@ class SynchronousMachineOrder4:
 
         self.check_diffs()
 
-    def calc_currents(self, vt):
+    def calc_currents(self, Vbus, Ibus):
         """
         Calculate machine current injections (in network reference frame)
         :param vt: complex initial voltage
         :return:
         """
+
+        vt = Vbus[self.bus_idx]
+
         # Calculate terminal voltage in dq reference frame
         self.Vd = np.abs(vt) * np.sin(self.delta - np.angle(vt))
         self.Vq = np.abs(vt) * np.cos(self.delta - np.angle(vt))
 
         # Check if speed-voltage term should be included
-        if self.speed_volt:
-            omega = self.omega
-        else:
-            omega = 1
+        k = np.where(self.speed_volt == False)[0]
+        omega = self.omega
+        omega[k] = np.ones_like(k)
 
         # Calculate Id and Iq (Norton equivalent current injection in dq frame)
         self.Id = (self.Eqp - self.Ra / (self.Xqp * omega) * (self.Vd - self.Edp) - self.Vq / omega) / (self.Xdp + self.Ra ** 2 / (omega * omega * self.Xqp))
@@ -216,7 +220,8 @@ class SynchronousMachineOrder4:
         self.Vt = np.abs(vt)
         self.Vang = np.angle(vt)
 
-        return self.Im
+        # apply th currents to the passed vector
+        Ibus[self.bus_idx] = self.Im
 
     def check_diffs(self):
         """
@@ -227,11 +232,11 @@ class SynchronousMachineOrder4:
         dEqp = (self.Vfd - (self.Xd - self.Xdp) * self.Id - self.Eqp) / self.Td0p
         dEdp = ((self.Xq - self.Xqp) * self.Iq - self.Edp) / self.Tq0p
 
-        if round(dEdp, 6) != 0 or round(dEqp, 6) != 0:
+        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0:
             warn('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp))
 
-    def function(self, Eqp, Edp, omega):
+    def function(self, h, Eqp, Edp, omega):
         """
         Compute the magnitude's derivatives
         :param Eqp:
@@ -249,7 +254,48 @@ class SynchronousMachineOrder4:
 
         f4 = self.omega_n * (omega - 1.0)
 
-        return f1, f2, f3, f4
+        return h * f1, h * f2, h * f3, h * f4
+
+    def solve(self, h):
+        """
+        Solve using Runge-Kutta
+        Args:
+            h: step size
+
+        Returns: self.Eqp, self.Edp, self.omega, self.delta
+        """
+        # step 1
+        k1_Eqp, k1_Edp, k1_omega, k1_delta = self.function(h, self.Eqp, self.Edp, self.omega)
+
+        # step 2
+        k2_Eqp, k2_Edp, k2_omega, k2_delta = self.function(h, self.Eqp + 0.5 * k1_Eqp,
+                                                           self.Edp + 0.5 * k1_Edp,
+                                                           self.omega + 0.5 * k1_omega)
+
+        # step 3
+        k3_Eqp, k3_Edp, k3_omega, k3_delta = self.function(h, self.Eqp + 0.5 * k2_Eqp,
+                                                           self.Edp + 0.5 * k2_Edp,
+                                                           self.omega + 0.5 * k2_omega)
+
+        # step 4
+        k4_Eqp, k4_Edp, k4_omega, k4_delta = self.function(h, self.Eqp + 0.5 * k3_Eqp,
+                                                           self.Edp + 0.5 * k3_Edp,
+                                                           self.omega + 0.5 * k3_omega)
+        a = 1.0 / 6.0
+
+        # Tm = Pm / omega_0
+
+        # update the values
+
+        self.Eqp += a * (k1_Eqp + 2.0 * k2_Eqp + 2.0 * k3_Eqp + k4_Eqp)
+
+        self.Edp += a * (k1_Edp + 2.0 * k2_Edp + 2.0 * k3_Edp + k4_Edp)
+
+        self.omega += a * (k1_omega + 2.0 * k2_omega + 2.0 * k3_omega + k4_omega)
+
+        self.delta += a * (k1_delta + 2.0 * k2_delta + 2.0 * k3_delta + k4_delta)
+
+        return self.Eqp, self.Edp, self.omega, self.delta
 
 
 class SynchronousMachineOrder6SauerPai:
@@ -260,10 +306,12 @@ class SynchronousMachineOrder6SauerPai:
     Sauer, P.W., Pai, M. A., "Power System Dynamics and Stability", Stipes Publishing, 2006 
     """
     
-    def __init__(self, H, Ra, Xa, Xd, Xdp, Xdpp, Xq, Xqp, Xqpp, Td0p, Tq0p, Td0pp, Tq0pp, base_mva, Sbase, fn=50,
-                 speed_volt=False):
+    def __init__(self, H, Ra, Xa, Xd, Xdp, Xdpp, Xq, Xqp, Xqpp, Td0p, Tq0p, Td0pp, Tq0pp, base_mva, Sbase, bus_idx,
+                 fn=50, speed_volt=False):
         
         self.omega_n = 2 * np.pi * fn
+
+        self.bus_idx = bus_idx
 
         # Check for speed-voltage term option 
         self.speed_volt = speed_volt
@@ -320,7 +368,7 @@ class SynchronousMachineOrder6SauerPai:
         phi0 = np.angle(Ia0)
 
         # Calculate steady state machine emf (i.e. voltage behind synchronous reactance)
-        Eq0 = vt0 + np.complex(self.Ra, self.Xq) * Ia0
+        Eq0 = vt0 + (self.Ra + 1j * self.Xq) * Ia0
         self.delta = np.angle(Eq0)
 
         # Convert currents to rotor reference frame
@@ -364,7 +412,8 @@ class SynchronousMachineOrder6SauerPai:
         dphid_pp = (self.Eqp - (self.Xdp - self.Xa) * self.Id - self.phid_pp) / self.Td0pp
         dphiq_pp = (-self.Edp - (self.Xqp - self.Xa) * self.Iq - self.phiq_pp) / self.Tq0pp
 
-        if round(dEdp, 6) != 0 or round(dEqp, 6) != 0 or round(dphid_pp, 6) != 0 or round(dphiq_pp, 6) != 0:
+        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or \
+                        np.round(dphid_pp, 6).all() != 0 or np.round(dphiq_pp, 6).all() != 0:
             print('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', dphid_pp = ' + str(
                 dphid_pp) + ', dphiq_pp = ' + str(dphiq_pp))
@@ -448,10 +497,12 @@ class VoltageSourceConverterAverage:
     Average model of a VSC in voltage-control mode (i.e. controlled voltage source behind an impedance).
     Copyright (C) 2014-2015 Julius Susanto. All rights reserved.
     """
-    def __init__(self, R1, X1, fn):
+    def __init__(self, Rl, Xl, fn, bus_idx):
 
-        self.R1 = R1
-        self.X1 = X1
+        self.bus_idx = bus_idx
+
+        self.Rl = Rl
+        self.Xl = Xl
         self.fn = fn
 
         self.Edq = 0.0
@@ -489,7 +540,7 @@ class VoltageSourceConverterAverage:
         phi0 = np.angle(Ia0)
 
         # Calculate steady state machine emf (i.e. voltage behind synchronous reactance)
-        self.Edq = vt0 + (self.R1 + 1j * self.X1) * Ia0
+        self.Edq = vt0 + (self.Rl + 1j * self.Xl) * Ia0
         self.delta = np.angle(self.Edq)
 
         # Convert currents to rotor reference frame
@@ -546,7 +597,9 @@ class ExternalGrid:
     Grid is modelled as a constant voltage behind a transient reactance
     and two differential equations representing the swing equations.
     """
-    def __init__(self, Xdp, H, fn):
+    def __init__(self, Xdp, H, fn, bus_idx):
+
+        self.bus_idx = bus_idx
 
         self.Xdp = Xdp
         self.H = H
@@ -569,7 +622,7 @@ class ExternalGrid:
         phi0 = np.angle(Ia0)
 
         # Calculate steady state machine emf (i.e. voltage behind synchronous reactance)
-        Eq0 = vt0 + np.complex(0, self.Xdp) * Ia0
+        Eq0 = vt0 + 1j * self.Xdp * Ia0
         delta0 = np.angle(Eq0)
 
         p0 = 1 / self.Xdp * np.abs(vt0) * np.abs(Eq0) * np.sin(delta0 - np.angle(vt0))
@@ -592,7 +645,7 @@ class ExternalGrid:
         # Update signals
         self.Vt = np.abs(vt)
 
-        i_grid = self.Eq * np.exp(1j * self.delta) / np.complex(0, self.Xdp)
+        i_grid = self.Eq * np.exp(1j * self.delta) / (1j * self.Xdp)
 
         return i_grid
 
@@ -622,7 +675,7 @@ class SingleCageAsynchronousMotor:
 
     """
 
-    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, MVA_Rating, Sbase, fn=50):
+    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, MVA_Rating, Sbase, bus_idx, fn=50):
         """
         
         :param H: 
@@ -635,6 +688,9 @@ class SingleCageAsynchronousMotor:
         :param Sbase: System base power
         :param fn: system frequency
         """
+
+        self.bus_idx = bus_idx
+
         self.omega_n = 2 * np.pi * fn
 
         self.Sbase = Sbase
@@ -777,7 +833,7 @@ class SingleCageAsynchronousMotor:
         dEqp = -self.omega_n * self.slip * self.Edp - (self.Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p
         ds = self.calc_tmech(1) - self.Te
 
-        if round(dEdp, 6) != 0 or round(dEqp, 6) != 0 or round(ds, 6) != 0:
+        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or np.round(ds, 6).all() != 0:
             warn('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', ds = ' + str(ds))
 
@@ -792,8 +848,10 @@ class DoubleCageAsynchronousMotor:
 
     """
 
-    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, Rr2, Xr2, MVA_Rating, Sbase, fn=50):
-        
+    def __init__(self, H, Rr, Xr, Rs, Xs, a, Xm, Rr2, Xr2, MVA_Rating, Sbase, bus_idx, fn=50):
+
+        self.bus_idx = bus_idx
+
         self.omega_n = 2 * np.pi * fn
 
         # Convert parameters to 100MVA base
@@ -970,7 +1028,7 @@ class DoubleCageAsynchronousMotor:
         dEqp = -self.omega_n * self.slip * self.Edp - (self.Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p
         ds = self.calc_tmech(1) - self.Te
 
-        if round(dEdp, 6) != 0 or round(dEqp, 6) != 0 or round(ds, 6) != 0:
+        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or np.round(ds, 6).all() != 0:
             print('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', ds = ' + str(ds))
 
@@ -1073,19 +1131,23 @@ def solve_time_step(n, h, machine_controllers, v_prev, Zbus, bus_indices, max_er
     return v_prev
 
 
-def dynamic_simulation(n, Vbus, Ybus, Sbase, t_sim, h, objects=list(), machine_types=list(), bus_indices=list()):
+def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devices=list(), bus_indices=list()):
     """
     Dynamic transient simulation of a power system
-    :param n:
-    :param Vbus:
-    :param Ybus:
-    :param t_sim:
-    :param h:
-    :param machine_types:
-    :param bus_indices:
-    :return:
+    Args:
+        n:
+        Vbus:
+        Ybus:
+        Sbase:
+        fBase: base frequency i.e. 50Hz
+        t_sim:
+        h:
+        dynamic_devices: objects of each machine
+        bus_indices:
+
+    Returns:
+
     """
-    time = np.linspace(h, int(t_sim/h) + 1, h)
     max_err = 1e-3
     max_iter = 20
 
@@ -1107,7 +1169,14 @@ def dynamic_simulation(n, Vbus, Ybus, Sbase, t_sim, h, objects=list(), machine_t
     sam_idx = list()
     dam_idx = list()
 
-    n_obj = len(objects)
+    sm4_bus_idx = list()
+    sm6b_bus_idx = list()
+    vsc_bus_idx = list()
+    eg_bus_idx = list()
+    sam_bus_idx = list()
+    dam_bus_idx = list()
+
+    n_obj = len(dynamic_devices)
     H = np.zeros(n_obj)
     a = np.zeros(n_obj)
     Xm = np.zeros(n_obj)
@@ -1115,6 +1184,7 @@ def dynamic_simulation(n, Vbus, Ybus, Sbase, t_sim, h, objects=list(), machine_t
     Rs = np.zeros(n_obj)
     Xs = np.zeros(n_obj)
     Xd = np.zeros(n_obj)
+    Xa = np.zeros(n_obj)
     Xdp = np.zeros(n_obj)
     Xdpp = np.zeros(n_obj)
     Xq = np.zeros(n_obj)
@@ -1132,91 +1202,209 @@ def dynamic_simulation(n, Vbus, Ybus, Sbase, t_sim, h, objects=list(), machine_t
     Xr2 = np.zeros(n_obj)
     speed_volt = np.zeros(n_obj, dtype=bool)
 
-    for k, tpe in enumerate(machine_types):
+    machine_types = [None] * n
 
-        if tpe == DynamicModels.NoModel:  # no model
+    # extract the parameters from the objects into the arrays
+    for k, machine in enumerate(dynamic_devices):
+
+        # store the machine model in a list for later
+        machine_types[k] = machine.machine_model
+
+        # store the machine data into the representing vector
+        if machine.machine_model == DynamicModels.NoModel:  # no model
             pass
 
-        elif tpe == DynamicModels.SM4:  # fourth order synchronous machine
+        elif machine.machine_model == DynamicModels.SynchronousGeneratorOrder4:  # fourth order synchronous machine
 
-            H[k] = objects[k].H
-            Ra[k] = objects[k].Ra
-            Xd[k] = objects[k].Xd
-            Xdp[k] = objects[k].Xdp
-            Xdpp[k] = objects[k].Xdpp
-            Xq[k] = objects[k].Xq
-            Xqp[k] = objects[k].Xqp
-            Xqpp[k] = objects[k].Xqpp
-            Td0p[k] = objects[k].Td0p
-            Tq0p[k] = objects[k].Tq0p
-            base_mva[k] = objects[k].base_mva
-            speed_volt[k] = objects[k].speed_volt
+            H[k] = dynamic_devices[k].H
+            Ra[k] = dynamic_devices[k].Ra
+            Xd[k] = dynamic_devices[k].Xd
+            Xa[k] = dynamic_devices[k].Xa
+            Xdp[k] = dynamic_devices[k].Xdp
+            Xdpp[k] = dynamic_devices[k].Xdpp
+            Xq[k] = dynamic_devices[k].Xq
+            Xqp[k] = dynamic_devices[k].Xqp
+            Xqpp[k] = dynamic_devices[k].Xqpp
+            Td0p[k] = dynamic_devices[k].Td0p
+            Tq0p[k] = dynamic_devices[k].Tq0p
+            base_mva[k] = dynamic_devices[k].Snom
+            speed_volt[k] = dynamic_devices[k].speed_volt
             sm4_idx.append(k)
+            sm4_bus_idx.append(bus_indices[k])
 
-        elif tpe == DynamicModels.SM6b:  # sixth order synchronous machine
+        elif machine.machine_model == DynamicModels.SynchronousGeneratorOrder6:  # sixth order synchronous machine
 
-            H[k] = objects[k].H
-            Ra[k] = objects[k].Ra
-            Xd[k] = objects[k].Xd
-            Xdp[k] = objects[k].Xdp
-            Xdpp[k] = objects[k].Xdpp
-            Xq[k] = objects[k].Xq
-            Xqp[k] = objects[k].Xqp
-            Xqpp[k] = objects[k].Xqpp
-            Td0p[k] = objects[k].Td0p
-            Tq0p[k] = objects[k].Tq0p
-            Td0pp[k] = objects[k].Td0pp
-            Tq0pp[k] = objects[k].Tq0pp
-            base_mva[k] = objects[k].base_mva
-            speed_volt[k] = objects[k].speed_volt
+            H[k] = dynamic_devices[k].H
+            Ra[k] = dynamic_devices[k].Ra
+            Xd[k] = dynamic_devices[k].Xd
+            Xdp[k] = dynamic_devices[k].Xdp
+            Xdpp[k] = dynamic_devices[k].Xdpp
+            Xq[k] = dynamic_devices[k].Xq
+            Xqp[k] = dynamic_devices[k].Xqp
+            Xqpp[k] = dynamic_devices[k].Xqpp
+            Td0p[k] = dynamic_devices[k].Td0p
+            Tq0p[k] = dynamic_devices[k].Tq0p
+            Td0pp[k] = dynamic_devices[k].Td0pp
+            Tq0pp[k] = dynamic_devices[k].Tq0pp
+            base_mva[k] = dynamic_devices[k].Snom
+            speed_volt[k] = dynamic_devices[k].speed_volt
             sm6b_idx.append(k)
+            sm6b_bus_idx.append(bus_indices[k])
 
-        elif tpe == DynamicModels.VSC:  # voltage source converter
+        elif machine.machine_model == DynamicModels.VoltageSourceConverter:  # voltage source converter
 
             # R1, X1, fn
-            Ra[k] = objects[k].R1
-            Xd[k] = objects[k].X1
+            Ra[k] = dynamic_devices[k].R1
+            Xd[k] = dynamic_devices[k].X1
             vsc_idx.append(k)
+            vsc_bus_idx.append(bus_indices[k])
 
-        elif tpe == DynamicModels.EG:  # external grid
+        elif machine.machine_model == DynamicModels.ExternalGrid:  # external grid
             # Xdp, H
-            H[k] = objects[k].H
-            Xdp[k] = objects[k].Xdp
+            H[k] = dynamic_devices[k].H
+            Xdp[k] = dynamic_devices[k].Xdp
             eg_idx.append(k)
+            eg_bus_idx.append(bus_indices[k])
 
-        elif tpe == DynamicModels.SAM:  # single cage asynchronous motor
+        elif machine.machine_model == DynamicModels.AsynchronousSingleCageMotor:  # single cage asynchronous motor
             # H, Rr, Xr, Rs, Xs, a, Xm, Sbase, MVA_Rating
-            H[k] = objects[k].H
-            Rr[k] = objects[k].Rr
-            Xr[k] = objects[k].Xr
-            Rs[k] = objects[k].Rs
-            Xs[k] = objects[k].Xs
-            Xq[k] = objects[k].Xq
-            a[k] = objects[k].a
-            Xm[k] = objects[k].Xm
-            base_mva[k] = objects[k].MVA_Rating
+            H[k] = dynamic_devices[k].H
+            Rr[k] = dynamic_devices[k].Rr
+            Xr[k] = dynamic_devices[k].Xr
+            Rs[k] = dynamic_devices[k].Rs
+            Xs[k] = dynamic_devices[k].Xs
+            Xq[k] = dynamic_devices[k].Xq
+            a[k] = dynamic_devices[k].a
+            Xm[k] = dynamic_devices[k].Xm
+            base_mva[k] = dynamic_devices[k].MVA_Rating
             sam_idx.append(k)
+            sam_bus_idx.append(bus_indices[k])
 
-        elif tpe == DynamicModels.DAM:  # double cage asynchronous motor
+        elif machine.machine_model == DynamicModels.AsynchronousDoubleCageMotor:  # double cage asynchronous motor
             # H, Rr, Xr, Rs, Xs, a, Xm, Rr2, Xr2, MVA_Rating, Sbase
-            H[k] = objects[k].H
-            Rr[k] = objects[k].Rr
-            Xr[k] = objects[k].Xr
-            Rs[k] = objects[k].Rs
-            Xs[k] = objects[k].Xs
-            Rr2[k] = objects[k].Rr2
-            Xr2[k] = objects[k].Xr2
-            a[k] = objects[k].a
-            Xm[k] = objects[k].Xm
-            base_mva[k] = objects[k].MVA_Rating
+            H[k] = dynamic_devices[k].H
+            Rr[k] = dynamic_devices[k].Rr
+            Xr[k] = dynamic_devices[k].Xr
+            Rs[k] = dynamic_devices[k].Rs
+            Xs[k] = dynamic_devices[k].Xs
+            Rr2[k] = dynamic_devices[k].Rr2
+            Xr2[k] = dynamic_devices[k].Xr2
+            a[k] = dynamic_devices[k].a
+            Xm[k] = dynamic_devices[k].Xm
+            base_mva[k] = dynamic_devices[k].MVA_Rating
             dam_idx.append(k)
+            dam_bus_idx.append(bus_indices[k])
+
+    # create the controllers
+    sm4 = SynchronousMachineOrder4(H=H[sm4_idx],
+                                   Ra=Ra[sm4_idx],
+                                   Xd=Xd[sm4_idx],
+                                   Xdp=Xdp[sm4_idx],
+                                   Xdpp=Xdpp[sm4_idx],
+                                   Xq=Xq[sm4_idx],
+                                   Xqp=Xqp[sm4_idx],
+                                   Xqpp=Xqp[sm4_idx],
+                                   Td0p=Td0p[sm4_idx],
+                                   Tq0p=Tq0p[sm4_idx],
+                                   base_mva=base_mva[sm4_idx],
+                                   Sbase=Sbase,
+                                   bus_idx=sm4_bus_idx,
+                                   fn=fBase,
+                                   speed_volt=speed_volt[sm4_idx])
+
+    sm6 = SynchronousMachineOrder6SauerPai(H=H[sm6b_idx],
+                                           Ra=Ra[sm6b_idx],
+                                           Xa=Xa[sm6b_idx],
+                                           Xd=Xd[sm6b_idx],
+                                           Xdp=Xdp[sm6b_idx],
+                                           Xdpp=Xdpp[sm6b_idx],
+                                           Xq=Xq[sm6b_idx],
+                                           Xqp=Xqp[sm6b_idx],
+                                           Xqpp=Xqpp[sm6b_idx],
+                                           Td0p=Td0p[sm6b_idx],
+                                           Tq0p=Tq0p[sm6b_idx],
+                                           Td0pp=Td0pp[sm6b_idx],
+                                           Tq0pp=Tq0pp[sm6b_idx],
+                                           base_mva=base_mva[sm6b_idx],
+                                           Sbase=Sbase,
+                                           bus_idx=sm6b_bus_idx,
+                                           fn=fBase,
+                                           speed_volt=speed_volt[sm6b_idx])
+
+    vsc = VoltageSourceConverterAverage(Rl=Ra[vsc_idx], Xl=Xd[vsc_idx], fn=fBase, bus_idx=vsc_bus_idx)
+
+    exg = ExternalGrid(Xdp=Xdp[eg_idx], H=H[eg_idx], fn=fBase, bus_idx=eg_bus_idx)
+
+    sam = SingleCageAsynchronousMotor(H=H[sam_idx],
+                                      Rr=Rr[sam_idx],
+                                      Xr=Xr[sam_idx],
+                                      Rs=Rs[sam_idx],
+                                      Xs=Xs[sam_idx],
+                                      a=a[sam_idx],
+                                      Xm=Xm[sam_idx],
+                                      MVA_Rating=base_mva[sam_idx],
+                                      Sbase=Sbase,
+                                      bus_idx=sam_bus_idx,
+                                      fn=fBase)
+
+    dam = DoubleCageAsynchronousMotor(H=H[dam_idx],
+                                      Rr=Rr[dam_idx],
+                                      Xr=Xr[dam_idx],
+                                      Rs=Rs[dam_idx],
+                                      Xs=Xs[dam_idx],
+                                      a=a[dam_idx],
+                                      Xm=Xm[dam_idx],
+                                      Rr2=Rr2[dam_idx],
+                                      Xr2=Xr2[dam_idx],
+                                      MVA_Rating=base_mva[dam_idx],
+                                      Sbase=Sbase,
+                                      bus_idx=dam_bus_idx,
+                                      fn=fBase)
 
     # factorize the impedance matrix
     Zbus = splu(Ybus)
 
     # copy the initial voltage
-    v_prev = Vbus.copy()
+    V = Vbus.copy()
+    I = np.zeros(n, dtype=complex)
 
-    for t in time:
+    # initialize machines
+    sm4.initialise(vt0=Vbus[sm4_bus_idx], S0=Sbus[sm4_bus_idx])
+    sm6.initialise(vt0=Vbus[sm6b_bus_idx], S0=Sbus[sm6b_bus_idx])
+    vsc.initialise(vt0=Vbus[vsc_bus_idx], S0=Sbus[vsc_bus_idx])
+    exg.initialise(vt0=Vbus[eg_bus_idx], S0=Sbus[eg_bus_idx])
+    sam.initialise(vt0=Vbus[sam_bus_idx], S0=Sbus[sam_bus_idx])
+    dam.initialise(vt0=Vbus[dam_bus_idx], S0=Sbus[dam_bus_idx])
 
-        V = solve_time_step(n, h, machine_types, v_prev, Zbus, bus_indices, max_err, max_iter)
+    voltages = list()
+    omegas = list()
+
+    # iterate
+    t = 0.0
+    time = list()
+    while t < t_sim:
+
+        sm4.solve(h)
+
+        # compute machine currents
+
+        sm4.calc_currents(V, I)
+
+        # solve voltages
+        V = Zbus.solve(I / Sbase)
+
+        voltages.append(V)
+        omegas.append(sm4.omega)
+        time.append(t)
+
+        t += h
+
+        pass
+
+    voltages = np.array(voltages)
+    omegas = np.array(omegas)
+
+    from matplotlib import pyplot as plt
+    plt.plot(time, abs(voltages), linewidth=1)
+    # plt.plot(time, abs(omegas), linewidth=1)
+    plt.show()
