@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>white_icons/dyn.svg</file>
     <file>white_icons/map.svg</file>
     <file>white_icons/dcopf2ts.svg</file>
     <file>white_icons/rate_br.svg</file>

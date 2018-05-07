@@ -8,11 +8,11 @@
 PYPOWER-Dynamics
 Nine-Bus Network Stability Test
 """
+"""
+PYPOWER-Dynamics
+Classical Stability Test
+"""
 # Dynamic model classes
-from pydyn.controller import controller
-from pydyn.sym_order6a import sym_order6a
-from pydyn.sym_order6b import sym_order6b
-from pydyn.sym_order4 import sym_order4
 from pydyn.ext_grid import ext_grid
 
 # Simulation modules
@@ -30,38 +30,36 @@ if __name__ == '__main__':
     # SETUP #
     #########
 
-    print('---------------------------------------')
-    print('PYPOWER-Dynamics - 9 Bus Stability Test')
-    print('---------------------------------------')
+    print('----------------------------------------')
+    print('PYPOWER-Dynamics - Classical 9 Bus Test')
+    print('----------------------------------------')
 
     # Load PYPOWER case
     ppc = loadcase('case9.py')
 
     # Program options
-    dynopt = dict()
-    dynopt['h'] = 0.01  # step length (s)
-    dynopt['t_sim'] = 15.0  # simulation time (s)
+    dynopt = {}
+    dynopt['h'] = 0.001  # step length (s)
+    dynopt['t_sim'] = 2.0  # simulation time (s)
     dynopt['max_err'] = 1e-6  # Maximum error in network iteration (voltage mismatches)
     dynopt['max_iter'] = 25  # Maximum number of network iterations
     dynopt['verbose'] = False  # option for verbose messages
     dynopt['fn'] = 60  # Nominal system frequency (Hz)
-    dynopt['speed_volt'] = True  # Speed-voltage term option (for current injection calculation)
 
     # Integrator option
-    # dynopt['iopt'] = 'mod_euler'
-    dynopt['iopt'] = 'runge_kutta'
+    dynopt['iopt'] = 'mod_euler'
+    # dynopt['iopt'] = 'runge_kutta'
 
     # Create dynamic model objects
-    G1 = sym_order6b('G1.mach', dynopt)
-    G2 = sym_order6b('G2.mach', dynopt)
-    G3 = sym_order6b('G3.mach', dynopt)
+    G1 = ext_grid('GEN1', 0, 0.0608, 23.64, dynopt)
+    G2 = ext_grid('GEN2', 1, 0.1198, 6.01, dynopt)
+    G3 = ext_grid('GEN3', 2, 0.1813, 3.01, dynopt)
 
     # Create dictionary of elements
-    elements = dict()
+    elements = {}
     elements[G1.id] = G1
     elements[G2.id] = G2
     elements[G3.id] = G3
-    # elements[oCtrl.id] = oCtrl
 
     # Create event stack
     oEvents = events('events.evnt')
@@ -78,9 +76,10 @@ if __name__ == '__main__':
 
     # Plot variables
     plt.plot(oRecord.t_axis, rel_delta1 * 180 / np.pi, 'r-', oRecord.t_axis, rel_delta2 * 180 / np.pi, 'b-')
+    # plt.plot(oRecord.t_axis, oRecord.results['GEN1:omega'])
     plt.xlabel('Time (s)')
     plt.ylabel('Rotor Angles (relative to GEN1)')
     plt.show()
 
     # Write recorded variables to output file
-    # oRecord.write_output('output.csv')
+    oRecord.write_output('output.csv')

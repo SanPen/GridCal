@@ -26,6 +26,7 @@ from collections import OrderedDict
 from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap, Colormap
 from multiprocessing import cpu_count
+from geopy.geocoders import Nominatim
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -63,6 +64,9 @@ class ProfileTypes(Enum):
 
 
 class NewProfilesStructureDialogue(QDialog):
+    """
+    New profile dialogue window
+    """
     def __init__(self):
         super(NewProfilesStructureDialogue, self).__init__()
         self.setObjectName("self")
@@ -211,17 +215,13 @@ class MainGUI(QMainWindow):
 
         # create diagram editor object
         self.ui.lat1_doubleSpinBox.setValue(60)
-        self.ui.lat2_doubleSpinBox.setValue(0)
         self.ui.lon1_doubleSpinBox.setValue(30)
-        self.ui.lon2_doubleSpinBox.setValue(30)
         self.ui.zoom_spinBox.setValue(5)
 
         lat0 = self.ui.lat1_doubleSpinBox.value()
-        lat1 = self.ui.lat2_doubleSpinBox.value()
         lon0 = self.ui.lon1_doubleSpinBox.value()
-        lon1 = self.ui.lon2_doubleSpinBox.value()
         zoom = self.ui.zoom_spinBox.value()
-        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
+        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -354,6 +354,8 @@ class MainGUI(QMainWindow):
 
         self.ui.view_map_pushButton.clicked.connect(self.update_map)
 
+        self.ui.location_search_pushButton.clicked.connect(self.search_location)
+
         self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
 
         self.ui.profile_subtract_pushButton.clicked.connect(lambda: self.modify_profiles('-'))
@@ -410,7 +412,7 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-        self.ui.actionShow_map.setVisible(False)
+        self.ui.actionShow_map.setVisible(True)
         self.show_map()
         self.view_cascade_menu()
 
@@ -441,7 +443,9 @@ class MainGUI(QMainWindow):
         """
         show/hide the cascade simulation menu
         """
-        self.ui.map_frame.setVisible(self.ui.actionShow_map.isChecked())
+        val = self.ui.actionShow_map.isChecked()
+        self.ui.map_frame.setVisible(val)
+        self.grid_editor.diagramView.view_map(val)
 
     def about_box(self):
         """
@@ -694,32 +698,50 @@ class MainGUI(QMainWindow):
         """
         Automatic layout of the nodes
         """
-        if self.circuit.graph is None:
-            self.circuit.compile()
 
-        alg = dict()
-        alg['circular_layout'] = nx.circular_layout
-        alg['random_layout'] = nx.random_layout
-        alg['shell_layout'] = nx.shell_layout
-        alg['spring_layout'] = nx.spring_layout
-        alg['spectral_layout'] = nx.spectral_layout
-        alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+        # guilty assumption
+        do_it = True
 
-        sel = self.ui.automatic_layout_comboBox.currentText()
-        pos_alg = alg[sel]
+        # if the ask, checkbox is checked, then ask
+        if self.ui.ask_before_appliying_layout_checkBox.isChecked():
+            reply = QMessageBox.question(self, 'Message', 'Are you sure you want to try an automatic layout?',
+                                         QMessageBox.Yes, QMessageBox.No)
 
-        # get the positions of a spring layout of the graph
-        pos = pos_alg(self.circuit.graph, scale=10)
+            if reply == QMessageBox.Yes:
+                do_it = True
+            else:
+                do_it = False
 
-        # assign the positions to the graphical objects of the nodes
-        for i, bus in enumerate(self.circuit.buses):
-            try:
-                x, y = pos[i] * 500
-                bus.graphic_obj.setPos(QPoint(x, y))
-            except KeyError as ex:
-                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
-        # adjust the view
-        self.center_nodes()
+        if do_it:
+            if self.circuit.graph is None:
+                self.circuit.compile()
+
+            alg = dict()
+            alg['circular_layout'] = nx.circular_layout
+            alg['random_layout'] = nx.random_layout
+            alg['shell_layout'] = nx.shell_layout
+            alg['spring_layout'] = nx.spring_layout
+            alg['spectral_layout'] = nx.spectral_layout
+            alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+
+            sel = self.ui.automatic_layout_comboBox.currentText()
+            pos_alg = alg[sel]
+
+            # get the positions of a spring layout of the graph
+            pos = pos_alg(self.circuit.graph, scale=10)
+
+            # assign the positions to the graphical objects of the nodes
+            for i, bus in enumerate(self.circuit.buses):
+                try:
+                    x, y = pos[i] * 500
+                    bus.graphic_obj.setPos(QPoint(x, y))
+                except KeyError as ex:
+                    warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+            # adjust the view
+            self.center_nodes()
+
+        else:
+            pass  # asked and decided ot to change the layout
 
     def bigger_nodes(self):
         """
@@ -758,12 +780,10 @@ class MainGUI(QMainWindow):
                 self.circuit = MultiCircuit()
 
                 lat0 = self.ui.lat1_doubleSpinBox.value()
-                lat1 = self.ui.lat2_doubleSpinBox.value()
                 lon0 = self.ui.lon1_doubleSpinBox.value()
-                lon1 = self.ui.lon2_doubleSpinBox.value()
                 zoom = self.ui.zoom_spinBox.value()
 
-                self.grid_editor = GridEditor(self.circuit, lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
+                self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
                 self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
@@ -1064,11 +1084,26 @@ class MainGUI(QMainWindow):
         :return:
         """
         lat0 = self.ui.lat1_doubleSpinBox.value()
-        lat1 = self.ui.lat2_doubleSpinBox.value()
         lon0 = self.ui.lon1_doubleSpinBox.value()
-        lon1 = self.ui.lon2_doubleSpinBox.value()
         zoom = self.ui.zoom_spinBox.value()
-        self.grid_editor.diagramView.map.load_map(lat0, lat1, lon0, lon1, zoom)
+        self.grid_editor.diagramView.map.load_map(lat0, lon0, zoom)
+        self.grid_editor.diagramView.adapt_map_size()
+
+    def search_location(self):
+        """
+        Find the latitude and longitude of a lauwsy-defined location
+        :return:
+        """
+        geolocator = Nominatim()
+        location_text = self.ui.location_lineEdit.text()
+
+        if location_text.strip() != '':
+            try:
+                location = geolocator.geocode(location_text)
+                self.ui.lon1_doubleSpinBox.setValue(float(location.longitude))
+                self.ui.lat1_doubleSpinBox.setValue(float(location.latitude))
+            except:
+                self.msg('Location finding failed. \nCheck your connection.', 'Location finding')
 
     def auto_rate_branches(self):
         """
@@ -2440,7 +2475,7 @@ class MainGUI(QMainWindow):
 def run():
     """
     Main function to run the GUI
-    :return: 
+    :return:
     """
     app = QApplication(sys.argv)
     window = MainGUI()

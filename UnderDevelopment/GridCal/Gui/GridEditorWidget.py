@@ -2125,7 +2125,7 @@ class BusGraphicItem(QGraphicsRectItem):
 
 class MapWidget(QGraphicsRectItem):
 
-    def __init__(self, scene: QGraphicsScene, view: QGraphicsView, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+    def __init__(self, scene: QGraphicsScene, view: QGraphicsView, lat0=42, lon0=55, zoom=3):
         super(MapWidget, self).__init__(None)
 
         self.scene = scene
@@ -2151,9 +2151,7 @@ class MapWidget(QGraphicsRectItem):
         self.w = view.size().width()
 
         self.lat0 = lat0
-        self.lat1 = lat1
         self.lon0 = lon0
-        self.lon1 = lon1
         self.zoom = zoom
 
         # Create corner for resize:
@@ -2182,54 +2180,53 @@ class MapWidget(QGraphicsRectItem):
 
         return w, h
 
-    def load_map(self, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+    def load_map(self, lat0=42, lon0=55, zoom=3):
         """
         Load a map image into the widget
         :param lat0:
-        :param lat1:
         :param lon0:
-        :param lon1:
         :param zoom: 1~14
         """
         # store coordinates
         self.lat0 = lat0
-        self.lat1 = lat1
         self.lon0 = lon0
-        self.lon1 = lon1
         self.zoom = zoom
 
-        print('map:', lat0, lat1, lon0, lon1, zoom)
+        print('map:', lat0, lon0, zoom)
 
         # get map
-        # try:
-        map = smopy.Map((lat0, lat1, lon0, lon1), z=zoom)
+        try:
+            map = smopy.Map((lat0, lon0), z=zoom)
 
-        # w, h = map.img.size
-        self.img = ImageQt(map.img)
-        self.image = QPixmap.fromImage(self.img)
-        self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            # w, h = map.img.size
+            self.img = ImageQt(map.img)
+            self.image = QPixmap.fromImage(self.img)
+            self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+
+        except:
+            warn('Could not load the map')
 
     def repaint(self):
         """
         Reload with the last parameters
         """
-        self.load_map(self.lat0, self.lat1, self.lon0, self.lon1, self.zoom)
+        self.load_map(self.lat0, self.lon0, self.zoom)
 
-    # def paint(self, painter, option, widget=None):
-    #     """
-    #     Action that happens on widget repaint
-    #     :param painter:
-    #     :param option:
-    #     :param widget:
-    #     """
-    #     if self.image is not None:
-    #         painter.drawPixmap(QPoint(0, 0), self.image)
-    #         self.scene.update()
+    def paint(self, painter, option, widget=None):
+        """
+        Action that happens on widget repaint
+        :param painter:
+        :param option:
+        :param widget:
+        """
+        if self.image is not None:
+            painter.drawPixmap(QPoint(0, 0), self.image)
+            self.scene.update()
 
 
 class EditorGraphicsView(QGraphicsView):
 
-    def __init__(self, scene, parent=None, editor=None, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+    def __init__(self, scene, parent=None, editor=None, lat0=42, lon0=55, zoom=3):
         """
         Editor where the diagram is displayed
         @param scene: DiagramScene object
@@ -2249,8 +2246,13 @@ class EditorGraphicsView(QGraphicsView):
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
 
-        # self.map = MapWidget(self.scene_, self, lat0, lat1, lon0, lon1, zoom)
-        # self.view_map(False)
+        self.map = MapWidget(self.scene_, self, lat0, lon0, zoom)
+
+    def adapt_map_size(self):
+        w = self.size().width()
+        h = self.size().height()
+        print('EditorGraphicsView size: ', w, h)
+        self.map.change_size(w, h)
 
     def view_map(self, flag=True):
         """
@@ -2442,7 +2444,7 @@ class ObjectFactory(object):
 
 class GridEditor(QSplitter):
 
-    def __init__(self, circuit: MultiCircuit, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
+    def __init__(self, circuit: MultiCircuit, lat0=42, lon0=55, zoom=3):
         """
         Creates the Diagram Editor
         Args:
@@ -2486,7 +2488,7 @@ class GridEditor(QSplitter):
         # create all the schematic objects and replace the existing ones
         self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView
         self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self,
-                                              lat0=lat0, lat1=lat1, lon0=lon0, lon1=lon1, zoom=zoom)
+                                              lat0=lat0, lon0=lon0, zoom=zoom)
 
         # create the grid name editor
         self.frame1 = QFrame()
