@@ -7334,8 +7334,6 @@ class MonteCarlo(QThread):
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-        return self.results
-
     def cancel(self):
         """
         Cancel the simulation

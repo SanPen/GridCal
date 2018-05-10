@@ -412,7 +412,8 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-        self.ui.actionShow_map.setVisible(True)
+        self.ui.actionShow_map.setVisible(False)
+        self.ui.actionTransient_stability.setVisible(False)
         self.show_map()
         self.view_cascade_menu()
 
@@ -1088,6 +1089,22 @@ class MainGUI(QMainWindow):
         zoom = self.ui.zoom_spinBox.value()
         self.grid_editor.diagramView.map.load_map(lat0, lon0, zoom)
         self.grid_editor.diagramView.adapt_map_size()
+
+    def search_location(self):
+        """
+        Find the latitude and longitude of a lauwsy-defined location
+        :return:
+        """
+        geolocator = Nominatim()
+        location_text = self.ui.location_lineEdit.text()
+
+        if location_text.strip() != '':
+            try:
+                location = geolocator.geocode(location_text)
+                self.ui.lon1_doubleSpinBox.setValue(float(location.longitude))
+                self.ui.lat1_doubleSpinBox.setValue(float(location.latitude))
+            except:
+                self.msg('Location finding failed. \nCheck your connection.', 'Location finding')
 
     def search_location(self):
         """

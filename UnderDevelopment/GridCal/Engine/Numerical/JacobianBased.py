@@ -300,7 +300,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     # initialize
     V = V0
     Va = angle(V)
-    Vm = abs(V)
+    Vm = np.abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
     # set up indexing for updating V
@@ -328,7 +328,6 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     ii = np.linspace(0, nn-1, nn)
     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
 
-    # do Newton iterations
     while not converged and iter_ < max_it:
 
         # evaluate Jacobian
@@ -343,6 +342,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         # system matrix
         # H1 = H^t
         H1 = H.transpose().tocsr()
+
         # H2 = H1·H
         H2 = H1.dot(H)
 
@@ -365,10 +365,10 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
         # decision function
         val = dx.dot(lbmda * dx + rhs)
-        if val > 0:
+        if val > 0.0:
             rho = (f_prev - f) / (0.5 * val)
         else:
-            rho = -1
+            rho = -1.0
 
         # lambda update
         if rho >= 0:
@@ -387,17 +387,16 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
             Va -= dVa
             # update Vm and Va again in case we wrapped around with a negative Vm
             V = Vm * exp(1j * Va)
-            Vm = abs(V)
+            Vm = np.abs(V)
             Va = angle(V)
         else:
             update_jacobian = False
             lbmda *= nu
-            nu *= 2
+            nu *= 2.0
 
         # check convergence
-        # F = Sbus - V*conj(Ybus.dot(V))
-        normF = np.linalg.norm(dx, np.Inf)
-        # normF = np.linalg.norm(F, np.Inf)
+        # normF = np.linalg.norm(dx, np.Inf)
+        normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
         converged = normF < tol
         f_prev = f
 
