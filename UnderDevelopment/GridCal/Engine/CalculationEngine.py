@@ -407,6 +407,20 @@ def load_from_xls(filename):
     xl = pd.ExcelFile(filename)
     names = xl.sheet_names
 
+    allowed_data_sheets = ['Conf', 'config', 'bus', 'branch',
+                           'load', 'load_Sprof', 'load_Iprof', 'load_Zprof',
+                           'static_generator', 'static_generator_Sprof',
+                           'battery', 'battery_Vset_profiles', 'battery_P_profiles',
+                           'controlled_generator', 'CtrlGen_Vset_profiles', 'CtrlGen_P_profiles',
+                           'shunt', 'shunt_Y_profiles']
+
+    # check the validity of this excel file
+    for name in names:
+        if name not in allowed_data_sheets:
+            raise Exception('The file sheet ' + name + ' is not allowed.\n'
+                            'Did you create this file manually? Use GridCal instead.')
+
+    # parse the file
     if 'Conf' in names:
         for name in names:
 
@@ -3388,6 +3402,10 @@ class MultiCircuit(Circuit):
         self.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
         self.time_profile = None
+
+
+
+
 
         # common function
         def set_object_attributes(obj_, attr_list, values):
