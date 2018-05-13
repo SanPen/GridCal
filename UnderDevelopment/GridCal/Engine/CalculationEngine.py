@@ -7406,7 +7406,7 @@ class MonteCarloResults:
         self.l_avg_conv = None
 
         self.available_results = ['Bus voltage avg', 'Bus voltage std',
-                                  'Bus current avg', 'Bus current std',
+                                  'Branch current avg', 'Branch current std',
                                   'Branch loading avg', 'Branch loading std',
                                   'Bus voltage CDF', 'Branch loading CDF']
 
@@ -7615,7 +7615,7 @@ class MonteCarloResults:
                 x_label = 'Sampling points'
                 title = 'Bus voltage \naverage convergence'
 
-            elif result_type == 'Bus current avg':
+            elif result_type == 'Branch current avg':
                 y = self.c_avg_conv[1:-1, indices]
                 y_label = '(p.u.)'
                 x_label = 'Sampling points'
@@ -7633,7 +7633,7 @@ class MonteCarloResults:
                 x_label = 'Sampling points'
                 title = 'Bus voltage standard \ndeviation convergence'
 
-            elif result_type == 'Bus current std':
+            elif result_type == 'Branch current std':
                 y = self.c_std_conv[1:-1, indices]
                 y_label = '(p.u.)'
                 x_label = 'Sampling points'
