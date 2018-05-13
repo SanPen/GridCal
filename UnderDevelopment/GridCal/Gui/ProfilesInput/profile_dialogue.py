@@ -176,6 +176,21 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.assignation_table.doubleClicked.connect(self.assignation_table_double_click)
         self.ui.tableView.doubleClicked.connect(self.print_profile)
 
+    def msg(self, text, title="Warning"):
+        """
+        Message box
+        :param text: Text to display
+        :param title: Name of the window
+        """
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(text)
+        # msg.setInformativeText("This is additional information")
+        msg.setWindowTitle(title)
+        # msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        retval = msg.exec_()
+
     def get_multiplier(self):
         """
         Gets the necessary multiplier to pass the profile units to Mega
@@ -217,6 +232,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
                 elif file_extension in ['.xlsx', '.xls']:
                     self.original_data_frame = pd.read_excel(filename, sheet_name=sheet_index, index_col=0)
+
+                # try to format the data
+                try:
+                    self.original_data_frame = self.original_data_frame.astype(float)
+                except:
+                    self.msg('The format of the data is not recognized. Only int or float values are allowed')
+                    return
 
                 # set the profile names list
                 self.profile_names = self.original_data_frame.columns

@@ -364,6 +364,8 @@ class MainGUI(QMainWindow):
 
         self.ui.profile_divide_pushButton.clicked.connect(lambda: self.modify_profiles('/'))
 
+        self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -414,6 +416,7 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         self.ui.actionShow_map.setVisible(False)
         self.ui.actionTransient_stability.setVisible(False)
+        self.ui.tab_7.setVisible(False)
         self.show_map()
         self.view_cascade_menu()
 
@@ -1417,6 +1420,57 @@ class MainGUI(QMainWindow):
             raise Exception('Operation not supported: ' + str(operation))
 
         self.display_profiles()
+
+    def plot_profiles(self):
+        """
+
+        Returns:
+
+        """
+        value = self.ui.profile_factor_doubleSpinBox.value()
+
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude = magnitudes[idx]
+
+        if dev_type == 'Load':
+            objects = self.circuit.get_loads()
+
+        elif dev_type == 'StaticGenerator':
+            objects = self.circuit.get_static_generators()
+
+        elif dev_type == 'ControlledGenerator':
+            objects = self.circuit.get_controlled_generators()
+
+        elif dev_type == 'Battery':
+            objects = self.circuit.get_batteries()
+
+        elif dev_type == 'Shunt':
+            objects = self.circuit.get_shunts()
+
+        # get the selected element
+        obj_idx = self.ui.tableView.selectedIndexes()
+
+        # Assign profiles
+        if len(obj_idx):
+            fig = plt.figure(figsize=(12, 8))
+            ax = fig.add_subplot(111)
+
+            k = obj_idx[0].column()
+            units_dict = {objects[k].edit_headers[i]: objects[k].units[i] for i in range(len(objects[k].units))}
+
+            unit = units_dict[magnitude]
+            ax.set_ylabel(unit)
+
+            for i in range(len(obj_idx)):
+                k = obj_idx[i].column()
+                attr = objects[k].profile_attr[magnitude]
+                df = getattr(objects[k], attr)
+                df.columns = [objects[k].name]
+                df.plot(ax=ax)
+            plt.show()
+
 
     def display_profiles(self):
         """

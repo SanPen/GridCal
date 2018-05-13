@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.26
+__GridCal_VERSION__ = 2.29
 
 import os
 import pickle as pkl
@@ -1274,7 +1274,7 @@ class TapChanger:
 class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1, tap=1, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
         """
         Branch model constructor
         @param bus_from: Bus Object

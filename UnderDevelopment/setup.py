@@ -87,7 +87,8 @@ if platform.system() == 'Windows':
                          "pysot",
                          "openpyxl",
                          "pulp",
-                         "smopy"
+                         "smopy",
+                         "chardet"
                          ]
 else:
     # make the desktop entry
@@ -106,7 +107,8 @@ else:
                          "pysot",
                          "openpyxl",
                          "pulp",
-                         "smopy"
+                         "smopy",
+                         "chardet"
                          ]
 
 # Read the license
