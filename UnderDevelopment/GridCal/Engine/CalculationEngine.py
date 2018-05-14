@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.29
+__GridCal_VERSION__ = 2.30
 
 import os
 import pickle as pkl
@@ -5465,7 +5465,7 @@ class PowerFlowMP:
 
         return Vnew, Qnew, types_new, any_control_issue
 
-    def run(self):
+    def run(self, store_in_island=False):
         """
         Pack run_pf for the QThread
         :return:
@@ -5485,6 +5485,8 @@ class PowerFlowMP:
 
             # run circuit power flow
             res = self.run_pf(circuit, Vbus, Sbus, Ibus)
+
+            circuit.power_flow_results = res
 
             # merge the results from this island
             results.apply_from_island(res,
@@ -5614,7 +5616,7 @@ class PowerFlow(QRunnable):
         :return: 
         """
 
-        results = self.pf.run()
+        results = self.pf.run(store_in_island=True)
         self.results = results
         self.grid.power_flow_results = results
 

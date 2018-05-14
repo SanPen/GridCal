@@ -1326,23 +1326,29 @@ class MainGUI(QMainWindow):
 
         if dev_type == 'Load':
             objects = self.circuit.get_loads()
+            also_reactive_power = True
 
         elif dev_type == 'StaticGenerator':
             objects = self.circuit.get_static_generators()
+            also_reactive_power = True
 
         elif dev_type == 'ControlledGenerator':
             objects = self.circuit.get_controlled_generators()
+            also_reactive_power = False
 
         elif dev_type == 'Battery':
             objects = self.circuit.get_batteries()
+            also_reactive_power = False
 
         elif dev_type == 'Shunt':
             objects = self.circuit.get_shunts()
+            also_reactive_power = True
 
         if len(objects) > 0:
             dialogue = ProfileInputGUI(parent=self,
-                                       list_of_objects=objects, magnitude=magnitude,
-                                       AlsoReactivePower=False)
+                                       list_of_objects=objects,
+                                       magnitude=magnitude,
+                                       AlsoReactivePower=also_reactive_power)
             dialogue.resize(int(1.61 * 600.0), 600)  # golden ratio
             dialogue.exec()  # exec leaves the parent on hold
 
