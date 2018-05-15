@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.30
+__GridCal_VERSION__ = 2.292
 
 import os
 import pickle as pkl
@@ -407,16 +407,29 @@ def load_from_xls(filename):
     xl = pd.ExcelFile(filename)
     names = xl.sheet_names
 
-    allowed_data_sheets = ['Conf', 'config', 'bus', 'branch',
-                           'load', 'load_Sprof', 'load_Iprof', 'load_Zprof',
-                           'static_generator', 'static_generator_Sprof',
-                           'battery', 'battery_Vset_profiles', 'battery_P_profiles',
-                           'controlled_generator', 'CtrlGen_Vset_profiles', 'CtrlGen_P_profiles',
-                           'shunt', 'shunt_Y_profiles']
+    # this dictionary sets the allowed excel sheets and the possible specific converter
+    allowed_data_sheets = {'Conf': None,
+                           'config': None,
+                           'bus': None,
+                           'branch':None,
+                           'load': None,
+                           'load_Sprof': complex,
+                           'load_Iprof': complex,
+                           'load_Zprof': complex,
+                           'static_generator': None,
+                           'static_generator_Sprof': complex,
+                           'battery': None,
+                           'battery_Vset_profiles': float,
+                           'battery_P_profiles': float,
+                           'controlled_generator': None,
+                           'CtrlGen_Vset_profiles': float,
+                           'CtrlGen_P_profiles': float,
+                           'shunt': None,
+                           'shunt_Y_profiles': complex}
 
     # check the validity of this excel file
     for name in names:
-        if name not in allowed_data_sheets:
+        if name not in allowed_data_sheets.keys():
             raise Exception('The file sheet ' + name + ' is not allowed.\n'
                             'Did you create this file manually? Use GridCal instead.')
 
@@ -502,6 +515,13 @@ def load_from_xls(filename):
             else:
                 # just pick the DataFrame
                 df = xl.parse(name, index_col=0)
+
+                if allowed_data_sheets[name] == complex:
+                    # pandas does not read complex numbers right,
+                    # so when we expect a complex number input, parse directly
+                    for c in df.columns.values:
+                        df[c] = df[c].apply(lambda x: np.complex(x))
+
                 data[name] = df
 
     else:
