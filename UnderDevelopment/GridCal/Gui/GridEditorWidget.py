@@ -1,9 +1,12 @@
+import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+import smopy
+from PIL.ImageQt import ImageQt, Image
 from GridCal.Engine.CalculationEngine import *
 from GridCal.Gui.GuiFunctions import *
-import sys
+
 
 '''
 Dependencies:
@@ -539,6 +542,13 @@ class BranchGraphicItem(QGraphicsLineItem):
         ra3 = menu.addAction('Edit')
         ra3.triggered.connect(self.edit)
 
+        if self.api_object.is_transformer:
+            ra4 = menu.addAction('Tap up')
+            ra4.triggered.connect(self.tap_up)
+
+            ra5 = menu.addAction('Tap down')
+            ra5.triggered.connect(self.tap_down)
+
         menu.exec_(event.screenPos())
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
@@ -713,6 +723,18 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         if dlg.exec_():
             pass
+
+    def tap_up(self):
+        """
+        Set one tap up
+        """
+        self.api_object.tap_up()
+
+    def tap_down(self):
+        """
+        Set one tap down
+        """
+        self.api_object.tap_down()
 
 
 class ParameterDialog(QDialog):
@@ -1658,17 +1680,25 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         Plot API objects profiles
         """
         fig = plt.figure(figsize=(10, 8))
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        ax1 = fig.add_subplot(411)
+        ax2 = fig.add_subplot(412)
+        ax3 = fig.add_subplot(413)
+        ax4 = fig.add_subplot(414)
 
         self.api_object.Pprof.plot(ax=ax1, linewidth=1)
         self.api_object.Vsetprof.plot(ax=ax2, linewidth=1)
+        self.api_object.power_array.plot(ax=ax3, linewidth=1)
+        self.api_object.energy_array.plot(ax=ax4, linewidth=1)
 
         ax1.set_title('Active power profile')
         ax2.set_title('Set voltage profile')
+        ax3.set_title('Controlled active power profile')
+        ax4.set_title('Controlled energy profile')
 
         ax1.set_ylabel('MW')
         ax2.set_ylabel('V (p.u.)')
+        ax3.set_ylabel('MW')
+        ax4.set_ylabel('MWh')
 
         plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
 
@@ -1687,7 +1717,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
 
-class BusGraphicItem(QGraphicsRectItem, GeneralItem):
+class BusGraphicItem(QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -1710,8 +1740,9 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         super(BusGraphicItem, self).__init__(parent)
 
-        self.min_w = 60.0
-        self.min_h = 60.0
+        self.min_w = 180.0
+        self.min_h = 20.0
+        self.offset = 10
         self.h = bus.h if bus.h >= self.min_h else self.min_h
         self.w = bus.w if bus.w >= self.min_w else self.min_w
 
@@ -1727,7 +1758,14 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Enabled for short circuit
         self.sc_enabled = False
         self.pen_width = 4
-        # Properties of the rectangle:
+
+        # index
+        self.index = index
+
+        if pos is not None:
+            self.setPos(pos)
+
+        # color
         if self.api_object is not None:
             if self.api_object.active:
                 self.color = ACTIVE['color']
@@ -1739,36 +1777,48 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        self.setBrush(QBrush(Qt.darkGray))
-        self.setPen(QPen(self.color, self.pen_width, self.style))
-        self.setBrush(self.color)
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
-        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-
-        # index
-        self.index = index
-
-        if pos is not None:
-            self.setPos(pos)
-
         # Label:
         self.label = QGraphicsTextItem(bus.name, self)
-        self.label.setDefaultTextColor(QtCore.Qt.white)
+        # self.label.setDefaultTextColor(QtCore.Qt.white)
+        self.label.setDefaultTextColor(QtCore.Qt.black)
 
-        # Create corner for resize:
-        self.sizer = HandleItem(self)
-        self.sizer.setPos(self.w, self.h)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
-
-        self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
+        # square
+        self.tile = QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
+        self.tile.setOpacity(0.7)
 
         # connection terminals the block
         self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-
+        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style))
         self.hosting_connections = list()
+
+        # Create corner for resize:
+        self.sizer = HandleItem(self.terminal)
+        self.sizer.setPos(self.w, self.h)
+        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
+        self.sizer.setFlag(self.ItemIsMovable)
+        self.adapt()
+
+        # self.setBrush(QBrush(Qt.white))
+        # self.setOpacity(0.4)
+        # self.setPen(QPen(self.color, self.pen_width, self.style))
+        # self.setBrush(self.color)
+
+        self.set_tile_color(self.color)
+
+        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.transparent)
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
         # Update size:
         self.change_size(self.w, self.h)
+
+    # def setPen(self, pen):
+    #     self.tile.setPen(pen)
+    #
+    def set_tile_color(self, brush):
+        self.tile.setBrush(brush)
+        self.terminal.setBrush(brush)
 
     def change_size(self, w, h):
         """
@@ -1778,15 +1828,15 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         @return:
         """
         # Limit the block size to the minimum size:
-        if h < self.min_h:
-            h = self.min_h
+        # if h < self.min_h:
+        #     h = self.min_h
+        h = self.min_h
         if w < self.min_w:
             w = self.min_w
 
         self.setRect(0.0, 0.0, w, h)
         self.h = h
         self.w = w
-        offset = 10
 
         # center label:
         rect = self.label.boundingRect()
@@ -1796,7 +1846,7 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.label.setPos(lx, ly)
 
         # lower
-        y0 = h + offset
+        y0 = h + self.offset
         x0 = 0
         self.terminal.setPos(x0, y0)
         self.terminal.setRect(0.0, 0.0, w, 10)
@@ -1804,9 +1854,6 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         # Set text
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
-
-        # Move the sizer
-        # self.sizer.setPos(self.w, self.h)
 
         # rearrange children
         self.arrange_children()
@@ -1909,6 +1956,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         menu.exec_(event.screenPos())
 
+    def delete_all_connections(self):
+
+        self.terminal.remove_all_connections()
+
     def remove(self):
         """
         Remove this element
@@ -1933,16 +1984,16 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
             if self.api_object.active:
 
-                self.setBrush(QBrush(ACTIVE['color']))
-                self.setPen(QPen(ACTIVE['style']))
+                self.set_tile_color(QBrush(ACTIVE['color']))
+                # self.setPen(QPen(ACTIVE['style']))
                 # self.color = ACTIVE['color']
                 # self.style = ACTIVE['style']
 
                 for host in self.terminal.hosting_connections:
                     host.set_enable(val=True)
             else:
-                self.setBrush(QBrush(DEACTIVATED['color']))
-                self.setPen(QPen(ACTIVE['style']))
+                self.set_tile_color(QBrush(DEACTIVATED['color']))
+                # self.setPen(QPen(ACTIVE['style']))
 
                 # self.color = DEACTIVATED['color']
                 # self.style = DEACTIVATED['style']
@@ -1957,12 +2008,13 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
 
         """
         if self.sc_enabled is True:
-            self.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
+            # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
+            self.tile.setPen(QPen(Qt.transparent, self.pen_width))
             self.sc_enabled = False
 
         else:
             self.sc_enabled = True
-            self.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
+            self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
 
     def plot_profiles(self):
         """
@@ -1995,10 +2047,10 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         """
         Set the bus width according to the label text
         """
-        h = self.h
+        h = self.terminal.boundingRect().height()
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
-        self.sizer.setPos(w, h)
+        self.sizer.setPos(w, self.h)
 
     def add_load(self, api_obj=None):
         """
@@ -2071,9 +2123,110 @@ class BusGraphicItem(QGraphicsRectItem, GeneralItem):
         self.arrange_children()
 
 
+class MapWidget(QGraphicsRectItem):
+
+    def __init__(self, scene: QGraphicsScene, view: QGraphicsView, lat0=42, lon0=55, zoom=3):
+        super(MapWidget, self).__init__(None)
+
+        self.scene = scene
+        self.view = view
+
+        # self.setRect(self.scene.sceneRect())
+        # self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setFlags(self.ItemIsMovable)
+        self.image = None
+        self.img = None
+
+        self.pen_width = 4
+        # Properties of the rectangle:
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
+        self.setBrush(QBrush(Qt.darkGray))
+        self.setPen(QPen(self.color, self.pen_width, self.style))
+        self.setBrush(self.color)
+
+        self.scene.addItem(self)
+
+        self.h = view.size().height()
+        self.w = view.size().width()
+
+        self.lat0 = lat0
+        self.lon0 = lon0
+        self.zoom = zoom
+
+        # Create corner for resize:
+        self.sizer = HandleItem(self)
+        self.sizer.setPos(self.w, self.h)
+        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
+        # self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
+
+        self.change_size(self.w, self.h)
+        self.setPos(0, self.h)
+
+        # self.load_map()
+
+    def change_size(self, w, h):
+        """
+        Resize block function
+        @param w:
+        @param h:
+        @return:
+        """
+
+        self.setRect(0.0, 0.0, w, h)
+        self.h = h
+        self.w = w
+        self.repaint()
+
+        return w, h
+
+    def load_map(self, lat0=42, lon0=55, zoom=3):
+        """
+        Load a map image into the widget
+        :param lat0:
+        :param lon0:
+        :param zoom: 1~14
+        """
+        # store coordinates
+        self.lat0 = lat0
+        self.lon0 = lon0
+        self.zoom = zoom
+
+        print('map:', lat0, lon0, zoom)
+
+        # get map
+        try:
+            map = smopy.Map((lat0, lon0), z=zoom)
+
+            # w, h = map.img.size
+            self.img = ImageQt(map.img)
+            self.image = QPixmap.fromImage(self.img)
+            self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+
+        except:
+            warn('Could not load the map')
+
+    def repaint(self):
+        """
+        Reload with the last parameters
+        """
+        self.load_map(self.lat0, self.lon0, self.zoom)
+
+    def paint(self, painter, option, widget=None):
+        """
+        Action that happens on widget repaint
+        :param painter:
+        :param option:
+        :param widget:
+        """
+        if self.image is not None:
+            painter.drawPixmap(QPoint(0, 0), self.image)
+            self.scene.update()
+
+
 class EditorGraphicsView(QGraphicsView):
 
-    def __init__(self, scene, parent=None, editor=None):
+    def __init__(self, scene, parent=None, editor=None, lat0=42, lon0=55, zoom=3):
         """
         Editor where the diagram is displayed
         @param scene: DiagramScene object
@@ -2092,6 +2245,22 @@ class EditorGraphicsView(QGraphicsView):
         self.editor = editor
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
+
+        self.map = MapWidget(self.scene_, self, lat0, lon0, zoom)
+
+    def adapt_map_size(self):
+        w = self.size().width()
+        h = self.size().height()
+        print('EditorGraphicsView size: ', w, h)
+        self.map.change_size(w, h)
+
+    def view_map(self, flag=True):
+        """
+
+        :param flag:
+        :return:
+        """
+        self.map.setVisible(flag)
 
     def dragEnterEvent(self, event):
         """
@@ -2275,7 +2444,7 @@ class ObjectFactory(object):
 
 class GridEditor(QSplitter):
 
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit: MultiCircuit, lat0=42, lon0=55, zoom=3):
         """
         Creates the Diagram Editor
         Args:
@@ -2318,7 +2487,8 @@ class GridEditor(QSplitter):
 
         # create all the schematic objects and replace the existing ones
         self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView
-        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
+        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self,
+                                              lat0=lat0, lon0=lon0, zoom=zoom)
 
         # create the grid name editor
         self.frame1 = QFrame()
@@ -2360,6 +2530,8 @@ class GridEditor(QSplitter):
         self.started_branch = BranchGraphicItem(port, None, self.diagramScene)
         self.started_branch.bus_from = port.parent
         port.setZValue(0)
+        # if self.diagramView.map.isVisible():
+        #     self.diagramView.map.setZValue(-1)
         port.process_callbacks(port.parent.pos() + port.pos())
 
     def sceneMouseMoveEvent(self, event):
@@ -2413,6 +2585,8 @@ class GridEditor(QSplitter):
                         item.process_callbacks(item.parent.pos() + item.pos())
 
                         self.started_branch.setZValue(-1)
+                        # if self.diagramView.map.isVisible():
+                        #     self.diagramView.map.setZValue(-1)
 
             if self.started_branch.toPort is None:
                 self.started_branch.remove_()
@@ -2458,7 +2632,7 @@ class GridEditor(QSplitter):
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-        print('(', min_x, min_y, ')(', max_x, max_y, ')')
+        # print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
         h = max_y - min_y + 100
         w = max_x - min_x + 100
@@ -2501,7 +2675,7 @@ class GridEditor(QSplitter):
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-        print('(', min_x, min_y, ')(', max_x, max_y, ')')
+        # print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
         h = max_y - min_y + 100
         w = max_x - min_x + 100

@@ -86,7 +86,9 @@ if platform.system() == 'Windows':
                          "qtconsole",
                          "pysot",
                          "openpyxl",
-                         "pulp"
+                         "pulp",
+                         "smopy",
+                         "chardet"
                          ]
 else:
     # make the desktop entry
@@ -104,7 +106,9 @@ else:
                          "qtconsole",
                          "pysot",
                          "openpyxl",
-                         "pulp"
+                         "pulp",
+                         "smopy",
+                         "chardet"
                          ]
 
 # Read the license

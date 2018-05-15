@@ -13,32 +13,34 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.01
+__GridCal_VERSION__ = 2.30
 
 import os
 import pickle as pkl
 from datetime import datetime, timedelta
 from enum import Enum
 from warnings import warn
-
 import networkx as nx
 import pandas as pd
 import pulp
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox
-
-import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib import pyplot as plt
+import json
+import multiprocessing
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from poap.controller import SerialController
 from pyDOE import lhs
 from pySOT import *
-from scipy.sparse import csc_matrix, lil_matrix
+from scipy.sparse import csc_matrix, lil_matrix, hstack as hstack_s, vstack as vstack_s
 from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
+
+import matplotlib
+matplotlib.use('Qt5Agg')
+from matplotlib import pyplot as plt
+
+from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
 
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
@@ -46,6 +48,8 @@ from GridCal.Engine.Numerical.HELM import helm
 from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
+from GridCal.Engine.Numerical.SE import solve_se_lm
+from GridCal.Engine.Numerical.DynamicModels import DynamicModels
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -84,6 +88,15 @@ class NodeType(Enum):
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
 
 
+class MeasurementType(Enum):
+    Pinj = 1,
+    Qinj = 2,
+    Vmag = 3,
+    Pflow = 4,
+    Qflow = 5,
+    Iflow = 6
+
+
 class SolverType(Enum):
     NR = 1
     NRFD_XB = 2
@@ -98,6 +111,8 @@ class SolverType(Enum):
     LM = 11  # Levenberg-Marquardt
     FASTDECOUPLED = 12,
     LACPF = 13,
+    DC_OPF = 14,
+    AC_OPF = 15
 
 
 class TimeGroups(Enum):
@@ -138,11 +153,11 @@ class CDF(object):
         self.iscomplex = iscomplexobj(self.arr)
 
         # calculate the proportional values of samples
-        l = len(data)
-        if l > 1:
-            self.prob = 1. * arange(l) / (l - 1)
+        n = len(data)
+        if n > 1:
+            self.prob = 1. * arange(n) / (n - 1)
         else:
-            self.prob = 1. * arange(l)
+            self.prob = 1. * arange(n)
 
         # iterator index
         self.idx = 0
@@ -186,7 +201,7 @@ class CDF(object):
 
     def __sub__(self, other):
         """
-        Rest of two CDF
+        Subtract of two CDF
         @param other:
         @return: A CDF object with the subtraction a a CDF to this CDF
         """
@@ -392,6 +407,20 @@ def load_from_xls(filename):
     xl = pd.ExcelFile(filename)
     names = xl.sheet_names
 
+    allowed_data_sheets = ['Conf', 'config', 'bus', 'branch',
+                           'load', 'load_Sprof', 'load_Iprof', 'load_Zprof',
+                           'static_generator', 'static_generator_Sprof',
+                           'battery', 'battery_Vset_profiles', 'battery_P_profiles',
+                           'controlled_generator', 'CtrlGen_Vset_profiles', 'CtrlGen_P_profiles',
+                           'shunt', 'shunt_Y_profiles']
+
+    # check the validity of this excel file
+    for name in names:
+        if name not in allowed_data_sheets:
+            raise Exception('The file sheet ' + name + ' is not allowed.\n'
+                            'Did you create this file manually? Use GridCal instead.')
+
+    # parse the file
     if 'Conf' in names:
         for name in names:
 
@@ -480,27 +509,94 @@ def load_from_xls(filename):
 
     return data
 
-
 ########################################################################################################################
 # Circuit classes
 ########################################################################################################################
 
 
+class Measurement:
+
+    def __init__(self, value, uncertainty, mtype: MeasurementType):
+        """
+        Constructor
+        :param value: value 
+        :param uncertainty: uncertainty (standard deviation) 
+        :param mtype: type of measurement
+        """
+        self.val = value
+        self.sigma = uncertainty
+        self.measurement_type = mtype
+
+
+class ReliabilityDevice:
+
+    def __init__(self, mttf, mttr):
+        """
+        Class to provide reliability derived functionality
+        :param mttf: Mean Time To Failure (h)
+        :param mttr: Mean Time To Repair (h)
+        """
+        self.mttf = mttf
+
+        self.mttr = mttr
+
+    def get_failure_time(self, n_samples):
+        """
+        Get an array of possible failure times
+        :param n_samples: number of samples to draw
+        :return: Array of times in hours
+        """
+        return -1.0 * self.mttf * np.log(np.random.rand(n_samples))
+
+    def get_repair_time(self, n_samples):
+        """
+        Get an array of possible repair times
+        :param n_samples: number of samples to draw
+        :return: Array of times in hours
+        """
+        return -1.0 * self.mttr * np.log(np.random.rand(n_samples))
+
+    def get_reliability_events(self, horizon, n_samples):
+        """
+        Get random fail-repair events until a given time horizon in hours
+        :param horizon: maximum horizon in hours
+        :return: list of events
+        """
+        t = zeros(n_samples)
+        events = list()
+        while t.any() < horizon:  # if all event get to the horizon, finnish the sampling
+
+            # simulate failure
+            te = self.get_failure_time(n_samples)
+            if (t + te).any() <= horizon:
+                t += te
+                events.append(t)
+
+            # simulate repair
+            te = self.get_repair_time(n_samples)
+            if (t + te).any() <= horizon:
+                t += te
+                events.append(t)
+
+        return events
+
+
 class Bus:
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0, active=True):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
+                 active=True, is_slack=False):
         """
         Bus  constructor
-        Args:
-            name:
-            vnom:
-            vmin:
-            vmax:
-            xpos:
-            ypos:
-            height:
-            width:
-            active:
+        :param name: name of the bus
+        :param vnom: nominal voltage in kV
+        :param vmin: minimum per unit voltage (i.e. 0.9)
+        :param vmax: maximum per unit voltage (i.e. 1.1)
+        :param xpos: x position in pixels
+        :param ypos: y position in pixels
+        :param height: height of the graphic object
+        :param width: width of the graphic object
+        :param active: is the bus active?
+        :param is_slack: is this bus a slack bus?
         """
 
         self.name = name
@@ -512,16 +608,22 @@ class Bus:
         # Nominal voltage (kV)
         self.Vnom = vnom
 
+        # minimum voltage limit
         self.Vmin = vmin
 
+        # maximum voltage limit
         self.Vmax = vmax
 
+        # summation of lower reactive power limits connected
         self.Qmin_sum = 0
 
+        # summation of upper reactive power limits connected
         self.Qmax_sum = 0
 
+        # short circuit impedance
         self.Zf = 0
 
+        # is the bus active?
         self.active = active
 
         # List of load s attached to this bus
@@ -539,24 +641,26 @@ class Bus:
         # List of static generators attached tot this bus
         self.static_generators = list()
 
+        # List of measurements
+        self.measurements = list()
+
         # Bus type
         self.type = NodeType.NONE
 
         # Flag to determine if the bus is a slack bus or not
-        self.is_slack = False
+        self.is_slack = is_slack
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed
         self.dispatch_storage = False
 
+        # position and dimensions
         self.x = xpos
-
         self.y = ypos
-
         self.h = height
-
         self.w = width
 
+        # associated graphic object
         self.graphic_obj = None
 
         self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w']
@@ -615,7 +719,7 @@ class Bus:
 
         pass
 
-    def get_YISV(self, index=None, with_profiles=True):
+    def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
         """
         Compose the
             - Z: Impedance attached to the bus
@@ -623,8 +727,11 @@ class Bus:
             - S: Power attached to the bus
             - V: Voltage of the bus
         All in complex values
-        @return: Y, I, S, V, Yprof, Iprof, Sprof
+        :param index: index of the Pandas DataFrame
+        :param with_profiles: also fill the profiles
+        :return: Y, I, S, V, Yprof, Iprof, Sprof
         """
+
         Y = complex(0, 0)
         I = complex(0, 0)  # Positive Generates, negative consumes
         S = complex(0, 0)  # Positive Generates, negative consumes
@@ -684,7 +791,12 @@ class Bus:
                 warn(elm.name + ' is not active')
 
         # controlled gen and batteries
-        for elm in self.controlled_generators + self.batteries:
+        if dispatch_storage:
+            generators = self.controlled_generators  # do not include batteries
+        else:
+            generators = self.controlled_generators + self.batteries
+
+        for elm in generators:
 
             if elm.active:
                 # Add the generator active power
@@ -706,7 +818,7 @@ class Bus:
 
                 # add the power profile
                 if with_profiles:
-                    elm_p_prof, elm_vset_prof = elm.get_profiles(index)
+                    elm_p_prof, elm_vset_prof = elm.get_profiles(index, use_opf_vals=use_opf_vals)
                     if elm_p_prof is not None:
                         if s_profile is None:
                             s_profile = elm_p_prof.values  # Reverse sign convention in the load
@@ -769,6 +881,14 @@ class Bus:
             y_cdf = CDF(y_profile[:, 0])
 
         return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
+
+    def initialize_lp_profiles(self):
+        """
+        Dimention the LP var profiles
+        :return:
+        """
+        for elm in (self.controlled_generators + self.batteries):
+            elm.initialize_lp_vars()
 
     def plot_profiles(self, ax=None):
         """
@@ -861,6 +981,8 @@ class Bus:
 
         bus.w = self.w
 
+        bus.measurements = self.measurements
+
         # self.graphic_obj = None
 
         return bus
@@ -873,6 +995,27 @@ class Bus:
         self.retrieve_graphic_position()
         return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
                 self.x, self.y, self.h, self.w]
+
+    def get_json_dict(self, id):
+        """
+        Return Json-like dictionary
+        :return: 
+        """
+        return {'id': id,
+                'type': 'bus',
+                'phases': 'ps',
+                'name': self.name,
+                'active': self.active,
+                'is_slack': self.is_slack,
+                'Vnom': self.Vnom,
+                'vmin': self.Vmin,
+                'vmax': self.Vmax,
+                'rf': self.Zf.real,
+                'xf': self.Zf.imag,
+                'x': self.x,
+                'y': self.y,
+                'h': self.h,
+                'w': self.w}
 
     def set_state(self, t):
         """
@@ -949,6 +1092,14 @@ class Bus:
 
         for elm in self.shunts:
             elm.set_profile_values(t)
+
+    def apply_lp_profiles(self, Sbase):
+        """
+        Sets the lp solution to the regular generators profile
+        :return:
+        """
+        for elm in self.batteries + self.controlled_generators:
+            elm.apply_lp_profile(Sbase)
 
     def __str__(self):
         return self.name
@@ -1061,10 +1212,69 @@ class TransformerType:
         return self.name
 
 
-class Branch:
+class TapChanger:
+
+    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
+        """
+        Tap changer
+        Args:
+            taps_up: Number of taps position up
+            taps_down: Number of tap positions down
+            max_reg: Maximum regulation up i.e 1.1 -> +10%
+            min_reg: Maximum regulation down i.e 0.9 -> -10%
+        """
+        self.max_tap = taps_up
+
+        self.min_tap = -taps_down
+
+        self.inc_reg_up = (max_reg - 1.0) / taps_up
+
+        self.inc_reg_down = (1.0 - min_reg) / taps_down
+
+        self.tap = 0
+
+    def tap_up(self):
+        """
+        Go to the next upper tap position
+        """
+        if self.tap + 1 <= self.max_tap:
+            self.tap += 1
+
+    def tap_down(self):
+        """
+        Go to the next upper tap position
+        """
+        if self.tap - 1 >= self.min_tap:
+            self.tap -= 1
+
+    def get_tap(self):
+        """
+        Get the tap voltage regulation module
+        """
+        if self.tap == 0:
+            return 1.0
+        elif self.tap > 0:
+            return 1.0 + self.tap * self.inc_reg_up
+        elif self.tap < 0:
+            return 1.0 + self.tap * self.inc_reg_down
+
+    def set_tap(self, tap_module):
+        """
+        Set the integer tap position corresponding to a tap vlaue
+        @param tap_module: value like 1.05
+        """
+        if tap_module == 1.0:
+            self.tap = 0
+        elif tap_module > 1:
+            self.tap = int(round(tap_module - 1.0) / self.inc_reg_up)
+        elif tap_module < 1:
+            self.tap = int(round(1.0 - tap_module) / self.inc_reg_down)
+
+
+class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1, tap=1, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -1080,6 +1290,8 @@ class Branch:
         @param is_transformer: Is the branch a transformer?
         """
 
+        ReliabilityDevice.__init__(self, mttf, mttr)
+
         self.name = name
 
         self.type_name = 'Branch'
@@ -1091,26 +1303,29 @@ class Branch:
 
         self.active = active
 
-        # self.z_series = zserie  # R + jX
-        # self.y_shunt = yshunt  # G + jB
+        # List of measurements
+        self.measurements = list()
 
         self.R = r
         self.X = x
         self.G = g
         self.B = b
 
+        self.tap_changer = TapChanger()
+
         if tap != 0:
             self.tap_module = tap
+            self.tap_changer.set_tap(self.tap_module)
         else:
-            self.tap_module = 1
+            self.tap_module = self.tap_changer.get_tap()
 
         self.angle = shift_angle
 
         self.rate = rate
 
-        self.mttf = mttf
+        # self.mttf = mttf
 
-        self.mttr = mttr
+        # self.mttr = mttr
 
         self.is_transformer = is_transformer
 
@@ -1167,14 +1382,23 @@ class Branch:
                    mttr=self.mttr,
                    is_transformer=self.is_transformer)
 
+        b.measurements = self.measurements
+
         return b
 
-    def get_tap(self):
+    def tap_up(self):
         """
-        Get the complex tap value
-        @return:
+        Move the tap changer one position up
         """
-        return self.tap_module * exp(-1j * self.angle)
+        self.tap_changer.tap_up()
+        self.tap_module = self.tap_changer.get_tap()
+
+    def tap_down(self):
+        """
+        Move the tap changer one position up
+        """
+        self.tap_changer.tap_down()
+        self.tap_module = self.tap_changer.get_tap()
 
     def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, i, f, t):
         """
@@ -1192,7 +1416,7 @@ class Branch:
         """
         z_series = complex(self.R, self.X)
         y_shunt = complex(self.G, self.B)
-        tap = self.get_tap()
+        tap = self.tap_module * exp(-1j * self.angle)
         Ysh = y_shunt / 2
         if abs(z_series) > 0:
             Ys = 1 / z_series
@@ -1219,45 +1443,23 @@ class Branch:
         Yt[i, f] += Ytf
         Yt[i, t] += Ytt
 
-        # Y shunt for HELM
+        # Y shunt
         Yshunt[f] += Yff_sh
         Yshunt[t] += Ytt_sh
 
-        # Y series for HELM
+        # Y series
         Yseries[f, f] += Ys / (tap * conj(tap))
         Yseries[f, t] += Yft
         Yseries[t, f] += Ytf
         Yseries[t, t] += Ys
 
         # B1 for FDPF (no shunts, no resistance, no tap module)
-        z_series = complex(0, self.X)
-        y_shunt = complex(0, 0)
-        tap = exp(-1j * self.angle)  # self.tap_module * exp(-1j * self.angle)
-        Ysh = y_shunt / 2
-        Ys = 1 / z_series
-
-        Ytt = Ys + Ysh
-        Yff = Ytt / (tap * conj(tap))
-        Yft = - Ys / conj(tap)
-        Ytf = - Ys / tap
-
         B1[f, f] -= Yff.imag
         B1[f, t] -= Yft.imag
         B1[t, f] -= Ytf.imag
         B1[t, t] -= Ytt.imag
 
         # B2 for FDPF (with shunts, only the tap module)
-        z_series = complex(self.R, self.X)
-        y_shunt = complex(self.G, self.B)
-        tap = self.tap_module  # self.tap_module * exp(-1j * self.angle)
-        Ysh = y_shunt / 2
-        Ys = 1 / z_series
-
-        Ytt = Ys + Ysh
-        Yff = Ytt / (tap * conj(tap))
-        Yft = - Ys / conj(tap)
-        Ytf = - Ys / tap
-
         B2[f, f] -= Yff.imag
         B2[f, t] -= Yft.imag
         B2[t, f] -= Ytf.imag
@@ -1294,14 +1496,37 @@ class Branch:
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.tap_module, self.angle, self.is_transformer]
 
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'branch',
+                'phases': 'ps',
+                'name': self.name,
+                'from': bus_dict[self.bus_from],
+                'to': bus_dict[self.bus_to],
+                'active': self.active,
+                'rate': self.rate,
+                'r': self.R,
+                'x': self.X,
+                'g': self.G,
+                'b': self.B,
+                'tap_module': self.tap_module,
+                'tap_angle': self.angle,
+                'is_transformer': self.is_transformer}
+
     def __str__(self):
         return self.name
 
 
-class Load:
+class Load(ReliabilityDevice):
 
     def __init__(self, name='Load', impedance=complex(0, 0), current=complex(0, 0), power=complex(0, 0),
-                 impedance_prof=None, current_prof=None, power_prof=None, active=True):
+                 impedance_prof=None, current_prof=None, power_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
         Load model constructor
         This model implements the so-called ZIP model
@@ -1310,6 +1535,8 @@ class Load:
         @param current: Current complex (kA)
         @param power: Power complex (MVA)
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
 
         self.name = name
 
@@ -1346,16 +1573,18 @@ class Load:
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA', 'MVA', 'MVA']  # ['', '', 'Ohm', 'kA', 'MVA']
+        self.units = ['', '', '', 'MVA', 'MVA', 'MVA', 'h', 'h']  # ['', '', 'Ohm', 'kA', 'MVA']
 
         self.edit_types = {'name': str,
                            'bus': None,
                            'active': bool,
                            'Z': complex,
                            'I': complex,
-                           'S': complex}
+                           'S': complex,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'S': self.create_S_profile,
                           'I': self.create_I_profile,
@@ -1487,6 +1716,10 @@ class Load:
         # power profile for this load
         load.Sprof = self.Sprof
 
+        load.mttf = self.mttf
+
+        load.mttr = self.mttr
+
         return load
 
     def get_save_data(self):
@@ -1494,19 +1727,46 @@ class Load:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S)]
+        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S), self.mttf, self.mttr]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'load',
+                'phases': 'ps',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'Zr': self.Z.real,
+                'Zi': self.Z.imag,
+                'Ir': self.I.real,
+                'Ii': self.I.imag,
+                'P': self.S.real,
+                'Q': self.S.imag}
 
     def __str__(self):
         return self.name
 
 
-class StaticGenerator:
+class StaticGenerator(ReliabilityDevice):
 
-    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True):
+    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
 
-        @param power:
+        :param name:
+        :param power:
+        :param power_prof:
+        :param active:
+        :param mttf:
+        :param mttr:
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
 
         self.name = name
 
@@ -1528,14 +1788,16 @@ class StaticGenerator:
         # power profile for this load
         self.Sprof = power_prof
 
-        self.edit_headers = ['name', 'bus', 'active', 'S']
+        self.edit_headers = ['name', 'bus', 'active', 'S', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA']
+        self.units = ['', '', '', 'MVA', 'h', 'h']
 
         self.edit_types = {'name': str,
                            'bus': None,
                            'active': bool,
-                           'S': complex}
+                           'S': complex,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'S': self.create_S_profile}
 
@@ -1553,7 +1815,23 @@ class StaticGenerator:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.S)]
+        return [self.name, self.bus.name, self.active, str(self.S), self.mttf, self.mttr]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'static_gen',
+                'phases': 'ps',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'P': self.S.real,
+                'Q': self.S.imag}
 
     def create_profiles(self, index, S=None):
         """
@@ -1614,65 +1892,576 @@ class StaticGenerator:
         return self.name
 
 
-class Battery:
+class ControlledGenerator(ReliabilityDevice):
 
-    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
-                 power_prof=None, vset_prof=None, active=True):
+    def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
+                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
+                 enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0, Xa=0.0,
+                 Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
+                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2, speed_volt=True,
+                 machine_model=DynamicModels.SynchronousGeneratorOrder4):
         """
-        Batery (Voltage controlled and dispatchable)
-        @param name:
-        @param active_power:
-        @param voltage_module:
-        @param Qmin:
-        @param Qmax:
-        @param Snom:
-        @param Enom:
-        @param power_prof:
-        @param vset_prof:
-        @param active:
+        Voltage controlled generator
+        @param name: Name of the device
+        @param active_power: Active power (MW)
+        @param voltage_module: Voltage set point (p.u.)
+        @param Qmin: minimum reactive power in MVAr
+        @param Qmax: maximum reactive power in MVAr
+        @param Snom: Nominal power in MVA
+        @param power_prof: active power profile (Pandas DataFrame)
+        @param vset_prof: voltage set point profile (Pandas DataFrame)
+        @param active: Is the generator active?
+        @param p_min: minimum dispatchable power in MW
+        @param p_max maximum dispatchable power in MW
+        @param op_cost operational cost in Eur (or other currency) per MW
+        @param enabled_dispatch is the generator enabled for OPF?
+        @param mttf: Mean time to failure
+        @param mttr: Mean time to repair
+        @param Ra: armature resistance (pu)
+        @param Xa: armature reactance (pu)
+        @param Xd: d-axis reactance (p.u.)
+        @param Xq: q-axis reactance (p.u.)
+        @param Xdp: d-axis transient reactance (p.u.)
+        @param Xqp: q-axis transient reactance (p.u.)
+        @param Xdpp: d-axis subtransient reactance (pu)
+        @param Xqpp: q-axis subtransient reactance (pu)
+        @param Td0p: d-axis transient open loop time constant (s)
+        @param Tq0p: q-axis transient open loop time constant (s)
+        @param Td0pp: d-axis subtransient open loop time constant (s)
+        @param Tq0pp: q-axis subtransient open loop time constant (s)
+        @param H: machine inertia constant (MWs/MVA)
+        @param machine_model: Type of machine represented
         """
 
+        ReliabilityDevice.__init__(self, mttf, mttr)
+
+        # name of the device
         self.name = name
 
+        # is the device active for simulation?
         self.active = active
 
-        self.type_name = 'Battery'
+        # is the device active active power dispatch?
+        self.enabled_dispatch = enabled_dispatch
 
-        self.properties_with_profile = (['P', 'Vset'], [float, float])
+        # type of device
+        self.type_name = 'ControlledGenerator'
 
+        self.machine_model = machine_model
+
+        # graphical object associated to this object
         self.graphic_obj = None
+
+        # properties that hold a profile
+        self.properties_with_profile = (['P', 'Vset'], [float, float])
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
         # Power (MVA)
-        # MVA = kV * kA
         self.P = active_power
 
-        # power profile for this load
+        # Nominal power in MVA (also the machine base)
+        self.Snom = Snom
+
+        # Minimum dispatched power in MW
+        self.Pmin = p_min
+
+        # Maximum dispatched power in MW
+        self.Pmax = p_max
+
+        # power profile for this load in MW
         self.Pprof = power_prof
 
         # Voltage module set point (p.u.)
         self.Vset = voltage_module
 
-        # voltage set profile for this load
+        # voltage set profile for this load in p.u.
         self.Vsetprof = vset_prof
 
-        # minimum reactive power in per unit
+        # minimum reactive power in MVAr
         self.Qmin = Qmin
 
-        # Maximum reactive power in per unit
+        # Maximum reactive power in MVAr
         self.Qmax = Qmax
 
-        # Nominal power MVA
-        self.Snom = Snom
+        # Cost of operation €/MW
+        self.Cost = op_cost
 
-        # Nominal energy MWh
+        # Dynamic vars
+        self.Ra = Ra
+        self.Xa = Xa
+        self.Xd = Xd
+        self.Xq = Xq
+        self.Xdp = Xdp
+        self.Xqp = Xqp
+        self.Xdpp = Xdpp
+        self.Xqpp = Xqpp
+        self.Td0p = Td0p
+        self.Tq0p = Tq0p
+        self.Td0pp = Td0pp
+        self.Tq0pp = Tq0pp
+        self.H = H
+        self.speed_volt = speed_volt
+        # self.base_mva = base_mva  # machine base MVA
+
+        # system base power MVA
+        self.Sbase = Sbase
+
+        # Linear problem generator dispatch power variable (in p.u.)
+        self.lp_name = self.type_name + '_' + self.name + str(id(self))
+
+        # variable to dispatch the power in a Linear program
+        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+
+        # list of variables of active power dispatch in a series of linear programs
+        self.LPVar_P_prof = None
+
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom',
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
+
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
+
+        self.edit_types = {'name': str,
+                           'bus': None,
+                           'active': bool,
+                           'P': float,
+                           'Vset': float,
+                           'Snom': float,
+                           'Qmin': float,
+                           'Qmax': float,
+                           'Pmin': float,
+                           'Pmax': float,
+                           'Cost': float,
+                           'enabled_dispatch': bool,
+                           'mttf': float,
+                           'mttr': float}
+
+        self.profile_f = {'P': self.create_P_profile,
+                          'Vset': self.create_Vset_profile}
+
+        self.profile_attr = {'P': 'Pprof',
+                             'Vset': 'Vsetprof'}
+
+    def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
+
+        # make a new instance (separated object in memory)
+        gen = ControlledGenerator()
+
+        gen.name = self.name
+
+        # Power (MVA)
+        # MVA = kV * kA
+        gen.P = self.P
+
+        # is the generator active?
+        gen.active = self.active
+
+        # power profile for this load
+        gen.Pprof = self.Pprof
+
+        # Voltage module set point (p.u.)
+        gen.Vset = self.Vset
+
+        # voltage set profile for this load
+        gen.Vsetprof = self.Vsetprof
+
+        # minimum reactive power in per unit
+        gen.Qmin = self.Qmin
+
+        # Maximum reactive power in per unit
+        gen.Qmax = self.Qmax
+
+        # Nominal power
+        gen.Snom = self.Snom
+
+        # is the generator enabled for dispatch?
+        gen.enabled_dispatch = self.enabled_dispatch
+
+        gen.mttf = self.mttf
+
+        gen.mttr = self.mttr
+
+        return gen
+
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: json-compatible dictionary
+        """
+        return {'id': id,
+                'type': 'controlled_gen',
+                'phases': 'ps',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'P': self.P,
+                'vset': self.Vset,
+                'Snom': self.Snom,
+                'qmin': self.Qmin,
+                'qmax': self.Qmax,
+                'Pmin': self.Pmin,
+                'Pmax': self.Pmax,
+                'Cost': self.Cost}
+
+    def create_profiles_maginitude(self, index, arr, mag):
+        """
+        Create profiles from magnitude
+        Args:
+            index: Time index
+            arr: values array
+            mag: String with the magnitude to assign
+        """
+        if mag == 'P':
+            self.create_profiles(index, arr, None)
+        elif mag == 'V':
+            self.create_profiles(index, None, arr)
+        else:
+            raise Exception('Magnitude ' + mag + ' not supported')
+
+    def create_profiles(self, index, P=None, V=None):
+        """
+        Create the load object default profiles
+        Args:
+            index: time index associated
+            P: Active power (MW)
+            V: voltage set points
+        """
+        self.create_P_profile(index, P)
+        self.create_Vset_profile(index, V)
+
+    def create_P_profile(self, index, arr=None, arr_in_pu=False):
+        """
+        Create power profile based on index
+        Args:
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
+        """
+        if arr_in_pu:
+            dta = arr * self.P
+        else:
+            dta = ones(len(index)) * self.P if arr is None else arr
+        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+
+    def initialize_lp_vars(self):
+        """
+        Initialize the LP variables
+        """
+        self.lp_name = self.type_name + '_' + self.name + str(id(self))
+
+        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
+
+        self.LPVar_P_prof = [
+            pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
+
+    def get_lp_var_profile(self, index):
+        """
+        Get the profile of the LP solved values into a Pandas DataFrame
+        :param index: time index
+        :return: DataFrame with the LP values
+        """
+        dta = [x.value() for x in self.LPVar_P_prof]
+        return pd.DataFrame(data=dta, index=index, columns=[self.name])
+
+    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
+        """
+        Create power profile based on index
+        Args:
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
+        """
+        if arr_in_pu:
+            dta = arr * self.Vset
+        else:
+            dta = ones(len(index)) * self.Vset if arr is None else arr
+
+        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+
+    def get_profiles(self, index=None, use_opf_vals=False):
+        """
+        Get profiles and if the index is passed, create the profiles if needed
+        Args:
+            index: index of the Pandas DataFrame
+
+        Returns:
+            Power, Current and Impedance profiles
+        """
+        if index is not None:
+            if self.Pprof is None:
+                self.create_P_profile(index)
+            if self.Vsetprof is None:
+                self.create_Vset_profile(index)
+
+        if use_opf_vals:
+            return self.get_lp_var_profile(index), self.Vsetprof
+        else:
+            return self.Pprof, self.Vsetprof
+
+    def delete_profiles(self):
+        """
+        Delete the object profiles
+        :return: 
+        """
+        self.Pprof = None
+        self.Vsetprof = None
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index
+        """
+        self.P = self.Pprof.values[t]
+        self.Vset = self.Vsetprof.values[t]
+
+    def apply_lp_vars(self, at=None):
+        """
+        Set the LP vars to the main value or the profile
+        """
+        if self.LPVar_P is not None:
+            if at is None:
+                self.P = self.LPVar_P.value()
+            else:
+                self.Pprof.values[at] = self.LPVar_P.value()
+
+    def apply_lp_profile(self, Sbase):
+        """
+        Set LP profile to the regular profile
+        :return:
+        """
+        n = self.Pprof.shape[0]
+        if self.active and self.enabled_dispatch:
+            for i in range(n):
+                self.Pprof.values[i] = self.LPVar_P_prof[i].value() * Sbase
+        else:
+            # there are no values in the LP vars because this generator is deactivated,
+            # therefore fill the profiles with zeros when asked to copy the lp vars to the power profiles
+            self.Pprof.values = zeros(self.Pprof.shape[0])
+
+    def __str__(self):
+        return self.name
+
+
+# class BatteryController:
+#
+#     def __init__(self, nominal_energy=100000.0, charge_efficiency=0.9, discharge_efficiency=0.9,
+#                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
+#         """
+#         Battery controller constructor
+#         :param charge_efficiency: efficiency when charging
+#         :param discharge_efficiency: efficiency when discharging
+#         :param max_soc: maximum state of charge
+#         :param min_soc: minimum state of charge
+#         :param soc: current state of charge
+#         :param nominal_energy: declared amount of energy in MWh
+#         :param charge_per_cycle: per unit of power to take per cycle when charging
+#         :param discharge_per_cycle: per unit of power to deliver per cycle when charging
+#         """
+#
+#         self.charge_efficiency = charge_efficiency
+#
+#         self.discharge_efficiency = discharge_efficiency
+#
+#         self.max_soc = max_soc
+#
+#         self.min_soc = min_soc
+#
+#         self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
+#
+#         self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
+#
+#         self.discharge_per_cycle = discharge_per_cycle
+#
+#         self.min_energy = nominal_energy * self.min_soc
+#
+#         self.Enom = nominal_energy
+#
+#         self.soc_0 = soc
+#
+#         self.soc = soc
+#
+#         self.energy = self.Enom * self.soc
+#
+#     def reset(self):
+#         """
+#         Set he battery to its initial state
+#         """
+#         self.soc = self.soc_0
+#         self.energy = self.Enom * self.soc
+#         # self.energy_array = zeros(0)
+#         # self.power_array = zeros(0)
+#
+#     def process(self, P, dt, charge_if_needed=False, store_values=True):
+#         """
+#         process a cycle in the battery
+#         :param P: proposed power in MW
+#         :param dt: time increment in hours
+#         :param charge_if_needed: True / False
+#         :param store_values: Store the values into the internal arrays?
+#         :return: Amount of power actually processed in MW
+#         """
+#
+#         # if self.Enom is None:
+#         #     raise Exception('You need to set the battery nominal power!')
+#
+#         if np.isnan(P):
+#             warn('NaN found!!!!!!')
+#
+#         # pick the right efficiency value
+#         if P >= 0.0:
+#             eff = self.discharge_efficiency
+#             # energy_per_cycle = self.nominal_energy * self.discharge_per_cycle
+#         else:
+#             eff = self.charge_efficiency
+#
+#         # amount of energy that the battery can take in a cycle of 1 hour
+#         energy_per_cycle = self.Enom * self.charge_per_cycle
+#
+#         # compute the proposed energy. Later we check how much is actually possible
+#         proposed_energy = self.energy - P * dt * eff
+#
+#         # charge the battery from the grid if the SoC is too low and we are allowing this behaviour
+#         if charge_if_needed and self.soc < self.min_soc_charge:
+#             proposed_energy -= energy_per_cycle / dt  # negative is for charging
+#
+#         # Check the proposed energy
+#         if proposed_energy > self.Enom * self.max_soc:  # Truncated, too high
+#
+#             energy_new = self.Enom * self.max_soc
+#             power_new = (self.energy - energy_new) / (dt * eff)
+#
+#         elif proposed_energy < self.Enom * self.min_soc:  # Truncated, too low
+#
+#             energy_new = self.Enom * self.min_soc
+#             power_new = (self.energy - energy_new) / (dt * eff)
+#
+#         else:  # everything is within boundaries
+#
+#             energy_new = proposed_energy
+#             power_new = P
+#
+#         # Update the state of charge and the energy state
+#         self.soc = energy_new / self.Enom
+#         self.energy = energy_new
+#
+#         return power_new, self.energy
+
+
+class Battery(ControlledGenerator):
+
+    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
+                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
+                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True,
+                 mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
+                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
+                 Ra=0.0, Xa=0.0, Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
+                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2 ):
+        """
+        Battery (Voltage controlled and dispatchable)
+        :param name: Name of the device
+        :param active_power: Active power (MW)
+        :param voltage_module: Voltage set point (p.u.)
+        :param Qmin: minimum reactive power in MVAr
+        :param Qmax: maximum reactive power in MVAr
+        :param Snom: Nominal power in MVA
+        :param Enom: Nominal energy in MWh
+        :param power_prof: active power profile (Pandas DataFrame)
+        :param vset_prof: voltage set point profile (Pandas DataFrame)
+        :param active: Is the generator active?
+        :param p_min: minimum dispatchable power in MW
+        :param p_max maximum dispatchable power in MW
+        :param op_cost operational cost in Eur (or other currency) per MW
+        :param enabled_dispatch is the generator enabled for OPF?
+        :param mttf: Mean time to failure
+        :param mttr: Mean time to repair
+        :param charge_efficiency: efficiency when charging
+        :param discharge_efficiency: efficiency when discharging
+        :param max_soc: maximum state of charge
+        :param min_soc: minimum state of charge
+        :param soc: current state of charge
+        :param charge_per_cycle: per unit of power to take per cycle when charging
+        :param discharge_per_cycle: per unit of power to deliver per cycle when charging
+        """
+        ControlledGenerator.__init__(self, name=name,
+                                     active_power=active_power,
+                                     voltage_module=voltage_module,
+                                     Qmin=Qmin, Qmax=Qmax, Snom=Snom,
+                                     power_prof=power_prof,
+                                     vset_prof=vset_prof,
+                                     active=active,
+                                     p_min=p_min, p_max=p_max,
+                                     op_cost=op_cost,
+                                     Sbase=Sbase,
+                                     enabled_dispatch=enabled_dispatch,
+                                     mttf=mttf,
+                                     mttr=mttr,
+                                     Ra=Ra,
+                                     Xa=Xa,
+                                     Xd=Xd,
+                                     Xq=Xq,
+                                     Xdp=Xdp,
+                                     Xqp=Xqp,
+                                     Xdpp=Xdpp,
+                                     Xqpp=Xqpp,
+                                     Td0p=Td0p,
+                                     Tq0p=Tq0p,
+                                     Td0pp=Td0pp,
+                                     Tq0pp=Tq0pp,
+                                     H=H)
+
+        # type of this device
+        self.type_name = 'Battery'
+
+        self.charge_efficiency = charge_efficiency
+
+        self.discharge_efficiency = discharge_efficiency
+
+        self.max_soc = max_soc
+
+        self.min_soc = min_soc
+
+        self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
+
+        self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
+
+        self.discharge_per_cycle = discharge_per_cycle
+
+        self.min_energy = Enom * self.min_soc
+
         self.Enom = Enom
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom', 'Qmin', 'Qmax']
+        self.soc_0 = soc
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'kV', 'p.u.', 'p.u.']
+        self.soc = soc
+
+        self.energy = self.Enom * self.soc
+
+        self.energy_array = None
+
+        self.power_array = None
+
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
+                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
+                             'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency']
+
+        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh',
+                      'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h',
+                      '', '', '', '', '']
 
         self.edit_types = {'name': str,
                            'bus': None,
@@ -1682,16 +2471,26 @@ class Battery:
                            'Snom': float,
                            'Enom': float,
                            'Qmin': float,
-                           'Qmax': float}
-
-        self.profile_f = {'P': self.create_P_profile,
-                          'Vset': self.create_Vset_profile}
-
-        self.profile_attr = {'P': 'Pprof',
-                           'Vset': 'Vsetprof'}
+                           'Qmax': float,
+                           'Pmin': float,
+                           'Pmax': float,
+                           'Cost': float,
+                           'enabled_dispatch': bool,
+                           'mttf': float,
+                           'mttr': float,
+                           'soc_0': float,
+                           'max_soc': float,
+                           'min_soc': float,
+                           'charge_efficiency': float,
+                           'discharge_efficiency': float}
 
     def copy(self):
+        """
+        Make a copy of this object
+        Returns: Battery instance
+        """
 
+        # create a new instance of the battery
         batt = Battery()
 
         batt.name = self.name
@@ -1699,6 +2498,10 @@ class Battery:
         # Power (MVA)
         # MVA = kV * kA
         batt.P = self.P
+
+        batt.Pmax = self.Pmax
+
+        batt.Pmin = self.Pmin
 
         # power profile for this load
         batt.Pprof = self.Pprof
@@ -1721,6 +2524,39 @@ class Battery:
         # Nominal energy MWh
         batt.Enom = self.Enom
 
+        # Enable for active power dispatch?
+        batt.enabled_dispatch = self.enabled_dispatch
+
+        batt.mttf = self.mttf
+
+        batt.mttr = self.mttr
+
+        batt.charge_efficiency = self.charge_efficiency
+
+        batt.discharge_efficiency = self.discharge_efficiency
+
+        batt.max_soc = self.max_soc
+
+        batt.min_soc = self.min_soc
+
+        batt.min_soc_charge = self.min_soc_charge  # SoC state to force the battery charge
+
+        batt.charge_per_cycle = self.charge_per_cycle  # charge 10% per cycle
+
+        batt.discharge_per_cycle = self.discharge_per_cycle
+
+        batt.min_energy = self.min_energy
+
+        batt.soc_0 = self.soc
+
+        batt.soc = self.soc
+
+        batt.energy = self.energy
+
+        batt.energy_array = self.energy_array
+
+        batt.power_array = self.power_array
+
         return batt
 
     def get_save_data(self):
@@ -1728,29 +2564,40 @@ class Battery:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom, self.Qmin, self.Qmax]
+        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
+                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr,
+                self.soc_0, self.max_soc, self.min_soc, self.charge_efficiency, self.discharge_efficiency]
 
-    def create_profiles(self, index, P=None, V=None):
+    def get_json_dict(self, id, bus_dict):
         """
-        Create the load object default profiles
-        Args:
-            index:
-            steps:
-
-        Returns:
-
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID
+        :return: json-compatible dictionary
         """
-        self.create_P_profile(index, P)
-        self.create_Vset_profile(index, V)
+        return {'id': id,
+                'type': 'battery',
+                'phases': 'ps',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'P': self.P,
+                'Vset': self.Vset,
+                'Snom': self.Snom,
+                'Enom': self.Enom,
+                'qmin': self.Qmin,
+                'qmax': self.Qmax,
+                'Pmin': self.Pmin,
+                'Pmax': self.Pmax,
+                'Cost': self.Cost}
 
     def create_P_profile(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
-            index:
-
-        Returns:
-
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
         """
         if arr_in_pu:
             dta = arr * self.P
@@ -1758,306 +2605,97 @@ class Battery:
             dta = ones(len(index)) * self.P if arr is None else arr
         self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
-    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index:
+        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
 
-        Returns:
-
+    def reset(self):
         """
-        if arr_in_pu:
-            dta = arr * self.Vset
+        Set he battery to its initial state
+        """
+        self.soc = self.soc_0
+        self.energy = self.Enom * self.soc
+        dta = self.Pprof.values.copy()
+        index = self.Pprof.index
+        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+
+    def process(self, P, dt, charge_if_needed=False):
+        """
+        process a cycle in the battery
+        :param P: proposed power in MW
+        :param dt: time increment in hours
+        :param charge_if_needed: True / False
+        :param store_values: Store the values into the internal arrays?
+        :return: Amount of power actually processed in MW
+        """
+
+        # if self.Enom is None:
+        #     raise Exception('You need to set the battery nominal power!')
+
+        if np.isnan(P):
+            warn('NaN found!!!!!!')
+
+        # pick the right efficiency value
+        if P >= 0.0:
+            eff = self.discharge_efficiency
+            # energy_per_cycle = self.nominal_energy * self.discharge_per_cycle
         else:
-            dta = ones(len(index)) * self.Vset if arr is None else arr
-        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+            eff = self.charge_efficiency
 
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
+        # amount of energy that the battery can take in a cycle of 1 hour
+        energy_per_cycle = self.Enom * self.charge_per_cycle
 
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Pprof is None:
-                self.create_P_profile(index)
-            if self.Vsetprof is None:
-                self.create_vset_profile(index)
-        return self.Pprof, self.Vsetprof
+        # compute the proposed energy. Later we check how much is actually possible
+        proposed_energy = self.energy - P * dt * eff
 
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return: 
-        """
-        self.Pprof = None
-        self.Vsetprof = None
+        # charge the battery from the grid if the SoC is too low and we are allowing this behaviour
+        if charge_if_needed and self.soc < self.min_soc_charge:
+            proposed_energy -= energy_per_cycle / dt  # negative is for charging
 
-    def set_profile_values(self, t):
+        # Check the proposed energy
+        if proposed_energy > self.Enom * self.max_soc:  # Truncated, too high
+
+            energy_new = self.Enom * self.max_soc
+            power_new = (self.energy - energy_new) / (dt * eff)
+
+        elif proposed_energy < self.Enom * self.min_soc:  # Truncated, too low
+
+            energy_new = self.Enom * self.min_soc
+            power_new = (self.energy - energy_new) / (dt * eff)
+
+        else:  # everything is within boundaries
+
+            energy_new = proposed_energy
+            power_new = P
+
+        # Update the state of charge and the energy state
+        self.soc = energy_new / self.Enom
+        self.energy = energy_new
+
+        return power_new, self.energy
+
+    def get_processed_at(self, t, dt, store_values=True):
         """
-        Set the profile values at t
+        Get the processed power at the time index t
         :param t: time index
+        :param dt: time step in hours
+        :param store_values: store the values?
+        :return: active power processed by the battery control in MW
         """
-        self.P = self.Pprof.values[t]
-        self.Vset = self.Vsetprof.values[t]
+        power_value = self.Pprof.values[t]
 
-    def __str__(self):
-        return self.name
+        processed_power, processed_energy = self.process(power_value, dt)
 
+        if store_values:
+            self.energy_array.values[t] = processed_energy
+            self.power_array.values[t] = processed_power
 
-class ControlledGenerator:
-
-    def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0):
-        """
-        Voltage controlled generator
-        @param name:
-        @param active_power: Active power (MW)
-        @param voltage_module: Voltage set point (p.u.)
-        @param Qmin:
-        @param Qmax:
-        @param Snom:
-        @param power_prof:
-        @param vset_prof
-        @param active
-        @param p_min: minimum dispatchable power in MW
-        @param p_max maximum dispatchable power in MW
-        @param op_cost operational cost in Eur (or other currency) per MW
-        """
-
-        self.name = name
-
-        self.active = active
-
-        self.type_name = 'ControlledGenerator'
-
-        self.graphic_obj = None
-
-        self.properties_with_profile = (['P', 'Vset'], [float, float])
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
-
-        # Power (MVA)
-        # MVA = kV * kA
-        self.P = active_power
-
-        # Nominal power in MVA
-        self.Snom = Snom
-
-        # Minimum dispatched power in MW
-        self.Pmin = p_min
-
-        # Maximum dispatched power in MW
-        self.Pmax = p_max
-
-        # power profile for this load
-        self.Pprof = power_prof
-
-        # Voltage module set point (p.u.)
-        self.Vset = voltage_module
-
-        # voltage set profile for this load
-        self.Vsetprof = vset_prof
-
-        # minimum reactive power in MVAr
-        self.Qmin = Qmin
-
-        # Maximum reactive power in MVAr
-        self.Qmax = Qmax
-
-        # Cost of operation
-        self.Cost = op_cost
-
-        # Linear problem generator dispatch power variable (in p.u.)
-        self.LPVar_P = None
-
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost']
-
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'P': float,
-                           'Vset': float,
-                           'Snom': float,
-                           'Qmin': float,
-                           'Qmax': float,
-                           'Pmin': float,
-                           'Pmax': float,
-                           'Cost': float}
-
-        self.profile_f = {'P': self.create_P_profile,
-                          'Vset': self.create_Vset_profile}
-
-        self.profile_attr = {'P': 'Pprof',
-                           'Vset': 'Vsetprof'}
-
-    def copy(self):
-
-        gen = ControlledGenerator()
-
-        gen.name = self.name
-
-        # Power (MVA)
-        # MVA = kV * kA
-        gen.P = self.P
-
-        gen.active = self.active
-
-        # power profile for this load
-        gen.Pprof = self.Pprof
-
-        # Voltage module set point (p.u.)
-        gen.Vset = self.Vset
-
-        # voltage set profile for this load
-        gen.Vsetprof = self.Vsetprof
-
-        # minimum reactive power in per unit
-        gen.Qmin = self.Qmin
-
-        # Maximum reactive power in per unit
-        gen.Qmax = self.Qmax
-
-        # Nominal power
-        gen.Snom = self.Snom
-
-        return gen
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost]
-
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag =='P':
-            self.create_profiles(index, arr, None)
-        elif mag == 'V':
-            self.create_profiles(index, None, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
-    def create_profiles(self, index, P=None, V=None):
-        """
-        Create the load object default profiles
-        Args:
-            index:
-            steps:
-
-        Returns:
-
-        """
-        self.create_P_profile(index, P)
-        self.create_Vset_profile(index, V)
-
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index:
-
-        Returns:
-
-        """
-        if arr_in_pu:
-            dta = arr * self.P
-        else:
-            dta = ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index:
-
-        Returns:
-
-        """
-        if arr_in_pu:
-            dta = arr * self.Vset
-        else:
-            dta = ones(len(index)) * self.Vset if arr is None else arr
-        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Pprof is None:
-                self.create_P_profile(index)
-            if self.Vsetprof is None:
-                self.create_vset_profile(index)
-        return self.Pprof, self.Vsetprof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return: 
-        """
-        self.Pprof = None
-        self.Vsetprof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.Pprof.values[t]
-        self.Vset = self.Vsetprof.values[t]
-
-    def make_lp_vars(self, name, Sbase):
-        """
-        Create all the necessary LP variables
-        Args:
-            name: base name of the variables to make them unique
-            Sbase: Base system power in MVA
-
-        Returns:
-            nothing
-        """
-
-        self.LPVar_P = pulp.LpVariable(name + '_P', self.Pmin/Sbase, self.Pmax/Sbase)
-
-    def apply_lp_vars(self, at=None):
-        """
-        Set the LP vars to the main value or the profile
-        """
-        if self.LPVar_P is not None:
-            if at is None:
-                self.P = self.LPVar_P.value()
-            else:
-                self.Pprof.values[at] = self.LPVar_P.value()
-
-    def __str__(self):
-        return self.name
+        return processed_power
 
 
-class Shunt:
+class Shunt(ReliabilityDevice):
 
-    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True):
+    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
         Shunt object
         Args:
@@ -2066,6 +2704,9 @@ class Shunt:
             admittance_prof: Admittance profile in MVA at 1 p.u. voltage
             active: Is active True or False
         """
+
+        ReliabilityDevice.__init__(self, mttf, mttr)
+
         self.name = name
 
         self.active = active
@@ -2086,14 +2727,16 @@ class Shunt:
         # admittance profile
         self.Yprof = admittance_prof
 
-        self.edit_headers = ['name', 'bus', 'active', 'Y']
+        self.edit_headers = ['name', 'bus', 'active', 'Y', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA']  # MVA at 1 p.u.
+        self.units = ['', '', '', 'MVA', 'h', 'h']  # MVA at 1 p.u.
 
         self.edit_types = {'name': str,
                            'active': bool,
                            'bus': None,
-                           'Y': complex}
+                           'Y': complex,
+                           'mttf': float,
+                           'mttr': float}
 
         self.profile_f = {'Y': self.create_Y_profile}
 
@@ -2115,6 +2758,10 @@ class Shunt:
         # admittance profile
         shu.Yprof = self.Yprof
 
+        shu.mttf = self.mttf
+
+        shu.mttr = self.mttr
+
         return shu
 
     def get_save_data(self):
@@ -2122,7 +2769,23 @@ class Shunt:
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.Y)]
+        return [self.name, self.bus.name, self.active, str(self.Y), self.mttf, self.mttr]
+
+    def get_json_dict(self, id, bus_dict):
+        """
+        Get json dictionary
+        :param id: ID: Id for this object
+        :param bus_dict: Dictionary of buses [object] -> ID 
+        :return: 
+        """
+        return {'id': id,
+                'type': 'shunt',
+                'phases': 'ps',
+                'name': self.name,
+                'bus': bus_dict[self.bus],
+                'active': self.active,
+                'g': self.Y.real,
+                'b': self.Y.imag}
 
     def create_profiles_maginitude(self, index, arr, mag):
         """
@@ -2255,7 +2918,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self, time_profile=None, with_profiles=True):
+    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -2313,7 +2976,8 @@ class Circuit:
             self.buses[i].determine_bus_type()
 
             # compute the bus magnitudes
-            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV()
+            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV(use_opf_vals=use_opf_vals,
+                                                                                          dispatch_storage=dispatch_storage)
 
             # Assign the values to the simulation objects
             power_flow_input.Vbus[i] = V  # set the bus voltages
@@ -2371,10 +3035,10 @@ class Circuit:
         # normalize_string the power array
         power_flow_input.Sbus /= self.Sbase
 
-        # normalize_string the currents array (I was given in MVA at v=1 p.u.)
+        # normalize_string the currents array (the I vector was given in MVA at v=1 p.u.)
         power_flow_input.Ibus /= self.Sbase
 
-        # normalize the admittances array (Y was given in MVA at v=1 p.u.)
+        # normalize the admittances array (the Y vector was given in MVA at v=1 p.u.)
         # At this point only the shunt and load related values are added here
         # power_flow_input.Ybus /= self.Sbase
         # power_flow_input.Yshunt /= self.Sbase
@@ -2393,6 +3057,8 @@ class Circuit:
 
         if are_cdfs:
             monte_carlo_input = MonteCarloInput(n, Scdf_, Icdf_, Ycdf_)
+        else:
+            monte_carlo_input = None
 
         # Compile the branches
         for i in range(m):
@@ -2403,7 +3069,7 @@ class Circuit:
                 f = self.buses_dict[self.branches[i].bus_from]
                 t = self.buses_dict[self.branches[i].bus_to]
 
-                # apply the brach properties to the circuit matrices
+                # apply the branch properties to the circuit matrices
                 f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
                                                  Yseries=power_flow_input.Yseries,
                                                  Yshunt=power_flow_input.Yshunt,
@@ -2562,6 +3228,45 @@ class Circuit:
 
         return pd.DataFrame(data=data, index=self.power_flow_input.bus_names, columns=cols)
 
+    def apply_lp_profiles(self):
+        """
+        Apply the LP results as device profiles
+        :return:
+        """
+        for bus in self.buses:
+            bus.apply_lp_profiles(self.Sbase)
+
+    def copy(self):
+        """
+        Returns a deep (true) copy of this circuit
+        @return:
+        """
+
+        cpy = Circuit()
+
+        cpy.name = self.name
+
+        bus_dict = dict()
+        for bus in self.buses:
+            bus_cpy = bus.copy()
+            bus_dict[bus] = bus_cpy
+            cpy.buses.append(bus_cpy)
+
+        for branch in self.branches:
+            cpy.branches.append(branch.copy(bus_dict))
+
+        cpy.Sbase = self.Sbase
+
+        cpy.branch_original_idx = self.branch_original_idx.copy()
+
+        cpy.bus_original_idx = self.bus_original_idx.copy()
+
+        cpy.time_series_input = self.time_series_input.copy()
+
+        cpy.power_flow_input = self.power_flow_input.copy()
+
+        return cpy
+
     def __str__(self):
         return self.name
 
@@ -2608,6 +3313,18 @@ class MultiCircuit(Circuit):
             if dev.properties_with_profile is not None:
                 self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
 
+    def get_json_dict(self, id):
+        """
+        Get json dictionary
+        :return: 
+        """
+        return {'id': id,
+                'type': 'circuit',
+                'phases': 'ps',
+                'name': self.name,
+                'Sbase': self.Sbase,
+                'comments': self.comments}
+
     def load_file(self, filename):
         """
         Load GridCal compatible file
@@ -2617,7 +3334,7 @@ class MultiCircuit(Circuit):
         if os.path.exists(filename):
             name, file_extension = os.path.splitext(filename)
             # print(name, file_extension)
-            if file_extension == '.xls' or file_extension == '.xlsx':
+            if file_extension.lower() in ['.xls', '.xlsx']:
 
                 ppc = load_from_xls(filename)
 
@@ -2633,19 +3350,25 @@ class MultiCircuit(Circuit):
                     warn('The file could not be processed')
                     return False
 
-            elif file_extension == '.dgs':
+            elif file_extension.lower() == '.dgs':
                 from GridCal.Engine.Importers.DGS_Parser import dgs_to_circuit
                 circ = dgs_to_circuit(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
 
-            elif file_extension == '.m':
+            elif file_extension.lower() == '.m':
                 from GridCal.Engine.Importers.matpower_parser import parse_matpower_file
                 circ = parse_matpower_file(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
 
-            elif file_extension in ['.raw', '.RAW', '.Raw']:
+            elif file_extension.lower() == '.json':
+                from GridCal.Engine.Importers.JSON_parser import parse_json
+                circ = parse_json(filename)
+                self.buses = circ.buses
+                self.branches = circ.branches
+
+            elif file_extension.lower() == '.raw':
                 from GridCal.Engine.Importers.PSS_Parser import PSSeParser
                 parser = PSSeParser(filename)
                 circ = parser.circuit
@@ -2679,6 +3402,10 @@ class MultiCircuit(Circuit):
         self.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
         self.time_profile = None
+
+
+
+
 
         # common function
         def set_object_attributes(obj_, attr_list, values):
@@ -2781,7 +3508,8 @@ class MultiCircuit(Circuit):
             if 'CtrlGen_P_profiles' in data.keys():
                 val = data['CtrlGen_P_profiles'].values[:, i]
                 idx = data['CtrlGen_P_profiles'].index
-                obj.Pprof = pd.DataFrame(data=val, index=idx)
+                # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                obj.create_P_profile(index=idx, arr=val)
 
             if 'CtrlGen_Vset_profiles' in data.keys():
                 val = data['CtrlGen_Vset_profiles'].values[:, i]
@@ -2812,7 +3540,8 @@ class MultiCircuit(Circuit):
             if 'battery_P_profiles' in data.keys():
                 val = data['battery_P_profiles'].values[:, i]
                 idx = data['battery_P_profiles'].index
-                obj.Pprof = pd.DataFrame(data=val, index=idx)
+                # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                obj.create_P_profile(index=idx, arr=val)
 
             if 'battery_Vset_profiles' in data.keys():
                 val = data['battery_Vset_profiles'].values[:, i]
@@ -2885,6 +3614,19 @@ class MultiCircuit(Circuit):
         # print('Done!')
 
     def save_file(self, file_path):
+        """
+        Save File
+        :param file_path: 
+        :return: 
+        """
+        if file_path.endswith('.xlsx'):
+            self.save_excel(file_path)
+        elif file_path.endswith('.json'):
+            self.save_json(file_path)
+        else:
+            raise Exception('File path extension not understood\n' + file_path)
+
+    def save_excel(self, file_path):
         """
         Save the circuit information
         :param file_path: file path to save
@@ -3034,6 +3776,16 @@ class MultiCircuit(Circuit):
 
         writer.save()
 
+    def save_json(self, file_path):
+        """
+        
+        :param file_path: 
+        :return: 
+        """
+
+        from GridCal.Engine.Importers.JSON_parser import save_json_file
+        save_json_file(file_path, self)
+
     def save_calculation_objects(self, file_path):
         """
         Save all the calculation objects of all the grids
@@ -3055,7 +3807,7 @@ class MultiCircuit(Circuit):
 
         writer.save()
 
-    def compile(self):
+    def compile(self, use_opf_vals=False, dispatch_storage=False):
         """
         Divide the grid into the different possible grids
         @return:
@@ -3121,7 +3873,7 @@ class MultiCircuit(Circuit):
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
-            circuit.compile(self.time_profile)
+            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals, dispatch_storage=dispatch_storage)
 
             # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
@@ -3401,6 +4153,85 @@ class MultiCircuit(Circuit):
         else:
             raise Exception('There are no power flow results!')
 
+    def export_profiles(self, file_name):
+        """
+        Export object profiles to file
+        :param file_name: Excel file name
+        :return: Nothing
+        """
+
+        if self.time_profile is not None:
+
+            # collect data
+            P = list()
+            Q = list()
+            Ir = list()
+            Ii = list()
+            G = list()
+            B = list()
+            P_gen = list()
+            V_gen = list()
+            E_batt = list()
+
+            load_names = list()
+            gen_names = list()
+            bat_names = list()
+
+            for bus in self.buses:
+
+                for elm in bus.loads:
+                    load_names.append(elm.name)
+                    P.append(elm.Sprof.values.real[:, 0])
+                    Q.append(elm.Sprof.values.imag[:, 0])
+
+                    Ir.append(elm.Iprof.values.real[:, 0])
+                    Ii.append(elm.Iprof.values.imag[:, 0])
+
+                    G.append(elm.Zprof.values.real[:, 0])
+                    B.append(elm.Zprof.values.imag[:, 0])
+
+                for elm in bus.controlled_generators:
+                    gen_names.append(elm.name)
+
+                    P_gen.append(elm.Pprof.values[:, 0])
+                    V_gen.append(elm.Vsetprof.values[:, 0])
+
+                for elm in bus.batteries:
+                    bat_names.append(elm.name)
+                    gen_names.append(elm.name)
+                    P_gen.append(elm.Pprof.values[:, 0])
+                    V_gen.append(elm.Vsetprof.values[:, 0])
+                    E_batt.append(elm.energy_array.values[:, 0])
+
+            # form DataFrames
+            P = pd.DataFrame(data=np.array(P).transpose(), index=self.time_profile, columns=load_names)
+            Q = pd.DataFrame(data=np.array(Q).transpose(), index=self.time_profile, columns=load_names)
+            Ir = pd.DataFrame(data=np.array(Ir).transpose(), index=self.time_profile, columns=load_names)
+            Ii = pd.DataFrame(data=np.array(Ii).transpose(), index=self.time_profile, columns=load_names)
+            G = pd.DataFrame(data=np.array(G).transpose(), index=self.time_profile, columns=load_names)
+            B = pd.DataFrame(data=np.array(B).transpose(), index=self.time_profile, columns=load_names)
+            P_gen = pd.DataFrame(data=np.array(P_gen).transpose(), index=self.time_profile, columns=gen_names)
+            V_gen = pd.DataFrame(data=np.array(V_gen).transpose(), index=self.time_profile, columns=gen_names)
+            E_batt = pd.DataFrame(data=np.array(E_batt).transpose(), index=self.time_profile, columns=bat_names)
+
+            writer = pd.ExcelWriter(file_name)
+            P.to_excel(writer, 'P loads')
+            Q.to_excel(writer, 'Q loads')
+
+            Ir.to_excel(writer, 'Ir loads')
+            Ii.to_excel(writer, 'Ii loads')
+
+            G.to_excel(writer, 'G loads')
+            B.to_excel(writer, 'B loads')
+
+            P_gen.to_excel(writer, 'P generators')
+            V_gen.to_excel(writer, 'V generators')
+
+            E_batt.to_excel(writer, 'Energy batteries')
+            writer.save()
+        else:
+            raise Exception('There are no time series!')
+
     def copy(self):
         """
         Returns a deep (true) copy of this circuit
@@ -3491,8 +4322,8 @@ class MultiCircuit(Circuit):
 class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
-                 verbose=False, robust=False, initialize_with_existing_solution=True, dispatch_storage=True,
-                 tolerance=1e-6, max_iter=25, control_q=True):
+                 verbose=False, robust=False, initialize_with_existing_solution=True,
+                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True, dispatch_storage=False):
         """
         Power flow execution options
         @param solver_type:
@@ -3515,13 +4346,13 @@ class PowerFlowOptions:
 
         self.control_Q = control_q
 
-        self.dispatch_storage = dispatch_storage
-
         self.verbose = verbose
 
         self.robust = robust
 
         self.initialize_with_existing_solution = initialize_with_existing_solution
+
+        self.multi_thread = multi_core
 
         self.dispatch_storage = dispatch_storage
 
@@ -3534,6 +4365,10 @@ class PowerFlowInput:
         @param n: Number of buses
         @param m: Number of branches
         """
+        self.n = n
+
+        self.m = m
+
         # Array of integer values representing the buses types
         self.types = zeros(n, dtype=int)
 
@@ -3655,14 +4490,25 @@ class PowerFlowInput:
         if len(self.ref) == 0:  # there is no slack!
 
             if len(self.pv) == 0:  # there are no pv neither -> blackout grid
+
                 warn('There are no slack nodes selected')
 
             else:  # select the first PV generator as the slack
+
                 mx = max(self.Sbus[self.pv])
-                i = where(self.Sbus == mx)[0][0]
-                # print('Setting the bus ' + str(i) + ' as slack instead of pv')
+                if mx > 0:
+                    # find the generator that is injecting the most
+                    i = where(self.Sbus == mx)[0][0]
+
+                else:
+                    # all the generators are injecting zero, pick the first pv
+                    i = self.pv[0]
+
+                # delete the selected pv bus from the pv list and put it in the slack list
                 self.pv = delete(self.pv, where(self.pv == i)[0])
                 self.ref = [i]
+                # print('Setting bus', i, 'as slack')
+
             self.ref = ndarray.flatten(array(self.ref))
             self.types[self.ref] = NodeType.REF.value[0]
         else:
@@ -3790,6 +4636,83 @@ class PowerFlowInput:
             raise Exception('PF input: structure type not found')
 
         return df
+
+    def copy(self):
+
+        cpy = PowerFlowInput(self.n, self.m)
+
+        cpy.types = self.types.copy()
+
+        cpy.ref = self.ref.copy()
+
+        cpy.pv = self.pv.copy()
+
+        cpy.pq = self.pq.copy()
+
+        cpy.sto = self.sto.copy()
+
+        cpy.pqpv = self.pqpv.copy()
+
+        # Branch admittance matrix with the from buses
+        cpy.Yf = self.Yf.copy()
+
+        # Branch admittance matrix with the to buses
+        cpy.Yt = self.Yt.copy()
+
+        # Array with the 'from' index of the from bus of each branch
+        cpy.F = self.F.copy()
+
+        # Array with the 'to' index of the from bus of each branch
+        cpy.T = self.T.copy()
+
+        # array to store a 1 for the active branches
+        cpy.active_branches = self.active_branches.copy()
+
+        # Full admittance matrix (will be converted to sparse)
+        cpy.Ybus = self.Ybus.copy()
+
+        # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
+        # self.Zbus = None
+
+        # Admittance matrix of the series elements (will be converted to sparse)
+        cpy.Yseries = self.Yseries.copy()
+
+        # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
+        cpy.Yshunt = self.Yshunt.copy()
+
+        # Jacobian matrix 1 for the fast-decoupled power flow
+        cpy.B1 = self.B1.copy()
+
+        # Jacobian matrix 2 for the fast-decoupled power flow
+        cpy.B2 = self.B2.copy()
+
+        # Array of line-line nominal voltages of the buses
+        cpy.Vnom = self.Vnom.copy()
+
+        # Currents at the buses array
+        cpy.Ibus = self.Ibus.copy()
+
+        # Powers at the buses array
+        cpy.Sbus = self.Sbus.copy()
+
+        # Voltages at the buses array
+        cpy.Vbus = self.Vbus.copy()
+
+        cpy.Vmin = self.Vmin.copy()
+
+        cpy.Vmax = self.Vmax.copy()
+
+        cpy.Qmin = self.Qmin.copy()
+
+        cpy.Qmax = self.Qmax.copy()
+
+        cpy.branch_rates = self.branch_rates.copy()
+
+        cpy.bus_names = self.bus_names.copy()
+
+        cpy.available_structures = self.available_structures.copy()
+
+        return cpy
 
 
 class PowerFlowResults:
@@ -4085,17 +5008,15 @@ class PowerFlowResults:
         return df_bus, df_branch
 
 
-class PowerFlow(QRunnable):
-    # progress_signal = pyqtSignal(float)
-    # progress_text = pyqtSignal(str)
-    # done_signal = pyqtSignal()
-
+class PowerFlowMP:
+    """
+    Power flow without QT to use with multi processing
+    """
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
         """
-        QRunnable.__init__(self)
 
         # Grid to run a power flow in
         self.grid = grid
@@ -4110,73 +5031,48 @@ class PowerFlow(QRunnable):
         self.__cancel__ = False
 
     @staticmethod
-    def optimization(pv, circuit, Sbus, V, tol, maxiter, robust, verbose):
+    def compile_types(Sbus, types=None):
         """
-
-        @param pv:
-        @param circuit:
-        @param Sbus:
-        @param V:
-        @param tol:
-        @param maxiter:
-        @param robust:
-        @param verbose:
+        Compile the types
         @return:
         """
-        from scipy.optimize import minimize
 
-        def optimization_function(x, pv, circuit, Sbus, V, tol, maxiter, robust, verbose):
-            # Set the voltage set points given by x
-            V[pv] = ones(len(pv), dtype=complex) * x
+        pq = where(types == NodeType.PQ.value[0])[0]
+        pv = where(types == NodeType.PV.value[0])[0]
+        ref = where(types == NodeType.REF.value[0])[0]
+        sto = where(types == NodeType.STO_DISPATCH.value)[0]
 
-            # run power flow: The voltage V is modified by reference
-            V, converged, normF, Scalc = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                   Sbus=Sbus,
-                                                   V0=V,
-                                                   pv=circuit.power_flow_input.pv,
-                                                   pq=circuit.power_flow_input.pq,
-                                                   tol=tol,
-                                                   max_it=maxiter,
-                                                   robust=robust)
+        if len(ref) == 0:  # there is no slack!
 
-            # calculate the reactive power mismatches
-            n = len(Scalc)
-            excess = zeros(n)
-            Qgen = circuit.power_flow_input.Sbus.imag - Scalc.imag
-            exceed_up = where(Qgen > circuit.power_flow_input.Qmax)[0]
-            exceed_down = where(Qgen < circuit.power_flow_input.Qmin)[0]
-            # exceed = r_[exceed_down, exceed_up]
-            excess[exceed_up] = circuit.power_flow_input.Qmax[exceed_up] - Qgen[exceed_up]
-            excess[exceed_down] = circuit.power_flow_input.Qmax[exceed_down] - Qgen[exceed_down]
+            if len(pv) == 0:  # there are no pv neither -> blackout grid
 
-            fev = sum(excess)
-            if verbose:
-                print('f:', fev, 'x:', x)
-                print('\tQmin:', circuit.power_flow_input.Qmin[pv])
-                print('\tQgen:', Qgen[pv])
-                print('\tQmax:', circuit.power_flow_input.Qmax[pv])
+                warn('There are no slack nodes selected')
 
-            return fev
+            else:  # select the first PV generator as the slack
 
-        x0 = ones(len(pv))  # starting solution for the iteration
-        bounds = ones((len(pv), 2))
-        bounds[:, 0] *= 0.7
-        bounds[:, 1] *= 1.2
+                mx = max(Sbus[pv])
+                if mx > 0:
+                    # find the generator that is injecting the most
+                    i = where(Sbus == mx)[0][0]
 
-        args = (pv, circuit, Sbus, V, tol, maxiter, robust, verbose)  # extra arguments of the function after x
-        method = 'SLSQP'  # 'Nelder-Mead', TNC, SLSQP
-        tol = 0.001
-        options = dict()
-        options['disp'] = verbose
-        options['maxiter'] = 1000
+                else:
+                    # all the generators are injecting zero, pick the first pv
+                    i = pv[0]
 
-        res = minimize(fun=optimization_function, x0=x0, args=args, method=method, tol=tol,
-                       bounds=bounds, options=options)
+                # delete the selected pv bus from the pv list and put it in the slack list
+                pv = delete(pv, where(pv == i)[0])
+                ref = [i]
+                # print('Setting bus', i, 'as slack')
 
-        # fval = res.fun
-        # xsol = res.x
-        norm = circuit.power_flow_input.mismatch(V, Sbus)
-        return res.fun, norm
+            ref = ndarray.flatten(array(ref))
+            types[ref] = NodeType.REF.value[0]
+        else:
+            pass  # no problem :)
+
+        pqpv = r_[pq, pv]
+        pqpv.sort()
+
+        return ref, pq, pv, pqpv
 
     def single_power_flow(self, circuit: Circuit, solver_type: SolverType, voltage_solution, Sbus, Ibus):
         """
@@ -4186,16 +5082,9 @@ class PowerFlow(QRunnable):
         @param voltage_solution
         @return:
         """
-        # print('Single grid PF')
-        optimize = False
-
-        # Initial magnitudes
-        # if self.options.initialize_with_existing_solution and self.last_V is not None:
-        #     V = self.last_V[circuit.bus_original_idx]
-        # else:
-        #     V = circuit.power_flow_input.Vbus
 
         original_types = circuit.power_flow_input.types.copy()
+        ref, pq, pv, pqpv = self.compile_types(Sbus, original_types)
 
         any_control_issue = True  # guilty assumption...
 
@@ -4226,10 +5115,10 @@ class PowerFlow(QRunnable):
                     voltage_solution, converged, normF, Scalc, it, el = helm(Vbus=voltage_solution,
                                                                              Sbus=Sbus,
                                                                              Ybus=circuit.power_flow_input.Ybus,
-                                                                             pq=circuit.power_flow_input.pq,
-                                                                             pv=circuit.power_flow_input.pv,
-                                                                             ref=circuit.power_flow_input.ref,
-                                                                             pqpv=circuit.power_flow_input.pqpv,
+                                                                             pq=pq,
+                                                                             pv=pv,
+                                                                             ref=ref,
+                                                                             pqpv=pqpv,
                                                                              tol=self.options.tolerance,
                                                                              max_coefficient_count=self.options.max_iter)
 
@@ -4240,10 +5129,10 @@ class PowerFlow(QRunnable):
                                                                              Sbus=Sbus,
                                                                              Ibus=Ibus,
                                                                              V0=voltage_solution,
-                                                                             ref=circuit.power_flow_input.ref,
-                                                                             pvpq=circuit.power_flow_input.pqpv,
-                                                                             pq=circuit.power_flow_input.pq,
-                                                                             pv=circuit.power_flow_input.pv)
+                                                                             ref=ref,
+                                                                             pvpq=pqpv,
+                                                                             pq=pq,
+                                                                             pv=pv)
 
                 elif solver_type == SolverType.LACPF:
                     methods.append(SolverType.LACPF)
@@ -4253,20 +5142,21 @@ class PowerFlow(QRunnable):
                                                                               S=Sbus,
                                                                               I=Ibus,
                                                                               Vset=voltage_solution,
-                                                                              pq=circuit.power_flow_input.pq,
-                                                                              pv=circuit.power_flow_input.pv)
+                                                                              pq=pq,
+                                                                              pv=pv)
 
                 # Levenberg-Marquardt
                 elif solver_type == SolverType.LM:
                     methods.append(SolverType.LM)
-                    voltage_solution, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
-                                                                                             Sbus=Sbus,
-                                                                                             V0=voltage_solution,
-                                                                                             Ibus=Ibus,
-                                                                                             pv=circuit.power_flow_input.pv,
-                                                                                             pq=circuit.power_flow_input.pq,
-                                                                                             tol=self.options.tolerance,
-                                                                                             max_it=self.options.max_iter)
+                    voltage_solution, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
+                        Ybus=circuit.power_flow_input.Ybus,
+                        Sbus=Sbus,
+                        V0=voltage_solution,
+                        Ibus=Ibus,
+                        pv=pv,
+                        pq=pq,
+                        tol=self.options.tolerance,
+                        max_it=self.options.max_iter)
 
                 # Fast decoupled
                 elif solver_type == SolverType.FASTDECOUPLED:
@@ -4277,9 +5167,9 @@ class PowerFlow(QRunnable):
                                                                              Ybus=circuit.power_flow_input.Ybus,
                                                                              B1=circuit.power_flow_input.B1,
                                                                              B2=circuit.power_flow_input.B2,
-                                                                             pq=circuit.power_flow_input.pq,
-                                                                             pv=circuit.power_flow_input.pv,
-                                                                             pqpv=circuit.power_flow_input.pqpv,
+                                                                             pq=pq,
+                                                                             pv=pv,
+                                                                             pqpv=pqpv,
                                                                              tol=self.options.tolerance,
                                                                              max_it=self.options.max_iter)
 
@@ -4293,15 +5183,15 @@ class PowerFlow(QRunnable):
                                                                               S=Sbus,
                                                                               I=Ibus,
                                                                               Vset=voltage_solution,
-                                                                              pq=circuit.power_flow_input.pq,
-                                                                              pv=circuit.power_flow_input.pv)
+                                                                              pq=pq,
+                                                                              pv=pv)
                     # Solve NR with the linear AC solution
                     voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
                                                                                   Ibus=Ibus,
-                                                                                  pv=circuit.power_flow_input.pv,
-                                                                                  pq=circuit.power_flow_input.pq,
+                                                                                  pv=pv,
+                                                                                  pq=pq,
                                                                                   tol=self.options.tolerance,
                                                                                   max_it=self.options.max_iter,
                                                                                   robust=False)
@@ -4313,8 +5203,8 @@ class PowerFlow(QRunnable):
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
                                                                                   Ibus=Ibus,
-                                                                                  pv=circuit.power_flow_input.pv,
-                                                                                  pq=circuit.power_flow_input.pq,
+                                                                                  pv=pv,
+                                                                                  pq=pq,
                                                                                   tol=self.options.tolerance,
                                                                                   max_it=self.options.max_iter,
                                                                                   robust=True)
@@ -4327,8 +5217,8 @@ class PowerFlow(QRunnable):
                                                                 Sbus=Sbus,
                                                                 V0=voltage_solution,
                                                                 Ibus=Ibus,
-                                                                pv=circuit.power_flow_input.pv,
-                                                                pq=circuit.power_flow_input.pq,
+                                                                pv=pv,
+                                                                pq=pq,
                                                                 tol=self.options.tolerance,
                                                                 max_it=self.options.max_iter)
 
@@ -4349,7 +5239,7 @@ class PowerFlow(QRunnable):
                         if any_control_issue:
                             # voltage_solution = Vnew
                             Sbus = Sbus.real + 1j * Qnew
-                            circuit.power_flow_input.compile_types(types_new)
+                            ref, pq, pv, pqpv = self.compile_types(Sbus, types_new)
                         else:
                             if self.options.verbose:
                                 print('Controls Ok')
@@ -4376,7 +5266,7 @@ class PowerFlow(QRunnable):
             converged_lst.append(bool(converged))
 
         # revert the types to the original
-        circuit.power_flow_input.compile_types(original_types)
+        # ref, pq, pv, pqpv = self.compile_types(original_types)
 
         # Compute the branches power and the slack buses power
         Sbranch, Ibranch, loading, losses, Sbus = self.power_flow_post_process(circuit=circuit, V=voltage_solution)
@@ -4399,11 +5289,12 @@ class PowerFlow(QRunnable):
         return results
 
     @staticmethod
-    def power_flow_post_process(circuit: Circuit, V):
+    def power_flow_post_process(circuit: Circuit, V, only_power=False):
         """
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
         @param V: Voltage solution array for the circuit buses
+        @param only_power: compute only the power injection
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
@@ -4420,25 +5311,30 @@ class PowerFlow(QRunnable):
         Q = (V[pv] * conj(circuit.power_flow_input.Ybus[pv, :][:, :].dot(V))).imag
         Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
-        # Branches current, loading, etc
-        If = circuit.power_flow_input.Yf * V
-        It = circuit.power_flow_input.Yt * V
-        Sf = V[circuit.power_flow_input.F] * conj(If)
-        St = V[circuit.power_flow_input.T] * conj(It)
+        if not only_power:
+            # Branches current, loading, etc
+            If = circuit.power_flow_input.Yf * V
+            It = circuit.power_flow_input.Yt * V
+            Sf = V[circuit.power_flow_input.F] * conj(If)
+            St = V[circuit.power_flow_input.T] * conj(It)
 
-        # Branch losses in MVA
-        losses = (Sf + St) * circuit.Sbase
+            # Branch losses in MVA
+            losses = (Sf + St) * circuit.Sbase
 
-        # Branch current in p.u.
-        Ibranch = maximum(If, It)
+            # Branch current in p.u.
+            Ibranch = maximum(If, It)
 
-        # Branch power in MVA
-        Sbranch = maximum(Sf, St) * circuit.Sbase
+            # Branch power in MVA
+            Sbranch = maximum(Sf, St) * circuit.Sbase
 
-        # Branch loading in p.u.
-        loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)
+            # Branch loading in p.u.
+            loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)
 
-        return Sbranch, Ibranch, loading, losses, Sbus
+            return Sbranch, Ibranch, loading, losses, Sbus
+
+        else:
+            no_val = zeros(len(circuit.branches), dtype=complex)
+            return no_val, no_val, no_val, no_val, Sbus
 
     @staticmethod
     def switch_logic(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
@@ -4569,10 +5465,10 @@ class PowerFlow(QRunnable):
 
         return Vnew, Qnew, types_new, any_control_issue
 
-    def run(self):
+    def run(self, store_in_island=False):
         """
         Pack run_pf for the QThread
-        :return: 
+        :return:
         """
         # print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
@@ -4590,6 +5486,8 @@ class PowerFlow(QRunnable):
             # run circuit power flow
             res = self.run_pf(circuit, Vbus, Sbus, Ibus)
 
+            circuit.power_flow_results = res
+
             # merge the results from this island
             results.apply_from_island(res,
                                       circuit.bus_original_idx,
@@ -4601,28 +5499,24 @@ class PowerFlow(QRunnable):
         # sum_dev = results.check_limits(self.grid.power_flow_input)
 
         self.results = results
-        self.grid.power_flow_results = results
+
+        return results
 
     def run_pf(self, circuit: Circuit, Vbus, Sbus, Ibus):
         """
-        Run a power flow for every circuit
+        Run a power flow for a circuit
         @return:
         """
-        # print('PowerFlow at ', self.grid.name)
-        n = len(circuit.buses)
-        m = len(circuit.branches)
-        results = PowerFlowResults()
-        results.initialize(n, m)
 
         # Run the power flow
-        circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-                                                            solver_type=self.options.solver_type,
-                                                            voltage_solution=Vbus,
-                                                            Sbus=Sbus,
-                                                            Ibus=Ibus)
+        results = self.single_power_flow(circuit=circuit,
+                                         solver_type=self.options.solver_type,
+                                         voltage_solution=Vbus,
+                                         Sbus=Sbus,
+                                         Ibus=Ibus)
 
         # Retry with another solver
-        if not np.all(circuit.power_flow_results.converged) and self.options.auxiliary_solver_type is not None:
+        if not np.all(results.converged) and self.options.auxiliary_solver_type is not None:
             # print('Retying power flow with' + str(self.options.auxiliary_solver_type))
             # compose a voltage array that makes sense
             # if np.isnan(circuit.power_flow_results.voltage).any():
@@ -4634,102 +5528,105 @@ class PowerFlow(QRunnable):
             voltage = ones(len(circuit.buses), dtype=complex)
 
             # re-run power flow
-            circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-                                                                solver_type=self.options.auxiliary_solver_type,
-                                                                voltage_solution=voltage,
-                                                                Sbus=Sbus,
-                                                                Ibus=Ibus)
+            results = self.single_power_flow(circuit=circuit,
+                                             solver_type=self.options.auxiliary_solver_type,
+                                             voltage_solution=voltage,
+                                             Sbus=Sbus,
+                                             Ibus=Ibus)
 
-            if not np.all(circuit.power_flow_results.converged):
-                print('Did not converge, even after retry!, Error:', circuit.power_flow_results.error)
+            if not np.all(results.converged):
+                print('Did not converge, even after retry!, Error:', results.error)
         else:
             pass
 
         # check the power flow limits
-        circuit.power_flow_results.check_limits(circuit.power_flow_input)
+        results.check_limits(circuit.power_flow_input)
 
-        return circuit.power_flow_results
+        return results
 
-    # def run_at(self, t, mc=False):
-    #     """
-    #     Run power flow at the time series object index t
-    #     @param t:
-    #     @return:
-    #     """
-    #
-    #     '''
-    #     set_at ::
-    #
-    #     """
-    #     Set the current values given by the profile step of index t
-    #     @param t: index of the profiles
-    #     @param mc: Is this being run from MonteCarlo?
-    #     @return: Nothing
-    #     """
-    #
-    #     if self.time_series_input is not None:
-    #         if mc:
-    #
-    #             if self.mc_time_series is None:
-    #                 warn('No monte carlo inputs in island!!!')
-    #             else:
-    #                 self.power_flow_input.Sbus = self.mc_time_series.S[t, :] / self.Sbase
-    #         else:
-    #             self.power_flow_input.Sbus = self.time_series_input.S[t, :] / self.Sbase
-    #     else:
-    #         warn('No time series values')
-    #
-    #     '''
-    #
-    #
-    #     n = len(self.grid.buses)
-    #     m = len(self.grid.branches)
-    #     if self.grid.power_flow_results is None:
-    #         self.grid.power_flow_results = PowerFlowResults()
-    #     self.grid.power_flow_results.initialize(n, m)
-    #     i = 1
-    #     # self.progress_signal.emit(0.0)
-    #     for circuit in self.grid.circuits:
-    #         if self.options.verbose:
-    #             print('Solving ' + circuit.name)
-    #
-    #         # Set the profile values (changes circuit.power_flow_input.Sbus)
-    #         circuit.set_at(t, mc)
-    #
-    #         # Run the power flow
-    #         circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-    #                                                             solver_type=self.options.solver_type,
-    #                                                             voltage_solution=circuit.power_flow_input.Vbus,
-    #                                                             Sbus=circuit.power_flow_input.Sbus)
-    #
-    #         # Retry with another solver
-    #         if not circuit.power_flow_results.converged and self.options.auxiliary_solver_type is not None:
-    #             # check the voltage to use
-    #             if not np.isnan(circuit.power_flow_results.voltage).any():
-    #                 warn('Corrupt voltage, using flat solution in retry')
-    #                 voltage = ones(n, dtype=complex)
-    #             else:
-    #                 voltage = circuit.power_flow_results.voltage
-    #
-    #             circuit.power_flow_results = self.single_power_flow(circuit=circuit,
-    #                                                                 solver_type=self.options.auxiliary_solver_type,
-    #                                                                 voltage_solution=voltage,
-    #                                                                 Sbus=circuit.power_flow_input.Sbus)
-    #
-    #         # merge the results from this circuit
-    #         self.grid.power_flow_results.apply_from_island(circuit.power_flow_results,
-    #                                                        circuit.bus_original_idx,
-    #                                                        circuit.branch_original_idx)
-    #
-    #         i += 1
-    #
-    #     # check the limits
-    #     sum_dev = self.grid.power_flow_results.check_limits(self.grid.power_flow_input)
-    #
-    #     # self.progress_signal.emit(0.0)
-    #     # self.done_signal.emit()
-    #
-    #     return self.grid.power_flow_results
+    def cancel(self):
+        self.__cancel__ = True
+
+
+def power_flow_worker(t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict):
+    """
+    Power flow worker to schedule parallel power flows
+    :param t: execution index
+    :param options: power flow options
+    :param circuit: circuit
+    :param Vbus: Voltages to initialize
+    :param Sbus: Power injections
+    :param Ibus: Current injections
+    :param return_dict: parallel module dictionary in wich to return the values
+    :return:
+    """
+
+    instance = PowerFlowMP(None, options)
+    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
+
+
+def power_flow_worker_args(args):
+    """
+    Power flow worker to schedule parallel power flows
+
+    args -> t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict
+
+
+    :param t: execution index
+    :param options: power flow options
+    :param circuit: circuit
+    :param Vbus: Voltages to initialize
+    :param Sbus: Power injections
+    :param Ibus: Current injections
+    :param return_dict: parallel module dictionary in wich to return the values
+    :return:
+    """
+    t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
+    instance = PowerFlowMP(None, options)
+    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
+
+
+class PowerFlow(QRunnable):
+    """
+    Power flow wrapper to use with Qt
+    """
+
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+        """
+        PowerFlow class constructor
+        @param grid: MultiCircuit Object
+        """
+        QRunnable.__init__(self)
+
+        # Grid to run a power flow in
+        self.grid = grid
+
+        # Options to use
+        self.options = options
+
+        self.results = None
+
+        self.pf = PowerFlowMP(grid, options)
+
+        self.__cancel__ = False
+
+    def run(self):
+        """
+        Pack run_pf for the QThread
+        :return: 
+        """
+
+        results = self.pf.run(store_in_island=True)
+        self.results = results
+        self.grid.power_flow_results = results
+
+    def run_pf(self, circuit: Circuit, Vbus, Sbus, Ibus):
+        """
+        Run a power flow for every circuit
+        @return:
+        """
+
+        return self.pf.run_pf(circuit, Vbus, Sbus, Ibus)
 
     def cancel(self):
         self.__cancel__ = True
@@ -4925,7 +5822,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         else:
             return None
-
 
 
 class ShortCircuit(QRunnable):
@@ -5171,10 +6067,35 @@ class TimeSeriesInput:
             self.Iprof[res.Iprof.columns.values] = res.Iprof
             self.Yprof[res.Yprof.columns.values] = res.Yprof
 
+    def copy(self):
+
+        cpy = TimeSeriesInput()
+
+        # master time array. All the profiles must match its length
+        cpy.time_array = self.time_array
+
+        cpy.Sprof = self.Sprof.copy()
+        cpy.Iprof = self.Iprof.copy()
+        cpy.Yprof = self.Yprof.copy()
+
+        # Array of load admittances (shunt)
+        cpy.Y = self.Y.copy()
+
+        # Array of load currents
+        cpy.I = self.I.copy()
+
+        # Array of aggregated bus power (loads, generators, storage, etc...)
+        cpy.S = self.S.copy()
+
+        # is this timeSeriesInput valid? typically it is valid after compiling it
+        cpy.valid = self.valid
+
+        return cpy
+
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, nt, time=None):
+    def __init__(self, n, m, nt, start, end, time=None):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -5186,6 +6107,8 @@ class TimeSeriesResults(PowerFlowResults):
         self.nt = nt
         self.m = m
         self.n = n
+        self.start = start
+        self.end = end
 
         self.time = time
 
@@ -5479,7 +6402,7 @@ class TimeSeriesResultsAnalysis:
 
         self.buses_selected_for_storage_frequency = zeros(self.res.n)
 
-        for i in range(self.res.nt):
+        for i in range(self.res.start, self.res.end):
             self.branch_overload_frequency[self.res.overloads_idx[i]] += 1
             self.bus_undervoltage_frequency[self.res.undervoltage_idx[i]] += 1
             self.bus_overvoltage_frequency[self.res.overvoltage_idx[i]] += 1
@@ -5496,7 +6419,7 @@ class TimeSeries(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, start=0, end=None):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
@@ -5511,43 +6434,84 @@ class TimeSeries(QThread):
 
         self.results = None
 
+        self.start_ = start
+
+        self.end_ = end
+
         self.__cancel__ = False
 
-    def run(self):
+    def run_single_thread(self):
         """
-        Run the time series simulation
-        @return:
+        Run single thread time series
+        :return:
         """
         # initialize the power flow
-        powerflow = PowerFlow(self.grid, self.options)
+        powerflow = PowerFlowMP(self.grid, self.options)
 
         # initialize the grid time series results
         # we will append the island results with another function
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        if self.end_ is None:
+            self.end_ = nt
 
         # For every circuit, run the time series
         for nc, circuit in enumerate(self.grid.circuits):
 
+            # make a copy of the circuit to allow controls in place
+            # circuit = circuit_orig.copy()
+
+            # are we dispatching storage? if so, generate a dictionary of battery -> bus index
+            # to be able to set the batteries values into the vector S
+            if self.options.dispatch_storage:
+                batteries = list()
+                batteries_bus_idx = list()
+                for k, bus in enumerate(circuit.buses):
+                    for batt in bus.batteries:
+                        batt.reset()  # reset the calculation values
+                        batteries.append(batt)
+                        batteries_bus_idx.append(k)
+
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
+            # if there are valid profiles...
             if circuit.time_series_input.valid:
 
                 nt = len(circuit.time_series_input.time_array)
                 n = len(circuit.buses)
                 m = len(circuit.branches)
-                results = TimeSeriesResults(n, m, nt)
+                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
                 Vlast = circuit.power_flow_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
-                t = 0
-                while t < nt and not self.__cancel__:
+                t = self.start_
+                dt = 1.0  # default value in case of single-valued profile
 
+                # traverse the profiles time and simulate each time step
+                while t < self.end_ and not self.__cancel__:
                     # set the power values
+                    # if the storage dispatch option is active, the batteries power was not included
+                    # it shall be included now, after processing
                     Y, I, S = circuit.time_series_input.get_at(t)
+
+                    # add the controlled storage power if controlling storage
+                    if self.options.dispatch_storage:
+
+                        if t < self.end_-1:
+                            # compute the time delta: the time values come in nanoseconds
+                            dt = int(circuit.time_series_input.time_array[t+1]
+                                     - circuit.time_series_input.time_array[t]) * 1e-9 / 3600
+
+                        for k, batt in enumerate(batteries):
+
+                            P = batt.get_processed_at(t, dt=dt, store_values=True)
+                            bus_idx = batteries_bus_idx[k]
+                            S[bus_idx] += (P / circuit.Sbase)
+                        else:
+                            pass
 
                     # run power flow at the circuit
                     res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
@@ -5558,8 +6522,10 @@ class TimeSeries(QThread):
                     # store circuit results at the time index 't'
                     results.set_at(t, res)
 
-                    progress = ((t + 1) / nt) * 100
+                    progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
+                    self.progress_text.emit('Simulating ' + circuit.name + ' at '
+                                            + str(circuit.time_series_input.time_array[t]))
                     t += 1
 
                 # store at circuit level
@@ -5575,7 +6541,183 @@ class TimeSeries(QThread):
                 print('There are no profiles')
                 self.progress_text.emit('There are no profiles')
 
-        self.results = self.grid.time_series_results
+        return self.grid.time_series_results
+
+    def run_multi_thread(self):
+        """
+        Run multi thread time series
+        :return:
+        """
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        nt = len(self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        if self.end_ is None:
+            self.end_ = nt
+
+        n_cores = multiprocessing.cpu_count()
+
+        # For every circuit, run the time series
+        for nc, circuit in enumerate(self.grid.circuits):
+
+            self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
+
+            if circuit.time_series_input.valid:
+
+                nt = len(circuit.time_series_input.time_array)
+                n = len(circuit.buses)
+                m = len(circuit.branches)
+                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
+                Vlast = circuit.power_flow_input.Vbus
+
+                self.progress_signal.emit(0.0)
+
+                # Start jobs
+                manager = multiprocessing.Manager()
+                return_dict = manager.dict()
+
+                t = self.start_
+                while t < self.end_ and not self.__cancel__:
+
+                    k = 0
+                    jobs = list()
+
+                    # launch only n_cores jobs at the time
+                    while k < n_cores+2 and (t+k) < nt:
+                        # set the power values
+                        Y, I, S = circuit.time_series_input.get_at(t)
+
+                        # run power flow at the circuit
+                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, circuit, Vlast, S, I, return_dict))
+                        jobs.append(p)
+                        p.start()
+                        k += 1
+                        t += 1
+
+                    # wait for all jobs to complete
+                    for proc in jobs:
+                        proc.join()
+
+                    progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
+                    self.progress_signal.emit(progress)
+
+                # collect results
+                self.progress_text.emit('Collecting results...')
+                for t in return_dict.keys():
+                    # store circuit results at the time index 't'
+                    results.set_at(t, return_dict[t])
+
+                # store at circuit level
+                circuit.time_series_results = results
+
+                # merge  the circuit's results
+                self.grid.time_series_results.apply_from_island(results,
+                                                                circuit.bus_original_idx,
+                                                                circuit.branch_original_idx,
+                                                                circuit.time_series_input.time_array,
+                                                                circuit.name)
+            else:
+                print('There are no profiles')
+                self.progress_text.emit('There are no profiles')
+
+        return self.grid.time_series_results
+
+    def run_multi_thread_map(self):
+        """
+        Run multi thread time series
+        :return:
+        """
+
+        results_ = list()
+        self.completed_processes = 0
+        total_processes = 1
+        def complete(result):
+            results_.append(result)
+            self.completed_processes += 1
+            # print('Progress:', (self.completed_processes / total_processes) * 100)
+            progress = (self.completed_processes / total_processes) * 100
+            self.progress_signal.emit(progress)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        nt = len(self.grid.time_profile)
+        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+
+        n_cores = multiprocessing.cpu_count()
+        total_processes = nt
+
+        pool = multiprocessing.Pool()
+
+        # For every circuit, run the time series
+        for nc, circuit in enumerate(self.grid.circuits):
+
+            self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
+
+            if circuit.time_series_input.valid:
+
+                nt = len(circuit.time_series_input.time_array)
+                n = len(circuit.buses)
+                m = len(circuit.branches)
+                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
+                Vlast = circuit.power_flow_input.Vbus
+
+                self.progress_signal.emit(0.0)
+
+                # Start jobs
+                manager = multiprocessing.Manager()
+                return_dict = manager.dict()
+
+                t = 0
+                while t < nt and not self.__cancel__:
+
+                    # set the power values
+                    Y, I, S = circuit.time_series_input.get_at(t)
+
+                    # run power flow at the circuit
+                    pool.apply_async(func=power_flow_worker,
+                                     args=(t, self.options, circuit, Vlast, S, I, return_dict),
+                                     callback=complete)
+                    t += 1
+
+                pool.close()
+                pool.join()
+
+                # collect results
+                self.progress_text.emit('Collecting results...')
+                for t in return_dict.keys():
+                    # store circuit results at the time index 't'
+                    results.set_at(t, return_dict[t])
+
+                # store at circuit level
+                circuit.time_series_results = results
+
+                # merge  the circuit's results
+                self.grid.time_series_results.apply_from_island(results,
+                                                                circuit.bus_original_idx,
+                                                                circuit.branch_original_idx,
+                                                                circuit.time_series_input.time_array,
+                                                                circuit.name)
+            else:
+                print('There are no profiles')
+                self.progress_text.emit('There are no profiles')
+
+        return self.grid.time_series_results
+
+    def run(self):
+        """
+        Run the time series simulation
+        @return:
+        """
+
+        if self.options.multi_thread:
+            self.results = self.run_multi_thread()
+        else:
+            self.results = self.run_single_thread()
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -5760,6 +6902,14 @@ class VoltageCollapse(QThread):
 
         self.__cancel__ = False
 
+    def progress_callback(self, l):
+        """
+        Send progress report
+        :param l: lambda value
+        :return: None
+        """
+        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
+
     def run(self):
         """
         run the voltage collapse simulation
@@ -5811,7 +6961,8 @@ class VoltageCollapse(QThread):
                                              tol=1e-6,
                                              max_it=20,
                                              stop_at='NOSE',
-                                             verbose=False)
+                                             verbose=False,
+                                             call_back_fx=self.progress_callback)
 
             res = VoltageCollapseResults(nbus=0)  # nbus can be zero, because all the arrays are going to be overwritten
             res.voltages = array(Voltage_series)
@@ -5837,11 +6988,14 @@ class MonteCarloInput:
 
     def __init__(self, n, Scdf, Icdf, Ycdf):
         """
-
+        Monte carlo input constructor
+        @param n: number of nodes
         @param Scdf: Power cumulative density function
         @param Icdf: Current cumulative density function
         @param Ycdf: Admittances cumulative density function
         """
+
+        # number of nodes
         self.n = n
 
         self.Scdf = Scdf
@@ -5851,7 +7005,12 @@ class MonteCarloInput:
         self.Ycdf = Ycdf
 
     def __call__(self, samples=0, use_latin_hypercube=False):
-
+        """
+        Call this object
+        :param samples: number of samples
+        :param use_latin_hypercube: use Latin Hypercube to sample
+        :return: Time series object
+        """
         if use_latin_hypercube:
 
             lhs_points = lhs(self.n, samples=samples, criterion='center')
@@ -5895,10 +7054,9 @@ class MonteCarloInput:
         """
         Get samples at x
         Args:
-            x: values in [0, 1+ to sample the CDF
+            x: values in [0, 1] to sample the CDF
 
-        Returns:
-
+        Returns: Time series object
         """
         S = zeros((1, self.n), dtype=complex)
         I = zeros((1, self.n), dtype=complex)
@@ -5922,17 +7080,25 @@ class MonteCarlo(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, max_mc_iter=10000):
         """
-
-        @param grid:
-        @param options:
+        Monte Carlo simulation constructor
+        :param grid: MultiGrid instance
+        :param options: Power flow options
+        :param mc_tol: monte carlo std.dev tolerance
+        :param batch_size: size of the batch
+        :param max_mc_iter: maximum monte carlo iterations in case of not reach the precission
         """
         QThread.__init__(self)
 
         self.grid = grid
 
         self.options = options
+
+        self.mc_tol = mc_tol
+
+        self.batch_size = batch_size
+        self.max_mc_iter = max_mc_iter
 
         n = len(self.grid.buses)
         m = len(self.grid.branches)
@@ -5941,7 +7107,7 @@ class MonteCarlo(QThread):
 
         self.__cancel__ = False
 
-    def run(self):
+    def run_multi_thread(self):
         """
         Run the monte carlo simulation
         @return:
@@ -5949,16 +7115,12 @@ class MonteCarlo(QThread):
 
         self.__cancel__ = False
 
-        # initialize the power flow
-        powerflow = PowerFlow(self.grid, self.options)
-
         # initialize the grid time series results
         # we will append the island results with another function
-        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
+        Sbase = self.grid.Sbase
+        n_cores = multiprocessing.cpu_count()
 
-        mc_tol = 1e-6
-        batch_size = 100
-        max_mc_iter = 100000
         it = 0
         variance_sum = 0.0
         std_dev_progress = 0
@@ -5973,35 +7135,75 @@ class MonteCarlo(QThread):
 
         self.progress_signal.emit(0.0)
 
-        while (std_dev_progress < 100.0) and (it < max_mc_iter) and not self.__cancel__:
+        while (std_dev_progress < 100.0) and (it < self.max_mc_iter) and not self.__cancel__:
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            batch_results = MonteCarloResults(n, m, batch_size)
+            batch_results = MonteCarloResults(n, m, self.batch_size)
 
             # For every circuit, run the time series
-            for c in self.grid.circuits:
+            for circuit in self.grid.circuits:
 
                 # set the time series as sampled
                 # c.sample_monte_carlo_batch(batch_size)
-                mc_time_series = c.monte_carlo_input(batch_size, use_latin_hypercube=False)
-                Vbus = c.power_flow_input.Vbus
+                mc_time_series = circuit.monte_carlo_input(self.batch_size, use_latin_hypercube=False)
+                Vbus = circuit.power_flow_input.Vbus
 
-                # run the time series
-                for t in range(batch_size):
-                    # set the power values
-                    Y, I, S = mc_time_series.get_at(t)
+                manager = multiprocessing.Manager()
+                return_dict = manager.dict()
 
-                    # res = powerflow.run_at(t, mc=True)
-                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+                t = 0
+                while t < self.batch_size and not self.__cancel__:
 
-                    batch_results.S_points[t, c.bus_original_idx] = res.Sbus
-                    batch_results.V_points[t, c.bus_original_idx] = res.voltage
-                    batch_results.I_points[t, c.branch_original_idx] = res.Ibranch
-                    batch_results.loading_points[t, c.branch_original_idx] = res.loading
+                    k = 0
+                    jobs = list()
+
+                    # launch only n_cores jobs at the time
+                    while k < n_cores + 2 and (t + k) < self.batch_size:
+                        # set the power values
+                        Y, I, S = mc_time_series.get_at(t)
+
+                        # run power flow at the circuit
+                        p = multiprocessing.Process(target=power_flow_worker,
+                                                    args=(t, self.options, circuit, Vbus, S / Sbase, I / Sbase, return_dict))
+                        jobs.append(p)
+                        p.start()
+                        k += 1
+                        t += 1
+
+                    # wait for all jobs to complete
+                    for proc in jobs:
+                        proc.join()
+
+                    # progress = ((t + 1) / self.batch_size) * 100
+                    # self.progress_signal.emit(progress)
+
+                # collect results
+                self.progress_text.emit('Collecting batch results...')
+                for t in return_dict.keys():
+                    # store circuit results at the time index 't'
+                    res = return_dict[t]
+
+                    batch_results.S_points[t, circuit.bus_original_idx] = res.Sbus
+                    batch_results.V_points[t, circuit.bus_original_idx] = res.voltage
+                    batch_results.I_points[t, circuit.branch_original_idx] = res.Ibranch
+                    batch_results.loading_points[t, circuit.branch_original_idx] = res.loading
+
+                # # run the time series
+                # for t in range(batch_size):
+                #     # set the power values
+                #     Y, I, S = mc_time_series.get_at(t)
+                #
+                #     # res = powerflow.run_at(t, mc=True)
+                #     res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+                #
+                #     batch_results.S_points[t, c.bus_original_idx] = res.Sbus
+                #     batch_results.V_points[t, c.bus_original_idx] = res.voltage
+                #     batch_results.I_points[t, c.branch_original_idx] = res.Ibranch
+                #     batch_results.loading_points[t, c.branch_original_idx] = res.loading
 
             # Compute the Monte Carlo values
-            it += batch_size
+            it += self.batch_size
             mc_results.append_batch(batch_results)
             v_sum += batch_results.get_voltage_sum()
             v_avg = v_sum / it
@@ -6015,10 +7217,10 @@ class MonteCarlo(QThread):
             mc_results.error_series.append(err)
 
             # emmit the progress signal
-            std_dev_progress = 100 * mc_tol / err
+            std_dev_progress = 100 * self.mc_tol / err
             if std_dev_progress > 100:
                 std_dev_progress = 100
-            self.progress_signal.emit(max((std_dev_progress, it / max_mc_iter * 100)))
+            self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
 
             # print(iter, '/', max_mc_iter)
             # print('Vmc:', Vavg)
@@ -6029,10 +7231,123 @@ class MonteCarlo(QThread):
         mc_results.compile()
 
         # compute the averaged branch magnitudes
-        mc_results.sbranch, Ibranch, \
-        loading, mc_results.losses, Sbus = powerflow.power_flow_post_process(self.grid, mc_results.voltage)
+        mc_results.sbranch, _, _, _, _ = PowerFlowMP.power_flow_post_process(self.grid, mc_results.voltage)
 
-        self.results = mc_results
+        # print('V mc: ', mc_results.voltage)
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+        return mc_results
+
+    def run_single_thread(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+
+        self.__cancel__ = False
+
+        # initialize the power flow
+        powerflow = PowerFlowMP(self.grid, self.options)
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
+        Sbase = self.grid.Sbase
+
+        it = 0
+        variance_sum = 0.0
+        std_dev_progress = 0
+        v_variance = 0
+
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+
+        mc_results = MonteCarloResults(n, m)
+
+        v_sum = zeros(n, dtype=complex)
+
+        self.progress_signal.emit(0.0)
+
+        while (std_dev_progress < 100.0) and (it < self.max_mc_iter) and not self.__cancel__:
+
+            self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
+
+            batch_results = MonteCarloResults(n, m, self.batch_size)
+
+            # For every circuit, run the time series
+            for c in self.grid.circuits:
+
+                # set the time series as sampled
+                # c.sample_monte_carlo_batch(batch_size)
+                mc_time_series = c.monte_carlo_input(self.batch_size, use_latin_hypercube=False)
+                Vbus = c.power_flow_input.Vbus
+
+                # run the time series
+                for t in range(self.batch_size):
+                    # set the power values
+                    Y, I, S = mc_time_series.get_at(t)
+
+                    # res = powerflow.run_at(t, mc=True)
+                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S/Sbase, Ibus=I/Sbase)
+
+                    batch_results.S_points[t, c.bus_original_idx] = res.Sbus
+                    batch_results.V_points[t, c.bus_original_idx] = res.voltage
+                    batch_results.I_points[t, c.branch_original_idx] = res.Ibranch
+                    batch_results.loading_points[t, c.branch_original_idx] = res.loading
+
+            # Compute the Monte Carlo values
+            it += self.batch_size
+            mc_results.append_batch(batch_results)
+            v_sum += batch_results.get_voltage_sum()
+            v_avg = v_sum / it
+            v_variance = abs((power(mc_results.V_points - v_avg, 2.0) / (it - 1)).min())
+
+            # progress
+            variance_sum += v_variance
+            err = variance_sum / it
+            if err == 0:
+                err = 1e-200  # to avoid division by zeros
+            mc_results.error_series.append(err)
+
+            # emmit the progress signal
+            std_dev_progress = 100 * self.mc_tol / err
+            if std_dev_progress > 100:
+                std_dev_progress = 100
+            self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
+
+            # print(iter, '/', max_mc_iter)
+            # print('Vmc:', Vavg)
+            # print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
+
+        # compile results
+        self.progress_text.emit('Compiling results...')
+        mc_results.compile()
+
+        mc_results.sbranch, _, _, _, _ = PowerFlowMP.power_flow_post_process(self.grid, mc_results.voltage)
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+        return mc_results
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        # print('LHS run')
+        self.__cancel__ = False
+
+        if self.options.multi_thread:
+            self.results = self.run_multi_thread()
+        else:
+            self.results = self.run_single_thread()
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -6040,6 +7355,10 @@ class MonteCarlo(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -6055,6 +7374,11 @@ class MonteCarloResults:
         @param m: number of branches
         @param p: number of points (rows)
         """
+
+        self.n = n
+
+        self.m = m
+
         self.S_points = zeros((p, n), dtype=complex)
 
         self.V_points = zeros((p, n), dtype=complex)
@@ -6067,11 +7391,11 @@ class MonteCarloResults:
 
         self.error_series = list()
 
-        self.voltage = None
-        self.current = None
-        self.loading = None
-        self.sbranch = None
-        self.losses = None
+        self.voltage = zeros(n)
+        self.current = zeros(m)
+        self.loading = zeros(m)
+        self.sbranch = zeros(m)
+        self.losses = zeros(m)
 
         # magnitudes standard deviation convergence
         self.v_std_conv = None
@@ -6084,7 +7408,7 @@ class MonteCarloResults:
         self.l_avg_conv = None
 
         self.available_results = ['Bus voltage avg', 'Bus voltage std',
-                                  'Bus current avg', 'Bus current std',
+                                  'Branch current avg', 'Branch current std',
                                   'Branch loading avg', 'Branch loading std',
                                   'Bus voltage CDF', 'Branch loading CDF']
 
@@ -6175,9 +7499,8 @@ class MonteCarloResults:
         """
         open pickle
         Args:
-            fname:
-
-        Returns:
+            fname: file name
+        Returns: true if succeeded, false otherwise
 
         """
         if os.path.exists(fname):
@@ -6286,56 +7609,56 @@ class MonteCarloResults:
 
         if len(indices) > 0:
 
-            ylabel = ''
+            y_label = ''
             title = ''
             if result_type == 'Bus voltage avg':
                 y = self.v_avg_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus voltage \naverage convergence'
 
-            elif result_type == 'Bus current avg':
+            elif result_type == 'Branch current avg':
                 y = self.c_avg_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus current \naverage convergence'
 
             elif result_type == 'Branch loading avg':
                 y = self.l_avg_conv[1:-1, indices]
-                ylabel = '(%)'
-                xlabel = 'Sampling points'
+                y_label = '(%)'
+                x_label = 'Sampling points'
                 title = 'Branch loading \naverage convergence'
 
             elif result_type == 'Bus voltage std':
                 y = self.v_std_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus voltage standard \ndeviation convergence'
 
-            elif result_type == 'Bus current std':
+            elif result_type == 'Branch current std':
                 y = self.c_std_conv[1:-1, indices]
-                ylabel = '(p.u.)'
-                xlabel = 'Sampling points'
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
                 title = 'Bus current standard \ndeviation convergence'
 
             elif result_type == 'Branch loading std':
                 y = self.l_std_conv[1:-1, indices]
-                ylabel = '(%)'
-                xlabel = 'Sampling points'
+                y_label = '(%)'
+                x_label = 'Sampling points'
                 title = 'Branch loading standard \ndeviation convergence'
 
             elif result_type == 'Bus voltage CDF':
                 cdf = CDF(np.abs(self.V_points[:, indices]))
                 cdf.plot(ax=ax)
-                ylabel = '(p.u.)'
-                xlabel = 'Probability $P(X \leq x)$'
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
                 title = 'Bus voltage'
 
             elif result_type == 'Branch loading CDF':
                 cdf = CDF(np.abs(self.loading_points.real[:, indices]))
                 cdf.plot(ax=ax)
-                ylabel = '(p.u.)'
-                xlabel = 'Probability $P(X \leq x)$'
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
                 title = 'Branch loading'
 
             else:
@@ -6352,8 +7675,8 @@ class MonteCarloResults:
                 df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 
             ax.set_title(title)
-            ax.set_ylabel(ylabel)
-            ax.set_xlabel(xlabel)
+            ax.set_ylabel(y_label)
+            ax.set_xlabel(x_label)
 
             return df
 
@@ -6368,11 +7691,11 @@ class LatinHypercubeSampling(QThread):
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, sampling_points=1000):
         """
-
+        Latin Hypercube constructor
         Args:
-            grid:
-            options:
-            sampling_points:
+            grid: MultiCircuit instance
+            options: Power flow options
+            sampling_points: number of sampling points
         """
         QThread.__init__(self)
 
@@ -6386,7 +7709,102 @@ class LatinHypercubeSampling(QThread):
 
         self.__cancel__ = False
 
-    def run(self):
+    def run_multi_thread(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        # print('LHS run')
+        self.__cancel__ = False
+
+        # initialize vars
+        batch_size = self.sampling_points
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        n_cores = multiprocessing.cpu_count()
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running Latin Hypercube Sampling in parallel using ' + str(n_cores) + ' cores ...')
+
+        lhs_results = MonteCarloResults(n, m, batch_size)
+
+        max_iter = batch_size * len(self.grid.circuits)
+        Sbase = self.grid.Sbase
+        it = 0
+
+        # For every circuit, run the time series
+        for circuit in self.grid.circuits:
+
+            # try:
+            # set the time series as sampled in the circuit
+            # c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
+            mc_time_series = circuit.monte_carlo_input(batch_size, use_latin_hypercube=True)
+            Vbus = circuit.power_flow_input.Vbus
+
+            manager = multiprocessing.Manager()
+            return_dict = manager.dict()
+
+            t = 0
+            while t < batch_size and not self.__cancel__:
+
+                k = 0
+                jobs = list()
+
+                # launch only n_cores jobs at the time
+                while k < n_cores + 2 and (t + k) < batch_size:
+                    # set the power values
+                    Y, I, S = mc_time_series.get_at(t)
+
+                    # run power flow at the circuit
+                    p = multiprocessing.Process(target=power_flow_worker,
+                                                args=(t, self.options, circuit, Vbus, S/Sbase, I/Sbase, return_dict))
+                    jobs.append(p)
+                    p.start()
+                    k += 1
+                    t += 1
+
+                # wait for all jobs to complete
+                for proc in jobs:
+                    proc.join()
+
+                progress = ((t + 1) / batch_size) * 100
+                self.progress_signal.emit(progress)
+
+            # collect results
+            self.progress_text.emit('Collecting results...')
+            for t in return_dict.keys():
+                # store circuit results at the time index 't'
+                res = return_dict[t]
+
+                lhs_results.S_points[t, circuit.bus_original_idx] = res.Sbus
+                lhs_results.V_points[t, circuit.bus_original_idx] = res.voltage
+                lhs_results.I_points[t, circuit.branch_original_idx] = res.Ibranch
+                lhs_results.loading_points[t, circuit.branch_original_idx] = res.loading
+
+            # except Exception as ex:
+            #     print(c.name, ex)
+
+            if self.__cancel__:
+                break
+
+        # compile MC results
+        self.progress_text.emit('Compiling results...')
+        lhs_results.compile()
+
+        # lhs_results the averaged branch magnitudes
+        # lhs_results.sbranch, Ibranch, \
+        # loading, lhs_results.losses, Sbus = PowerFlowMP.power_flow_post_process(self.grid, lhs_results.voltage)
+
+        self.results = lhs_results
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+        return lhs_results
+
+    def run_single_thread(self):
         """
         Run the monte carlo simulation
         @return:
@@ -6395,11 +7813,11 @@ class LatinHypercubeSampling(QThread):
         self.__cancel__ = False
 
         # initialize the power flow
-        power_flow = PowerFlow(self.grid, self.options)
+        power_flow = PowerFlowMP(self.grid, self.options)
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.grid.time_series_results = TimeSeriesResults(0, 0, 0)
+        self.grid.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
 
         batch_size = self.sampling_points
         n = len(self.grid.buses)
@@ -6466,7 +7884,30 @@ class LatinHypercubeSampling(QThread):
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
+        return lhs_results
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        # print('LHS run')
+        self.__cancel__ = False
+
+        if self.options.multi_thread:
+            self.results = self.run_multi_thread()
+        else:
+            self.results = self.run_single_thread()
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
     def cancel(self):
+        """
+        Cancel the simulation
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -6481,6 +7922,12 @@ class LatinHypercubeSampling(QThread):
 class CascadingReportElement:
 
     def __init__(self, removed_idx, pf_results, criteria):
+        """
+        CascadingReportElement constructor
+        :param removed_idx: list of removed branch indices
+        :param pf_results: power flow results object
+        :param criteria: criteria used in the end
+        """
         self.removed_idx = removed_idx
         self.pf_results = pf_results
         self.criteria = criteria
@@ -6489,7 +7936,10 @@ class CascadingReportElement:
 class CascadingResults:
 
     def __init__(self, cascade_type: CascadeType):
-
+        """
+        Cascading results constructor
+        :param cascade_type: Cascade type
+        """
         self.cascade_type = cascade_type
 
         self.events = list()
@@ -6522,6 +7972,7 @@ class CascadingResults:
 
     def plot(self):
 
+        # TODO: implement cascading plot
         pass
 
 
@@ -6535,9 +7986,12 @@ class Cascading(QThread):
         """
         Constructor
         Args:
-            grid: Grid to cascade
+            grid: MultiCircuit instance to cascade
             options: Power flow Options
             triggering_idx: branch indices to trigger first
+            max_additional_islands: number of islands that shall be formed to consider a blackout
+            cascade_type_: Cascade simulation kind
+            n_lhs_samples_: number of latin hypercube samples if using LHS cascade
         """
 
         QThread.__init__(self)
@@ -6583,7 +8037,8 @@ class Cascading(QThread):
 
         return idx
 
-    def remove_probability_based(self, circuit: Circuit, results: MonteCarloResults, max_val, min_prob):
+    @staticmethod
+    def remove_probability_based(circuit: MultiCircuit, results: MonteCarloResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
         :param circuit:
@@ -6686,13 +8141,13 @@ class Cascading(QThread):
 
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowMP(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
             model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
 
         else:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowMP(self.grid, self.options)
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running cascading failure...')
@@ -6708,21 +8163,14 @@ class Cascading(QThread):
 
             # For every circuit, run a power flow
             # for c in self.grid.circuits:
-            model_simulator.run()
+            results = model_simulator.run()
             # print(model_simulator.results.get_convergence_report())
 
-            # if it == 0:
-            #     # the first iteration try to trigger the selected indices, if any
-            #     idx = self.remove_elements(self.grid, model_simulator.results.loading, idx=self.triggering_idx)
-            # else:
-            #     # for the next indices, just cascade normally
-            #     idx = self.remove_elements(self.grid, model_simulator.results.loading)
-
-            idx, criteria = self.remove_probability_based(self.grid, model_simulator.results,
-                                                          max_val=1.0, min_prob=0.1)
+            # remove grid elements (branches)
+            idx, criteria = self.remove_probability_based(self.grid, results, max_val=1.0, min_prob=0.1)
 
             # store the removed indices and the results
-            entry = CascadingReportElement(idx, model_simulator.results, criteria)
+            entry = CascadingReportElement(idx, results, criteria)
             self.results.events.append(entry)
 
             # recompile grid
@@ -6759,6 +8207,10 @@ class Cascading(QThread):
         return self.results.get_table()
 
     def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -6781,7 +8233,7 @@ class Optimize(QThread):
         Args:
             grid: Grid to cascade
             options: Power flow Options
-            triggering_idx: branch indices to trigger first
+            max_iter: max iterations
         """
 
         QThread.__init__(self)
@@ -6816,27 +8268,30 @@ class Optimize(QThread):
         self.it = 0
 
     def objfunction(self, x):
-
-
+        """
+        Objective function to run
+        :param x: combinations of values between 0~1
+        :return: objective function value, the average voltage in this case
+        """
         Vbus = self.grid.power_flow_input.Vbus
 
         # For every circuit, run the time series
-        for c in self.grid.circuits:
+        for circuit in self.grid.circuits:
             # sample from the CDF give the vector x of values in [0, 1]
             # c.sample_at(x)
-            mc_time_series = c.monte_carlo_input.get_at(x)
+            mc_time_series = circuit.monte_carlo_input.get_at(x)
 
             Y, I, S = mc_time_series.get_at(t=0)
 
             #  run the sampled values
             # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S, Ibus=I)
+            res = self.power_flow.run_pf(circuit=circuit, Vbus=Vbus, Sbus=S, Ibus=I)
 
-            Y, I, S = c.mc_time_series.get_at(0)
-            self.results.S_points[self.it, c.bus_original_idx] = S
-            self.results.V_points[self.it, c.bus_original_idx] = res.voltage[c.bus_original_idx]
-            self.results.I_points[self.it, c.branch_original_idx] = res.Ibranch[c.branch_original_idx]
-            self.results.loading_points[self.it, c.branch_original_idx] = res.loading[c.branch_original_idx]
+            # Y, I, S = circuit.mc_time_series.get_at(0)
+            self.results.S_points[self.it, circuit.bus_original_idx] = S
+            self.results.V_points[self.it, circuit.bus_original_idx] = res.voltage[circuit.bus_original_idx]
+            self.results.I_points[self.it, circuit.branch_original_idx] = res.Ibranch[circuit.branch_original_idx]
+            self.results.loading_points[self.it, circuit.branch_original_idx] = res.loading[circuit.branch_original_idx]
 
         self.it += 1
         prog = self.it / self.max_eval * 100
@@ -6849,8 +8304,8 @@ class Optimize(QThread):
 
     def run(self):
         """
-        Run the monte carlo simulation
-        @return:
+        Run the optimization
+        @return: Nothing
         """
         self.it = 0
         n = len(self.grid.buses)
@@ -6909,8 +8364,6 @@ class Optimize(QThread):
     def plot(self, ax=None):
         """
         Plot the optimization convergence
-        Returns:
-
         """
         clr = np.array(['#2200CC', '#D9007E', '#FF6600', '#FFCC00', '#ACE600', '#0099CC',
                         '#8900CC', '#FF0000', '#FF9900', '#FFFF00', '#00CC01', '#0055CC'])
@@ -6929,6 +8382,9 @@ class Optimize(QThread):
             ax.set_title('Optimization convergence')
 
     def cancel(self):
+        """
+        Cancel the simulation
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
@@ -7005,7 +8461,7 @@ class DcOpf:
 
         self.loads = np.zeros(self.nbus)
 
-    def build(self):
+    def build(self, t_idx=None):
         """
         Build the OPF problem using the sparse formulation
         In this step, the circuit loads are not included
@@ -7036,7 +8492,7 @@ class DcOpf:
         ################################################################################################################
         # Add the objective function
         ################################################################################################################
-        fobj = 0
+        fobj = 0.0
 
         # add the voltage angles multiplied by zero (trick)
         for j in self.pqpv:
@@ -7045,21 +8501,28 @@ class DcOpf:
         # Add the generators cost
         for k, bus in enumerate(self.circuit.buses):
 
+            generators = bus.controlled_generators + bus.batteries
+
             # check that there are at least one generator at the slack node
-            if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
+            if len(generators) == 0 and bus.type == NodeType.REF:
                 self.potential_errors = True
                 warn('There is no generator at the Slack node ' + bus.name + '!!!')
 
             # Add the bus LP vars
-            for gen in bus.controlled_generators:
-
-                # create the generation variable
-                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name, self.Sbase)
+            for i, gen in enumerate(generators):
 
                 # add the variable to the objective function
-                fobj += gen.LPVar_P * gen.Cost
-
-                self.PG.append(gen.LPVar_P)  # add the var reference just to print later...
+                if gen.active and gen.enabled_dispatch:
+                    if t_idx is None:
+                        fobj += gen.LPVar_P * gen.Cost
+                        # add the var reference just to print later...
+                        self.PG.append(gen.LPVar_P)
+                    else:
+                        fobj += gen.LPVar_P_prof[t_idx] * gen.Cost
+                        # add the var reference just to print later...
+                        self.PG.append(gen.LPVar_P_prof[t_idx])
+                else:
+                    pass  # the generator is not active
 
             # minimize the load shedding if activated
             if self.load_shedding:
@@ -7069,8 +8532,11 @@ class DcOpf:
         if not self.load_shedding:
             # Minimize the branch overload slacks
             for k, branch in enumerate(self.circuit.branches):
-                fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
-                fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
+                if branch.active:
+                    fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
+                    fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
+                else:
+                    pass  # the branch is not active
 
         # Add the objective function to the problem
         prob += fobj
@@ -7081,18 +8547,46 @@ class DcOpf:
         #      using-linear-programming
         ################################################################################################################
         for i in self.pqpv:
+
             calculated_node_power = 0
             node_power_injection = 0
+            generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
 
             # add the calculated node power
             for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
+
                 j = self.B.indices[ii]
+
                 if j not in self.vd:
+
                     calculated_node_power += self.B.data[ii] * self.theta[j]
 
+                    if self.B.data[ii] < 1e-6:
+                        warn("There are susceptances close to zero.")
+
             # add the generation LP vars
-            for gen in self.circuit.buses[i].controlled_generators:
-                node_power_injection += gen.LPVar_P
+            if t_idx is None:
+                for gen in generators:
+                    if gen.active:
+                        if gen.enabled_dispatch:
+                            # add the dispatch variable
+                            node_power_injection += gen.LPVar_P
+                        else:
+                            # set the default value
+                            node_power_injection += gen.P / self.Sbase
+                    else:
+                        pass
+            else:
+                for gen in generators:
+                    if gen.active:
+                        if gen.enabled_dispatch:
+                            # add the dispatch variable
+                            node_power_injection += gen.LPVar_P_prof[t_idx]
+                        else:
+                            # set the default profile value
+                            node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
+                    else:
+                        pass
 
             # Store the terms for adding the load later.
             # This allows faster problem compilation in case of recurrent runs
@@ -7115,8 +8609,10 @@ class DcOpf:
         #  set the slack generator power
         ################################################################################################################
         for i in self.vd:
+
             val = 0
             g = 0
+            generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
 
             # compute the slack node power
             for ii in range(self.B.indptr[i], self.B.indptr[i+1]):
@@ -7124,8 +8620,18 @@ class DcOpf:
                 val += self.B.data[ii] * self.theta[j]
 
             # Sum the slack generators
-            for gen in self.circuit.buses[i].controlled_generators:
-                g += gen.LPVar_P
+            if t_idx is None:
+                for gen in generators:
+                    if gen.active and gen.enabled_dispatch:
+                        g += gen.LPVar_P
+                    else:
+                        pass
+            else:
+                for gen in generators:
+                    if gen.active and gen.enabled_dispatch:
+                        g += gen.LPVar_P_prof[t_idx]
+                    else:
+                        pass
 
             # the sum of the slack node generators must be equal to the slack node power
             prob.add(g == val, 'ct_slack_power_' + str(i))
@@ -7135,25 +8641,31 @@ class DcOpf:
         ################################################################################################################
         any_rate_zero = False
         for k, branch in enumerate(self.circuit.branches):
-            i = self.circuit.buses_dict[branch.bus_from]
-            j = self.circuit.buses_dict[branch.bus_to]
 
-            # branch flow
-            Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
-            Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+            if branch.active:
+                i = self.circuit.buses_dict[branch.bus_from]
+                j = self.circuit.buses_dict[branch.bus_to]
 
-            # constraints
-            if not self.load_shedding:
-                # Add slacks
-                prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-                prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+                # branch flow
+                Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
+                Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
+
+                # constraints
+                if not self.load_shedding:
+                    # Add slacks
+                    prob.add(Fij + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                    prob.add(Fji + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+                    # prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                    # prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+                else:
+                    # The slacks are in the form of load shedding
+                    prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                    prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+
+                if branch.rate <= 1e-6:
+                    any_rate_zero = True
             else:
-                # THe slacks are in the form of load shedding
-                prob.add(Fij <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
-                prob.add(Fji <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
-
-            if branch.rate <= 1e-6:
-                any_rate_zero = True
+                pass  # the branch is not active...
 
         # No branch can have rate = 0, otherwise the problem fails
         if any_rate_zero:
@@ -7181,7 +8693,10 @@ class DcOpf:
 
                 # add the nodal demand
                 for load in self.circuit.buses[i].loads:
-                    self.loads[i] += load.S.real / self.Sbase
+                    if load.active:
+                        self.loads[i] += load.S.real / self.Sbase
+                    else:
+                        pass
 
                 if calculated_node_power is 0 and node_power_injection is 0:
                     # nodes without injection or generation
@@ -7210,7 +8725,10 @@ class DcOpf:
 
                 # add the nodal demand
                 for load in self.circuit.buses[i].loads:
-                    self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
+                    if load.active:
+                        self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
+                    else:
+                        pass
 
                 # add the restriction
                 if self.load_shedding:
@@ -7243,6 +8761,8 @@ class DcOpf:
             print('Load shedding:', self.load_shedding)
             self.problem.solve()  # solve with CBC
             # prob.solve(CPLEX())
+
+            # self.problem.writeLP('dcopf.lp')
 
             # The status of the solution is printed to the screen
             print("Status:", pulp.LpStatus[self.problem.status])
@@ -7280,17 +8800,19 @@ class DcOpf:
                 F = 'None'
             print('Branch ' + str(i) + '-' + str(j) + '(', branch.rate, 'MW) ->', F)
 
-    def get_results(self, save_lp_file=False):
+    def get_results(self, save_lp_file=False, t_idx=None, realistic=False):
         """
         Return the optimization results
-        Returns:
-            OptimalPowerFlowResults instance
+        :param save_lp_file:
+        :param t_idx:
+        :param realistic:
+        :return: OptimalPowerFlowResults instance
         """
 
         # initialize results object
         n = len(self.circuit.buses)
         m = len(self.circuit.branches)
-        res = OptimalPowerFlowResults()
+        res = OptimalPowerFlowResults(is_dc=True)
         res.initialize(n, m)
 
         if save_lp_file:
@@ -7299,45 +8821,640 @@ class DcOpf:
 
         if self.solved:
 
-            # Add buses
-            for i in range(n):
-                g = 0.0
+            if realistic:
 
-                # Sum the slack generators
-                for gen in self.circuit.buses[i].controlled_generators:
-                    g += gen.LPVar_P.value()
-                    # print(gen.name, gen.LPVar_P.value())
+                # Add buses
+                for i in range(n):
+                    # Set the voltage
+                    res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
-                # Set the results
-                res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
+                    if self.load_shed is not None:
+                        res.load_shedding[i] = self.load_shed[i].value()
 
-                # Set the voltage
-                res.voltage[i] = 1 * exp(1j * self.theta[i].value())
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, res.voltage)
 
-                if self.load_shed is not None:
-                    res.load_shedding[i] = self.load_shed[i].value()
+            else:
+                # Add buses
+                for i in range(n):
+                    # g = 0.0
+                    #
+                    # generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+                    #
+                    # # Sum the slack generators
+                    # if t_idx is None:
+                    #     for gen in generators:
+                    #         if gen.active and gen.enabled_dispatch:
+                    #             g += gen.LPVar_P.value()
+                    # else:
+                    #     for gen in generators:
+                    #         if gen.active and gen.enabled_dispatch:
+                    #             g += gen.LPVar_P_prof[t_idx].value()
+                    #
+                    # # Set the results
+                    # res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
 
-            # Add branches
-            for k, branch in enumerate(self.circuit.branches):
+                    # Set the voltage
+                    res.voltage[i] = 1 * exp(1j * self.theta[i].value())
 
-                # get the from and to nodal indices of the branch
-                i = self.circuit.buses_dict[branch.bus_from]
-                j = self.circuit.buses_dict[branch.bus_to]
+                    if self.load_shed is not None:
+                        res.load_shedding[i] = self.load_shed[i].value()
 
-                # compute the power flowing
-                if self.theta[i].value() is not None and self.theta[j].value() is not None:
-                    F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, res.voltage, only_power=True)
+
+                # Add branches
+                for k, branch in enumerate(self.circuit.branches):
+
+                    if branch.active:
+                        # get the from and to nodal indices of the branch
+                        i = self.circuit.buses_dict[branch.bus_from]
+                        j = self.circuit.buses_dict[branch.bus_to]
+
+                        # compute the power flowing
+                        if self.theta[i].value() is not None and self.theta[j].value() is not None:
+                            F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
+                        else:
+                            F = -1
+
+                        # Set the results
+                        if self.slack_loading_ij_p[k] is not None:
+                            res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                                + self.slack_loading_ji_p[k].value()
+                                                - self.slack_loading_ij_n[k].value()
+                                                - self.slack_loading_ji_n[k].value()) * self.Sbase
+                        res.Sbranch[k] = F
+                        res.loading[k] = abs(F / branch.rate)
+                    else:
+                        pass
+
+        else:
+            # the problem did not solve, pass
+            pass
+
+        return res
+
+
+class AcOpf:
+
+    def __init__(self, circuit: Circuit, options, voltage_band=0.1):
+        """
+        Linearized AC power flow, solved with a linear solver :o
+        :param circuit: GridCal Circuit instance
+        """
+
+        self.vm_low = 1.0 - voltage_band
+        self.vm_high = 1.0 + voltage_band
+
+        self.load_shedding = options.load_shedding
+
+        self.circuit = circuit
+        self.Sbase = circuit.Sbase
+
+        # node sets
+        self.pv = circuit.power_flow_input.pv
+        self.pq = circuit.power_flow_input.pq
+        self.vd = circuit.power_flow_input.ref
+        self.pvpq = r_[self.pv, self.pq]
+        self.pvpqpq = r_[self.pv, self.pq, self.pq]
+
+        Y = circuit.power_flow_input.Ybus
+        self.B = circuit.power_flow_input.Ybus.imag
+        Ys = circuit.power_flow_input.Yseries
+        S = circuit.power_flow_input.Sbus
+        self.V = circuit.power_flow_input.Vbus.copy()
+
+        # form the system matrix
+        A11 = -Ys.imag[self.pvpq, :][:, self.pvpq]
+        A12 = Y.real[self.pvpq, :][:, self.pq]
+        A21 = -Ys.real[self.pq, :][:, self.pvpq]
+        A22 = -Y.imag[self.pq, :][:, self.pq]
+        self.sys_mat = vstack_s([hstack_s([A11, A12]),
+                                 hstack_s([A21, A22])], format="csr")
+
+        # form the slack system matrix
+        A11s = -Ys.imag[self.vd, :][:, self.pvpq]
+        A12s = Y.real[self.vd, :][:, self.pq]
+        self.sys_mat_slack = hstack_s([A11s, A12s], format="csr")
+
+        # compose the right hand side (power vectors)
+        self.rhs = r_[S.real[self.pvpq], S.imag[self.pq]]
+
+        # declare the voltage increments dx
+        self.nn = self.sys_mat.shape[0]
+        self.nbranch = len(self.circuit.branches)
+        self.nbus = len(self.circuit.buses)
+        self.dx_var = [None] * self.nn
+
+        self.flow_ij = [None] * self.nbranch
+        self.flow_ji = [None] * self.nbranch
+
+        self.theta_dict = dict()
+
+        self.loads = np.zeros(self.nn)
+        self.load_shed = [None] * self.nn
+
+        npv = len(self.pv)
+        npq = len(self.pq)
+        for i in range(self.nn):
+            if i < (npv+npq):
+                self.dx_var[i] = pulp.LpVariable("Va" + str(i), -0.5, 0.5)
+                self.theta_dict[self.pvpq[i]] = self.dx_var[i]  # dictionary to store the angles for the pvpq nodes
+                self.load_shed[i] = pulp.LpVariable("LoadShed_P_" + str(i), 0.0, 1e20)
+            else:
+                self.dx_var[i] = pulp.LpVariable("Vm" + str(i))
+                self.load_shed[i] = pulp.LpVariable("LoadShed_Q_" + str(i), 0.0, 1e20)
+
+        # declare the slack vars
+        self.slack_loading_ij_p = [None] * self.nbranch
+        self.slack_loading_ji_p = [None] * self.nbranch
+        self.slack_loading_ij_n = [None] * self.nbranch
+        self.slack_loading_ji_n = [None] * self.nbranch
+
+        if self.load_shedding:
+            pass
+
+        else:
+
+            for i in range(self.nbranch):
+                self.slack_loading_ij_p[i] = pulp.LpVariable("LoadingSlack_ij_p_" + str(i), 0, 1e20)
+                self.slack_loading_ji_p[i] = pulp.LpVariable("LoadingSlack_ji_p_" + str(i), 0, 1e20)
+                self.slack_loading_ij_n[i] = pulp.LpVariable("LoadingSlack_ij_n_" + str(i), 0, 1e20)
+                self.slack_loading_ji_n[i] = pulp.LpVariable("LoadingSlack_ji_n_" + str(i), 0, 1e20)
+
+        # declare the generation
+        self.PG = list()
+
+        # LP problem
+        self.problem = None
+
+        # potential errors flag
+        self.potential_errors = False
+
+        # Check if the problem was solved or not
+        self.solved = False
+
+        # LP problem restrictions saved on build and added to the problem with every load change
+        self.s_restrictions = list()
+        self.p_restrictions = list()
+
+    def build(self, t_idx=None):
+        """
+        Formulate and Solve the AC LP problem
+        :return: Nothing
+        """
+        prob = pulp.LpProblem("AC power flow", pulp.LpMinimize)
+
+        npv = len(self.pv)
+        npq = len(self.pq)
+
+        ################################################################################################################
+        # Add the objective function
+        ################################################################################################################
+        fobj = 0.0
+
+        # Add the objective function (all zeros)
+        # for i in range(self.nn):
+        #     fobj += self.dx_var[i] * 0.0
+
+        # Add the generators cost
+        for k, bus in enumerate(self.circuit.buses):
+
+            generators = bus.controlled_generators + bus.batteries
+
+            # check that there are at least one generator at the slack node
+            if len(generators) == 0 and bus.type == NodeType.REF:
+                self.potential_errors = True
+                warn('There is no generator at the Slack node ' + bus.name + '!!!')
+
+            # Add the bus LP vars
+            for i, gen in enumerate(generators):
+
+                # add the variable to the objective function
+                if gen.active and gen.enabled_dispatch:
+                    if t_idx is None:
+                        fobj += gen.LPVar_P * gen.Cost
+                        # add the var reference just to print later...
+                        self.PG.append(gen.LPVar_P)
+                    else:
+                        fobj += gen.LPVar_P_prof[t_idx] * gen.Cost
+                        # add the var reference just to print later...
+                        self.PG.append(gen.LPVar_P_prof[t_idx])
                 else:
-                    F = -1
+                    pass  # the generator is not active
 
-                # Set the results
-                if self.slack_loading_ij_p[k] is not None:
-                    res.overloads[k] = (self.slack_loading_ij_p[k].value()
-                                        + self.slack_loading_ji_p[k].value()
-                                        - self.slack_loading_ij_n[k].value()
-                                        - self.slack_loading_ji_n[k].value()) * self.Sbase
-                res.Sbranch[k] = F
-                res.loading[k] = abs(F / branch.rate)
+            # minimize the load shedding if activated
+            if self.load_shedding:
+                fobj += self.load_shed[k]
+
+        # minimize the branch loading slack if not load shedding
+        if not self.load_shedding:
+            # Minimize the branch overload slacks
+            for k, branch in enumerate(self.circuit.branches):
+                if branch.active:
+                    fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
+                    fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
+                else:
+                    pass  # the branch is not active
+
+        # Add the objective function to the problem
+        prob += fobj
+        ################################################################################################################
+        # Add the matrix multiplication as constraints
+        # See: https://math.stackexchange.com/questions/1727572/solving-a-feasible-system-of-linear-equations-
+        #      using-linear-programming
+        ################################################################################################################
+
+        # Matrix product
+        for i in range(self.nn):
+
+            calculated_node_power = 0
+            node_power_injection = 0
+
+            # add the calculated node power
+            for ii in range(self.sys_mat.indptr[i], self.sys_mat.indptr[i + 1]):
+                j = self.sys_mat.indices[ii]
+                calculated_node_power += self.sys_mat.data[ii] * self.dx_var[j]
+
+            # Only for PV!
+            if i < npv:
+
+                # gather the generators at the node
+                k = self.pvpqpq[i]
+                generators = self.circuit.buses[k].controlled_generators + self.circuit.buses[k].batteries
+
+                # add the generation LP vars
+                if t_idx is None:
+                    for gen in generators:
+                        if gen.active:
+                            if gen.enabled_dispatch:
+                                # add the dispatch variable
+                                node_power_injection += gen.LPVar_P
+                            else:
+                                # set the default value
+                                node_power_injection += gen.P / self.Sbase
+                        else:
+                            pass
+                else:
+                    for gen in generators:
+                        if gen.active:
+                            if gen.enabled_dispatch:
+                                # add the dispatch variable
+                                node_power_injection += gen.LPVar_P_prof[t_idx]
+                            else:
+                                # set the default profile value
+                                node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
+                        else:
+                            pass
+            else:
+                pass  # it is a PQ node, no generators there
+
+            # Store the terms for adding the load later.
+            # This allows faster problem compilation in case of recurrent runs
+            self.s_restrictions.append(calculated_node_power)
+            self.p_restrictions.append(node_power_injection)
+
+            # const = s == self.rhs[i]
+            # prob += const
+
+        ################################################################################################################
+        # Add the matrix multiplication as constraints (slack)
+        ################################################################################################################
+
+        for i in range(self.sys_mat_slack.shape[0]):  # vd nodes
+
+            calculated_node_power = 0
+            node_power_injection = 0
+
+            # add the calculated node power
+            for ii in range(self.sys_mat_slack.indptr[i], self.sys_mat_slack.indptr[i + 1]):
+                j = self.sys_mat_slack.indices[ii]
+                calculated_node_power += self.sys_mat_slack.data[ii] * self.dx_var[j]
+
+            # Only for PV!
+            if i < npv:
+
+                # gather the generators at the node
+                k = self.vd[i]
+                generators = self.circuit.buses[k].controlled_generators + self.circuit.buses[k].batteries
+
+                # add the generation LP vars
+                if t_idx is None:
+                    for gen in generators:
+                        if gen.active and gen.enabled_dispatch:
+                            node_power_injection += gen.LPVar_P
+                        else:
+                            pass
+                else:
+                    for gen in generators:
+                        if gen.active and gen.enabled_dispatch:
+                            node_power_injection += gen.LPVar_P_prof[t_idx]
+                        else:
+                            pass
+            else:
+                pass  # it is a PQ node, no generators there
+
+            # the sum of the slack node generators must be equal to the slack node power
+            prob.add(calculated_node_power == node_power_injection, 'ct_slack_power_' + str(i))
+
+        ################################################################################################################
+        # control the voltage module between vm_low and vm_high
+        ################################################################################################################
+        for k, i in enumerate(self.pq):
+            vm_var = abs(self.V[i]) + self.dx_var[npv + npq + k]  # compose the voltage module
+            prob += vm_var <= self.vm_high
+            prob += self.vm_low <= vm_var
+
+        ################################################################################################################
+        # control the voltage angles: Already defined with bounds
+        ################################################################################################################
+        # No need, already done
+
+        ################################################################################################################
+        # Set the branch limits: This is the same as in the DC OPF, unless a better approximation is found
+        ################################################################################################################
+        for k, branch in enumerate(self.circuit.branches):
+            i = self.circuit.buses_dict[branch.bus_from]
+            j = self.circuit.buses_dict[branch.bus_to]
+
+            if i in self.theta_dict.keys():
+                va_i = self.theta_dict[i]
+            else:
+                va_i = 0.0  # is slack
+
+            if j in self.theta_dict.keys():
+                va_j = self.theta_dict[j]
+            else:
+                va_j = 0.0
+
+            # branch flow
+            self.flow_ij[k] = self.B[i, j] * (va_i - va_j)
+            self.flow_ji[k] = self.B[i, j] * (va_j - va_i)
+
+            # constraints
+            if not self.load_shedding:
+                # Add slacks
+                prob.add(self.flow_ij[k] + self.slack_loading_ij_p[k] - self.slack_loading_ij_n[k] <= branch.rate / self.Sbase,
+                         'ct_br_flow_ij_' + str(k))
+                prob.add(self.flow_ji[k] + self.slack_loading_ji_p[k] - self.slack_loading_ji_n[k] <= branch.rate / self.Sbase,
+                         'ct_br_flow_ji_' + str(k))
+            else:
+                # The slacks are in the form of load shedding
+                prob.add(self.flow_ij[k] <= branch.rate / self.Sbase, 'ct_br_flow_ij_' + str(k))
+                prob.add(self.flow_ji[k] <= branch.rate / self.Sbase, 'ct_br_flow_ji_' + str(k))
+
+        # set the current problem
+        self.problem = prob
+
+    def set_loads(self, t_idx=None):
+        """
+        Add the loads to the LP problem
+        Args:
+            t_idx: time index, if none, the default object values are taken
+        """
+        npv = len(self.pv)
+        npq = len(self.pq)
+
+        if t_idx is None:
+
+            # use the default loads
+            for k, i in enumerate(self.pvpqpq):
+
+                # these restrictions come from the build step to be fulfilled with the load now
+                node_power_injection = self.p_restrictions[k]
+                calculated_node_power = self.s_restrictions[k]
+
+                # add the nodal demand
+                for load in self.circuit.buses[i].loads:
+                    if load.active:
+                        if k < (npq + npv):
+                            self.loads[i] += load.S.real / self.Sbase
+                        else:
+                            self.loads[i] += load.S.imag / self.Sbase
+                    else:
+                        pass
+
+                if calculated_node_power is 0 and node_power_injection is 0:
+                    # nodes without injection or generation
+                    pass
+                else:
+                    # add the restriction
+                    if self.load_shedding:
+
+                        self.problem.add(calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
+                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+                        # if there is no load at the node, do not allow load shedding
+                        if len(self.circuit.buses[i].loads) == 0:
+                            self.problem.add(self.load_shed[i] == 0.0, self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+
+                    else:
+                        self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+        else:
+            # Use the load profile values at index=t_idx
+            for k, i in enumerate(self.pvpq):
+
+                # these restrictions come from the build step to be fulfilled with the load now
+                node_power_injection = self.p_restrictions[k]
+                calculated_node_power = self.s_restrictions[k]
+
+                # add the nodal demand
+                for load in self.circuit.buses[i].loads:
+                    if load.active:
+                        if k < (npq + npv):
+                            self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
+                        else:
+                            self.loads[i] += load.Sprof.values[t_idx].imag / self.Sbase
+                    else:
+                        pass
+
+                # add the restriction
+                if self.load_shedding:
+
+                    self.problem.add(
+                        calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
+                        self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+                    # if there is no load at the node, do not allow load shedding
+                    if len(self.circuit.buses[i].loads) == 0:
+                        self.problem.add(self.load_shed[i] == 0.0,
+                                         self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+
+                else:
+                    self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
+                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+
+    def solve(self):
+        """
+        Solve the LP OPF problem
+        """
+
+        if self.problem is None:
+            self.build()
+
+        if not self.potential_errors:
+
+            # if there is no problem there, make it
+            if self.problem is None:
+                self.build()
+
+            print('Solving LP')
+            print('Load shedding:', self.load_shedding)
+            self.problem.solve()  # solve with CBC
+            # prob.solve(CPLEX())
+
+            # self.problem.writeLP('dcopf.lp')
+
+            # The status of the solution is printed to the screen
+            print("Status:", pulp.LpStatus[self.problem.status])
+
+            # The optimised objective function value is printed to the screen
+            print("Cost =", pulp.value(self.problem.objective), '€')
+
+            self.solved = True
+
+            # Solve
+            self.problem.solve()
+            self.problem.writeLP('ac_opf.lp')
+
+            # compose the results vector ###############################################################################
+            npv = len(self.pv)
+            npq = len(self.pq)
+
+            x_inc = zeros(self.nn)
+            for i, th in enumerate(self.dx_var):
+                x_inc[i] = th.value()
+
+            #  set the pv voltages
+            va_pv = x_inc[0:npv]
+            vm_pv = abs(self.V[self.pv])
+            self.V[self.pv] = vm_pv * exp(1j * va_pv)
+
+            # set the pq voltages
+            va_pq = x_inc[npv:npv + npq]
+            vm_pq = abs(self.V[self.pq]) + x_inc[npv + npq:]
+            self.V[self.pq] = vm_pq * exp(1j * va_pq)
+
+        else:
+            self.solved = False
+
+    def print(self):
+        print('Voltage solution')
+
+        # compose voltages results
+        df_v = pd.DataFrame(data=np.c_[abs(self.V), np.angle(self.V), self.V.real, self.V.imag],
+                            columns=['Module', 'Angle(rad)', 'Real', 'Imag'],
+                            index=['Bus' + str(i) for i in range(self.V.shape[0])])
+
+        # compose branches results
+        flows = zeros(self.nbranch)
+        loading = zeros(self.nbranch)
+        br_names = [None] * self.nbranch
+        for k in range(self.nbranch):
+            flows[k] = abs(self.flow_ij[k].value()) * self.Sbase
+            loading[k] = flows[k] / self.circuit.branches[k].rate * 100.0
+            br_names[k] = 'Branch ' + str(k)
+
+        df_f = pd.DataFrame(data=np.c_[flows, loading],
+                            columns=['Flow (MW)', 'Loading (%)'],
+                            index=br_names)
+
+        generation = zeros(len(self.PG))
+        gen_names = [None] * len(self.PG)
+        for k, gen_var in enumerate(self.PG):
+            generation[k] = gen_var.value() * self.Sbase
+            gen_names[k] = 'Gen' + str(k)
+
+        df_g = pd.DataFrame(data=generation,
+                            columns=['Gen(MW)'],
+                            index=gen_names)
+        print(df_v)
+        print(df_f)
+        print(df_g)
+
+    def get_results(self, save_lp_file=False, t_idx=None, realistic=False):
+        """
+        Return the optimization results
+        :param save_lp_file:
+        :param t_idx:
+        :param realistic: compute the realistic values associated with the voltage solution
+        :return: OptimalPowerFlowResults instance
+        """
+
+        # initialize results object
+        n_bus = len(self.circuit.buses)
+        n_branch = len(self.circuit.branches)
+        res = OptimalPowerFlowResults(is_dc=False)
+        res.initialize(n_bus, n_branch)
+
+        if save_lp_file:
+            # export the problem formulation to an LP file
+            self.problem.writeLP('acopf.lp')
+
+        if self.solved:
+
+            if realistic:
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, self.V)
+                res.voltage = self.V
+            else:
+
+                # Add buses
+                for i in range(n_bus):
+
+                    g = 0.0
+                    generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+
+                    # Sum the slack generators
+                    if t_idx is None:
+                        for gen in generators:
+                            if gen.active and gen.enabled_dispatch:
+                                g += gen.LPVar_P.value()
+                    else:
+                        for gen in generators:
+                            if gen.active and gen.enabled_dispatch:
+                                g += gen.LPVar_P_prof[t_idx].value()
+
+                    # Set the results (power, load shedding)
+                    res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
+
+                    if self.load_shed is not None:
+                        res.load_shedding[i] = self.load_shed[i].value()
+
+                # Set the values
+                res.Sbranch, res.Ibranch, res.loading, \
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, self.V, only_power=True)
+                res.voltage = self.V
+                angles = np.angle(self.V)
+
+                # Add branches
+                for k, branch in enumerate(self.circuit.branches):
+
+                    if branch.active:
+                        # get the from and to nodal indices of the branch
+                        i = self.circuit.buses_dict[branch.bus_from]
+                        j = self.circuit.buses_dict[branch.bus_to]
+
+                        # compute the power flowing
+                        if angles[i] is not None and angles[j] is not None:
+                            F = self.B[i, j] * (angles[i] - angles[j]) * self.Sbase
+                        else:
+                            F = -1
+
+                        # Set the results
+                        if self.slack_loading_ij_p[k] is not None:
+                            res.overloads[k] = (self.slack_loading_ij_p[k].value()
+                                                + self.slack_loading_ji_p[k].value()
+                                                - self.slack_loading_ij_n[k].value()
+                                                - self.slack_loading_ji_n[k].value()) * self.Sbase
+                        res.Sbranch[k] = F
+                        res.loading[k] = abs(F / branch.rate)
+                    else:
+                        pass
 
         else:
             # the problem did not solve, pass
@@ -7348,29 +9465,37 @@ class DcOpf:
 
 class OptimalPowerFlowOptions:
 
-    def __init__(self, verbose=False, load_shedding=False):
+    def __init__(self, verbose=False, load_shedding=False, solver=SolverType.DC_OPF, realistic_results=False):
         """
-        
-        :param verbose: 
+        OPF options constructor
+        :param verbose:
+        :param load_shedding:
+        :param solver:
+        :param realistic_results:
         """
         self.verbose = verbose
 
         self.load_shedding = load_shedding
 
+        self.solver = solver
+
+        self.realistic_results = realistic_results
+
 
 class OptimalPowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
-                 loading=None, losses=None, converged=None):
+                 loading=None, losses=None, converged=None, is_dc=False):
         """
-
-        Args:
-            Sbus:
-            voltage:
-            Sbranch:
-            loading:
-            losses:
-            converged:
+        OPF results constructor
+        :param Sbus: bus power injections
+        :param voltage: bus voltages
+        :param load_shedding: load shedding values
+        :param Sbranch: branch power values
+        :param overloads: branch overloading values
+        :param loading: branch loading values
+        :param losses: branch losses
+        :param converged: converged?
         """
         self.Sbus = Sbus
 
@@ -7393,19 +9518,21 @@ class OptimalPowerFlowResults:
 
         self.plot_bars_limit = 100
 
+        self.is_dc = is_dc
+
     def copy(self):
         """
         Return a copy of this
         @return:
         """
-        return PowerFlowResults(Sbus=self.Sbus,
-                                voltage=self.voltage,
-                                load_shedding=self.load_shedding,
-                                Sbranch=self.Sbranch,
-                                overloads=self.overloads,
-                                loading=self.loading,
-                                losses=self.losses,
-                                converged=self.converged)
+        return OptimalPowerFlowResults(Sbus=self.Sbus,
+                                       voltage=self.voltage,
+                                       load_shedding=self.load_shedding,
+                                       Sbranch=self.Sbranch,
+                                       overloads=self.overloads,
+                                       loading=self.loading,
+                                       losses=self.losses,
+                                       converged=self.converged)
 
     def initialize(self, n, m):
         """
@@ -7459,14 +9586,11 @@ class OptimalPowerFlowResults:
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
-        Args:
-            result_type:
-            ax:
-            indices:
-            names:
-
-        Returns:
-
+        :param result_type: 
+        :param ax: 
+        :param indices: 
+        :param names: 
+        :return: 
         """
 
         if ax is None:
@@ -7481,9 +9605,14 @@ class OptimalPowerFlowResults:
             y_label = ''
             title = ''
             if result_type == 'Bus voltage':
-                y = np.angle(self.voltage[indices])
-                y_label = '(rad)'
-                title = 'Bus voltage angle'
+                if self.is_dc:
+                    y = np.angle(self.voltage[indices])
+                    y_label = '(rad)'
+                    title = 'Bus voltage angle'
+                else:
+                    y = np.abs(self.voltage[indices])
+                    y_label = '(p.u.)'
+                    title = 'Bus voltage'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices].real
@@ -7543,6 +9672,7 @@ class OptimalPowerFlow(QRunnable):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
+        @param options: OPF options
         """
         QRunnable.__init__(self)
 
@@ -7564,19 +9694,22 @@ class OptimalPowerFlow(QRunnable):
         """
         Run a power flow simulation for a single circuit
         @param circuit: Single island circuit
-        @param options: Optimal Power Flow options
         @param t_idx: time index, if none the default values are taken
         @return: OptimalPowerFlowResults object
         """
 
         # declare LP problem
-        problem = DcOpf(circuit, self.options)
-        problem.build()
+        if self.options.solver == SolverType.DC_OPF:
+            problem = DcOpf(circuit, self.options)
+        else:
+            problem = AcOpf(circuit, self.options)
+
+        problem.build(t_idx=t_idx)
         problem.set_loads(t_idx=t_idx)
         problem.solve()
 
         # results
-        res = problem.get_results()
+        res = problem.get_results(t_idx=t_idx, realistic=self.options.realistic_results)
 
         return res, problem.solved
 
@@ -7617,7 +9750,10 @@ class OptimalPowerFlow(QRunnable):
         return self.results
 
     def run(self):
-
+        """
+        
+        :return: 
+        """
         self.opf()
 
     def run_at(self, t):
@@ -7637,7 +9773,7 @@ class OptimalPowerFlow(QRunnable):
 
 class OptimalPowerFlowTimeSeriesResults:
 
-    def __init__(self, n, m, nt, time=None):
+    def __init__(self, n, m, nt, time=None, is_dc=False):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -7671,6 +9807,8 @@ class OptimalPowerFlowTimeSeriesResults:
                                   'Branch loading', 'Branch overloads', 'Load shedding']
 
         # self.generators_power = zeros((ng, nt), dtype=complex)
+
+        self.is_dc = is_dc
 
     def set_at(self, t, res: OptimalPowerFlowResults):
         """
@@ -7714,9 +9852,15 @@ class OptimalPowerFlowTimeSeriesResults:
             y_label = ''
             title = ''
             if result_type == 'Bus voltage':
-                y = np.angle(self.voltage[:, indices])
-                y_label = '(rad)'
-                title = 'Bus voltage angle'
+
+                if self.is_dc:
+                    y = np.angle(self.voltage[:, indices])
+                    y_label = '(rad)'
+                    title = 'Bus voltage angle'
+                else:
+                    y = np.abs(self.voltage[:, indices])
+                    y_label = '(p.u.)'
+                    title = 'Bus voltage'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[:, indices].real
@@ -7778,7 +9922,7 @@ class OptimalPowerFlowTimeSeries(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
         """
         OPF time series constructor
         :param grid: MultiCircuit instance
@@ -7792,7 +9936,19 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         self.results = None
 
+        self.start_ = start_
+
+        self.end_ = end_
+
         self.__cancel__ = False
+
+    def initialize_lp_vars(self):
+        """
+        initialize all the bus LP profiles
+        :return:
+        """
+        for bus in self.grid.buses:
+            bus.initialize_lp_profiles()
 
     def run(self):
         """
@@ -7802,28 +9958,38 @@ class OptimalPowerFlowTimeSeries(QThread):
         # initialize the power flow
         opf = OptimalPowerFlow(self.grid, self.options)
 
+        # initilize OPF time series LP var profiles
+        self.initialize_lp_vars()
+
         # initialize the grid time series results
         # we will append the island results with another function
 
         if self.grid.time_profile is not None:
 
+            if self.options.solver == SolverType.DC_OPF:
+                self.progress_text.emit('Running DC OPF time series...')
+                is_dc = True
+            else:
+                self.progress_text.emit('Running AC OPF time series...')
+                is_dc = False
+
             n = len(self.grid.buses)
             m = len(self.grid.branches)
             nt = len(self.grid.time_profile)
-            self.results = OptimalPowerFlowTimeSeriesResults(n, m, nt, time=self.grid.time_profile)
+            if self.end_ is None:
+                self.end_ = nt
+            self.results = OptimalPowerFlowTimeSeriesResults(n, m, nt, time=self.grid.time_profile, is_dc=is_dc)
 
-            self.progress_text.emit('Running OPF time series...')
-
-            t = 0
-            while t < nt and not self.__cancel__:
-                print(t + 1, ' / ', nt)
+            t = self.start_
+            while t < self.end_ and not self.__cancel__:
+                # print(t + 1, ' / ', nt)
                 # set the power values
                 # Y, I, S = self.grid.time_series_input.get_at(t)
 
                 res = opf.run_at(t)
                 self.results.set_at(t, res)
 
-                progress = ((t + 1) / nt) * 100
+                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
                 t += 1
 
@@ -7837,4 +10003,245 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Set the cancel state
+        """
         self.__cancel__ = True
+
+
+########################################################################################################################
+# State Estimation classes
+########################################################################################################################
+
+class StateEstimationInput:
+
+    def __init__(self):
+        """
+        State estimation inputs constructor
+        """
+
+        # Node active power measurements vector of pointers
+        self.p_inj =list()
+
+        # Node  reactive power measurements vector of pointers
+        self.q_inj = list()
+
+        # Branch active power measurements vector of pointers
+        self.p_flow = list()
+
+        # Branch reactive power measurements vector of pointers
+        self.q_flow = list()
+
+        # Branch current module measurements vector of pointers
+        self.i_flow = list()
+
+        # Node voltage module measurements vector of pointers
+        self.vm_m = list()
+
+        # nodes without power injection measurements
+        self.p_inj_idx = list()
+
+        # branches without power measurements
+        self.p_flow_idx = list()
+
+        # nodes without reactive power injection measurements
+        self.q_inj_idx = list()
+
+        # branches without reactive power measurements
+        self.q_flow_idx = list()
+
+        # branches without current measurements
+        self.i_flow_idx = list()
+
+        # nodes without voltage module measurements
+        self.vm_m_idx = list()
+
+    def clear(self):
+        """
+        Clear
+        """
+        self.p_inj.clear()
+        self.p_flow.clear()
+        self.q_inj.clear()
+        self.q_flow.clear()
+        self.i_flow.clear()
+        self.vm_m.clear()
+
+        self.p_inj_idx.clear()
+        self.p_flow_idx.clear()
+        self.q_inj_idx.clear()
+        self.q_flow_idx.clear()
+        self.i_flow_idx.clear()
+        self.vm_m_idx.clear()
+
+    def consolidate(self):
+        """
+        consolidate the measurements into "measurements" and "sigma"
+        :return: measurements, sigma
+        """
+
+        nz = len(self.p_inj) + len(self.p_flow) + len(self.q_inj) + len(self.q_flow) + len(self.i_flow) + len(self.vm_m)
+
+        magnitudes = np.zeros(nz)
+        sigma = np.zeros(nz)
+
+        # go through the measurements in order and form the vectors
+        k = 0
+        for m in self.p_flow + self.p_inj + self.q_flow + self.q_inj + self.i_flow + self.vm_m:
+            magnitudes[k] = m.val
+            sigma[k] = m.sigma
+            k += 1
+
+        return magnitudes, sigma
+
+
+class StateEstimationResults(PowerFlowResults):
+
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None,
+                 error=None, converged=None, Qpv=None):
+        """
+        Constructor
+        :param Sbus: Bus power injections
+        :param voltage: Bus voltages
+        :param Sbranch: Branch power flow
+        :param Ibranch: Branch current flow
+        :param loading: Branch loading
+        :param losses: Branch losses
+        :param error: error
+        :param converged: converged?
+        :param Qpv: Reactive power at the PV nodes
+        """
+        # initialize the
+        PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
+                                  loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
+
+
+class StateEstimation(QRunnable):
+
+    def __init__(self, circuit: MultiCircuit):
+        """
+        Constructor
+        :param circuit: circuit object 
+        """
+
+        QRunnable.__init__(self)
+
+        self.grid = circuit
+
+        self.se_results = None
+
+    @staticmethod
+    def collect_measurements(circuit: Circuit):
+        """
+        Form the input from the circuit measurements
+        :return: nothing, the input object is stored in this class
+        """
+        se_input = StateEstimationInput()
+
+        # collect the bus measurements
+        for i, bus in enumerate(circuit.buses):
+
+            for m in bus.measurements:
+
+                if m.measurement_type == MeasurementType.Pinj:
+                    se_input.p_inj_idx.append(i)
+                    se_input.p_inj.append(m)
+
+                elif m.measurement_type == MeasurementType.Qinj:
+                    se_input.q_inj_idx.append(i)
+                    se_input.q_inj.append(m)
+
+                elif m.measurement_type == MeasurementType.Vmag:
+                    se_input.vm_m_idx.append(i)
+                    se_input.vm_m.append(m)
+
+                else:
+                    raise Exception('The bus ' + str(bus) + ' contains a measurement of type ' + str(m.measurement_type))
+
+        # collect the branch measurements
+        for i, branch in enumerate(circuit.branches):
+
+            for m in branch.measurements:
+
+                if m.measurement_type == MeasurementType.Pflow:
+                    se_input.p_flow_idx.append(i)
+                    se_input.p_flow.append(m)
+
+                elif m.measurement_type == MeasurementType.Qflow:
+                    se_input.q_flow_idx.append(i)
+                    se_input.q_flow.append(m)
+
+                elif m.measurement_type == MeasurementType.Iflow:
+                    se_input.i_flow_idx.append(i)
+                    se_input.i_flow.append(m)
+
+                else:
+                    raise Exception(
+                        'The branch ' + str(branch) + ' contains a measurement of type ' + str(m.measurement_type))
+
+        return se_input
+
+    def run(self):
+        """
+        Run state estimation
+        :return: 
+        """
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        self.se_results = StateEstimationResults()
+        self.se_results.initialize(n, m)
+
+        for circuit in self.grid.circuits:
+
+            # collect inputs
+            se_input = self.collect_measurements(circuit=circuit)
+
+            # run solver
+            v_sol, err, converged = solve_se_lm(Ybus=circuit.power_flow_input.Ybus,
+                                                Yf=circuit.power_flow_input.Yf,
+                                                Yt=circuit.power_flow_input.Yt,
+                                                f=circuit.power_flow_input.F,
+                                                t=circuit.power_flow_input.T,
+                                                se_input=se_input,
+                                                ref=circuit.power_flow_input.ref,
+                                                pq=circuit.power_flow_input.pq,
+                                                pv=circuit.power_flow_input.pv)
+
+            # Compute the branches power and the slack buses power
+            Sbranch, Ibranch, loading, losses, Sbus = PowerFlowMP.power_flow_post_process(circuit=circuit, V=v_sol)
+
+            # pack results into a SE results object
+            results = StateEstimationResults(Sbus=Sbus,
+                                             voltage=v_sol,
+                                             Sbranch=Sbranch,
+                                             Ibranch=Ibranch,
+                                             loading=loading,
+                                             losses=losses,
+                                             error=[err],
+                                             converged=[converged],
+                                             Qpv=None)
+
+            self.se_results.apply_from_island(results, circuit.bus_original_idx, circuit.branch_original_idx)
+
+
+########################################################################################################################
+# Dynamic simulation
+########################################################################################################################
+
+
+class DynamicSimulationOptions:
+
+    def __init__(self, h=0.01, t_sim=5, max_err=0.0001, max_iter=25):
+
+        # step length (s)
+        self.h = h
+
+        # simulation time (s)
+        self.t_sim = t_sim
+
+        # Maximum error in network iteration (voltage mismatches)
+        self.max_err = max_err
+
+        # Maximum number of network iterations
+        self.max_iter = max_iter
+

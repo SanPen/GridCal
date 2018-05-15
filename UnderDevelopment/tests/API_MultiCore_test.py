@@ -20,7 +20,8 @@ grid = MultiCircuit()
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
-fname = 'IEEE_30BUS_profiles.xls'
+fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+# fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE_30_new.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 grid.load_file(fname)
@@ -43,34 +44,48 @@ print('\terr:', grid.power_flow_results.error)
 print('\tConv:', grid.power_flow_results.converged)
 
 
-def caller0(i):  # function to create a copy of the grid and a power flow associated
-    grd = grid.copy()
-    grd.name = 'grid ' + str(i)
-    grd.compile()
-    return PowerFlow(grd, options)
+def simulation_constructor(args):  # function to create a copy of the grid and a power flow associated
+    # grd = grid.copy()
+    # grd.name = 'grid ' + str(i)
+    # grd.compile()
+    # return PowerFlow(grd, options)
+    return PowerFlowMP(args[0], args[1])
 
 
-def caller1(worker: PowerFlow):  # function to run the instance
-    worker.run()
-    return worker.grid
+def instance_executor(instance: PowerFlow):  # function to run the instance
+    instance.run()
+    return instance.grid
 
 
 def run():
     pool = Pool()
-    batch_size = 1000
+    batch_size = 10000
 
-    # create copies of the grid to run asynchronously
+    # create instances of the of the power flow simulation given the grid
     print('cloning...')
-    workers = pool.map(caller0, range(batch_size))
+    instances = pool.map(simulation_constructor, [[grid, options]]*batch_size)
 
-    # run asynchronous power flows on the created copies
+    # instances = pool.map(simulation_constructor, range(batch_size))
+
+    # run asynchronous power flows on the created instances
     print('running...')
-    grids = pool.map(caller1, workers)
+    instances = pool.map_async(instance_executor, instances)
+
+    # monitor progress
+    while True:
+        if instances.ready():
+            break
+        remaining = instances._number_left
+        progress = ((batch_size - remaining + 1) / batch_size) * 100
+        print("Waiting for", remaining, "tasks to complete...", progress, '%')
+
+        time.sleep(0.5)
 
     # display the collected results
-    for grid_item in grids:
-        print('\n\n' + grid_item.name)
-        print('\t|V|:', abs(grid_item.power_flow_results.voltage))
+    for instance in instances:
+        print('\n\n' + instance.name)
+        print('\t|V|:', abs(instance.power_flow_results.voltage))
+
 
 if __name__ == '__main__':
     run()

@@ -20,11 +20,13 @@ from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 
 import os.path
+import platform
 import sys
 from collections import OrderedDict
 from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap, Colormap
 from multiprocessing import cpu_count
+from geopy.geocoders import Nominatim
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -62,6 +64,9 @@ class ProfileTypes(Enum):
 
 
 class NewProfilesStructureDialogue(QDialog):
+    """
+    New profile dialogue window
+    """
     def __init__(self):
         super(NewProfilesStructureDialogue, self).__init__()
         self.setObjectName("self")
@@ -193,12 +198,30 @@ class MainGUI(QMainWindow):
                               'spring_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
+        # solvers dictionary
+        self.lp_solvers_dict = OrderedDict()
+        self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
+        self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
+
+        self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
+        # do not allow MP under windows because it crashes
+        if platform.system() == 'Windows':
+            self.ui.use_multiprocessing_checkBox.setEnabled(False)
+
         ################################################################################################################
         # Declare the schematic editor
         ################################################################################################################
 
         # create diagram editor object
-        self.grid_editor = GridEditor(self.circuit)
+        self.ui.lat1_doubleSpinBox.setValue(60)
+        self.ui.lon1_doubleSpinBox.setValue(30)
+        self.ui.zoom_spinBox.setValue(5)
+
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -275,6 +298,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
+        self.ui.actionShow_map.triggered.connect(self.show_map)
+
         self.ui.actionOPF.triggered.connect(self.run_opf)
 
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
@@ -286,6 +311,12 @@ class MainGUI(QMainWindow):
         self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
 
         self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
+
+        self.ui.actionExport_all_power_flow_results.triggered.connect(self.export_pf_results)
+
+        self.ui.actionExport_all_the_device_s_profiles.triggered.connect(self.export_object_profiles)
+
+        self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
 
         # Buttons
 
@@ -321,6 +352,10 @@ class MainGUI(QMainWindow):
 
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
 
+        self.ui.view_map_pushButton.clicked.connect(self.update_map)
+
+        self.ui.location_search_pushButton.clicked.connect(self.search_location)
+
         self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
 
         self.ui.profile_subtract_pushButton.clicked.connect(lambda: self.modify_profiles('-'))
@@ -328,6 +363,8 @@ class MainGUI(QMainWindow):
         self.ui.profile_multiply_pushButton.clicked.connect(lambda: self.modify_profiles('*'))
 
         self.ui.profile_divide_pushButton.clicked.connect(lambda: self.modify_profiles('/'))
+
+        self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -353,6 +390,10 @@ class MainGUI(QMainWindow):
         # combobox
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
+        # sliders
+        self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
+        self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
+
         ################################################################################################################
         # Colormaps
         ################################################################################################################
@@ -373,7 +414,10 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-
+        self.ui.actionShow_map.setVisible(False)
+        self.ui.actionTransient_stability.setVisible(False)
+        self.ui.tab_7.setVisible(False)
+        self.show_map()
         self.view_cascade_menu()
 
     def LOCK(self, val=True):
@@ -398,6 +442,14 @@ class MainGUI(QMainWindow):
         """
         self.ui.cascade_menu.setVisible(self.ui.actionBlackout_cascade.isChecked())
         self.ui.cascade_grid_splitter.setStretchFactor(1, 4)
+
+    def show_map(self):
+        """
+        show/hide the cascade simulation menu
+        """
+        val = self.ui.actionShow_map.isChecked()
+        self.ui.map_frame.setVisible(val)
+        self.grid_editor.diagramView.view_map(val)
 
     def about_box(self):
         """
@@ -559,7 +611,7 @@ class MainGUI(QMainWindow):
                 r, g, b, a = self.voltage_cmap(vnorm[i])
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
-                bus.graphic_obj.setBrush(QColor(r*255, g*255, b*255, a*255))
+                bus.graphic_obj.set_tile_color(QColor(r*255, g*255, b*255, a*255))
 
                 tooltip = str(i) + ': ' + bus.name + '\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
@@ -571,7 +623,7 @@ class MainGUI(QMainWindow):
                 bus.graphic_obj.setToolTip(tooltip)
 
             else:
-                bus.graphic_obj.setBrush(Qt.gray)
+                bus.graphic_obj.set_tile_color(Qt.gray)
 
         # color branches
         if s_branch is not None:
@@ -629,13 +681,13 @@ class MainGUI(QMainWindow):
         dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
-    def compile(self):
+    def compile(self, use_opf_vals=False, dispatch_storage=False):
         """
         This function compiles the circuit and updates the UI accordingly
         """
 
         try:
-            self.circuit.compile()
+            self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage)
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
@@ -650,32 +702,50 @@ class MainGUI(QMainWindow):
         """
         Automatic layout of the nodes
         """
-        if self.circuit.graph is None:
-            self.circuit.compile()
 
-        alg = dict()
-        alg['circular_layout'] = nx.circular_layout
-        alg['random_layout'] = nx.random_layout
-        alg['shell_layout'] = nx.shell_layout
-        alg['spring_layout'] = nx.spring_layout
-        alg['spectral_layout'] = nx.spectral_layout
-        alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+        # guilty assumption
+        do_it = True
 
-        sel = self.ui.automatic_layout_comboBox.currentText()
-        pos_alg = alg[sel]
+        # if the ask, checkbox is checked, then ask
+        if self.ui.ask_before_appliying_layout_checkBox.isChecked():
+            reply = QMessageBox.question(self, 'Message', 'Are you sure you want to try an automatic layout?',
+                                         QMessageBox.Yes, QMessageBox.No)
 
-        # get the positions of a spring layout of the graph
-        pos = pos_alg(self.circuit.graph, scale=10)
+            if reply == QMessageBox.Yes:
+                do_it = True
+            else:
+                do_it = False
 
-        # assign the positions to the graphical objects of the nodes
-        for i, bus in enumerate(self.circuit.buses):
-            try:
-                x, y = pos[i] * 500
-                bus.graphic_obj.setPos(QPoint(x, y))
-            except KeyError as ex:
-                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
-        # adjust the view
-        self.center_nodes()
+        if do_it:
+            if self.circuit.graph is None:
+                self.circuit.compile()
+
+            alg = dict()
+            alg['circular_layout'] = nx.circular_layout
+            alg['random_layout'] = nx.random_layout
+            alg['shell_layout'] = nx.shell_layout
+            alg['spring_layout'] = nx.spring_layout
+            alg['spectral_layout'] = nx.spectral_layout
+            alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+
+            sel = self.ui.automatic_layout_comboBox.currentText()
+            pos_alg = alg[sel]
+
+            # get the positions of a spring layout of the graph
+            pos = pos_alg(self.circuit.graph, scale=10)
+
+            # assign the positions to the graphical objects of the nodes
+            for i, bus in enumerate(self.circuit.buses):
+                try:
+                    x, y = pos[i] * 500
+                    bus.graphic_obj.setPos(QPoint(x, y))
+                except KeyError as ex:
+                    warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+            # adjust the view
+            self.center_nodes()
+
+        else:
+            pass  # asked and decided ot to change the layout
 
     def bigger_nodes(self):
         """
@@ -713,7 +783,11 @@ class MainGUI(QMainWindow):
                 # print('New')
                 self.circuit = MultiCircuit()
 
-                self.grid_editor = GridEditor(self.circuit)
+                lat0 = self.ui.lat1_doubleSpinBox.value()
+                lon0 = self.ui.lon1_doubleSpinBox.value()
+                zoom = self.ui.zoom_spinBox.value()
+
+                self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
                 self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
@@ -749,7 +823,7 @@ class MainGUI(QMainWindow):
         # declare the allowed file types
         # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.json)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
@@ -791,6 +865,8 @@ class MainGUI(QMainWindow):
             if self.circuit.time_profile is not None:
                 # print('Profiles available')
                 mdl = get_list_model(self.circuit.time_profile)
+                # setup profile sliders
+                self.set_up_profile_sliders()
             else:
                 mdl = QStandardItemModel()
             self.ui.profile_time_selection_comboBox.setModel(mdl)
@@ -807,7 +883,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "Excel (*.xlsx)"
+        files_types = "Excel (*.xlsx);;JSON (*.json)"
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -827,6 +903,7 @@ class MainGUI(QMainWindow):
 
             extension = dict()
             extension['Excel (*.xlsx)'] = '.xlsx'
+            extension['JSON (*.json)'] = '.json'
             # extension['Numpy Case (*.npz)'] = '.npz'
 
             if file_extension == '':
@@ -838,6 +915,80 @@ class MainGUI(QMainWindow):
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+
+    def closeEvent(self, event):
+        """
+        Close event
+        :param event:
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            quit_msg = "Are you sure you want to exit GridCal?"
+            reply = QMessageBox.question(self, 'Close', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            # no buses so exit
+            event.accept()
+
+    def export_pf_results(self):
+        """
+        Export power flow results
+        """
+        if self.power_flow is not None:
+            if self.circuit.graph is None:
+                self.circuit.compile()
+
+            # declare the allowed file types
+            files_types = "Excel file (*.xlsx)"
+            # call dialog to select the file
+            if self.project_directory is None:
+                self.project_directory = ''
+
+            # set grid name
+            self.circuit.name = self.grid_editor.name_label.text()
+
+            fname = os.path.join(self.project_directory, 'power flow results of ' + self.grid_editor.name_label.text())
+
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+            if filename is not "":
+                if not filename.endswith('.xlsx'):
+                    filename += '.xlsx'
+                self.circuit.export_pf(file_name=filename)
+        else:
+            pass
+
+    def export_object_profiles(self):
+        """
+        Export object profiles
+        """
+        if self.circuit.time_profile is not None:
+            if self.circuit.graph is None:
+                self.circuit.compile()
+
+            # declare the allowed file types
+            files_types = "Excel file (*.xlsx)"
+            # call dialog to select the file
+            if self.project_directory is None:
+                self.project_directory = ''
+
+            # set grid name
+            self.circuit.name = self.grid_editor.name_label.text()
+
+            fname = os.path.join(self.project_directory, 'profiles of ' + self.grid_editor.name_label.text())
+
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+            if filename is not "":
+                if not filename.endswith('.xlsx'):
+                    filename += '.xlsx'
+                self.circuit.export_profiles(file_name=filename)
+        else:
+            self.msg('There are no profiles!')
 
     def export_simulation_data(self):
         """
@@ -930,6 +1081,49 @@ class MainGUI(QMainWindow):
 
         #  center the view
         self.grid_editor.center_nodes()
+
+    def update_map(self):
+        """
+        Update map
+        :return:
+        """
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+        self.grid_editor.diagramView.map.load_map(lat0, lon0, zoom)
+        self.grid_editor.diagramView.adapt_map_size()
+
+    def search_location(self):
+        """
+        Find the latitude and longitude of a lauwsy-defined location
+        :return:
+        """
+        geolocator = Nominatim()
+        location_text = self.ui.location_lineEdit.text()
+
+        if location_text.strip() != '':
+            try:
+                location = geolocator.geocode(location_text)
+                self.ui.lon1_doubleSpinBox.setValue(float(location.longitude))
+                self.ui.lat1_doubleSpinBox.setValue(float(location.latitude))
+            except:
+                self.msg('Location finding failed. \nCheck your connection.', 'Location finding')
+
+    def search_location(self):
+        """
+        Find the latitude and longitude of a lauwsy-defined location
+        :return:
+        """
+        geolocator = Nominatim()
+        location_text = self.ui.location_lineEdit.text()
+
+        if location_text.strip() != '':
+            try:
+                location = geolocator.geocode(location_text)
+                self.ui.lon1_doubleSpinBox.setValue(float(location.longitude))
+                self.ui.lat1_doubleSpinBox.setValue(float(location.latitude))
+            except:
+                self.msg('Location finding failed. \nCheck your connection.', 'Location finding')
 
     def auto_rate_branches(self):
         """
@@ -1053,7 +1247,6 @@ class MainGUI(QMainWindow):
 
         """
         dev_type = self.ui.profile_device_type_comboBox.currentText()
-
         mdl = get_list_model(self.circuit.profile_magnitudes[dev_type][0])
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
 
@@ -1067,9 +1260,12 @@ class MainGUI(QMainWindow):
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
             steps, step_length, step_unit, time_base = dlg.get_values()
-            # print(steps, step_length, step_unit, time_base)
+
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
+
             self.compile()
+
+            self.set_up_profile_sliders()
 
     def delete_profiles_structure(self):
         """
@@ -1087,6 +1283,7 @@ class MainGUI(QMainWindow):
                 self.circuit.time_profile = None
                 self.circuit.has_time_series = False
                 self.ui.tableView.setModel(None)
+                self.set_up_profile_sliders()
             else:
                 pass
         else:
@@ -1129,24 +1326,30 @@ class MainGUI(QMainWindow):
 
         if dev_type == 'Load':
             objects = self.circuit.get_loads()
+            also_reactive_power = True
 
         elif dev_type == 'StaticGenerator':
             objects = self.circuit.get_static_generators()
+            also_reactive_power = True
 
         elif dev_type == 'ControlledGenerator':
             objects = self.circuit.get_controlled_generators()
+            also_reactive_power = False
 
         elif dev_type == 'Battery':
             objects = self.circuit.get_batteries()
+            also_reactive_power = False
 
         elif dev_type == 'Shunt':
             objects = self.circuit.get_shunts()
+            also_reactive_power = True
 
         if len(objects) > 0:
             dialogue = ProfileInputGUI(parent=self,
-                                       list_of_objects=objects, magnitude=magnitude,
-                                       AlsoReactivePower=False)
-            dialogue.resize(1.61 * 600.0, 600.0)  # golden ratio
+                                       list_of_objects=objects,
+                                       magnitude=magnitude,
+                                       AlsoReactivePower=also_reactive_power)
+            dialogue.resize(int(1.61 * 600.0), 600)  # golden ratio
             dialogue.exec()  # exec leaves the parent on hold
 
             if dialogue.time is not None:
@@ -1165,6 +1368,9 @@ class MainGUI(QMainWindow):
                 for i, elm in enumerate(objects):
                     if not dialogue.zeroed[i]:
                         elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+
+                # set up sliders
+                self.set_up_profile_sliders()
 
             else:
                 pass  # the dialogue was closed
@@ -1221,6 +1427,57 @@ class MainGUI(QMainWindow):
 
         self.display_profiles()
 
+    def plot_profiles(self):
+        """
+
+        Returns:
+
+        """
+        value = self.ui.profile_factor_doubleSpinBox.value()
+
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude = magnitudes[idx]
+
+        if dev_type == 'Load':
+            objects = self.circuit.get_loads()
+
+        elif dev_type == 'StaticGenerator':
+            objects = self.circuit.get_static_generators()
+
+        elif dev_type == 'ControlledGenerator':
+            objects = self.circuit.get_controlled_generators()
+
+        elif dev_type == 'Battery':
+            objects = self.circuit.get_batteries()
+
+        elif dev_type == 'Shunt':
+            objects = self.circuit.get_shunts()
+
+        # get the selected element
+        obj_idx = self.ui.tableView.selectedIndexes()
+
+        # Assign profiles
+        if len(obj_idx):
+            fig = plt.figure(figsize=(12, 8))
+            ax = fig.add_subplot(111)
+
+            k = obj_idx[0].column()
+            units_dict = {objects[k].edit_headers[i]: objects[k].units[i] for i in range(len(objects[k].units))}
+
+            unit = units_dict[magnitude]
+            ax.set_ylabel(unit)
+
+            for i in range(len(obj_idx)):
+                k = obj_idx[i].column()
+                attr = objects[k].profile_attr[magnitude]
+                df = getattr(objects[k], attr)
+                df.columns = [objects[k].name]
+                df.plot(ax=ax)
+            plt.show()
+
+
     def display_profiles(self):
         """
         Display profile
@@ -1255,22 +1512,25 @@ class MainGUI(QMainWindow):
 
         set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
 
+        dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
+
         if self.ui.helm_retry_checkBox.isChecked():
             solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
         else:
             solver_to_retry_with = None
 
-        dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
+        mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
         ops = PowerFlowOptions(solver_type=solver_type,
                                aux_solver_type=solver_to_retry_with,
                                verbose=False,
                                robust=False,
                                initialize_with_existing_solution=True,
-                               dispatch_storage=dispatch_storage,
                                tolerance=tolerance,
                                max_iter=max_iter,
-                               control_q=enforce_q_limits)
+                               control_q=enforce_q_limits,
+                               multi_core=mp,
+                               dispatch_storage=dispatch_storage)
 
         return ops
 
@@ -1538,7 +1798,7 @@ class MainGUI(QMainWindow):
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
                 # Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
-                Sbranch, Ibranch, loading, losses, Sbus = self.power_flow.power_flow_post_process(self.circuit, V)
+                Sbranch, Ibranch, loading, losses, Sbus = self.power_flow.pf.power_flow_post_process(self.circuit, V)
 
                 self.color_based_of_pf(s_bus=Sbus,
                                        s_branch=Sbranch,
@@ -1567,10 +1827,23 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                self.compile()
+
+                use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
+
+                if self.optimal_power_flow_time_series is None and use_opf_vals:
+                    use_opf_vals = False
+                    self.msg('There are not OPF time series, '
+                             'therefore this operation will continue with the profile stored values.')
+                    self.ui.actionUse_OPF_in_TS.setChecked(False)
 
                 options = self.get_selected_power_flow_options()
-                self.time_series = TimeSeries(grid=self.circuit, options=options)
+
+                self.compile(use_opf_vals=use_opf_vals, dispatch_storage=options.dispatch_storage)
+
+                start = self.ui.profile_start_slider.value()
+                end = self.ui.profile_end_slider.value() + 1
+
+                self.time_series = TimeSeries(grid=self.circuit, options=options, start=start, end=end)
 
                 # Set the time series run options
                 self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1623,7 +1896,9 @@ class MainGUI(QMainWindow):
 
                 options = self.get_selected_power_flow_options()
 
-                self.monte_carlo = MonteCarlo(self.circuit, options)
+                tol = 10**(-1*self.ui.tolerance_stochastic_spinBox.value())
+                max_iter = self.ui.max_iterations_stochastic_spinBox.value()
+                self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100, max_mc_iter=max_iter)
 
                 self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
                 self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
@@ -1844,7 +2119,11 @@ class MainGUI(QMainWindow):
 
             # get the power flow options from the GUI
             load_shedding = self.ui.load_shedding_checkBox.isChecked()
-            options = OptimalPowerFlowOptions(load_shedding=load_shedding)
+            realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
+            solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+            options = OptimalPowerFlowOptions(load_shedding=load_shedding,
+                                              solver=solver,
+                                              realistic_results=realistic_results)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -1875,7 +2154,7 @@ class MainGUI(QMainWindow):
                                        loadings=self.optimal_power_flow.results.loading,
                                        types=self.circuit.power_flow_input.types,
                                        s_branch=self.optimal_power_flow.results.Sbranch,
-                                       s_bus=self.optimal_power_flow.results.Sbus / self.circuit.Sbase)
+                                       s_bus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
 
             else:
@@ -1904,10 +2183,16 @@ class MainGUI(QMainWindow):
 
                 # gather the simulation options
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
-                options = OptimalPowerFlowOptions(load_shedding=load_shedding)
+                solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+                options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
+                start = self.ui.profile_start_slider.value()
+                end = self.ui.profile_end_slider.value() + 1
 
                 # create the OPF time series instance
-                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit, options=options)
+                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
+                                                                                 options=options,
+                                                                                 start_=start,
+                                                                                 end_=end)
 
                 # make the thread connections to the GUI
                 self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1940,7 +2225,37 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
         else:
+            pass
 
+    def copy_opf_to_time_series(self):
+        """
+        Copy the OPF generation values to the Time series object and execute a time series simulation
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.circuit.time_profile is not None:
+
+                if self.optimal_power_flow_time_series is not None:
+
+                    quit_msg = "Are you sure you want overwrite the time events " \
+                               "with the simulated by the OPF time series?"
+                    reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                    if reply == QMessageBox.Yes:
+
+                        self.circuit.apply_lp_profiles()
+
+                    else:
+                        pass
+
+                else:
+                    self.msg('There are no OPF time series execution.'
+                             '\nRun OPF time series to be able to copy the value to the time series object.')
+
+            else:
+                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+        else:
             pass
 
     def set_cancel_state(self):
@@ -1965,9 +2280,7 @@ class MainGUI(QMainWindow):
 
     def update_available_results(self):
         """
-
-        Returns:
-
+        Update the results that are displayed in the results tab
         """
         lst = list()
         self.available_results_dict = dict()
@@ -2034,9 +2347,7 @@ class MainGUI(QMainWindow):
 
     def update_available_results_in_the_study(self):
         """
-
-        Returns:
-
+        Update the available results
         """
         elm = self.ui.result_listView.selectedIndexes()[0].data()
         lst = self.available_results_dict[elm]
@@ -2199,19 +2510,53 @@ class MainGUI(QMainWindow):
         """
         Adapt the width of all the nodes to their names
         """
-
         for bus in self.circuit.buses:
             bus.graphic_obj.adapt()
+
+    def set_up_profile_sliders(self):
+        """
+        Set up profiles
+        :return:
+        """
+        if self.circuit.time_profile is not None:
+            t = len(self.circuit.time_profile) - 1
+
+            self.ui.profile_start_slider.setMinimum(0)
+            self.ui.profile_start_slider.setMaximum(t)
+            self.ui.profile_start_slider.setValue(0)
+
+            self.ui.profile_end_slider.setMinimum(0)
+            self.ui.profile_end_slider.setMaximum(t)
+            self.ui.profile_end_slider.setValue(t)
+        else:
+            pass
+
+    def profile_sliders_changed(self):
+        """
+        Correct sliders if they change
+        :return:
+        """
+        start = self.ui.profile_start_slider.value()
+        end = self.ui.profile_end_slider.value()
+
+        if start > end:
+            self.ui.profile_end_slider.setValue(start)
+            end = start
+
+        if self.circuit.time_profile is not None:
+            t1 = self.circuit.time_profile[start]
+            t2 = self.circuit.time_profile[end]
+            self.ui.profile_label.setText(str(t1) + '->' + str(t2))
 
 
 def run():
     """
     Main function to run the GUI
-    :return: 
+    :return:
     """
     app = QApplication(sys.argv)
     window = MainGUI()
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio :)
+    window.resize(int(1.61 * 700.0), 700)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())
 

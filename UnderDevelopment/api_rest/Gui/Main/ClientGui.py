@@ -202,6 +202,8 @@ class MainGUI(QMainWindow):
             df = pd.DataFrame(data=voltages)
             df.fillna(0, inplace=True)
             df.plot(ax=ax, kind='bar')
+            ax.axhline(0.9, c='r', alpha=0.7)
+            ax.axhline(1.1, c='r', alpha=0.7)
 
             self.ui.resultsPlot.redraw()
 
@@ -214,8 +216,10 @@ def run():
     Main function to run the GUI
     :return: 
     """
+    print('loading...')
     app = QApplication(sys.argv)
     # url = 'http://192.168.1.103:5000'
+    # url = 'http://192.168.197.22:5000'
     url = 'http://127.0.0.1:5000'
     window = MainGUI(url=url)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio :)

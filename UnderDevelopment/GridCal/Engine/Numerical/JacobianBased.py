@@ -12,7 +12,9 @@
 
 # The file has been modified from Pypower.
 # The function mu() has been added to the solver in order to provide an optimal iteration control
-# Copyright (c) 2016 Santiago Peñate Vera
+#
+# Copyright (c) 2018 Santiago Peñate Vera
+#
 # This file retains the BSD-Style license
 
 
@@ -26,14 +28,6 @@ import time
 import numpy as np
 
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
-
-try:
-    from numba import jit
-    NUMBA_DETECTED = True
-    print('Numba was detected, enjoy :D')
-except Exception as ex:
-    NUMBA_DETECTED = False
-    print('No numba on the system, you may want to consider installing it :)')
 
 
 def dSbus_dV(Ybus, V, I):
@@ -172,198 +166,6 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return J
 
 
-if NUMBA_DETECTED:
-    # @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=True)
-    @jit(nopython=True, cache=True)
-    def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
-        """
-        Calculates Jacobian faster with numba and sparse matrices.
-        Input: dS_dVa and dS_dVm in CSR sparse form (Yx = data, Yp = indptr, Yj = indices), pvpq, pq from pypower
-        OUTPUT:
-        @author: Florian Schaefer
-        Calculate Jacobian entries
-        J11 = dS_dVa[array([pvpq]).T, pvpq].real
-        J12 = dS_dVm[array([pvpq]).T, pq].real
-        J21 = dS_dVa[array([pq]).T, pvpq].imag
-        J22 = dS_dVm[array([pq]).T, pq].imag
-        Explanation of code:
-        To understand the concept the CSR storage method should be known. See:
-        https://de.wikipedia.org/wiki/Compressed_Row_Storage
-        J has the shape
-        | J11 | J12 |               | (pvpq, pvpq) | (pvpq, pq) |
-        | --------- | = dimensions: | ------------------------- |
-        | J21 | J22 |               |  (pq, pvpq)  |  (pq, pq)  |
-        We first iterate the rows of J11 and J12 (for r in range lpvpq) and add the entries which are stored in dS_dV
-        Then we iterate the rows of J21 and J22 (for r in range lpq) and add the entries from dS_dV
-        Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
-        Args:
-            dVm_x:
-            dVa_x:
-            Yp:
-            Yj:
-            pvpq_lookup:
-            pvpq:
-            pq:
-            Jx:
-            Jj:
-            Jp:
-
-        Returns: data from CSR form of Jacobian (Jx, Jj, Jp) and number of non zeros (nnz)
-
-        """
-
-        # Jacobi Matrix in sparse form
-        # Jp, Jx, Jj equal J like:
-        # J = zeros(shape=(ndim, ndim), dtype=float64)
-
-        # get length of vectors
-        npvpq = len(pvpq)
-        npq = len(pq)
-        npv = npvpq - npq
-
-        # nonzeros in J
-        nnz = 0
-
-        # iterate rows of J
-        # first iterate pvpq (J11 and J12)
-        for r in range(npvpq):
-            # nnzStar is necessary to calculate nonzeros per row
-            nnzStart = nnz
-            # iterate columns of J11 = dS_dVa.real at positions in pvpq
-            # check entries in row pvpq[r] of dS_dV
-            for c in range(Yp[pvpq[r]], Yp[pvpq[r]+1]):
-                # check if column Yj is in pvpq
-                cc = pvpq_lookup[Yj[c]]
-                # entries for J11 and J12
-                if pvpq[cc] == Yj[c]:
-                    # entry found
-                    # equals entry of J11: J[r,cc] = dVa_x[c].real
-                    Jx[nnz] = dVa_x[c].real
-                    Jj[nnz] = cc
-                    nnz += 1
-                    # if entry is found in the "pq part" of pvpq = add entry of J12
-                    if cc >= npv:
-                        Jx[nnz] = dVm_x[c].real
-                        Jj[nnz] = cc + npq
-                        nnz += 1
-            # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
-            Jp[r+1] = nnz - nnzStart + Jp[r]
-        # second: iterate pq (J21 and J22)
-        for r in range(npq):
-            nnzStart = nnz
-            # iterate columns of J21 = dS_dVa.imag at positions in pvpq
-            for c in range(Yp[pq[r]], Yp[pq[r]+1]):
-                cc = pvpq_lookup[Yj[c]]
-                if pvpq[cc] == Yj[c]:
-                    # entry found
-                    # equals entry of J21: J[r + lpvpq, cc] = dVa_x[c].imag
-                    Jx[nnz] = dVa_x[c].imag
-                    Jj[nnz] = cc
-                    nnz += 1
-                    if cc >= npv:
-                        # if entry is found in the "pq part" of pvpq = Add entry of J22
-                        Jx[nnz] = dVm_x[c].imag
-                        Jj[nnz] = cc + npq
-                        nnz += 1
-            # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
-            Jp[r + npvpq + 1] = nnz - nnzStart + Jp[r + npvpq]
-
-    # @jit(Tuple((c16[:], c16[:]))(c16[:], i4[:], i4[:], c16[:], c16[:]), nopython=True, cache=True)
-    @jit(nopython=True, cache=True)
-    def dSbus_dV_numba_sparse(Yx, Yp, Yj, V, Vnorm, Ibus):  # pragma: no cover
-        """
-        Computes partial derivatives of power injection w.r.t. voltage.
-        Calculates faster with numba and sparse matrices.
-        Input: Ybus in CSR sparse form (Yx = data, Yp = indptr, Yj = indices), V and Vnorm (= V / abs(V))
-        OUTPUT: data from CSR form of dS_dVm, dS_dVa
-        (index pointer and indices are the same as the ones from Ybus)
-        Translation of: dS_dVm = dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
-                                 dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
-        """
-
-        # transform input
-
-        # init buffer vector
-        buffer = zeros(len(V), dtype=complex128)
-        dS_dVm = Yx.copy()
-        dS_dVa = Yx.copy()
-
-        # iterate through sparse matrix
-        for r in range(len(Yp) - 1):
-            for k in range(Yp[r], Yp[r + 1]):
-                # Ibus = Ybus * V
-                buffer[r] += Yx[k] * V[Yj[k]]
-                # Ybus * diag(Vnorm)
-                dS_dVm[k] *= Vnorm[Yj[k]]
-                # Ybus * diag(V)
-                dS_dVa[k] *= V[Yj[k]]
-
-            Ibus[r] += buffer[r]
-
-            # conj(diagIbus) * diagVnorm
-            buffer[r] = conj(buffer[r]) * Vnorm[r]
-
-        for r in range(len(Yp) - 1):
-            for k in range(Yp[r], Yp[r + 1]):
-                # diag(V) * conj(Ybus * diagVnorm)
-                dS_dVm[k] = conj(dS_dVm[k]) * V[r]
-
-                if r == Yj[k]:
-                    # diagonal elements
-                    dS_dVa[k] = -Ibus[r] + dS_dVa[k]
-                    dS_dVm[k] += buffer[r]
-
-                # 1j * diagV * conj(diagIbus - Ybus * diagV)
-                dS_dVa[k] = conj(-dS_dVa[k]) * (1j * V[r])
-
-        return dS_dVm, dS_dVa
-
-
-    def create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq, Ibus=None):
-        """
-        Fast jacobian creation
-        Taken from https://github.com/lthurner/pandapower/blob/develop/pandapower/pf/newtonpf.py
-        Args:
-            Ybus:
-            V:
-            pvpq:
-            pq:
-            createJ:
-            pvpq_lookup:
-            npv:
-            npq:
-            Ibus:
-
-        Returns:
-
-        """
-
-        Ibus = zeros(len(V), dtype=complex128) if Ibus is None else -Ibus
-
-        # create Jacobian from fast calc of dS_dV
-        dVm_x, dVa_x = dSbus_dV_numba_sparse(Ybus.data, Ybus.indptr, Ybus.indices, V, V / abs(V), Ibus)
-
-        # data in J, space pre-allocated is bigger than actual Jx -> will be reduced later on
-        Jx = empty(len(dVm_x) * 4, dtype=float64)
-
-        # row pointer, dimension = pvpq.shape[0] + pq.shape[0] + 1
-        Jp = zeros(pvpq.shape[0] + pq.shape[0] + 1, dtype=int32)
-
-        # indices, same with the pre-allocated space (see Jx)
-        Jj = empty(len(dVm_x) * 4, dtype=int32)
-
-        # fill Jx, Jj and Jp
-        create_J(dVm_x, dVa_x, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
-
-        # resize before generating the scipy sparse matrix
-        Jx.resize(Jp[-1], refcheck=False)
-        Jj.resize(Jp[-1], refcheck=False)
-
-        # generate scipy sparse matrix
-        dimJ = npv + npq + npq
-        return sparse((Jx, Jj, Jp), shape=(dimJ, dimJ))
-
-
 def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
@@ -399,11 +201,6 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     npv = len(pv)
     npq = len(pq)
 
-    if NUMBA_DETECTED:
-        # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = zeros(max(Ybus.indices) + 1, dtype=int)
-        pvpq_lookup[pvpq] = arange(len(pvpq))
-
     # j1:j2 - V angle of pv buses
     j1 = 0
     j2 = npv
@@ -432,11 +229,8 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
         # update iteration counter
         iter_ += 1
 
-        if NUMBA_DETECTED:
-            J = create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq, Ibus=Ibus)
-        else:
-            # evaluate Jacobian
-            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        # evaluate Jacobian
+        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
         # compute update step
         dx = spsolve(J, F)
@@ -506,18 +300,13 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     # initialize
     V = V0
     Va = angle(V)
-    Vm = abs(V)
+    Vm = np.abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
     # set up indexing for updating V
     pvpq = r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
-
-    if NUMBA_DETECTED:
-        # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = zeros(max(Ybus.indices) + 1, dtype=int)
-        pvpq_lookup[pvpq] = arange(len(pvpq))
 
     # j1:j2 - V angle of pv buses
     j1 = 0
@@ -539,15 +328,11 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     ii = np.linspace(0, nn-1, nn)
     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
 
-    # do Newton iterations
     while not converged and iter_ < max_it:
 
         # evaluate Jacobian
         if update_jacobian:
-            if NUMBA_DETECTED:
-                H = create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq, Ibus=Ibus)
-            else:
-                H = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
         # evaluate the solution error F(x0)
         Scalc = V * conj(Ybus * V - Ibus)
@@ -557,6 +342,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         # system matrix
         # H1 = H^t
         H1 = H.transpose().tocsr()
+
         # H2 = H1·H
         H2 = H1.dot(H)
 
@@ -579,10 +365,10 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
         # decision function
         val = dx.dot(lbmda * dx + rhs)
-        if val > 0:
+        if val > 0.0:
             rho = (f_prev - f) / (0.5 * val)
         else:
-            rho = -1
+            rho = -1.0
 
         # lambda update
         if rho >= 0:
@@ -601,17 +387,16 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
             Va -= dVa
             # update Vm and Va again in case we wrapped around with a negative Vm
             V = Vm * exp(1j * Va)
-            Vm = abs(V)
+            Vm = np.abs(V)
             Va = angle(V)
         else:
             update_jacobian = False
             lbmda *= nu
-            nu *= 2
+            nu *= 2.0
 
         # check convergence
-        # F = Sbus - V*conj(Ybus.dot(V))
-        normF = np.linalg.norm(dx, np.Inf)
-        # normF = np.linalg.norm(F, np.Inf)
+        # normF = np.linalg.norm(dx, np.Inf)
+        normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
         converged = normF < tol
         f_prev = f
 
