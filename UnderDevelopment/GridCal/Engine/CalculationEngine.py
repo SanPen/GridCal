@@ -10248,6 +10248,44 @@ class StateEstimation(QRunnable):
 # Dynamic simulation
 ########################################################################################################################
 
+class DynamicSimulationEvents:
+
+    def __init__(self):
+
+        self.time = list()
+        self.event_type = list()
+        self.object = list()
+        self.params = list()
+
+        self.events_available = ['Bus short circuit', 'Bus recovery', 'Line failure', 'Line recovery']
+
+    def add(self, t, evt_type, obj, param):
+        """
+        Add elements
+        :param t: time in seconds
+        :param evt_type: event type
+        :param obj: object selected
+        :param param: extra parameters
+        """
+
+        if evt_type not in self.events_available:
+            raise Exception('Event not supported!')
+
+        self.time.append(t)
+        self.event_type.append(evt_type)
+        self.object.append(obj)
+        self.params.append(param)
+
+    def remove_at(self, i):
+        """
+        Remove the elements at a position
+        :param i: index
+        """
+        self.time.pop(i)
+        self.event_type.pop(i)
+        self.object.pop(i)
+        self.params.pop(i)
+
 
 class DynamicSimulationOptions:
 

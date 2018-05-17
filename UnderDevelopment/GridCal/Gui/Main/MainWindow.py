@@ -2,14 +2,13 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_mainWindow(object):
-
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
         mainWindow.resize(1173, 723)
@@ -307,6 +306,7 @@ class Ui_mainWindow(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_18 = QtWidgets.QVBoxLayout(self.tab_2)
+        self.verticalLayout_18.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_18.setObjectName("verticalLayout_18")
         self.comments_textEdit = QtWidgets.QTextEdit(self.tab_2)
         self.comments_textEdit.setObjectName("comments_textEdit")
@@ -319,16 +319,18 @@ class Ui_mainWindow(object):
         self.SettingsTab = QtWidgets.QWidget()
         self.SettingsTab.setObjectName("SettingsTab")
         self.gridLayout_8 = QtWidgets.QGridLayout(self.SettingsTab)
+        self.gridLayout_8.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_8.setObjectName("gridLayout_8")
         self.tabWidget_2 = QtWidgets.QTabWidget(self.SettingsTab)
         self.tabWidget_2.setTabPosition(QtWidgets.QTabWidget.South)
         self.tabWidget_2.setElideMode(QtCore.Qt.ElideNone)
         self.tabWidget_2.setDocumentMode(False)
-        self.tabWidget_2.setProperty("tabBarAutoHide", False)
+        self.tabWidget_2.setTabBarAutoHide(False)
         self.tabWidget_2.setObjectName("tabWidget_2")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.gridLayout_9 = QtWidgets.QGridLayout(self.tab_3)
+        self.gridLayout_9.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_9.setObjectName("gridLayout_9")
         self.frame_13 = QtWidgets.QFrame(self.tab_3)
         self.frame_13.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -471,6 +473,7 @@ class Ui_mainWindow(object):
         self.tab_4 = QtWidgets.QWidget()
         self.tab_4.setObjectName("tab_4")
         self.gridLayout_10 = QtWidgets.QGridLayout(self.tab_4)
+        self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_10.setObjectName("gridLayout_10")
         spacerItem8 = QtWidgets.QSpacerItem(20, 260, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_10.addItem(spacerItem8, 1, 0, 1, 1)
@@ -535,6 +538,7 @@ class Ui_mainWindow(object):
         self.tab_5 = QtWidgets.QWidget()
         self.tab_5.setObjectName("tab_5")
         self.gridLayout_11 = QtWidgets.QGridLayout(self.tab_5)
+        self.gridLayout_11.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_11.setObjectName("gridLayout_11")
         self.frame_21 = QtWidgets.QFrame(self.tab_5)
         self.frame_21.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -656,6 +660,7 @@ class Ui_mainWindow(object):
         self.tab_6 = QtWidgets.QWidget()
         self.tab_6.setObjectName("tab_6")
         self.gridLayout_12 = QtWidgets.QGridLayout(self.tab_6)
+        self.gridLayout_12.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_12.setObjectName("gridLayout_12")
         self.frame_15 = QtWidgets.QFrame(self.tab_6)
         self.frame_15.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -838,6 +843,7 @@ class Ui_mainWindow(object):
         self.tab_10 = QtWidgets.QWidget()
         self.tab_10.setObjectName("tab_10")
         self.gridLayout_16 = QtWidgets.QGridLayout(self.tab_10)
+        self.gridLayout_16.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_16.setObjectName("gridLayout_16")
         self.frame_17 = QtWidgets.QFrame(self.tab_10)
         self.frame_17.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -1136,6 +1142,7 @@ class Ui_mainWindow(object):
         self.TimeEventsTab = QtWidgets.QWidget()
         self.TimeEventsTab.setObjectName("TimeEventsTab")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.TimeEventsTab)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.tabWidget_4 = QtWidgets.QTabWidget(self.TimeEventsTab)
         self.tabWidget_4.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -1264,6 +1271,7 @@ class Ui_mainWindow(object):
         self.tab_7 = QtWidgets.QWidget()
         self.tab_7.setObjectName("tab_7")
         self.verticalLayout_13 = QtWidgets.QVBoxLayout(self.tab_7)
+        self.verticalLayout_13.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_13.setObjectName("verticalLayout_13")
         self.frame_16 = QtWidgets.QFrame(self.tab_7)
         self.frame_16.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -1293,6 +1301,7 @@ class Ui_mainWindow(object):
         self.ResultsTab = QtWidgets.QWidget()
         self.ResultsTab.setObjectName("ResultsTab")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.ResultsTab)
+        self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.splitter_2 = QtWidgets.QSplitter(self.ResultsTab)
         self.splitter_2.setOrientation(QtCore.Qt.Horizontal)
@@ -1368,6 +1377,7 @@ class Ui_mainWindow(object):
         self.tab_8 = QtWidgets.QWidget()
         self.tab_8.setObjectName("tab_8")
         self.verticalLayout_29 = QtWidgets.QVBoxLayout(self.tab_8)
+        self.verticalLayout_29.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_29.setObjectName("verticalLayout_29")
         self.resultsPlot = MatplotlibWidget(self.tab_8)
         self.resultsPlot.setObjectName("resultsPlot")
@@ -1376,6 +1386,7 @@ class Ui_mainWindow(object):
         self.tab_9 = QtWidgets.QWidget()
         self.tab_9.setObjectName("tab_9")
         self.gridLayout_14 = QtWidgets.QGridLayout(self.tab_9)
+        self.gridLayout_14.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_14.setObjectName("gridLayout_14")
         self.resultsTableView = QtWidgets.QTableView(self.tab_9)
         self.resultsTableView.setObjectName("resultsTableView")
@@ -1393,6 +1404,7 @@ class Ui_mainWindow(object):
         self.console_tab = QtWidgets.QWidget()
         self.console_tab.setObjectName("console_tab")
         self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.console_tab)
+        self.verticalLayout_22.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_22.setObjectName("verticalLayout_22")
         icon20 = QtGui.QIcon()
         icon20.addPixmap(QtGui.QPixmap(":/Icons/white_icons/console.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -1419,7 +1431,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1173, 23))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1173, 21))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -1671,7 +1683,7 @@ class Ui_mainWindow(object):
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
-        self.tabWidget_4.setCurrentIndex(1)
+        self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 

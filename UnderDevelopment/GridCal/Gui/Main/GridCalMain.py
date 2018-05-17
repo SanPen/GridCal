@@ -415,10 +415,10 @@ class MainGUI(QMainWindow):
         # Other actions
         ################################################################################################################
         self.ui.actionShow_map.setVisible(False)
-        self.ui.actionTransient_stability.setVisible(False)
-        self.ui.tab_7.setVisible(False)
-        self.show_map()
+        # self.ui.actionTransient_stability.setVisible(True)
+        # self.ui.tab_7.setVisible(True)
         self.view_cascade_menu()
+        self.show_map()
 
     def LOCK(self, val=True):
         """
