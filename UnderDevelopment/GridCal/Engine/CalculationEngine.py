@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.292
+__GridCal_VERSION__ = 2.293
 
 import os
 import pickle as pkl
@@ -5852,7 +5852,7 @@ class ShortCircuit(QRunnable):
     # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions):
+    def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions, pf_results: PowerFlowResults):
         """
         PowerFlow class constructor
         @param grid: MultiCircuit Object
@@ -5861,6 +5861,9 @@ class ShortCircuit(QRunnable):
 
         # Grid to run a power flow in
         self.grid = grid
+
+        # power flow results
+        self.pf_results = pf_results
 
         # Options to use
         self.options = options
@@ -5875,15 +5878,13 @@ class ShortCircuit(QRunnable):
 
         self.__cancel__ = False
 
-    def single_short_circuit(self, circuit: Circuit):
+    def single_short_circuit(self, circuit: Circuit, Vpf):
         """
         Run a power flow simulation for a single circuit
         @param circuit:
-        @return:
+        @param Vpf: Power flow voltage
+        @return: short circuit results
         """
-
-        assert (circuit.power_flow_results is not None)
-
         # compute Zbus if needed
         if circuit.power_flow_input.Zbus is None:
             # is dense, so no need to store it as sparse
@@ -5892,7 +5893,7 @@ class ShortCircuit(QRunnable):
         # Compute the short circuit
         V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
                                       Zbus=circuit.power_flow_input.Zbus,
-                                      Vbus=circuit.power_flow_results.voltage,
+                                      Vbus=Vpf,
                                       Zf=self.Zf, baseMVA=circuit.Sbase)
 
         # Compute the branches power
@@ -5951,8 +5952,10 @@ class ShortCircuit(QRunnable):
             if self.options.verbose:
                 print('Solving ' + circuit.name)
 
-            circuit.short_circuit_results = self.single_short_circuit(circuit)
-            results.apply_from_island(circuit.short_circuit_results, circuit.bus_original_idx,
+            circuit.short_circuit_results = self.single_short_circuit(circuit=circuit,
+                                                                      Vpf=self.pf_results.voltage[circuit.bus_original_idx])
+            results.apply_from_island(circuit.short_circuit_results,
+                                      circuit.bus_original_idx,
                                       circuit.branch_original_idx)
 
             # self.progress_signal.emit((k+1) / len(self.grid.circuits))

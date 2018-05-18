@@ -1644,7 +1644,7 @@ class MainGUI(QMainWindow):
                     self.LOCK()
                     # get the power flow options from the GUI
                     sc_options = ShortCircuitOptions(bus_index=sel_buses)
-                    self.short_circuit = ShortCircuit(self.circuit, sc_options)
+                    self.short_circuit = ShortCircuit(self.circuit, sc_options, self.power_flow.results)
 
                     # self.threadpool.start(self.short_circuit)
                     # self.threadpool.waitForDone()
