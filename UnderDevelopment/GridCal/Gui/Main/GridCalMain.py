@@ -246,6 +246,7 @@ class MainGUI(QMainWindow):
         self.cascade = None
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
+        self.transient_stability = None
 
         self.results_df = None
 
@@ -295,6 +296,8 @@ class MainGUI(QMainWindow):
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
         self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
+
+        self.ui.actionTransient_stability.triggered.connect(self.run_transient_stability)
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
@@ -395,7 +398,7 @@ class MainGUI(QMainWindow):
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
 
         ################################################################################################################
-        # Colormaps
+        # Color maps
         ################################################################################################################
         vmax = 1.2
         seq = [(0 / vmax, 'black'),
@@ -808,6 +811,7 @@ class MainGUI(QMainWindow):
                 self.time_series = None
                 self.voltage_stability = None
                 self.results_df = None
+
                 self.clear_results()
 
             else:
@@ -2227,6 +2231,50 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def run_transient_stability(self):
+        """
+        Run transient stability
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.power_flow is not None:
+
+                # Since we must run this study in the same conditions as
+                # the last power flow, no compilation is needed
+
+                self.LOCK()
+
+                options = TransientStabilityOptions()
+                options.t_sim = self.ui.transient_time_span_doubleSpinBox.value()
+                options.h = self.ui.transient_time_step_doubleSpinBox.value()
+                self.transient_stability = TransientStability(self.circuit,
+                                                              options,
+                                                              self.power_flow.results)
+
+                try:
+                    self.transient_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.transient_stability.progress_text.connect(self.ui.progress_label.setText)
+                    self.transient_stability.done_signal.connect(self.UNLOCK)
+                    self.transient_stability.done_signal.connect(self.post_transient_stability)
+
+                    # Run
+                    self.transient_stability.start()
+
+                except Exception as ex:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Transient stability')
+                    self.transient_stability = None
+                    self.UNLOCK()
+
+            else:
+                self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+        else:
+            pass
+
+    def post_transient_stability(self):
+
+        self.update_available_results()
+
     def copy_opf_to_time_series(self):
         """
         Copy the OPF generation values to the Time series object and execute a time series simulation
@@ -2316,6 +2364,10 @@ class MainGUI(QMainWindow):
             lst.append("Optimal power flow time series")
             self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
 
+        if self.transient_stability is not None:
+            lst.append("Transient stability")
+            self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
+
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
 
@@ -2336,6 +2388,7 @@ class MainGUI(QMainWindow):
         self.voltage_stability = None
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
+        self.transient_stability = None
 
         self.available_results_dict = dict()
         self.ui.result_listView.setModel(None)
@@ -2344,6 +2397,8 @@ class MainGUI(QMainWindow):
         self.ui.result_element_selection_listView.setModel(None)
         self.ui.resultsPlot.clear(force=True)
         self.ui.simulationDataStructureTableView.setModel(None)
+        self.ui.tableView.setModel(None)
+        self.ui.transient_events_tableView.setModel(None)
 
     def update_available_results_in_the_study(self):
         """
@@ -2390,28 +2445,40 @@ class MainGUI(QMainWindow):
             self.results_df = None
             res_mdl = None
             if study == 'Power Flow':
-                self.results_df = self.power_flow.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.power_flow.results.plot(result_type=study_type,
+                                                               ax=ax, indices=indices, names=names)
 
             elif study == 'Time Series':
-                self.results_df = self.time_series.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.time_series.results.plot(result_type=study_type,
+                                                                ax=ax, indices=indices, names=names)
 
             elif study == 'Voltage Stability':
-                self.results_df = self.voltage_stability.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.voltage_stability.results.plot(result_type=study_type,
+                                                                      ax=ax, indices=indices, names=names)
 
             elif study == 'Monte Carlo':
-                self.results_df = self.monte_carlo.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.monte_carlo.results.plot(result_type=study_type,
+                                                                ax=ax, indices=indices, names=names)
 
             elif study == 'Latin Hypercube':
-                self.results_df = self.latin_hypercube_sampling.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.latin_hypercube_sampling.results.plot(result_type=study_type,
+                                                                             ax=ax, indices=indices, names=names)
 
             elif study == 'Short Circuit':
-                self.results_df = self.short_circuit.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.short_circuit.results.plot(result_type=study_type,
+                                                                  ax=ax, indices=indices, names=names)
 
             elif study == 'Optimal power flow':
-                self.results_df = self.optimal_power_flow.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.optimal_power_flow.results.plot(result_type=study_type,
+                                                                       ax=ax, indices=indices, names=names)
 
             elif study == 'Optimal power flow time series':
-                self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type, ax=ax, indices=indices, names=names)
+                self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type,
+                                                                                   ax=ax, indices=indices, names=names)
+
+            elif study == 'Transient stability':
+                self.results_df = self.transient_stability.results.plot(result_type=study_type,
+                                                                        ax=ax, indices=indices, names=names)
 
             if self.results_df is not None:
                 res_mdl = PandasModel(self.results_df)

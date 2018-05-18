@@ -49,7 +49,7 @@ from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, Levenber
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
-from GridCal.Engine.Numerical.DynamicModels import DynamicModels
+from GridCal.Engine.Numerical.DynamicModels import DynamicModels, dynamic_simulation
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -2887,6 +2887,9 @@ class Circuit:
 
         # Base power (MVA)
         self.Sbase = 100.0
+
+        # Base frequency in Hz
+        self.fBase = 50.0
 
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
@@ -10245,51 +10248,13 @@ class StateEstimation(QRunnable):
 
 
 ########################################################################################################################
-# Dynamic simulation
+# Transient stability
 ########################################################################################################################
 
-class DynamicSimulationEvents:
 
-    def __init__(self):
+class TransientStabilityOptions:
 
-        self.time = list()
-        self.event_type = list()
-        self.object = list()
-        self.params = list()
-
-        self.events_available = ['Bus short circuit', 'Bus recovery', 'Line failure', 'Line recovery']
-
-    def add(self, t, evt_type, obj, param):
-        """
-        Add elements
-        :param t: time in seconds
-        :param evt_type: event type
-        :param obj: object selected
-        :param param: extra parameters
-        """
-
-        if evt_type not in self.events_available:
-            raise Exception('Event not supported!')
-
-        self.time.append(t)
-        self.event_type.append(evt_type)
-        self.object.append(obj)
-        self.params.append(param)
-
-    def remove_at(self, i):
-        """
-        Remove the elements at a position
-        :param i: index
-        """
-        self.time.pop(i)
-        self.event_type.pop(i)
-        self.object.pop(i)
-        self.params.pop(i)
-
-
-class DynamicSimulationOptions:
-
-    def __init__(self, h=0.01, t_sim=5, max_err=0.0001, max_iter=25):
+    def __init__(self, h=0.001, t_sim=15, max_err=0.0001, max_iter=25):
 
         # step length (s)
         self.h = h
@@ -10303,3 +10268,63 @@ class DynamicSimulationOptions:
         # Maximum number of network iterations
         self.max_iter = max_iter
 
+
+class TransientStability(QThread):
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: TransientStabilityOptions, pf_res: PowerFlowResults):
+        """
+        TimeSeries constructor
+        @param grid: MultiCircuit instance
+        @param options: PowerFlowOptions instance
+        """
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.options = options
+
+        self.pf_res = pf_res
+
+        self.results = None
+
+    def status(self, txt, progress):
+        """
+        Emit status
+        :param txt: text to display
+        :param progress: progress 0-100
+        """
+        self.progress_signal.emit(progress)
+        self.progress_text.emit(txt)
+
+    def run(self):
+        """
+        Run transient stability
+        """
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running transient stability...')
+
+        for circuit in self.grid.circuits:
+            dynamic_devices = circuit.get_controlled_generators()
+            bus_indices = [circuit.buses_dict[elm.bus] for elm in dynamic_devices]
+
+            res = dynamic_simulation(n=len(circuit.buses),
+                                     Vbus=self.pf_res.voltage[circuit.bus_original_idx],
+                                     Sbus=self.pf_res.Sbus[circuit.bus_original_idx],
+                                     Ybus=circuit.power_flow_input.Ybus,
+                                     Sbase=circuit.Sbase,
+                                     fBase=circuit.fBase,
+                                     t_sim=self.options.t_sim,
+                                     h=self.options.h,
+                                     dynamic_devices=dynamic_devices,
+                                     bus_indices=bus_indices,
+                                     callback=self.status)
+
+        self.results = res
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()

@@ -15,10 +15,12 @@
 
 
 import numpy as np
+import pandas as pd
 from scipy.sparse.linalg import splu
 from scipy.sparse import csr_matrix as sparse
 from enum import Enum
 from warnings import warn
+from matplotlib import pyplot as plt
 
 
 class DiffEqSolver(Enum):
@@ -34,6 +36,105 @@ class DynamicModels(Enum):
     ExternalGrid = 4,  # external grid
     AsynchronousSingleCageMotor = 5,  # single cage asynchronous motor
     AsynchronousDoubleCageMotor = 6  # double cage asynchronous motor
+
+
+class TransientStabilityEvents:
+
+    def __init__(self):
+
+        self.time = list()
+        self.event_type = list()
+        self.object = list()
+        self.params = list()
+
+        self.events_available = ['Bus short circuit', 'Bus recovery', 'Line failure', 'Line recovery']
+
+    def add(self, t, evt_type, obj, param):
+        """
+        Add elements
+        :param t: time in seconds
+        :param evt_type: event type
+        :param obj: object selected
+        :param param: extra parameters
+        """
+
+        if evt_type not in self.events_available:
+            raise Exception('Event not supported!')
+
+        self.time.append(t)
+        self.event_type.append(evt_type)
+        self.object.append(obj)
+        self.params.append(param)
+
+    def remove_at(self, i):
+        """
+        Remove the elements at a position
+        :param i: index
+        """
+        self.time.pop(i)
+        self.event_type.pop(i)
+        self.object.pop(i)
+        self.params.pop(i)
+
+
+class TransientStabilityResults:
+
+    def __init__(self):
+
+        self.voltage = None
+
+        self.omega = None
+
+        self.time = None
+
+        self.available_results = ['Bus voltage']
+
+    def plot(self, result_type, ax=None, indices=None, names=None, LINEWIDTH=2):
+        """
+        Plot the results
+        :param result_type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = np.array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            y_label = ''
+            title = ''
+            if result_type == 'Bus voltage':
+
+                y = np.abs(self.voltage[:, indices])
+                y_label = '(p.u.)'
+                title = 'Bus voltage module'
+
+            else:
+                pass
+
+            df = pd.DataFrame(data=y, columns=labels, index=self.time)
+
+            df.fillna(0, inplace=True)
+
+            if len(df.columns) > 10:
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+            else:
+                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+
+            ax.set_title(title)
+            ax.set_ylabel(y_label)
+            ax.set_xlabel('Time')
+
+            return df
+
+        else:
+            return None
 
 
 class SynchronousMachineOrder4:
@@ -1063,7 +1164,8 @@ class DoubleCageAsynchronousMotor:
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', ds = ' + str(ds))
 
 
-def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devices=list(), bus_indices=list()):
+def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devices=list(), bus_indices=list(),
+                       callback=None):
     """
     Dynamic transient simulation of a power system
     Args:
@@ -1347,16 +1449,14 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
 
         t += h
 
-    voltages = np.array(voltages)
-    omegas = np.array(omegas)
+        if callback is not None:
+            progress = t / t_sim * 100
+            txt = 'Running transient stability t:' + str(t)
+            callback(txt, progress)
 
-    from matplotlib import pyplot as plt
+    res = TransientStabilityResults()
+    res.voltage = np.array(voltages)
+    res.omegas = np.array(omegas)
+    res.time = np.array(time)
 
-    plt.figure()
-    plt.plot(time, abs(voltages), linewidth=1)
-    plt.title('Generator voltages')
-
-    plt.figure()
-    plt.plot(time, abs(omegas), linewidth=1)
-    plt.title('Angular speeds')
-    plt.show()
+    return res
