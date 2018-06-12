@@ -1433,9 +1433,7 @@ class MainGUI(QMainWindow):
 
     def plot_profiles(self):
         """
-
-        Returns:
-
+        Plot profiles from the time events
         """
         value = self.ui.profile_factor_doubleSpinBox.value()
 
@@ -1473,14 +1471,18 @@ class MainGUI(QMainWindow):
             unit = units_dict[magnitude]
             ax.set_ylabel(unit)
 
+            # get the unique columns in the selected cells
+            cols = set()
             for i in range(len(obj_idx)):
-                k = obj_idx[i].column()
+                cols.add(obj_idx[i].column())
+
+            # plot every column
+            for k in cols:
                 attr = objects[k].profile_attr[magnitude]
                 df = getattr(objects[k], attr)
                 df.columns = [objects[k].name]
                 df.plot(ax=ax)
             plt.show()
-
 
     def display_profiles(self):
         """
