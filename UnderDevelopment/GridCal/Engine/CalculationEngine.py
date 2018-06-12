@@ -1474,16 +1474,30 @@ class Branch(ReliabilityDevice):
         Yseries[t, t] += Ys
 
         # B1 for FDPF (no shunts, no resistance, no tap module)
-        B1[f, f] -= Yff.imag
-        B1[f, t] -= Yft.imag
-        B1[t, f] -= Ytf.imag
-        B1[t, t] -= Ytt.imag
+        b1 = 1.0 / (self.X + 1e-20)
+        B1[f, f] -= b1
+        B1[f, t] -= b1
+        B1[t, f] -= b1
+        B1[t, t] -= b1
 
         # B2 for FDPF (with shunts, only the tap module)
-        B2[f, f] -= Yff.imag
-        B2[f, t] -= Yft.imag
-        B2[t, f] -= Ytf.imag
-        B2[t, t] -= Ytt.imag
+        b2 = b1 + self.B
+        B2[f, f] -= b2 / (tap * conj(tap))
+        B2[f, t] -= b1 / conj(tap)
+        B2[t, f] -= b1 / tap
+        B2[t, t] -= b2
+
+        # # B1 for FDPF (no shunts, no resistance, no tap module)
+        # B1[f, f] -= Yff.imag
+        # B1[f, t] -= Yft.imag
+        # B1[t, f] -= Ytf.imag
+        # B1[t, t] -= Ytt.imag
+        #
+        # # B2 for FDPF (with shunts, only the tap module)
+        # B2[f, f] -= Yff.imag
+        # B2[f, t] -= Yft.imag
+        # B2[t, f] -= Ytf.imag
+        # B2[t, t] -= Ytt.imag
 
         return f, t
 
@@ -5368,7 +5382,7 @@ class PowerFlowMP:
         @param ref: array of pq indices
         @param V: array of voltages (all buses)
         @param Vset: Array of set points (all buses)
-        @param Q: Array of rective power (all buses)
+        @param Q: Array of reactive power (all buses)
         @param types: Array of types (all buses)
         @param original_types: Types as originally intended (all buses)
         @param verbose: output messages via the console
