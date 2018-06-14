@@ -1,0 +1,1661 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?> 
+<!--  edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Back (EDF R&D) 
+  --> 
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2005/CIM-schema-cim10#">
+<cim:IEC61970Version rdf:ID="IEC61970Version">
+  <cim:version>cim61970_v002</cim:version> 
+  <cim:date>2005-04-28</cim:date> 
+  </cim:IEC61970Version>
+<cim:Breaker rdf:ID="_022fae55982483196343f718896258c">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:Terminal rdf:ID="_05acb5219448689416da0f0ccbdd">
+  <cim:Naming.name>NOD03S71_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f82e66629e348d39c8653532ee34c8f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_35561729c5b4fa1b6159291db78c85b" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_1047979a7144432d868b3294716c2629">
+  <cim:Naming.name>NOD08S11_SM_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_a85d5717f2a947758a27a3626cee74a" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_10ad445273bb40d7b06cf18b59aeb53c" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_10611261fe8149493c299acce496ac">
+  <cim:Naming.name>NOD01S71-NOD02S71-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f3fe7234a519421e818d40b7babce7b7" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_bcb42d92ed994426a1d2f896ec81260" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_1087a74520994077adf1c31ca5b9c6e2">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW2_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_a78315134f14d5483f5dc42aa2d9a64" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_709fbc7a935e454b95bde244926d72bf" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_10ad445273bb40d7b06cf18b59aeb53c">
+  <cim:Naming.name>NOD08S11</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_353a2750b62049b6bc69f8671f2bf1cc" /> 
+  </cim:ConnectivityNode>
+<cim:Analog rdf:ID="_10dac0e32bfe40e1878585de7ae0e66b">
+  <cim:Naming.name>NOD06S61_SM_MS</cim:Naming.name> 
+  <cim:Measurement.MeasurementType rdf:resource="#_f75224a737464ad9b32e6c801278d44a" /> 
+  <cim:Measurement.Terminal rdf:resource="#_37ac3d41ddc241beb5f7bd15d599cbb1" /> 
+  <cim:Measurement.Unit rdf:resource="#_ae2af2ff40e74d47b0f9e47f8ae450df" /> 
+  <cim:Measurement.MemberOf_PSR rdf:resource="#_1983f84c3db84f75b46c5559b793d19f" /> 
+  </cim:Analog>
+
+<cim:Terminal rdf:ID="_1115ccc93d404eabad3639aa8589a3c2">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_9951efc1c38f46f2b18bc4ab1634b5b" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e014d6a0bc6495c96952fcec46c43a" /> 
+  </cim:Terminal>
+<cim:Substation rdf:ID="_1157c9fe7db64fe190ded39d669724f5">
+  <cim:Naming.name>NOD03S71</cim:Naming.name> 
+  <cim:Substation.MemberOf_SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:Substation>
+<cim:Terminal rdf:ID="_117634591bf9401db21c6bb57705717">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_48b9dd86a334a74847a40b3868244f9" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e88ac25b578435aa75ced50856a2324" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_11f587264afa47d090dbfc8eb4d93ae0">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_211296fa3ff9498d8833a8a8df9bc1b0" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_a8ff8923a240452ebebb664cfd50bc4c" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_12cfa155f4643428ae162f8d42b827e">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_2fd348762b3b462a8c629c317676a" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Line rdf:ID="_13a302c75124caf97cd4754e0315a98">
+  <cim:Naming.name>NOD09S61-NOD10S61-1</cim:Naming.name> 
+  </cim:Line>
+
+<cim:Terminal rdf:ID="_13ef991baa6a4c16b9ca8d25bef3ebd">
+  <cim:Naming.name>NOD01S71-NOD02S71-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_811ea4ad8580432abb704c684a117a3a" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_4b3f9cbb37348085c889d5aecb5043" /> 
+  </cim:Terminal>
+<cim:BaseVoltage rdf:ID="_144aef9f8d44b1496dc347efc75786">
+  <cim:BaseVoltage.nominalVoltage>220</cim:BaseVoltage.nominalVoltage> 
+  <cim:BaseVoltage.BasePower rdf:resource="#_21f436dd7b4242bf88217efd36a33f2" /> 
+  </cim:BaseVoltage>
+<cim:ConnectivityNode rdf:ID="_14b3b8a5c04f4957ac30d5b89a97259">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  </cim:ConnectivityNode>
+
+<cim:Breaker rdf:ID="_14bd5d588d3411e9fd4cb5612d84bf6">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW2_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_14c11c57fa447268a783e4a8abaf9">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_5d87d56dfae84ef39598721ca5e1766a" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_36b7815a3b24981bfa9a2244dd450be" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_153013c5561428b893c2a10236401a">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_549af154d6e4a238d5c58f4949cc5e3" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7fa74a8e8b774451ab92ba5feade757" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_15e4f94ee2c64d82a61f4329bed73366">
+  <cim:Naming.name>NOD13S61_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_b3adc68b882b489fabe620dfe2ffedf6" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_d9310a7b3bd4fb3aa3e3b89b915c90" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_1610b968751a444c825a1a8e57c9b038">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW2_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7924abe41c94b7b89d257d2a7f242" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_55b37398b080415d923acb6a9bc72e84" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_16dc27133af242cc9c49703bb11cb0ad">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW2_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_6c77f701a8e48e9bdc45ec75cfc6d85" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_3a51bb3714b14776bde95cf6cccaeea5" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_16f14a2addf455b08ed2798187f62a">
+  <cim:Naming.name>NOD12S61_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_ca44149dc11d4f3ca18d53285465ad3" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e014d6a0bc6495c96952fcec46c43a" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_1844c289f5046889c5ec23fcce6c871">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_c8259c3467f54cf5a6ad23766ce91244" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_efeca1ef32484c6099bfca4e2dc07b41" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_1898fbdd962f44aca394c95694222628">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  </cim:ConnectivityNode>
+
+<cim:MeasurementType rdf:ID="_19729be3ab194f9e83e42b6d582452">
+  <cim:Naming.name>Angle</cim:Naming.name> 
+  </cim:MeasurementType>
+<cim:SynchronousMachine rdf:ID="_1983f84c3db84f75b46c5559b793d19f">
+  <cim:Naming.name>NOD06S61_SM</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  <cim:RegulatingCondEq.Measurement rdf:resource="#_10dac0e32bfe40e1878585de7ae0e66b" /> 
+  <cim:RegulatingCondEq.RegulationSchedule rdf:resource="#_9ba849f8593e4092882897a593d8f281" /> 
+  <cim:SynchronousMachine.baseMVAr>287.42599</cim:SynchronousMachine.baseMVAr> 
+  <cim:SynchronousMachine.maximumMVAr>99999</cim:SynchronousMachine.maximumMVAr> 
+  <cim:SynchronousMachine.minimumMVAr>-99999</cim:SynchronousMachine.minimumMVAr> 
+  <cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineOperatingMode.condenser" /> 
+  <cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineType.condenser" /> 
+  <cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_faf74f1d45e444a4b4341c276c143f60" /> 
+  </cim:SynchronousMachine>
+
+<cim:Terminal rdf:ID="_1ab95ea2b1f941cab1f844a12969731f">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_8d3ed14e4aa046db961e16db7df3222" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6afa565db9499f9d15c6c756e4d733" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_1b544aafbfbd461eb74723f1f6a6559">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7f6e46c4c6e44940aba3840bba6528f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_10ad445273bb40d7b06cf18b59aeb53c" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_1c42f987a5204f1cb420c3f1c7d572d7">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_39f6b75be4294cb827fce15f5c3a4f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_cda9f3ee476040c8a2c73d51094e97" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_1d1419814ade456a91f2748c2393a459">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW2_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_297fb9c78f43cb8cd03f9fe3db9f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f941416a71d46ef974cd6e3ce83c8e" /> 
+  </cim:Terminal>
+<cim:Analog rdf:ID="_1dfdd9ab6a04f2f90c3ba172316d8f">
+  <cim:Naming.name>NOD08S11_SM_MS</cim:Naming.name> 
+  <cim:Measurement.MeasurementType rdf:resource="#_f75224a737464ad9b32e6c801278d44a" /> 
+  <cim:Measurement.Terminal rdf:resource="#_1047979a7144432d868b3294716c2629" /> 
+  <cim:Measurement.Unit rdf:resource="#_ae2af2ff40e74d47b0f9e47f8ae450df" /> 
+  <cim:Measurement.MemberOf_PSR rdf:resource="#_a85d5717f2a947758a27a3626cee74a" /> 
+  </cim:Analog>
+<cim:Breaker rdf:ID="_1dfffd40b04a7f98122b1f15afccb">
+
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_1e26ec54c76149d6a8954e3ec2c520da">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_d868c6dba244197ae3cd7ef9f2c7cb4" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_36b7815a3b24981bfa9a2244dd450be" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_1f648e1efbff48168ae44acfc7a59561">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_27df2fe128a4a34984cc9b7a6cd601c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_935f945de87e483baaa4c950a8f39796" /> 
+  </cim:Terminal>
+
+<cim:ACLineSegment rdf:ID="_211296fa3ff9498d8833a8a8df9bc1b0">
+  <cim:Naming.name>NOD02S71-NOD05S71-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:Conductor.bch>0.000479223</cim:Conductor.bch> 
+  <cim:Conductor.r>4.1110682</cim:Conductor.r> 
+  <cim:Conductor.x>12.552692</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_fe63c77941904924994487b4cd4be77" /> 
+  </cim:ACLineSegment>
+<cim:Breaker rdf:ID="_214c2c7829284edd91d3b90e4e2d32">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0908bce97ad46c38f8fba427ed873a1" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:Terminal rdf:ID="_21804cddcd604b6ae305835f0e3ff99">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_86ab6895ff2f4860b8413b7b12d35c9e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c99b18f73b1e4e98acd4f52e098ddde" /> 
+  </cim:Terminal>
+<cim:TapChanger rdf:ID="_21b9ab67ac240ebaa9e3b134347f396">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TC1</cim:Naming.name> 
+  <cim:TapChanger.highStep>3</cim:TapChanger.highStep> 
+  <cim:TapChanger.lowStep>1</cim:TapChanger.lowStep> 
+  <cim:TapChanger.neutralKV>220</cim:TapChanger.neutralKV> 
+  <cim:TapChanger.neutralStep>2</cim:TapChanger.neutralStep> 
+  <cim:TapChanger.normalStep>3</cim:TapChanger.normalStep> 
+  <cim:TapChanger.stepVoltageIncrement>6.8318176</cim:TapChanger.stepVoltageIncrement> 
+  <cim:TapChanger.tculControlMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerControlMode.volt" /> 
+  <cim:TapChanger.TransformerWinding rdf:resource="#_c23d3313debb4b39b1ee4499b65084a6" /> 
+  </cim:TapChanger>
+
+<cim:Terminal rdf:ID="_21ce21c25b24b89bf1080e1cd79d1f">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_271c9d3bb53349b592baaa6ff2ec6e9" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6afa565db9499f9d15c6c756e4d733" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_21da66441344fab5daaeaf5cb5b5e3">
+  <cim:Naming.name>NOD12S61-NOD14S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_4d72b06e907a4164976835228bb04f57" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c372af4d85b448cba88e650f376ce1" /> 
+  </cim:Terminal>
+<cim:BasePower rdf:ID="_21f436dd7b4242bf88217efd36a33f2">
+  <cim:BasePower.basePower>100</cim:BasePower.basePower> 
+  </cim:BasePower>
+
+<cim:Terminal rdf:ID="_2258461de5ca4a73a189101ed9ec5fa5">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_d6065fdf7ac426eb3cd30cd67ee235" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_9f5b961c98b04fcfab2fe49c35b5d3b7" /> 
+  </cim:Terminal>
+<cim:VoltageLevel rdf:ID="_23333cd4619840f88ea8431dc1915fe">
+  <cim:Naming.name>NOD01S71</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>437</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>323</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_b0eabfcd17c4fbdaba1f4b3a28b7873" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  </cim:VoltageLevel>
+
+<cim:Terminal rdf:ID="_245a2726d2794be8034c48d36e1d81">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW2_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_a78315134f14d5483f5dc42aa2d9a64" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7031cb373db84a99b6717ff7cedb37fe" /> 
+  </cim:Terminal>
+<cim:CurveSchedData rdf:ID="_247211dfe76c4e9a9323d60ff50b1b7">
+  <cim:Naming.name>NOD01S71_SM_CSD</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>402.7999</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_375e6afbc4f54aa78b80d6d78d7a9dda" /> 
+  </cim:CurveSchedData>
+
+<cim:TransformerWinding rdf:ID="_2489bd97cd304f6e8780a547321cbcf">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>220</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.primary" /> 
+  <cim:TransformerWinding.x>6.7296376</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_bea288ab75c64e92a39e35a1cc8d12ec" /> 
+  </cim:TransformerWinding>
+
+<cim:Line rdf:ID="_2647174ac027409cb01c6ba35bafc9cf">
+  <cim:Naming.name>NOD01S71-NOD05S71-1</cim:Naming.name> 
+  </cim:Line>
+<cim:GeneratingUnit rdf:ID="_26e89b15bf2448dca3b049a133ec433b">
+  <cim:Naming.name>NOD09S61_GU</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  <cim:GeneratingUnit.initialMW>0</cim:GeneratingUnit.initialMW> 
+  <cim:GeneratingUnit.SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:GeneratingUnit>
+<cim:Breaker rdf:ID="_271c9d3bb53349b592baaa6ff2ec6e9">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:Terminal rdf:ID="_271d29dc7ba442efb09ce3e05d78ab52">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_2c81ab23612c465f86659ce891d447b9" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c9a5899aa39e4e7696f0461b6255f7f8" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_2770b194e6a64c3e879faeadeec85a22">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW2_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_3bf166a8ecf4083996241bdcbea992e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_709fbc7a935e454b95bde244926d72bf" /> 
+  </cim:Terminal>
+<cim:ACLineSegment rdf:ID="_27df2fe128a4a34984cc9b7a6cd601c">
+  <cim:Naming.name>NOD06S61-NOD13S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>1.600588</cim:Conductor.r> 
+  <cim:Conductor.x>3.152292</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_e52ccc9c911d426baeae1b06099d51b" /> 
+  </cim:ACLineSegment>
+
+<cim:Terminal rdf:ID="_2844c4d4f0824a2482f86f2fcb562be6">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_61fd90088c647a2bfd8bb6fd205071" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_91f896d2b247a0939ac83c7c1d2afe" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_297fb9c78f43cb8cd03f9fe3db9f">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW2_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_2b351b975a4444fb5ed8a963051c72">
+  <cim:Naming.name>NOD12S61-NOD14S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_ac5e83bc69394f88b7dee43e18a4684" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f3e5c740491c45558d91f49a7010ea51" /> 
+  </cim:Terminal>
+
+<cim:Line rdf:ID="_2b3e0434f3041b6ba0caf776eaa423">
+  <cim:Naming.name>NOD12S61-NOD13S61-1</cim:Naming.name> 
+  </cim:Line>
+<cim:ConnectivityNode rdf:ID="_2b42dddb20f4b1c9e245df7712d131">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW2_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_2b78c3b58e3b493884a1b562efc0e08b">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_2489bd97cd304f6e8780a547321cbcf" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_5dad6c1af8457285e61eaa49fdb3b1" /> 
+  </cim:Terminal>
+
+<cim:ACLineSegment rdf:ID="_2bf86eb66b8f416c8d75655037629826">
+  <cim:Naming.name>NOD09S61-NOD10S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>0.76955998</cim:Conductor.r> 
+  <cim:Conductor.x>2.0448999</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_13a302c75124caf97cd4754e0315a98" /> 
+  </cim:ACLineSegment>
+<cim:Breaker rdf:ID="_2c81ab23612c465f86659ce891d447b9">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_95ae3b7d651a4e1ba36622c11283bbf7" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:ACLineSegment rdf:ID="_2ce6c237d39342d1a31b7fc386827422">
+  <cim:Naming.name>NOD09S61-NOD14S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>3.0758202</cim:Conductor.r> 
+  <cim:Conductor.x>6.5427122</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_86da5c351388477086d7843c6029a3da" /> 
+  </cim:ACLineSegment>
+<cim:ACLineSegment rdf:ID="_2e5c5de3146a4bae838dd1a651d6a989">
+  <cim:Naming.name>NOD13S61-NOD14S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>4.1362643</cim:Conductor.r> 
+  <cim:Conductor.x>8.4216003</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_a391417d4747a59378874d07aeea0" /> 
+  </cim:ACLineSegment>
+
+<cim:MVArCapabilityCurve rdf:ID="_2f30889d8ff640c082b53397d3acce3">
+  <cim:Naming.name>NOD03S71_SM_MCC</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.straightLineYValues" /> 
+  <cim:CurveSchedule.xAxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.activePower" /> 
+  <cim:CurveSchedule.xAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.y2AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:MVArCapabilityCurve.SynchronousMachines rdf:resource="#_6638f35ab854ae6a4cf493cc3b166e2" /> 
+  </cim:MVArCapabilityCurve>
+<cim:Substation rdf:ID="_2f471989b2a74189b6a25babcf18b037">
+  <cim:Naming.name>NOD11S61</cim:Naming.name> 
+  <cim:Substation.MemberOf_SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:Substation>
+
+<cim:Terminal rdf:ID="_2f841ed316441d0abca68ed5ae8dae2">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_e56ea7c4b374de1895b641e6cad2ecb" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7031cb373db84a99b6717ff7cedb37fe" /> 
+  </cim:Terminal>
+<cim:VoltageLevel rdf:ID="_2fd348762b3b462a8c629c317676a">
+  <cim:Naming.name>NOD11S61</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>253</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>187</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_2f471989b2a74189b6a25babcf18b037" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  </cim:VoltageLevel>
+
+<cim:CurveSchedData rdf:ID="_2ff481f52b114e7b99a692abdbe346ee">
+  <cim:Naming.name>NOD03S71_SM_CSD1</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>-99999</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.y2AxisData>99999</cim:CurveSchedData.y2AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_2f30889d8ff640c082b53397d3acce3" /> 
+  </cim:CurveSchedData>
+<cim:Terminal rdf:ID="_30296d89fa8143689d3a7738ae45d26">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_89d4bf071e9419a9f584ae9e867522c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_d9310a7b3bd4fb3aa3e3b89b915c90" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_30e76ce1f81249e7894af3189c6f6c0">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_bf14b510456149a924ac6465659670" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c99b18f73b1e4e98acd4f52e098ddde" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_31742e5b706a4df6a8a82dbfad5e833c">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_6e4116401f8b487a8615c648d745f27e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f9f011e57b2f4f8e96ad7ffcb068afd5" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_324bcd1e9528437b936934aef043261b">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_4794c9be10d845aa24b551455baa6d" /> 
+  </cim:ConnectivityNode>
+
+<cim:Terminal rdf:ID="_32a5bab47dd64d6287e35a085ab12df">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_cdc7942e10134febb2e76b2e7cad48bc" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_14b3b8a5c04f4957ac30d5b89a97259" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_33753b12f6474588a9f3912d31d61c5b">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_214c2c7829284edd91d3b90e4e2d32" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c562e0c0137474afb670732ae3f03b" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_345313d7ed204aee9a1271a55691ed5">
+  <cim:Naming.name>NOD04S71_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_491034bf555d46f59c1e2ad4c3e17d12" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f941416a71d46ef974cd6e3ce83c8e" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_345fd61e4f4e4c26933b40d39e906048">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7c29156914da42eb879a3cd4632ed87c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f6ac79e7a3c04a4eaccde35069f6380" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_34bfc4ac11774c1b90eb22589cf383d">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW2_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:VoltageLevel rdf:ID="_353a2750b62049b6bc69f8671f2bf1cc">
+  <cim:Naming.name>NOD08S11</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>31.049999</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>22.950001</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_96875c3ee774caa9669b9848d92b4d" /> 
+  </cim:VoltageLevel>
+
+<cim:ConnectivityNode rdf:ID="_35561729c5b4fa1b6159291db78c85b">
+  <cim:Naming.name>NOD03S71</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_965de8ae5c834e49b8f71d92ab34ca8d" /> 
+  </cim:ConnectivityNode>
+<cim:BaseVoltage rdf:ID="_358210899d3742a59e6d74bbf2d3dce0">
+  <cim:BaseVoltage.nominalVoltage>380</cim:BaseVoltage.nominalVoltage> 
+  <cim:BaseVoltage.BasePower rdf:resource="#_21f436dd7b4242bf88217efd36a33f2" /> 
+  </cim:BaseVoltage>
+<cim:ConnectivityNode rdf:ID="_365a16b8e34d448893d2f968ddffd72a">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_95ae3b7d651a4e1ba36622c11283bbf7" /> 
+  </cim:ConnectivityNode>
+
+<cim:TransformerWinding rdf:ID="_368d77e1d64ec9b260b6a236f73b">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW2</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.secondary" /> 
+  <cim:TransformerWinding.x>20.077679</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_bea288ab75c64e92a39e35a1cc8d12ec" /> 
+  </cim:TransformerWinding>
+
+<cim:ConnectivityNode rdf:ID="_36b7815a3b24981bfa9a2244dd450be">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  </cim:ConnectivityNode>
+<cim:TransformerWinding rdf:ID="_36bd58964f3146d98c8ca7adfd40cd96">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW2</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.secondary" /> 
+  <cim:TransformerWinding.x>6.358654</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_93f9644689424f59a66f5bf0b31249e9" /> 
+  </cim:TransformerWinding>
+
+<cim:SynchronousMachine rdf:ID="_37142954961b462c8da2afa86cc8b49e">
+  <cim:Naming.name>NOD02S71_SM</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:RegulatingCondEq.Measurement rdf:resource="#_9a4f8a85604d96bced6bbe3e13339" /> 
+  <cim:RegulatingCondEq.RegulationSchedule rdf:resource="#_4195b96724f4097b5adef2846ec6348" /> 
+  <cim:SynchronousMachine.baseMVAr>909.22913</cim:SynchronousMachine.baseMVAr> 
+  <cim:SynchronousMachine.maximumMVAr>99999</cim:SynchronousMachine.maximumMVAr> 
+  <cim:SynchronousMachine.minimumMVAr>-99999</cim:SynchronousMachine.minimumMVAr> 
+  <cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineOperatingMode.generator" /> 
+  <cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineType.generator" /> 
+  <cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_71ccc2b4cf1549b2b42873a9f9cc8c35" /> 
+  </cim:SynchronousMachine>
+
+<cim:RegulationSchedule rdf:ID="_375e6afbc4f54aa78b80d6d78d7a9dda">
+  <cim:Naming.name>NOD01S71_SM_RS</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.constantYValue" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.voltage" /> 
+  </cim:RegulationSchedule>
+<cim:Terminal rdf:ID="_37ac3d41ddc241beb5f7bd15d599cbb1">
+  <cim:Naming.name>NOD06S61_SM_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_1983f84c3db84f75b46c5559b793d19f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f7e756bd6be14937829aa036c349add8" /> 
+  </cim:Terminal>
+<cim:Line rdf:ID="_37ad53ba2c9e4fdc8e81c45076a546a7">
+  <cim:Naming.name>NOD12S61-NOD14S61-1</cim:Naming.name> 
+  </cim:Line>
+
+<cim:ConnectivityNode rdf:ID="_37b2ea4ad65e47bbb788ebd932363f4d">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_4794c9be10d845aa24b551455baa6d" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_37f3a6123cc0472e8dcab777aa35861">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_86ab6895ff2f4860b8413b7b12d35c9e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_ce0d0b8fea4423886f68241d4e762e" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_39f6b75be4294cb827fce15f5c3a4f">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_95ae3b7d651a4e1ba36622c11283bbf7" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:ConnectivityNode rdf:ID="_3a51bb3714b14776bde95cf6cccaeea5">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW2_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:TransformerWinding rdf:ID="_3bf166a8ecf4083996241bdcbea992e">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW2</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.secondary" /> 
+  <cim:TransformerWinding.x>9.0969954</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_91b3371b18284211b6b3463c7b3be31" /> 
+  </cim:TransformerWinding>
+
+<cim:Breaker rdf:ID="_3c3baf537c834ec68c7346c0235917cf">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:VoltageLevel rdf:ID="_3d6d614d5beb4fa189e422e6cac5cfa8">
+  <cim:Naming.name>NOD02S71</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>437</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>323</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  </cim:VoltageLevel>
+
+<cim:Terminal rdf:ID="_3f29fc2027754d778fc191e591d2c16c">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW2_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_368d77e1d64ec9b260b6a236f73b" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_34bfc4ac11774c1b90eb22589cf383d" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_3f6fc133b22492ab295f8c543534c2">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_214c2c7829284edd91d3b90e4e2d32" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7031cb373db84a99b6717ff7cedb37fe" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_408c790affb4b14bfbd57b4ac97f6c">
+  <cim:Naming.name>NOD03S71-NOD04S71-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_965de8ae5c834e49b8f71d92ab34ca8d" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:Terminal rdf:ID="_40e848cd418d4eeaa2de319560aad5a4">
+  <cim:Naming.name>NOD01S71_SM_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_71d3378352a64e58993733ac7b9675f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_4b3f9cbb37348085c889d5aecb5043" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_4160966a5ad40b79b48c3573e116c6">
+  <cim:Naming.name>NOD03S71-NOD04S71-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_e7adbccfd9f40148c1ca59ca5c283" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f941416a71d46ef974cd6e3ce83c8e" /> 
+  </cim:Terminal>
+<cim:RegulationSchedule rdf:ID="_4195b96724f4097b5adef2846ec6348">
+  <cim:Naming.name>NOD02S71_SM_RS</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.constantYValue" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.voltage" /> 
+  </cim:RegulationSchedule>
+
+<cim:Terminal rdf:ID="_42cd868c5b204bd48898bf86123f356d">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_cdc7942e10134febb2e76b2e7cad48bc" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6afa565db9499f9d15c6c756e4d733" /> 
+  </cim:Terminal>
+<cim:EnergyConsumer rdf:ID="_438c1d09a69452ea3fdb833aa157a35">
+  <cim:Naming.name>NOD11S61</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_2fd348762b3b462a8c629c317676a" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>70</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>36</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+
+<cim:MVArCapabilityCurve rdf:ID="_4627fb85b99448958e65d9552b8daca5">
+  <cim:Naming.name>NOD01S71_SM_MCC</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.straightLineYValues" /> 
+  <cim:CurveSchedule.xAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.xAxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.activePower" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.y2AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:MVArCapabilityCurve.SynchronousMachines rdf:resource="#_71d3378352a64e58993733ac7b9675f" /> 
+  </cim:MVArCapabilityCurve>
+<cim:Terminal rdf:ID="_47781d623cc64b998359646543afcfca">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f87459fa14c4d190d524f6d117896" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_d9310a7b3bd4fb3aa3e3b89b915c90" /> 
+  </cim:Terminal>
+
+<cim:VoltageLevel rdf:ID="_4794c9be10d845aa24b551455baa6d">
+  <cim:Naming.name>NOD13S61</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>253</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>187</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_c37dd6c0d112402fb5467116c1484bf5" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  </cim:VoltageLevel>
+<cim:ACLineSegment rdf:ID="_48b9dd86a334a74847a40b3868244f9">
+  <cim:Naming.name>NOD10S61-NOD11S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>1.985368</cim:Conductor.r> 
+  <cim:Conductor.x>4.6478519</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_5e5727e5b2541ec8f7d616fa2414b4b" /> 
+  </cim:ACLineSegment>
+
+<cim:EnergyConsumer rdf:ID="_491034bf555d46f59c1e2ad4c3e17d12">
+  <cim:Naming.name>NOD04S71</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>956</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>-78</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+<cim:MVArCapabilityCurve rdf:ID="_49ce48a57dde4ab688b3d949b78f6bd6">
+  <cim:Naming.name>NOD08S11_SM_MCC</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.straightLineYValues" /> 
+  <cim:CurveSchedule.xAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.xAxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.activePower" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.y2AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:MVArCapabilityCurve.SynchronousMachines rdf:resource="#_a85d5717f2a947758a27a3626cee74a" /> 
+  </cim:MVArCapabilityCurve>
+
+<cim:ConnectivityNode rdf:ID="_4a3a7bc8b43b455da2f2f1a091e870d8">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  </cim:ConnectivityNode>
+<cim:TransformerWinding rdf:ID="_4a60f5fbe7d144d5af1b16fa4715f85">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>2.0978055</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.primary" /> 
+  <cim:TransformerWinding.x>6.3652906</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_6bb7dc437e7416ca1adcd5e46ce42d7" /> 
+  </cim:TransformerWinding>
+
+<cim:ConnectivityNode rdf:ID="_4b3f9cbb37348085c889d5aecb5043">
+  <cim:Naming.name>NOD01S71</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_23333cd4619840f88ea8431dc1915fe" /> 
+  </cim:ConnectivityNode>
+<cim:Breaker rdf:ID="_4b738ab89a5c43be952dc696e9e8ca85">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW2_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_4cf1ccb53a7a4c8fb9f7c9532b47652">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f4328be635ed4a5c951626886e34fa2" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_935f945de87e483baaa4c950a8f39796" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_4d2db3c1133433aae97f996fe4f7454">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_2c81ab23612c465f86659ce891d447b9" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_cda9f3ee476040c8a2c73d51094e97" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_4d72b06e907a4164976835228bb04f57">
+  <cim:Naming.name>NOD12S61-NOD14S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_95ae3b7d651a4e1ba36622c11283bbf7" /> 
+  <cim:Switch.normalOpen>1</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_4d8d776994d4d21952f4c838da85d6f">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_2e5c5de3146a4bae838dd1a651d6a989" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_bf581b86577542428fb584ae4e7a104b" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_4e8818d7cc9c4ce9bef7802d30c3cb92">
+  <cim:Naming.name>NOD03S71-NOD04S71-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_579568ff484b45b680fc2989f0279acf" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_fe13f32f8a47ab94cc5166d36f148" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_4f984a317038438ba8b72e7ccc54d399">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7d2bd415f2ab47debc1f769dbf2f4044" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f941416a71d46ef974cd6e3ce83c8e" /> 
+  </cim:Terminal>
+<cim:CurveSchedData rdf:ID="_4fa130ba92374f1eaadd7da7ed951c5">
+  <cim:Naming.name>NOD08S11_SM_CSD</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>29.43</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_5f9811291e0482c81ca1709383ee9d" /> 
+  </cim:CurveSchedData>
+
+<cim:Terminal rdf:ID="_4fb783498b5413da8756696b41d2d5">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7f6e46c4c6e44940aba3840bba6528f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f6ac79e7a3c04a4eaccde35069f6380" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_506f7712edcd4d29afa7588de440a61d">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW2_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_c2be6881fe874d1cba92f324b059f3ca" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_82e59a2fbee43838ca1e7b7665a5043" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_5120bae4ef46be9531e393f7a95a1">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_a33d3c692fed4136b09b2c7c7e17a12c" /> 
+  </cim:ConnectivityNode>
+
+<cim:Terminal rdf:ID="_517cfdc09aa4b90996b20673dff269">
+  <cim:Naming.name>NOD01S71-NOD02S71-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_5e40aa2455c14ad7b6bada458fb55c51" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6ad96ff5c7c4de08bf3bb182b26aeae" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_52967484c504b58acca040b0a6a4fe">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_4a60f5fbe7d144d5af1b16fa4715f85" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_91f896d2b247a0939ac83c7c1d2afe" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_549af154d6e4a238d5c58f4949cc5e3">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_965de8ae5c834e49b8f71d92ab34ca8d" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:Terminal rdf:ID="_55a15269bbe2465298852e8ab6a991f7">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_96e0e287b8914edfb65add233e7fc437" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_bb0c138523d4826a482c2f52635dbd9" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_55b37398b080415d923acb6a9bc72e84">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW2_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_55d5a5e6ba74e8e97fcc2b699901581">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_d868c6dba244197ae3cd7ef9f2c7cb4" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f7e756bd6be14937829aa036c349add8" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_563ef334bec14981acf4b73dd74a5aea">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_27df2fe128a4a34984cc9b7a6cd601c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_37b2ea4ad65e47bbb788ebd932363f4d" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_56f477776998407e88997e1274bda783">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_12cfa155f4643428ae162f8d42b827e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f9f011e57b2f4f8e96ad7ffcb068afd5" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_57764b7a77d04de9903b3efbfb8c15ee">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_2ce6c237d39342d1a31b7fc386827422" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_365a16b8e34d448893d2f968ddffd72a" /> 
+  </cim:Terminal>
+
+<cim:ACLineSegment rdf:ID="_579568ff484b45b680fc2989f0279acf">
+  <cim:Naming.name>NOD03S71-NOD04S71-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:Conductor.bch>0.00017728392</cim:Conductor.bch> 
+  <cim:Conductor.r>4.8374</cim:Conductor.r> 
+  <cim:Conductor.x>12.347644</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_7e36a9801ba249fe92f53e1cdb8b4af2" /> 
+  </cim:ACLineSegment>
+<cim:Terminal rdf:ID="_586dd995b32444fb641e2fd3e4aa56e">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_9951efc1c38f46f2b18bc4ab1634b5b" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e77c67b4b6e4422b913a79e4addfa56" /> 
+  </cim:Terminal>
+
+<cim:GeneratingUnit rdf:ID="_589c922ec2ba41c08de0c16b5d79e0cc">
+  <cim:Naming.name>NOD08S11_GU</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_353a2750b62049b6bc69f8671f2bf1cc" /> 
+  <cim:GeneratingUnit.initialMW>0</cim:GeneratingUnit.initialMW> 
+  <cim:GeneratingUnit.SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:GeneratingUnit>
+<cim:Terminal rdf:ID="_58b1504344c940c3ae99a451d3f7568">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_c8259c3467f54cf5a6ad23766ce91244" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7fa74a8e8b774451ab92ba5feade757" /> 
+  </cim:Terminal>
+<cim:Substation rdf:ID="_597751622a5437a8f2c7a7b4d9ce5e">
+
+  <cim:Naming.name>NOD10S61</cim:Naming.name> 
+  <cim:Substation.MemberOf_SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:Substation>
+<cim:Terminal rdf:ID="_59a75917ac64489af2c624d429905a">
+  <cim:Naming.name>NOD03S71-NOD04S71-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_408c790affb4b14bfbd57b4ac97f6c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_fe13f32f8a47ab94cc5166d36f148" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_5a6e4fdfcf4a16b7e6d52dd4f07b3c">
+  <cim:Naming.name>NOD09S61-NOD14S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  </cim:ConnectivityNode>
+
+<cim:Terminal rdf:ID="_5ad022f3aa134720b8b59683a223449e">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW2_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f1771814529b4793a02ca46164db63b" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_55b37398b080415d923acb6a9bc72e84" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_5b25d6da8fca4dc08221a12f48cd2a85">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_6e4116401f8b487a8615c648d745f27e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_91b1acae5635424094f4c490ac8acfa" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_5b75b9797e9a4c188cc3d363f5355849">
+  <cim:Naming.name>NOD12S61-NOD14S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_6454e6b374dd449081a359ef803a9a96" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e014d6a0bc6495c96952fcec46c43a" /> 
+  </cim:Terminal>
+
+<cim:ACLineSegment rdf:ID="_5d87d56dfae84ef39598721ca5e1766a">
+  <cim:Naming.name>NOD06S61-NOD12S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>2.97418</cim:Conductor.r> 
+  <cim:Conductor.x>6.1903601</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_d9f2164c506346d38d50e3e0bfbe3ede" /> 
+  </cim:ACLineSegment>
+<cim:ConnectivityNode rdf:ID="_5dad6c1af8457285e61eaa49fdb3b1">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  </cim:ConnectivityNode>
+
+<cim:Breaker rdf:ID="_5e40aa2455c14ad7b6bada458fb55c51">
+  <cim:Naming.name>NOD01S71-NOD02S71-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Line rdf:ID="_5e5727e5b2541ec8f7d616fa2414b4b">
+  <cim:Naming.name>NOD10S61-NOD11S61-1</cim:Naming.name> 
+  </cim:Line>
+<cim:RegulationSchedule rdf:ID="_5f9811291e0482c81ca1709383ee9d">
+  <cim:Naming.name>NOD08S11_SM_RS</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.constantYValue" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.voltage" /> 
+  </cim:RegulationSchedule>
+
+<cim:PowerTransformer rdf:ID="_60af6937d1704196b0c7d7effda117dd">
+  <cim:Naming.name>NOD07S71-NOD04S71-1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:PowerTransformer.transformerType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerType.voltageControl" /> 
+  </cim:PowerTransformer>
+<cim:Breaker rdf:ID="_61fd90088c647a2bfd8bb6fd205071">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Breaker rdf:ID="_6454e6b374dd449081a359ef803a9a96">
+  <cim:Naming.name>NOD12S61-NOD14S61-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_b2f4f9c1d0ec42e281906477a31efd26" /> 
+  <cim:Switch.normalOpen>1</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:SynchronousMachine rdf:ID="_6638f35ab854ae6a4cf493cc3b166e2">
+  <cim:Naming.name>NOD03S71_SM</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_965de8ae5c834e49b8f71d92ab34ca8d" /> 
+  <cim:RegulatingCondEq.Measurement rdf:resource="#_c60a21c6e3446bcb81dbe56561250d1" /> 
+  <cim:RegulatingCondEq.RegulationSchedule rdf:resource="#_f8da52344c724564907393ebe5bf7ece" /> 
+  <cim:SynchronousMachine.baseMVAr>509.99509</cim:SynchronousMachine.baseMVAr> 
+  <cim:SynchronousMachine.maximumMVAr>99999</cim:SynchronousMachine.maximumMVAr> 
+  <cim:SynchronousMachine.minimumMVAr>-99999</cim:SynchronousMachine.minimumMVAr> 
+  <cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineOperatingMode.condenser" /> 
+  <cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineType.condenser" /> 
+  <cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_a68efcc62e2d41589425f642ca816a5" /> 
+  </cim:SynchronousMachine>
+
+<cim:Terminal rdf:ID="_6710b7a515fe44489002effa3ed5050">
+  <cim:Naming.name>NOD02S71_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_feed2554d24141a9979f07c8ed6d91f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6ad96ff5c7c4de08bf3bb182b26aeae" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_68c6ae281fa4244a834d7bf8cf9f1cc">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_b4534064ca714fa8f6121c52e309798" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f7e756bd6be14937829aa036c349add8" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_6947eddaeff846468cebba899c305392">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f09e631e74fa41bc835f78c47463493d" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_d9310a7b3bd4fb3aa3e3b89b915c90" /> 
+  </cim:Terminal>
+
+<cim:ConnectivityNode rdf:ID="_6ad96ff5c7c4de08bf3bb182b26aeae">
+  <cim:Naming.name>NOD02S71</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:ConnectivityNode rdf:ID="_6afa565db9499f9d15c6c756e4d733">
+  <cim:Naming.name>NOD09S61</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_6b1bb4fd523244ca17bea9e21dcc848">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_8eedafe3ecbf48aaa9a2572d92b35a84" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c562e0c0137474afb670732ae3f03b" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_6b2e6ea60bf4e50a874386392dd9f4">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW2_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_297fb9c78f43cb8cd03f9fe3db9f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_34bfc4ac11774c1b90eb22589cf383d" /> 
+  </cim:Terminal>
+<cim:TapChanger rdf:ID="_6b578ce8dcbd4ca8b3c9e374729a6c43">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TC1</cim:Naming.name> 
+  <cim:TapChanger.highStep>3</cim:TapChanger.highStep> 
+  <cim:TapChanger.lowStep>1</cim:TapChanger.lowStep> 
+  <cim:TapChanger.neutralKV>220</cim:TapChanger.neutralKV> 
+  <cim:TapChanger.neutralStep>2</cim:TapChanger.neutralStep> 
+  <cim:TapChanger.normalStep>3</cim:TapChanger.normalStep> 
+  <cim:TapChanger.stepVoltageIncrement>3.1022713</cim:TapChanger.stepVoltageIncrement> 
+  <cim:TapChanger.tculControlMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerControlMode.volt" /> 
+  <cim:TapChanger.TransformerWinding rdf:resource="#_2489bd97cd304f6e8780a547321cbcf" /> 
+  </cim:TapChanger>
+
+<cim:PowerTransformer rdf:ID="_6bb7dc437e7416ca1adcd5e46ce42d7">
+  <cim:Naming.name>NOD02S71-NOD04S71-1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:PowerTransformer.transformerType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerType.voltageAndPhaseControl" /> 
+  </cim:PowerTransformer>
+<cim:CurveSchedData rdf:ID="_6bf95e8cd0704d15a1defd4bdd4d0c4">
+  <cim:Naming.name>NOD01S71_SM_CSD1</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>-99999</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.y2AxisData>99999</cim:CurveSchedData.y2AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_4627fb85b99448958e65d9552b8daca5" /> 
+  </cim:CurveSchedData>
+
+<cim:TransformerWinding rdf:ID="_6c77f701a8e48e9bdc45ec75cfc6d85">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW2</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.secondary" /> 
+  <cim:TransformerWinding.x>7.5490141</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_60af6937d1704196b0c7d7effda117dd" /> 
+  </cim:TransformerWinding>
+
+<cim:Terminal rdf:ID="_6d2b42e1d3d547748e2a83ae626d829">
+  <cim:Naming.name>NOD12S61-NOD14S61-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_ac5e83bc69394f88b7dee43e18a4684" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_c372af4d85b448cba88e650f376ce1" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_6e4116401f8b487a8615c648d745f27e">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_2fd348762b3b462a8c629c317676a" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:ConnectivityNode rdf:ID="_7031cb373db84a99b6717ff7cedb37fe">
+  <cim:Naming.name>NOD05S71</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_d0908bce97ad46c38f8fba427ed873a1" /> 
+  </cim:ConnectivityNode>
+
+<cim:ConnectivityNode rdf:ID="_709fbc7a935e454b95bde244926d72bf">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW2_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_d0908bce97ad46c38f8fba427ed873a1" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_713c6995f9c0446f8af0a0a0b43493da">
+  <cim:Naming.name>NOD05S71_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_ee29b388ca2411dae1897bca13be651" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7031cb373db84a99b6717ff7cedb37fe" /> 
+  </cim:Terminal>
+<cim:GeneratingUnit rdf:ID="_71ccc2b4cf1549b2b42873a9f9cc8c35">
+  <cim:Naming.name>NOD02S71_GU</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:GeneratingUnit.initialMW>898.89185</cim:GeneratingUnit.initialMW> 
+  <cim:GeneratingUnit.ratedNetMaxMW>817.17438</cim:GeneratingUnit.ratedNetMaxMW> 
+  <cim:GeneratingUnit.SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:GeneratingUnit>
+
+<cim:SynchronousMachine rdf:ID="_71d3378352a64e58993733ac7b9675f">
+  <cim:Naming.name>NOD01S71_SM</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_23333cd4619840f88ea8431dc1915fe" /> 
+  <cim:RegulatingCondEq.Measurement rdf:resource="#_b6927e4c6222456accc67fb74c85d" /> 
+  <cim:RegulatingCondEq.RegulationSchedule rdf:resource="#_375e6afbc4f54aa78b80d6d78d7a9dda" /> 
+  <cim:SynchronousMachine.baseMVAr>-358.60101</cim:SynchronousMachine.baseMVAr> 
+  <cim:SynchronousMachine.maximumMVAr>99999</cim:SynchronousMachine.maximumMVAr> 
+  <cim:SynchronousMachine.minimumMVAr>-99999</cim:SynchronousMachine.minimumMVAr> 
+  <cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineOperatingMode.generator" /> 
+  <cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineType.generator" /> 
+  <cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_f1c0c969644343e8b88ae41537dd5b" /> 
+  </cim:SynchronousMachine>
+
+<cim:Terminal rdf:ID="_75d24d430fb49cb9258dbba2fb1ebb3">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_1dfffd40b04a7f98122b1f15afccb" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_4a3a7bc8b43b455da2f2f1a091e870d8" /> 
+  </cim:Terminal>
+<cim:EnergyConsumer rdf:ID="_7880a4aaf089437eb69ac1415233e">
+  <cim:Naming.name>NOD06S61</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>224</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>150</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+
+<cim:TransformerWinding rdf:ID="_7924abe41c94b7b89d257d2a7f242">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW2</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>2.0978055</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.secondary" /> 
+  <cim:TransformerWinding.x>6.3652906</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_6bb7dc437e7416ca1adcd5e46ce42d7" /> 
+  </cim:TransformerWinding>
+
+<cim:Terminal rdf:ID="_79845846b557456d916960913127e9a0">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_12cfa155f4643428ae162f8d42b827e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e88ac25b578435aa75ced50856a2324" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_7a657f485c841ada5082ae0d4f140">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f8787b26ad14c3095cfd50dbcbd37" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_5120bae4ef46be9531e393f7a95a1" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_7a68594e39da4b23bdb1a634c687baf8">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_89d4bf071e9419a9f584ae9e867522c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_324bcd1e9528437b936934aef043261b" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_7ad257e0688b4036992372c1171dfa12">
+  <cim:Naming.name>NOD10S61-NOD11S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_48b9dd86a334a74847a40b3868244f9" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_5120bae4ef46be9531e393f7a95a1" /> 
+  </cim:Terminal>
+<cim:TransformerWinding rdf:ID="_7c29156914da42eb879a3cd4632ed87c">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_96875c3ee774caa9669b9848d92b4d" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>27</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.primary" /> 
+  <cim:TransformerWinding.x>0.032101516</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_93f9644689424f59a66f5bf0b31249e9" /> 
+  </cim:TransformerWinding>
+
+<cim:Breaker rdf:ID="_7d2bd415f2ab47debc1f769dbf2f4044">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Line rdf:ID="_7e36a9801ba249fe92f53e1cdb8b4af2">
+  <cim:Naming.name>NOD03S71-NOD04S71-1</cim:Naming.name> 
+  </cim:Line>
+<cim:ConnectivityNode rdf:ID="_7e46aaecc72f4ec19ef4b9c5803e4180">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_a33d3c692fed4136b09b2c7c7e17a12c" /> 
+  </cim:ConnectivityNode>
+
+<cim:TapChanger rdf:ID="_7e89def281d491fb31b1a5c0b072f2">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TC1</cim:Naming.name> 
+  <cim:TapChanger.highStep>3</cim:TapChanger.highStep> 
+  <cim:TapChanger.lowStep>1</cim:TapChanger.lowStep> 
+  <cim:TapChanger.neutralKV>380</cim:TapChanger.neutralKV> 
+  <cim:TapChanger.neutralStep>2</cim:TapChanger.neutralStep> 
+  <cim:TapChanger.normalStep>3</cim:TapChanger.normalStep> 
+  <cim:TapChanger.stepVoltageIncrement>2.1539466</cim:TapChanger.stepVoltageIncrement> 
+  <cim:TapChanger.tculControlMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerControlMode.volt" /> 
+  <cim:TapChanger.TransformerWinding rdf:resource="#_9810c005c456c8b4da8649da5455d" /> 
+  </cim:TapChanger>
+
+<cim:Breaker rdf:ID="_7f6e46c4c6e44940aba3840bba6528f">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_353a2750b62049b6bc69f8671f2bf1cc" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:ConnectivityNode rdf:ID="_7fa74a8e8b774451ab92ba5feade757">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_965de8ae5c834e49b8f71d92ab34ca8d" /> 
+  </cim:ConnectivityNode>
+<cim:Breaker rdf:ID="_811ea4ad8580432abb704c684a117a3a">
+  <cim:Naming.name>NOD01S71-NOD02S71-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_23333cd4619840f88ea8431dc1915fe" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:MVArCapabilityCurve rdf:ID="_825f90a0465e44acbb576e736f811c16">
+  <cim:Naming.name>NOD06S61_SM_MCC</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.straightLineYValues" /> 
+  <cim:CurveSchedule.xAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.xAxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.activePower" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.y2AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.reactivePower" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:MVArCapabilityCurve.SynchronousMachines rdf:resource="#_1983f84c3db84f75b46c5559b793d19f" /> 
+  </cim:MVArCapabilityCurve>
+<cim:Line rdf:ID="_82d1b8fb5544b11b7d737154f97c991">
+  <cim:Naming.name>NOD04S71-NOD05S71-1</cim:Naming.name> 
+  </cim:Line>
+
+<cim:ConnectivityNode rdf:ID="_82e59a2fbee43838ca1e7b7665a5043">
+  <cim:Naming.name>NOD07S71</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:VoltageLevel rdf:ID="_83441496d74aa7b9e1e3d9996e8f1">
+  <cim:Naming.name>NOD09S61</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>253</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>187</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  </cim:VoltageLevel>
+
+<cim:Substation rdf:ID="_8670961d004ee780ccfbdf1f9a3f40">
+  <cim:Naming.name>NOD12S61</cim:Naming.name> 
+  <cim:Substation.MemberOf_SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:Substation>
+<cim:Terminal rdf:ID="_86894fee11dc428d8fdbbb2877b01c">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_8d3ed14e4aa046db961e16db7df3222" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_5dad6c1af8457285e61eaa49fdb3b1" /> 
+  </cim:Terminal>
+<cim:ACLineSegment rdf:ID="_86ab6895ff2f4860b8413b7b12d35c9e">
+  <cim:Naming.name>NOD01S71-NOD05S71-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:Conductor.bch>0.00068144046</cim:Conductor.bch> 
+  <cim:Conductor.r>3.900244</cim:Conductor.r> 
+  <cim:Conductor.x>16.103489</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_2647174ac027409cb01c6ba35bafc9cf" /> 
+  </cim:ACLineSegment>
+
+<cim:Line rdf:ID="_86da5c351388477086d7843c6029a3da">
+  <cim:Naming.name>NOD09S61-NOD14S61-1</cim:Naming.name> 
+  </cim:Line>
+<cim:Terminal rdf:ID="_89c9dfc82926405481bdc28edc5694b">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f09e631e74fa41bc835f78c47463493d" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_37b2ea4ad65e47bbb788ebd932363f4d" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_89d4bf071e9419a9f584ae9e867522c">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_4794c9be10d845aa24b551455baa6d" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+
+<cim:CurveSchedData rdf:ID="_8b7dcbdaf7e848a5911bdda9d757d">
+  <cim:Naming.name>NOD06S61_SM_CSD1</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>-99999</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.y2AxisData>99999</cim:CurveSchedData.y2AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_825f90a0465e44acbb576e736f811c16" /> 
+  </cim:CurveSchedData>
+<cim:Terminal rdf:ID="_8ceac4cbe4b74a3c987cda6a3e2b4931">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_2bf86eb66b8f416c8d75655037629826" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_14b3b8a5c04f4957ac30d5b89a97259" /> 
+  </cim:Terminal>
+
+<cim:Breaker rdf:ID="_8d3ed14e4aa046db961e16db7df3222">
+  <cim:Naming.name>NOD09S61-NOD04S71-1_TW1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_8da4ba7ad04968b4a6c154741947a4">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW2_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_c2be6881fe874d1cba92f324b059f3ca" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_9ea02bc318104ae68ca1ac1166a8d960" /> 
+  </cim:Terminal>
+<cim:EnergyConsumer rdf:ID="_8e593ac63d57442992dd9ebe1fa82883">
+  <cim:Naming.name>NOD09S61</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_83441496d74aa7b9e1e3d9996e8f1" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>590</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>332</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+
+<cim:Terminal rdf:ID="_8ec330a21e1c4561be11f55b7ca13234">
+  <cim:Naming.name>NOD09S61_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_8e593ac63d57442992dd9ebe1fa82883" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6afa565db9499f9d15c6c756e4d733" /> 
+  </cim:Terminal>
+<cim:ACLineSegment rdf:ID="_8eedafe3ecbf48aaa9a2572d92b35a84">
+  <cim:Naming.name>NOD04S71-NOD05S71-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>0.963148</cim:Conductor.r> 
+  <cim:Conductor.x>3.0396199</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_82d1b8fb5544b11b7d737154f97c991" /> 
+  </cim:ACLineSegment>
+
+<cim:Terminal rdf:ID="_8f831786bac4d208e8ed7fe2616e32c">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_9810c005c456c8b4da8649da5455d" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_ef5c1adaefc94176bf9de8e8155bce37" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_9093e6ae6bfe46a2a5c7bec749d6750">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW2_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_36bd58964f3146d98c8ca7adfd40cd96" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_9ea02bc318104ae68ca1ac1166a8d960" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_91b1acae5635424094f4c490ac8acfa">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_2fd348762b3b462a8c629c317676a" /> 
+  </cim:ConnectivityNode>
+
+<cim:PowerTransformer rdf:ID="_91b3371b18284211b6b3463c7b3be31">
+  <cim:Naming.name>NOD06S61-NOD05S71-1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ee95224fd6f640d6baec60093e1d19d" /> 
+  <cim:PowerTransformer.transformerType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerType.voltageControl" /> 
+  </cim:PowerTransformer>
+<cim:Terminal rdf:ID="_91cd91ccf6b94f7fa33eb0dd86756b9e">
+  <cim:Naming.name>NOD14S61_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_b63b8eb916845c4aef0d751649179b" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_cda9f3ee476040c8a2c73d51094e97" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_91f896d2b247a0939ac83c7c1d2afe">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+
+<cim:ConnectivityNode rdf:ID="_935f945de87e483baaa4c950a8f39796">
+  <cim:Naming.name>NOD06S61-NOD13S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_93a33e4a655447183f4ab2c3ce416c">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_549af154d6e4a238d5c58f4949cc5e3" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_35561729c5b4fa1b6159291db78c85b" /> 
+  </cim:Terminal>
+<cim:PowerTransformer rdf:ID="_93f9644689424f59a66f5bf0b31249e9">
+  <cim:Naming.name>NOD08S11-NOD07S71-1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:PowerTransformer.transformerType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerType.fix" /> 
+  </cim:PowerTransformer>
+
+<cim:Terminal rdf:ID="_94ac494a5ad94b29992593492d5bdc3">
+  <cim:Naming.name>NOD06S61_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7880a4aaf089437eb69ac1415233e" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f7e756bd6be14937829aa036c349add8" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_94c9bceebdc94212a972f6624358053">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_022fae55982483196343f718896258c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6ad96ff5c7c4de08bf3bb182b26aeae" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_94dfabfcf5c4429d859c5b823e14ceee">
+  <cim:Naming.name>NOD03S71-NOD04S71-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_e7adbccfd9f40148c1ca59ca5c283" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_aa7377a8919f464386c431a53cfbf3c1" /> 
+  </cim:Terminal>
+
+<cim:VoltageLevel rdf:ID="_95ae3b7d651a4e1ba36622c11283bbf7">
+  <cim:Naming.name>NOD14S61</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>253</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>187</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_d2f83becf1aa4e8a81d34a2bd7b470b9" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  </cim:VoltageLevel>
+<cim:VoltageLevel rdf:ID="_965de8ae5c834e49b8f71d92ab34ca8d">
+  <cim:Naming.name>NOD03S71</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>437</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>323</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_1157c9fe7db64fe190ded39d669724f5" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  </cim:VoltageLevel>
+
+<cim:BaseVoltage rdf:ID="_96875c3ee774caa9669b9848d92b4d">
+  <cim:BaseVoltage.nominalVoltage>27</cim:BaseVoltage.nominalVoltage> 
+  <cim:BaseVoltage.BasePower rdf:resource="#_21f436dd7b4242bf88217efd36a33f2" /> 
+  </cim:BaseVoltage>
+<cim:Breaker rdf:ID="_96e0e287b8914edfb65add233e7fc437">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_a33d3c692fed4136b09b2c7c7e17a12c" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:TransformerWinding rdf:ID="_9810c005c456c8b4da8649da5455d">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.primary" /> 
+  <cim:TransformerWinding.x>7.5490141</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_60af6937d1704196b0c7d7effda117dd" /> 
+  </cim:TransformerWinding>
+
+<cim:Terminal rdf:ID="_98cbd3ac85ec4e5fa3a0d4756524d1ec">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_ad2aac829804f699c2edf25ae311f2" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_ce0d0b8fea4423886f68241d4e762e" /> 
+  </cim:Terminal>
+<cim:Breaker rdf:ID="_9951efc1c38f46f2b18bc4ab1634b5b">
+  <cim:Naming.name>NOD06S61-NOD12S61-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_b2f4f9c1d0ec42e281906477a31efd26" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Analog rdf:ID="_9a4f8a85604d96bced6bbe3e13339">
+  <cim:Naming.name>NOD02S71_SM_MS</cim:Naming.name> 
+  <cim:Measurement.MeasurementType rdf:resource="#_f75224a737464ad9b32e6c801278d44a" /> 
+  <cim:Measurement.Terminal rdf:resource="#_eaddaada419541868c6eed231a8a7183" /> 
+  <cim:Measurement.Unit rdf:resource="#_ae2af2ff40e74d47b0f9e47f8ae450df" /> 
+  <cim:Measurement.MemberOf_PSR rdf:resource="#_37142954961b462c8da2afa86cc8b49e" /> 
+  </cim:Analog>
+
+<cim:RegulationSchedule rdf:ID="_9ba849f8593e4092882897a593d8f281">
+  <cim:Naming.name>NOD06S61_SM_RS</cim:Naming.name> 
+  <cim:CurveSchedule.curveStyle rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#CurveStyle.constantYValue" /> 
+  <cim:CurveSchedule.yAxisType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#NumericType.FLOAT_TYPE" /> 
+  <cim:CurveSchedule.y1AxisQuantity rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#AxisQuantity.voltage" /> 
+  </cim:RegulationSchedule>
+<cim:Terminal rdf:ID="_9c61174fac04dc1beb15b423bf71c16">
+  <cim:Naming.name>NOD09S61-NOD10S61-1_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_96e0e287b8914edfb65add233e7fc437" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_7e46aaecc72f4ec19ef4b9c5803e4180" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_9cfcc521a53947229777583fd67d6a87">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_TS2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_de6bcc16595d42c2893a8b297e421739" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_324bcd1e9528437b936934aef043261b" /> 
+  </cim:Terminal>
+
+<cim:ConnectivityNode rdf:ID="_9ea02bc318104ae68ca1ac1166a8d960">
+  <cim:Naming.name>NOD08S11-NOD07S71-1_TW2_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_9f1f86ff50204a11b9e653f871d0e74a">
+  <cim:Naming.name>NOD03S71_SM_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_6638f35ab854ae6a4cf493cc3b166e2" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_35561729c5b4fa1b6159291db78c85b" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_9f5b961c98b04fcfab2fe49c35b5d3b7">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_b2f4f9c1d0ec42e281906477a31efd26" /> 
+  </cim:ConnectivityNode>
+
+<cim:Terminal rdf:ID="_a1eacb6e33c54491b3a6b275c486044">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_e0b3fbf836df47ed99c7508a93c2787f" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_4a3a7bc8b43b455da2f2f1a091e870d8" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_a1f7875213e74894a110d4ef9b30d561">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_dfbebc213394a1d999839662464ebd" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_ef5c1adaefc94176bf9de8e8155bce37" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_a2872a42849472d9f01b57cbc6b71d">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f87459fa14c4d190d524f6d117896" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_bf581b86577542428fb584ae4e7a104b" /> 
+  </cim:Terminal>
+
+<cim:VoltageLevel rdf:ID="_a33d3c692fed4136b09b2c7c7e17a12c">
+  <cim:Naming.name>NOD10S61</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>253</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>187</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_597751622a5437a8f2c7a7b4d9ce5e" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  </cim:VoltageLevel>
+<cim:Line rdf:ID="_a391417d4747a59378874d07aeea0">
+  <cim:Naming.name>NOD13S61-NOD14S61-1</cim:Naming.name> 
+  </cim:Line>
+<cim:CurveSchedData rdf:ID="_a4f6788497ae49a68238d62f4365720">
+
+  <cim:Naming.name>NOD03S71_SM_CSD</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>383.7999</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_f8da52344c724564907393ebe5bf7ece" /> 
+  </cim:CurveSchedData>
+<cim:GeneratingUnit rdf:ID="_a68efcc62e2d41589425f642ca816a5">
+  <cim:Naming.name>NOD03S71_GU</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_965de8ae5c834e49b8f71d92ab34ca8d" /> 
+  <cim:GeneratingUnit.initialMW>0</cim:GeneratingUnit.initialMW> 
+  <cim:GeneratingUnit.SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:GeneratingUnit>
+
+<cim:Breaker rdf:ID="_a78315134f14d5483f5dc42aa2d9a64">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW2_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0908bce97ad46c38f8fba427ed873a1" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:SynchronousMachine rdf:ID="_a85d5717f2a947758a27a3626cee74a">
+  <cim:Naming.name>NOD08S11_SM</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_353a2750b62049b6bc69f8671f2bf1cc" /> 
+  <cim:RegulatingCondEq.Measurement rdf:resource="#_1dfdd9ab6a04f2f90c3ba172316d8f" /> 
+  <cim:RegulatingCondEq.RegulationSchedule rdf:resource="#_5f9811291e0482c81ca1709383ee9d" /> 
+  <cim:SynchronousMachine.baseMVAr>344.66959</cim:SynchronousMachine.baseMVAr> 
+  <cim:SynchronousMachine.maximumMVAr>99999</cim:SynchronousMachine.maximumMVAr> 
+  <cim:SynchronousMachine.minimumMVAr>-99999</cim:SynchronousMachine.minimumMVAr> 
+  <cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineOperatingMode.condenser" /> 
+  <cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#SynchronousMachineType.condenser" /> 
+  <cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_589c922ec2ba41c08de0c16b5d79e0cc" /> 
+  </cim:SynchronousMachine>
+
+<cim:CurveSchedData rdf:ID="_a8db7c4f8da48d93598449c4f4deea">
+  <cim:Naming.name>NOD02S71_SM_CSD</cim:Naming.name> 
+  <cim:CurveSchedData.xAxisData>0</cim:CurveSchedData.xAxisData> 
+  <cim:CurveSchedData.y1AxisData>397.10001</cim:CurveSchedData.y1AxisData> 
+  <cim:CurveSchedData.CurveSchedule rdf:resource="#_4195b96724f4097b5adef2846ec6348" /> 
+  </cim:CurveSchedData>
+<cim:ConnectivityNode rdf:ID="_a8ff8923a240452ebebb664cfd50bc4c">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_d0908bce97ad46c38f8fba427ed873a1" /> 
+  </cim:ConnectivityNode>
+<cim:ConnectivityNode rdf:ID="_aa7377a8919f464386c431a53cfbf3c1">
+
+  <cim:Naming.name>NOD03S71-NOD04S71-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:Terminal rdf:ID="_aa91bed396ca41389f90ef3462d49b5">
+  <cim:Naming.name>NOD12S61-NOD13S61-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_d6065fdf7ac426eb3cd30cd67ee235" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_e014d6a0bc6495c96952fcec46c43a" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_aab58cd8fa5f4e58a3c999e844b15fcb">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_022fae55982483196343f718896258c" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_b739a970e84040dabd8c57f2a468d2c1" /> 
+  </cim:Terminal>
+
+<cim:Terminal rdf:ID="_ab39418b1345438693c921228eb26521">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_dfbebc213394a1d999839662464ebd" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_82e59a2fbee43838ca1e7b7665a5043" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_abfcf7ff5c2a43a98a69e710573e1248">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_b27375ce12f146c7a48b66d9ea3b487" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6ad96ff5c7c4de08bf3bb182b26aeae" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_ac43e1f8c8bc42c29dece6e35847d5d1">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_TB1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_7d2bd415f2ab47debc1f769dbf2f4044" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f3ac689e5d6345ba9196509db8ae3615" /> 
+  </cim:Terminal>
+
+<cim:ACLineSegment rdf:ID="_ac5e83bc69394f88b7dee43e18a4684">
+  <cim:Naming.name>NOD12S61-NOD14S61-1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:Conductor.bch>0</cim:Conductor.bch> 
+  <cim:Conductor.r>3.749548</cim:Conductor.r> 
+  <cim:Conductor.x>4.2277403</cim:Conductor.x> 
+  <cim:ACLineSegment.MemberOf_Line rdf:resource="#_37ad53ba2c9e4fdc8e81c45076a546a7" /> 
+  </cim:ACLineSegment>
+<cim:Terminal rdf:ID="_acbfdae386194a22bbf369719b24793">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f74cf8358ad44ef866d93fea3ba17b" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_1898fbdd962f44aca394c95694222628" /> 
+  </cim:Terminal>
+
+<cim:Breaker rdf:ID="_ad2aac829804f699c2edf25ae311f2">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_B2</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0908bce97ad46c38f8fba427ed873a1" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Unit rdf:ID="_ae2af2ff40e74d47b0f9e47f8ae450df">
+  <cim:Naming.name>kV</cim:Naming.name> 
+  </cim:Unit>
+<cim:Substation rdf:ID="_b0eabfcd17c4fbdaba1f4b3a28b7873">
+  <cim:Naming.name>NOD01S71</cim:Naming.name> 
+  <cim:Substation.MemberOf_SubControlArea rdf:resource="#_b198466d24a64f25942195cbab26b384" /> 
+  </cim:Substation>
+
+<cim:SubControlArea rdf:ID="_b198466d24a64f25942195cbab26b384">
+  <cim:Naming.name>07</cim:Naming.name> 
+  <cim:SubControlArea.HostControlArea rdf:resource="#_c27c3ab63ee2497981ffd754b1732774" /> 
+  </cim:SubControlArea>
+<cim:Breaker rdf:ID="_b27375ce12f146c7a48b66d9ea3b487">
+  <cim:Naming.name>NOD02S71-NOD03S71-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:TapChanger rdf:ID="_b28c42e84f1149349222c6d8dbde5d2">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TC1</cim:Naming.name> 
+  <cim:TapChanger.highStep>19</cim:TapChanger.highStep> 
+  <cim:TapChanger.lowStep>1</cim:TapChanger.lowStep> 
+  <cim:TapChanger.neutralKV>380</cim:TapChanger.neutralKV> 
+  <cim:TapChanger.neutralStep>10</cim:TapChanger.neutralStep> 
+  <cim:TapChanger.normalStep>15</cim:TapChanger.normalStep> 
+  <cim:TapChanger.stepPhaseShiftIncrement>-0.75222224</cim:TapChanger.stepPhaseShiftIncrement> 
+  <cim:TapChanger.stepVoltageIncrement>0</cim:TapChanger.stepVoltageIncrement> 
+  <cim:TapChanger.tculControlMode rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerControlMode.volt" /> 
+  <cim:TapChanger.TransformerWinding rdf:resource="#_4a60f5fbe7d144d5af1b16fa4715f85" /> 
+  </cim:TapChanger>
+
+<cim:VoltageLevel rdf:ID="_b2f4f9c1d0ec42e281906477a31efd26">
+  <cim:Naming.name>NOD12S61</cim:Naming.name> 
+  <cim:VoltageLevel.highVoltageLimit>253</cim:VoltageLevel.highVoltageLimit> 
+  <cim:VoltageLevel.lowVoltageLimit>187</cim:VoltageLevel.lowVoltageLimit> 
+  <cim:VoltageLevel.MemberOf_Substation rdf:resource="#_8670961d004ee780ccfbdf1f9a3f40" /> 
+  <cim:VoltageLevel.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  </cim:VoltageLevel>
+<cim:EnergyConsumer rdf:ID="_b3adc68b882b489fabe620dfe2ffedf6">
+  <cim:Naming.name>NOD13S61</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_4794c9be10d845aa24b551455baa6d" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>270</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>116</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+
+<cim:Breaker rdf:ID="_b4534064ca714fa8f6121c52e309798">
+  <cim:Naming.name>NOD06S61-NOD11S61-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_d0191bb2b8643419b74f1a77d8e4e9" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:Terminal rdf:ID="_b5cf8b3544e6447b4b6c41a9be387a2">
+  <cim:Naming.name>NOD09S61_SM_T</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_f0b0325f3d746d4b970f0736f17514" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6afa565db9499f9d15c6c756e4d733" /> 
+  </cim:Terminal>
+<cim:EnergyConsumer rdf:ID="_b63b8eb916845c4aef0d751649179b">
+  <cim:Naming.name>NOD14S61</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_95ae3b7d651a4e1ba36622c11283bbf7" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>298</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>100</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+
+<cim:Analog rdf:ID="_b6927e4c6222456accc67fb74c85d">
+  <cim:Naming.name>NOD01S71_SM_MS</cim:Naming.name> 
+  <cim:Measurement.MeasurementType rdf:resource="#_f75224a737464ad9b32e6c801278d44a" /> 
+  <cim:Measurement.Terminal rdf:resource="#_40e848cd418d4eeaa2de319560aad5a4" /> 
+  <cim:Measurement.Unit rdf:resource="#_ae2af2ff40e74d47b0f9e47f8ae450df" /> 
+  <cim:Measurement.MemberOf_PSR rdf:resource="#_71d3378352a64e58993733ac7b9675f" /> 
+  </cim:Analog>
+<cim:ConnectivityNode rdf:ID="_b739a970e84040dabd8c57f2a468d2c1">
+  <cim:Naming.name>NOD02S71-NOD05S71-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+<cim:EnergyConsumer rdf:ID="_b9297752fb04566bee486a1596e141">
+  <cim:Naming.name>NOD10S61</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_a33d3c692fed4136b09b2c7c7e17a12c" /> 
+  <cim:EnergyConsumer.conformingLoadFlag>0</cim:EnergyConsumer.conformingLoadFlag> 
+  <cim:EnergyConsumer.pfixed>180</cim:EnergyConsumer.pfixed> 
+  <cim:EnergyConsumer.qfixed>116</cim:EnergyConsumer.qfixed> 
+  </cim:EnergyConsumer>
+
+<cim:Terminal rdf:ID="_b9d9982271b8445fb0dc1920e837a24c">
+  <cim:Naming.name>NOD04S71-NOD05S71-1_TS1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_8eedafe3ecbf48aaa9a2572d92b35a84" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f3ac689e5d6345ba9196509db8ae3615" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_bb0c138523d4826a482c2f52635dbd9">
+  <cim:Naming.name>NOD10S61</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_a33d3c692fed4136b09b2c7c7e17a12c" /> 
+  </cim:ConnectivityNode>
+<cim:TransformerWinding rdf:ID="_bb1d7cc3577946e8ac4c89ab6cae2811">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW2</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_358210899d3742a59e6d74bbf2d3dce0" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>380</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.secondary" /> 
+  <cim:TransformerWinding.x>3.971</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_e058a062f2ce4c519cd460e97069561f" /> 
+  </cim:TransformerWinding>
+
+<cim:Terminal rdf:ID="_bc1588ee5bb4b46b658508acfba4b8a">
+  <cim:Naming.name>NOD09S61-NOD07S71-1_TW2_TB2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_4b738ab89a5c43be952dc696e9e8ca85" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_2b42dddb20f4b1c9e245df7712d131" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_bc2e55276d1c425894aebc368479ab9a">
+  <cim:Naming.name>NOD02S71-NOD04S71-1_TW1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_61fd90088c647a2bfd8bb6fd205071" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_6ad96ff5c7c4de08bf3bb182b26aeae" /> 
+  </cim:Terminal>
+<cim:ConnectivityNode rdf:ID="_bcb42d92ed994426a1d2f896ec81260">
+  <cim:Naming.name>NOD01S71-NOD02S71-1_CNB2</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_3d6d614d5beb4fa189e422e6cac5cfa8" /> 
+  </cim:ConnectivityNode>
+
+<cim:PowerTransformer rdf:ID="_bea288ab75c64e92a39e35a1cc8d12ec">
+  <cim:Naming.name>NOD09S61-NOD04S71-1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_dcd2272019834930bf50c0af8cfbc093" /> 
+  <cim:PowerTransformer.transformerType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#TransformerType.voltageControl" /> 
+  </cim:PowerTransformer>
+<cim:Breaker rdf:ID="_bf14b510456149a924ac6465659670">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_B1</cim:Naming.name> 
+  <cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_23333cd4619840f88ea8431dc1915fe" /> 
+  <cim:Switch.normalOpen>0</cim:Switch.normalOpen> 
+  </cim:Breaker>
+<cim:ConnectivityNode rdf:ID="_bf581b86577542428fb584ae4e7a104b">
+  <cim:Naming.name>NOD13S61-NOD14S61-1_CNB1</cim:Naming.name> 
+  <cim:ConnectivityNode.MemberOf_EquipmentContainer rdf:resource="#_4794c9be10d845aa24b551455baa6d" /> 
+  </cim:ConnectivityNode>
+
+<cim:Terminal rdf:ID="_bfb04a5c3551472ba66ac45628039e6">
+  <cim:Naming.name>NOD07S71-NOD04S71-1_TW2_T2</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_14bd5d588d3411e9fd4cb5612d84bf6" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_f941416a71d46ef974cd6e3ce83c8e" /> 
+  </cim:Terminal>
+<cim:Terminal rdf:ID="_c07136684484aa09c0a1a59142c1da">
+  <cim:Naming.name>NOD01S71-NOD05S71-1_T1</cim:Naming.name> 
+  <cim:Terminal.ConductingEquipment rdf:resource="#_bf14b510456149a924ac6465659670" /> 
+  <cim:Terminal.ConnectivityNode rdf:resource="#_4b3f9cbb37348085c889d5aecb5043" /> 
+  </cim:Terminal>
+<cim:TransformerWinding rdf:ID="_c23d3313debb4b39b1ee4499b65084a6">
+  <cim:Naming.name>NOD06S61-NOD05S71-1_TW1</cim:Naming.name> 
+  <cim:ConductingEquipment.BaseVoltage rdf:resource="#_144aef9f8d44b1496dc347efc75786" /> 
+  <cim:TransformerWinding.b>0</cim:TransformerWinding.b> 
+  <cim:TransformerWinding.g>0</cim:TransformerWinding.g> 
+  <cim:TransformerWinding.r>0</cim:TransformerWinding.r> 
+  <cim:TransformerWinding.ratedKV>220</cim:TransformerWinding.ratedKV> 
+  <cim:TransformerWinding.ratedMVA>6581.1001</cim:TransformerWinding.ratedMVA> 
+  <cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2005/CIM-schema-cim10#WindingType.primary" /> 
+  <cim:TransformerWinding.x>3.0491314</cim:TransformerWinding.x> 
+  <cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_91b3371b18284211b6b3463c7b3be31" /> 
+  </cim:TransformerWinding>
+
+</rdf:RDF>
