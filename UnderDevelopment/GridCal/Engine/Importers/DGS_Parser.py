@@ -24,11 +24,6 @@ from numpy import array
 from pandas import DataFrame as df
 from warnings import warn
 
-pd.set_option('display.height', 1000)
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
-
 
 # def get_transformer_impedances(Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc, GR_hv1=0.5, GX_hv1=0.5):
 #     """
