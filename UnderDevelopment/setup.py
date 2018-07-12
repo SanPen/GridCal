@@ -2,7 +2,7 @@ from distutils.core import setup
 import sys
 import os
 import platform
-from GridCal.Engine.CalculationEngine import __GridCal_VERSION__
+from GridCal.__version__ import __GridCal_VERSION__
 
 
 def make_linux_desktop_file(version_, comment):
@@ -73,43 +73,33 @@ for dir_name, dir_names, file_names in os.walk('doc'):
             files_list.append(fullname)
         data_files.append(('share/' + name + '/' + dir_name, files_list))
 
+
+install_requires = ["numpy>=1.14.0",
+                    "scipy>=1.0.0",
+                    "networkx>=2.1",
+                    "pandas>=0.22",
+                    "xlwt>=1.3.0",
+                    "xlrd>=1.1.0",
+                    "PyQt5>=5.8",
+                    "matplotlib>=2.1.1",
+                    "qtconsole>=4.3.1",
+                    "pysot>=0.1.36",
+                    "openpyxl>=2.4.9",
+                    "pulp>=1.6.8",
+                    "smopy>=0.0.6",
+                    "chardet>=3.0.4"
+                    ]
+
 if platform.system() == 'Windows':
     # list the packages (On windows anaconda is assumed)
-    required_packages = ["numpy",
-                         "scipy",
-                         "networkx",
-                         "pandas",
-                         "xlwt",
-                         "xlrd",
-                         # "PyQt5",
-                         "matplotlib",
-                         "qtconsole",
-                         "pysot",
-                         "openpyxl",
-                         "pulp",
-                         "smopy",
-                         "chardet"
-                         ]
+    install_requires.pop(6)  # remove PyQt5 since it may conflict with anaconda's installation
+
 else:
     # make the desktop entry
     make_linux_desktop_file(version_=version, comment=description)
 
     # list the packages
-    required_packages = ["numpy",
-                         "scipy",
-                         "networkx",
-                         "pandas",
-                         "xlwt",
-                         "xlrd",
-                         "PyQt5",
-                         "matplotlib",
-                         "qtconsole",
-                         "pysot",
-                         "openpyxl",
-                         "pulp",
-                         "smopy",
-                         "chardet"
-                         ]
+    pass
 
 # Read the license
 data_files.append('LICENSE.txt')
@@ -147,7 +137,7 @@ setup(
     # long_description=open("README.txt").read(),
 
     # Dependent packages (distributions)
-    install_requires=required_packages,
+    install_requires=install_requires,
 
-    setup_requires=required_packages
+    setup_requires=install_requires
 )

@@ -114,10 +114,10 @@ if __name__ == '__main__':
     from GridCal.Engine.CalculationEngine import *
 
     grid = MultiCircuit()
-    # grid.load_file('lynn5buspq.xlsx')
+    grid.load_file('lynn5buspq.xlsx')
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('C:\\Users\\spenate\Documents\\PROYECTOS\\Monash\\phase0\\Grid\\Monash University.xlsx')
-    grid.load_file('D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_14.xlsx')
+    # grid.load_file('D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_14.xlsx')
     grid.compile()
 
     circuit = grid.circuits[0]

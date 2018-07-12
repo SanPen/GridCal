@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-__GridCal_VERSION__ = 2.294
+
 
 import os
 import pickle as pkl
@@ -35,8 +35,7 @@ from scipy.sparse import csc_matrix, lil_matrix, hstack as hstack_s, vstack as v
 from scipy.sparse.linalg import inv
 from sklearn.ensemble import RandomForestRegressor
 
-import matplotlib
-matplotlib.use('Qt5Agg')
+
 from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
