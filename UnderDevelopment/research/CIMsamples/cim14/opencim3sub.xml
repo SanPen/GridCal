@@ -1,0 +1,1213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+         xmlns:cim="http://iec.ch/TC57/2008/CIM-schema-cim14#">
+    <!--
+    Two busbars have been added  
+    -->
+	<cim:GeographicalRegion rdf:ID="_37C0E103000D40CD812C47572C31C0AD">
+		<cim:IdentifiedObject.name>GeoRegion</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>OpenCIM3bus</cim:IdentifiedObject.localName>
+	</cim:GeographicalRegion>
+	<cim:SubGeographicalRegion rdf:ID="_ID_SubGeographicalRegion">
+		<cim:IdentifiedObject.name>SubRegion</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>SubRegion</cim:IdentifiedObject.localName>
+		<cim:SubGeographicalRegion.Region rdf:resource="#_37C0E103000D40CD812C47572C31C0AD"/>
+	</cim:SubGeographicalRegion>
+	<!--             -->
+	<!-- BaseVoltage -->
+	<!--             -->
+	<cim:BaseVoltage rdf:ID="_ID_BaseVoltage_220KV">
+		<cim:IdentifiedObject.name>BaseVoltage 220KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>220KV</cim:IdentifiedObject.localName>
+		<cim:BaseVoltage.nominalVoltage>220</cim:BaseVoltage.nominalVoltage>
+	</cim:BaseVoltage>	
+	<cim:BaseVoltage rdf:ID="_ID_BaseVoltage_15KV">
+		<cim:IdentifiedObject.name>BaseVoltage 15KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>15KV</cim:IdentifiedObject.localName>
+		<cim:BaseVoltage.nominalVoltage>15</cim:BaseVoltage.nominalVoltage>
+	</cim:BaseVoltage>	
+	<!--             -->
+	<!-- substation1 -->
+	<!--             -->
+	<cim:Substation rdf:ID="_ID_SUBSTATION1">
+		<cim:IdentifiedObject.name>Substation1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Substation1</cim:IdentifiedObject.localName>
+		<cim:Substation.Region rdf:resource="#_ID_SubGeographicalRegion"/>
+	</cim:Substation>	
+	<cim:VoltageLevel rdf:ID="_ID_SUB1_VLevel_220KV_EF4559BF7EB">
+		<cim:IdentifiedObject.name>Substation-1 220KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub1H_VOLT</cim:IdentifiedObject.localName>
+		<cim:VoltageLevel.MemberOf_Substation rdf:resource="#_ID_SUBSTATION1"/>
+		<cim:VoltageLevel.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:VoltageLevel>	
+	<cim:VoltageLevel rdf:ID="_ID_SUB1_VLevel_15KV_EEF4559BF7EB">
+		<cim:IdentifiedObject.name>Substation-1 15KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub1L_VOLT</cim:IdentifiedObject.localName>
+		<cim:VoltageLevel.MemberOf_Substation rdf:resource="#_ID_SUBSTATION1"/>
+		<cim:VoltageLevel.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:VoltageLevel>
+	<!-- GT1 -->
+	<cim:ThermalGeneratingUnit rdf:ID="_ID_SUB1_GenUnit1">
+		<cim:GeneratingUnit.genControlSource rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#GeneratorControlSource.onAGC"/>
+		<cim:GeneratingUnit.initialP>30</cim:GeneratingUnit.initialP>
+		<cim:GeneratingUnit.nominalP>60</cim:GeneratingUnit.nominalP>
+		<cim:GeneratingUnit.normalPF>0.85</cim:GeneratingUnit.normalPF>
+		<cim:GeneratingUnit.maxOperatingP>100</cim:GeneratingUnit.maxOperatingP>
+		<cim:GeneratingUnit.minOperatingP>10</cim:GeneratingUnit.minOperatingP>
+		<cim:IdentifiedObject.name>GT1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GT1</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUBSTATION1"/>
+	</cim:ThermalGeneratingUnit>	
+	   <cim:SynchronousMachine rdf:ID="_ID_SUB1_ShynchMachine_Gen1">
+		<cim:SynchronousMachine.maxQ>800</cim:SynchronousMachine.maxQ>
+		<cim:SynchronousMachine.minQ>-800</cim:SynchronousMachine.minQ>
+		<cim:SynchronousMachine.ratedS>1200</cim:SynchronousMachine.ratedS>
+		<cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#SynchronousMachineOperatingMode.generator"/>
+		<cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#SynchronousMachineType.generator"/>
+		<cim:SynchronousMachine.referencePriority>0</cim:SynchronousMachine.referencePriority>
+		<cim:IdentifiedObject.name>SynchGen1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GEN_1</cim:IdentifiedObject.localName>
+		<cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_ID_SUB1_GenUnit1"/>
+		<cim:RegulatingCondEq.RegulatingControl rdf:resource="#_8230B69E80F9402FA09E7D3D8B547CB6"/>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	   </cim:SynchronousMachine>	
+	   <cim:Terminal rdf:ID="_GEN1C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>GEN1_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GEN1_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB1_ShynchMachine_Gen1"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Sub1_GEN1_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Sub1_GEN1_C1">
+		<cim:IdentifiedObject.name>GEN1_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GEN1_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	   <cim:Analog rdf:ID="_D0E86D5181654BFDABCD81AD6F6A0E2A">
+		<cim:Analog.positiveFlowIn>true</cim:Analog.positiveFlowIn>
+		<cim:Analog.normalValue>60.0</cim:Analog.normalValue>
+		<cim:IdentifiedObject.name>Gen1_P</cim:IdentifiedObject.name>
+		<cim:Measurement.measurementType>ThreePhaseActivePower</cim:Measurement.measurementType>
+		<cim:Measurement.MemberOf_PSR rdf:resource="#_ID_SUB1_ShynchMachine_Gen1"/>
+		<cim:Measurement.Terminal rdf:resource="#_GEN1C5712A0D2F431594B0638457202CBC"/>
+		<cim:Measurement.Unit rdf:resource="#_34BC3ABA7AEF48D3B6C125ACC74C2FD5"/>
+	   </cim:Analog>	   
+	   <cim:Analog rdf:ID="_D0E86D5181654BFDABCD81AD6F6A0E2B">
+		<cim:Analog.positiveFlowIn>true</cim:Analog.positiveFlowIn>
+		<cim:Analog.normalValue>20.0</cim:Analog.normalValue>
+		<cim:IdentifiedObject.name>Gen1_Q</cim:IdentifiedObject.name>
+		<cim:Measurement.measurementType>ThreePhaseReactivePower</cim:Measurement.measurementType>
+		<cim:Measurement.MemberOf_PSR rdf:resource="#_ID_SUB1_ShynchMachine_Gen1"/>
+		<cim:Measurement.Terminal rdf:resource="#_GEN1C5712A0D2F431594B0638457202CBC"/>
+		<cim:Measurement.Unit rdf:resource="#_96D78FFD1233469BA7683486BE983CD4"/>
+	   </cim:Analog>	
+	   <cim:RegulatingControl rdf:ID="_8230B69E80F9402FA09E7D3D8B547CB6">
+	   	<cim:RegulatingControl.mode rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#RegulatingControlModeKind.fixed"/>
+	   	<cim:RegulatingControl.targetValue>1.05</cim:RegulatingControl.targetValue>
+		<cim:IdentifiedObject.name>Voltage Reg G1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>_R</cim:IdentifiedObject.localName>
+	   </cim:RegulatingControl>	      
+	<!-- TR1 -->
+	<cim:PowerTransformer rdf:ID="_ID_PowerXfr_TR1">
+		<cim:IdentifiedObject.name>TR1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUBSTATION1"/>
+	</cim:PowerTransformer>	
+	   <cim:TransformerWinding rdf:ID="_ID_TR1_W1">
+		<cim:TransformerWinding.g>0</cim:TransformerWinding.g>
+		<cim:TransformerWinding.b>-.0000025625</cim:TransformerWinding.b>
+		<cim:TransformerWinding.r>.9648</cim:TransformerWinding.r>
+		<cim:TransformerWinding.x>44.7896</cim:TransformerWinding.x>
+		<cim:TransformerWinding.ratedU>15</cim:TransformerWinding.ratedU>
+		<cim:TransformerWinding.ratedS>100</cim:TransformerWinding.ratedS>
+		<cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingType.primary"/>
+		<cim:TransformerWinding.connectionType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingConnection.Y"/>
+		<cim:IdentifiedObject.name>TR1_W1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1_W1</cim:IdentifiedObject.localName>
+		<cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_ID_PowerXfr_TR1"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	   </cim:TransformerWinding>
+	   <cim:Terminal rdf:ID="_T1W1C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>TR1W1_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1W1_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_TR1_W1"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR1_W1_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_TR1_W1_C1">
+		<cim:IdentifiedObject.name>TR1W1_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1W1_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:TransformerWinding rdf:ID="_ID_TR1_W2">
+		<cim:TransformerWinding.g>0</cim:TransformerWinding.g>
+		<cim:TransformerWinding.b>0</cim:TransformerWinding.b>
+		<cim:TransformerWinding.r>0</cim:TransformerWinding.r>
+		<cim:TransformerWinding.x>0</cim:TransformerWinding.x>
+		<cim:TransformerWinding.ratedU>220</cim:TransformerWinding.ratedU>
+		<cim:TransformerWinding.ratedS>100</cim:TransformerWinding.ratedS>
+		<cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingType.secondary"/>
+		<cim:TransformerWinding.connectionType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingConnection.Y"/>
+		<cim:IdentifiedObject.name>TR1_W2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1_W2</cim:IdentifiedObject.localName>
+		<cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_ID_PowerXfr_TR1"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	   </cim:TransformerWinding>	
+	   <cim:Terminal rdf:ID="_T1W2C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>TR1W2_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1W2_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_TR1_W2"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR1_W2_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_TR1_W2_C1">
+		<cim:IdentifiedObject.name>TR1W2_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1W2_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	<!-- BUS1 -->   
+	<cim:BusbarSection rdf:ID="_ID_SUB1_BUS1_2F6957E4EF4559BF7EB">
+		<cim:IdentifiedObject.name>Sub1-BUS</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub1-BUS</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:BusbarSection>	
+	   <cim:Terminal rdf:ID="_BUS1C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>BUS1_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS1_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB1_BUS1_2F6957E4EF4559BF7EB"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_BUS1_C1">
+		<cim:IdentifiedObject.name>BUS1_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS1_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- BUS1_Low -->   
+	<cim:BusbarSection rdf:ID="_ID_SUB1_BUS1_Low_57E4EF4559BF7EB">
+		<cim:IdentifiedObject.name>Sub1-BUS_Low</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub1-BUS_Low</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:BusbarSection>	
+	   <cim:Terminal   rdf:ID="_BUS1_Low_A0D2F431594B0638457202BC">
+		<cim:IdentifiedObject.name>BUS1_Low_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS1_Low_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB1_BUS1_Low_57E4EF4559BF7EB"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_Low_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_BUS1_Low_C1">
+		<cim:IdentifiedObject.name>BUS1_Low_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS1_Low_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- B1 -->   
+	<cim:Breaker rdf:ID="_B11ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B1</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>	
+	   <cim:Terminal rdf:ID="_B11EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B1_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B1_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B11ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B1_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B1_C1">
+		<cim:IdentifiedObject.name>B1_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B1_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B12EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B1_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B1_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B11ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B1_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B1_C2">
+		<cim:IdentifiedObject.name>B1_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B1_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>
+	<!-- B4 -->   
+	<cim:Breaker rdf:ID="_B41ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B4</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B4</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>	
+	   <cim:Terminal rdf:ID="_B41EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B4_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B4_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B41ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B4_C1"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B4_C1">
+		<cim:IdentifiedObject.name>B4_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B4_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B42EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B4_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B4_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B41ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B4_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B4_C2">
+		<cim:IdentifiedObject.name>B4_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B4_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- Bus1 - S1 B1_C1 -->   
+	<cim:Disconnector rdf:ID="_S192CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S1</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S12EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S1_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S1_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S192CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S11EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S1_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S1_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S192CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B1_C1"/>
+	   </cim:Terminal>	
+	<!-- B1_C2 - S2 - LN2AC_C1 -->   
+	<cim:Disconnector rdf:ID="_S292CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S2</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S21EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S2_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S2_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S292CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B1_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S22EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S2_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S2_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S292CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN2AC_C1"/>
+	   </cim:Terminal>
+	<!-- Bus1 - S5 - B4_C1 -->   
+	<cim:Disconnector rdf:ID="_S592CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S5</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S5</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>
+	   <cim:Terminal rdf:ID="_S51EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S5_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S5_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S592CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S52EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S5_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S5_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S592CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B4_C1"/>
+	   </cim:Terminal>	
+	<!-- B4_C2 - S6 - LN1AC_C1 -->   
+	<cim:Disconnector rdf:ID="_S692CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S6</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S6</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S61EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S6_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S6_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S692CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B4_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S62EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S6_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S6_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S692CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN1AC_C1"/>
+	   </cim:Terminal>	
+	<!-- GT1 - S15 - BUS1_Low_C1 -->   
+	<cim:Disconnector rdf:ID="_S152CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S15</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S15</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S15EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S15_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S15_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S152CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR1_W1_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S15FC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S15_Bus1_Low</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S15_Bus1_Low</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S152CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_Low_C1"/>
+	   </cim:Terminal>	
+	<!-- GT1 - S19 - BUS_Low_C1 -->   
+	<cim:Disconnector rdf:ID="_S19_CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S19</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S19</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S19_E5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S19_G1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S19_G1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S19_CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Sub1_GEN1_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S19_F5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S19_Bus1_Low</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S19_Bus1_Low</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S19_CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_Low_C1"/>
+	   </cim:Terminal>	
+	<!-- TR1_C2 - S16 Bus1 -->   
+	<cim:Disconnector rdf:ID="_S162CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S16</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S16</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S16EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S15_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S15_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S162CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR1_W2_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S16FC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S15_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S15_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S162CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS1_C1"/>
+	   </cim:Terminal>	
+	<!--             -->
+	<!-- substation2 -->
+	<!--             -->
+	<cim:Substation rdf:ID="_ID_SUBSTATION2">
+		<cim:IdentifiedObject.name>Substation2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Substation2</cim:IdentifiedObject.localName>
+		<cim:Substation.Region rdf:resource="#_ID_SubGeographicalRegion"/>
+	</cim:Substation>	
+	<cim:VoltageLevel rdf:ID="_ID_SUB2_VLevel_220KV_EF4559BF7EB">
+		<cim:IdentifiedObject.name>Substation-2 220KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub2H_VOLT</cim:IdentifiedObject.localName>
+		<cim:VoltageLevel.MemberOf_Substation rdf:resource="#_ID_SUBSTATION2"/>
+		<cim:VoltageLevel.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:VoltageLevel>	
+	<cim:NonConformLoad rdf:ID="_ID_SUB2_LOAD1">
+		<cim:EnergyConsumer.pfixed>100</cim:EnergyConsumer.pfixed>
+		<cim:EnergyConsumer.qfixed>25</cim:EnergyConsumer.qfixed>
+		<cim:EnergyConsumer.pfixedPct>100</cim:EnergyConsumer.pfixedPct>
+		<cim:EnergyConsumer.qfixedPct>100</cim:EnergyConsumer.qfixedPct>
+		<cim:IdentifiedObject.name>Sub2_Load</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub2_Load</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:NonConformLoad>	
+	   <cim:Terminal rdf:ID="_LOADC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>LOAD_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LOAD_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB2_LOAD1"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Sub2_LOAD_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Sub2_LOAD_C1">
+		<cim:IdentifiedObject.name>LOAD_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LOAD_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>
+	   <cim:Analog rdf:ID="_D0E86D5181654BFDABCD81AD6F6A0E2E">
+		<cim:Analog.positiveFlowIn>true</cim:Analog.positiveFlowIn>
+		<cim:Analog.normalValue>100.0</cim:Analog.normalValue>
+		<cim:IdentifiedObject.name>Load_P</cim:IdentifiedObject.name>
+		<cim:Measurement.measurementType>ThreePhaseActivePower</cim:Measurement.measurementType>
+		<cim:Measurement.MemberOf_PSR rdf:resource="#_ID_SUB2_LOAD1"/>
+		<cim:Measurement.Terminal rdf:resource="#_LOADC5712A0D2F431594B0638457202CBC"/>
+		<cim:Measurement.Unit rdf:resource="#_34BC3ABA7AEF48D3B6C125ACC74C2FD5"/>
+	   </cim:Analog>	   
+	   <cim:Analog rdf:ID="_D0E86D5181654BFDABCD81AD6F6A0E2F">
+		<cim:Analog.positiveFlowIn>true</cim:Analog.positiveFlowIn>
+		<cim:Analog.normalValue>30.0</cim:Analog.normalValue>
+		<cim:IdentifiedObject.name>Load_Q</cim:IdentifiedObject.name>
+		<cim:Measurement.measurementType>ThreePhaseReactivePower</cim:Measurement.measurementType>
+		<cim:Measurement.MemberOf_PSR rdf:resource="#_ID_SUB2_LOAD1"/>
+		<cim:Measurement.Terminal rdf:resource="#_LOADC5712A0D2F431594B0638457202CBC"/>
+		<cim:Measurement.Unit rdf:resource="#_96D78FFD1233469BA7683486BE983CD4"/>
+	   </cim:Analog>	
+	<!-- BUS2 -->   
+	<cim:BusbarSection rdf:ID="_ID_SUB2_BUS2_2F6957E4EF4559BF7EB">
+		<cim:IdentifiedObject.name>Sub2-BUS2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub2-BUS2</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:BusbarSection>	
+	   <cim:Terminal rdf:ID="_BUS2C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>BUS2_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS2_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB2_BUS2_2F6957E4EF4559BF7EB"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS2_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_BUS2_C1">
+		<cim:IdentifiedObject.name>BUS2_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS2_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- B2 -->   
+	<cim:Breaker rdf:ID="_B21ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B2</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>	
+	   <cim:Terminal rdf:ID="_B21EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B2_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B2_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B21ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B2_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B2_C1">
+		<cim:IdentifiedObject.name>B2_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B2_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B22EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B2_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B2_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B21ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B2_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B2_C2">
+		<cim:IdentifiedObject.name>B2_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B2_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- B3 -->   
+	<cim:Breaker rdf:ID="_B31ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B3</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B3</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>	
+	   <cim:Terminal rdf:ID="_B31EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B3_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B3_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B31ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B3_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B3_C1">
+		<cim:IdentifiedObject.name>B3_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B3_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B32EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B3_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B3_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B31ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B3_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B3_C2">
+		<cim:IdentifiedObject.name>B3_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B3_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>
+	<!-- B6 -->   
+	<cim:Breaker rdf:ID="_B61ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B6</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B6</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>
+	   <cim:Terminal rdf:ID="_B61EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B6_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B6_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B61ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B6_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B6_C1">
+		<cim:IdentifiedObject.name>B6_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B6_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B62EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B6_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B6_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B61ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B6_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B6_C2">
+		<cim:IdentifiedObject.name>B6_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B6_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- LN2AC_C2 - S3 - B2_C1 -->   
+	<cim:Disconnector rdf:ID="_S332CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S3</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S3</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>
+	   <cim:Terminal rdf:ID="_S31EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S3_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S3_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S332CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN2AC_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S32EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S3_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S3_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S332CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B2_C1"/>
+	   </cim:Terminal>	
+	<!-- B2_C2 - S4 - BUS2_C1 -->   
+	<cim:Disconnector rdf:ID="_S432CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S4</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S4</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>
+	   <cim:Terminal rdf:ID="_S41EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S4_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S4_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S432CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B2_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S42EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S4_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S4_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S432CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS2_C1"/>
+	   </cim:Terminal>	
+	<!-- BUS2_C1 - S9 - B6_C1 -->   
+	<cim:Disconnector rdf:ID="_S932CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S9</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S9</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>
+	   <cim:Terminal rdf:ID="_S91EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S9_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S9_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S932CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS2_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S92EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S9_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S9_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S932CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B6_C1"/>
+	   </cim:Terminal>	
+	<!-- B6_C2 - S10 - LN3AC_C1 -->   
+	<cim:Disconnector rdf:ID="_S102CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S10</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S10</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>
+	   <cim:Terminal rdf:ID="_S101EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S10_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S10_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S102CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B6_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S102EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S10_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S10_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S102CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN3AC_C1"/>
+	   </cim:Terminal>	
+	<!-- BUS2_C1 - S17 - B3_C1 -->   
+	<cim:Disconnector rdf:ID="_S172CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S17</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S17</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>
+	   <cim:Terminal rdf:ID="_S171EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S7_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S7_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S172CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS2_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S172EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S7_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S7_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S172CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B3_C1"/>
+	   </cim:Terminal>	
+	<!-- B3_C2 - S18 - LOAD_C1 -->   
+	<cim:Disconnector rdf:ID="_S182CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S18</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S18</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S181EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S18_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S18_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S182CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B3_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S182EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S18_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S18_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S182CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Sub2_LOAD_C1"/>
+	   </cim:Terminal>	
+	<!--             -->
+	<!-- substation3 -->
+	<!--             -->
+	<cim:Substation rdf:ID="_ID_SUBSTATION3">
+		<cim:IdentifiedObject.name>Substation3</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Substation3</cim:IdentifiedObject.localName>
+		<cim:Substation.Region rdf:resource="#_ID_SubGeographicalRegion"/>
+	</cim:Substation>	
+	<cim:VoltageLevel rdf:ID="_ID_SUB3_VLevel_220KV_EF4559BF7EB">
+		<cim:IdentifiedObject.name>Substation-3 220KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub3H_VOLT</cim:IdentifiedObject.localName>
+		<cim:VoltageLevel.MemberOf_Substation rdf:resource="#_ID_SUBSTATION3"/>
+		<cim:VoltageLevel.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:VoltageLevel>	
+	<cim:VoltageLevel rdf:ID="_ID_SUB3_VLevel_15KV_EEF4559BF7EB">
+		<cim:IdentifiedObject.name>Substation-3 15KV</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub3L_VOLT</cim:IdentifiedObject.localName>
+		<cim:VoltageLevel.MemberOf_Substation rdf:resource="#_ID_SUBSTATION3"/>
+		<cim:VoltageLevel.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:VoltageLevel>
+	<!-- GT2 -->
+	<cim:ThermalGeneratingUnit rdf:ID="_ID_SUB3_GenUnit2">
+		<cim:GeneratingUnit.genControlSource rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#GeneratorControlSource.onAGC"/>
+		<cim:GeneratingUnit.initialP>30</cim:GeneratingUnit.initialP>
+		<cim:GeneratingUnit.nominalP>60</cim:GeneratingUnit.nominalP>
+		<cim:GeneratingUnit.normalPF>0.9</cim:GeneratingUnit.normalPF>
+		<cim:GeneratingUnit.maxOperatingP>100</cim:GeneratingUnit.maxOperatingP>
+		<cim:GeneratingUnit.minOperatingP>10</cim:GeneratingUnit.minOperatingP>
+		<cim:IdentifiedObject.name>GT2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GT2</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUBSTATION3"/>
+	</cim:ThermalGeneratingUnit>	
+	   <cim:SynchronousMachine rdf:ID="_ID_SUB2_ShynchMachine_Gen2">
+		<cim:SynchronousMachine.maxQ>800</cim:SynchronousMachine.maxQ>
+		<cim:SynchronousMachine.minQ>-800</cim:SynchronousMachine.minQ>
+		<cim:SynchronousMachine.ratedS>1200</cim:SynchronousMachine.ratedS>
+		<cim:SynchronousMachine.operatingMode rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#SynchronousMachineOperatingMode.generator"/>
+		<cim:SynchronousMachine.type rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#SynchronousMachineType.generator"/>
+		<cim:SynchronousMachine.referencePriority>0</cim:SynchronousMachine.referencePriority>
+		<cim:IdentifiedObject.name>SynchGen2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GEN_2</cim:IdentifiedObject.localName>
+		<cim:SynchronousMachine.MemberOf_GeneratingUnit rdf:resource="#_ID_SUB3_GenUnit2"/>
+		<cim:RegulatingCondEq.RegulatingControl rdf:resource="#_8230B69E80F9402FA09E7D3D8B547CB7"/>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	   </cim:SynchronousMachine>
+	   <cim:Terminal rdf:ID="_GEN2C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>GEN2_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GEN2_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB2_ShynchMachine_Gen2"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_GEN2_C2"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_GEN2_C2">
+		<cim:IdentifiedObject.name>GEN2_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>GEN2_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	   <cim:Analog rdf:ID="_D0E86D5181654BFDABCD81AD6F6A0E2C">
+		<cim:Analog.positiveFlowIn>true</cim:Analog.positiveFlowIn>
+		<cim:Analog.normalValue>50.0</cim:Analog.normalValue>
+		<cim:IdentifiedObject.name>Gen2_P</cim:IdentifiedObject.name>
+		<cim:Measurement.measurementType>ThreePhaseActivePower</cim:Measurement.measurementType>
+		<cim:Measurement.MemberOf_PSR rdf:resource="#_ID_SUB2_ShynchMachine_Gen2"/>
+		<cim:Measurement.Terminal rdf:resource="#_GEN2C5712A0D2F431594B0638457202CBC"/>
+		<cim:Measurement.Unit rdf:resource="#_34BC3ABA7AEF48D3B6C125ACC74C2FD5"/>
+	   </cim:Analog>	   
+	   <cim:Analog rdf:ID="_D0E86D5181654BFDABCD81AD6F6A0E2D">
+		<cim:Analog.positiveFlowIn>true</cim:Analog.positiveFlowIn>
+		<cim:Analog.normalValue>15.0</cim:Analog.normalValue>
+		<cim:IdentifiedObject.name>Gen2_Q</cim:IdentifiedObject.name>
+		<cim:Measurement.measurementType>ThreePhaseReactivePower</cim:Measurement.measurementType>
+		<cim:Measurement.MemberOf_PSR rdf:resource="#_ID_SUB2_ShynchMachine_Gen2"/>
+		<cim:Measurement.Terminal rdf:resource="#_GEN2C5712A0D2F431594B0638457202CBC"/>
+		<cim:Measurement.Unit rdf:resource="#_96D78FFD1233469BA7683486BE983CD4"/>
+	   </cim:Analog>	
+	   <cim:RegulatingControl rdf:ID="_8230B69E80F9402FA09E7D3D8B547CB7">
+	   	<cim:RegulatingControl.mode rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#RegulatingControlModeKind.voltage"/>
+	   	<cim:RegulatingControl.targetValue>1.04</cim:RegulatingControl.targetValue>
+		<cim:IdentifiedObject.name>Voltage Reg G2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>_R</cim:IdentifiedObject.localName>
+	   </cim:RegulatingControl>		   
+	<!-- TR2 -->   
+	<cim:PowerTransformer rdf:ID="_ID_PowerXfr_TR2">
+		<cim:IdentifiedObject.name>TR2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR2</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUBSTATION3"/>
+	</cim:PowerTransformer>	
+	   <cim:TransformerWinding rdf:ID="_ID_TR2_W1">
+		<cim:TransformerWinding.g>0</cim:TransformerWinding.g>
+		<cim:TransformerWinding.b>-.0000025625</cim:TransformerWinding.b>
+		<cim:TransformerWinding.r>.9648</cim:TransformerWinding.r>
+		<cim:TransformerWinding.x>44.7896</cim:TransformerWinding.x>
+		<cim:TransformerWinding.ratedU>15</cim:TransformerWinding.ratedU>
+		<cim:TransformerWinding.ratedS>100</cim:TransformerWinding.ratedS>
+		<cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingType.primary"/>
+		<cim:TransformerWinding.connectionType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingConnection.Y"/>
+		<cim:IdentifiedObject.name>TR2_W1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR2_W1</cim:IdentifiedObject.localName>
+		<cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_ID_PowerXfr_TR2"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	   </cim:TransformerWinding>	
+	   <cim:Terminal rdf:ID="_T2W1C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>TR2W1_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR2W1_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_TR2_W1"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR2_W1_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_TR2_W1_C1">
+		<cim:IdentifiedObject.name>TR2W1_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR2W1_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:TransformerWinding rdf:ID="_ID_TR2_W2">
+		<cim:TransformerWinding.g>0</cim:TransformerWinding.g>
+		<cim:TransformerWinding.b>0</cim:TransformerWinding.b>
+		<cim:TransformerWinding.r>0</cim:TransformerWinding.r>
+		<cim:TransformerWinding.x>0</cim:TransformerWinding.x>
+		<cim:TransformerWinding.ratedU>220</cim:TransformerWinding.ratedU>
+		<cim:TransformerWinding.ratedS>100</cim:TransformerWinding.ratedS>
+		<cim:TransformerWinding.windingType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingType.secondary"/>
+		<cim:TransformerWinding.connectionType rdf:resource="http://iec.ch/TC57/2008/CIM-schema-cim13#WindingConnection.Y"/>
+		<cim:IdentifiedObject.name>TR2_W2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR2_W2</cim:IdentifiedObject.localName>
+		<cim:TransformerWinding.MemberOf_PowerTransformer rdf:resource="#_ID_PowerXfr_TR2"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	   </cim:TransformerWinding>	
+	   <cim:Terminal rdf:ID="_T2W2C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>TR2W2_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR2W2_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_TR2_W2"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR2_W2_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_TR2_W2_C1">
+		<cim:IdentifiedObject.name>TR1W2_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>TR1W2_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	<!-- BUS3 -->   
+	<cim:BusbarSection rdf:ID="_ID_SUB3_BUS3_2F6957E4EF4559BF7EB">
+		<cim:IdentifiedObject.name>Sub3-BUS3</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub3-BUS3</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:BusbarSection>	
+	   <cim:Terminal rdf:ID="_BUS3C5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>BUS3_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS3_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB3_BUS3_2F6957E4EF4559BF7EB"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_BUS3_C1">
+		<cim:IdentifiedObject.name>BUS3_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS3_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>		
+	<!-- BUS3_Low -->   
+	<cim:BusbarSection rdf:ID="_ID_SUB3_BUS3_Low_57E4EF4559BF7EB">
+		<cim:IdentifiedObject.name>Sub3-BUS3_Low</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>Sub3-BUS3_Low</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:BusbarSection>	
+	   <cim:Terminal rdf:ID="_BUS3_Loq_A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>BUS3_Low_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS3_Low_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_SUB3_BUS3_Low_57E4EF4559BF7EB"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_Low_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_BUS3_Low_C1">
+		<cim:IdentifiedObject.name>BUS3_Low_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>BUS3_Low_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+	   </cim:ConnectivityNode>		
+	<!-- B5 -->   
+	<cim:Breaker rdf:ID="_B51ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B5</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B5</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>	
+	   <cim:Terminal rdf:ID="_B51EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B5_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B5_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B51ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B5_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B5_C1">
+		<cim:IdentifiedObject.name>B5_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B5_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B52EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B5_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B5_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B51ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B5_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B5_C2">
+		<cim:IdentifiedObject.name>B5_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B5_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- B7 -->   
+	<cim:Breaker rdf:ID="_B71ED8476CA04C87AFE0EEABE4C974A7">
+		<cim:Breaker.ratedCurrent>0</cim:Breaker.ratedCurrent>
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Breaker B7</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B7</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Breaker>	
+	   <cim:Terminal rdf:ID="_B71EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B7_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B7_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B71ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B7_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B7_C1">
+		<cim:IdentifiedObject.name>B7_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B7_C1</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	   
+	   <cim:Terminal rdf:ID="_B72EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>B7_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B7_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_B71ED8476CA04C87AFE0EEABE4C974A7"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B7_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_Breaker_B7_C2">
+		<cim:IdentifiedObject.name>B7_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>B7_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!-- LN1AC_C2 - S7 - B5_C1 -->   
+	<cim:Disconnector rdf:ID="_S792CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S7</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S7</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S71EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S7_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S7_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S792CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN1AC_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S72EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S7_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S7_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S792CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B5_C1"/>
+	   </cim:Terminal>	
+	<!-- B5_C2 - S8 - BUS3_C1 -->   
+	<cim:Disconnector rdf:ID="_S892CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S8</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S8</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S81EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S8_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S8_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S892CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B5_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S82EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S8_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S8_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S892CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_C1"/>
+	   </cim:Terminal>	
+	<!-- LN3AC_C2 - S11 - B7_C1 -->   
+	<cim:Disconnector rdf:ID="_S112CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S11</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S11</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S111EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S11_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S11_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S112CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN3AC_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S112EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S11_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S11_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S112CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B7_C1"/>
+	   </cim:Terminal>	
+	<!-- B7_C2 - S12 - BUS3_C1 -->   
+	<cim:Disconnector rdf:ID="_S122CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S12</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S12</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S121EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S12_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S12_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S122CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_Breaker_B7_C2"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S122EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S12_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S12_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S122CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_C1"/>
+	   </cim:Terminal>
+	<!-- BUS3_C1 - S13 - TR2_W2_C1 -->   
+	<cim:Disconnector rdf:ID="_S132CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S13</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S13</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S131EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S13_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S13_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S132CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S132EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S13_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S13_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S132CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR2_W2_C1"/>
+	   </cim:Terminal>
+	<!-- TR2_W1_C1 - S14 - BUS3_Low_C1 -->   
+	<cim:Disconnector rdf:ID="_S142CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S14</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S14</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S141EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S14_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S14_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S142CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_TR2_W1_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S142EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S14_Bus3_Low</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S14_Bus3_Low</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S142CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_Low_C1"/>
+	   </cim:Terminal>
+	<!-- BUS3_Low_C1 - S20 - GEN2_C1 -->   
+	<cim:Disconnector rdf:ID="_S202CC8E9D894D44BACECC06F90F0A4F">
+		<cim:Switch.normalOpen>false</cim:Switch.normalOpen>
+		<cim:IdentifiedObject.name>Disconnector S20</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S20</cim:IdentifiedObject.localName>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_SUB3_VLevel_15KV_EEF4559BF7EB"/>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_15KV"/>
+	</cim:Disconnector>	
+	   <cim:Terminal rdf:ID="_S201EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S20_Bus3_Low</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S20_Bus3_Low</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S202CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_BUS3_Low_C1"/>
+	   </cim:Terminal>	
+	   <cim:Terminal rdf:ID="_S202EC5712A0D2F431594B0638457202CBC">
+		<cim:IdentifiedObject.name>S20_G2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>S20_G2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_S202CC8E9D894D44BACECC06F90F0A4F"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_GEN2_C2"/>
+	   </cim:Terminal>
+	<!--             -->
+	<!-- LN1AC       -->
+	<!--             -->
+	<cim:Line rdf:ID="_ID_LN1AC_Line">
+		<cim:IdentifiedObject.name>LN1AC Sub1 to Sub3</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN1AC</cim:IdentifiedObject.localName>
+		<cim:Line.Region rdf:resource="#_ID_SubGeographicalRegion"/>
+	</cim:Line>
+	<cim:ACLineSegment rdf:ID="_ID_LN1AC_ACLineSeg">
+		<cim:ACLineSegment.gch>0.0000489</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.bch>0.000348</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.r>0.231</cim:ACLineSegment.r>
+		<cim:ACLineSegment.x>130.25</cim:ACLineSegment.x>
+		<cim:ACLineSegment.g0ch>0.512</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.b0ch>0.023</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.r0>0.386</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x0>0.392</cim:ACLineSegment.x0>
+		<cim:Conductor.length>0</cim:Conductor.length>
+		<cim:IdentifiedObject.name>LN1AC</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN1AC</cim:IdentifiedObject.localName>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_LN1AC_Line"/>
+	</cim:ACLineSegment>	
+	<cim:Terminal rdf:ID="_ID_LN1AC_T1">
+		<cim:IdentifiedObject.name>LN1AC_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN1AC_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_LN1AC_ACLineSeg"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN1AC_C1"/>
+	</cim:Terminal>
+	<cim:ConnectivityNode rdf:ID="_ID_LN1AC_C1">
+		<cim:IdentifiedObject.name>LN1AC_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN1AC_C1</cim:IdentifiedObject.localName>
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	</cim:ConnectivityNode>	
+	<cim:Terminal rdf:ID="_ID_LN1AC_T2">
+		<cim:IdentifiedObject.name>LN1AC_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN1AC_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_LN1AC_ACLineSeg"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN1AC_C2"/>
+	</cim:Terminal>	
+	<cim:ConnectivityNode rdf:ID="_ID_LN1AC_C2">
+		<cim:IdentifiedObject.name>LN1AC_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN1AC C2</cim:IdentifiedObject.localName>
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	</cim:ConnectivityNode>	
+	<!--             -->
+	<!-- LN2AC       -->
+	<!--             -->
+	<cim:Line rdf:ID="_ID_LN2AC_Line">
+		<cim:IdentifiedObject.name>LN2AC Sub1 to Sub2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN2AC</cim:IdentifiedObject.localName>
+		<cim:Line.Region rdf:resource="#_ID_SubGeographicalRegion"/>
+	</cim:Line>
+	<cim:ACLineSegment rdf:ID="_ID_LN2AC_ACLineSeg">
+		<cim:ACLineSegment.gch>0.0000498</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.bch>0.00048</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.r>0.215</cim:ACLineSegment.r>
+		<cim:ACLineSegment.x>20.45</cim:ACLineSegment.x>
+		<cim:ACLineSegment.g0ch>0.412</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.b0ch>0.03</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.r0>0.438</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x0>0.502</cim:ACLineSegment.x0>
+		<cim:Conductor.length>0</cim:Conductor.length>
+		<cim:IdentifiedObject.name>LN2AC</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN2AC</cim:IdentifiedObject.localName>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_LN2AC_Line"/>
+	</cim:ACLineSegment>	
+	<cim:Terminal rdf:ID="_ID_LN2AC_T1">
+		<cim:IdentifiedObject.name>LN2AC_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN2AC_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_LN2AC_ACLineSeg"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN2AC_C1"/>
+	</cim:Terminal>
+	<cim:ConnectivityNode rdf:ID="_ID_LN2AC_C1">
+		<cim:IdentifiedObject.name>LN2AC_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN2AC_C1</cim:IdentifiedObject.localName>
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB1_VLevel_220KV_EF4559BF7EB"/>
+	</cim:ConnectivityNode>	
+	<cim:Terminal rdf:ID="_ID_LN2AC_T2">
+		<cim:IdentifiedObject.name>LN2AC_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN2AC_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_LN2AC_ACLineSeg"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN2AC_C2"/>
+	</cim:Terminal>	
+	<cim:ConnectivityNode rdf:ID="_ID_LN2AC_C2">
+		<cim:IdentifiedObject.name>LN2AC_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN2AC_C2</cim:IdentifiedObject.localName>
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	</cim:ConnectivityNode>		
+	<!--             -->
+	<!-- LN3AC       -->
+	<!--             -->
+	<cim:Line rdf:ID="_ID_LN3AC_Line">
+		<cim:IdentifiedObject.name>LN3AC Sub2 to Sub3</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN3AC</cim:IdentifiedObject.localName>
+		<cim:Line.Region rdf:resource="#_ID_SubGeographicalRegion"/>
+	</cim:Line>
+	<cim:ACLineSegment rdf:ID="_ID_LN3AC_ACLineSeg">
+		<cim:ACLineSegment.gch>0.0000543</cim:ACLineSegment.gch>
+		<cim:ACLineSegment.bch>0.000356</cim:ACLineSegment.bch>
+		<cim:ACLineSegment.r>5.656</cim:ACLineSegment.r>
+		<cim:ACLineSegment.x>50.33</cim:ACLineSegment.x>
+		<cim:ACLineSegment.g0ch>0.544</cim:ACLineSegment.g0ch>
+		<cim:ACLineSegment.b0ch>0.045</cim:ACLineSegment.b0ch>
+		<cim:ACLineSegment.r0>0.434</cim:ACLineSegment.r0>
+		<cim:ACLineSegment.x0>0.544</cim:ACLineSegment.x0>
+		<cim:Conductor.length>0</cim:Conductor.length>
+		<cim:IdentifiedObject.name>LN3AC</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN3AC</cim:IdentifiedObject.localName>
+		<cim:ConductingEquipment.BaseVoltage rdf:resource="#_ID_BaseVoltage_220KV"/>
+		<cim:Equipment.MemberOf_EquipmentContainer rdf:resource="#_ID_LN3AC_Line"/>
+	</cim:ACLineSegment>	
+	   <cim:Terminal rdf:ID="_ID_LN3AC_T1">
+		<cim:IdentifiedObject.name>LN3AC_T1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN3AC_T1</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_LN3AC_ACLineSeg"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN3AC_C1"/>
+	   </cim:Terminal>
+	   <cim:ConnectivityNode rdf:ID="_ID_LN3AC_C1">
+		<cim:IdentifiedObject.name>LN3AC_C1</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN3AC_C1</cim:IdentifiedObject.localName>
+		<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB2_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	   <cim:Terminal rdf:ID="_ID_LN3AC_T2">
+		<cim:IdentifiedObject.name>LN3AC_T2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN3AC_T2</cim:IdentifiedObject.localName>
+		<cim:Terminal.ConductingEquipment rdf:resource="#_ID_LN3AC_ACLineSeg"/>
+		<cim:Terminal.ConnectivityNode rdf:resource="#_ID_LN3AC_C2"/>
+	   </cim:Terminal>	
+	   <cim:ConnectivityNode rdf:ID="_ID_LN3AC_C2">
+		<cim:IdentifiedObject.name>LN3AC_C2</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.localName>LN3AC_C2</cim:IdentifiedObject.localName>
+	  	<cim:ConnectivityNode.ConnectivityNodeContainer rdf:resource="#_ID_SUB3_VLevel_220KV_EF4559BF7EB"/>
+	   </cim:ConnectivityNode>	
+	<!--             -->
+	<!-- Units       -->
+	<!--             -->
+	<cim:Unit rdf:ID="_34BC3ABA7AEF48D3B6C125ACC74C2FD5">
+		<cim:IdentifiedObject.name>MW</cim:IdentifiedObject.name>
+	</cim:Unit>
+	<cim:Unit rdf:ID="_552837A6A28144EB9ACC0263C658E5DD">
+		<cim:IdentifiedObject.name>MVA</cim:IdentifiedObject.name>
+	</cim:Unit>
+	<cim:Unit rdf:ID="_96D78FFD1233469BA7683486BE983CD4">
+		<cim:IdentifiedObject.name>MVAr</cim:IdentifiedObject.name>
+	</cim:Unit>
+	<cim:Unit rdf:ID="_C31191E137FF4C919CC74DA15D1E170A">
+		<cim:IdentifiedObject.name>kV</cim:IdentifiedObject.name>
+	</cim:Unit>
+</rdf:RDF>
