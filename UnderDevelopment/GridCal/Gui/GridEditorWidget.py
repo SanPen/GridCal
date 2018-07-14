@@ -31,6 +31,7 @@ ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': QtCore.Qt.yellow}
 OTHER = ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
+FONT_SCALE = 1.9
 
 
 class LineEditor(QDialog):
@@ -1781,6 +1782,7 @@ class BusGraphicItem(QGraphicsRectItem):
         self.label = QGraphicsTextItem(bus.name, self)
         # self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setDefaultTextColor(QtCore.Qt.black)
+        self.label.setScale(FONT_SCALE)
 
         # square
         self.tile = QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
@@ -1842,7 +1844,7 @@ class BusGraphicItem(QGraphicsRectItem):
         rect = self.label.boundingRect()
         lw, lh = rect.width(), rect.height()
         lx = (w - lw) / 2
-        ly = (h - lh) / 2
+        ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
         self.label.setPos(lx, ly)
 
         # lower
@@ -1867,10 +1869,12 @@ class BusGraphicItem(QGraphicsRectItem):
             Nothing
         """
         y0 = self.h + 40
-        x = 0
+        n = len(self.shunt_children)
+        inc_x = self.w / (n + 1)
+        x = inc_x
         for elm in self.shunt_children:
-            elm.setPos(x, y0)
-            x += elm.w + 10
+            elm.setPos(x - elm.w / 2, y0)
+            x += inc_x
 
         # Arrange line positions
         self.terminal.process_callbacks(self.pos() + self.terminal.pos())
