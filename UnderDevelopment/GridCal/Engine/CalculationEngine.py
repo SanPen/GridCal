@@ -3659,6 +3659,8 @@ class MultiCircuit(Circuit):
             self.save_excel(file_path)
         elif file_path.endswith('.json'):
             self.save_json(file_path)
+        elif file_path.endswith('.xml'):
+            self.save_cim(file_path)
         else:
             raise Exception('File path extension not understood\n' + file_path)
 
@@ -3821,6 +3823,19 @@ class MultiCircuit(Circuit):
 
         from GridCal.Engine.Importers.JSON_parser import save_json_file
         save_json_file(file_path, self)
+
+    def save_cim(self, file_path):
+        """
+
+        :param file_path:
+        :return:
+        """
+
+        from GridCal.Engine.Importers.CIM import CimExport
+
+        cim = CimExport(self)
+
+        cim.save(file_name=file_path)
 
     def save_calculation_objects(self, file_path):
         """
