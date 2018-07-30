@@ -1,17 +1,4 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+from GridCal.Engine.CalculationEngine import MultiCircuit
 
 
 def index_find(string, start, end):
@@ -27,7 +14,7 @@ def index_find(string, start, end):
 
 class GeneralContainer:
 
-    def __init__(self, header, tpe):
+    def __init__(self, id, tpe, resources=list()):
         """
         General CIM object container
         :param header: object xml header
@@ -39,9 +26,14 @@ class GeneralContainer:
         self.tpe = tpe
 
         # pick the object id
-        self.id = index_find(header, '"', '">').replace('#', '')
+        self.id = id
+
+        # list of properties which are considered as resources
+        self.resources = resources
 
         self.terminals = list()
+
+        self.base_voltage = list()
 
     def parse_line(self, line):
         """
@@ -57,7 +49,7 @@ class GeneralContainer:
 
         for L1, L2 in parsers:
             # try to parse the property
-            prop = index_find(line, L1[0], L1[1])
+            prop = index_find(line, L1[0], L1[1]).strip()
 
             # try to parse the value
             val = index_find(line, L2[0], L2[1])
@@ -95,43 +87,81 @@ class GeneralContainer:
     def __str__(self):
         return self.tpe + ':' + self.id
 
+    def get_xml(self, level=0):
+
+        """
+        Returns an XML representation of the object
+        Args:
+            level:
+
+        Returns:
+
+        """
+
+        """
+        <cim:IEC61970CIMVersion rdf:ID="version">
+            <cim:IEC61970CIMVersion.version>IEC61970CIM16v29a</cim:IEC61970CIMVersion.version>
+            <cim:IEC61970CIMVersion.date>2015-07-15</cim:IEC61970CIMVersion.date>
+        </cim:IEC61970CIMVersion>
+        """
+
+        l1 = '  ' * level  # start/end tabbing
+        l2 = '  ' * (level + 1)  # middle tabbing
+
+        # header
+        xml = l1 + '<cim:' + self.tpe + ' rdf:ID="' + self.id + '">\n'
+
+        # properties
+        for prop, value in self.properties.items():
+            v = str(value).replace(' ', '_')
+
+            if prop in self.resources:
+                xml += l2 + '<cim:' + self.tpe + '.' + prop + ' rdf:resource="#' + v + '" />\n'
+            else:
+                xml += l2 + '<cim:' + self.tpe + '.' + prop + '>' + v + '</cim:' + self.tpe + '.' + prop + '>\n'
+
+        # closing
+        xml += l1 + '</cim:' + self.tpe + '>\n'
+
+        return xml
+
 
 class ACLineSegment(GeneralContainer):
 
-    def __init__(self, header, tpe):
-        GeneralContainer.__init__(self, header, tpe)
+    def __init__(self, id, tpe):
+        GeneralContainer.__init__(self, id, tpe)
 
         self.base_voltage = list()
 
 
 class PowerTransformer(GeneralContainer):
 
-    def __init__(self, header, tpe):
-        GeneralContainer.__init__(self, header, tpe)
+    def __init__(self, id, tpe):
+        GeneralContainer.__init__(self, id, tpe)
 
         self.windings = list()
 
 
 class Winding(GeneralContainer):
 
-    def __init__(self, header, tpe):
-        GeneralContainer.__init__(self, header, tpe)
+    def __init__(self, id, tpe):
+        GeneralContainer.__init__(self, id, tpe)
 
         self.tap_changers = list()
 
 
 class ConformLoad(GeneralContainer):
 
-    def __init__(self, header, tpe):
-        GeneralContainer.__init__(self, header, tpe)
+    def __init__(self, id, tpe):
+        GeneralContainer.__init__(self, id, tpe)
 
         self.load_response_characteristics = list()
 
 
 class SynchronousMachine(GeneralContainer):
 
-    def __init__(self, header, tpe):
-        GeneralContainer.__init__(self, header, tpe)
+    def __init__(self, id, tpe):
+        GeneralContainer.__init__(self, id, tpe)
 
         self.base_voltage = list()
 
@@ -151,28 +181,46 @@ class CIMCircuit:
         self.elements_by_type = dict()
 
         # classes to read, theo others are ignored
-        self.classes = ['ACLineSegment',
-                        'BaseVoltage',
-                        'BusbarSection',
-                        'ConformLoad',
-                        'GeneratingUnit',
-                        'LoadResponseCharacteristic',
-                        'PowerTransformer',
-                        'RatioTapChanger',
-                        'RegulatingControl',
-                        'ShuntCompensator',
-                        'SynchronousMachine',
-                        'Terminal',
-                        'TransformerWinding',
-                        'VoltageLimit',
-                        'TopologicalNode',
-                        'ConnectivityNode',
-                        'Breaker',
-                        'Disconnector',
-                        'EnergyConsumer',
-                        'PowerTransformerEnd',
-                        'EquivalentNetwork',
-                        'EquivalentInjection']
+        self.classes = ["ACLineSegment",
+                        "Analog",
+                        "BaseVoltage",
+                        "Breaker",
+                        "BusbarSection",
+                        "ConformLoad",
+                        "ConformLoadSchedule",
+                        "ConnectivityNode",
+                        "Control",
+                        "DayType",
+                        "Disconnector",
+                        "Discrete",
+                        "EnergyConsumer",
+                        "EquivalentInjection",
+                        "EquivalentNetwork",
+                        "GeneratingUnit",
+                        "GeographicalRegion",
+                        "IEC61970CIMVersion",
+                        "Line",
+                        "LoadBreakSwitch",
+                        "LoadResponseCharacteristic",
+                        "Model",
+                        "OperationalLimitSet",
+                        "PositionPoint",
+                        "PowerTransformer",
+                        "PowerTransformerEnd",
+                        "PSRType",
+                        "RatioTapChanger",
+                        "RegulatingControl",
+                        "Season",
+                        "SeriesCompensator",
+                        "ShuntCompensator",
+                        "Substation",
+                        "SynchronousMachine",
+                        "Terminal",
+                        "TopologicalNode",
+                        "TransformerWinding",
+                        "VoltageLevel",
+                        "VoltageLimit"
+                        ]
 
     def clear(self):
         """
@@ -240,6 +288,9 @@ class CIMCircuit:
                     if prop in ['ConductingEquipment', 'TopologicalNode', 'ConnectivityNode']:
                         ref_obj.terminals.append(element)
 
+                    if prop in ['BaseVoltage']:
+                        element.base_voltage.append(ref_obj)
+
                     # the winding points at the transformer with the property PowerTransformer
                     if ref_obj.tpe == 'PowerTransformer':
                         if prop in ['PowerTransformer']:
@@ -264,9 +315,9 @@ class CIMCircuit:
                         if prop in ['LoadResponse']:
                             element.load_response_characteristics.append(ref_obj)
 
-                    if element.tpe == 'ACLineSegment':
-                        if prop in ['BaseVoltage']:
-                            element.base_voltage.append(ref_obj)
+                    # if element.tpe == 'ACLineSegment':
+                    #     if prop in ['BaseVoltage']:
+                    #         element.base_voltage.append(ref_obj)
 
                 else:
                     pass
@@ -284,90 +335,389 @@ class CIMCircuit:
             classes = classes_
         recording = False
 
+        disabled = False
+
         # Read text file line by line
         with open(file_name, 'r') as file_pointer:
 
             for line in file_pointer:
 
-                # determine if the line opens or closes and object
-                # and of which type of the ones pre-specified
-                start_rec, end_rec, tpe = self.check_type(line, classes)
+                if '<!--' in line:
+                    disabled = True
 
-                if tpe is not "":
-                    # a recognisable object was found
+                if not disabled:
 
-                    if start_rec:
-                        # start recording object
-                        if tpe == 'PowerTransformer':
-                            element = PowerTransformer(line, tpe)
+                    # determine if the line opens or closes and object
+                    # and of which type of the ones pre-specified
+                    start_rec, end_rec, tpe = self.check_type(line, classes)
 
-                        elif tpe == 'ACLineSegment':
-                            element = ACLineSegment(line, tpe)
+                    if tpe is not "":
+                        # a recognisable object was found
 
-                        elif tpe == 'TransformerWinding':
-                            element = Winding(line, tpe)
+                        if start_rec:
 
-                        elif tpe == 'PowerTransformerEnd':
-                            element = Winding(line, tpe)
+                            id = index_find(line, '"', '">').replace('#', '')
 
-                        elif tpe == 'ConformLoad':
-                            element = ConformLoad(line, tpe)
+                            # start recording object
+                            if tpe == 'PowerTransformer':
+                                element = PowerTransformer(id, tpe)
 
-                        elif tpe == 'SynchronousMachine':
-                            element = SynchronousMachine(line, tpe)
+                            elif tpe == 'ACLineSegment':
+                                element = ACLineSegment(id, tpe)
 
-                        else:
-                            element = GeneralContainer(line, tpe)
+                            elif tpe == 'TransformerWinding':
+                                element = Winding(id, tpe)
 
-                        recording = True
+                            elif tpe == 'PowerTransformerEnd':
+                                element = Winding(id, tpe)
 
-                    if end_rec:
-                        # stop recording object
-                        if recording:
+                            elif tpe == 'ConformLoad':
+                                element = ConformLoad(id, tpe)
 
-                            if element.id in self.elm_dict.keys():
-                                idx = self.elm_dict[element.id]
-                                self.elements[idx].merge(element)
-                                # print('Merging!')
+                            elif tpe == 'SynchronousMachine':
+                                element = SynchronousMachine(id, tpe)
+
                             else:
-                                self.elm_dict[element.id] = len(self.elements)
-                                self.elements.append(element)
+                                element = GeneralContainer(id, tpe)
 
-                            if tpe not in self.elements_by_type.keys():
-                                self.elements_by_type[tpe] = list()
+                            recording = True
 
-                            self.elements_by_type[tpe].append(element)
+                        if end_rec:
+                            # stop recording object
+                            if recording:
 
-                            recording = False
+                                if element.id in self.elm_dict.keys():
+                                    idx = self.elm_dict[element.id]
+                                    self.elements[idx].merge(element)
+                                    # print('Merging!')
+                                else:
+                                    self.elm_dict[element.id] = len(self.elements)
+                                    self.elements.append(element)
 
+                                if tpe not in self.elements_by_type.keys():
+                                    self.elements_by_type[tpe] = list()
+
+                                self.elements_by_type[tpe].append(element)
+
+                                recording = False
+
+                    else:
+                        # process line
+                        if recording:
+                            element.parse_line(line)
                 else:
-                    # process line
-                    if recording:
-                        element.parse_line(line)
+                    # the line is a comment
+                    # print('#', line.replace('\n', ''))
+
+                    if '-->' in line:
+                        disabled = False
+
+
+class CimExport:
+
+    def __init__(self, circuit: MultiCircuit):
+
+        self.circuit = circuit
+
+    def save(self, file_name):
+        """
+        Save XML CIM version of a grid
+        Args:
+            file_name: file path
+        """
+
+        # open CIM file for writing
+        text_file = open(file_name, "w")
+
+        # header
+        text_file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        text_file.write('<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2009/CIM-schema-cim14#">\n')
+
+        # Model
+        model = GeneralContainer(id=self.circuit.name, tpe='Model')
+        model.properties['name'] = self.circuit.name
+        model.properties['version'] = 1
+        text_file.write(model.get_xml(1))
+
+        bus_id_dict = dict()
+        base_voltages = set()
+        base_voltages_dict = dict()
+
+        # buses sweep to gather previous data (base voltages, etc..)
+        for i, bus in enumerate(self.circuit.buses):
+            base_voltages.add(int(bus.Vnom))
+
+        # generate Base voltages
+        for V in base_voltages:
+
+            id = 'Base_voltage_' + str(V).replace('.', '_')
+
+            base_voltages_dict[int(V)] = id
+
+            model = GeneralContainer(id=id, tpe='BaseVoltage')
+            model.properties['name'] = id
+            model.properties['nominalVoltage'] = int(V)
+            text_file.write(model.get_xml(1))
+
+        # buses sweep to actually generate XML
+        terminal_resources = ['TopologicalNode', 'ConductingEquipment']
+        for i, bus in enumerate(self.circuit.buses):
+
+            # make id
+            id = 'BUS_' + str(i)
+
+            # make dictionary entry
+            bus_id_dict[bus] = id
+
+            base_voltage = base_voltages_dict[int(bus.Vnom)]
+
+            # generate model
+            model = GeneralContainer(id=id, tpe='TopologicalNode', resources=['BaseVoltage'])
+            model.properties['name'] = bus.name
+            model.properties['aliasName'] = bus.name
+            model.properties['BaseVoltage'] = base_voltage
+            text_file.write(model.get_xml(1))
+
+            for il, elm in enumerate(bus.loads):
+
+                id2 = id + '_LOAD_' + str(il)
+                id3 = id2 + '_LRC'
+
+                model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse'])
+                model.properties['name'] = elm.name
+                model.properties['aliasName'] = elm.name
+                model.properties['BaseVoltage'] = base_voltage
+                model.properties['LoadResponse'] = id3
+                model.properties['pfixed'] = elm.S.real
+                model.properties['qfixed'] = elm.S.imag
+                model.properties['normallyInService'] = elm.active
+                text_file.write(model.get_xml(1))
+
+                model = GeneralContainer(id=id3, tpe='LoadResponseCharacteristic', resources=[])
+                model.properties['name'] = elm.name
+                model.properties['exponentModel'] = 'false'
+                model.properties['pConstantCurrent'] = elm.I.real
+                model.properties['pConstantImpedance'] = elm.Z.real
+                model.properties['pConstantPower'] = elm.S.real
+                model.properties['pVoltageExponent'] = 0.0
+                model.properties['pFrequencyExponent'] = 0.0
+                model.properties['qConstantCurrent'] = elm.I.imag
+                model.properties['qConstantImpedance'] = elm.Z.imag
+                model.properties['qConstantPower'] = elm.S.imag
+                model.properties['qVoltageExponent'] = 0.0
+                model.properties['qFrequencyExponent'] = 0.0
+                text_file.write(model.get_xml(1))
+
+                # Terminal 1 (from)
+                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                model.properties['name'] = elm.name
+                model.properties['TopologicalNode'] = bus_id_dict[bus]
+                model.properties['ConductingEquipment'] = id2
+                model.properties['connected'] = 'true'
+                model.properties['sequenceNumber'] = '1'
+                text_file.write(model.get_xml(1))
+
+            for il, elm in enumerate(bus.static_generators):
+
+                id2 = id + '_StatGen_' + str(il)
+
+                model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse'])
+                model.properties['name'] = elm.name
+                model.properties['aliasName'] = elm.name
+                model.properties['BaseVoltage'] = base_voltage
+                model.properties['pfixed'] = -elm.S.real
+                model.properties['qfixed'] = -elm.S.imag
+                model.properties['normallyInService'] = elm.active
+                text_file.write(model.get_xml(1))
+
+                # Terminal 1 (from)
+                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                model.properties['name'] = elm.name
+                model.properties['TopologicalNode'] = bus_id_dict[bus]
+                model.properties['ConductingEquipment'] = id2
+                model.properties['connected'] = 'true'
+                model.properties['sequenceNumber'] = '1'
+                text_file.write(model.get_xml(1))
+
+            for il, elm in enumerate(bus.controlled_generators):
+
+                id2 = id + '_SyncGen_' + str(il)
+                id3 = id2 + '_GU'
+                id4 = id2 + '_RC'
+
+                model = GeneralContainer(id=id2, tpe='SynchrnousMachine', resources=['BaseVoltage', 'RegulatingControl', 'GeneratingUnit'])
+                model.properties['name'] = elm.name
+                model.properties['aliasName'] = elm.name
+                model.properties['BaseVoltage'] = base_voltage
+                model.properties['RegulatingControl'] = id3
+                model.properties['GeneratingUnit'] = id4
+                model.properties['maxQ'] = elm.Qmax
+                model.properties['minQ'] = elm.Qmin
+                model.properties['ratedS'] = elm.Snom
+                model.properties['normallyInService'] = elm.active
+                text_file.write(model.get_xml(1))
+
+                model = GeneralContainer(id=id3, tpe='RegulatingControl', resources=[])
+                model.properties['name'] = elm.name
+                model.properties['targetValue'] = elm.Vset
+                text_file.write(model.get_xml(1))
+
+                model = GeneralContainer(id=id4, tpe='GeneratingUnit', resources=[])
+                model.properties['name'] = elm.name
+                model.properties['initialP'] = elm.P
+                text_file.write(model.get_xml(1))
+
+                # Terminal 1 (from)
+                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                model.properties['name'] = elm.name
+                model.properties['TopologicalNode'] = bus_id_dict[bus]
+                model.properties['ConductingEquipment'] = id2
+                model.properties['connected'] = 'true'
+                model.properties['sequenceNumber'] = '1'
+                text_file.write(model.get_xml(1))
+
+            for il, elm in enumerate(bus.shunts):
+
+                id2 = id + '_Shunt_' + str(il)
+
+                model = GeneralContainer(id=id2, tpe='ShuntCompensator', resources=['BaseVoltage'])
+                model.properties['name'] = elm.name
+                model.properties['aliasName'] = elm.name
+                model.properties['BaseVoltage'] = base_voltage
+                model.properties['gPerSection'] = elm.Y.real
+                model.properties['bPerSection'] = elm.Y.real
+                model.properties['g0PerSection'] = 0.0
+                model.properties['b0PerSection'] = 0.0
+                model.properties['normallyInService'] = elm.active
+                text_file.write(model.get_xml(1))
+
+                # Terminal 1 (from)
+                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                model.properties['name'] = elm.name
+                model.properties['TopologicalNode'] = bus_id_dict[bus]
+                model.properties['ConductingEquipment'] = id2
+                model.properties['connected'] = 'true'
+                model.properties['sequenceNumber'] = '1'
+                text_file.write(model.get_xml(1))
+
+        # Branches
+        winding_resources = ['connectionType', 'windingType', 'PowerTransformer']
+        for i, branch in enumerate(self.circuit.branches):
+
+            if branch.is_transformer:
+                id = 'Transformer_' + str(i)
+
+                model = GeneralContainer(id=id, tpe='PowerTransformer', resources=[])
+                model.properties['name'] = branch.name
+                model.properties['aliasName'] = branch.name
+                text_file.write(model.get_xml(1))
+
+                # W1 (from)
+                Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
+                Ybase = 1 / Zbase
+                model = GeneralContainer(id=id + "_W1", tpe='PowerTransformerEnd', resources=winding_resources)
+                model.properties['name'] = branch.name
+                model.properties['PowerTransformer'] = id
+                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['r'] = branch.R / 2 * Zbase
+                model.properties['x'] = branch.X / 2 * Zbase
+                model.properties['g'] = branch.G / 2 * Ybase
+                model.properties['b'] = branch.B / 2 * Ybase
+                model.properties['r0'] = 0.0
+                model.properties['x0'] = 0.0
+                model.properties['g0'] = 0.0
+                model.properties['b0'] = 0.0
+                model.properties['ratedS'] = branch.rate
+                model.properties['ratedU'] = branch.bus_from.Vnom
+                model.properties['rground'] = 0.0
+                model.properties['xground'] = 0.0
+                model.properties['connectionType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingConnection.Y"
+                model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.primary"
+                text_file.write(model.get_xml(1))
+
+                # W2 (To)
+                Zbase = (branch.bus_to.Vnom ** 2) / self.circuit.Sbase
+                Ybase = 1 / Zbase
+                model = GeneralContainer(id=id + "_W2", tpe='PowerTransformerEnd', resources=winding_resources)
+                model.properties['name'] = branch.name
+                model.properties['PowerTransformer'] = id
+                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_to.Vnom)]
+                model.properties['r'] = branch.R / 2 * Zbase
+                model.properties['x'] = branch.X / 2 * Zbase
+                model.properties['g'] = branch.G / 2 * Ybase
+                model.properties['b'] = branch.B / 2 * Ybase
+                model.properties['r0'] = 0.0
+                model.properties['x0'] = 0.0
+                model.properties['g0'] = 0.0
+                model.properties['b0'] = 0.0
+                model.properties['ratedS'] = branch.rate
+                model.properties['ratedU'] = branch.bus_to.Vnom
+                model.properties['rground'] = 0.0
+                model.properties['xground'] = 0.0
+                model.properties['connectionType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingConnection.Y"
+                model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.secondary"
+                text_file.write(model.get_xml(1))
+
+            else:
+                id = 'Line_' + str(i)
+                Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
+                Ybase = 1 / Zbase
+                model = GeneralContainer(id=id, tpe='ACLineSegment', resources=['BaseVoltage'])
+                model.properties['name'] = branch.name
+                model.properties['aliasName'] = branch.name
+                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['r'] = branch.R * Zbase
+                model.properties['x'] = branch.X * Zbase
+                model.properties['g'] = branch.G * Ybase
+                model.properties['b'] = branch.B * Ybase
+                model.properties['r0'] = 0.0
+                model.properties['x0'] = 0.0
+                model.properties['g0'] = 0.0
+                model.properties['b0'] = 0.0
+                model.properties['length'] = 1.0
+                text_file.write(model.get_xml(1))
+
+            # Terminal 1 (from)
+            model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)
+            model.properties['name'] = bus.name
+            model.properties['TopologicalNode'] = bus_id_dict[branch.bus_from]
+            model.properties['ConductingEquipment'] = id
+            model.properties['connected'] = 'true'
+            model.properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
+
+            # Terminal 2 (to)
+            model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)
+            model.properties['name'] = bus.name
+            model.properties['TopologicalNode'] = bus_id_dict[branch.bus_to]
+            model.properties['ConductingEquipment'] = id
+            model.properties['connected'] = 'true'
+            model.properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
+
+        # end
+        text_file.write("</rdf:RDF>")
+
+        text_file.close()
 
 
 if __name__ == '__main__':
-    import os
 
-    circuit = CIMCircuit()
+    grid = MultiCircuit()
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
+    # fname = 'Pegasus 89 Bus.xlsx'
+    # fname = 'Illinois200Bus.xlsx'
+    # fname = 'IEEE_30_new.xlsx'
+    # fname = 'lynn5buspq.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE30_new.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 
-    fname = './../../../../Grids_and_profiles/grids/IEEE14_equipment_v14.xml'
-    if os.name == 'nt':
-        fname.replace('/', '\\')
+    print('Reading...')
+    grid.load_file(fname)
 
-    circuit.parse_file(fname)
-
-    fname = './../../../../Grids_and_profiles/grids/IEEE14_equipment_v16.xml'
-    if os.name == 'nt':
-        fname.replace('/', '\\')
-
-    circuit.parse_file(fname)
-
-    circuit.find_references()
-
-    # print objects
-    for elm in circuit.elements:
-        print('\n')
-        elm.print()
-
-    pass
+    grid.save_cim('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE_14_GridCal.xml')

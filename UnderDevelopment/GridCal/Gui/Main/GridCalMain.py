@@ -887,7 +887,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "Excel (*.xlsx);;JSON (*.json)"
+        files_types = "Excel (*.xlsx);;CIM (*.xml);;JSON (*.json)"
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -907,6 +907,7 @@ class MainGUI(QMainWindow):
 
             extension = dict()
             extension['Excel (*.xlsx)'] = '.xlsx'
+            extension['CIM (*.xml)'] = '.xml'
             extension['JSON (*.json)'] = '.json'
             # extension['Numpy Case (*.npz)'] = '.npz'
 
@@ -914,11 +915,14 @@ class MainGUI(QMainWindow):
                 filename = name + extension[type_selected]
 
             # call to save the file in the circuit
-            try:
-                self.circuit.save_file(filename)
-            except:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+
+            self.circuit.save_file(filename)
+
+            # try:
+            #     self.circuit.save_file(filename)
+            # except:
+            #     exc_type, exc_value, exc_traceback = sys.exc_info()
+            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
     def closeEvent(self, event):
         """
