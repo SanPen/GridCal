@@ -472,7 +472,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1 = None
         self.c2 = None
         if self.api_object is not None:
-            if self.api_object.is_transformer:
+            if self.api_object.branch_type == BranchType.Transformer:
                 self.make_transformer_signs()
 
         # add the line and it possible children to the scene
@@ -543,7 +543,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         ra3 = menu.addAction('Edit')
         ra3.triggered.connect(self.edit)
 
-        if self.api_object.is_transformer:
+        if self.api_object.branch_type == BranchType.Transformer:
             ra4 = menu.addAction('Tap up')
             ra4.triggered.connect(self.tap_up)
 
@@ -674,7 +674,7 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.setZValue(-1)
 
             if self.api_object is not None:
-                if self.api_object.is_transformer:
+                if self.api_object.branch_type == BranchType.Transformer:
 
                     if self.c1 is None:
                         self.make_transformer_signs()
@@ -705,7 +705,7 @@ class BranchGraphicItem(QGraphicsLineItem):
             pen:
         """
         self.setPen(pen)
-        if self.api_object.is_transformer:
+        if self.api_object.branch_type == BranchType.Transformer:
             if self.c1 is None:
                 self.redraw()
             self.c1.setPen(pen)
@@ -717,7 +717,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-        if self.api_object.is_transformer:
+        if self.api_object.branch_type == BranchType.Transformer:
             dlg = TransformerEditor(self.api_object, Sbase)
         else:
             dlg = LineEditor(self.api_object, Sbase)
@@ -2575,14 +2575,14 @@ class GridEditor(QSplitter):
                         v2 = self.started_branch.bus_to.api_object.Vnom
 
                         if abs(v1 - v2) > 1.0:
-                            is_transformer = True
+                            branch_type = BranchType.Transformer
                         else:
-                            is_transformer = False
+                            branch_type = BranchType.Line
 
                         obj = Branch(bus_from=self.started_branch.bus_from.api_object,
                                      bus_to=self.started_branch.bus_to.api_object,
                                      name=name,
-                                     is_transformer=is_transformer)
+                                     branch_type=branch_type)
                         obj.graphic_obj = self.started_branch
                         self.started_branch.api_object = obj
                         self.circuit.add_branch(obj)

@@ -1,4 +1,4 @@
-from GridCal.Engine.CalculationEngine import MultiCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit, BranchType
 
 
 def index_find(string, start, end):
@@ -622,7 +622,7 @@ class CimExport:
         winding_resources = ['connectionType', 'windingType', 'PowerTransformer']
         for i, branch in enumerate(self.circuit.branches):
 
-            if branch.is_transformer:
+            if branch.branch_type == BranchType.Transformer:
                 id = 'Transformer_' + str(i)
 
                 model = GeneralContainer(id=id, tpe='PowerTransformer', resources=[])
@@ -676,7 +676,7 @@ class CimExport:
                 model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.secondary"
                 text_file.write(model.get_xml(1))
 
-            else:
+            elif branch.branch_type == BranchType.Line:
                 id = 'Line_' + str(i)
                 Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
                 Ybase = 1 / Zbase
@@ -694,6 +694,9 @@ class CimExport:
                 model.properties['b0ch'] = 0.0
                 model.properties['length'] = 1.0
                 text_file.write(model.get_xml(1))
+
+            else:
+                print(branch.name, branch.branch_type, 'not implemented yet for CIM export')
 
             # Terminal 1 (from)
             model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)

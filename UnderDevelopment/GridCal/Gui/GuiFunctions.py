@@ -19,6 +19,8 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5.QtGui import *
 
+from GridCal.Engine.CalculationEngine import BranchTypeConverter, BranchType
+
 
 class ComboDelegate(QItemDelegate):
     commitData = QtCore.pyqtSignal(object)
@@ -331,8 +333,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         for i in range(self.c):
             tpe = self.attribute_types[self.attributes[i]]
+
             if tpe is bool:
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+                F(i, delegate)
+
+            if tpe is BranchType:
+                conv = BranchTypeConverter(None)
+                delegate = ComboDelegate(self.parent, conv.values, conv.options)
                 F(i, delegate)
 
             elif tpe is float:
@@ -346,6 +354,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             elif tpe is complex:
                 delegate = ComplexDelegate(self.parent)
                 F(i, delegate)
+
             elif tpe is None:
                 F(i, None)
                 if len(self.non_editable_indices) == 0:
@@ -407,8 +416,13 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         attr = self.attributes[attr_idx]
+        tpe = self.attribute_types[self.attributes[attr_idx]]
+
         if 'bus' in attr:
             return getattr(self.objects[obj_idx], attr).name
+        elif tpe is BranchType:
+            conv = BranchTypeConverter(None)
+            return conv.inv_conv[getattr(self.objects[obj_idx], attr)]
         else:
             return getattr(self.objects[obj_idx], attr)
 
@@ -440,8 +454,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             obj_idx = index.row()
             attr_idx = index.column()
 
+        tpe = self.attribute_types[self.attributes[attr_idx]]
+
         if attr_idx not in self.non_editable_indices:
-            setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            if tpe is BranchType:
+                conv = BranchTypeConverter(None)
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], conv.conv[value])
+            else:
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
         else:
             pass  # the column cannot be edited
 

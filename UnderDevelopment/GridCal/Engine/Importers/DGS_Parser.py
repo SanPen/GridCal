@@ -946,7 +946,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                                active=status,
                                mttf=0,
                                mttr=0,
-                               is_transformer=True)
+                               branch_type=True)
 
                 circuit.add_branch(trafo)
 

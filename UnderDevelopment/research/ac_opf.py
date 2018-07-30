@@ -136,7 +136,7 @@ class AcOPf:
             generators = bus.controlled_generators + bus.batteries
 
             # check that there are at least one generator at the slack node
-            if len(generators) == 0 and bus.type == NodeType.REF:
+            if len(generators) == 0 and bus.type == BusMode.REF:
                 self.potential_errors = True
                 warn('There is no generator at the Slack node ' + bus.name + '!!!')
 

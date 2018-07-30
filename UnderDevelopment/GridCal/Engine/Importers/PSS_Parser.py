@@ -188,7 +188,7 @@ class PSSeBus:
             data:
         """
 
-        bustype = {1: NodeType.PQ, 2: NodeType.PV, 3: NodeType.REF, 4: NodeType.PQ}
+        bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.REF, 4: BusMode.PQ}
 
         if version == 33:
             n = len(data[0])
@@ -235,7 +235,7 @@ class PSSeBus:
         # set type
         self.bus.type = bustype[self.IDE]
 
-        if self.bus.type == NodeType.REF:
+        if self.bus.type == BusMode.REF:
             self.bus.is_slack = True
 
         self.bus.name = self.bus.name.replace("'", "").strip()
@@ -663,7 +663,7 @@ class PSSeBranch:
                         active=True,
                         mttf=0,
                         mttr=0,
-                        is_transformer=False)
+                        branch_type=False)
         return object
 
 
@@ -1287,7 +1287,7 @@ class PSSeTransformer:
                             active=True,
                             mttf=0,
                             mttr=0,
-                            is_transformer=True)
+                            branch_type=True)
 
             return [object]
 
@@ -1314,7 +1314,7 @@ class PSSeTransformer:
                              active=True,
                              mttf=0,
                              mttr=0,
-                             is_transformer=True)
+                             branch_type=True)
 
             r = self.R2_3
             x = self.X2_3
@@ -1333,7 +1333,7 @@ class PSSeTransformer:
                              active=True,
                              mttf=0,
                              mttr=0,
-                             is_transformer=True)
+                             branch_type=True)
 
             r = self.R3_1
             x = self.X3_1
@@ -1352,7 +1352,7 @@ class PSSeTransformer:
                              active=True,
                              mttf=0,
                              mttr=0,
-                             is_transformer=True)
+                             branch_type=True)
 
             return [object1, object2, object3]
 
