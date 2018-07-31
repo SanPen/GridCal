@@ -600,7 +600,7 @@ class MainGUI(QMainWindow):
         Sbase = self.circuit.Sbase
 
         '''
-        class NodeType(Enum):
+        class BusMode(Enum):
         PQ = 1,
         PV = 2,
         REF = 3,
@@ -846,13 +846,13 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Loading file...')
             QtGui.QGuiApplication.processEvents()
 
-            try:
-                self.circuit.load_file(filename=filename)
-            except Exception as ex:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
+            # try:
+            #     self.circuit.load_file(filename=filename)
+            # except Exception as ex:
+            #     exc_type, exc_value, exc_traceback = sys.exc_info()
+            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
 
-            # self.circuit.load_file(filename=filename)
+            self.circuit.load_file(filename=filename)
 
             self.ui.progress_label.setText('Creating schematic...')
             QtGui.QGuiApplication.processEvents()
@@ -1172,7 +1172,7 @@ class MainGUI(QMainWindow):
 
                 if abs(v1-v2) > 1.0:
 
-                    branch.is_transformer = True
+                    branch.branch_type = BranchType.Transformer
 
                 else:
 

@@ -61,7 +61,7 @@ class DcOpf:
         for bus in self.circuit.buses:
 
             # check that there are at least one generator at the slack node
-            if len(bus.controlled_generators) == 0 and bus.type == NodeType.REF:
+            if len(bus.controlled_generators) == 0 and bus.type == BusMode.REF:
                 raise Warning('There is no generator at the Slack node ' + bus.name + '!!!')
 
             # Add the bus LP vars

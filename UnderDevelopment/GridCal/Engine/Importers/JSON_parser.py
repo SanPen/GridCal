@@ -54,7 +54,7 @@ def parse_json_data(data):
                           active=True)
 
                 if element["is_slack"]:
-                    elm.type = NodeType.REF
+                    elm.type = BusMode.REF
                 if element["vmax"] > 0:
                     elm.Vmax = element["vmax"]
                 if element["vmin"] > 0:
@@ -165,7 +165,7 @@ def parse_json_data(data):
                              active=element["active"],
                              mttf=0,
                              mttr=0,
-                             is_transformer=element["is_transformer"])
+                             branch_type=element["branch_type"])
                 circuit.add_branch(elm)
 
         else:
