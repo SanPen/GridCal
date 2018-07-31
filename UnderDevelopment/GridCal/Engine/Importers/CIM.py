@@ -1,3 +1,5 @@
+
+from warnings import warn
 from GridCal.Engine.CalculationEngine import MultiCircuit, BranchType
 
 
@@ -426,6 +428,8 @@ class CimExport:
             file_name: file path
         """
 
+        logger = list()
+
         # open CIM file for writing
         text_file = open(file_name, "w")
 
@@ -445,6 +449,10 @@ class CimExport:
 
         # buses sweep to gather previous data (base voltages, etc..)
         for i, bus in enumerate(self.circuit.buses):
+
+            if bus.Vnom <= 0.0:
+                logger.append('The bus ' + bus.name + ' has zero nominal voltage, this will cause NaN impedance values.')
+
             base_voltages.add(int(bus.Vnom))
 
         # generate Base voltages
@@ -695,8 +703,21 @@ class CimExport:
                 model.properties['length'] = 1.0
                 text_file.write(model.get_xml(1))
 
+            elif branch.branch_type == BranchType.Switch:
+                id = 'Switch_' + str(i)
+                model = GeneralContainer(id=id, tpe='Switch', resources=['BaseVoltage'])
+                model.properties['name'] = branch.name
+                model.properties['aliasName'] = branch.name
+                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['normalOpen'] = False
+                model.properties['ratedCurrent'] = branch.rate / branch.bus_from.Vnom  # kA
+                model.properties['open'] = not branch.active
+                model.properties['retained'] = False
+                model.properties['normallyInService'] = True
+                text_file.write(model.get_xml(1))
+
             else:
-                print(branch.name, branch.branch_type, 'not implemented yet for CIM export')
+                logger.append(branch.name + ' ' + str(branch.branch_type) + ' not implemented yet for CIM export')
 
             # Terminal 1 (from)
             model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)
@@ -720,6 +741,8 @@ class CimExport:
         text_file.write("</rdf:RDF>")
 
         text_file.close()
+
+        return logger
 
 
 if __name__ == '__main__':

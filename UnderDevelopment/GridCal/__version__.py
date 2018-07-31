@@ -1,1 +1,1 @@
-__GridCal_VERSION__ = "2.42"
+__GridCal_VERSION__ = "2.43"

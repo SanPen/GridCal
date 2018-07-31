@@ -194,6 +194,7 @@ def save_json_file(file_path, circuit: MultiCircuit):
     elements = list()  # list of
     key = 0
     bus_key_dict = dict()
+    logger = list()
 
     # add the circuit
     circuit_dict = circuit.get_json_dict(key)
@@ -230,3 +231,5 @@ def save_json_file(file_path, circuit: MultiCircuit):
     text_file = open(file_path, "w")
     text_file.write(json_str)
     text_file.close()
+
+    return logger

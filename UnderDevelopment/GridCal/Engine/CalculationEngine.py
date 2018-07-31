@@ -3529,6 +3529,11 @@ class MultiCircuit(Circuit):
 
         # Add the branches
         lst = data['branch']
+
+        # fix the old 'is_transformer' property
+        lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
+        lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
+
         bus_from = lst['bus_from'].values
         bus_to = lst['bus_to'].values
         hdr = lst.columns.values
@@ -3714,14 +3719,17 @@ class MultiCircuit(Circuit):
         :param file_path: 
         :return: 
         """
+        logger = list()
         if file_path.endswith('.xlsx'):
-            self.save_excel(file_path)
+            logger = self.save_excel(file_path)
         elif file_path.endswith('.json'):
-            self.save_json(file_path)
+            logger = self.save_json(file_path)
         elif file_path.endswith('.xml'):
-            self.save_cim(file_path)
+            logger = self.save_cim(file_path)
         else:
             raise Exception('File path extension not understood\n' + file_path)
+
+        return logger
 
     def save_excel(self, file_path):
         """
@@ -3729,6 +3737,8 @@ class MultiCircuit(Circuit):
         :param file_path: file path to save
         :return:
         """
+        logger = list()
+
         dfs = dict()
 
         # configuration ################################################################################################
@@ -3873,6 +3883,8 @@ class MultiCircuit(Circuit):
 
         writer.save()
 
+        return logger
+
     def save_json(self, file_path):
         """
         
@@ -3881,7 +3893,8 @@ class MultiCircuit(Circuit):
         """
 
         from GridCal.Engine.Importers.JSON_parser import save_json_file
-        save_json_file(file_path, self)
+        logger = save_json_file(file_path, self)
+        return logger
 
     def save_cim(self, file_path):
         """
@@ -3894,7 +3907,9 @@ class MultiCircuit(Circuit):
 
         cim = CimExport(self)
 
-        cim.save(file_name=file_path)
+        logger = cim.save(file_name=file_path)
+
+        return logger
 
     def save_calculation_objects(self, file_path):
         """
