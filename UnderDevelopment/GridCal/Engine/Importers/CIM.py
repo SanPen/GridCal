@@ -479,11 +479,20 @@ class CimExport:
 
             base_voltage = base_voltages_dict[int(bus.Vnom)]
 
-            # generate model
-            model = GeneralContainer(id=id, tpe='TopologicalNode', resources=['BaseVoltage'])
+            # Bus model
+            model = GeneralContainer(id=id, tpe='TopologicalNode', resources=['BaseVoltage', 'PositionPoint'])
             model.properties['name'] = bus.name
             model.properties['aliasName'] = bus.name
             model.properties['BaseVoltage'] = base_voltage
+            model.properties['PositionPoint'] = id + '_POS'
+            text_file.write(model.get_xml(1))
+
+            # Location model
+            model = GeneralContainer(id=id + '_POS', tpe='PositionPoint', resources=[])
+            model.properties['sequenceNumber'] = i
+            model.properties['xPosition'] = bus.x
+            model.properties['yPosition'] = bus.y
+            model.properties['zPosition'] = 0
             text_file.write(model.get_xml(1))
 
             for il, elm in enumerate(bus.loads):
