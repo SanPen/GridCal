@@ -545,7 +545,7 @@ class CimExport:
                 id3 = id2 + '_GU'
                 id4 = id2 + '_RC'
 
-                model = GeneralContainer(id=id2, tpe='SynchrnousMachine', resources=['BaseVoltage', 'RegulatingControl', 'GeneratingUnit'])
+                model = GeneralContainer(id=id2, tpe='SynchronousMachine', resources=['BaseVoltage', 'RegulatingControl', 'GeneratingUnit'])
                 model.properties['name'] = elm.name
                 model.properties['aliasName'] = elm.name
                 model.properties['BaseVoltage'] = base_voltage
@@ -559,7 +559,7 @@ class CimExport:
 
                 model = GeneralContainer(id=id3, tpe='RegulatingControl', resources=[])
                 model.properties['name'] = elm.name
-                model.properties['targetValue'] = elm.Vset
+                model.properties['targetValue'] = elm.Vset * bus.Vnom
                 text_file.write(model.get_xml(1))
 
                 model = GeneralContainer(id=id4, tpe='GeneratingUnit', resources=[])
@@ -585,7 +585,7 @@ class CimExport:
                 model.properties['aliasName'] = elm.name
                 model.properties['BaseVoltage'] = base_voltage
                 model.properties['gPerSection'] = elm.Y.real
-                model.properties['bPerSection'] = elm.Y.real
+                model.properties['bPerSection'] = elm.Y.imag
                 model.properties['g0PerSection'] = 0.0
                 model.properties['b0PerSection'] = 0.0
                 model.properties['normallyInService'] = elm.active
@@ -594,6 +594,24 @@ class CimExport:
                 # Terminal 1 (from)
                 model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
                 model.properties['name'] = elm.name
+                model.properties['TopologicalNode'] = bus_id_dict[bus]
+                model.properties['ConductingEquipment'] = id2
+                model.properties['connected'] = 'true'
+                model.properties['sequenceNumber'] = '1'
+                text_file.write(model.get_xml(1))
+
+            if bus.is_slack:
+                id2 = id + '_EqNetwork'
+
+                model = GeneralContainer(id=id2, tpe='EquivalentNetwork', resources=['BaseVoltage'])
+                model.properties['name'] = bus.name + '_Slack'
+                model.properties['aliasName'] = bus.name + '_Slack'
+                model.properties['BaseVoltage'] = base_voltage
+                text_file.write(model.get_xml(1))
+
+                # Terminal 1 (from)
+                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                model.properties['name'] = id2 + '_T'
                 model.properties['TopologicalNode'] = bus_id_dict[bus]
                 model.properties['ConductingEquipment'] = id2
                 model.properties['connected'] = 'true'
@@ -668,18 +686,18 @@ class CimExport:
                 model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
                 model.properties['r'] = branch.R * Zbase
                 model.properties['x'] = branch.X * Zbase
-                model.properties['g'] = branch.G * Ybase
-                model.properties['b'] = branch.B * Ybase
+                model.properties['gch'] = branch.G * Ybase
+                model.properties['bch'] = branch.B * Ybase
                 model.properties['r0'] = 0.0
                 model.properties['x0'] = 0.0
-                model.properties['g0'] = 0.0
-                model.properties['b0'] = 0.0
+                model.properties['g0ch'] = 0.0
+                model.properties['b0ch'] = 0.0
                 model.properties['length'] = 1.0
                 text_file.write(model.get_xml(1))
 
             # Terminal 1 (from)
             model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)
-            model.properties['name'] = bus.name
+            model.properties['name'] = bus.name + '_' + branch.name + '_T1'
             model.properties['TopologicalNode'] = bus_id_dict[branch.bus_from]
             model.properties['ConductingEquipment'] = id
             model.properties['connected'] = 'true'
@@ -687,8 +705,8 @@ class CimExport:
             text_file.write(model.get_xml(1))
 
             # Terminal 2 (to)
-            model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)
-            model.properties['name'] = bus.name
+            model = GeneralContainer(id=id + '_T2', tpe='Terminal', resources=terminal_resources)
+            model.properties['name'] = bus.name + '_' + branch.name + '_T2'
             model.properties['TopologicalNode'] = bus_id_dict[branch.bus_to]
             model.properties['ConductingEquipment'] = id
             model.properties['connected'] = 'true'
@@ -712,12 +730,14 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
+    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
 
     print('Reading...')
     grid.load_file(fname)
 
-    grid.save_cim('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE_14_GridCal.xml')
+    # grid.save_cim('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE_14_GridCal.xml')
+    grid.save_cim('C:\\Users\\spenate\\Documents\\PROYECTOS\\SCADA_microgrid\\CIM\\newton\\IEEE_30_Bus.xml')
