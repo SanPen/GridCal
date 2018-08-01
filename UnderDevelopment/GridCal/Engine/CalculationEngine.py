@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 import os
 import pickle as pkl
 from datetime import datetime, timedelta
@@ -79,12 +77,57 @@ plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
 ########################################################################################################################
 
 
-class NodeType(Enum):
+class BusMode(Enum):
     PQ = 1,
     PV = 2,
     REF = 3,
     NONE = 4,
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
+
+
+class BranchType(Enum):
+    Branch = 'branch',
+    Line = 'line',
+    Transformer = 'transformer',
+    Reactance = 'reactance',
+    Switch = 'switch'
+
+
+class BranchTypeConverter:
+
+    def __init__(self, tpe: BranchType):
+
+        self.tpe = tpe
+
+        self.options = ['branch',
+                        'line',
+                        'transformer',
+                        'switch',
+                        'reactance']
+        self.values = [BranchType.Branch,
+                       BranchType.Line,
+                       BranchType.Transformer,
+                       BranchType.Switch,
+                       BranchType.Reactance]
+
+        self.conv = dict()
+        self.inv_conv = dict()
+
+        for o, v in zip(self.options, self.values):
+            self.conv[o] = v
+            self.inv_conv[v] = o
+
+    def __str__(self):
+        """
+        Convert value to string
+        """
+        return self.inv_conv[self.tpe]
+
+    def __call__(self, str_value):
+        """
+        Convert from string
+        """
+        return self.conv[str_value]
 
 
 class MeasurementType(Enum):
@@ -664,7 +707,7 @@ class Bus:
         self.measurements = list()
 
         # Bus type
-        self.type = NodeType.NONE
+        self.type = BusMode.NONE
 
         # Flag to determine if the bus is a slack bus or not
         self.is_slack = is_slack
@@ -717,24 +760,24 @@ class Bus:
         if gen_on > 0:
 
             if self.is_slack:  # If contains generators and is marked as REF, then set it as REF
-                self.type = NodeType.REF
+                self.type = BusMode.REF
             else:  # Otherwise set as PV
-                self.type = NodeType.PV
+                self.type = BusMode.PV
 
         elif batt_on > 0:
 
             if self.dispatch_storage:
                 # If there are storage devices and the dispatchable flag is on, set the bus as dispatchable
-                self.type = NodeType.STO_DISPATCH
+                self.type = BusMode.STO_DISPATCH
             else:
                 # Otherwise a storage device shall be marked as a voltage controlled bus
-                self.type = NodeType.PV
+                self.type = BusMode.PV
         else:
             if self.is_slack:  # If there is no device but still is marked as REF, then set as REF
-                self.type = NodeType.REF
+                self.type = BusMode.REF
             else:
                 # Nothing special; set it as PQ
-                self.type = NodeType.PQ
+                self.type = BusMode.PQ
 
         pass
 
@@ -1293,7 +1336,8 @@ class TapChanger:
 class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, is_transformer=False):
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
+                 branch_type: BranchType=BranchType.Line):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -1306,7 +1350,7 @@ class Branch(ReliabilityDevice):
         @param shift_angle: tap shift angle in radians
         @param mttf: Mean time to failure
         @param mttr: Mean time to repair
-        @param is_transformer: Is the branch a transformer?
+        @param branch_type: Is the branch a transformer?
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1346,15 +1390,24 @@ class Branch(ReliabilityDevice):
 
         # self.mttr = mttr
 
-        self.is_transformer = is_transformer
+        self.branch_type = branch_type
 
         self.type_obj = None
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'tap_module', 'angle', 'is_transformer']
+                             'tap_module', 'angle', 'branch_type']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
                       'p.u.', 'rad', '']
+
+        # converter for enumerations
+        self.conv = {'branch': BranchType.Branch,
+                     'line': BranchType.Line,
+                     'transformer': BranchType.Transformer,
+                     'switch': BranchType.Switch,
+                     'reactance': BranchType.Reactance}
+
+        self.inv_conv = {val: key for key, val in self.conv.items()}
 
         self.edit_types = {'name': str,
                            'bus_from': None,
@@ -1369,7 +1422,11 @@ class Branch(ReliabilityDevice):
                            'B': float,
                            'tap_module': float,
                            'angle': float,
-                           'is_transformer':bool}
+                           'branch_type': BranchType}
+
+    def branch_type_converter(self, val_string):
+
+        return self.conv[val_string.lower()]
 
     def copy(self, bus_dict=None):
         """
@@ -1399,7 +1456,7 @@ class Branch(ReliabilityDevice):
                    active=self.active,
                    mttf=self.mttf,
                    mttr=self.mttr,
-                   is_transformer=self.is_transformer)
+                   branch_type=self.branch_type)
 
         b.measurements = self.measurements
 
@@ -1519,15 +1576,16 @@ class Branch(ReliabilityDevice):
 
         self.rate = obj.Nominal_power
 
-        self.is_transformer = True
+        self.branch_type = True
 
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
         :return:
         """
+        conv = BranchTypeConverter(None)
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.tap_module, self.angle, self.is_transformer]
+                self.R, self.X, self.G, self.B, self.tap_module, self.angle, conv.inv_conv[self.branch_type]]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1550,7 +1608,7 @@ class Branch(ReliabilityDevice):
                 'b': self.B,
                 'tap_module': self.tap_module,
                 'tap_angle': self.angle,
-                'is_transformer': self.is_transformer}
+                'branch_type': self.branch_type}
 
     def __str__(self):
         return self.name
@@ -3439,10 +3497,6 @@ class MultiCircuit(Circuit):
 
         self.time_profile = None
 
-
-
-
-
         # common function
         def set_object_attributes(obj_, attr_list, values):
             for a, attr in enumerate(attr_list):
@@ -3450,12 +3504,17 @@ class MultiCircuit(Circuit):
                 # Hack to change the enabled by active...
                 if attr == 'is_enabled':
                     attr = 'active'
-
-                conv = obj.edit_types[attr]  # get the type converter
-                if conv is None:
-                    setattr(obj_, attr, values[a])
+                if hasattr(obj_, attr):
+                    conv = obj_.edit_types[attr]  # get the type converter
+                    if conv is None:
+                        setattr(obj_, attr, values[a])
+                    elif conv is BranchType:
+                        cbr = BranchTypeConverter(None)
+                        setattr(obj_, attr, cbr(values[a]))
+                    else:
+                        setattr(obj_, attr, conv(values[a]))
                 else:
-                    setattr(obj_, attr, conv(values[a]))
+                    warn(str(obj_) + ' has no ' + attr + ' property.')
 
         # Add the buses
         lst = data['bus']
@@ -3470,6 +3529,11 @@ class MultiCircuit(Circuit):
 
         # Add the branches
         lst = data['branch']
+
+        # fix the old 'is_transformer' property
+        lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
+        lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
+
         bus_from = lst['bus_from'].values
         bus_to = lst['bus_to'].values
         hdr = lst.columns.values
@@ -3655,14 +3719,17 @@ class MultiCircuit(Circuit):
         :param file_path: 
         :return: 
         """
+        logger = list()
         if file_path.endswith('.xlsx'):
-            self.save_excel(file_path)
+            logger = self.save_excel(file_path)
         elif file_path.endswith('.json'):
-            self.save_json(file_path)
+            logger = self.save_json(file_path)
         elif file_path.endswith('.xml'):
-            self.save_cim(file_path)
+            logger = self.save_cim(file_path)
         else:
             raise Exception('File path extension not understood\n' + file_path)
+
+        return logger
 
     def save_excel(self, file_path):
         """
@@ -3670,6 +3737,8 @@ class MultiCircuit(Circuit):
         :param file_path: file path to save
         :return:
         """
+        logger = list()
+
         dfs = dict()
 
         # configuration ################################################################################################
@@ -3814,6 +3883,8 @@ class MultiCircuit(Circuit):
 
         writer.save()
 
+        return logger
+
     def save_json(self, file_path):
         """
         
@@ -3822,7 +3893,8 @@ class MultiCircuit(Circuit):
         """
 
         from GridCal.Engine.Importers.JSON_parser import save_json_file
-        save_json_file(file_path, self)
+        logger = save_json_file(file_path, self)
+        return logger
 
     def save_cim(self, file_path):
         """
@@ -3835,7 +3907,9 @@ class MultiCircuit(Circuit):
 
         cim = CimExport(self)
 
-        cim.save(file_name=file_path)
+        logger = cim.save(file_name=file_path)
+
+        return logger
 
     def save_calculation_objects(self, file_path):
         """
@@ -4533,10 +4607,10 @@ class PowerFlowInput:
         """
         if types_new is not None:
             self.types = types_new.copy()
-        self.pq = where(self.types == NodeType.PQ.value[0])[0]
-        self.pv = where(self.types == NodeType.PV.value[0])[0]
-        self.ref = where(self.types == NodeType.REF.value[0])[0]
-        self.sto = where(self.types == NodeType.STO_DISPATCH.value)[0]
+        self.pq = where(self.types == BusMode.PQ.value[0])[0]
+        self.pv = where(self.types == BusMode.PV.value[0])[0]
+        self.ref = where(self.types == BusMode.REF.value[0])[0]
+        self.sto = where(self.types == BusMode.STO_DISPATCH.value)[0]
 
         if len(self.ref) == 0:  # there is no slack!
 
@@ -4561,7 +4635,7 @@ class PowerFlowInput:
                 # print('Setting bus', i, 'as slack')
 
             self.ref = ndarray.flatten(array(self.ref))
-            self.types[self.ref] = NodeType.REF.value[0]
+            self.types[self.ref] = BusMode.REF.value[0]
         else:
             pass  # no problem :)
 
@@ -5088,10 +5162,10 @@ class PowerFlowMP:
         @return:
         """
 
-        pq = where(types == NodeType.PQ.value[0])[0]
-        pv = where(types == NodeType.PV.value[0])[0]
-        ref = where(types == NodeType.REF.value[0])[0]
-        sto = where(types == NodeType.STO_DISPATCH.value)[0]
+        pq = where(types == BusMode.PQ.value[0])[0]
+        pv = where(types == BusMode.PV.value[0])[0]
+        ref = where(types == BusMode.REF.value[0])[0]
+        sto = where(types == BusMode.STO_DISPATCH.value)[0]
 
         if len(ref) == 0:  # there is no slack!
 
@@ -5116,7 +5190,7 @@ class PowerFlowMP:
                 # print('Setting bus', i, 'as slack')
 
             ref = ndarray.flatten(array(ref))
-            types[ref] = NodeType.REF.value[0]
+            types[ref] = BusMode.REF.value[0]
         else:
             pass  # no problem :)
 
@@ -5468,10 +5542,10 @@ class PowerFlowMP:
         any_control_issue = False
         for i in range(n):
 
-            if types[i] == NodeType.REF.value[0]:
+            if types[i] == BusMode.REF.value[0]:
                 pass
 
-            elif types[i] == NodeType.PQ.value[0] and original_types[i] == NodeType.PV.value[0]:
+            elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
 
                 if Vm[i] != Vset[i]:
 
@@ -5484,7 +5558,7 @@ class PowerFlowMP:
                     else:  # switch back to PV, set Vinew = Viset.
                         if verbose:
                             print('Bus', i, ' switched back to PV')
-                        types_new[i] = NodeType.PV.value[0]
+                        types_new[i] = BusMode.PV.value[0]
                         Vnew[i] = complex(Vset[i], 0)
 
                     any_control_issue = True
@@ -5492,19 +5566,19 @@ class PowerFlowMP:
                 else:
                     pass  # The voltages are equal
 
-            elif types[i] == NodeType.PV.value[0]:
+            elif types[i] == BusMode.PV.value[0]:
 
                 if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
                     if verbose:
                         print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
-                    types_new[i] = NodeType.PQ.value[0]
+                    types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmax[i]
                     any_control_issue = True
 
                 elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
                     if verbose:
                         print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
-                    types_new[i] = NodeType.PQ.value[0]
+                    types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmin[i]
                     any_control_issue = True
 
@@ -8558,7 +8632,7 @@ class DcOpf:
             generators = bus.controlled_generators + bus.batteries
 
             # check that there are at least one generator at the slack node
-            if len(generators) == 0 and bus.type == NodeType.REF:
+            if len(generators) == 0 and bus.type == BusMode.REF:
                 self.potential_errors = True
                 warn('There is no generator at the Slack node ' + bus.name + '!!!')
 
@@ -9079,7 +9153,7 @@ class AcOpf:
             generators = bus.controlled_generators + bus.batteries
 
             # check that there are at least one generator at the slack node
-            if len(generators) == 0 and bus.type == NodeType.REF:
+            if len(generators) == 0 and bus.type == BusMode.REF:
                 self.potential_errors = True
                 warn('There is no generator at the Slack node ' + bus.name + '!!!')
 

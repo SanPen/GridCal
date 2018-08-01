@@ -54,7 +54,7 @@ def parse_json_data(data):
                           active=True)
 
                 if element["is_slack"]:
-                    elm.type = NodeType.REF
+                    elm.type = BusMode.REF
                 if element["vmax"] > 0:
                     elm.Vmax = element["vmax"]
                 if element["vmin"] > 0:
@@ -165,7 +165,7 @@ def parse_json_data(data):
                              active=element["active"],
                              mttf=0,
                              mttr=0,
-                             is_transformer=element["is_transformer"])
+                             branch_type=element["branch_type"])
                 circuit.add_branch(elm)
 
         else:
@@ -194,6 +194,7 @@ def save_json_file(file_path, circuit: MultiCircuit):
     elements = list()  # list of
     key = 0
     bus_key_dict = dict()
+    logger = list()
 
     # add the circuit
     circuit_dict = circuit.get_json_dict(key)
@@ -230,3 +231,5 @@ def save_json_file(file_path, circuit: MultiCircuit):
     text_file = open(file_path, "w")
     text_file.write(json_str)
     text_file.close()
+
+    return logger

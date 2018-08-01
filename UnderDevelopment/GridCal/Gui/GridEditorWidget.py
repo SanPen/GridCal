@@ -4,6 +4,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import smopy
 from PIL.ImageQt import ImageQt, Image
+import sip
+
 from GridCal.Engine.CalculationEngine import *
 from GridCal.Gui.GuiFunctions import *
 
@@ -467,13 +469,13 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.setToPort(toPort)
 
         # add transformer circles
+        self.symbol_type = BranchType.Line
         self.symbol = None
         self.c0 = None
         self.c1 = None
         self.c2 = None
         if self.api_object is not None:
-            if self.api_object.is_transformer:
-                self.make_transformer_signs()
+            self.make_symbol()
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
@@ -481,7 +483,38 @@ class BranchGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
-    def make_transformer_signs(self):
+    def make_symbol(self):
+        """
+        Make the branch symbol
+        :return:
+        """
+
+        if self.symbol is not None:
+            self.diagramScene.removeItem(self.symbol)
+            sip.delete(self.symbol)
+            self.symbol = None
+
+        if self.api_object.branch_type == BranchType.Transformer:
+            self.make_transformer_symbol()
+            self.symbol_type = BranchType.Transformer
+
+        elif self.api_object.branch_type == BranchType.Switch:
+            self.make_switch_symbol()
+            self.symbol_type = BranchType.Switch
+
+        elif self.api_object.branch_type == BranchType.Reactance:
+            self.make_reactance_symbol()
+            self.symbol_type = BranchType.Switch
+
+        else:
+            self.symbol = None
+            self.c0 = None
+            self.c1 = None
+            self.c2 = None
+            self.symbol_type = BranchType.Line
+            pass  # It is a line
+
+    def make_transformer_symbol(self):
         """
         create the transformer simbol
         :return:
@@ -511,6 +544,23 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1.setZValue(2)
         self.c2.setZValue(1)
 
+    def make_switch_symbol(self):
+        h = 80.0
+        w = h
+        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+        self.symbol.setPen(QPen(self.color, self.width, self.style))
+        if self.api_object.active:
+            self.symbol.setBrush(self.color)
+        else:
+            self.symbol.setBrush(Qt.white)
+
+    def make_reactance_symbol(self):
+        h = 40.0
+        w = 2 * h
+        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+        self.symbol.setPen(QPen(self.color, self.width, self.style))
+        self.symbol.setBrush(self.color)
+
     def setToolTipText(self, toolTip: str):
         """
         Set branch tool tip text
@@ -520,6 +570,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.setToolTip(toolTip)
         if self.symbol is not None:
             self.symbol.setToolTip(toolTip)
+        if self.c0 is not None:
             self.c0.setToolTip(toolTip)
             self.c1.setToolTip(toolTip)
             self.c2.setToolTip(toolTip)
@@ -543,7 +594,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         ra3 = menu.addAction('Edit')
         ra3.triggered.connect(self.edit)
 
-        if self.api_object.is_transformer:
+        if self.api_object.branch_type == BranchType.Transformer:
             ra4 = menu.addAction('Tap up')
             ra4.triggered.connect(self.tap_up)
 
@@ -571,7 +622,13 @@ class BranchGraphicItem(QGraphicsLineItem):
         :param event:
         :return:
         """
-        self.edit()
+
+        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line ]:
+            # trigger the editor
+            self.edit()
+        elif self.api_object.branch_type is BranchType.Switch:
+            # change state
+            self.enable_disable_toggle()
 
     def remove(self):
         """
@@ -616,6 +673,15 @@ class BranchGraphicItem(QGraphicsLineItem):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
+
+        # Switch coloring
+        if self.symbol_type == BranchType.Switch:
+            if self.api_object.active:
+                self.symbol.setBrush(self.color)
+            else:
+                self.symbol.setBrush(Qt.white)
+
+        # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))
 
     def setFromPort(self, fromPort):
@@ -674,11 +740,13 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.setZValue(-1)
 
             if self.api_object is not None:
-                if self.api_object.is_transformer:
 
-                    if self.c1 is None:
-                        self.make_transformer_signs()
+                # if the object branch type is different from the current displayed type, change it
+                if self.symbol_type != self.api_object.branch_type:
+                    self.make_symbol()
 
+                if self.api_object.branch_type != BranchType.Line and \
+                        self.api_object.branch_type != BranchType.Branch:
                     try:
                         h = self.pos2.y() - self.pos1.y()
                         b = self.pos2.x() - self.pos1.x()
@@ -705,9 +773,10 @@ class BranchGraphicItem(QGraphicsLineItem):
             pen:
         """
         self.setPen(pen)
-        if self.api_object.is_transformer:
-            if self.c1 is None:
-                self.redraw()
+        if self.symbol is not None:
+            # self.redraw()
+            self.symbol.setPen(pen)
+        if self.c1 is not None:
             self.c1.setPen(pen)
             self.c2.setPen(pen)
 
@@ -717,13 +786,16 @@ class BranchGraphicItem(QGraphicsLineItem):
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-        if self.api_object.is_transformer:
-            dlg = TransformerEditor(self.api_object, Sbase)
-        else:
-            dlg = LineEditor(self.api_object, Sbase)
 
-        if dlg.exec_():
-            pass
+        if self.api_object.branch_type == BranchType.Transformer:
+            dlg = TransformerEditor(self.api_object, Sbase)
+            if dlg.exec_():
+                pass
+
+        elif self.api_object.branch_type == BranchType.Line:
+            dlg = LineEditor(self.api_object, Sbase)
+            if dlg.exec_():
+                pass
 
     def tap_up(self):
         """
@@ -2575,14 +2647,14 @@ class GridEditor(QSplitter):
                         v2 = self.started_branch.bus_to.api_object.Vnom
 
                         if abs(v1 - v2) > 1.0:
-                            is_transformer = True
+                            branch_type = BranchType.Transformer
                         else:
-                            is_transformer = False
+                            branch_type = BranchType.Line
 
                         obj = Branch(bus_from=self.started_branch.bus_from.api_object,
                                      bus_to=self.started_branch.bus_to.api_object,
                                      name=name,
-                                     is_transformer=is_transformer)
+                                     branch_type=branch_type)
                         obj.graphic_obj = self.started_branch
                         self.started_branch.api_object = obj
                         self.circuit.add_branch(obj)

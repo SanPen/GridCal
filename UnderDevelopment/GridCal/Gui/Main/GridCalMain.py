@@ -143,6 +143,50 @@ class NewProfilesStructureDialogue(QDialog):
         return steps, step_length, step_unit, time_base.toPyDateTime()
 
 
+class LogsDialogue(QDialog):
+    """
+    New profile dialogue window
+    """
+    def __init__(self, name, logs: list()):
+        super(LogsDialogue, self).__init__()
+        self.setObjectName("self")
+        # self.resize(200, 71)
+        # self.setMinimumSize(QtCore.QSize(200, 71))
+        # self.setMaximumSize(QtCore.QSize(200, 71))
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        # icon = QtGui.QIcon()
+        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.setWindowIcon(icon)
+        self.layout = QVBoxLayout(self)
+
+        # logs_list
+        self.logs_list = QListView()
+        model = QtGui.QStandardItemModel()
+        self.logs_list.setModel(model)
+
+        for entry in logs:
+            item = QtGui.QStandardItem(entry)
+            model.appendRow(item)
+
+        # accept button
+        self.accept_btn = QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.layout.addWidget(QLabel("Logs"))
+        self.layout.addWidget(self.logs_list)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle(name)
+
+    def accept_click(self):
+        self.accept()
+
+
 class MainGUI(QMainWindow):
 
     def __init__(self, parent=None):
@@ -600,7 +644,7 @@ class MainGUI(QMainWindow):
         Sbase = self.circuit.Sbase
 
         '''
-        class NodeType(Enum):
+        class BusMode(Enum):
         PQ = 1,
         PV = 2,
         REF = 3,
@@ -848,6 +892,7 @@ class MainGUI(QMainWindow):
 
             try:
                 self.circuit.load_file(filename=filename)
+
             except Exception as ex:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
@@ -916,13 +961,18 @@ class MainGUI(QMainWindow):
 
             # call to save the file in the circuit
 
-            self.circuit.save_file(filename)
+            # self.circuit.save_file(filename)
 
-            # try:
-            #     self.circuit.save_file(filename)
-            # except:
-            #     exc_type, exc_value, exc_traceback = sys.exc_info()
-            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+            try:
+                logger = self.circuit.save_file(filename)
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Save file logger', logger)
+                    dlg.exec_()
+
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
     def closeEvent(self, event):
         """
@@ -1172,7 +1222,7 @@ class MainGUI(QMainWindow):
 
                 if abs(v1-v2) > 1.0:
 
-                    branch.is_transformer = True
+                    branch.branch_type = BranchType.Transformer
 
                 else:
 
