@@ -3425,6 +3425,8 @@ class MultiCircuit(Circuit):
         @param filename:
         @return:
         """
+        logger = list()
+
         if os.path.exists(filename):
             name, file_extension = os.path.splitext(filename)
             # print(name, file_extension)
@@ -3436,13 +3438,13 @@ class MultiCircuit(Circuit):
                 if 'version' not in ppc.keys():
                     from GridCal.Engine.Importers.matpower_parser import interpret_data_v1
                     interpret_data_v1(self, ppc)
-                    return True
+                    return logger
                 elif ppc['version'] == 2.0:
                     self.interpret_data_v2(ppc)
-                    return True
+                    return logger
                 else:
                     warn('The file could not be processed')
-                    return False
+                    return logger
 
             elif file_extension.lower() == '.dgs':
                 from GridCal.Engine.Importers.DGS_Parser import dgs_to_circuit
@@ -3468,10 +3470,13 @@ class MultiCircuit(Circuit):
                 circ = parser.circuit
                 self.buses = circ.buses
                 self.branches = circ.branches
+                logger = parser.logger
 
         else:
             warn('The file does not exist.')
-            return False
+            logger.append(filename + ' does not exist.')
+
+        return logger
 
     def interpret_data_v2(self, data):
         """
@@ -3531,8 +3536,9 @@ class MultiCircuit(Circuit):
         lst = data['branch']
 
         # fix the old 'is_transformer' property
-        lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
-        lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
+        if 'is_transformer' in lst.columns.values:
+            lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
+            lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
 
         bus_from = lst['bus_from'].values
         bus_to = lst['bus_to'].values
@@ -3719,7 +3725,7 @@ class MultiCircuit(Circuit):
         :param file_path: 
         :return: 
         """
-        logger = list()
+
         if file_path.endswith('.xlsx'):
             logger = self.save_excel(file_path)
         elif file_path.endswith('.json'):
@@ -3727,7 +3733,8 @@ class MultiCircuit(Circuit):
         elif file_path.endswith('.xml'):
             logger = self.save_cim(file_path)
         else:
-            raise Exception('File path extension not understood\n' + file_path)
+            logger = list()
+            logger.append('File path extension not understood\n' + file_path)
 
         return logger
 

@@ -871,7 +871,7 @@ class MainGUI(QMainWindow):
         # declare the allowed file types
         # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.json)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
@@ -891,7 +891,11 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
 
             try:
-                self.circuit.load_file(filename=filename)
+                logger = self.circuit.load_file(filename=filename)
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Open file logger', logger)
+                    dlg.exec_()
 
             except Exception as ex:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -963,16 +967,22 @@ class MainGUI(QMainWindow):
 
             # self.circuit.save_file(filename)
 
-            try:
-                logger = self.circuit.save_file(filename)
+            logger = self.circuit.save_file(filename)
 
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Save file logger', logger)
-                    dlg.exec_()
+            if len(logger) > 0:
+                dlg = LogsDialogue('Save file logger', logger)
+                dlg.exec_()
 
-            except:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+            # try:
+            #     logger = self.circuit.save_file(filename)
+            #
+            #     if len(logger) > 0:
+            #         dlg = LogsDialogue('Save file logger', logger)
+            #         dlg.exec_()
+            #
+            # except:
+            #     exc_type, exc_value, exc_traceback = sys.exc_info()
+            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
     def closeEvent(self, event):
         """
