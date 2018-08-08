@@ -475,7 +475,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1 = None
         self.c2 = None
         if self.api_object is not None:
-            self.make_symbol()
+            self.update_symbol()
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
@@ -483,7 +483,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
-    def make_symbol(self):
+    def update_symbol(self):
         """
         Make the branch symbol
         :return:
@@ -545,7 +545,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c2.setZValue(1)
 
     def make_switch_symbol(self):
-        h = 80.0
+        h = 40.0
         w = h
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
         self.symbol.setPen(QPen(self.color, self.width, self.style))
@@ -638,7 +638,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.diagramScene.circuit.delete_branch(self.api_object)
         self.diagramScene.removeItem(self)
 
-    def remove_(self):
+    def remove_widget(self):
         """
         Remove this object in the diagram
         @return:
@@ -743,10 +743,17 @@ class BranchGraphicItem(QGraphicsLineItem):
 
                 # if the object branch type is different from the current displayed type, change it
                 if self.symbol_type != self.api_object.branch_type:
-                    self.make_symbol()
+                    self.update_symbol()
 
-                if self.api_object.branch_type != BranchType.Line and \
-                        self.api_object.branch_type != BranchType.Branch:
+                if self.api_object.branch_type == BranchType.Line:
+                    pass
+
+                elif self.api_object.branch_type == BranchType.Branch:
+                    pass
+
+                else:
+
+                    # if the branch has a moveable symbol, move it
                     try:
                         h = self.pos2.y() - self.pos1.y()
                         b = self.pos2.x() - self.pos1.x()
@@ -773,16 +780,20 @@ class BranchGraphicItem(QGraphicsLineItem):
             pen:
         """
         self.setPen(pen)
-        if self.symbol is not None:
-            # self.redraw()
-            self.symbol.setPen(pen)
-        if self.c1 is not None:
-            self.c1.setPen(pen)
-            self.c2.setPen(pen)
+
+        # Color the symbol only for switches
+        if self.api_object.branch_type == BranchType.Switch:
+            if self.symbol is not None:
+                self.symbol.setPen(pen)
+
+        elif self.api_object.branch_type == BranchType.Transformer:
+            if self.c1 is not None:
+                self.c1.setPen(pen)
+                self.c2.setPen(pen)
 
     def edit(self):
         """
-        Open the apropiate editor dialogue
+        Open the appropriate editor dialogue
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
@@ -909,7 +920,7 @@ class TerminalItem(QGraphicsRectItem):
         """
         n = len(self.hosting_connections)
         for i in range(n - 1, -1, -1):
-            self.hosting_connections[i].remove_()
+            self.hosting_connections[i].remove_widget()
             self.hosting_connections.pop(i)
 
 
@@ -2665,7 +2676,7 @@ class GridEditor(QSplitter):
                         #     self.diagramView.map.setZValue(-1)
 
             if self.started_branch.toPort is None:
-                self.started_branch.remove_()
+                self.started_branch.remove_widget()
 
         # release this pointer
         self.started_branch = None
