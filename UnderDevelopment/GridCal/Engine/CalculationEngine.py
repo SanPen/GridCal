@@ -3472,6 +3472,14 @@ class MultiCircuit(Circuit):
                 self.branches = circ.branches
                 logger = parser.logger
 
+            elif file_extension.lower() == '.xml':
+                from GridCal.Engine.Importers.CIM import CIMImport
+                parser = CIMImport()
+                circ = parser.load_cim_file(filename)
+                self.buses = circ.buses
+                self.branches = circ.branches
+                logger = parser.logger
+
         else:
             warn('The file does not exist.')
             logger.append(filename + ' does not exist.')
@@ -3910,13 +3918,13 @@ class MultiCircuit(Circuit):
         :return:
         """
 
-        from GridCal.Engine.Importers.CIM import CimExport
+        from GridCal.Engine.Importers.CIM import CIMExport
 
-        cim = CimExport(self)
+        cim = CIMExport(self)
 
-        logger = cim.save(file_name=file_path)
+        cim.save(file_name=file_path)
 
-        return logger
+        return cim.logger
 
     def save_calculation_objects(self, file_path):
         """

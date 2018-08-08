@@ -835,6 +835,9 @@ class MainGUI(QMainWindow):
                 zoom = self.ui.zoom_spinBox.value()
 
                 self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
+
+                self.grid_editor.diagramView.view_map(False)
+
                 self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
@@ -871,7 +874,7 @@ class MainGUI(QMainWindow):
         # declare the allowed file types
         # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
@@ -890,18 +893,18 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Loading file...')
             QtGui.QGuiApplication.processEvents()
 
-            try:
-                logger = self.circuit.load_file(filename=filename)
+            # try:
+            #     logger = self.circuit.load_file(filename=filename)
+            #
+            #     if len(logger) > 0:
+            #         dlg = LogsDialogue('Open file logger', logger)
+            #         dlg.exec_()
+            #
+            # except Exception as ex:
+            #     exc_type, exc_value, exc_traceback = sys.exc_info()
+            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
 
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Open file logger', logger)
-                    dlg.exec_()
-
-            except Exception as ex:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
-
-            # self.circuit.load_file(filename=filename)
+            self.circuit.load_file(filename=filename)
 
             self.ui.progress_label.setText('Creating schematic...')
             QtGui.QGuiApplication.processEvents()

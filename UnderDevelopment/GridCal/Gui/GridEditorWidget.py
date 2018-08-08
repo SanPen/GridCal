@@ -545,6 +545,10 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c2.setZValue(1)
 
     def make_switch_symbol(self):
+        """
+        Mathe the switch symbol
+        :return:
+        """
         h = 40.0
         w = h
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
@@ -555,6 +559,10 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.symbol.setBrush(Qt.white)
 
     def make_reactance_symbol(self):
+        """
+        Make the reactance symbol
+        :return:
+        """
         h = 40.0
         w = 2 * h
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
@@ -568,8 +576,10 @@ class BranchGraphicItem(QGraphicsLineItem):
             toolTip: text
         """
         self.setToolTip(toolTip)
+
         if self.symbol is not None:
             self.symbol.setToolTip(toolTip)
+
         if self.c0 is not None:
             self.c0.setToolTip(toolTip)
             self.c1.setToolTip(toolTip)
