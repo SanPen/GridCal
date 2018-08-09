@@ -879,6 +879,7 @@ class CIMImport:
         # replace CIM references in the CIM objects
         cim.find_references()
 
+        # Terminals
         T_dict = dict()
         if 'Terminal' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['Terminal']:
@@ -887,9 +888,9 @@ class CIMImport:
                 else:
                     name = elm.id
 
-                T = Bus(name=name)
-                T_dict[elm.id] = T
-                circuit.add_bus(T)
+                # T = Bus(name=name)
+                T_dict[elm.id] = elm
+                # circuit.add_bus(T)
 
         else:
             self.logger.append('There are no Terminals!!!!!')
@@ -935,6 +936,10 @@ class CIMImport:
             for elm in cim.elements_by_type['ACLineSegment']:
                 T1 = T_dict[elm.terminals[0].id]
                 T2 = T_dict[elm.terminals[1].id]
+
+                B1 = self.terminal_node[T1][0]
+                B2 = self.terminal_node[T2][0]
+
                 name = elm.properties['name']
                 r, x, r0, x0, g, b, g0, b0, l = self.try_properties(elm.properties, prop_lst)
 
@@ -949,8 +954,8 @@ class CIMImport:
                 G = g * l / Ybase
                 B = b * l / Ybase
 
-                line = Branch(bus_from=T1,
-                              bus_to=T2,
+                line = Branch(bus_from=B1,
+                              bus_to=B2,
                               name=name,
                               r=R,
                               x=X,
@@ -980,6 +985,9 @@ class CIMImport:
                     T2 = T_dict[elm.terminals[1].id]
                 else:
                     raise Exception('Check element' + elm.id)
+
+                B1 = self.terminal_node[T1][0]
+                B2 = self.terminal_node[T2][0]
 
                 # reset the values for the new object
                 R = 0
@@ -1054,8 +1062,8 @@ class CIMImport:
 
                 tap_m = taps[0] * taps[1]
 
-                line = Branch(bus_from=T1,
-                              bus_to=T2,
+                line = Branch(bus_from=B1,
+                              bus_to=B2,
                               name=name,
                               r=R,
                               x=X,
@@ -1077,6 +1085,8 @@ class CIMImport:
             for elm in self.get_elements(cim.elements_by_type, cim_switches):
                 T1 = T_dict[elm.terminals[0].id]
                 T2 = T_dict[elm.terminals[1].id]
+                B1 = self.terminal_node[T1][0]
+                B2 = self.terminal_node[T2][0]
 
                 if 'name' in elm.properties:
                     name = elm.properties['name']
@@ -1088,8 +1098,8 @@ class CIMImport:
                 else:
                     state = True
 
-                line = Branch(bus_from=T1,
-                              bus_to=T2,
+                line = Branch(bus_from=B1,
+                              bus_to=B2,
                               name=name,
                               r=EPS,
                               x=EPS,
@@ -1110,6 +1120,7 @@ class CIMImport:
         if self.any_in_dict(cim.elements_by_type, cim_loads):
             for elm in self.get_elements(cim.elements_by_type, cim_loads):
                 T1 = T_dict[elm.terminals[0].id]
+                B1 = self.terminal_node[T1][0]
 
                 # Active and reactive power values
 
@@ -1131,12 +1142,13 @@ class CIMImport:
                             impedance=complex(0, 0),
                             current=complex(0, 0),
                             power=complex(p, q))
-                circuit.add_load(T1, load)
+                circuit.add_load(B1, load)
 
         # shunts
         if 'ShuntCompensator' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ShuntCompensator']:
                 T1 = T_dict[elm.terminals[0].id]
+                B1 = self.terminal_node[T1][0]
 
                 g = float(elm.properties['gPerSection'])
                 b = float(elm.properties['bPerSection'])
@@ -1147,12 +1159,13 @@ class CIMImport:
                 # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
 
                 sh = Shunt(name=name, admittance=complex(g, b))
-                circuit.add_shunt(T1, sh)
+                circuit.add_shunt(B1, sh)
 
         # Generators
         if 'SynchronousMachine' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['SynchronousMachine']:
                 T1 = T_dict[elm.terminals[0].id]
+                B1 = self.terminal_node[T1][0]
 
                 # nominal voltage and set voltage
                 if len(elm.base_voltage) > 0:
@@ -1188,7 +1201,7 @@ class CIMImport:
                 gen = ControlledGenerator(name=name,
                                           active_power=p,
                                           voltage_module=vset)
-                circuit.add_controlled_generator(T1, gen)
+                circuit.add_controlled_generator(B1, gen)
 
         return circuit
 
