@@ -646,8 +646,8 @@ class CIMExport:
                     raise Exception(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
 
                 # W1 (from)
-                Srate = branch.rate / 2
-                Zbase = (branch.bus_from.Vnom ** 2) / Srate
+                winding_power_rate = branch.rate / 2
+                Zbase = (branch.bus_from.Vnom ** 2) / winding_power_rate
                 Ybase = 1 / Zbase
                 model = GeneralContainer(id=id + "_W1", tpe='PowerTransformerEnd', resources=winding_resources)
                 model.properties['name'] = branch.name
@@ -661,7 +661,7 @@ class CIMExport:
                 model.properties['x0'] = 0.0
                 model.properties['g0'] = 0.0
                 model.properties['b0'] = 0.0
-                model.properties['ratedS'] = Srate
+                model.properties['ratedS'] = winding_power_rate
                 model.properties['ratedU'] = branch.bus_from.Vnom
                 model.properties['rground'] = 0.0
                 model.properties['xground'] = 0.0
@@ -670,7 +670,7 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
                 # W2 (To)
-                Zbase = (branch.bus_to.Vnom ** 2) / Srate
+                Zbase = (branch.bus_to.Vnom ** 2) / winding_power_rate
                 Ybase = 1 / Zbase
                 model = GeneralContainer(id=id + "_W2", tpe='PowerTransformerEnd', resources=winding_resources)
                 model.properties['name'] = branch.name
@@ -684,7 +684,7 @@ class CIMExport:
                 model.properties['x0'] = 0.0
                 model.properties['g0'] = 0.0
                 model.properties['b0'] = 0.0
-                model.properties['ratedS'] = Srate
+                model.properties['ratedS'] = winding_power_rate
                 model.properties['ratedU'] = branch.bus_to.Vnom
                 model.properties['rground'] = 0.0
                 model.properties['xground'] = 0.0
