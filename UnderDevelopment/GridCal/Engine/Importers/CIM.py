@@ -632,26 +632,27 @@ class CIMExport:
                 model.properties['aliasName'] = branch.name
                 text_file.write(model.get_xml(1))
 
-                V1 = base_voltages_dict[int(branch.bus_from.Vnom)]
-                V2 = base_voltages_dict[int(branch.bus_to.Vnom)]
-
                 #  warnings
                 if branch.rate <= 0.0:
                     self.logger.append(branch.name + ": The rate is 0, this will cause a problem when loading.")
+                    raise Exception(branch.name + ": The rate is 0, this will cause a problem when loading.")
 
                 if branch.bus_from.Vnom <= 0.0:
                     self.logger.append(branch.name + ": The voltage at the from side is 0, this will cause a problem when loading.")
+                    raise Exception(branch.name + ": The voltage at the from side, this will cause a problem when loading.")
 
                 if branch.bus_to.Vnom <= 0.0:
                     self.logger.append(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
+                    raise Exception(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
 
                 # W1 (from)
-                Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
+                Srate = branch.rate / 2
+                Zbase = (branch.bus_from.Vnom ** 2) / Srate
                 Ybase = 1 / Zbase
                 model = GeneralContainer(id=id + "_W1", tpe='PowerTransformerEnd', resources=winding_resources)
                 model.properties['name'] = branch.name
                 model.properties['PowerTransformer'] = id
-                model.properties['BaseVoltage'] = V1
+                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
                 model.properties['r'] = branch.R / 2 * Zbase
                 model.properties['x'] = branch.X / 2 * Zbase
                 model.properties['g'] = branch.G / 2 * Ybase
@@ -660,7 +661,7 @@ class CIMExport:
                 model.properties['x0'] = 0.0
                 model.properties['g0'] = 0.0
                 model.properties['b0'] = 0.0
-                model.properties['ratedS'] = branch.rate / 2
+                model.properties['ratedS'] = Srate
                 model.properties['ratedU'] = branch.bus_from.Vnom
                 model.properties['rground'] = 0.0
                 model.properties['xground'] = 0.0
@@ -669,12 +670,12 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
                 # W2 (To)
-                Zbase = (branch.bus_to.Vnom ** 2) / self.circuit.Sbase
+                Zbase = (branch.bus_to.Vnom ** 2) / Srate
                 Ybase = 1 / Zbase
                 model = GeneralContainer(id=id + "_W2", tpe='PowerTransformerEnd', resources=winding_resources)
                 model.properties['name'] = branch.name
                 model.properties['PowerTransformer'] = id
-                model.properties['BaseVoltage'] = V2
+                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_to.Vnom)]
                 model.properties['r'] = branch.R / 2 * Zbase
                 model.properties['x'] = branch.X / 2 * Zbase
                 model.properties['g'] = branch.G / 2 * Ybase
@@ -683,7 +684,7 @@ class CIMExport:
                 model.properties['x0'] = 0.0
                 model.properties['g0'] = 0.0
                 model.properties['b0'] = 0.0
-                model.properties['ratedS'] = branch.rate / 2
+                model.properties['ratedS'] = Srate
                 model.properties['ratedU'] = branch.bus_to.Vnom
                 model.properties['rground'] = 0.0
                 model.properties['xground'] = 0.0
@@ -901,7 +902,10 @@ class CIMImport:
         if self.any_in_dict(cim.elements_by_type, cim_nodes):
             for elm in self.get_elements(cim.elements_by_type, cim_nodes):
                 name = elm.properties['name']
-                CN = Bus(name=name)
+
+                Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+
+                CN = Bus(name=name, vnom=Vnom)
                 CN_dict[elm.id] = CN
                 circuit.add_bus(CN)
         else:
