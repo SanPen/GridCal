@@ -646,7 +646,7 @@ class ReliabilityDevice:
 class Bus:
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
-                 active=True, is_slack=False):
+                 active=True, is_slack=False, area='Defualt', zone='Default', substation='Default'):
         """
         Bus  constructor
         :param name: name of the bus
@@ -688,6 +688,12 @@ class Bus:
         # is the bus active?
         self.active = active
 
+        self.area = area
+
+        self.zone = zone
+
+        self.substation = substation
+
         # List of load s attached to this bus
         self.loads = list()
 
@@ -725,9 +731,11 @@ class Bus:
         # associated graphic object
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w']
+        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w',
+                             'area', 'zone', 'substation']
 
-        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px']
+        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px',
+                      '', '', '']
 
         self.edit_types = {'name': str,
                            'active': bool,
@@ -739,7 +747,10 @@ class Bus:
                            'x': float,
                            'y': float,
                            'h': float,
-                           'w': float}
+                           'w': float,
+                           'area': str,
+                           'zone': str,
+                           'substation': str}
 
     def determine_bus_type(self):
         """
@@ -1043,6 +1054,12 @@ class Bus:
 
         bus.w = self.w
 
+        bus.area = self.area
+
+        bus.zone = self.zone
+
+        bus.substation = self.substation
+
         bus.measurements = self.measurements
 
         # self.graphic_obj = None
@@ -1056,7 +1073,7 @@ class Bus:
         """
         self.retrieve_graphic_position()
         return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
-                self.x, self.y, self.h, self.w]
+                self.x, self.y, self.h, self.w, self.area, self.zone, self.substation]
 
     def get_json_dict(self, id):
         """
@@ -1077,7 +1094,10 @@ class Bus:
                 'x': self.x,
                 'y': self.y,
                 'h': self.h,
-                'w': self.w}
+                'w': self.w,
+                'area': self.area,
+                'zone': self.zone,
+                'substation': self.substation}
 
     def set_state(self, t):
         """
@@ -3770,126 +3790,173 @@ class MultiCircuit(Circuit):
         # buses ########################################################################################################
         obj = list()
         names_count = dict()
-        for elm in self.buses:
+        headers = Bus().edit_headers
+        if len(self.buses) > 0:
+            for elm in self.buses:
 
-            # check name: if the name is repeated, change it so that it is not
-            if elm.name in names_count.keys():
-                names_count[elm.name] += 1
-                elm.name = elm.name + '_' + str(names_count[elm.name])
-            else:
-                names_count[elm.name] = 1
+                # check name: if the name is repeated, change it so that it is not
+                if elm.name in names_count.keys():
+                    names_count[elm.name] += 1
+                    elm.name = elm.name + '_' + str(names_count[elm.name])
+                else:
+                    names_count[elm.name] = 1
 
-            obj.append(elm.get_save_data())
-        dfs['bus'] = pd.DataFrame(data=array(obj).astype('str'), columns=Bus().edit_headers)
+                obj.append(elm.get_save_data())
+
+            dta = array(obj).astype('str')
+        else:
+            dta = np.zeros((0, len(headers)))
+
+        dfs['bus'] = pd.DataFrame(data=dta, columns=headers)
 
         # branches #####################################################################################################
-        obj = list()
-        for elm in self.branches:
-            obj.append(elm.get_save_data())
-        dfs['branch'] = pd.DataFrame(data=obj, columns=Branch(None, None).edit_headers)
+        headers = Branch(None, None).edit_headers
+        if len(self.branches) > 0:
+            obj = list()
+            for elm in self.branches:
+                obj.append(elm.get_save_data())
+
+            dta = array(obj).astype('str')
+        else:
+            dta = np.zeros((0, len(headers)))
+
+        dfs['branch'] = pd.DataFrame(data=dta, columns=headers)
 
         # loads ########################################################################################################
-        obj = list()
-        s_profiles = None
-        i_profiles = None
-        z_profiles = None
-        hdr = list()
-        for elm in self.get_loads():
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if s_profiles is None and elm.Sprof is not None:
-                    s_profiles = elm.Sprof.values
-                    i_profiles = elm.Iprof.values
-                    z_profiles = elm.Zprof.values
-                else:
-                    s_profiles = c_[s_profiles, elm.Sprof.values]
-                    i_profiles = c_[i_profiles, elm.Iprof.values]
-                    z_profiles = c_[z_profiles, elm.Zprof.values]
+        headers = Load().edit_headers
+        loads = self.get_loads()
+        if len(loads) > 0:
+            obj = list()
+            s_profiles = None
+            i_profiles = None
+            z_profiles = None
+            hdr = list()
+            for elm in loads:
+                obj.append(elm.get_save_data())
+                hdr.append(elm.name)
+                if T is not None:
+                    if s_profiles is None and elm.Sprof is not None:
+                        s_profiles = elm.Sprof.values
+                        i_profiles = elm.Iprof.values
+                        z_profiles = elm.Zprof.values
+                    else:
+                        s_profiles = c_[s_profiles, elm.Sprof.values]
+                        i_profiles = c_[i_profiles, elm.Iprof.values]
+                        z_profiles = c_[z_profiles, elm.Zprof.values]
 
-        dfs['load'] = pd.DataFrame(data=obj, columns=Load().edit_headers)
+            dfs['load'] = pd.DataFrame(data=obj, columns=headers)
 
-        if s_profiles is not None:
-            dfs['load_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
-            dfs['load_Iprof'] = pd.DataFrame(data=i_profiles.astype('str'), columns=hdr, index=T)
-            dfs['load_Zprof'] = pd.DataFrame(data=z_profiles.astype('str'), columns=hdr, index=T)
+            if s_profiles is not None:
+                dfs['load_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
+                dfs['load_Iprof'] = pd.DataFrame(data=i_profiles.astype('str'), columns=hdr, index=T)
+                dfs['load_Zprof'] = pd.DataFrame(data=z_profiles.astype('str'), columns=hdr, index=T)
+        else:
+            dfs['load'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
         # static generators ############################################################################################
-        obj = list()
-        hdr = list()
-        s_profiles = None
-        for elm in self.get_static_generators():
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if s_profiles is None and elm.Sprof is not None:
-                    s_profiles = elm.Sprof.values
-                else:
-                    s_profiles = c_[s_profiles, elm.Sprof.values]
+        headers = StaticGenerator().edit_headers
+        st_gen = self.get_static_generators()
+        if len(st_gen) > 0:
+            obj = list()
+            hdr = list()
+            s_profiles = None
+            for elm in st_gen:
+                obj.append(elm.get_save_data())
+                hdr.append(elm.name)
+                if T is not None:
+                    if s_profiles is None and elm.Sprof is not None:
+                        s_profiles = elm.Sprof.values
+                    else:
+                        s_profiles = c_[s_profiles, elm.Sprof.values]
 
-        dfs['static_generator'] = pd.DataFrame(data=obj, columns=StaticGenerator().edit_headers)
+            dfs['static_generator'] = pd.DataFrame(data=obj, columns=headers)
 
-        if s_profiles is not None:
-            dfs['static_generator_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
+            if s_profiles is not None:
+                dfs['static_generator_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
+        else:
+            dfs['static_generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
         # battery ######################################################################################################
-        obj = list()
-        hdr = list()
-        v_set_profiles = None
-        p_profiles = None
-        for elm in self.get_batteries():
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if p_profiles is None and elm.Pprof is not None:
-                    p_profiles = elm.Pprof.values
-                    v_set_profiles = elm.Vsetprof.values
-                else:
-                    p_profiles = c_[p_profiles, elm.Pprof.values]
-                    v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
-        dfs['battery'] = pd.DataFrame(data=obj, columns=Battery().edit_headers)
+        batteries = self.get_batteries()
+        headers = Battery().edit_headers
 
-        if p_profiles is not None:
-            dfs['battery_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
-            dfs['battery_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+        if len(batteries) > 0:
+            obj = list()
+            hdr = list()
+            v_set_profiles = None
+            p_profiles = None
+            for elm in batteries:
+                obj.append(elm.get_save_data())
+                hdr.append(elm.name)
+                if T is not None:
+                    if p_profiles is None and elm.Pprof is not None:
+                        p_profiles = elm.Pprof.values
+                        v_set_profiles = elm.Vsetprof.values
+                    else:
+                        p_profiles = c_[p_profiles, elm.Pprof.values]
+                        v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
+            dfs['battery'] = pd.DataFrame(data=obj, columns=headers)
 
-        # controlled generator
-        obj = list()
-        hdr = list()
-        v_set_profiles = None
-        p_profiles = None
-        for elm in self.get_controlled_generators():
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None and elm.Pprof is not None:
-                if p_profiles is None:
-                    p_profiles = elm.Pprof.values
-                    v_set_profiles = elm.Vsetprof.values
-                else:
-                    p_profiles = c_[p_profiles, elm.Pprof.values]
-                    v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
-        dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=ControlledGenerator().edit_headers)
-        if p_profiles is not None:
-            dfs['CtrlGen_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
-            dfs['CtrlGen_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+            if p_profiles is not None:
+                dfs['battery_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
+                dfs['battery_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+        else:
+            dfs['battery'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
-        # shunt
-        obj = list()
-        hdr = list()
-        y_profiles = None
-        for elm in self.get_shunts():
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if y_profiles is None and elm.Yprof.values is not None:
-                    y_profiles = elm.Yprof.values
-                else:
-                    y_profiles = c_[y_profiles, elm.Yprof.values]
+        # controlled generator #########################################################################################
+        con_gen = self.get_controlled_generators()
+        headers = ControlledGenerator().edit_headers
 
-        dfs['shunt'] = pd.DataFrame(data=obj, columns=Shunt().edit_headers)
+        if len(con_gen) > 0:
+            obj = list()
+            hdr = list()
+            v_set_profiles = None
+            p_profiles = None
+            for elm in con_gen:
+                obj.append(elm.get_save_data())
+                hdr.append(elm.name)
+                if T is not None and elm.Pprof is not None:
+                    if p_profiles is None:
+                        p_profiles = elm.Pprof.values
+                        v_set_profiles = elm.Vsetprof.values
+                    else:
+                        p_profiles = c_[p_profiles, elm.Pprof.values]
+                        v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
 
-        if y_profiles is not None:
-            dfs['shunt_Y_profiles'] = pd.DataFrame(data=y_profiles.astype(str), columns=hdr, index=T)
+            dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=headers)
+
+            if p_profiles is not None:
+                dfs['CtrlGen_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
+                dfs['CtrlGen_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+        else:
+            dfs['controlled_generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+        # shunt ########################################################################################################
+
+        shunts = self.get_shunts()
+        headers = Shunt().edit_headers
+
+        if len(shunts) > 0:
+            obj = list()
+            hdr = list()
+            y_profiles = None
+            for elm in shunts:
+                obj.append(elm.get_save_data())
+                hdr.append(elm.name)
+                if T is not None:
+                    if y_profiles is None and elm.Yprof.values is not None:
+                        y_profiles = elm.Yprof.values
+                    else:
+                        y_profiles = c_[y_profiles, elm.Yprof.values]
+
+            dfs['shunt'] = pd.DataFrame(data=obj, columns=headers)
+
+            if y_profiles is not None:
+                dfs['shunt_Y_profiles'] = pd.DataFrame(data=y_profiles.astype(str), columns=hdr, index=T)
+        else:
+
+            dfs['shunt'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
 
         # flush-save
         writer = pd.ExcelWriter(file_path)

@@ -201,7 +201,8 @@ class PSSeBus:
             # create bus
             name = self.NAME
             # name = str(self.I) + '_' + self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True)
+            self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
+                           area=self.AREA, zone=self.ZONE)
 
         elif version == 32:
 
@@ -211,7 +212,7 @@ class PSSeBus:
             name = self.NAME
             # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True)
+                           active=True, area=self.AREA, zone=self.ZONE)
 
         elif version == 30:
 
@@ -222,7 +223,7 @@ class PSSeBus:
             name = self.NAME
             # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True)
+                           active=True, area=self.AREA, zone=self.ZONE)
 
             if self.GL > 0 or self.BL > 0:
                 sh = Shunt(name='Shunt_' + self.ID,
