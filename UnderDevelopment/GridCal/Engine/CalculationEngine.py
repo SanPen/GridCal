@@ -42,7 +42,7 @@ from PyQt5.QtWidgets import QMessageBox
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
 from GridCal.Engine.Numerical.HELM import helm
-from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF
+from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF, NR_Backtrack
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
@@ -5385,23 +5385,22 @@ class PowerFlowMP:
                     methods.append(SolverType.NR)
 
                     # presolve linear system
-                    voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.power_flow_input.Ybus,
-                                                                              Ys=circuit.power_flow_input.Yseries,
-                                                                              S=Sbus,
-                                                                              I=Ibus,
-                                                                              Vset=voltage_solution,
-                                                                              pq=pq,
-                                                                              pv=pv)
+                    # voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.power_flow_input.Ybus,
+                    #                                                           Ys=circuit.power_flow_input.Yseries,
+                    #                                                           S=Sbus,
+                    #                                                           I=Ibus,
+                    #                                                           Vset=voltage_solution,
+                    #                                                           pq=pq,
+                    #                                                           pv=pv)
                     # Solve NR with the linear AC solution
-                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
-                                                                                  Sbus=Sbus,
-                                                                                  V0=voltage_solution,
-                                                                                  Ibus=Ibus,
-                                                                                  pv=pv,
-                                                                                  pq=pq,
-                                                                                  tol=self.options.tolerance,
-                                                                                  max_it=self.options.max_iter,
-                                                                                  robust=False)
+                    voltage_solution, converged, normF, Scalc, it, el = NR_Backtrack(Ybus=circuit.power_flow_input.Ybus,
+                                                                                     Sbus=Sbus,
+                                                                                     V0=voltage_solution,
+                                                                                     Ibus=Ibus,
+                                                                                     pv=pv,
+                                                                                     pq=pq,
+                                                                                     tol=self.options.tolerance,
+                                                                                     max_it=self.options.max_iter)
 
                 # Newton-Raphson-Iwamoto
                 elif solver_type == SolverType.IWAMOTO:

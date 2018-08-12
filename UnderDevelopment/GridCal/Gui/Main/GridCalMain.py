@@ -207,9 +207,9 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
+        self.solvers_dict['Newton-Raphson'] = SolverType.NR
         self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
         self.solvers_dict['Fast-Decoupled'] = SolverType.FASTDECOUPLED
-        self.solvers_dict['Newton-Raphson'] = SolverType.NR
         # self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
         # self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
         self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO

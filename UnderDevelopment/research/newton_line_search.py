@@ -166,9 +166,9 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return J
 
 
-def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     """
-    Solves the power flow using a full Newton's method with the backtrack improvement algorithm
+    Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
         Ybus: Admittance matrix
         Sbus: Array of nodal power injections
@@ -262,7 +262,7 @@ def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             back_track_counter += 1
 
         l_iter = 0
-        while not cond and l_iter < 10 and mu_ > 0.01:
+        while not cond and l_iter < 10 and mu_ > 0.1:
             # line search back
 
             # to divide mu by 4 is the simplest backtrack process
@@ -299,10 +299,11 @@ def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
 
     print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
 
-    return V, converged, normF, Scalc, iter_, elapsed
+    return V, converged, normF, Scalc
 
 
-def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
+
+def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
@@ -324,6 +325,9 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     start = time.time()
 
     # initialize
+    back_track_counter = 0
+    back_track_iterations = 0
+    alpha = 1e-4
     converged = 0
     iter_ = 0
     V = V0
@@ -349,10 +353,10 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
 
     # evaluate F(x0)
     Scalc = V * conj(Ybus * V - Ibus)
-    mis = Scalc - Sbus  # compute the mismatch
-    F = r_[mis[pv].real,
-           mis[pq].real,
-           mis[pq].imag]
+    dS = Scalc - Sbus  # compute the mismatch
+    F = r_[dS[pv].real,
+           dS[pq].real,
+           dS[pq].imag]
 
     # check tolerance
     normF = linalg.norm(F, Inf)
@@ -377,29 +381,54 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
         if npq:
             dVa[pq] = dx[j3:j4]
             dVm[pq] = dx[j5:j6]
-        dV = dVm * exp(1j * dVa)  # voltage mismatch
 
-        # update voltage
-        if robust:
-            if not (dV == 0.0).any():  # if dV contains zeros will crash the second Jacobian drivative
-                mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
-            else:
-                mu_ = 1.0
-        else:
-            mu_ = 1.0
-
+        # update voltage the Newton way (mu=1)
+        mu_ = 1.0
         Vm -= mu_ * dVm
         Va -= mu_ * dVa
+        Vnew = Vm * exp(1j * Va)
 
-        V = Vm * exp(1j * Va)
+        # compute the mismatch function f(x_new)
+        dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+        Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-        Vm = abs(V)  # update Vm and Va again in case
-        Va = angle(V)  # we wrapped around with a negative Vm
+        gradF = F * J  # gradient of F
+        cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()  # condition to back track (no improvement at all)
 
-        # evaluate F(x)
-        Scalc = V * conj(Ybus * V - Ibus)
-        mis = Scalc - Sbus  # complex power mismatch
-        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+        if not cond:
+            back_track_counter += 1
+
+        l_iter = 0
+        mu2 = mu_
+        mu1 = 0
+        while not cond and l_iter < 10:
+            # line search back
+
+            if l_iter == 0:  # first iteration
+                mu1 = gradF.dot(Fnew) / (2.0 * (Fnew - F - gradF * dx))
+
+            # to divide mu by 4 is the simplest backtrack process
+            # TODO: implement the more complex mu backtrack from numerical recipes
+
+            # update voltage with a closer value to the last value in the Jacobian direction
+            mu_ *= 0.25
+            Vm -= mu_ * dVm
+            Va -= mu_ * dVa
+            Vnew = Vm * exp(1j * Va)
+
+            # compute the mismatch function f(x_new)
+            dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+
+            gradF = F * J
+            cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()
+
+            l_iter += 1
+            back_track_iterations += 1
+
+        # update calculation variables
+        V = Vnew
+        F = Fnew
 
         # check for convergence
         normF = linalg.norm(F, Inf)
@@ -410,136 +439,69 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     end = time.time()
     elapsed = end - start
 
-    return V, converged, normF, Scalc, iter_, elapsed
+    print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
+
+    return V, converged, normF, Scalc
 
 
-def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
-    """
-    Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
-    It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
-    Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
-    Returns:
-        Voltage solution, converged?, error, calculated power injections
+########################################################################################################################
+#  MAIN
+########################################################################################################################
+if __name__ == "__main__":
+    from GridCal.Engine.CalculationEngine import *
 
-    @Author: Santiago Peñate Vera
-    """
-    start = time.time()
+    grid = MultiCircuit()
+    # grid.load_file('lynn5buspq.xlsx')
+    # grid.load_file('IEEE30.xlsx')
+    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
+    grid.compile()
 
-    # initialize
-    V = V0
-    Va = angle(V)
-    Vm = np.abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
-    # set up indexing for updating V
-    pvpq = r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
+    circuit = grid.circuits[0]
 
-    # j1:j2 - V angle of pv buses
-    j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
+    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
+    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
+    print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    print('\ntypes:\n', circuit.power_flow_input.types)
+    print('\npq:\n', circuit.power_flow_input.pq)
+    print('\npv:\n', circuit.power_flow_input.pv)
+    print('\nvd:\n', circuit.power_flow_input.ref)
 
-    update_jacobian = True
-    converged = False
-    iter_ = 0
-    nu = 2.0
-    lbmda = 0
-    f_prev = 1e9  # very large number
-    nn = 2 * npq + npv
-    ii = np.linspace(0, nn-1, nn)
-    Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
+    import time
+    print('Newton-Raphson-Line-search')
+    start_time = time.time()
+    # Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15
+    V1, converged_, err, S = NR_LS(Ybus=circuit.power_flow_input.Ybus,
+                                   Sbus=circuit.power_flow_input.Sbus,
+                                   V0=circuit.power_flow_input.Vbus,
+                                   Ibus=circuit.power_flow_input.Ibus,
+                                   pv=circuit.power_flow_input.pv,
+                                   pq=circuit.power_flow_input.pq,
+                                   tol=1e-9,
+                                   max_it=100)
 
-    while not converged and iter_ < max_it:
+    print("--- %s seconds ---" % (time.time() - start_time))
+    # print_coeffs(C, W, R, X, H)
 
-        # evaluate Jacobian
-        if update_jacobian:
-            H = Jacobian(Ybus, V, Ibus, pq, pvpq)
+    print('V module:\t', abs(V1))
+    print('V angle: \t', angle(V1))
+    print('error: \t', err)
 
-        # evaluate the solution error F(x0)
-        Scalc = V * conj(Ybus * V - Ibus)
-        mis = Scalc - Sbus  # compute the mismatch
-        dz = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+    # check the HELM solution: v against the NR power flow
+    print('\nNR standard')
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9, control_q=False)
+    power_flow = PowerFlow(grid, options)
 
-        # system matrix
-        # H1 = H^t
-        H1 = H.transpose().tocsr()
+    start_time = time.time()
+    power_flow.run()
+    print("--- %s seconds ---" % (time.time() - start_time))
+    vnr = circuit.power_flow_results.voltage
 
-        # H2 = H1·H
-        H2 = H1.dot(H)
+    print('V module:\t', abs(vnr))
+    print('V angle: \t', angle(vnr))
+    print('error: \t', circuit.power_flow_results.error)
 
-        # set first value of lmbda
-        if iter_ == 0:
-            lbmda = 1e-3 * H2.diagonal().max()
-
-        # compute system matrix A = H^T·H - lambda·I
-        A = H2 + lbmda * Idn
-
-        # right hand side
-        # H^t·dz
-        rhs = H1.dot(dz)
-
-        # Solve the increment
-        dx = spsolve(A, rhs)
-
-        # objective function to minimize
-        f = 0.5 * dz.dot(dz)
-
-        # decision function
-        val = dx.dot(lbmda * dx + rhs)
-        if val > 0.0:
-            rho = (f_prev - f) / (0.5 * val)
-        else:
-            rho = -1.0
-
-        # lambda update
-        if rho >= 0:
-            update_jacobian = True
-            lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
-            nu = 2.0
-
-            # reassign the solution vector
-            if npv:
-                dVa[pv] = dx[j1:j2]
-            if npq:
-                dVa[pq] = dx[j3:j4]
-                dVm[pq] = dx[j5:j6]
-
-            Vm -= dVm
-            Va -= dVa
-            # update Vm and Va again in case we wrapped around with a negative Vm
-            V = Vm * exp(1j * Va)
-            Vm = np.abs(V)
-            Va = angle(V)
-        else:
-            update_jacobian = False
-            lbmda *= nu
-            nu *= 2.0
-
-        # check convergence
-        # normF = np.linalg.norm(dx, np.Inf)
-        normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
-        converged = normF < tol
-        f_prev = f
-
-        # update iteration counter
-        iter_ += 1
-
-    end = time.time()
-    elapsed = end - start
-
-    return V, converged, normF, Scalc, iter_, elapsed
+    # check
+    print('\ndiff:\t', V1 - vnr)
