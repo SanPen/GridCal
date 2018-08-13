@@ -413,6 +413,8 @@ class MainGUI(QMainWindow):
 
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
 
+        self.ui.analyze_objects_pushButton.clicked.connect(self.analyze_objects)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -2639,6 +2641,18 @@ class MainGUI(QMainWindow):
             if col > -1:
                 # print(idx.row(), idx.column())
                 mdl.copy_to_column(idx)
+
+    def analyze_objects(self):
+        """
+
+        :return:
+        """
+        idx = self.ui.dataStructuresListView.currentIndex()
+
+        if idx.row() > -1:
+            obj_type = self.ui.dataStructuresListView.selectedIndexes()[0].data().lower()
+            self.circuit.analyse_objects(object_type=obj_type)
+            plt.show()
 
     def adjust_all_node_width(self):
         """

@@ -4520,6 +4520,117 @@ class MultiCircuit(Circuit):
         for bus in self.buses:
             bus.set_state(t)
 
+    def analyse_objects(self, object_type, fig=None):
+
+        if object_type == 'branches':
+            properties = ['R', 'X', 'G', 'B', 'rate']
+            types = [float, float, float, float, float]
+            # log_scale = [True, True, True, True, False]
+            log_scale = [False, False, False, False, False]
+            objects = self.branches
+
+        elif object_type == 'buses':
+            properties = ['Vnom']
+            types = [float]
+            log_scale = [False]
+            objects = self.buses
+
+        elif object_type == 'controlled generators':
+            properties = ['Vset', 'P', 'Qmin', 'Qmax']
+            log_scale = [False, False, False, False]
+            types = [float, float, float, float]
+            objects = self.get_controlled_generators()
+
+        elif object_type == 'batteries':
+            properties = ['Vset', 'P', 'Qmin', 'Qmax']
+            log_scale = [False, False, False, False]
+            types = [float, float, float, float]
+            objects = self.get_batteries()
+
+        elif object_type == 'static generators':
+            properties = ['S']
+            log_scale = [False]
+            types = [complex]
+            objects = self.get_static_generators()
+
+        elif object_type == 'shunts':
+            properties = ['Y']
+            log_scale = [False]
+            types = [complex]
+            objects = self.get_shunts()
+
+        elif object_type == 'loads':
+            properties = ['S', 'I', 'Z']
+            log_scale = [False, False, False]
+            types = [complex, complex, complex]
+            objects = self.get_loads()
+
+        else:
+            return
+
+        # fill values
+        p = 0
+        for i in range(len(properties)):
+            if types[i] is complex:
+                p += 2
+            else:
+                p += 1
+
+        n = len(objects)
+        vals = zeros((n, p))
+        extended_prop = [None] * p
+        log_scale_extended = [None] * p
+        for i, elem in enumerate(objects):
+            a = 0
+            for j in range(len(properties)):
+                if types[j] is complex:
+                    val = getattr(elem, properties[j])
+                    vals[i, a] = val.real
+                    vals[i, a + 1] = val.imag
+                    extended_prop[a] = properties[j] + '.re'
+                    extended_prop[a + 1] = properties[j] + '.im'
+                    log_scale_extended[a] = log_scale[j]
+                    log_scale_extended[a + 1] = log_scale[j]
+                    a += 2
+                else:
+                    vals[i, a] = getattr(elem, properties[j])
+                    extended_prop[a] = properties[j]
+                    log_scale_extended[a] = log_scale[j]
+                    a += 1
+
+        # create figure if needed
+        if fig is None:
+            fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('Analysis of the ' + object_type, fontsize=16)
+
+        if n > 0:
+            k = int(math.sqrt(p))
+            axs = [None] * p
+
+            for j in range(p):
+                x = vals[:, j]
+                mu = x.mean()
+                variance = x.var()
+                sigma = math.sqrt(variance)
+                r = (mu - 6 * sigma, mu + 6 * sigma)
+
+                # print checks
+                l = np.where(x < r[0])[0]
+                u = np.where(x > r[1])[0]
+
+                print(extended_prop[j], r, '\n\t', l, '\n\t', u)
+
+                # plot
+                axs[j] = fig.add_subplot(k, k + 1, j + 1)
+                axs[j].hist(x, bins=100, range=r, density=None, weights=None,
+                            cumulative=False, bottom=None, histtype='bar',
+                            align='mid', orientation='vertical', normed=True)
+                axs[j].plot(x, zeros(n), 'o')
+                axs[j].set_title(extended_prop[j])
+
+                if log_scale_extended[j]:
+                    axs[j].set_xscale('log')
+
 
 ########################################################################################################################
 # Power flow classes

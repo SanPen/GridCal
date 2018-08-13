@@ -217,9 +217,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     # evaluate F(x0)
     Scalc = V * conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real,
-           dS[pq].real,
-           dS[pq].imag]
+    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     # check tolerance
     normF = linalg.norm(F, Inf)
@@ -254,18 +252,18 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         # compute the mismatch function f(x_new)
         dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
         Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        normFprev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
 
-        gradF = F * J  # gradient of F
-        cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()  # condition to back track (no improvement at all)
+        cond = normF < normFprev  # condition to back track (no improvement at all)
 
         if not cond:
             back_track_counter += 1
 
         l_iter = 0
-        while not cond and l_iter < 10 and mu_ > 0.1:
+        while not cond and l_iter < 10 and mu_ > 0.01:
             # line search back
 
-            # to divide mu by 4 is the simplest backtrack process
+            # to divide mu by 4 is the simplest backtracking process
             # TODO: implement the more complex mu backtrack from numerical recipes
 
             # update voltage with a closer value to the last value in the Jacobian direction
@@ -278,8 +276,10 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
             Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-            gradF = F * J
-            cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()
+            normFnew = linalg.norm(Fnew, Inf)
+            normFnew_prev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+
+            cond = normFnew < normFnew_prev
 
             l_iter += 1
             back_track_iterations += 1
@@ -287,6 +287,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         # update calculation variables
         V = Vnew
         F = Fnew
+        # normF = normFnew
 
         # check for convergence
         normF = linalg.norm(F, Inf)
@@ -297,7 +298,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     end = time.time()
     elapsed = end - start
 
-    print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
+    print('iter_', iter_, '  -  back_track_counter', back_track_counter,
+          '  -  back_track_iterations', back_track_iterations)
 
     return V, converged, normF, Scalc
 
@@ -399,8 +401,6 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             back_track_counter += 1
 
         l_iter = 0
-        mu2 = mu_
-        mu1 = 0
         while not cond and l_iter < 10:
             # line search back
 
@@ -491,7 +491,7 @@ if __name__ == "__main__":
 
     # check the HELM solution: v against the NR power flow
     print('\nNR standard')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9, control_q=False)
+    options = PowerFlowOptions(SolverType.IWAMOTO, verbose=False, robust=False, tolerance=1e-9, control_q=False)
     power_flow = PowerFlow(grid, options)
 
     start_time = time.time()

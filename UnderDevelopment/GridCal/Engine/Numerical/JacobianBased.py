@@ -217,9 +217,7 @@ def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     # evaluate F(x0)
     Scalc = V * conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real,
-           dS[pq].real,
-           dS[pq].imag]
+    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     # check tolerance
     normF = linalg.norm(F, Inf)
@@ -254,9 +252,8 @@ def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         # compute the mismatch function f(x_new)
         dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
         Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-
-        gradF = F * J  # gradient of F
-        cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()  # condition to back track (no improvement at all)
+        Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
+        cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
 
         if not cond:
             back_track_counter += 1
@@ -265,7 +262,7 @@ def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         while not cond and l_iter < 10 and mu_ > 0.01:
             # line search back
 
-            # to divide mu by 4 is the simplest backtrack process
+            # to divide mu by 4 is the simplest backtracking process
             # TODO: implement the more complex mu backtrack from numerical recipes
 
             # update voltage with a closer value to the last value in the Jacobian direction
@@ -277,9 +274,8 @@ def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             # compute the mismatch function f(x_new)
             dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
             Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-
-            gradF = F * J
-            cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()
+            Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
+            cond = (Fnew < Fnew_prev).any()
 
             l_iter += 1
             back_track_iterations += 1
