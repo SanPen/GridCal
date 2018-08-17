@@ -89,7 +89,7 @@ class PSSeGrid:
         self.branches = list()
         self.transformers = list()
 
-    def get_circuit(self):
+    def get_circuit(self, logger: list):
         """
         Return GridCal circuit
         Returns:
@@ -115,7 +115,7 @@ class PSSeGrid:
         for psse_load in self.loads:
 
             bus = psse_bus_dict[psse_load.I]
-            api_obj = psse_load.get_object(bus)
+            api_obj = psse_load.get_object(bus, logger)
 
             circuit.add_load(bus, api_obj)
 
@@ -123,7 +123,7 @@ class PSSeGrid:
         for psse_shunt in self.shunts:
 
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = psse_shunt.get_object(bus)
+            api_obj = psse_shunt.get_object(bus, logger)
 
             circuit.add_shunt(bus, api_obj)
 
@@ -131,7 +131,7 @@ class PSSeGrid:
         for psse_gen in self.generators:
 
             bus = psse_bus_dict[psse_gen.I]
-            api_obj = psse_gen.get_object()
+            api_obj = psse_gen.get_object(logger)
 
             circuit.add_controlled_generator(bus, api_obj)
 
@@ -141,7 +141,7 @@ class PSSeGrid:
         # Go through Branches
         for psse_banch in self.branches:
             # get the object
-            branch = psse_banch.get_object(psse_bus_dict)
+            branch = psse_banch.get_object(psse_bus_dict, logger)
 
             # Add to the circuit
             circuit.add_branch(branch)
@@ -149,7 +149,7 @@ class PSSeGrid:
         # Go through Transformers
         for psse_banch in self.transformers:
             # get the object
-            branches = psse_banch.get_object(psse_bus_dict)
+            branches = psse_banch.get_object(psse_bus_dict, logger)
 
             # Add to the circuit
             for branch in branches:
@@ -160,7 +160,7 @@ class PSSeGrid:
 
 class PSSeBus:
 
-    def __init__(self, data, version):
+    def __init__(self, data, version, logger: list):
         """
         I: Bus number (1 through 999997). No default allowed.
         NAME Alphanumeric identifier assigned to bus I. NAME may be up to twelve characters
@@ -201,7 +201,8 @@ class PSSeBus:
             # create bus
             name = self.NAME
             # name = str(self.I) + '_' + self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True)
+            self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
+                           area=self.AREA, zone=self.ZONE)
 
         elif version == 32:
 
@@ -211,7 +212,7 @@ class PSSeBus:
             name = self.NAME
             # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True)
+                           active=True, area=self.AREA, zone=self.ZONE)
 
         elif version == 30:
 
@@ -222,7 +223,7 @@ class PSSeBus:
             name = self.NAME
             # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True)
+                           active=True, area=self.AREA, zone=self.ZONE)
 
             if self.GL > 0 or self.BL > 0:
                 sh = Shunt(name='Shunt_' + self.ID,
@@ -243,7 +244,7 @@ class PSSeBus:
 
 class PSSeLoad:
 
-    def __init__(self, data, version):
+    def __init__(self, data, version, logger: list):
         """
         I: Bus number, or extended bus name enclosed in single quotes (refer to Extended Bus
             Names). No default allowed.
@@ -297,7 +298,7 @@ class PSSeLoad:
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, \
              self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
-    def get_object(self, bus: Bus):
+    def get_object(self, bus: Bus, logger:list):
         """
         Return GridCal Load object
         Returns:
@@ -309,7 +310,7 @@ class PSSeLoad:
         vv = bus.Vnom ** 2.0
 
         if vv == 0:
-            warn('Voltage equal to zero in shunt conversion!!!')
+            logger.append('Voltage equal to zero in shunt conversion!!!')
 
         g, b = self.YP, self.YQ
         ir, ii = self.IP, self.IQ
@@ -328,7 +329,7 @@ class PSSeLoad:
 
 class PSSeShunt:
 
-    def __init__(self, data, version):
+    def __init__(self, data, version, logger: list):
         """
         I: Bus number, or extended bus name enclosed in single quotes (refer to Extended
             Bus Names). No default allowed.
@@ -358,7 +359,7 @@ class PSSeShunt:
 
             self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
 
-    def get_object(self, bus: Bus):
+    def get_object(self, bus: Bus, logger: list):
         """
         Return GridCal Load object
         Returns:
@@ -370,7 +371,7 @@ class PSSeShunt:
         vv = bus.Vnom**2.0
 
         if vv == 0:
-            warn('Voltage equal to zero in shunt conversion!!!')
+            logger.append('Voltage equal to zero in shunt conversion!!!')
 
         g = self.GL
         b = self.BL
@@ -385,7 +386,7 @@ class PSSeShunt:
 
 class PSSeGenerator:
 
-    def __init__(self, data, version):
+    def __init__(self, data, version, logger: list):
         """
         I: Bus number, or extended bus name enclosed in single quotes (refer to Extended
             Bus Names). No default allowed.
@@ -494,7 +495,7 @@ class PSSeGenerator:
             else:
                 raise Exception('Wrong data length in generator' + str(length))
 
-    def get_object(self):
+    def get_object(self, logger: list):
         """
         Return GridCal Load object
         Returns:
@@ -516,7 +517,7 @@ class PSSeGenerator:
 
 class PSSeBranch:
 
-    def __init__(self, data, version):
+    def __init__(self, data, version, logger: list):
         """
         I: Branch from bus number, or extended bus name enclosed in single quotes (refer to
             Extended Bus Names). No default allowed.
@@ -597,7 +598,8 @@ class PSSeBranch:
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN = data[0]
 
             else:
-                raise Exception('Wrong data length in branch' + str(length))
+                logger.append('Wrong data length in branch' + str(length))
+                return
 
         elif version == 30:
             """
@@ -624,13 +626,14 @@ class PSSeBranch:
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN = data[0]
 
             else:
-                raise Exception('Wrong data length in branch' + str(length))
+                logger.append('Wrong data length in branch' + str(length))
+                return
 
         else:
 
-            warn('Invalid Branch version')
+            logger.append('Invalid Branch version')
 
-    def get_object(self, psse_bus_dict):
+    def get_object(self, psse_bus_dict, logger: list):
         """
         Return GridCal branch object
         Args:
@@ -663,13 +666,13 @@ class PSSeBranch:
                         active=True,
                         mttf=0,
                         mttr=0,
-                        branch_type=False)
+                        branch_type=BranchType.Line)
         return object
 
 
 class PSSeTransformer:
 
-    def __init__(self, data, version):
+    def __init__(self, data, version, logger: list):
         """
         I The bus number, or extended bus name enclosed in single quotes (refer to
             Extended Bus Names), of the bus to which Winding 1 is connected. The trans-
@@ -1229,7 +1232,7 @@ class PSSeTransformer:
                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
                 self.CR3, self.CX3 = data[3]
 
-    def get_object(self, psse_bus_dict):
+    def get_object(self, psse_bus_dict, logger: list):
         """
         Return GridCal branch object
         Args:
@@ -1273,7 +1276,7 @@ class PSSeTransformer:
                 g = self.MAG1
                 b = self.MAG2
 
-                warn('Transformer impedance is not in p.u.')
+                logger.append('Transformer impedance is not in p.u.')
 
             object = Branch(bus_from=bus_from, bus_to=bus_to,
                             name=self.NAME.replace("'", "").strip(),
@@ -1287,7 +1290,7 @@ class PSSeTransformer:
                             active=True,
                             mttf=0,
                             mttr=0,
-                            branch_type=True)
+                            branch_type=BranchType.Transformer)
 
             return [object]
 
@@ -1314,7 +1317,7 @@ class PSSeTransformer:
                              active=True,
                              mttf=0,
                              mttr=0,
-                             branch_type=True)
+                             branch_type=BranchType.Transformer)
 
             r = self.R2_3
             x = self.X2_3
@@ -1333,7 +1336,7 @@ class PSSeTransformer:
                              active=True,
                              mttf=0,
                              mttr=0,
-                             branch_type=True)
+                             branch_type=BranchType.Transformer)
 
             r = self.R3_1
             x = self.X3_1
@@ -1352,7 +1355,7 @@ class PSSeTransformer:
                              active=True,
                              mttf=0,
                              mttr=0,
-                             branch_type=True)
+                             branch_type=BranchType.Transformer)
 
             return [object1, object2, object3]
 
@@ -1394,9 +1397,13 @@ class PSSeParser:
         self.parsers = dict()
         self.versions = [33, 32, 30]
 
-        self.pss_grid = self.parse_psse(file_name)
+        self.logger = list()
 
-        self.circuit = self.pss_grid.get_circuit()
+        self.pss_grid, logs = self.parse_psse(file_name)
+
+        self.logger += logs
+
+        self.circuit = self.pss_grid.get_circuit(self.logger)
 
     def parse_psse(self, file_name):
         """
@@ -1412,6 +1419,8 @@ class PSSeParser:
         """
         print('Parsing ', file_name)
 
+        logger = list()
+
         # make a guess of the file encoding
         detection = chardet.detect(open(file_name, "rb").read())
 
@@ -1426,7 +1435,8 @@ class PSSeParser:
         grid = PSSeGrid(interpret_line(sections[0]))
 
         if grid.REV not in self.versions:
-            raise Exception('The PSSe version is not compatible. Compatible versions are:', self.versions)
+            logger.append('The PSSe version is not compatible. Compatible versions are:' + str(self.versions))
+            return
         else:
             version = grid.REV
 
@@ -1484,9 +1494,9 @@ class PSSeParser:
                 data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
 
                 # pass the data to the according object to assign it to the matching variables
-                objects_list.append(ObjectT(data, version))
+                objects_list.append(ObjectT(data, version, logger))
 
-        return grid
+        return grid, logger
 
 
 if __name__ == '__main__':

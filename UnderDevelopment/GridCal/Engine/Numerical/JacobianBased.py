@@ -166,6 +166,138 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return J
 
 
+def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+    """
+    Solves the power flow using a full Newton's method with the backtrack improvement algorithm
+    Args:
+        Ybus: Admittance matrix
+        Sbus: Array of nodal power injections
+        V0: Array of nodal voltages (initial solution)
+        Ibus: Array of nodal current injections
+        pv: Array with the indices of the PV buses
+        pq: Array with the indices of the PQ buses
+        tol: Tolerance
+        max_it: Maximum number of iterations
+        robust: Boolean variable for the use of the Iwamoto optimal step factor.
+    Returns:
+        Voltage solution, converged?, error, calculated power injections
+
+    @author: Ray Zimmerman (PSERC Cornell)
+    @Author: Santiago Penate Vera
+    """
+    start = time.time()
+
+    # initialize
+    back_track_counter = 0
+    back_track_iterations = 0
+    alpha = 1e-4
+    converged = 0
+    iter_ = 0
+    V = V0
+    Va = angle(V)
+    Vm = abs(V)
+    dVa = zeros_like(Va)
+    dVm = zeros_like(Vm)
+
+    # set up indexing for updating V
+    pvpq = r_[pv, pq]
+    npv = len(pv)
+    npq = len(pq)
+
+    # j1:j2 - V angle of pv buses
+    j1 = 0
+    j2 = npv
+    # j3:j4 - V angle of pq buses
+    j3 = j2
+    j4 = j2 + npq
+    # j5:j6 - V mag of pq buses
+    j5 = j4
+    j6 = j4 + npq
+
+    # evaluate F(x0)
+    Scalc = V * conj(Ybus * V - Ibus)
+    dS = Scalc - Sbus  # compute the mismatch
+    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+
+    # check tolerance
+    normF = linalg.norm(F, Inf)
+
+    if normF < tol:
+        converged = 1
+
+    # do Newton iterations
+    while not converged and iter_ < max_it:
+        # update iteration counter
+        iter_ += 1
+
+        # evaluate Jacobian
+        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+
+        # compute update step
+        dx = spsolve(J, F)
+
+        # reassign the solution vector
+        if npv:
+            dVa[pv] = dx[j1:j2]
+        if npq:
+            dVa[pq] = dx[j3:j4]
+            dVm[pq] = dx[j5:j6]
+
+        # update voltage the Newton way (mu=1)
+        mu_ = 1.0
+        Vm -= mu_ * dVm
+        Va -= mu_ * dVa
+        Vnew = Vm * exp(1j * Va)
+
+        # compute the mismatch function f(x_new)
+        dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+        Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
+        cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
+
+        if not cond:
+            back_track_counter += 1
+
+        l_iter = 0
+        while not cond and l_iter < 10 and mu_ > 0.01:
+            # line search back
+
+            # to divide mu by 4 is the simplest backtracking process
+            # TODO: implement the more complex mu backtrack from numerical recipes
+
+            # update voltage with a closer value to the last value in the Jacobian direction
+            mu_ *= 0.25
+            Vm -= mu_ * dVm
+            Va -= mu_ * dVa
+            Vnew = Vm * exp(1j * Va)
+
+            # compute the mismatch function f(x_new)
+            dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+            Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
+            cond = (Fnew < Fnew_prev).any()
+
+            l_iter += 1
+            back_track_iterations += 1
+
+        # update calculation variables
+        V = Vnew
+        F = Fnew
+
+        # check for convergence
+        normF = linalg.norm(F, Inf)
+
+        if normF < tol:
+            converged = 1
+
+    end = time.time()
+    elapsed = end - start
+
+    print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
+
+    return V, converged, normF, Scalc, iter_, elapsed
+
+
 def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.

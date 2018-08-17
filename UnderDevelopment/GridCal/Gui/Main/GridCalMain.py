@@ -18,6 +18,7 @@ from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
+from GridCal.Gui.Analysis.analysis_dialogue import GridAnalysisGUI
 
 import os.path
 import platform
@@ -207,9 +208,9 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
+        self.solvers_dict['Newton-Raphson'] = SolverType.NR
         self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
         self.solvers_dict['Fast-Decoupled'] = SolverType.FASTDECOUPLED
-        self.solvers_dict['Newton-Raphson'] = SolverType.NR
         # self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
         # self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
         self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
@@ -412,6 +413,8 @@ class MainGUI(QMainWindow):
         self.ui.profile_divide_pushButton.clicked.connect(lambda: self.modify_profiles('/'))
 
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
+
+        self.ui.analyze_objects_pushButton.clicked.connect(self.display_grid_analysis)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -835,6 +838,9 @@ class MainGUI(QMainWindow):
                 zoom = self.ui.zoom_spinBox.value()
 
                 self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
+
+                self.grid_editor.diagramView.view_map(False)
+
                 self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
                 # delete all widgets
@@ -871,7 +877,7 @@ class MainGUI(QMainWindow):
         # declare the allowed file types
         # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.json)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
@@ -891,13 +897,17 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
 
             try:
-                self.circuit.load_file(filename=filename)
+                logger = self.circuit.load_file(filename=filename)
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Open file logger', logger)
+                    dlg.exec_()
 
             except Exception as ex:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
 
-            # self.circuit.load_file(filename=filename)
+            # logger = self.circuit.load_file(filename=filename)
 
             self.ui.progress_label.setText('Creating schematic...')
             QtGui.QGuiApplication.processEvents()
@@ -961,7 +971,11 @@ class MainGUI(QMainWindow):
 
             # call to save the file in the circuit
 
-            # self.circuit.save_file(filename)
+            # logger = self.circuit.save_file(filename)
+            #
+            # if len(logger) > 0:
+            #     dlg = LogsDialogue('Save file logger', logger)
+            #     dlg.exec_()
 
             try:
                 logger = self.circuit.save_file(filename)
@@ -2628,6 +2642,17 @@ class MainGUI(QMainWindow):
             if col > -1:
                 # print(idx.row(), idx.column())
                 mdl.copy_to_column(idx)
+
+    def display_grid_analysis(self):
+        """
+        Display the grid analysis GUI
+        """
+
+        dialogue = GridAnalysisGUI(parent=self, object_types=self.grid_editor.object_types, circuit=self.circuit)
+        dialogue.resize(1.61 * 700.0, 700.0)
+        dialogue.setModal(False)
+        dialogue.show()
+        dialogue.exec_()
 
     def adjust_all_node_width(self):
         """
