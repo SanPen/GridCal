@@ -124,13 +124,14 @@ Some of the features you'll find already are:
 
 - Compatible with other formats:
   - Import
+    - CIM (Common Information Model v16)
     - PSS/e RAW versions 30, 32 and 33.
     - Matpower (might not be fully compatible, notify me if not).
     - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
   - Export
     - Excel (normal GridCal format)
     - Custom JSON
-    - CIM (Common Information Model)
+    - CIM (Common Information Model v16)
 
 - ![](https://github.com/SanPen/GridCal/blob/master/UnderDevelopment/GridCal/Gui/Main/white_icons/pf.svg)Power flow:
   - Newton Raphson Iwamoto (robust Newton Raphson).
