@@ -10,21 +10,20 @@ This software aims to be a complete platform for power systems research and simu
 
 # Standalone setup
 
-Yes, you can now install GridCal as a separated standalone program without having to bother about setting up python.
+You can install GridCal as a separated standalone program without having to bother about setting up python.
 
 [GridCal for windows x64](https://mega.nz/#!Dl5m0b7T!brD9O0ejs2Ih6rOLVaCjQm3-JZttH-ksrp5xXrrX3BU)
 
 [GridCal for linux x64](https://mega.nz/#!m4YUhICZ!c5bLncNwqCQG3H6p0ST4qnSP1GTii-44_di06RGSV-o)
 
-+ This setup is a minimal python distribution with GridCal installed and shorcuts to make it run ;)
 
 # Python package installation
 
 GridCal is multiplatform and it will work in Linux, Windows and OSX.
 
-Open a console and type:
+The recommended way to install GridCal if you have a python distribution already is to open a console and type:
 
-`pip install GridCal` (windows)
+`pip install GridCal` (Windows)
 
 `pip3 install GridCal` (Linux / OSX)
 
