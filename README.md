@@ -7,7 +7,6 @@ This software aims to be a complete platform for power systems research and simu
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
-![](https://github.com/SanPen/GridCal/blob/master/pics/results_vstability.png)
 
 # Windows standalone setup
 
