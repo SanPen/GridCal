@@ -87,7 +87,9 @@ install_requires = ["numpy>=1.14.0",
                     "openpyxl>=2.4.9",
                     "pulp>=1.6.8",
                     "smopy>=0.0.6",
-                    "chardet>=3.0.4"
+                    "chardet>=3.0.4",
+                    "scikit-learn>=0.18",
+                    "geopy>=1.16"
                     ]
 
 if platform.system() == 'Windows':
