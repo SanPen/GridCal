@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -339,7 +339,7 @@ class Ui_mainWindow(object):
         self.tabWidget_2.setTabPosition(QtWidgets.QTabWidget.South)
         self.tabWidget_2.setElideMode(QtCore.Qt.ElideNone)
         self.tabWidget_2.setDocumentMode(False)
-        self.tabWidget_2.setProperty("tabBarAutoHide", False)
+        self.tabWidget_2.setTabBarAutoHide(False)
         self.tabWidget_2.setObjectName("tabWidget_2")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
@@ -1432,7 +1432,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1173, 25))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1173, 22))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -1706,6 +1706,7 @@ class Ui_mainWindow(object):
         self.view_map_pushButton.setText(_translate("mainWindow", "view"))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), _translate("mainWindow", "Grid"))
         self.label_3.setText(_translate("mainWindow", "Data structures"))
+        self.analyze_objects_pushButton.setToolTip(_translate("mainWindow", "Launch the grid analysis interface"))
         self.analyze_objects_pushButton.setText(_translate("mainWindow", "Analyze"))
         self.label_4.setText(_translate("mainWindow", "Data table"))
         self.setValueToColumnButton.setText(_translate("mainWindow", "Set value to column"))

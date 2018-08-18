@@ -8,17 +8,21 @@ This software aims to be a complete platform for power systems research and simu
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
 
-# Windows standalone setup
+# Standalone setup
 
 Yes, you can now install GridCal as a separated standalone program without having to bother about setting up python.
 
-[Download GridCal](https://mega.nz/#!Dl5m0b7T!brD9O0ejs2Ih6rOLVaCjQm3-JZttH-ksrp5xXrrX3BU)
+[GridCal for windows x64](https://mega.nz/#!Dl5m0b7T!brD9O0ejs2Ih6rOLVaCjQm3-JZttH-ksrp5xXrrX3BU)
+
+[GridCal for linux x64](https://mega.nz/#!m4YUhICZ!c5bLncNwqCQG3H6p0ST4qnSP1GTii-44_di06RGSV-o)
 
 + This setup is a minimal python distribution with GridCal installed and shorcuts to make it run ;)
 
-# Package Installation
+# Python package installation
 
-Still, GridCal is multiplatform and it will work in Linux, Windows and OSX. Open a console and type:
+GridCal is multiplatform and it will work in Linux, Windows and OSX.
+
+Open a console and type:
 
 `pip install GridCal` (windows)
 
@@ -28,7 +32,7 @@ Still, GridCal is multiplatform and it will work in Linux, Windows and OSX. Open
 
 Check out the video on how to install [**Python and GridCal on Windows 10**.](https://youtu.be/yGxMq2JB1Zo)
 
-## Manual installation
+### Manual package installation
 
 Sometimes `pip` does not download the lattest version for some reason. In those cases, go to https://pypi.python.org/pypi/GridCal/ and download the lattest GridCal file: `GridCal-x.xx.tar.gz`.
 
@@ -38,7 +42,7 @@ Windows: `pip install GridCal-x.xx.tar.gz`
 
 OSX/Linux: `pip3 install GridCal-x.xx.tar.gz`
 
-## Installation from GitHub
+### Installation from GitHub
 
 To install the development version of `GridCal` that lives under `UnderDevelopment`, open a console and type:
 
