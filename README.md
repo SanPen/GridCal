@@ -57,16 +57,20 @@ Here `5c4dcb96998ae882412b5fee977cf0cff7a40d3c` is the git version.
 
 From a Python console:
 
-`from GridCal.ExecuteGridCal import run`
-
-`run()`
+```
+from GridCal.ExecuteGridCal import run
+run()
+```
 
 Or directly from the shell:
 
+- (Windows, with python 3.5 or higher)
 
-`python -c "from GridCal.ExecuteGridCal import run; run()"`(Windows, with python 3.5 or higher)
+    `python -c "from GridCal.ExecuteGridCal import run; run()"`
 
-`python3 -c "from GridCal.ExecuteGridCal import run; run()"` (Linux/OSX)
+- (Linux/OSX)
+
+    `python3 -c "from GridCal.ExecuteGridCal import run; run()"`
 
 The GUI should pop up.
 
