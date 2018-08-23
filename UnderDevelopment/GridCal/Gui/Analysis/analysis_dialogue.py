@@ -356,6 +356,8 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             log_scale = [False]
             objects = self.circuit.buses
 
+            names = set()
+
             for i, elm in enumerate(objects):
 
                 if elm.Vnom <= 0.0:
@@ -365,6 +367,13 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                 if elm.name == '':
                     self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
                                  property='name', message='The bus does not have a name')
+
+                if elm.name in names:
+                    self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
+                                 property='name', message='The bus name is not unique')
+
+                # add the name to a set
+                names.add(elm.name)
 
         elif object_type == 'controlled generators':
             properties = ['Vset', 'P', 'Qmin', 'Qmax']

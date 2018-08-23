@@ -452,8 +452,8 @@ if __name__ == "__main__":
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
+    grid.load_file('IEEE30.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
     grid.compile()
 
     circuit = grid.circuits[0]
@@ -485,8 +485,6 @@ if __name__ == "__main__":
     print("--- %s seconds ---" % (time.time() - start_time))
     # print_coeffs(C, W, R, X, H)
 
-    print('V module:\t', abs(V1))
-    print('V angle: \t', angle(V1))
     print('error: \t', err)
 
     # check the HELM solution: v against the NR power flow
@@ -499,9 +497,13 @@ if __name__ == "__main__":
     print("--- %s seconds ---" % (time.time() - start_time))
     vnr = circuit.power_flow_results.voltage
 
-    print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
     print('error: \t', circuit.power_flow_results.error)
 
     # check
-    print('\ndiff:\t', V1 - vnr)
+
+    data = c_[np.abs(V1), angle(V1), np.abs(vnr), angle(vnr),  np.abs(V1 - vnr)]
+    cols = ['|V|', 'angle', '|V| benchmark NR', 'angle benchmark NR', 'Diff']
+    df = pd.DataFrame(data, columns=cols)
+
+    print()
+    print(df)

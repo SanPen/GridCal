@@ -20,7 +20,7 @@
 
 from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \
 empty, float64, int32, arange
-from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
+from scipy.sparse import issparse, csr_matrix as sparse, hstack as hstack_sp, vstack as vstack_sp, diags
 from scipy.sparse.linalg import spsolve, splu
 import scipy
 scipy.ALLOW_THREADS = True
@@ -151,22 +151,29 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     Returns:
         The system Jacobian matrix
     """
-    dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
+    # dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
+
+    I = Ybus * V - Ibus
+
+    diagV = diags(V)
+    diagI = diags(I)
+    diagVnorm = diags(V / np.abs(V))
+
+    dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagI) * diagVnorm
+    dS_dVa = 1j * diagV * conj(diagI - Ybus * diagV)
 
     J11 = dS_dVa[array([pvpq]).T, pvpq].real
     J12 = dS_dVm[array([pvpq]).T, pq].real
     J21 = dS_dVa[array([pq]).T, pvpq].imag
     J22 = dS_dVm[array([pq]).T, pq].imag
 
-    J = vstack([
-        hstack([J11, J12]),
-        hstack([J21, J22])
-    ], format="csr")
+    J = vstack_sp([hstack_sp([J11, J12]),
+                   hstack_sp([J21, J22])], format="csr")
 
     return J
 
 
-def NR_Backtrack(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     """
     Solves the power flow using a full Newton's method with the backtrack improvement algorithm
     Args:
@@ -537,5 +544,170 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
     end = time.time()
     elapsed = end - start
+
+    return V, converged, normF, Scalc, iter_, elapsed
+
+
+def Jacobian_I(Ybus, V, pq, pvpq):
+    """
+    Computes the system Jacobian matrix
+    Args:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
+
+    Returns:
+        The system Jacobian matrix in current equations
+    """
+    dI_dVm = Ybus * diags(V / np.abs(V))
+    dI_dVa = 1j * (Ybus * diags(V))
+
+    J11 = dI_dVa[array([pvpq]).T, pvpq].real
+    J12 = dI_dVm[array([pvpq]).T, pq].real
+    J21 = dI_dVa[array([pq]).T, pvpq].imag
+    J22 = dI_dVm[array([pq]).T, pq].imag
+
+    J = vstack_sp([hstack_sp([J11, J12]),
+                   hstack_sp([J21, J22])], format="csr")
+
+    return J
+
+
+def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
+    """
+    Solves the power flow using a full Newton's method in current equations with current mismatch with line search
+    Args:
+        Ybus: Admittance matrix
+        Sbus_sp: Array of nodal specified power injections
+        V0: Array of nodal voltages (initial solution)
+        Ibus_sp: Array of nodal specified current injections
+        pv: Array with the indices of the PV buses
+        pq: Array with the indices of the PQ buses
+        tol: Tolerance
+        max_it: Maximum number of iterations
+    Returns:
+        Voltage solution, converged?, error, calculated power injections
+
+    @Author: Santiago Penate Vera
+    """
+    start = time.time()
+
+    # initialize
+    back_track_counter = 0
+    back_track_iterations = 0
+    alpha = 1e-4
+    converged = 0
+    iter_ = 0
+    V = V0
+    Va = angle(V)
+    Vm = abs(V)
+    dVa = zeros_like(Va)
+    dVm = zeros_like(Vm)
+
+    # set up indexing for updating V
+    pvpq = r_[pv, pq]
+    npv = len(pv)
+    npq = len(pq)
+
+    # j1:j2 - V angle of pv buses
+    j1 = 0
+    j2 = npv
+    # j3:j4 - V angle of pq buses
+    j3 = j2
+    j4 = j2 + npq
+    # j5:j6 - V mag of pq buses
+    j5 = j4
+    j6 = j4 + npq
+
+    # evaluate F(x0)
+    Icalc = Ybus * V - Ibus_sp
+    dI = conj(Sbus_sp / V) - Icalc  # compute the mismatch
+    F = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+    normF = linalg.norm(F, Inf)  # check tolerance
+
+    if normF < tol:
+        converged = 1
+
+    # do Newton iterations
+    while not converged and iter_ < max_it:
+        # update iteration counter
+        iter_ += 1
+
+        # evaluate Jacobian
+        J = Jacobian_I(Ybus, V, pq, pvpq)
+
+        # compute update step
+        dx = spsolve(J, F)
+
+        # reassign the solution vector
+        if npv:
+            dVa[pv] = dx[j1:j2]
+        if npq:
+            dVa[pq] = dx[j3:j4]
+            dVm[pq] = dx[j5:j6]
+
+        # update voltage the Newton way (mu=1)
+        mu_ = 1.0
+        Vm += mu_ * dVm
+        Va += mu_ * dVa
+        Vnew = Vm * exp(1j * Va)
+
+        # compute the mismatch function f(x_new)
+        Icalc = Ybus * Vnew - Ibus_sp
+        dI = conj(Sbus_sp / Vnew) - Icalc
+        Fnew = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+
+        normFprev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+
+        cond = normF < normFprev  # condition to back track (no improvement at all)
+
+        if not cond:
+            back_track_counter += 1
+
+        l_iter = 0
+        while not cond and l_iter < 10 and mu_ > 0.01:
+            # line search back
+
+            # to divide mu by 4 is the simplest backtracking process
+            # TODO: implement the more complex mu backtrack from numerical recipes
+
+            # update voltage with a closer value to the last value in the Jacobian direction
+            mu_ *= 0.25
+            Vm -= mu_ * dVm
+            Va -= mu_ * dVa
+            Vnew = Vm * exp(1j * Va)
+
+            # compute the mismatch function f(x_new)
+            Icalc = Ybus * Vnew - Ibus_sp
+            dI = conj(Sbus_sp / Vnew) - Icalc
+            Fnew = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+
+            normFnew = linalg.norm(Fnew, Inf)
+            normFnew_prev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+
+            cond = normFnew < normFnew_prev
+
+            l_iter += 1
+            back_track_iterations += 1
+
+        # update calculation variables
+        V = Vnew
+        F = Fnew
+
+        # check for convergence
+        normF = linalg.norm(F, Inf)
+
+        if normF < tol:
+            converged = 1
+
+    end = time.time()
+    elapsed = end - start
+
+    print('iter_', iter_,
+          '  -  back_track_counter', back_track_counter,
+          '  -  back_track_iterations', back_track_iterations)
+
+    Scalc = V * conj(Icalc)
 
     return V, converged, normF, Scalc, iter_, elapsed

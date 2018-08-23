@@ -42,7 +42,7 @@ from PyQt5.QtWidgets import QMessageBox
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
 from GridCal.Engine.Numerical.HELM import helm
-from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF, NR_Backtrack
+from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, Jacobian, LevenbergMarquardtPF, NR_LS, NR_I_LS
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
@@ -154,7 +154,8 @@ class SolverType(Enum):
     FASTDECOUPLED = 12,
     LACPF = 13,
     DC_OPF = 14,
-    AC_OPF = 15
+    AC_OPF = 15,
+    NRI = 16
 
 
 class TimeGroups(Enum):
@@ -5341,6 +5342,7 @@ class PowerFlowMP:
                                                                              pq=pq,
                                                                              pv=pv)
 
+                # LAC PF
                 elif solver_type == SolverType.LACPF:
                     methods.append(SolverType.LACPF)
 
@@ -5384,23 +5386,15 @@ class PowerFlowMP:
                 elif solver_type == SolverType.NR:
                     methods.append(SolverType.NR)
 
-                    # presolve linear system
-                    # voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.power_flow_input.Ybus,
-                    #                                                           Ys=circuit.power_flow_input.Yseries,
-                    #                                                           S=Sbus,
-                    #                                                           I=Ibus,
-                    #                                                           Vset=voltage_solution,
-                    #                                                           pq=pq,
-                    #                                                           pv=pv)
                     # Solve NR with the linear AC solution
-                    voltage_solution, converged, normF, Scalc, it, el = NR_Backtrack(Ybus=circuit.power_flow_input.Ybus,
-                                                                                     Sbus=Sbus,
-                                                                                     V0=voltage_solution,
-                                                                                     Ibus=Ibus,
-                                                                                     pv=pv,
-                                                                                     pq=pq,
-                                                                                     tol=self.options.tolerance,
-                                                                                     max_it=self.options.max_iter)
+                    voltage_solution, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.power_flow_input.Ybus,
+                                                                              Sbus=Sbus,
+                                                                              V0=voltage_solution,
+                                                                              Ibus=Ibus,
+                                                                              pv=pv,
+                                                                              pq=pq,
+                                                                              tol=self.options.tolerance,
+                                                                              max_it=self.options.max_iter)
 
                 # Newton-Raphson-Iwamoto
                 elif solver_type == SolverType.IWAMOTO:
@@ -5414,6 +5408,19 @@ class PowerFlowMP:
                                                                                   tol=self.options.tolerance,
                                                                                   max_it=self.options.max_iter,
                                                                                   robust=True)
+
+                # Newton-Raphson in current equations
+                elif solver_type == SolverType.NRI:
+                    methods.append(SolverType.NRI)
+                    # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
+                    voltage_solution, converged, normF, Scalc, it, el = NR_I_LS(Ybus=circuit.power_flow_input.Ybus,
+                                                                                Sbus_sp=Sbus,
+                                                                                V0=voltage_solution,
+                                                                                Ibus_sp=Ibus,
+                                                                                pv=pv,
+                                                                                pq=pq,
+                                                                                tol=self.options.tolerance,
+                                                                                max_it=self.options.max_iter)
 
                 # for any other method, for now, do a LM
                 else:
@@ -5715,37 +5722,83 @@ class PowerFlowMP:
         """
 
         # Run the power flow
-        results = self.single_power_flow(circuit=circuit,
-                                         solver_type=self.options.solver_type,
-                                         voltage_solution=Vbus,
-                                         Sbus=Sbus,
-                                         Ibus=Ibus)
+        # results = self.single_power_flow(circuit=circuit,
+        #                                  solver_type=self.options.solver_type,
+        #                                  voltage_solution=Vbus,
+        #                                  Sbus=Sbus,
+        #                                  Ibus=Ibus)
 
         # Retry with another solver
-        if not np.all(results.converged) and self.options.auxiliary_solver_type is not None:
-            # print('Retying power flow with' + str(self.options.auxiliary_solver_type))
-            # compose a voltage array that makes sense
-            # if np.isnan(circuit.power_flow_results.voltage).any():
-            #     print('Corrupt voltage, using flat solution in retry')
-            #     voltage = ones(len(circuit.buses), dtype=complex)
-            # else:
-            #     voltage = circuit.power_flow_results.voltage
 
-            voltage = ones(len(circuit.buses), dtype=complex)
+        if self.options.auxiliary_solver_type is not None:
+            solvers = [self.options.solver_type,
+                       SolverType.IWAMOTO,
+                       SolverType.FASTDECOUPLED,
+                       SolverType.LM,
+                       SolverType.LACPF]
+        else:
+            # No retry selected
+            solvers = [self.options.solver_type]
 
-            # re-run power flow
-            results = self.single_power_flow(circuit=circuit,
-                                             solver_type=self.options.auxiliary_solver_type,
-                                             voltage_solution=voltage,
-                                             Sbus=Sbus,
-                                             Ibus=Ibus)
+        # set worked to false to enter in the loop
+        worked = False
 
-            if not np.all(results.converged):
+
+
+        if not worked:
+
+            k = 0
+            methods = list()
+            inner_it = list()
+            elapsed = list()
+            errors = list()
+            converged_lst = list()
+            outer_it = 0
+            while k < len(solvers) and not worked:
+
+                # get the solver
+                solver = solvers[k]
+
+                print('Trying', solver)
+
+                # set the initial voltage
+                V0 = Vbus.copy()
+
+                # run power flow
+                results = self.single_power_flow(circuit=circuit,
+                                                 solver_type=solver,
+                                                 voltage_solution=V0,
+                                                 Sbus=Sbus,
+                                                 Ibus=Ibus)
+
+                # did it worked?
+                worked = np.all(results.converged)
+
+                # record the solver steps
+                methods += results.methods
+                inner_it += results.inner_iterations
+                outer_it += results.outer_iterations
+                elapsed += results.elapsed
+                errors += results.error
+                converged_lst += results.converged
+
+                k += 1
+
+            if not worked:
                 print('Did not converge, even after retry!, Error:', results.error)
         else:
+            # the original solver worked
             pass
 
-        # check the power flow limits
+        # set the total process variables:
+        results.methods = methods
+        results.inner_iterations = inner_it
+        results.outer_iterations = outer_it
+        results.elapsed = elapsed
+        results.error = errors
+        results.converged = converged_lst
+
+            # check the power flow limits
         results.check_limits(circuit.power_flow_input)
 
         return results
