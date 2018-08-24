@@ -208,27 +208,22 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
-        self.solvers_dict['Newton-Raphson'] = SolverType.NR
+        self.solvers_dict['Newton-Raphson in power'] = SolverType.NR
+        self.solvers_dict['Newton-Raphson in current'] = SolverType.NRI
+        self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
         self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
         self.solvers_dict['Fast-Decoupled'] = SolverType.FASTDECOUPLED
-        # self.solvers_dict['NR Fast decoupled (BX)'] = SolverType.NRFD_BX
-        # self.solvers_dict['NR Fast decoupled (XB)'] = SolverType.NRFD_XB
-        self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
-        # self.solvers_dict['Gauss-Seidel'] = SolverType.GAUSS
-        # self.solvers_dict['Z-Matrix Gauss-Seidel'] = SolverType.ZBUS
         self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
-        # self.solvers_dict['Z-Matrix HELM'] = SolverType.HELMZ
-        # self.solvers_dict['Continuation NR'] = SolverType.CONTINUATION_NR
         self.solvers_dict['Linear AC approximation'] = SolverType.LACPF
         self.solvers_dict['DC approximation'] = SolverType.DC
 
         lst = list(self.solvers_dict.keys())
         mdl = get_list_model(lst)
         self.ui.solver_comboBox.setModel(mdl)
-        self.ui.retry_solver_comboBox.setModel(mdl)
+        # self.ui.retry_solver_comboBox.setModel(mdl)
 
         self.ui.solver_comboBox.setCurrentIndex(0)
-        self.ui.retry_solver_comboBox.setCurrentIndex(0)
+        # self.ui.retry_solver_comboBox.setCurrentIndex(3)
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)
@@ -516,10 +511,7 @@ class MainGUI(QMainWindow):
         msg += "GridCal is licensed under the GNU general public license V.3 "
         msg += 'See the license file for more details. \n\n'
 
-        msg += "GridCal has been carefully crafted since 2015 to serve as a platform for research and consultancy." \
-               "The calculation engine has been designed in an object oriented fashion. " \
-               "The Newton-Raphson power flow has been adapted from MatPower, and many other methods have been added, " \
-               "enhancing them to run fast in the object oriented scheme.\n\n"
+        msg += "GridCal has been carefully crafted since 2015 to serve as a platform for research and consultancy.\n\n"
 
         msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
 
@@ -758,7 +750,7 @@ class MainGUI(QMainWindow):
 
         # if the ask, checkbox is checked, then ask
         if self.ui.ask_before_appliying_layout_checkBox.isChecked():
-            reply = QMessageBox.question(self, 'Message', 'Are you sure you want to try an automatic layout?',
+            reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to try an automatic layout?',
                                          QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
@@ -1584,12 +1576,13 @@ class MainGUI(QMainWindow):
 
         max_iter = self.ui.max_iterations_spinBox.value()
 
-        set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
+        # set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
 
         dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
 
         if self.ui.helm_retry_checkBox.isChecked():
-            solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
+            # solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
+            solver_to_retry_with = SolverType.LACPF  # to set a value
         else:
             solver_to_retry_with = None
 
@@ -1673,12 +1666,16 @@ class MainGUI(QMainWindow):
                                    losses=self.circuit.power_flow_results.losses)
             self.update_available_results()
 
-            msg_ = 'Power flow converged: ' + str(self.circuit.power_flow_results.converged) \
-                   + '\n\terr: ' + str(self.circuit.power_flow_results.error) \
-                   + '\n\telapsed: ' + str(self.circuit.power_flow_results.elapsed) \
-                   + '\n\tmethods: ' + str(self.circuit.power_flow_results.methods) \
-                   + '\n\tinner iter: ' + str(self.circuit.power_flow_results.inner_iterations) \
-                   + '\n\touter iter: ' + str(self.circuit.power_flow_results.outer_iterations)
+            data = np.r_[self.circuit.power_flow_results.methods,
+                         self.circuit.power_flow_results.converged,
+                         self.circuit.power_flow_results.error,
+                         self.circuit.power_flow_results.elapsed,
+                         self.circuit.power_flow_results.inner_iterations].transpose()
+            col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
+            df = pd.DataFrame(data, columns=col)
+
+            msg_ = 'Power flow converged: \n' \
+                   + df.__str__()
             self.console_msg(msg_)
 
         else:

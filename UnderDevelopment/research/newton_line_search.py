@@ -304,7 +304,6 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     return V, converged, normF, Scalc
 
 
-
 def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
@@ -356,12 +355,10 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     # evaluate F(x0)
     Scalc = V * conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real,
-           dS[pq].real,
-           dS[pq].imag]
+    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     # check tolerance
-    normF = linalg.norm(F, Inf)
+    normF = 0.5 * F.dot(F)
 
     if normF < tol:
         converged = 1
@@ -393,21 +390,18 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         # compute the mismatch function f(x_new)
         dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
         Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        normFnew = 0.5 * Fnew.dot(Fnew)
 
-        gradF = F * J  # gradient of F
-        cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()  # condition to back track (no improvement at all)
+        cond = normFnew > normF  # condition to back track (no improvement at all)
 
         if not cond:
             back_track_counter += 1
 
         l_iter = 0
-        while not cond and l_iter < 10:
+        while not cond and l_iter < 10 and mu_ > 0.01:
             # line search back
 
-            if l_iter == 0:  # first iteration
-                mu1 = gradF.dot(Fnew) / (2.0 * (Fnew - F - gradF * dx))
-
-            # to divide mu by 4 is the simplest backtrack process
+            # to divide mu by 4 is the simplest backtracking process
             # TODO: implement the more complex mu backtrack from numerical recipes
 
             # update voltage with a closer value to the last value in the Jacobian direction
@@ -420,8 +414,9 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
             Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-            gradF = F * J
-            cond = (Fnew < F + alpha * gradF.dot(Fnew - F)).any()
+            normFnew = 0.5 * Fnew.dot(Fnew)
+
+            cond = normFnew > normF
 
             l_iter += 1
             back_track_iterations += 1
@@ -429,9 +424,10 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         # update calculation variables
         V = Vnew
         F = Fnew
+        # normF = normFnew
 
         # check for convergence
-        normF = linalg.norm(F, Inf)
+        normF = 0.5 * Fnew.dot(Fnew)
 
         if normF < tol:
             converged = 1
@@ -439,7 +435,8 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     end = time.time()
     elapsed = end - start
 
-    print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
+    print('iter_', iter_, '  -  back_track_counter', back_track_counter,
+          '  -  back_track_iterations', back_track_iterations)
 
     return V, converged, normF, Scalc
 
@@ -448,12 +445,17 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine.CalculationEngine import *
+    from GridCal.Engine.CalculationEngine import MultiCircuit, PowerFlowOptions, PowerFlow, SolverType
+    import pandas as pd
+
+    pd.set_option('display.max_rows', 500)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.width', 1000)
 
     grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
+    grid.load_file('IEEE30.xlsx')
+    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
     grid.compile()
 
     circuit = grid.circuits[0]
@@ -473,7 +475,7 @@ if __name__ == "__main__":
     print('Newton-Raphson-Line-search')
     start_time = time.time()
     # Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15
-    V1, converged_, err, S = NR_LS(Ybus=circuit.power_flow_input.Ybus,
+    V1, converged_, err, S = NR_LS2(Ybus=circuit.power_flow_input.Ybus,
                                    Sbus=circuit.power_flow_input.Sbus,
                                    V0=circuit.power_flow_input.Vbus,
                                    Ibus=circuit.power_flow_input.Ibus,
@@ -485,8 +487,6 @@ if __name__ == "__main__":
     print("--- %s seconds ---" % (time.time() - start_time))
     # print_coeffs(C, W, R, X, H)
 
-    print('V module:\t', abs(V1))
-    print('V angle: \t', angle(V1))
     print('error: \t', err)
 
     # check the HELM solution: v against the NR power flow
@@ -499,9 +499,13 @@ if __name__ == "__main__":
     print("--- %s seconds ---" % (time.time() - start_time))
     vnr = circuit.power_flow_results.voltage
 
-    print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
     print('error: \t', circuit.power_flow_results.error)
 
     # check
-    print('\ndiff:\t', V1 - vnr)
+
+    data = np.c_[np.abs(V1), angle(V1), np.abs(vnr), angle(vnr),  np.abs(V1 - vnr)]
+    cols = ['|V|', 'angle', '|V| benchmark NR', 'angle benchmark NR', 'Diff']
+    df = pd.DataFrame(data, columns=cols)
+
+    print()
+    print(df)

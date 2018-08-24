@@ -890,15 +890,18 @@
                </item>
                <item row="10" column="0" colspan="2">
                 <widget class="QCheckBox" name="helm_retry_checkBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the selected method does not converge, try a list of methods that may help&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
-                  <string>Retry with</string>
+                  <string>Retry with other methods if failed</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0" colspan="2">
+               <item row="11" column="0" colspan="2">
                 <widget class="QCheckBox" name="control_Q_checkBox">
                  <property name="text">
                   <string>Control reactive power</string>
@@ -912,19 +915,6 @@
                 <widget class="QCheckBox" name="auto_precision_checkBox">
                  <property name="text">
                   <string>Automatic precision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="0" colspan="2">
-                <widget class="QComboBox" name="retry_solver_comboBox"/>
-               </item>
-               <item row="12" column="0" colspan="2">
-                <widget class="QCheckBox" name="remember_last_solution_checkBox">
-                 <property name="text">
-                  <string>Initialize with the last solution</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -1037,7 +1027,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="14" column="0">
+               <item row="12" column="0">
                 <spacer name="verticalSpacer_10">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -3029,7 +3019,7 @@ points from time series</string>
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_11">
            <attribute name="title">
@@ -3677,7 +3667,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1173</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

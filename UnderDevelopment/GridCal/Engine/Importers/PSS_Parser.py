@@ -239,8 +239,9 @@ class PSSeBus:
         if self.bus.type == BusMode.REF:
             self.bus.is_slack = True
 
-        self.bus.name = self.bus.name.replace("'", "").strip()
-
+        # Ensures unique name
+        self.bus.name = str(self.I) + '_' + self.bus.name.replace("'", "").strip()
+        # self.bus.name = self.bus.name.replace("'", "").strip()
 
 class PSSeLoad:
 
@@ -1405,6 +1406,13 @@ class PSSeParser:
 
         self.circuit = self.pss_grid.get_circuit(self.logger)
 
+        self.check_grid()
+
+    def check_grid(self):
+        pass
+        # check buses names
+        # for bus in self.circuit.buses:
+
     def parse_psse(self, file_name):
         """
         Parser implemented according to:
@@ -1459,7 +1467,7 @@ class PSSeParser:
         # 11: Multi-Terminal DC Transmission Line Data
         # 12: Multi-Section Line Grouping Data
         # 13: Zone Data
-        # 14: Interarea Transfer Data
+        # 14: Inter-area Transfer Data
         # 15: Owner Data
         # 16: FACTS Device Data
         # 17: Switched Shunt Data
@@ -1477,31 +1485,47 @@ class PSSeParser:
         for section_idx, objects_list, ObjectT, lines_per_object in meta_data:
 
             # split the section lines by object declaration: '\n  ' delimits each object start.
-            lines = sections[section_idx].split('\n  ')
+            # lines = sections[section_idx].split('\n  ')
+            lines = sections[section_idx].split('\n')
 
             # this removes the useless header
             lines.pop(0)
 
             # iterate ove the object's lines
-            for line in lines:
-                # pick the line that matches the object and split it by line returns \n
-                object_lines = line.split('\n')
+            for l in range(0, len(lines), lines_per_object):
 
-                # interpret each line of the object and store into data
-                # data is a vector of vectors with data definitions
-                # for the buses, branches, loads etc. data contains 1 vector,
-                # for the transformers data contains 4 vectors
-                data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
+                if ',' in lines[l]:
 
-                # pass the data to the according object to assign it to the matching variables
-                objects_list.append(ObjectT(data, version, logger))
+                    data = list()
+                    for k in range(lines_per_object):
+                        data.append(interpret_line(lines[l + k]))
+
+                    # pick the line that matches the object and split it by line returns \n
+                    # object_lines = line.split('\n')
+
+                    # interpret each line of the object and store into data
+                    # data is a vector of vectors with data definitions
+                    # for the buses, branches, loads etc. data contains 1 vector,
+                    # for the transformers data contains 4 vectors
+                    # data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
+
+                    # pass the data to the according object to assign it to the matching variables
+                    objects_list.append(ObjectT(data, version, logger))
+
+                else:
+                    logger.append('SKIP:' + lines[l])
 
         return grid, logger
 
 
 if __name__ == '__main__':
-    # fname = 'raw/ExampleGrid_PSSEver32.raw'
-    fname = 'raw/ExampleGrid_PSSEver33.raw'
+    # file
+    fname = 'IEEE57.RAW'
 
     parser = PSSeParser(fname)
+
+    print('Logs')
+    for l in parser.logger:
+        print(l)
+
     pass
