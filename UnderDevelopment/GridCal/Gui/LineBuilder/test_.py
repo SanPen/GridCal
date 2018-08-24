@@ -53,11 +53,6 @@ class WiresCollection(QtCore.QAbstractTableModel):
     def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self.header)
 
-    def index(self, row, column, parent=QtCore.QModelIndex(), *args, **kwargs):
-        if self.hasIndex(row, column, parent):
-            return self.createIndex(row, column, self.m_data[row])
-        return QtCore.QModelIndex()
-
     def parent(self, index=None):
         return QtCore.QModelIndex()
 
