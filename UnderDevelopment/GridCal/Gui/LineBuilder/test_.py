@@ -42,8 +42,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
         :param index:
         :return:
         """
-        row = len(self.wires)
-        self.beginRemoveRows(QtCore.QModelIndex(), row, row)
+        self.beginRemoveRows(QtCore.QModelIndex(), index, index)
         self.wires.pop(index)
         self.endRemoveRows()
 
@@ -59,7 +58,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = getattr(self.wires[index.row()], self.index_prop(index.column()))
+                val = getattr(self.wires[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
@@ -145,7 +144,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         Delete wire from the collection
         :return:
         """
-        idx = self.ui.wires_tableView.currentIndex()
+        idx = self.wires_tableView.currentIndex()
         sel_idx = idx.row()
 
         if sel_idx > -1:
