@@ -21,6 +21,10 @@ class Wire:
         self.r = r
         self.gmr = gmr
 
+    def copy(self):
+
+        return Wire(self.name, self.x, self.y, self.gmr, self.r)
+
 
 class WiresCollection(QtCore.QAbstractTableModel):
 
@@ -30,6 +34,10 @@ class WiresCollection(QtCore.QAbstractTableModel):
         self.header = ['Name', 'R (Ohm/km)', 'GMR (m)']
 
         self.index_prop = {0: 'name', 1: 'r', 2: 'gmr'}
+
+        self.converter = {0: str, 1: float, 2: float}
+
+        self.editable = [True, True, True]
 
         self.wires = list()
 
@@ -51,9 +59,25 @@ class WiresCollection(QtCore.QAbstractTableModel):
         :return:
         """
         row = len(self.wires)
-        self.beginRemoveRows(QtCore.QModelIndex(), row, row)
+        self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
         self.wires.pop(index)
         self.endRemoveRows()
+
+    def is_used(self, name):
+        """
+        checks if the name is used
+        """
+        n = len(self.wires)
+        for i in range(n-1, -1, -1):
+            if self.wires[i].name == name:
+                return True
+        return False
+
+    def flags(self, index):
+        if self.editable[index.column()]:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.wires)
@@ -61,18 +85,13 @@ class WiresCollection(QtCore.QAbstractTableModel):
     def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self.header)
 
-    def index(self, row, column, parent=QtCore.QModelIndex(), *args, **kwargs):
-        if self.hasIndex(row, column, parent):
-            return self.createIndex(row, column, self.m_data[row])
-        return QtCore.QModelIndex()
-
     def parent(self, index=None):
         return QtCore.QModelIndex()
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = getattr(self.wires[index.row()], self.index_prop(index.column()))
+                val = getattr(self.wires[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
@@ -88,27 +107,97 @@ class WiresCollection(QtCore.QAbstractTableModel):
         :param value:
         :param role:
         """
-        wire = self.wires[index.row()]
-        attr = self.index_prop[index.column()]
-        setattr(wire, attr, value)
+        if self.editable[index.column()]:
+            wire = self.wires[index.row()]
+            attr = self.index_prop[index.column()]
+
+            if attr == 'name':
+                if self.is_used(value):
+                    pass
+                else:
+                    setattr(wire, attr, self.converter[index.column()](value))
+            else:
+                setattr(wire, attr, self.converter[index.column()](value))
+
+        return True
 
 
 class Tower(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, edit_callback=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.header = ['Wire', 'X (m)', 'Y (m)']
 
         self.index_prop = {0: 'name', 1: 'x', 2: 'y'}
 
+        self.converter = {0: str, 1: float, 2: float}
+
+        self.editable = [False, True, True]
+
         self.wires = list()
 
-    def addWire(self, wire: Wire):
-        self.wires.append(wire)
+        self.edit_callback = edit_callback
 
-    def deleteWire(self, index):
+    def add(self, wire: Wire):
+        """
+        Add wire
+        :param wire:
+        :return:
+        """
+        row = len(self.wires)
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        self.wires.append(wire)
+        self.endInsertRows()
+
+    def delete(self, index):
+        """
+        Delete wire
+        :param index:
+        :return:
+        """
+        row = len(self.wires)
+        self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
         self.wires.pop(index)
+        self.endRemoveRows()
+
+    def plot(self, ax=None):
+
+        if ax is None:
+            fig = plt.Figure(figsize=(12, 6))
+            ax = fig.add_subplot(1, 1, 1)
+
+        n = len(self.wires)
+        x = np.zeros(n)
+        y = np.zeros(n)
+        for i, wire in enumerate(self.wires):
+            x[i] = wire.x
+            y[i] = wire.y
+
+        ax.plot(x, y, '.')
+        ax.set_title('Tower wire position')
+        ax.set_xlabel('m')
+        ax.set_ylabel('m')
+        ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
+        ax.set_ylim([0, np.max(y) + 1])
+
+    def delete_by_name(self, wire: Wire):
+        n = len(self.wires)
+        for i in range(n-1, -1, -1):
+            if self.wires[i].name == wire.name:
+                self.delete(i)
+
+    def is_used(self, wire: Wire):
+        n = len(self.wires)
+        for i in range(n-1, -1, -1):
+            if self.wires[i].name == wire.name:
+                return True
+
+    def flags(self, index):
+        if self.editable[index.column()]:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
 
     def rowCount(self, parent=None):
         return len(self.wires)
@@ -119,7 +208,7 @@ class Tower(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = getattr(self.wires[index.row()], self.index_prop(index.column()))
+                val = getattr(self.wires[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
@@ -128,17 +217,22 @@ class Tower(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Horizontal:
                 return self.header[p_int]
 
+    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        """
+        if self.editable[index.column()]:
+            wire = self.wires[index.row()]
+            attr = self.index_prop[index.column()]
+            setattr(wire, attr, self.converter[index.column()](value))
 
-class ProxyModel(QtCore.QSortFilterProxyModel):
-    def __init__(self):
-        super(ProxyModel, self).__init__()
-        self.cb_status = True
+            if self.edit_callback is not None:
+                self.edit_callback()
 
-    def cbChanged(self, arg=None):
-        self.cb_status = arg
-        print(self.cb_status)
-        self.invalidateFilter()
-
+        return True
 
 
 class TowerBuilderGUI(QtWidgets.QDialog):
@@ -152,11 +246,11 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setWindowTitle('Tower builder')
+        self.setWindowTitle('Line builder')
 
         self.wire_collection = WiresCollection(self)
 
-        self.tower = Tower(self)
+        self.tower = Tower(self, edit_callback=self.plot)
 
         # set models
         self.ui.wires_tableView.setModel(self.wire_collection)
@@ -202,7 +296,14 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
+
+            # delete all the wires from the tower too
+            self.tower.delete_by_name(self.wire_collection.wires[sel_idx])
+
+            # delete from the catalogue
             self.wire_collection.delete(sel_idx)
+
+            self.plot()
         else:
             self.msg('Select a wire in the wires collection')
 
@@ -215,8 +316,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            selected_wire = self.wire_collection.wires[sel_idx]
-            self.tower.addWire(selected_wire)
+            selected_wire = self.wire_collection.wires[sel_idx].copy()
+            self.tower.add(selected_wire)
         else:
             self.msg('Select a wire in the wires collection')
 
@@ -229,15 +330,22 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            self.tower.deleteWire(sel_idx)
+            self.tower.delete(sel_idx)
+
+            self.plot()
         else:
             self.msg('Select a wire from the tower')
 
     def compute(self):
-        pass
+
+        self.plot()
 
     def plot(self):
-        pass
+
+        self.ui.plotwidget.clear()
+        ax = self.ui.plotwidget.get_axis()
+        self.tower.plot(ax=ax)
+        self.ui.plotwidget.redraw()
 
 
 if __name__ == "__main__":

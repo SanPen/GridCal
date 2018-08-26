@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(949, 511)
+        Dialog.resize(949, 537)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout.setContentsMargins(1, 1, 1, 1)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -20,7 +20,6 @@ class Ui_Dialog(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.tab_2)
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.splitter_3 = QtWidgets.QSplitter(self.tab_2)
         self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
@@ -137,7 +136,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Tower creation"))
-        self.label_5.setText(_translate("Dialog", "Wires"))
+        self.label_5.setText(_translate("Dialog", "Wires catalogue"))
         self.add_wire_pushButton.setText(_translate("Dialog", "Add"))
         self.delete_wire_pushButton.setText(_translate("Dialog", "Delete"))
         self.label_3.setText(_translate("Dialog", "Wire composition (Tower)"))
