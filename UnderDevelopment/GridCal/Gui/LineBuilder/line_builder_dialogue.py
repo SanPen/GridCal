@@ -10,20 +10,8 @@ import math
 from PyQt5.QtWidgets import *
 
 from GridCal.Gui.LineBuilder.gui import *
-
-
-class Wire:
-
-    def __init__(self, name, x, y, gmr, r):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.r = r
-        self.gmr = gmr
-
-    def copy(self):
-
-        return Wire(self.name, self.x, self.y, self.gmr, self.r)
+from GridCal.Gui.LineBuilder.line_parameters import *
+from GridCal.Gui.GuiFunctions import PandasModel
 
 
 class WiresCollection(QtCore.QAbstractTableModel):
@@ -127,13 +115,13 @@ class Tower(QtCore.QAbstractTableModel):
     def __init__(self, parent=None, edit_callback=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
 
-        self.header = ['Wire', 'X (m)', 'Y (m)']
+        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', 'Ri (Ohm/km)', 'Xi (Ohm/km)', 'GMR (m)']
 
-        self.index_prop = {0: 'name', 1: 'x', 2: 'y'}
+        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'r', 5: 'x', 6: 'gmr'}
 
-        self.converter = {0: str, 1: float, 2: float}
+        self.converter = {0: str, 1: float, 2: float, 3: int, 4: float, 5: float, 6:float}
 
-        self.editable = [False, True, True]
+        self.editable = [False, True, True, True, True, True, True]
 
         self.wires = list()
 
@@ -227,7 +215,18 @@ class Tower(QtCore.QAbstractTableModel):
         if self.editable[index.column()]:
             wire = self.wires[index.row()]
             attr = self.index_prop[index.column()]
-            setattr(wire, attr, self.converter[index.column()](value))
+
+            try:
+                val = self.converter[index.column()](value)
+            except:
+                val = 0
+
+            # correct the phase to the correct range
+            if attr == 'phase':
+                if val < 0 or val > 3:
+                    val = 0
+
+            setattr(wire, attr, val)
 
             if self.edit_callback is not None:
                 self.edit_callback()
@@ -338,6 +337,15 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
     def compute(self):
 
+        f = 50
+        rho = 100
+
+        z = calc_z_matrix(self.tower.wires, f=f, rho=rho)
+        cols = ['N', 'A', 'B', 'C']
+        z_df = pd.DataFrame(data=z, columns=cols, index=cols)
+
+        self.ui.z_tableView.setModel(PandasModel(z_df))
+
         self.plot()
 
     def plot(self):
@@ -347,11 +355,29 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.tower.plot(ax=ax)
         self.ui.plotwidget.redraw()
 
+    def example_1(self):
+        name = '4/0 6/1 ACSR'
+        r = 0.367851632  # ohm / km
+        x = 0  # ohm / km
+        gmr = 0.002481072  # m
+        w0 = Wire(name, xpos=0,      ypos=8.8392, gmr=gmr, r=r, x=x, phase=0)
+        w1 = Wire(name, xpos=0.762,  ypos=8.8392, gmr=gmr, r=r, x=x, phase=1)
+        w2 = Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2)
+        w3 = Wire(name, xpos=1.2192, ypos=7.62,   gmr=gmr, r=r, x=x, phase=3)
+
+        self.tower.add(w0)
+        self.tower.add(w1)
+        self.tower.add(w2)
+        self.tower.add(w3)
+
 
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     window = TowerBuilderGUI()
+
+    window.example_1()
+
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())

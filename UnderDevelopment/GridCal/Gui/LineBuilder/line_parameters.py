@@ -1,16 +1,46 @@
-from math import pi, cos, sin, log, acos, sqrt
+from numpy import pi, cos, sin, log, arccos, sqrt
+import numpy as np
 
 """
 Equations source:
 a) https://vismor.com/documents/power_systems/transmission_lines/S2.SS1.php
 b) William H. Kersting - Distribution system modelling (3rd Ed.)
-
+c) ATP-EMTP theory book
 
 Typical values of earth 
 10 Ω/​m3 - Resistivity of swampy ground 
 100 Ω/​m3 - Resistivity of average damp earth 
 1000 Ω/​m3 - Resistivity of dry earth 
 """
+
+
+class Wire:
+
+    def __init__(self, name, xpos, ypos, gmr, r, x, phase=0):
+        """
+        Wire definition
+        :param name: Name of the wire type
+        :param x: x position (m)
+        :param y: y position (m)
+        :param gmr: Geometric Mean Radius (m)
+        :param r: Resistance per unit length (Ohm / km)
+        :param r: Reactance per unit length (Ohm / km)
+        :param phase: 0->Neutral, 1->A, 2->B, 3->C
+        """
+        self.name = name
+        self.xpos = xpos
+        self.ypos = ypos
+        self.r = r
+        self.x = x
+        self.gmr = gmr
+        self.phase = phase
+
+    def copy(self):
+        """
+        Copy of the wire
+        :return:
+        """
+        return Wire(self.name, self.x, self.y, self.gmr, self.r, self.phase)
 
 
 def p_approx(k, theta):
@@ -70,7 +100,7 @@ def get_D_ij(xi, yi, xj, yj):
     return sqrt((xi - xj) ** 2 + (yi + yj) ** 2)
 
 
-def z_ii(r_i, h_i, gmr_i, f, rho):
+def z_ii(r_i, x_i, h_i, gmr_i, f, rho):
     """
     Self impedance
     :param r_i: wire resistance
@@ -80,17 +110,21 @@ def z_ii(r_i, h_i, gmr_i, f, rho):
     :param rho: earth resistivity (Ohm / m^3)
     :return: self impedance in Ohm / m
     """
-    w = 2 * pi * f
+    # w = 2 * pi * f  # rad
+    #
+    # mu_0 = 4 * pi * 1e-7  # H/m
+    #
+    # k = sqrt(5) * 1000 * mu_0 * 2 * h_i * sqrt(f / rho)
+    #
+    # theta = 0
+    #
+    # p = p_approx(k, theta)
+    #
+    # q = q_approx(k, theta)
+    #
+    # z = r_i + 1j * 2 * w * log(2 * h_i / gmr_i) + 4 * w * (p + 1j * q)
 
-    k = 4 * pi * h_i * sqrt(2 * rho * f)
-
-    theta = 0
-
-    p = p_approx(k, theta)
-
-    q = q_approx(k, theta)
-
-    z = r_i + 1j * 2 * w * log(2 * h_i / gmr_i) + 4 * w * (p + 1j * q)
+    z = r_i + p + 1j * (w * mu_0 / (2 * pi) * log(2 * h_i / gmr_i) + x_i + q)
 
     return z
 
@@ -106,11 +140,13 @@ def z_ij(h_i, h_j, d_ij, D_ij, f, rho):
     :param rho: earth resistivity (Ohm / m^3)
     :return: mutual impedance in Ohm / m
     """
-    w = 2 * pi * f
+    w = 2 * pi * f  # rad
 
-    k = 2 * pi * D_ij * sqrt(2 * rho * f)
+    mu_0 = 4 * pi * 1e-7  # H/m
 
-    theta = acos(h_i + h_j) / D_ij
+    k = sqrt(5) * 1000 * mu_0 * D_ij * sqrt(f / rho)
+
+    theta = arccos((h_i + h_j) / D_ij)
 
     p = p_approx(k, theta)
 
@@ -121,5 +157,33 @@ def z_ij(h_i, h_j, d_ij, D_ij, f, rho):
     return z
 
 
-def calc_z_matrix():
-    pass
+def calc_z_matrix(wires: list, f=50, rho=100):
+    """
+    Impedance matrix
+    :param wires: list of wire objects
+    :param f: system frequency (Hz)
+    :param rho: earth resistivity
+    :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C
+    """
+    z = np.zeros((4, 4), dtype=complex)
+
+    for i, wire_i in enumerate(wires):
+
+        # self impedance
+        z[wire_i.phase, wire_i.phase] += z_ii(r_i=wire_i.r, h_i=wire_i.y, gmr_i=wire_i.gmr, f=f, rho=rho)
+
+        for j, wire_j in enumerate(wires):
+
+            if i != j:
+                #  mutual impedance
+                d_ij = get_d_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
+
+                D_ij = get_D_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
+
+                z[wire_i.phase, wire_j.phase] += z_ij(h_i=wire_i.y, h_j=wire_j.y, d_ij=d_ij, D_ij=D_ij, f=f, rho=rho)
+
+            else:
+                # they are the same wire and it is already accounted in the self impedance
+                pass
+
+    return z

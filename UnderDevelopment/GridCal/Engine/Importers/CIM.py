@@ -448,9 +448,26 @@ class CIMExport:
         base_voltages = set()
         base_voltages_dict = dict()
 
+        # dictionary of substation given a bus
+        substation_bus = dict()
+
         # buses sweep to gather previous data (base voltages, etc..)
         for i, bus in enumerate(self.circuit.buses):
-            base_voltages.add(int(bus.Vnom))
+
+            Vnom = int(bus.Vnom)
+
+            # add the nominal voltage to the set of bus_voltages
+            base_voltages.add(Vnom)
+
+            # if the substation was not accounted for, create the list of voltage levels
+            if bus.substation not in substation_bus.keys():
+                substation_bus[bus.substation] = dict()
+
+            if Vnom not in substation_bus[bus.substation].keys():
+                substation_bus[bus.substation][Vnom] = list()
+
+            # add bus to the categorization
+            substation_bus[bus.substation][Vnom].append(bus)
 
         # generate Base voltages
         for V in base_voltages:
@@ -464,167 +481,208 @@ class CIMExport:
             model.properties['nominalVoltage'] = int(V)
             text_file.write(model.get_xml(1))
 
-        # buses sweep to actually generate XML
+        # generate voltage levels, substations and buses and their objects
+        substation_idx = 0
+        voltage_level_idx = 0
+        bus_idx = 0
         terminal_resources = ['TopologicalNode', 'ConductingEquipment']
-        for i, bus in enumerate(self.circuit.buses):
 
-            # make id
-            id = 'BUS_' + str(i)
+        for substation in substation_bus.keys():
 
-            # make dictionary entry
-            bus_id_dict[bus] = id
+            substation_id = substation + '_' + str(substation_idx)
+            substation_idx += 1
 
-            base_voltage = base_voltages_dict[int(bus.Vnom)]
-
-            if bus.Vnom <= 0.0:
-                self.logger.append(bus.name + ' has zero nominal voltage, this produces an invalid file because of the per-unit conversion')
-
-            # generate model
-            model = GeneralContainer(id=id, tpe='TopologicalNode', resources=['BaseVoltage'])
-            model.properties['name'] = bus.name
-            model.properties['aliasName'] = bus.name
-            model.properties['BaseVoltage'] = base_voltage
+            model = GeneralContainer(id=substation_id, tpe='Substation', resources=['Location', 'SubGeographicalRegion'])
+            model.properties['name'] = substation
+            model.properties['aliasName'] = substation
+            model.properties['PSRType'] = ''
+            model.properties['Location'] = ''
+            model.properties['SubGeographicalRegion'] = ''
             text_file.write(model.get_xml(1))
 
-            for il, elm in enumerate(bus.loads):
+            for voltage_level in substation_bus[substation].keys():
 
-                id2 = id + '_LOAD_' + str(il)
-                id3 = id2 + '_LRC'
+                voltage_level_id = 'VoltageLevel_' + str(voltage_level) + '_' + str(voltage_level_idx)
+                voltage_level_idx += 1
 
-                model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse'])
-                model.properties['name'] = elm.name
-                model.properties['aliasName'] = elm.name
+                base_voltage = base_voltages_dict[int(voltage_level)]
+
+                model = GeneralContainer(id=voltage_level_id, tpe='VoltageLevel', resources=['BaseVoltage', 'Substation'])
+                model.properties['name'] = substation
+                model.properties['aliasName'] = substation
                 model.properties['BaseVoltage'] = base_voltage
-                model.properties['LoadResponse'] = id3
-                model.properties['pfixed'] = elm.S.real
-                model.properties['qfixed'] = elm.S.imag
-                model.properties['normallyInService'] = elm.active
+                model.properties['Substation'] = substation_id
                 text_file.write(model.get_xml(1))
 
-                model = GeneralContainer(id=id3, tpe='LoadResponseCharacteristic', resources=[])
-                model.properties['name'] = elm.name
-                model.properties['exponentModel'] = 'false'
-                model.properties['pConstantCurrent'] = elm.I.real
-                model.properties['pConstantImpedance'] = elm.Z.real
-                model.properties['pConstantPower'] = elm.S.real
-                model.properties['pVoltageExponent'] = 0.0
-                model.properties['pFrequencyExponent'] = 0.0
-                model.properties['qConstantCurrent'] = elm.I.imag
-                model.properties['qConstantImpedance'] = elm.Z.imag
-                model.properties['qConstantPower'] = elm.S.imag
-                model.properties['qVoltageExponent'] = 0.0
-                model.properties['qFrequencyExponent'] = 0.0
-                text_file.write(model.get_xml(1))
+                # buses sweep to actually generate XML
+                for bus in substation_bus[substation][voltage_level]:
 
-                # Terminal 1 (from)
-                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
-                model.properties['name'] = elm.name
-                model.properties['TopologicalNode'] = bus_id_dict[bus]
-                model.properties['ConductingEquipment'] = id2
-                model.properties['connected'] = 'true'
-                model.properties['sequenceNumber'] = '1'
-                text_file.write(model.get_xml(1))
+                    # make id
+                    id = 'BUS_' + str(bus_idx)
 
-            for il, elm in enumerate(bus.static_generators):
+                    # make dictionary entry
+                    bus_id_dict[bus] = id
 
-                id2 = id + '_StatGen_' + str(il)
+                    base_voltage = base_voltages_dict[int(bus.Vnom)]
 
-                model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse'])
-                model.properties['name'] = elm.name
-                model.properties['aliasName'] = elm.name
-                model.properties['BaseVoltage'] = base_voltage
-                model.properties['pfixed'] = -elm.S.real
-                model.properties['qfixed'] = -elm.S.imag
-                model.properties['normallyInService'] = elm.active
-                text_file.write(model.get_xml(1))
+                    if bus.Vnom <= 0.0:
+                        self.logger.append(bus.name + ' has zero nominal voltage, this produces an invalid file because of the per-unit conversion')
 
-                # Terminal 1 (from)
-                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
-                model.properties['name'] = elm.name
-                model.properties['TopologicalNode'] = bus_id_dict[bus]
-                model.properties['ConductingEquipment'] = id2
-                model.properties['connected'] = 'true'
-                model.properties['sequenceNumber'] = '1'
-                text_file.write(model.get_xml(1))
+                    # generate model
+                    model = GeneralContainer(id=id, tpe='TopologicalNode', resources=['BaseVoltage', 'VoltageLevel'])
+                    model.properties['name'] = bus.name
+                    model.properties['aliasName'] = bus.name
+                    model.properties['BaseVoltage'] = base_voltage
+                    model.properties['VoltageLevel'] = voltage_level_id
+                    text_file.write(model.get_xml(1))
 
-            for il, elm in enumerate(bus.controlled_generators):
+                    for il, elm in enumerate(bus.loads):
 
-                id2 = id + '_SyncGen_' + str(il)
-                id3 = id2 + '_GU'
-                id4 = id2 + '_RC'
+                        id2 = id + '_LOAD_' + str(il)
+                        id3 = id2 + '_LRC'
 
-                model = GeneralContainer(id=id2, tpe='SynchronousMachine', resources=['BaseVoltage', 'RegulatingControl', 'GeneratingUnit'])
-                model.properties['name'] = elm.name
-                model.properties['aliasName'] = elm.name
-                model.properties['BaseVoltage'] = base_voltage
-                model.properties['RegulatingControl'] = id3
-                model.properties['GeneratingUnit'] = id4
-                model.properties['maxQ'] = elm.Qmax
-                model.properties['minQ'] = elm.Qmin
-                model.properties['ratedS'] = elm.Snom
-                model.properties['normallyInService'] = elm.active
-                text_file.write(model.get_xml(1))
+                        model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'])
+                        model.properties['name'] = elm.name
+                        model.properties['aliasName'] = elm.name
+                        model.properties['BaseVoltage'] = base_voltage
+                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['LoadResponse'] = id3
+                        model.properties['pfixed'] = elm.S.real
+                        model.properties['qfixed'] = elm.S.imag
+                        model.properties['normallyInService'] = elm.active
+                        text_file.write(model.get_xml(1))
 
-                model = GeneralContainer(id=id3, tpe='RegulatingControl', resources=[])
-                model.properties['name'] = elm.name
-                model.properties['targetValue'] = elm.Vset * bus.Vnom
-                text_file.write(model.get_xml(1))
+                        model = GeneralContainer(id=id3, tpe='LoadResponseCharacteristic', resources=[])
+                        model.properties['name'] = elm.name
+                        model.properties['exponentModel'] = 'false'
+                        model.properties['pConstantCurrent'] = elm.I.real
+                        model.properties['pConstantImpedance'] = elm.Z.real
+                        model.properties['pConstantPower'] = elm.S.real
+                        model.properties['pVoltageExponent'] = 0.0
+                        model.properties['pFrequencyExponent'] = 0.0
+                        model.properties['qConstantCurrent'] = elm.I.imag
+                        model.properties['qConstantImpedance'] = elm.Z.imag
+                        model.properties['qConstantPower'] = elm.S.imag
+                        model.properties['qVoltageExponent'] = 0.0
+                        model.properties['qFrequencyExponent'] = 0.0
+                        text_file.write(model.get_xml(1))
 
-                model = GeneralContainer(id=id4, tpe='GeneratingUnit', resources=[])
-                model.properties['name'] = elm.name
-                model.properties['initialP'] = elm.P
-                text_file.write(model.get_xml(1))
+                        # Terminal 1 (from)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model.properties['name'] = elm.name
+                        model.properties['TopologicalNode'] = bus_id_dict[bus]
+                        model.properties['ConductingEquipment'] = id2
+                        model.properties['connected'] = 'true'
+                        model.properties['sequenceNumber'] = '1'
+                        text_file.write(model.get_xml(1))
 
-                # Terminal 1 (from)
-                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
-                model.properties['name'] = elm.name
-                model.properties['TopologicalNode'] = bus_id_dict[bus]
-                model.properties['ConductingEquipment'] = id2
-                model.properties['connected'] = 'true'
-                model.properties['sequenceNumber'] = '1'
-                text_file.write(model.get_xml(1))
+                    for il, elm in enumerate(bus.static_generators):
 
-            for il, elm in enumerate(bus.shunts):
+                        id2 = id + '_StatGen_' + str(il)
 
-                id2 = id + '_Shunt_' + str(il)
+                        model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'])
+                        model.properties['name'] = elm.name
+                        model.properties['aliasName'] = elm.name
+                        model.properties['BaseVoltage'] = base_voltage
+                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['pfixed'] = -elm.S.real
+                        model.properties['qfixed'] = -elm.S.imag
+                        model.properties['normallyInService'] = elm.active
+                        text_file.write(model.get_xml(1))
 
-                model = GeneralContainer(id=id2, tpe='ShuntCompensator', resources=['BaseVoltage'])
-                model.properties['name'] = elm.name
-                model.properties['aliasName'] = elm.name
-                model.properties['BaseVoltage'] = base_voltage
-                model.properties['gPerSection'] = elm.Y.real
-                model.properties['bPerSection'] = elm.Y.imag
-                model.properties['g0PerSection'] = 0.0
-                model.properties['b0PerSection'] = 0.0
-                model.properties['normallyInService'] = elm.active
-                text_file.write(model.get_xml(1))
+                        # Terminal 1 (from)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model.properties['name'] = elm.name
+                        model.properties['TopologicalNode'] = bus_id_dict[bus]
+                        model.properties['ConductingEquipment'] = id2
+                        model.properties['connected'] = 'true'
+                        model.properties['sequenceNumber'] = '1'
+                        text_file.write(model.get_xml(1))
 
-                # Terminal 1 (from)
-                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
-                model.properties['name'] = elm.name
-                model.properties['TopologicalNode'] = bus_id_dict[bus]
-                model.properties['ConductingEquipment'] = id2
-                model.properties['connected'] = 'true'
-                model.properties['sequenceNumber'] = '1'
-                text_file.write(model.get_xml(1))
+                    for il, elm in enumerate(bus.controlled_generators):
 
-            if bus.is_slack:
-                id2 = id + '_EqNetwork'
+                        id2 = id + '_SyncGen_' + str(il)
+                        id3 = id2 + '_GU'
+                        id4 = id2 + '_RC'
 
-                model = GeneralContainer(id=id2, tpe='EquivalentNetwork', resources=['BaseVoltage'])
-                model.properties['name'] = bus.name + '_Slack'
-                model.properties['aliasName'] = bus.name + '_Slack'
-                model.properties['BaseVoltage'] = base_voltage
-                text_file.write(model.get_xml(1))
+                        model = GeneralContainer(id=id2, tpe='SynchronousMachine', resources=['BaseVoltage', 'RegulatingControl', 'GeneratingUnit', 'VoltageLevel'])
+                        model.properties['name'] = elm.name
+                        model.properties['aliasName'] = elm.name
+                        model.properties['BaseVoltage'] = base_voltage
+                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['RegulatingControl'] = id3
+                        model.properties['GeneratingUnit'] = id4
+                        model.properties['maxQ'] = elm.Qmax
+                        model.properties['minQ'] = elm.Qmin
+                        model.properties['ratedS'] = elm.Snom
+                        model.properties['normallyInService'] = elm.active
+                        text_file.write(model.get_xml(1))
 
-                # Terminal 1 (from)
-                model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
-                model.properties['name'] = id2 + '_T'
-                model.properties['TopologicalNode'] = bus_id_dict[bus]
-                model.properties['ConductingEquipment'] = id2
-                model.properties['connected'] = 'true'
-                model.properties['sequenceNumber'] = '1'
-                text_file.write(model.get_xml(1))
+                        model = GeneralContainer(id=id3, tpe='RegulatingControl', resources=[])
+                        model.properties['name'] = elm.name
+                        model.properties['targetValue'] = elm.Vset * bus.Vnom
+                        text_file.write(model.get_xml(1))
+
+                        model = GeneralContainer(id=id4, tpe='GeneratingUnit', resources=[])
+                        model.properties['name'] = elm.name
+                        model.properties['initialP'] = elm.P
+                        text_file.write(model.get_xml(1))
+
+                        # Terminal 1 (from)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model.properties['name'] = elm.name
+                        model.properties['TopologicalNode'] = bus_id_dict[bus]
+                        model.properties['ConductingEquipment'] = id2
+                        model.properties['connected'] = 'true'
+                        model.properties['sequenceNumber'] = '1'
+                        text_file.write(model.get_xml(1))
+
+                    for il, elm in enumerate(bus.shunts):
+
+                        id2 = id + '_Shunt_' + str(il)
+
+                        model = GeneralContainer(id=id2, tpe='ShuntCompensator', resources=['BaseVoltage', 'VoltageLevel'])
+                        model.properties['name'] = elm.name
+                        model.properties['aliasName'] = elm.name
+                        model.properties['BaseVoltage'] = base_voltage
+                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['gPerSection'] = elm.Y.real
+                        model.properties['bPerSection'] = elm.Y.imag
+                        model.properties['g0PerSection'] = 0.0
+                        model.properties['b0PerSection'] = 0.0
+                        model.properties['normallyInService'] = elm.active
+                        text_file.write(model.get_xml(1))
+
+                        # Terminal 1 (from)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model.properties['name'] = elm.name
+                        model.properties['TopologicalNode'] = bus_id_dict[bus]
+                        model.properties['ConductingEquipment'] = id2
+                        model.properties['connected'] = 'true'
+                        model.properties['sequenceNumber'] = '1'
+                        text_file.write(model.get_xml(1))
+
+                    if bus.is_slack:
+                        id2 = id + '_EqNetwork'
+
+                        model = GeneralContainer(id=id2, tpe='EquivalentNetwork', resources=['BaseVoltage', 'VoltageLevel'])
+                        model.properties['name'] = bus.name + '_Slack'
+                        model.properties['aliasName'] = bus.name + '_Slack'
+                        model.properties['BaseVoltage'] = base_voltage
+                        model.properties['VoltageLevel'] = voltage_level_id
+                        text_file.write(model.get_xml(1))
+
+                        # Terminal 1 (from)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model.properties['name'] = id2 + '_T'
+                        model.properties['TopologicalNode'] = bus_id_dict[bus]
+                        model.properties['ConductingEquipment'] = id2
+                        model.properties['connected'] = 'true'
+                        model.properties['sequenceNumber'] = '1'
+                        text_file.write(model.get_xml(1))
+
+                    # increment the bus index
+                    bus_idx += 1
 
         # Branches
         winding_resources = ['connectionType', 'windingType', 'PowerTransformer']
@@ -1270,10 +1328,12 @@ if __name__ == '__main__':
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
     # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Australia.xml'
-    fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE 57.xml'
-
+    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE 57.xml'
+    fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xlsx'
     print('Reading...')
     grid.load_file(fname)
+
+    grid.save_cim('D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xml')
 
     # grid.save_cim('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE_14_GridCal.xml')
     # grid.save_cim('C:\\Users\\spenate\\Documents\\PROYECTOS\\SCADA_microgrid\\CIM\\newton\\IEEE_30_Bus.xml')
