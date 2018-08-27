@@ -1,5 +1,7 @@
 from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, ControlledGenerator, Branch, BranchType, Load, Shunt, StaticGenerator
 
+from math import sqrt
+
 
 def index_find(string, start, end):
     """
@@ -861,7 +863,8 @@ class CIMExport:
                                          resources=['BaseVoltage'],
                                          class_replacements={'name': 'IdentifiedObject',
                                                              'aliasName': 'IdentifiedObject',
-                                                             'BaseVoltage': 'ConductingEquipment'}
+                                                             'BaseVoltage': 'ConductingEquipment',
+                                                             'value': 'CurrentLimit'}
                                          )
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
@@ -875,6 +878,7 @@ class CIMExport:
                 model.properties['g0ch'] = 0.0
                 model.properties['b0ch'] = 0.0
                 model.properties['length'] = 1.0
+                model.properties['value'] = branch.rate / (branch.bus_from.Vnom * sqrt(3))  # kA
                 text_file.write(model.get_xml(1))
 
             elif branch.branch_type == BranchType.Switch:
