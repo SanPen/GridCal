@@ -3,9 +3,7 @@ import numpy as np
 
 """
 Equations source:
-a) https://vismor.com/documents/power_systems/transmission_lines/S2.SS1.php
-b) William H. Kersting - Distribution system modelling (3rd Ed.)
-c) ATP-EMTP theory book
+a) ATP-EMTP theory book
 
 Typical values of earth 
 10 Ω/​m3 - Resistivity of swampy ground 
