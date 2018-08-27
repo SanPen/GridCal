@@ -1666,17 +1666,18 @@ class MainGUI(QMainWindow):
                                    losses=self.circuit.power_flow_results.losses)
             self.update_available_results()
 
-            data = np.r_[self.circuit.power_flow_results.methods,
-                         self.circuit.power_flow_results.converged,
-                         self.circuit.power_flow_results.error,
-                         self.circuit.power_flow_results.elapsed,
-                         self.circuit.power_flow_results.inner_iterations].transpose()
-            col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
-            df = pd.DataFrame(data, columns=col)
+            if len(self.circuit.power_flow_results.methods[0]) > 0:
+                data = np.r_[self.circuit.power_flow_results.methods,
+                             self.circuit.power_flow_results.converged,
+                             self.circuit.power_flow_results.error,
+                             self.circuit.power_flow_results.elapsed,
+                             self.circuit.power_flow_results.inner_iterations].transpose()
+                col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
+                df = pd.DataFrame(data, columns=col)
 
-            msg_ = 'Power flow converged: \n' \
-                   + df.__str__()
-            self.console_msg(msg_)
+                msg_ = 'Power flow converged: \n' \
+                       + df.__str__()
+                self.console_msg(msg_)
 
         else:
             warn('Something went wrong, There are no power flow results.')

@@ -14,13 +14,15 @@ def index_find(string, start, end):
 
 class GeneralContainer:
 
-    def __init__(self, id, tpe, resources=list()):
+    def __init__(self, id, tpe, resources=list(), class_replacements=dict()):
         """
         General CIM object container
         :param header: object xml header
         :param tpe: type of the object (class)
         """
         self.properties = dict()
+
+        self.class_replacements = class_replacements
 
         # store the object type
         self.tpe = tpe
@@ -118,10 +120,16 @@ class GeneralContainer:
         for prop, value in self.properties.items():
             v = str(value).replace(' ', '_')
 
-            if prop in self.resources:
-                xml += l2 + '<cim:' + self.tpe + '.' + prop + ' rdf:resource="#' + v + '" />\n'
+            # eventually replace the class of the property, because CIM is so well designed...
+            if prop in self.class_replacements.keys():
+                cls = self.class_replacements[prop]
             else:
-                xml += l2 + '<cim:' + self.tpe + '.' + prop + '>' + v + '</cim:' + self.tpe + '.' + prop + '>\n'
+                cls = self.tpe
+
+            if prop in self.resources:
+                xml += l2 + '<cim:' + cls + '.' + prop + ' rdf:resource="#' + v + '" />\n'
+            else:
+                xml += l2 + '<cim:' + cls + '.' + prop + '>' + v + '</cim:' + cls + '.' + prop + '>\n'
 
         # closing
         xml += l1 + '</cim:' + self.tpe + '>\n'
@@ -454,7 +462,7 @@ class CIMExport:
         # buses sweep to gather previous data (base voltages, etc..)
         for i, bus in enumerate(self.circuit.buses):
 
-            Vnom = int(bus.Vnom)
+            Vnom = bus.Vnom
 
             # add the nominal voltage to the set of bus_voltages
             base_voltages.add(Vnom)
@@ -472,13 +480,13 @@ class CIMExport:
         # generate Base voltages
         for V in base_voltages:
 
-            id = 'Base_voltage_' + str(V).replace('.', '_')
+            conn_node_id = 'Base_voltage_' + str(V).replace('.', '_')
 
-            base_voltages_dict[int(V)] = id
+            base_voltages_dict[V] = conn_node_id
 
-            model = GeneralContainer(id=id, tpe='BaseVoltage')
-            model.properties['name'] = id
-            model.properties['nominalVoltage'] = int(V)
+            model = GeneralContainer(id=conn_node_id, tpe='BaseVoltage')
+            model.properties['name'] = conn_node_id
+            model.properties['nominalVoltage'] = V
             text_file.write(model.get_xml(1))
 
         # generate voltage levels, substations and buses and their objects
@@ -502,10 +510,10 @@ class CIMExport:
 
             for voltage_level in substation_bus[substation].keys():
 
-                voltage_level_id = 'VoltageLevel_' + str(voltage_level) + '_' + str(voltage_level_idx)
+                voltage_level_id = 'VoltageLevel_' + str(voltage_level).replace('.', '_') + '_' + str(voltage_level_idx)
                 voltage_level_idx += 1
 
-                base_voltage = base_voltages_dict[int(voltage_level)]
+                base_voltage = base_voltages_dict[voltage_level]
 
                 model = GeneralContainer(id=voltage_level_id, tpe='VoltageLevel', resources=['BaseVoltage', 'Substation'])
                 model.properties['name'] = substation
@@ -518,34 +526,46 @@ class CIMExport:
                 for bus in substation_bus[substation][voltage_level]:
 
                     # make id
-                    id = 'BUS_' + str(bus_idx)
+                    conn_node_id = 'BUS_' + str(bus_idx)
+
+                    Vnom = bus.Vnom
 
                     # make dictionary entry
-                    bus_id_dict[bus] = id
+                    bus_id_dict[bus] = conn_node_id
 
-                    base_voltage = base_voltages_dict[int(bus.Vnom)]
+                    base_voltage = base_voltages_dict[Vnom]
 
                     if bus.Vnom <= 0.0:
                         self.logger.append(bus.name + ' has zero nominal voltage, this produces an invalid file because of the per-unit conversion')
 
                     # generate model
-                    model = GeneralContainer(id=id, tpe='TopologicalNode', resources=['BaseVoltage', 'VoltageLevel'])
+                    model = GeneralContainer(id=conn_node_id, tpe='ConnectivityNode',
+                                             resources=['BaseVoltage', 'VoltageLevel', 'ConnectivityNodeContainer'],
+                                             class_replacements={'name': 'IdentifiedObject',
+                                                                 'aliasName': 'IdentifiedObject'}
+                                             )
                     model.properties['name'] = bus.name
                     model.properties['aliasName'] = bus.name
                     model.properties['BaseVoltage'] = base_voltage
-                    model.properties['VoltageLevel'] = voltage_level_id
+                    # model.properties['VoltageLevel'] = voltage_level_id
+                    model.properties['ConnectivityNodeContainer'] = voltage_level_id
                     text_file.write(model.get_xml(1))
 
                     for il, elm in enumerate(bus.loads):
 
-                        id2 = id + '_LOAD_' + str(il)
+                        id2 = conn_node_id + '_LOAD_' + str(il)
                         id3 = id2 + '_LRC'
 
-                        model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'])
+                        model = GeneralContainer(id=id2, tpe='ConformLoad',
+                                                 resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject',
+                                                                     'EquipmentContainer': 'Equipment'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['aliasName'] = elm.name
                         model.properties['BaseVoltage'] = base_voltage
-                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['EquipmentContainer'] = voltage_level_id
                         model.properties['LoadResponse'] = id3
                         model.properties['pfixed'] = elm.S.real
                         model.properties['qfixed'] = elm.S.imag
@@ -568,7 +588,10 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                                                 resources=terminal_resources,
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject'})
                         model.properties['name'] = elm.name
                         model.properties['TopologicalNode'] = bus_id_dict[bus]
                         model.properties['ConductingEquipment'] = id2
@@ -578,20 +601,29 @@ class CIMExport:
 
                     for il, elm in enumerate(bus.static_generators):
 
-                        id2 = id + '_StatGen_' + str(il)
+                        id2 = conn_node_id + '_StatGen_' + str(il)
 
-                        model = GeneralContainer(id=id2, tpe='ConformLoad', resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'])
+                        model = GeneralContainer(id=id2, tpe='ConformLoad',
+                                                 resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject',
+                                                                     'EquipmentContainer': 'Equipment'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['aliasName'] = elm.name
                         model.properties['BaseVoltage'] = base_voltage
-                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['EquipmentContainer'] = voltage_level_id
                         model.properties['pfixed'] = -elm.S.real
                         model.properties['qfixed'] = -elm.S.imag
                         model.properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                                                 resources=terminal_resources,
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['TopologicalNode'] = bus_id_dict[bus]
                         model.properties['ConductingEquipment'] = id2
@@ -601,15 +633,21 @@ class CIMExport:
 
                     for il, elm in enumerate(bus.controlled_generators):
 
-                        id2 = id + '_SyncGen_' + str(il)
+                        id2 = conn_node_id + '_SyncGen_' + str(il)
                         id3 = id2 + '_GU'
                         id4 = id2 + '_RC'
 
-                        model = GeneralContainer(id=id2, tpe='SynchronousMachine', resources=['BaseVoltage', 'RegulatingControl', 'GeneratingUnit', 'VoltageLevel'])
+                        model = GeneralContainer(id=id2, tpe='SynchronousMachine',
+                                                 resources=['BaseVoltage', 'RegulatingControl',
+                                                            'GeneratingUnit', 'VoltageLevel'],
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject',
+                                                                     'EquipmentContainer': 'Equipment'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['aliasName'] = elm.name
                         model.properties['BaseVoltage'] = base_voltage
-                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['EquipmentContainer'] = voltage_level_id
                         model.properties['RegulatingControl'] = id3
                         model.properties['GeneratingUnit'] = id4
                         model.properties['maxQ'] = elm.Qmax
@@ -629,7 +667,11 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                                                 resources=terminal_resources,
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['TopologicalNode'] = bus_id_dict[bus]
                         model.properties['ConductingEquipment'] = id2
@@ -639,13 +681,18 @@ class CIMExport:
 
                     for il, elm in enumerate(bus.shunts):
 
-                        id2 = id + '_Shunt_' + str(il)
+                        id2 = conn_node_id + '_Shunt_' + str(il)
 
-                        model = GeneralContainer(id=id2, tpe='ShuntCompensator', resources=['BaseVoltage', 'VoltageLevel'])
+                        model = GeneralContainer(id=id2, tpe='ShuntCompensator',
+                                                 resources=['BaseVoltage', 'VoltageLevel'],
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject',
+                                                                     'EquipmentContainer': 'Equipment'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['aliasName'] = elm.name
                         model.properties['BaseVoltage'] = base_voltage
-                        model.properties['VoltageLevel'] = voltage_level_id
+                        model.properties['EquipmentContainer'] = voltage_level_id
                         model.properties['gPerSection'] = elm.Y.real
                         model.properties['bPerSection'] = elm.Y.imag
                         model.properties['g0PerSection'] = 0.0
@@ -654,7 +701,11 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
+                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                                                 resources=terminal_resources,
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject'}
+                                                 )
                         model.properties['name'] = elm.name
                         model.properties['TopologicalNode'] = bus_id_dict[bus]
                         model.properties['ConductingEquipment'] = id2
@@ -663,9 +714,12 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                     if bus.is_slack:
-                        id2 = id + '_EqNetwork'
+                        equivalent_network_id = conn_node_id + '_EqNetwork'
 
-                        model = GeneralContainer(id=id2, tpe='EquivalentNetwork', resources=['BaseVoltage', 'VoltageLevel'])
+                        model = GeneralContainer(id=equivalent_network_id, tpe='EquivalentNetwork',
+                                                 resources=['BaseVoltage', 'VoltageLevel'],
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject'})
                         model.properties['name'] = bus.name + '_Slack'
                         model.properties['aliasName'] = bus.name + '_Slack'
                         model.properties['BaseVoltage'] = base_voltage
@@ -673,10 +727,14 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal', resources=terminal_resources)
-                        model.properties['name'] = id2 + '_T'
+                        model = GeneralContainer(id=equivalent_network_id + '_T', tpe='Terminal',
+                                                 resources=terminal_resources,
+                                                 class_replacements={'name': 'IdentifiedObject',
+                                                                     'aliasName': 'IdentifiedObject'}
+                                                 )
+                        model.properties['name'] = equivalent_network_id + '_T'
                         model.properties['TopologicalNode'] = bus_id_dict[bus]
-                        model.properties['ConductingEquipment'] = id2
+                        model.properties['ConductingEquipment'] = equivalent_network_id
                         model.properties['connected'] = 'true'
                         model.properties['sequenceNumber'] = '1'
                         text_file.write(model.get_xml(1))
@@ -690,9 +748,14 @@ class CIMExport:
         for i, branch in enumerate(self.circuit.branches):
 
             if branch.branch_type == BranchType.Transformer:
-                id = 'Transformer_' + str(i)
+                conn_node_id = 'Transformer_' + str(i)
 
-                model = GeneralContainer(id=id, tpe='PowerTransformer', resources=[])
+                model = GeneralContainer(id=conn_node_id, tpe='PowerTransformer',
+                                         resources=[],
+                                         class_replacements={'name': 'IdentifiedObject',
+                                                             'aliasName': 'IdentifiedObject',
+                                                             'EquipmentContainer': 'Equipment'}
+                                         )
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
                 text_file.write(model.get_xml(1))
@@ -714,10 +777,15 @@ class CIMExport:
                 winding_power_rate = branch.rate / 2
                 Zbase = (branch.bus_from.Vnom ** 2) / winding_power_rate
                 Ybase = 1 / Zbase
-                model = GeneralContainer(id=id + "_W1", tpe='PowerTransformerEnd', resources=winding_resources)
+                model = GeneralContainer(id=conn_node_id + "_W1", tpe='PowerTransformerEnd',
+                                         resources=winding_resources,
+                                         class_replacements={'name': 'IdentifiedObject',
+                                                             'aliasName': 'IdentifiedObject',
+                                                             'BaseVoltage': 'ConductingEquipment'}
+                                         )
                 model.properties['name'] = branch.name
-                model.properties['PowerTransformer'] = id
-                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['PowerTransformer'] = conn_node_id
+                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
                 model.properties['r'] = branch.R / 2 * Zbase
                 model.properties['x'] = branch.X / 2 * Zbase
                 model.properties['g'] = branch.G / 2 * Ybase
@@ -737,10 +805,15 @@ class CIMExport:
                 # W2 (To)
                 Zbase = (branch.bus_to.Vnom ** 2) / winding_power_rate
                 Ybase = 1 / Zbase
-                model = GeneralContainer(id=id + "_W2", tpe='PowerTransformerEnd', resources=winding_resources)
+                model = GeneralContainer(id=conn_node_id + "_W2", tpe='PowerTransformerEnd',
+                                         resources=winding_resources,
+                                         class_replacements={'name': 'IdentifiedObject',
+                                                             'aliasName': 'IdentifiedObject',
+                                                             'BaseVoltage': 'ConductingEquipment'}
+                                         )
                 model.properties['name'] = branch.name
-                model.properties['PowerTransformer'] = id
-                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_to.Vnom)]
+                model.properties['PowerTransformer'] = conn_node_id
+                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_to.Vnom]
                 model.properties['r'] = branch.R / 2 * Zbase
                 model.properties['x'] = branch.X / 2 * Zbase
                 model.properties['g'] = branch.G / 2 * Ybase
@@ -763,8 +836,8 @@ class CIMExport:
                     Vnom = branch.bus_to.Vnom
                     SVI = (Vnom - Vnom * branch.tap_module) * 100.0 / Vnom
 
-                    model = GeneralContainer(id=id + 'Tap_2', tpe='RatioTapChanger', resources=tap_changer_resources)
-                    model.properties['TransformerWinding'] = id + "_W2"
+                    model = GeneralContainer(id=conn_node_id + 'Tap_2', tpe='RatioTapChanger', resources=tap_changer_resources)
+                    model.properties['TransformerWinding'] = conn_node_id + "_W2"
                     model.properties['name'] = branch.name + 'tap changer'
                     model.properties['neutralU'] = Vnom
                     model.properties['stepVoltageIncrement'] = SVI
@@ -776,7 +849,7 @@ class CIMExport:
 
             elif branch.branch_type == BranchType.Line or branch.branch_type == BranchType.Branch:
 
-                id = 'Branch_' + str(i)
+                conn_node_id = 'Branch_' + str(i)
                 Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
 
                 if branch.bus_from.Vnom <= 0.0:
@@ -784,10 +857,15 @@ class CIMExport:
                 else:
                     Ybase = 1 / Zbase
 
-                model = GeneralContainer(id=id, tpe='ACLineSegment', resources=['BaseVoltage'])
+                model = GeneralContainer(id=conn_node_id, tpe='ACLineSegment',
+                                         resources=['BaseVoltage'],
+                                         class_replacements={'name': 'IdentifiedObject',
+                                                             'aliasName': 'IdentifiedObject',
+                                                             'BaseVoltage': 'ConductingEquipment'}
+                                         )
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
-                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
                 model.properties['r'] = branch.R * Zbase
                 model.properties['x'] = branch.X * Zbase
                 model.properties['gch'] = branch.G * Ybase
@@ -801,11 +879,11 @@ class CIMExport:
 
             elif branch.branch_type == BranchType.Switch:
 
-                id = 'Switch_' + str(i)
-                model = GeneralContainer(id=id, tpe='Switch', resources=['BaseVoltage'])
+                conn_node_id = 'Switch_' + str(i)
+                model = GeneralContainer(id=conn_node_id, tpe='Switch', resources=['BaseVoltage'])
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
-                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
                 model.properties['normalOpen'] = False
                 model.properties['open'] = not branch.active
                 text_file.write(model.get_xml(1))
@@ -814,7 +892,7 @@ class CIMExport:
 
                 self.logger.append('Reactance CIM export not implemented yet, exported as a branch')
 
-                id = 'Reactance_' + str(i)
+                conn_node_id = 'Reactance_' + str(i)
                 Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
 
                 if branch.bus_from.Vnom <= 0.0:
@@ -822,10 +900,10 @@ class CIMExport:
                 else:
                     Ybase = 1 / Zbase
 
-                model = GeneralContainer(id=id, tpe='ACLineSegment', resources=['BaseVoltage'])
+                model = GeneralContainer(id=conn_node_id, tpe='ACLineSegment', resources=['BaseVoltage'])
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
-                model.properties['BaseVoltage'] = base_voltages_dict[int(branch.bus_from.Vnom)]
+                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
                 model.properties['r'] = branch.R * Zbase
                 model.properties['x'] = branch.X * Zbase
                 model.properties['gch'] = branch.G * Ybase
@@ -838,19 +916,27 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
             # Terminal 1 (from)
-            model = GeneralContainer(id=id + '_T1', tpe='Terminal', resources=terminal_resources)
+            model = GeneralContainer(id=conn_node_id + '_T1', tpe='Terminal',
+                                     resources=terminal_resources,
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject'}
+                                     )
             model.properties['name'] = bus.name + '_' + branch.name + '_T1'
             model.properties['TopologicalNode'] = bus_id_dict[branch.bus_from]
-            model.properties['ConductingEquipment'] = id
+            model.properties['ConductingEquipment'] = conn_node_id
             model.properties['connected'] = 'true'
             model.properties['sequenceNumber'] = '1'
             text_file.write(model.get_xml(1))
 
             # Terminal 2 (to)
-            model = GeneralContainer(id=id + '_T2', tpe='Terminal', resources=terminal_resources)
+            model = GeneralContainer(id=conn_node_id + '_T2', tpe='Terminal',
+                                     resources=terminal_resources,
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject'}
+                                     )
             model.properties['name'] = bus.name + '_' + branch.name + '_T2'
             model.properties['TopologicalNode'] = bus_id_dict[branch.bus_to]
-            model.properties['ConductingEquipment'] = id
+            model.properties['ConductingEquipment'] = conn_node_id
             model.properties['connected'] = 'true'
             model.properties['sequenceNumber'] = '1'
             text_file.write(model.get_xml(1))
