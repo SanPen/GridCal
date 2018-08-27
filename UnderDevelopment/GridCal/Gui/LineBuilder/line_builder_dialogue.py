@@ -159,8 +159,8 @@ class Tower(QtCore.QAbstractTableModel):
         x = np.zeros(n)
         y = np.zeros(n)
         for i, wire in enumerate(self.wires):
-            x[i] = wire.x
-            y[i] = wire.y
+            x[i] = wire.xpos
+            y[i] = wire.ypos
 
         ax.plot(x, y, '.')
         ax.set_title('Tower wire position')
@@ -340,11 +340,35 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         f = 50
         rho = 100
 
-        z = calc_z_matrix(self.tower.wires, f=f, rho=rho)
-        cols = ['N', 'A', 'B', 'C']
-        z_df = pd.DataFrame(data=z, columns=cols, index=cols)
+        # Impedances
+        z_abcn, phases_abcn, z_abc, phases_abc, z_seq = calc_z_matrix(self.tower.wires, f=f, rho=rho)
 
-        self.ui.z_tableView.setModel(PandasModel(z_df))
+        cols = ['Phase' + str(i) for i in phases_abcn]
+        z_df = pd.DataFrame(data=z_abcn, columns=cols, index=cols)
+        self.ui.z_tableView_abcn.setModel(PandasModel(z_df))
+
+        cols = ['Phase' + str(i) for i in phases_abc]
+        z_df = pd.DataFrame(data=z_abc, columns=cols, index=cols)
+        self.ui.z_tableView_abc.setModel(PandasModel(z_df))
+
+        cols = ['Sequence ' + str(i) for i in range(3)]
+        z_df = pd.DataFrame(data=z_seq, columns=cols, index=cols)
+        self.ui.z_tableView_seq.setModel(PandasModel(z_df))
+
+        # Admittances
+        y_abcn, phases_abcn, y_abc, phases_abc, y_seq = calc_y_matrix(self.tower.wires, f=f, rho=rho)
+
+        cols = ['Phase' + str(i) for i in phases_abcn]
+        z_df = pd.DataFrame(data=y_abcn * 1e-6, columns=cols, index=cols)
+        self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
+
+        cols = ['Phase' + str(i) for i in phases_abc]
+        z_df = pd.DataFrame(data=y_abc * 1e-6, columns=cols, index=cols)
+        self.ui.y_tableView_abc.setModel(PandasModel(z_df))
+
+        cols = ['Sequence ' + str(i) for i in range(3)]
+        z_df = pd.DataFrame(data=y_seq * 1e-6, columns=cols, index=cols)
+        self.ui.y_tableView_seq.setModel(PandasModel(z_df))
 
         self.plot()
 
@@ -360,15 +384,35 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         r = 0.367851632  # ohm / km
         x = 0  # ohm / km
         gmr = 0.002481072  # m
-        w0 = Wire(name, xpos=0,      ypos=8.8392, gmr=gmr, r=r, x=x, phase=0)
-        w1 = Wire(name, xpos=0.762,  ypos=8.8392, gmr=gmr, r=r, x=x, phase=1)
-        w2 = Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2)
-        w3 = Wire(name, xpos=1.2192, ypos=7.62,   gmr=gmr, r=r, x=x, phase=3)
 
-        self.tower.add(w0)
-        self.tower.add(w1)
-        self.tower.add(w2)
-        self.tower.add(w3)
+        self.tower.add(Wire(name, xpos=0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=0))
+        self.tower.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=3))
+
+    def example_2(self):
+        name = '4/0 6/1 ACSR'
+        r = 0.367851632  # ohm / km
+        x = 0  # ohm / km
+        gmr = 0.002481072  # m
+
+        incx = 0.1
+        incy = 0.1
+
+        self.tower.add(Wire(name, xpos=0,      ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower.add(Wire(name, xpos=0.762,  ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
+        self.tower.add(Wire(name, xpos=1.2192, ypos=7.62,   gmr=gmr, r=r, x=x, phase=0))
+
+        self.tower.add(Wire(name, xpos=incx+0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower.add(Wire(name, xpos=incx+0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower.add(Wire(name, xpos=incx+2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
+        # self.tower.add(Wire(name, xpos=incx+1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=0))
+
+        self.tower.add(Wire(name, xpos=incx/2 + 0,    ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower.add(Wire(name, xpos=incx/2 + 0.762, ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower.add(Wire(name, xpos=incx/2 + 2.1336, ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=3))
+        # self.tower.add(Wire(name, xpos=incx/2 + 1.2192, ypos=incy+7.62, gmr=gmr, r=r, x=x, phase=0))
 
 
 if __name__ == "__main__":
@@ -376,7 +420,8 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = TowerBuilderGUI()
 
-    window.example_1()
+    window.example_2()
+    window.compute()
 
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()

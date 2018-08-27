@@ -1,4 +1,4 @@
-from math import pi, cos, sin, log, acos, sqrt
+from math import pi, cos, sin, log, acos, sqrt, pow
 
 """
 Equations source:
@@ -11,6 +11,10 @@ Typical values of earth
 100 Ω/​m3 - Resistivity of average damp earth 
 1000 Ω/​m3 - Resistivity of dry earth 
 """
+
+
+
+
 
 
 def p_approx(k, theta):

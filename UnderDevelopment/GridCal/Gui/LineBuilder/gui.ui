@@ -109,10 +109,6 @@
                 </widget>
                </item>
               </layout>
-              <zorder>label_5</zorder>
-              <zorder>wires_tableView</zorder>
-              <zorder>tower_tableView</zorder>
-              <zorder>frame</zorder>
              </widget>
              <widget class="QWidget" name="tab_5">
               <attribute name="title">
@@ -211,12 +207,32 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Z series (Ohm / km)</string>
+          <string>   Z series (Ohm / km) fpr ABCN</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QTableView" name="z_tableView"/>
+        <widget class="QTableView" name="z_tableView_abcn"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>   Z series (Ohm / km) for ABC</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="z_tableView_abc"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>   Z series (Ohm / km) in sequence components</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="z_tableView_seq"/>
        </item>
       </layout>
      </widget>
@@ -228,12 +244,32 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Y shunt (uS / km)</string>
+          <string>   Y shunt (uS / km) for ABCN</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QTableView" name="tableView"/>
+        <widget class="QTableView" name="y_tableView_abcn"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>   Y shunt (uS / km) for ABC</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="y_tableView_abc"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>   Y shunt (uS / km) for the sequence components</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="y_tableView_seq"/>
        </item>
       </layout>
      </widget>
