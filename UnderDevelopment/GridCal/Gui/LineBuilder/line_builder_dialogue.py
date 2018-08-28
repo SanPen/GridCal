@@ -150,7 +150,10 @@ class Tower(QtCore.QAbstractTableModel):
         self.endRemoveRows()
 
     def plot(self, ax=None):
-
+        """
+        Plot wires position
+        :param ax: Axis object
+        """
         if ax is None:
             fig = plt.Figure(figsize=(12, 6))
             ax = fig.add_subplot(1, 1, 1)
@@ -168,6 +171,9 @@ class Tower(QtCore.QAbstractTableModel):
         ax.set_ylabel('m')
         ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
         ax.set_ylim([0, np.max(y) + 1])
+        ax.patch.set_facecolor('white')
+        ax.grid(False)
+        ax.grid(which='major', axis='y', linestyle='--')
 
     def delete_by_name(self, wire: Wire):
         n = len(self.wires)
@@ -246,6 +252,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
+
+        self.ui.main_splitter.setSizes([10, 1])
 
         self.wire_collection = WiresCollection(self)
 
@@ -337,8 +345,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
     def compute(self):
 
-        f = 50
-        rho = 100
+        f = self.ui.frequency_doubleSpinBox.value()
+        rho = self.ui.rho_doubleSpinBox.value()
 
         # Impedances
         z_abcn, phases_abcn, z_abc, phases_abc, z_seq = calc_z_matrix(self.tower.wires, f=f, rho=rho)
@@ -375,7 +383,11 @@ class TowerBuilderGUI(QtWidgets.QDialog):
     def plot(self):
 
         self.ui.plotwidget.clear()
+
+        fig = self.ui.plotwidget.get_figure()
+        fig.set_facecolor('white')
         ax = self.ui.plotwidget.get_axis()
+
         self.tower.plot(ax=ax)
         self.ui.plotwidget.redraw()
 

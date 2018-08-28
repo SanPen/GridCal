@@ -215,7 +215,7 @@ class PandasModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with a pandas data frame
     """
-    def __init__(self, data, parent=None, editable=False, editable_min_idx=-1):
+    def __init__(self, data, parent=None, editable=False, editable_min_idx=-1, decimals=6):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self.data = np.array(data.values)
         self._cols = data.columns
@@ -228,6 +228,8 @@ class PandasModel(QtCore.QAbstractTableModel):
             if isinstance(self.index[0], np.datetime64):
                 self.index = pd.to_datetime(self.index)
                 self.isDate = True
+
+        self.format_string = '.' + str(decimals) + 'f'
 
         self.formatter = lambda x: "%.2f" % x
 
@@ -247,7 +249,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
-                return str(self.data[index.row(), index.column()])
+                return self.data[index.row(), index.column()].__format__(self.format_string)
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):

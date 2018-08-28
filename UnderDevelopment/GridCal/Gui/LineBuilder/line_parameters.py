@@ -172,6 +172,61 @@ def abc_2_seq(mat):
     return Ainv.dot(mat).dot(A)
 
 
+def kron_reduction(mat, keep, embed):
+    """
+    Perform the Kron reduction
+    :param mat: primitive matrix
+    :param keep: indices to keep
+    :param embed: indices to remove / embed
+    :return:
+    """
+    Zaa = mat[keep, :][:, keep]
+    Zag = mat[keep, :][:, embed]
+    Zga = mat[embed, :][:, keep]
+    Zgg = mat[embed, :][:, embed]
+
+    return Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
+
+
+def wire_bundling(phases_set, primitive, phases_vector):
+
+    for phase in phases_set:
+
+        # get the list of wire indices
+        wires_indices = np.where(phases_vector == phase)[0]
+
+        if len(wires_indices) > 1:
+
+            # get the first wire and remove it from the wires list
+            i = wires_indices[0]
+
+            # wires to keep
+            a = np.r_[i, np.where(phases_vector != phase)[0]]
+
+            # wires to reduce
+            g = wires_indices[1:]
+
+            # column subtraction
+            for k in g:
+                primitive[:, k] -= primitive[:, i]
+
+            # row subtraction
+            for k in g:
+                primitive[k, :] -= primitive[i, :]
+
+            # kron - reduction to Zabcn
+            primitive = kron_reduction(mat=primitive, keep=a, embed=g)
+
+            # reduce the phases too
+            phases_vector = phases_vector[a]
+
+        else:
+            # only one wire in this phase: nothing to do
+            pass
+
+    return primitive, phases_vector
+
+
 def calc_z_matrix(wires: list, f=50, rho=100):
     """
     Impedance matrix
@@ -206,7 +261,6 @@ def calc_z_matrix(wires: list, f=50, rho=100):
                 z_prim[i, j] = z_ij(x_i=wire_i.xpos, x_j=wire_j.xpos,
                                     h_i=wire_i.ypos, h_j=wire_j.ypos,
                                     d_ij=d_ij, f=f, rho=rho)
-
             else:
                 # they are the same wire and it is already accounted in the self impedance
                 pass
@@ -222,54 +276,13 @@ def calc_z_matrix(wires: list, f=50, rho=100):
     phases_set = list(phases_set)
     phases_set.sort(reverse=True)
 
-    for phase in phases_set:
-
-        # get the list of wire indices
-        wires_indices = np.where(phases_abcn == phase)[0]
-
-        if len(wires_indices) > 1:
-
-            # get the first wire and remove it from the wires list
-            i = wires_indices[0]
-
-            # wires to keep
-            a = np.r_[i, np.where(phases_abcn != phase)[0]]
-
-            # wires to reduce
-            g = wires_indices[1:]
-
-            # column subtraction
-            for k in g:
-                z_abcn[:, k] -= z_abcn[:, i]
-
-            # row subtraction
-            for k in g:
-                z_abcn[k, :] -= z_abcn[i, :]
-
-            # kron - reduction to Zabcn
-            Zaa = z_abcn[a, :][:, a]
-            Zag = z_abcn[a, :][:, g]
-            Zga = z_abcn[g, :][:, a]
-            Zgg = z_abcn[g, :][:, g]
-
-            z_abcn = Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
-
-            # reduce the phases too
-            phases_abcn = phases_abcn[a]
-
-        else:
-            # only one wire in this phase: nothing to do
-            pass
+    # wire bundling
+    z_abcn, phases_abcn = wire_bundling(phases_set=phases_set, primitive=z_abcn, phases_vector=phases_abcn)
 
     # kron - reduction to Zabc
     a = np.where(phases_abcn != 0)[0]
     g = np.where(phases_abcn == 0)[0]
-    Zaa = z_abcn[a, :][:, a]
-    Zag = z_abcn[a, :][:, g]
-    Zga = z_abcn[g, :][:, a]
-    Zgg = z_abcn[g, :][:, g]
-
-    z_abc = Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
+    z_abc = kron_reduction(mat=z_abcn, keep=a, embed=g)
 
     # reduce the phases too
     phases_abc = phases_abcn[a]
@@ -290,17 +303,22 @@ def calc_y_matrix(wires: list, f=50, rho=100):
     """
 
     n = len(wires)
+
+    # Maxwell's potential matrix
     p_prim = np.zeros((n, n), dtype=complex)
 
     # dictionary with the wire indices per phase
     phases_set = set()
+
+    # 1 / (2 * pi * e0) in km/F
+    one_two_pi_e0 = 17.975109e-6
 
     phases_abcn = np.zeros(n, dtype=int)
 
     for i, wire_i in enumerate(wires):
 
         # self impedance
-        p_prim[i, i] = 17.975109e-6 * log(2 * wire_i.ypos / wire_i.gmr)
+        p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / wire_i.gmr)
 
         # mutual impedances
         for j, wire_j in enumerate(wires):
@@ -311,7 +329,7 @@ def calc_y_matrix(wires: list, f=50, rho=100):
 
                 D_ij = get_D_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
 
-                p_prim[i, j] = 17.975109e-6 * log(D_ij / d_ij)
+                p_prim[i, j] = one_two_pi_e0 * log(D_ij / d_ij)
 
             else:
                 # they are the same wire and it is already accounted in the self impedance
@@ -328,54 +346,13 @@ def calc_y_matrix(wires: list, f=50, rho=100):
     phases_set = list(phases_set)
     phases_set.sort(reverse=True)
 
-    for phase in phases_set:
-
-        # get the list of wire indices
-        wires_indices = np.where(phases_abcn == phase)[0]
-
-        if len(wires_indices) > 1:
-
-            # get the first wire and remove it from the wires list
-            i = wires_indices[0]
-
-            # wires to keep
-            a = np.r_[i, np.where(phases_abcn != phase)[0]]
-
-            # wires to reduce
-            g = wires_indices[1:]
-
-            # column subtraction
-            for k in g:
-                p_abcn[:, k] -= p_abcn[:, i]
-
-            # row subtraction
-            for k in g:
-                p_abcn[k, :] -= p_abcn[i, :]
-
-            # kron - reduction to Zabcn
-            Zaa = p_abcn[a, :][:, a]
-            Zag = p_abcn[a, :][:, g]
-            Zga = p_abcn[g, :][:, a]
-            Zgg = p_abcn[g, :][:, g]
-
-            p_abcn = Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
-
-            # reduce the phases too
-            phases_abcn = phases_abcn[a]
-
-        else:
-            # only one wire in this phase: nothing to do
-            pass
+    # wire bundling
+    p_abcn, phases_abcn = wire_bundling(phases_set=phases_set, primitive=p_abcn, phases_vector=phases_abcn)
 
     # kron - reduction to Zabc
     a = np.where(phases_abcn != 0)[0]
     g = np.where(phases_abcn == 0)[0]
-    Zaa = p_abcn[a, :][:, a]
-    Zag = p_abcn[a, :][:, g]
-    Zga = p_abcn[g, :][:, a]
-    Zgg = p_abcn[g, :][:, g]
-
-    p_abc = Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
+    p_abc = kron_reduction(mat=p_abcn, keep=a, embed=g)
 
     # reduce the phases too
     phases_abc = phases_abcn[a]

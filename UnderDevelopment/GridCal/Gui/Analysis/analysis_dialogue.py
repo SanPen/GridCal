@@ -113,7 +113,6 @@ class GridErrorLog(QtCore.QAbstractTableModel):
                 return self.header[p_int]
 
 
-
 class GridAnalysisGUI(QtWidgets.QDialog):
 
     def __init__(self, parent=None, object_types=list(), circuit: MultiCircuit=None):
@@ -150,6 +149,9 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         self.ui.objectsListView.clicked.connect(self.object_type_selected)
 
         # Actions
+        self.ui.plotwidget.canvas.fig.clear()
+        self.ui.plotwidget.get_figure().set_facecolor('white')
+        self.ui.plotwidget.get_axis().set_facecolor('white')
         self.analyze_click()
 
     def msg(self, text, title="Warning"):
@@ -174,6 +176,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             object_type:
             fig:
         """
+
         if object_type == 'branches':
             properties = ['R', 'X', 'G', 'B', 'rate']
             types = [float, float, float, float, float]
@@ -254,6 +257,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         if fig is None:
             fig = plt.figure(figsize=(12, 6))
         fig.suptitle('Analysis of the ' + object_type, fontsize=16)
+        fig.set_facecolor('white')
 
         if n > 0:
             k = int(math.sqrt(p))
@@ -274,6 +278,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
 
                 # plot
                 axs[j] = fig.add_subplot(k, k + 1, j + 1)
+                axs[j].set_facecolor('white')
                 axs[j].hist(x, bins=100, range=r, density=None, weights=None,
                             cumulative=False, bottom=None, histtype='bar',
                             align='mid', orientation='vertical')

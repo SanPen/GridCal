@@ -861,14 +861,11 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def open_file(self):
+    def open_file_process(self):
         """
-        Open GridCal file
-        @return:
+        process to open a file without asking
+        :return:
         """
-        # declare the allowed file types
-        # files_types = "Excel (*.xlsx);;Excel 97 (*.xls);;DigSILENT (*.dgs);;MATPOWER (*.m);;PSS/e (*.raw)"
-
         files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml)"
         # call dialog to select the file
 
@@ -928,6 +925,26 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Done!')
             QtGui.QGuiApplication.processEvents()
             self.UNLOCK()
+
+    def open_file(self):
+        """
+        Open GridCal file
+        @return:
+        """
+
+        if len(self.circuit.buses) > 0:
+            quit_msg = "Are you sure you want to quit the current grid and open a new one?" \
+                       "\n If the process is cancelled the grid will remain."
+            reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+
+                self.open_file_process()
+            else:
+                pass
+        else:
+            # Just open the file
+            self.open_file_process()
 
     def save_file(self):
         """
@@ -2463,10 +2480,16 @@ class MainGUI(QMainWindow):
         self.ui.resultsTableView.setModel(None)
         self.ui.result_type_listView.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
-        self.ui.resultsPlot.clear(force=True)
+
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.tableView.setModel(None)
         self.ui.transient_events_tableView.setModel(None)
+
+        self.ui.dataStructureTableView.setModel(None)
+
+        self.ui.resultsPlot.clear(force=True)
+        self.ui.resultsPlot.canvas.fig.clear()
+        self.ui.resultsPlot.get_figure().set_facecolor('white')
 
     def update_available_results_in_the_study(self):
         """
