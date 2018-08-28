@@ -729,7 +729,12 @@ class MainGUI(QMainWindow):
         """
 
         try:
-            self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage)
+            logger = self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage)
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Open file logger', logger)
+                dlg.exec_()
+
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
@@ -760,7 +765,7 @@ class MainGUI(QMainWindow):
 
         if do_it:
             if self.circuit.graph is None:
-                self.circuit.compile()
+                self.compile()
 
             alg = dict()
             alg['circular_layout'] = nx.circular_layout
@@ -1021,7 +1026,7 @@ class MainGUI(QMainWindow):
         """
         if self.power_flow is not None:
             if self.circuit.graph is None:
-                self.circuit.compile()
+                self.compile()
 
             # declare the allowed file types
             files_types = "Excel file (*.xlsx)"
@@ -1049,7 +1054,7 @@ class MainGUI(QMainWindow):
         """
         if self.circuit.time_profile is not None:
             if self.circuit.graph is None:
-                self.circuit.compile()
+                self.compile()
 
             # declare the allowed file types
             files_types = "Excel file (*.xlsx)"
@@ -1077,7 +1082,7 @@ class MainGUI(QMainWindow):
         """
 
         if self.circuit.graph is None:
-            self.circuit.compile()
+            self.compile()
 
         # declare the allowed file types
         files_types = "Excel file (*.xlsx)"
@@ -1310,7 +1315,7 @@ class MainGUI(QMainWindow):
 
         if i > -1:
             if self.circuit.graph is None:
-                self.circuit.compile()
+                self.compile()
 
             elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
 

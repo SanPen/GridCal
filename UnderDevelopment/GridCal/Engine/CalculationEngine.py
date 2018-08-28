@@ -3033,7 +3033,7 @@ class Circuit:
         self.buses = list()
         self.bus_original_idx = list()
 
-    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
+    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False, logger=list()):
         """
         Compile the circuit into all the needed arrays:
             - Ybus matrix
@@ -3209,13 +3209,15 @@ class Circuit:
                 power_flow_input.branch_rates[i] = self.branches[i].rate
             else:
                 power_flow_input.branch_rates[i] = 1e-6
-                warn('The branch ' + str(i) + ' has no rate. Setting 1e-6 to avoid zero division.')
+                logger.append('The branch ' + str(i) + ' has no rate. Setting 1e-6 to avoid zero division.')
 
         # Assign the power flow inputs  button
         power_flow_input.compile()
         self.power_flow_input = power_flow_input
         self.time_series_input = time_series_input
         self.monte_carlo_input = monte_carlo_input
+
+        return logger
 
     def set_at(self, t, mc=False):
         """
@@ -4021,6 +4023,8 @@ class MultiCircuit(Circuit):
         @return:
         """
 
+        logger = list()
+
         n = len(self.buses)
         m = len(self.branches)
         self.power_flow_input = PowerFlowInput(n, m)
@@ -4081,7 +4085,7 @@ class MultiCircuit(Circuit):
                     circuit.branches.append(branch)
                     circuit.branch_original_idx.append(i)
 
-            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals, dispatch_storage=dispatch_storage)
+            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals, dispatch_storage=dispatch_storage, logger=logger)
 
             # initialize the multi circuit power flow inputs (for later use in displays and such)
             self.power_flow_input.set_from(circuit.power_flow_input,
@@ -4100,7 +4104,7 @@ class MultiCircuit(Circuit):
 
             isl_idx += 1
 
-        pass
+        return logger
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
