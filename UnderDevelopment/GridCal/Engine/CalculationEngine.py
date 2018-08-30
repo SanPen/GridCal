@@ -48,6 +48,8 @@ from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
 from GridCal.Engine.Numerical.DynamicModels import DynamicModels, dynamic_simulation
 
+from GridCal.Engine.object_types import *
+
 ########################################################################################################################
 # Set Matplotlib global parameters
 ########################################################################################################################
@@ -647,7 +649,7 @@ class ReliabilityDevice:
 class Bus:
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
-                 active=True, is_slack=False, area='Defualt', zone='Default', substation='Default'):
+                 active=True, is_slack=False, area='Default', zone='Default', substation='Default'):
         """
         Bus  constructor
         :param name: name of the bus
@@ -1188,142 +1190,6 @@ class Bus:
         return self.name
 
 
-class TransformerType:
-
-    def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
-                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1, name='TransformerType'):
-        """
-        Constructor
-        @param HV_nominal_voltage: High voltage side nominal voltage (kV)
-        @param LV_nominal_voltage: Low voltage side nominal voltage (kV)
-        @param Nominal_power: Transformer nominal power (MVA)
-        @param Copper_losses: Copper losses (kW)
-        @param Iron_losses: Iron Losses (kW)
-        @param No_load_current: No load current (%)
-        @param Short_circuit_voltage: Short circuit voltage (%)
-        @param GR_hv1:
-        @param GX_hv1:
-        """
-
-        self.name = name
-
-        self.type_name = 'TransformerType'
-
-        self.properties_with_profile = None
-
-        self.HV_nominal_voltage = HV_nominal_voltage
-
-        self.LV_nominal_voltage = LV_nominal_voltage
-
-        self.Nominal_power = Nominal_power
-
-        self.Copper_losses = Copper_losses
-
-        self.Iron_losses = Iron_losses
-
-        self.No_load_current = No_load_current
-
-        self.Short_circuit_voltage = Short_circuit_voltage
-
-        self.GR_hv1 = GR_hv1
-
-        self.GX_hv1 = GX_hv1
-
-        self.edit_headers = ['name',
-                             'HV_nominal_voltage',
-                             'LV_nominal_voltage',
-                             'Nominal_power',
-                             'Copper_losses',
-                             'Iron_losses',
-                             'No_load_current',
-                             'Short_circuit_voltage']
-
-        self.units = ['',
-                      'kV',
-                      'kV',
-                      'MVA',
-                      'kW',
-                      'kW',
-                      '%',
-                      '%']
-
-        self.non_editable_indices = list()
-
-        self.edit_types = {'name': str,
-                           'HV_nominal_voltage': float,
-                           'LV_nominal_voltage': float,
-                           'Nominal_power': float,
-                           'Copper_losses': float,
-                           'Iron_losses': float,
-                           'No_load_current': float,
-                           'Short_circuit_voltage': float}
-
-    def get_impedances(self):
-        """
-        Compute the branch parameters of a transformer from the short circuit
-        test values
-        @return:
-            leakage_impedance: Series impedance
-            magnetizing_impedance: Shunt impedance
-        """
-        Vhv = self.HV_nominal_voltage
-
-        Vlv = self.LV_nominal_voltage
-
-        Sn = self.Nominal_power
-
-        Pcu = self.Copper_losses
-
-        Pfe = self.Iron_losses
-
-        I0 = self.No_load_current
-
-        Vsc = self.Short_circuit_voltage
-
-        # GRhv = self.GR_hv1
-        # GXhv = self.GX_hv1
-
-        # Zn_hv = (Vhv ** 2) / Sn
-        # Zn_lv = (Vlv ** 2) / Sn
-
-        zsc = Vsc / 100.0
-        rsc = (Pcu / 1000.0) / Sn
-        # xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
-        xsc = sqrt(zsc ** 2 - rsc ** 2)
-
-        # rcu_hv = rsc * self.GR_hv1
-        # rcu_lv = rsc * (1 - self.GR_hv1)
-        # xs_hv = xsc * self.GX_hv1
-        # xs_lv = xsc * (1 - self.GX_hv1)
-
-        if Pfe > 0.0 and I0 > 0.0:
-            rfe = Sn / (Pfe / 1000.0)
-
-            zm = 1.0 / (I0 / 100.0)
-
-            xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
-
-        else:
-
-            rfe = 0.0
-            xm = 0.0
-
-        # series impedance
-        z_series = rsc + 1j * xsc
-
-        # y_series = 1.0 / z_series
-
-        # shunt impedance
-        zl = rfe + 1j * xm
-
-        # y_shunt = 1.0 / zl
-
-        return z_series, zl
-
-    def __str__(self):
-        return self.name
-
-
 class TapChanger:
 
     def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
@@ -1387,7 +1253,7 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line, length=1):
+                 branch_type: BranchType=BranchType.Line, length=1, template_type=None):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -1402,6 +1268,7 @@ class Branch(ReliabilityDevice):
         @param mttr: Mean time to repair
         @param branch_type: Is the branch a transformer?
         @param length: eventual line length in km
+        @param template_type: template from the catalogue (Tower, TransformerType, etc...)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1441,19 +1308,19 @@ class Branch(ReliabilityDevice):
 
         self.rate = rate
 
-        # self.mttf = mttf
-
-        # self.mttr = mttr
-
+        # Branch type: Transformer, Line, Branch, etc...
         self.branch_type = branch_type
+
+        # template from the catalogue (Tower, TransformerType, etc...)
+        self.template_type = template_type
 
         self.type_obj = None
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'tap_module', 'angle', 'branch_type']
+                             'length', 'tap_module', 'angle', 'branch_type', 'template_type']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'p.u.', 'rad', '']
+                      'km', 'p.u.', 'rad', '', '']
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
@@ -1475,9 +1342,11 @@ class Branch(ReliabilityDevice):
                            'X': float,
                            'G': float,
                            'B': float,
+                           'length': float,
                            'tap_module': float,
                            'angle': float,
-                           'branch_type': BranchType}
+                           'branch_type': BranchType,
+                           'template_type': list}
 
     def branch_type_converter(self, val_string):
 
@@ -1511,7 +1380,9 @@ class Branch(ReliabilityDevice):
                    active=self.active,
                    mttf=self.mttf,
                    mttr=self.mttr,
-                   branch_type=self.branch_type)
+                   branch_type=self.branch_type,
+                   length=self.length,
+                   template_type=self.template_type)
 
         b.measurements = self.measurements
 
@@ -1621,14 +1492,25 @@ class Branch(ReliabilityDevice):
 
         self.branch_type = True
 
+    def apply_overhead_line(self, obj: Tower):
+
+        pass
+
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
         :return:
         """
         conv = BranchTypeConverter(None)
+
+        if self.template_type is not None:
+            template_name = self.template_type.name
+        else:
+            template_name = None
+
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.tap_module, self.angle, conv.inv_conv[self.branch_type]]
+                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle,
+                conv.inv_conv[self.branch_type], template_name]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1651,7 +1533,8 @@ class Branch(ReliabilityDevice):
                 'b': self.B,
                 'tap_module': self.tap_module,
                 'tap_angle': self.angle,
-                'branch_type': self.branch_type}
+                'branch_type': self.branch_type,
+                'template_type': self.template_type}
 
     def __str__(self):
         return self.name

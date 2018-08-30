@@ -308,6 +308,143 @@ class Tower(QtCore.QAbstractTableModel):
 
         return True
 
+
+class TransformerType:
+
+    def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
+                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1, name='TransformerType'):
+        """
+        Constructor
+        @param HV_nominal_voltage: High voltage side nominal voltage (kV)
+        @param LV_nominal_voltage: Low voltage side nominal voltage (kV)
+        @param Nominal_power: Transformer nominal power (MVA)
+        @param Copper_losses: Copper losses (kW)
+        @param Iron_losses: Iron Losses (kW)
+        @param No_load_current: No load current (%)
+        @param Short_circuit_voltage: Short circuit voltage (%)
+        @param GR_hv1:
+        @param GX_hv1:
+        """
+
+        self.name = name
+
+        self.type_name = 'TransformerType'
+
+        self.properties_with_profile = None
+
+        self.HV_nominal_voltage = HV_nominal_voltage
+
+        self.LV_nominal_voltage = LV_nominal_voltage
+
+        self.Nominal_power = Nominal_power
+
+        self.Copper_losses = Copper_losses
+
+        self.Iron_losses = Iron_losses
+
+        self.No_load_current = No_load_current
+
+        self.Short_circuit_voltage = Short_circuit_voltage
+
+        self.GR_hv1 = GR_hv1
+
+        self.GX_hv1 = GX_hv1
+
+        self.edit_headers = ['name',
+                             'HV_nominal_voltage',
+                             'LV_nominal_voltage',
+                             'Nominal_power',
+                             'Copper_losses',
+                             'Iron_losses',
+                             'No_load_current',
+                             'Short_circuit_voltage']
+
+        self.units = ['',
+                      'kV',
+                      'kV',
+                      'MVA',
+                      'kW',
+                      'kW',
+                      '%',
+                      '%']
+
+        self.non_editable_indices = list()
+
+        self.edit_types = {'name': str,
+                           'HV_nominal_voltage': float,
+                           'LV_nominal_voltage': float,
+                           'Nominal_power': float,
+                           'Copper_losses': float,
+                           'Iron_losses': float,
+                           'No_load_current': float,
+                           'Short_circuit_voltage': float}
+
+    def get_impedances(self):
+        """
+        Compute the branch parameters of a transformer from the short circuit
+        test values
+        @return:
+            leakage_impedance: Series impedance
+            magnetizing_impedance: Shunt impedance
+        """
+        Vhv = self.HV_nominal_voltage
+
+        Vlv = self.LV_nominal_voltage
+
+        Sn = self.Nominal_power
+
+        Pcu = self.Copper_losses
+
+        Pfe = self.Iron_losses
+
+        I0 = self.No_load_current
+
+        Vsc = self.Short_circuit_voltage
+
+        # GRhv = self.GR_hv1
+        # GXhv = self.GX_hv1
+
+        # Zn_hv = (Vhv ** 2) / Sn
+        # Zn_lv = (Vlv ** 2) / Sn
+
+        zsc = Vsc / 100.0
+        rsc = (Pcu / 1000.0) / Sn
+        # xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
+        xsc = sqrt(zsc ** 2 - rsc ** 2)
+
+        # rcu_hv = rsc * self.GR_hv1
+        # rcu_lv = rsc * (1 - self.GR_hv1)
+        # xs_hv = xsc * self.GX_hv1
+        # xs_lv = xsc * (1 - self.GX_hv1)
+
+        if Pfe > 0.0 and I0 > 0.0:
+            rfe = Sn / (Pfe / 1000.0)
+
+            zm = 1.0 / (I0 / 100.0)
+
+            xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
+
+        else:
+
+            rfe = 0.0
+            xm = 0.0
+
+        # series impedance
+        z_series = rsc + 1j * xsc
+
+        # y_series = 1.0 / z_series
+
+        # shunt impedance
+        zl = rfe + 1j * xm
+
+        # y_shunt = 1.0 / zl
+
+        return z_series, zl
+
+    def __str__(self):
+        return self.name
+
+
 def z_ij_EMTP(n, x_i, x_j, h_i, h_j, D_ij, f, rho):
 
     sgn = np.zeros(n)
