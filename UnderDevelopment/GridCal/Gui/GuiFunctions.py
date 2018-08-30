@@ -284,8 +284,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with the properties of objects
     """
-    def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False, non_editable_indices=list(),
-                 transposed=False):
+    def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False,
+                 non_editable_indices=list(),  transposed=False, check_unique=[]):
         """
 
         :param objects: list of objects associated to the editor
@@ -311,6 +311,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         self.editable = editable
 
         self.non_editable_indices = non_editable_indices
+
+        self.check_unique = check_unique
 
         self.r = len(self.objects)
 
@@ -363,6 +365,17 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                     self.non_editable_indices.append(i)
             else:
                 pass
+
+    def update(self):
+        """
+        Add wire
+        :param wire:
+        :return:
+        """
+        row = self.rowCount()
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # whatever code
+        self.endInsertRows()
 
     def flags(self, index):
         """
@@ -458,14 +471,35 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         tpe = self.attribute_types[self.attributes[attr_idx]]
 
-        if attr_idx not in self.non_editable_indices:
-            if tpe is BranchType:
-                conv = BranchTypeConverter(None)
-                setattr(self.objects[obj_idx], self.attributes[attr_idx], conv.conv[value])
-            else:
-                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+        # check taken values
+        if self.attributes[attr_idx] in self.check_unique:
+            taken = self.attr_taken(self.attributes[attr_idx], value)
         else:
-            pass  # the column cannot be edited
+            taken = False
+
+        if not taken:
+            if attr_idx not in self.non_editable_indices:
+                if tpe is BranchType:
+                    conv = BranchTypeConverter(None)
+
+                    setattr(self.objects[obj_idx], self.attributes[attr_idx], conv.conv[value])
+                else:
+
+                    setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            else:
+                pass  # the column cannot be edited
+
+    def attr_taken(self, attr, val):
+        """
+        Checks if the attribute value is taken
+        :param attr:
+        :param val:
+        :return:
+        """
+        for obj in self.objects:
+            if val == getattr(obj, attr):
+                return True
+        return False
 
     def headerData(self, p_int, orientation, role):
         """

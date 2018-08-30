@@ -1,5 +1,21 @@
-from numpy import pi, cos, sin, log, arccos, sqrt, exp
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+from numpy import pi, cos, sin, log, arccos, sqrt, exp
+from matplotlib import pyplot as plt
+from PyQt5 import QtCore
 
 """
 Equations source:
@@ -33,13 +49,264 @@ class Wire:
         self.gmr = gmr
         self.phase = phase
 
+        self.edit_headers = ['name', 'r', 'x', 'gmr']
+        self.units = ['', 'Ohm/km', 'Ohm/km', 'm']
+        self.non_editable_indices = list()
+        self.edit_types = {'name': str,
+                           'r': float,
+                           'x': float,
+                           'gmr': float}
+
     def copy(self):
         """
         Copy of the wire
         :return:
         """
-        return Wire(self.name, self.x, self.y, self.gmr, self.r, self.phase)
+        return Wire(self.name, self.xpos, self.ypos, self.gmr, self.r, self.x, self.phase)
 
+
+class WiresCollection(QtCore.QAbstractTableModel):
+
+    def __init__(self, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.header = ['Name', 'R (Ohm/km)', 'GMR (m)']
+
+        self.index_prop = {0: 'name', 1: 'r', 2: 'gmr'}
+
+        self.converter = {0: str, 1: float, 2: float}
+
+        self.editable = [True, True, True]
+
+        self.wires = list()
+
+    def add(self, wire: Wire):
+        """
+        Add wire
+        :param wire:
+        :return:
+        """
+        row = len(self.wires)
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        self.wires.append(wire)
+        self.endInsertRows()
+
+    def delete(self, index):
+        """
+        Delete wire
+        :param index:
+        :return:
+        """
+        row = len(self.wires)
+        self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
+        self.wires.pop(index)
+        self.endRemoveRows()
+
+    def is_used(self, name):
+        """
+        checks if the name is used
+        """
+        n = len(self.wires)
+        for i in range(n-1, -1, -1):
+            if self.wires[i].name == name:
+                return True
+        return False
+
+    def flags(self, index):
+        if self.editable[index.column()]:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self.wires)
+
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return len(self.header)
+
+    def parent(self, index=None):
+        return QtCore.QModelIndex()
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+                val = getattr(self.wires[index.row()], self.index_prop[index.column()])
+                return str(val)
+        return None
+
+    def headerData(self, p_int, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.header[p_int]
+
+    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        """
+        if self.editable[index.column()]:
+            wire = self.wires[index.row()]
+            attr = self.index_prop[index.column()]
+
+            if attr == 'name':
+                if self.is_used(value):
+                    pass
+                else:
+                    setattr(wire, attr, self.converter[index.column()](value))
+            else:
+                setattr(wire, attr, self.converter[index.column()](value))
+
+        return True
+
+
+class Tower(QtCore.QAbstractTableModel):
+
+    def __init__(self, parent=None, edit_callback=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        # properties
+        self.name = 'Tower'
+        self.earth_resistivity = 100
+        self.frequency = 50
+        self.seq_resistance = complex(0, 0)
+        self.seq_admittance = complex(0, 0)
+
+        # other properties
+        self.wires = list()
+        self.edit_callback = edit_callback
+
+        # wire properties for edition
+        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', 'Ri (Ohm/km)', 'Xi (Ohm/km)', 'GMR (m)']
+
+        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'r', 5: 'x', 6: 'gmr'}
+
+        self.converter = {0: str, 1: float, 2: float, 3: int, 4: float, 5: float, 6: float}
+
+        self.editable_wire = [False, True, True, True, True, True, True]
+
+        # properties for the object model
+        self.edit_headers = ['name', 'earth_resistivity', 'frequency', 'seq_resistance', 'seq_admittance']
+        self.units = ['', 'Ohm/m3', 'Hz', 'Ohm/km', 'S/km']
+        self.non_editable_indices = [3, 4]
+        self.edit_types = {'name': str,
+                           'earth_resistivity': float,
+                           'frequency': float,
+                           'seq_resistance': complex,
+                           'seq_admittance': complex}
+
+    def add(self, wire: Wire):
+        """
+        Add wire
+        :param wire:
+        :return:
+        """
+        row = self.rowCount()
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        self.wires.append(wire)
+        self.endInsertRows()
+
+    def delete(self, index):
+        """
+        Delete wire
+        :param index:
+        :return:
+        """
+        row = self.rowCount()
+        self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
+        self.wires.pop(index)
+        self.endRemoveRows()
+
+    def plot(self, ax=None):
+        """
+        Plot wires position
+        :param ax: Axis object
+        """
+        if ax is None:
+            fig = plt.Figure(figsize=(12, 6))
+            ax = fig.add_subplot(1, 1, 1)
+
+        n = len(self.wires)
+        x = np.zeros(n)
+        y = np.zeros(n)
+        for i, wire in enumerate(self.wires):
+            x[i] = wire.xpos
+            y[i] = wire.ypos
+
+        ax.plot(x, y, '.')
+        ax.set_title('Tower wire position')
+        ax.set_xlabel('m')
+        ax.set_ylabel('m')
+        ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
+        ax.set_ylim([0, np.max(y) + 1])
+        ax.patch.set_facecolor('white')
+        ax.grid(False)
+        ax.grid(which='major', axis='y', linestyle='--')
+
+    def delete_by_name(self, wire: Wire):
+        n = len(self.wires)
+        for i in range(n-1, -1, -1):
+            if self.wires[i].name == wire.name:
+                self.delete(i)
+
+    def is_used(self, wire: Wire):
+        n = len(self.wires)
+        for i in range(n-1, -1, -1):
+            if self.wires[i].name == wire.name:
+                return True
+
+    def flags(self, index):
+        if self.editable_wire[index.column()]:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=None):
+        return len(self.wires)
+
+    def columnCount(self, parent=None):
+        return len(self.header)
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+                val = getattr(self.wires[index.row()], self.index_prop[index.column()])
+                return str(val)
+        return None
+
+    def headerData(self, p_int, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.header[p_int]
+
+    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        """
+        if self.editable_wire[index.column()]:
+            wire = self.wires[index.row()]
+            attr = self.index_prop[index.column()]
+
+            try:
+                val = self.converter[index.column()](value)
+            except:
+                val = 0
+
+            # correct the phase to the correct range
+            if attr == 'phase':
+                if val < 0 or val > 3:
+                    val = 0
+
+            setattr(wire, attr, val)
+
+            if self.edit_callback is not None:
+                self.edit_callback()
+
+        return True
 
 def z_ij_EMTP(n, x_i, x_j, h_i, h_j, D_ij, f, rho):
 
@@ -259,7 +526,7 @@ def calc_z_matrix(wires: list, f=50, rho=100):
                 # D_ij = get_D_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
 
                 z_prim[i, j] = z_ij(x_i=wire_i.xpos, x_j=wire_j.xpos,
-                                    h_i=wire_i.ypos, h_j=wire_j.ypos,
+                                    h_i=wire_i.ypos + 1e-12, h_j=wire_j.ypos + 1e-12,
                                     d_ij=d_ij, f=f, rho=rho)
             else:
                 # they are the same wire and it is already accounted in the self impedance
@@ -325,9 +592,9 @@ def calc_y_matrix(wires: list, f=50, rho=100):
 
             if i != j:
                 #  mutual impedance
-                d_ij = get_d_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
+                d_ij = get_d_ij(wire_i.xpos, wire_i.ypos + 1e-12, wire_j.xpos, wire_j.ypos + 1e-12)
 
-                D_ij = get_D_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
+                D_ij = get_D_ij(wire_i.xpos, wire_i.ypos + 1e-12, wire_j.xpos, wire_j.ypos + 1e-12)
 
                 p_prim[i, j] = one_two_pi_e0 * log(D_ij / d_ij)
 

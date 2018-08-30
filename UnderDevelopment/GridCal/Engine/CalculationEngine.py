@@ -64,12 +64,12 @@ RIGHT = 0.98
 TOP = 0.8
 BOTTOM = 0.2
 plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
-plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
-plt.rc('axes', labelsize=SMALL_SIZE)  # fontsize of the x and y labels
-plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
-plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
+plt.rc('axes', titlesize=SMALL_SIZE)  # font size of the axes title
+plt.rc('axes', labelsize=SMALL_SIZE)  # font size of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)  # font size of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)  # font size of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)  # legend font size
+plt.rc('figure', titlesize=MEDIUM_SIZE)  # font size of the figure title
 
 
 ########################################################################################################################
@@ -1229,6 +1229,35 @@ class TransformerType:
 
         self.GX_hv1 = GX_hv1
 
+        self.edit_headers = ['name',
+                             'HV_nominal_voltage',
+                             'LV_nominal_voltage',
+                             'Nominal_power',
+                             'Copper_losses',
+                             'Iron_losses',
+                             'No_load_current',
+                             'Short_circuit_voltage']
+
+        self.units = ['',
+                      'kV',
+                      'kV',
+                      'MVA',
+                      'kW',
+                      'kW',
+                      '%',
+                      '%']
+
+        self.non_editable_indices = list()
+
+        self.edit_types = {'name': str,
+                           'HV_nominal_voltage': float,
+                           'LV_nominal_voltage': float,
+                           'Nominal_power': float,
+                           'Copper_losses': float,
+                           'Iron_losses': float,
+                           'No_load_current': float,
+                           'Short_circuit_voltage': float}
+
     def get_impedances(self):
         """
         Compute the branch parameters of a transformer from the short circuit
@@ -1358,20 +1387,21 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line):
+                 branch_type: BranchType=BranchType.Line, length=1):
         """
         Branch model constructor
         @param bus_from: Bus Object
         @param bus_to: Bus Object
         @param name: name of the branch
-        @param zserie: branch series impedance (complex)
-        @param yshunt: branch shunt admittance (complex)
+        @param zserie: total branch series impedance in per unit (complex)
+        @param yshunt: total branch shunt admittance in per unit (complex)
         @param rate: branch rate in MVA
         @param tap: tap module
         @param shift_angle: tap shift angle in radians
         @param mttf: Mean time to failure
         @param mttr: Mean time to repair
         @param branch_type: Is the branch a transformer?
+        @param length: eventual line length in km
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1390,6 +1420,10 @@ class Branch(ReliabilityDevice):
         # List of measurements
         self.measurements = list()
 
+        # line length in km
+        self.length = length
+
+        # total impedance and admittance in p.u.
         self.R = r
         self.X = x
         self.G = g
@@ -1559,22 +1593,10 @@ class Branch(ReliabilityDevice):
 
         # B2 for FDPF (with shunts, only the tap module)
         b2 = b1 + self.B
-        B2[f, f] -= b2 / (tap * conj(tap))
-        B2[f, t] -= b1 / conj(tap)
-        B2[t, f] -= b1 / tap
+        B2[f, f] -= (b2 / (tap * conj(tap))).real
+        B2[f, t] -= (b1 / conj(tap)).real
+        B2[t, f] -= (b1 / tap).real
         B2[t, t] -= b2
-
-        # # B1 for FDPF (no shunts, no resistance, no tap module)
-        # B1[f, f] -= Yff.imag
-        # B1[f, t] -= Yft.imag
-        # B1[t, f] -= Ytf.imag
-        # B1[t, t] -= Ytt.imag
-        #
-        # # B2 for FDPF (with shunts, only the tap module)
-        # B2[f, f] -= Yff.imag
-        # B2[f, t] -= Yft.imag
-        # B2[t, f] -= Ytf.imag
-        # B2[t, t] -= Ytt.imag
 
         return f, t
 
@@ -2997,6 +3019,15 @@ class Circuit:
 
         # Dictionary relating the bus object to its index. Updated upon compilation
         self.buses_dict = dict()
+
+        # List of overhead line objects
+        self.overhead_line_types = list()
+
+        # list of wire types
+        self.wire_types = list()
+
+        # List of transformer types
+        self.transformer_types = list()
 
         # Object with the necessary inputs for a power flow study
         self.power_flow_input = None
@@ -4974,7 +5005,10 @@ class PowerFlowResults:
 
         self.buses_useful_for_storage = None
 
-        self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses']
+        self.available_results = ['Bus voltage',
+                                  # 'Bus voltage (polar)',
+                                  'Branch power', 'Branch current',
+                                  'Branch_loading', 'Branch losses']
 
         self.plot_bars_limit = 100
 
@@ -5150,34 +5184,47 @@ class PowerFlowResults:
             labels = names[indices]
             y_label = ''
             title = ''
+            polar = False
             if result_type == 'Bus voltage':
                 y = self.voltage[indices]
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
+                polar = False
+
+            if result_type == 'Bus voltage (polar)':
+                y = self.voltage[indices]
+                y_label = '(p.u.)'
+                title = 'Bus voltage '
+                polar = True
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices]
                 y_label = '(MVA)'
                 title = 'Branch power '
+                polar = False
 
             elif result_type == 'Branch current':
                 y = self.Ibranch[indices]
                 y_label = '(p.u.)'
                 title = 'Branch current '
+                polar = False
 
             elif result_type == 'Branch_loading':
                 y = self.loading[indices] * 100
                 y_label = '(%)'
                 title = 'Branch loading '
+                polar = False
 
             elif result_type == 'Branch losses':
                 y = self.losses[indices]
                 y_label = '(MVA)'
                 title = 'Branch losses '
+                polar = False
 
             else:
                 pass
 
+            # plot
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])
             if len(df.columns) < self.plot_bars_limit:
                 df.abs().plot(ax=ax, kind='bar')

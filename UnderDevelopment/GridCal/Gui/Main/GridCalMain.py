@@ -17,8 +17,10 @@ from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
+from GridCal.Engine.object_types import Tower, Wire
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.Analysis.analysis_dialogue import GridAnalysisGUI
+from GridCal.Gui.LineBuilder.line_builder_dialogue import TowerBuilderGUI
 
 import os.path
 import platform
@@ -265,6 +267,8 @@ class MainGUI(QMainWindow):
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
+        self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
+
         pfo = PowerFlowInput(1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
@@ -273,6 +277,7 @@ class MainGUI(QMainWindow):
         self.grid_editor.setStretchFactor(1, 10)
         self.ui.splitter_8.setStretchFactor(1, 15)
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
+        self.ui.catalogueSplitter.setStretchFactor(1, 15)
 
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
@@ -411,6 +416,10 @@ class MainGUI(QMainWindow):
 
         self.ui.analyze_objects_pushButton.clicked.connect(self.display_grid_analysis)
 
+        self.ui.catalogue_add_pushButton.clicked.connect(self.add_to_catalogue)
+        self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
+        self.ui.catalogue_delete_pushButton.clicked.connect(self.delete_from_catalogue)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -428,6 +437,8 @@ class MainGUI(QMainWindow):
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
+
+        self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -957,6 +968,7 @@ class MainGUI(QMainWindow):
         """
         # declare the allowed file types
         files_types = "Excel (*.xlsx);;CIM (*.xml);;JSON (*.json)"
+
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -978,7 +990,6 @@ class MainGUI(QMainWindow):
             extension['Excel (*.xlsx)'] = '.xlsx'
             extension['CIM (*.xml)'] = '.xml'
             extension['JSON (*.json)'] = '.json'
-            # extension['Numpy Case (*.npz)'] = '.npz'
 
             if file_extension == '':
                 filename = name + extension[type_selected]
@@ -2493,7 +2504,7 @@ class MainGUI(QMainWindow):
         self.ui.dataStructureTableView.setModel(None)
 
         self.ui.resultsPlot.clear(force=True)
-        self.ui.resultsPlot.canvas.fig.clear()
+        # self.ui.resultsPlot.canvas.fig.clear()
         self.ui.resultsPlot.get_figure().set_facecolor('white')
 
     def update_available_results_in_the_study(self):
@@ -2539,7 +2550,7 @@ class MainGUI(QMainWindow):
             ax = self.ui.resultsPlot.get_axis()
 
             self.results_df = None
-            res_mdl = None
+
             if study == 'Power Flow':
                 self.results_df = self.power_flow.results.plot(result_type=study_type,
                                                                ax=ax, indices=indices, names=names)
@@ -2577,9 +2588,8 @@ class MainGUI(QMainWindow):
                                                                         ax=ax, indices=indices, names=names)
 
             if self.results_df is not None:
+                # set the table model
                 res_mdl = PandasModel(self.results_df)
-
-                # set hte table model
                 self.ui.resultsTableView.setModel(res_mdl)
 
             # refresh the plot display (LEFT, RIGHT, TOP, BOTTOM are defined in CalculationEngine.py)
@@ -2721,6 +2731,178 @@ class MainGUI(QMainWindow):
             t1 = self.circuit.time_profile[start]
             t2 = self.circuit.time_profile[end]
             self.ui.profile_label.setText(str(t1) + '->' + str(t2))
+
+    def add_to_catalogue(self):
+        """
+        Add object to the catalogue
+        :return:
+        """
+        print('Add')
+        something_happened = False
+        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
+
+            # get the object type
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+
+            if tpe == 'Overhead lines':
+
+                obj = Tower()
+                obj.name = 'Tower_' + str(len(self.circuit.overhead_line_types))
+                self.circuit.overhead_line_types.append(obj)
+                something_happened = True
+
+            elif tpe == 'Wires':
+
+                name = 'Wire_' + str(len(self.circuit.wire_types))
+                obj = Wire(name=name, xpos=0, ypos=0, gmr=0.01, r=0.01, x=0, phase=1)
+                self.circuit.wire_types.append(obj)
+                something_happened = True
+
+            elif tpe == 'Transformers':
+
+                name = 'XFormer_type_' + str(len(self.circuit.transformer_types))
+                obj = TransformerType(HV_nominal_voltage=10, LV_nominal_voltage=0.4, Nominal_power=2,
+                                      Copper_losses=0.8, Iron_losses=0.1, No_load_current=0.1, Short_circuit_voltage=0.1,
+                                      GR_hv1=0.5, GX_hv1=0.5, name=name)
+                self.circuit.transformer_types.append(obj)
+                something_happened = True
+
+            else:
+                pass
+
+        else:
+            pass
+
+        if something_happened:
+            self.catalogue_element_selected()
+
+    def edit_from_catalogue(self):
+        """
+        Edit catalogue element
+        """
+        something_happened = False
+        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
+
+            # get the object type
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+
+            # get the selected index
+            idx = self.ui.catalogueTableView.currentIndex().row()
+
+            if idx > -1:
+                if tpe == 'Overhead lines':
+
+                    # pick the object
+                    tower = self.circuit.overhead_line_types[idx]
+
+                    # launch editor
+                    dialogue = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
+                    dialogue.resize(1.81 * 600.0, 600.0)
+                    dialogue.exec()
+
+                    something_happened = True
+
+                elif tpe == 'Wires':
+
+                    self.msg('No editor available.\nThe values can be changes from within the table.', 'Wires')
+
+                elif tpe == 'Transformers':
+
+                    self.msg('No editor available.\nThe values can be changes from within the table.', 'Transformers')
+
+                else:
+                    pass
+            else:
+                self.msg('Select an element from the table')
+        else:
+            self.msg('Select a catalogue element and then a catalogue object')
+
+        if something_happened:
+            self.catalogue_element_selected()
+
+    def delete_from_catalogue(self):
+        """
+        Delete element from catalogue
+        :return:
+        """
+        something_happened = False
+        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
+
+            # get the object type
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+
+            # get the selected index
+            idx = self.ui.catalogueTableView.currentIndex().row()
+
+            if idx > -1:
+                if tpe == 'Overhead lines':
+
+                    self.circuit.overhead_line_types.pop(idx)
+                    something_happened = True
+
+                elif tpe == 'Wires':
+
+                    self.circuit.wire_types.pop(idx)
+                    something_happened = True
+
+                elif tpe == 'Transformers':
+
+                    self.circuit.transformer_types.pop(idx)
+                    something_happened = True
+
+                else:
+                    pass
+            else:
+                self.msg('Select an element from the table')
+        else:
+            self.msg('Select a catalogue element and then a catalogue object')
+
+        if something_happened:
+            self.catalogue_element_selected()
+
+    def catalogue_element_selected(self):
+        """
+        Catalogue element clicked
+        """
+
+        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
+
+            # get the clicked type
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+
+            if tpe == 'Overhead lines':
+                elm = Tower()
+                mdl = ObjectsModel(self.circuit.overhead_line_types,
+                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   parent=self.ui.catalogueTableView, editable=True,
+                                   non_editable_indices=elm.non_editable_indices,
+                                   check_unique=['name'])
+            elif tpe == 'Wires':
+                elm = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0)
+                mdl = ObjectsModel(self.circuit.wire_types,
+                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   parent=self.ui.catalogueTableView, editable=True,
+                                   non_editable_indices=elm.non_editable_indices,
+                                   check_unique=['name'])
+
+            elif tpe == 'Transformers':
+                elm = TransformerType(HV_nominal_voltage=10, LV_nominal_voltage=10, Nominal_power=10,
+                                      Copper_losses=0, Iron_losses=0, No_load_current=0.1, Short_circuit_voltage=0.1,
+                                      GR_hv1=0.5, GX_hv1=0.5)
+                mdl = ObjectsModel(self.circuit.transformer_types,
+                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   parent=self.ui.catalogueTableView, editable=True,
+                                   non_editable_indices=elm.non_editable_indices,
+                                   check_unique=['name'])
+
+            else:
+                mdl = None
+
+            # Set model
+            self.ui.catalogueTableView.setModel(mdl)
+
+        else:
+            pass
 
 
 def run():
