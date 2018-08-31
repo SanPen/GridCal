@@ -1,42 +1,6 @@
 from PyQt5.QtWidgets import QTreeView, QFileSystemModel, QApplication
-from PyQt5 import QtCore, QtWidgets, QtGui, Qt
+from PyQt5 import QtCore, QtWidgets, QtGui
 import os
-
-
-class GroupNode(object):
-    """A group node in the tree of databases model."""
-
-    def __init__(self, parent, name):
-        """Create a group node for the tree of databases model."""
-
-        self.children = []
-        self.parent = parent
-        self.name = name
-
-
-    def __len__(self):
-        return len(self.children)
-
-
-    def insertChild(self, child, position=0):
-        """Insert a child in a group node."""
-        self.children.insert(position, child)
-
-
-    def childAtRow(self, row):
-        """The row-th child of this node."""
-
-        assert 0 <= row <= len(self.children)
-        return self.children[row]
-
-
-    def row(self):
-        """The position of this node in the parent's list of children."""
-
-        if self.parent:
-            return self.parent.children.index(self)
-
-        return 0
 
 
 class Main(QTreeView):

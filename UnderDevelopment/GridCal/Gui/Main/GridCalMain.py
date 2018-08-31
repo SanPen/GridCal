@@ -146,7 +146,8 @@ class MainGUI(QMainWindow):
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
         self.grid_editor.setStretchFactor(1, 10)
-        self.ui.splitter_8.setStretchFactor(1, 15)
+        self.ui.dataStructuresSplitter.setStretchFactor(1, 15)
+        self.ui.templatesSplitter.setStretchFactor(15, 1)
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
         self.ui.catalogueSplitter.setStretchFactor(1, 15)
 
@@ -291,6 +292,10 @@ class MainGUI(QMainWindow):
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
         self.ui.catalogue_delete_pushButton.clicked.connect(self.delete_from_catalogue)
 
+        self.ui.viewTemplatesButton.clicked.connect(self.view_template_toggle)
+
+        self.ui.assignTemplateButton.clicked.connect(self.assign_template)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -342,8 +347,11 @@ class MainGUI(QMainWindow):
         # Other actions
         ################################################################################################################
         self.ui.actionShow_map.setVisible(False)
-        # self.ui.actionTransient_stability.setVisible(True)
-        # self.ui.tab_7.setVisible(True)
+
+        # template
+        self.view_templates(False)
+        self.view_template_controls(False)
+
         self.view_cascade_menu()
         self.show_map()
 
@@ -362,6 +370,40 @@ class MainGUI(QMainWindow):
         @return:
         """
         self.LOCK(False)
+
+    def view_templates(self, value=True):
+        """
+        View the frame
+        Args:
+            value:
+
+        Returns:
+
+        """
+        self.ui.templatesFrame.setVisible(value)
+
+        # fill the catalogue
+        if value:
+            self.fill_catalogue_tree_view()
+
+    def view_template_controls(self, value=True):
+        """
+        View the buttons
+        Args:
+            value:
+
+        Returns:
+
+        """
+        self.ui.viewTemplatesButton.setVisible(value)
+        # self.ui.assignTemplateButton.setVisible(value)
+
+    def view_template_toggle(self):
+
+        if self.ui.templatesFrame.isVisible():
+            self.view_templates(False)
+        else:
+            self.view_templates(True)
 
     def view_cascade_menu(self):
         """
@@ -1149,6 +1191,8 @@ class MainGUI(QMainWindow):
         """
         elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
 
+        self.view_template_controls(False)
+
         # ['Buses', 'Branches', 'Loads', 'Static Generators', 'Controlled Generators', 'Batteries']
 
         if elm_type == 'Buses':
@@ -1158,14 +1202,14 @@ class MainGUI(QMainWindow):
 
         elif elm_type == 'Branches':
 
-            catalogue_dict = {'Overhead lines': self.circuit.overhead_line_types,
-                              'Transformers': self.circuit.transformer_types}
+            self.fill_catalogue_tree_view()
 
             elm = Branch(None, None)
             mdl = BranchObjectModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
                                     parent=self.ui.dataStructureTableView, editable=True,
-                                    non_editable_indices=[1, 2, 14],
-                                    catalogue_dict=catalogue_dict)
+                                    non_editable_indices=[1, 2, 14])
+
+            self.view_template_controls(True)
 
         elif elm_type == 'Loads':
             elm = Load()
@@ -1193,6 +1237,26 @@ class MainGUI(QMainWindow):
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
+        self.view_templates(False)
+
+    def fill_catalogue_tree_view(self):
+        """
+        Fill the Catalogue tree view with the catalogue types
+        """
+        catalogue_dict = {'Overhead lines': self.circuit.overhead_line_types,
+                          'Transformers': self.circuit.transformer_types}
+
+        model = QStandardItemModel()
+        model.setHorizontalHeaderLabels(['Template'])
+        for key in catalogue_dict.keys():
+            # add parent node
+            parent1 = QStandardItem(str(key))
+            # add children to parent
+            for elm in catalogue_dict[key]:
+                child1 = QStandardItem(str(elm))
+                parent1.appendRow([child1])
+            model.appendRow(parent1)
+        self.ui.catalogueTreeView.setModel(model)
 
     def view_simulation_objects_data(self):
         """
@@ -2780,6 +2844,14 @@ class MainGUI(QMainWindow):
 
         else:
             pass
+
+    def assign_template(self):
+        """
+
+        Returns:
+
+        """
+        print('assign_template')
 
 
 def run():
