@@ -161,17 +161,41 @@ class WiresCollection(QtCore.QAbstractTableModel):
         return True
 
 
-class Tower(QtCore.QAbstractTableModel):
+class BranchTemplate:
 
-    def __init__(self, parent=None, edit_callback=None):
+    def __init__(self, name='BranchTemplate'):
+
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+
+class Tower(QtCore.QAbstractTableModel, BranchTemplate):
+
+    def __init__(self, parent=None, edit_callback=None, name='Tower'):
         QtCore.QAbstractTableModel.__init__(self, parent)
+        BranchTemplate.__init__(self, name=name)
 
         # properties
-        self.name = 'Tower'
+        self.name = name
         self.earth_resistivity = 100
         self.frequency = 50
         self.seq_resistance = complex(0, 0)
         self.seq_admittance = complex(0, 0)
+
+        # impedances
+        self.z_abcn = None
+        self.z_phases_abcn = None
+        self.z_abc = None
+        self.z_phases_abc = None
+        self.z_seq = None
+
+        self.y_abcn = None
+        self.y_phases_abcn = None
+        self.y_abc = None
+        self.y_phases_abc = None
+        self.y_seq = None
 
         # other properties
         self.wires = list()
@@ -244,6 +268,52 @@ class Tower(QtCore.QAbstractTableModel):
         ax.grid(False)
         ax.grid(which='major', axis='y', linestyle='--')
 
+    def check(self, logger=list()):
+        """
+        Check that the wires configuration make sense
+        :return:
+        """
+
+        for i, wire_i in enumerate(self.wires):
+
+            if wire_i.gmr < 0:
+                logger.append('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
+                return False
+
+            for j, wire_j in enumerate(self.wires):
+
+                if i != j:
+                    if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
+                        logger.append('The wires' + wire_i.name + '(' + str(i) + ') and ' +
+                                      wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
+                        return False
+                else:
+                    pass
+
+        return True
+
+    def compute(self):
+        """
+        Compute the tower matrices
+        :return:
+        """
+        # heck the wires configuration
+        all_ok = self.check()
+
+        if all_ok:
+            # Impedances
+            self.z_abcn, self.z_phases_abcn, self.z_abc, \
+            self.z_phases_abc, self.z_seq = calc_z_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+
+            # Admittances
+            self.y_abcn, self.y_phases_abcn, self.y_abc, \
+            self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+
+            self.seq_resistance = self.z_seq[1, 1]
+            self.seq_admittance = self.y_seq[1, 1]
+        else:
+            pass
+
     def delete_by_name(self, wire: Wire):
         n = len(self.wires)
         for i in range(n-1, -1, -1):
@@ -308,43 +378,142 @@ class Tower(QtCore.QAbstractTableModel):
 
         return True
 
-def z_ij_EMTP(n, x_i, x_j, h_i, h_j, D_ij, f, rho):
 
-    sgn = np.zeros(n)
+class TransformerType(BranchTemplate):
 
-    a = 4 * pi * sqrt(5) * 1e-4 * D_ij * sqrt(f / rho)
-    b = np.zeros(n)
-    c = np.zeros(n)
-    d = np.zeros(n)
+    def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
+                 No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1, name='TransformerType'):
+        """
+        Constructor
+        @param HV_nominal_voltage: High voltage side nominal voltage (kV)
+        @param LV_nominal_voltage: Low voltage side nominal voltage (kV)
+        @param Nominal_power: Transformer nominal power (MVA)
+        @param Copper_losses: Copper losses (kW)
+        @param Iron_losses: Iron Losses (kW)
+        @param No_load_current: No load current (%)
+        @param Short_circuit_voltage: Short circuit voltage (%)
+        @param GR_hv1:
+        @param GX_hv1:
+        """
+        BranchTemplate.__init__(self, name=name)
 
-    P = np.zeros(n)
-    Q = np.zeros(n)
+        self.name = name
 
-    b[1] = sqrt(2) / 6  # b1
-    b[2] = 1 / 16  # b2
+        self.type_name = 'TransformerType'
 
-    c[2] = log(2 / 1.7811) + 1 + 1/2 - 1/4
+        self.properties_with_profile = None
 
-    cos_theta_ij = (h_i + h_j) / D_ij
-    sin_theta_ij = (x_i - x_j) / D_ij
+        self.HV_nominal_voltage = HV_nominal_voltage
 
-    P[0] = pi / 8
-    Q[0] = 1/2 * (1 / 2 + log(2 / exp(0.57722)))
+        self.LV_nominal_voltage = LV_nominal_voltage
 
-    for i in range(1, n):
+        self.Nominal_power = Nominal_power
 
-        sgn[i] = pow(-1, ((i+1)/2) % 2)
+        self.Copper_losses = Copper_losses
 
-        d[i] = b[i] * pi / 4
+        self.Iron_losses = Iron_losses
 
-        if i > 1:
-            b[i] = sgn[i] * b[i-2] / (i * (i + 2))
+        self.No_load_current = No_load_current
 
-            c[i] = c[i-2] + 1 / i + 1 / (i+2)
+        self.Short_circuit_voltage = Short_circuit_voltage
 
-    if a <= 5:
+        self.GR_hv1 = GR_hv1
 
-        a_i_cos_i = pow(a, i-1)
+        self.GX_hv1 = GX_hv1
+
+        self.edit_headers = ['name',
+                             'HV_nominal_voltage',
+                             'LV_nominal_voltage',
+                             'Nominal_power',
+                             'Copper_losses',
+                             'Iron_losses',
+                             'No_load_current',
+                             'Short_circuit_voltage']
+
+        self.units = ['',
+                      'kV',
+                      'kV',
+                      'MVA',
+                      'kW',
+                      'kW',
+                      '%',
+                      '%']
+
+        self.non_editable_indices = list()
+
+        self.edit_types = {'name': str,
+                           'HV_nominal_voltage': float,
+                           'LV_nominal_voltage': float,
+                           'Nominal_power': float,
+                           'Copper_losses': float,
+                           'Iron_losses': float,
+                           'No_load_current': float,
+                           'Short_circuit_voltage': float}
+
+    def get_impedances(self):
+        """
+        Compute the branch parameters of a transformer from the short circuit
+        test values
+        @return:
+            leakage_impedance: Series impedance
+            magnetizing_impedance: Shunt impedance
+        """
+        Vhv = self.HV_nominal_voltage
+
+        Vlv = self.LV_nominal_voltage
+
+        Sn = self.Nominal_power
+
+        Pcu = self.Copper_losses
+
+        Pfe = self.Iron_losses
+
+        I0 = self.No_load_current
+
+        Vsc = self.Short_circuit_voltage
+
+        # GRhv = self.GR_hv1
+        # GXhv = self.GX_hv1
+
+        # Zn_hv = (Vhv ** 2) / Sn
+        # Zn_lv = (Vlv ** 2) / Sn
+
+        zsc = Vsc / 100.0
+        rsc = (Pcu / 1000.0) / Sn
+        # xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
+        xsc = sqrt(zsc ** 2 - rsc ** 2)
+
+        # rcu_hv = rsc * self.GR_hv1
+        # rcu_lv = rsc * (1 - self.GR_hv1)
+        # xs_hv = xsc * self.GX_hv1
+        # xs_lv = xsc * (1 - self.GX_hv1)
+
+        if Pfe > 0.0 and I0 > 0.0:
+            rfe = Sn / (Pfe / 1000.0)
+
+            zm = 1.0 / (I0 / 100.0)
+
+            xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
+
+        else:
+
+            rfe = 0.0
+            xm = 0.0
+
+        # series impedance
+        z_series = rsc + 1j * xsc
+
+        # y_series = 1.0 / z_series
+
+        # shunt impedance
+        zl = rfe + 1j * xm
+
+        # y_shunt = 1.0 / zl
+
+        return z_series, zl
+
+    def __str__(self):
+        return self.name
 
 
 def get_d_ij(xi, yi, xj, yj):
@@ -456,7 +625,13 @@ def kron_reduction(mat, keep, embed):
 
 
 def wire_bundling(phases_set, primitive, phases_vector):
-
+    """
+    Algorithm to bundle wires per phase
+    :param phases_set: set of phases (list with unique occurrences of each phase values, i.e. [0, 1, 2, 3])
+    :param primitive: Primitive matrix to reduce by bundling wires
+    :param phases_vector: Vector that contains the phase of each wire
+    :return: reduced primitive matrix, corresponding phases
+    """
     for phase in phases_set:
 
         # get the list of wire indices
@@ -578,7 +753,10 @@ def calc_y_matrix(wires: list, f=50, rho=100):
     phases_set = set()
 
     # 1 / (2 * pi * e0) in km/F
-    one_two_pi_e0 = 17.975109e-6
+    e_air = 1.00058986
+    e_0 = 8.854187817e-9  # F/km
+    e = e_0 * e_air
+    one_two_pi_e0 = 1 / (2 * pi * e)  # km/F
 
     phases_abcn = np.zeros(n, dtype=int)
 

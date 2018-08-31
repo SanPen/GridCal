@@ -358,7 +358,7 @@ class TransformerEditor(QDialog):
         # z_series = leakage_impedance
         # y_shunt = 1 / magnetizing_impedance
 
-        self.branch.apply_transformer_type(tpe)
+        self.branch.apply_type(tpe)
 
         self.accept()
 

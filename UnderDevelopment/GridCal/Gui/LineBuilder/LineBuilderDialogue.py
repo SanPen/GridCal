@@ -25,13 +25,14 @@ import math
 from PyQt5.QtWidgets import *
 
 from GridCal.Gui.LineBuilder.gui import *
-from GridCal.Engine.object_types import *
+from GridCal.Engine.ObjectTypes import *
 from GridCal.Gui.GuiFunctions import PandasModel
+from GridCal.Gui.GeneralDialogues import LogsDialogue
 
 
 class TowerBuilderGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, tower=None, wires_catalogue=None):
+    def __init__(self, parent=None, tower=None, wires_catalogue=list()):
         """
         Constructor
         Args:
@@ -44,10 +45,12 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         self.ui.main_splitter.setSizes([10, 1])
 
+        # create wire collection from the catalogue
         self.wire_collection = WiresCollection(self)
         for wire in wires_catalogue:
             self.wire_collection.add(wire)
 
+        # was there a tower passed? else create one
         if tower is None:
             self.tower = Tower(self, edit_callback=self.plot)
         else:
@@ -140,76 +143,54 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         else:
             self.msg('Select a wire from the tower')
 
-    def check(self):
+    def compute(self):
         """
-        Check that the wires configuration make sense
+
         :return:
         """
-        for i, wire_i in enumerate(self.tower.wires):
 
-            if wire_i.gmr < 0:
-                self.msg('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
-                return False
-
-            for j, wire_j in enumerate(self.tower.wires):
-
-                if i != j:
-                    if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
-                        self.msg('The wires' + wire_i.name + '(' + str(i) + ') and ' +
-                                 wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
-                        return False
-                else:
-                    pass
-
-        return True
-
-    def compute(self):
-
-        f = self.ui.frequency_doubleSpinBox.value()
-        rho = self.ui.rho_doubleSpinBox.value()
-
-        self.tower.earth_resistivity = rho
+        self.tower.frequency = self.ui.frequency_doubleSpinBox.value()
+        self.tower.earth_resistivity = self.ui.rho_doubleSpinBox.value()
 
         # heck the wires configuration
-        all_ok = self.check()
+        logs = list()
+        all_ok = self.tower.check(logs)
 
-        if all_ok:
-            # Impedances
-            z_abcn, phases_abcn, z_abc, phases_abc, z_seq = calc_z_matrix(self.tower.wires, f=f, rho=rho)
+        if not all_ok:
+            logger_diag = LogsDialogue(name='Tower computation', logs=logs)
+            logger_diag.exec_()
+        else:
+            # compute the matrices
+            self.tower.compute()
 
-            cols = ['Phase' + str(i) for i in phases_abcn]
-            z_df = pd.DataFrame(data=z_abcn, columns=cols, index=cols)
+            # Impedances in Ohm/km
+            cols = ['Phase' + str(i) for i in self.tower.z_phases_abcn]
+            z_df = pd.DataFrame(data=self.tower.z_abcn, columns=cols, index=cols)
             self.ui.z_tableView_abcn.setModel(PandasModel(z_df))
 
-            cols = ['Phase' + str(i) for i in phases_abc]
-            z_df = pd.DataFrame(data=z_abc, columns=cols, index=cols)
+            cols = ['Phase' + str(i) for i in self.tower.z_phases_abc]
+            z_df = pd.DataFrame(data=self.tower.z_abc, columns=cols, index=cols)
             self.ui.z_tableView_abc.setModel(PandasModel(z_df))
 
             cols = ['Sequence ' + str(i) for i in range(3)]
-            z_df = pd.DataFrame(data=z_seq, columns=cols, index=cols)
+            z_df = pd.DataFrame(data=self.tower.z_seq, columns=cols, index=cols)
             self.ui.z_tableView_seq.setModel(PandasModel(z_df))
 
-            # Admittances
-            y_abcn, phases_abcn, y_abc, phases_abc, y_seq = calc_y_matrix(self.tower.wires, f=f, rho=rho)
-
-            cols = ['Phase' + str(i) for i in phases_abcn]
-            z_df = pd.DataFrame(data=y_abcn * 1e-6, columns=cols, index=cols)
+            # Admittances in uS/km
+            cols = ['Phase' + str(i) for i in self.tower.y_phases_abcn]
+            z_df = pd.DataFrame(data=self.tower.y_abcn * 1e6, columns=cols, index=cols)
             self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
 
-            cols = ['Phase' + str(i) for i in phases_abc]
-            z_df = pd.DataFrame(data=y_abc * 1e-6, columns=cols, index=cols)
+            cols = ['Phase' + str(i) for i in self.tower.y_phases_abc]
+            z_df = pd.DataFrame(data=self.tower.y_abc * 1e6, columns=cols, index=cols)
             self.ui.y_tableView_abc.setModel(PandasModel(z_df))
 
             cols = ['Sequence ' + str(i) for i in range(3)]
-            z_df = pd.DataFrame(data=y_seq * 1e-6, columns=cols, index=cols)
+            z_df = pd.DataFrame(data=self.tower.y_seq * 1e6, columns=cols, index=cols)
             self.ui.y_tableView_seq.setModel(PandasModel(z_df))
 
-            self.tower.seq_resistance = z_seq[1, 1]
-            self.tower.seq_admittance = y_seq[1, 1] * 1e-6
-        else:
-            pass
-
-        self.plot()
+            # plot
+            self.plot()
 
     def plot(self):
 
@@ -232,6 +213,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.tower.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
         self.tower.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
         self.tower.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=3))
+
+        self.wire_collection.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
 
     def example_2(self):
         name = '4/0 6/1 ACSR'
@@ -256,6 +239,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.tower.add(Wire(name, xpos=incx/2 + 0.762, ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=2))
         self.tower.add(Wire(name, xpos=incx/2 + 2.1336, ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=3))
         # self.tower.add(Wire(name, xpos=incx/2 + 1.2192, ypos=incy+7.62, gmr=gmr, r=r, x=x, phase=0))
+
+        self.wire_collection.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
 
 
 if __name__ == "__main__":
