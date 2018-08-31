@@ -161,17 +161,41 @@ class WiresCollection(QtCore.QAbstractTableModel):
         return True
 
 
-class Tower(QtCore.QAbstractTableModel):
+class BranchTemplate:
 
-    def __init__(self, parent=None, edit_callback=None):
+    def __init__(self, name='BranchTemplate'):
+
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+
+class Tower(QtCore.QAbstractTableModel, BranchTemplate):
+
+    def __init__(self, parent=None, edit_callback=None, name='Tower'):
         QtCore.QAbstractTableModel.__init__(self, parent)
+        BranchTemplate.__init__(self, name=name)
 
         # properties
-        self.name = 'Tower'
+        self.name = name
         self.earth_resistivity = 100
         self.frequency = 50
         self.seq_resistance = complex(0, 0)
         self.seq_admittance = complex(0, 0)
+
+        # impedances
+        self.z_abcn = None
+        self.z_phases_abcn = None
+        self.z_abc = None
+        self.z_phases_abc = None
+        self.z_seq = None
+
+        self.y_abcn = None
+        self.y_phases_abcn = None
+        self.y_abc = None
+        self.y_phases_abc = None
+        self.y_seq = None
 
         # other properties
         self.wires = list()
@@ -244,6 +268,52 @@ class Tower(QtCore.QAbstractTableModel):
         ax.grid(False)
         ax.grid(which='major', axis='y', linestyle='--')
 
+    def check(self, logger=list()):
+        """
+        Check that the wires configuration make sense
+        :return:
+        """
+
+        for i, wire_i in enumerate(self.wires):
+
+            if wire_i.gmr < 0:
+                logger.append('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
+                return False
+
+            for j, wire_j in enumerate(self.wires):
+
+                if i != j:
+                    if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
+                        logger.append('The wires' + wire_i.name + '(' + str(i) + ') and ' +
+                                      wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
+                        return False
+                else:
+                    pass
+
+        return True
+
+    def compute(self):
+        """
+        Compute the tower matrices
+        :return:
+        """
+        # heck the wires configuration
+        all_ok = self.check()
+
+        if all_ok:
+            # Impedances
+            self.z_abcn, self.z_phases_abcn, self.z_abc, \
+            self.z_phases_abc, self.z_seq = calc_z_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+
+            # Admittances
+            self.y_abcn, self.y_phases_abcn, self.y_abc, \
+            self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+
+            self.seq_resistance = self.z_seq[1, 1]
+            self.seq_admittance = self.y_seq[1, 1]
+        else:
+            pass
+
     def delete_by_name(self, wire: Wire):
         n = len(self.wires)
         for i in range(n-1, -1, -1):
@@ -309,7 +379,7 @@ class Tower(QtCore.QAbstractTableModel):
         return True
 
 
-class TransformerType:
+class TransformerType(BranchTemplate):
 
     def __init__(self, HV_nominal_voltage, LV_nominal_voltage, Nominal_power, Copper_losses, Iron_losses,
                  No_load_current, Short_circuit_voltage, GR_hv1, GX_hv1, name='TransformerType'):
@@ -325,6 +395,7 @@ class TransformerType:
         @param GR_hv1:
         @param GX_hv1:
         """
+        BranchTemplate.__init__(self, name=name)
 
         self.name = name
 
@@ -445,45 +516,6 @@ class TransformerType:
         return self.name
 
 
-def z_ij_EMTP(n, x_i, x_j, h_i, h_j, D_ij, f, rho):
-
-    sgn = np.zeros(n)
-
-    a = 4 * pi * sqrt(5) * 1e-4 * D_ij * sqrt(f / rho)
-    b = np.zeros(n)
-    c = np.zeros(n)
-    d = np.zeros(n)
-
-    P = np.zeros(n)
-    Q = np.zeros(n)
-
-    b[1] = sqrt(2) / 6  # b1
-    b[2] = 1 / 16  # b2
-
-    c[2] = log(2 / 1.7811) + 1 + 1/2 - 1/4
-
-    cos_theta_ij = (h_i + h_j) / D_ij
-    sin_theta_ij = (x_i - x_j) / D_ij
-
-    P[0] = pi / 8
-    Q[0] = 1/2 * (1 / 2 + log(2 / exp(0.57722)))
-
-    for i in range(1, n):
-
-        sgn[i] = pow(-1, ((i+1)/2) % 2)
-
-        d[i] = b[i] * pi / 4
-
-        if i > 1:
-            b[i] = sgn[i] * b[i-2] / (i * (i + 2))
-
-            c[i] = c[i-2] + 1 / i + 1 / (i+2)
-
-    if a <= 5:
-
-        a_i_cos_i = pow(a, i-1)
-
-
 def get_d_ij(xi, yi, xj, yj):
     """
     Distance module between wires
@@ -593,7 +625,13 @@ def kron_reduction(mat, keep, embed):
 
 
 def wire_bundling(phases_set, primitive, phases_vector):
-
+    """
+    Algorithm to bundle wires per phase
+    :param phases_set: set of phases (list with unique occurrences of each phase values, i.e. [0, 1, 2, 3])
+    :param primitive: Primitive matrix to reduce by bundling wires
+    :param phases_vector: Vector that contains the phase of each wire
+    :return: reduced primitive matrix, corresponding phases
+    """
     for phase in phases_set:
 
         # get the list of wire indices
@@ -715,7 +753,10 @@ def calc_y_matrix(wires: list, f=50, rho=100):
     phases_set = set()
 
     # 1 / (2 * pi * e0) in km/F
-    one_two_pi_e0 = 17.975109e-6
+    e_air = 1.00058986
+    e_0 = 8.854187817e-9  # F/km
+    e = e_0 * e_air
+    one_two_pi_e0 = 1 / (2 * pi * e)  # km/F
 
     phases_abcn = np.zeros(n, dtype=int)
 

@@ -17,10 +17,10 @@ from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Engine.object_types import Tower, Wire
+from GridCal.Engine.ObjectTypes import Tower, Wire, TransformerType
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
-from GridCal.Gui.Analysis.analysis_dialogue import GridAnalysisGUI
-from GridCal.Gui.LineBuilder.line_builder_dialogue import TowerBuilderGUI
+from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
+from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI
 
 import os.path
 import platform
@@ -59,135 +59,6 @@ class ResultTypes(Enum):
     branches_loading = 14,
     gen_reactive_power_pu = 15,
     gen_reactive_power = 16
-
-
-class ProfileTypes(Enum):
-    Loads = 1,
-    Generators = 2
-
-
-class NewProfilesStructureDialogue(QDialog):
-    """
-    New profile dialogue window
-    """
-    def __init__(self):
-        super(NewProfilesStructureDialogue, self).__init__()
-        self.setObjectName("self")
-        # self.resize(200, 71)
-        # self.setMinimumSize(QtCore.QSize(200, 71))
-        # self.setMaximumSize(QtCore.QSize(200, 71))
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        # icon = QtGui.QIcon()
-        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # self.setWindowIcon(icon)
-        self.layout = QVBoxLayout(self)
-
-        # calendar
-        self.calendar = QDateTimeEdit()
-        d = datetime.today()
-        self.calendar.setDateTime(QDateTime(d.year, 1, 1, 00, 00, 00))
-
-        # number of time steps
-        self.steps_spinner = QSpinBox()
-        self.steps_spinner.setMinimum(1)
-        self.steps_spinner.setMaximum(9999999)
-        self.steps_spinner.setValue(1)
-
-        # time step length
-        self.step_length = QDoubleSpinBox()
-        self.step_length.setMinimum(1)
-        self.step_length.setMaximum(60)
-        self.step_length.setValue(1)
-
-        # units combo box
-        self.units = QComboBox()
-        self.units.setModel(get_list_model(['h', 'm', 's']))
-
-        # accept button
-        self.accept_btn = QPushButton()
-        self.accept_btn.setText('Accept')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # labels
-
-        # add all to the GUI
-        self.layout.addWidget(QLabel("Start date"))
-        self.layout.addWidget(self.calendar)
-
-        self.layout.addWidget(QLabel("Number of time steps"))
-        self.layout.addWidget(self.steps_spinner)
-
-        self.layout.addWidget(QLabel("Time step length"))
-        self.layout.addWidget(self.step_length)
-
-        self.layout.addWidget(QLabel("Time units"))
-        self.layout.addWidget(self.units)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle('New profiles structure')
-
-    def accept_click(self):
-        self.accept()
-
-    def get_values(self):
-        steps = self.steps_spinner.value()
-
-        step_length = self.step_length.value()
-
-        step_unit = self.units.currentText()
-
-        time_base = self.calendar.dateTime()
-
-        # a = QDateTime(2011, 4, 22, 00, 00, 00)
-        # a
-        return steps, step_length, step_unit, time_base.toPyDateTime()
-
-
-class LogsDialogue(QDialog):
-    """
-    New profile dialogue window
-    """
-    def __init__(self, name, logs: list()):
-        super(LogsDialogue, self).__init__()
-        self.setObjectName("self")
-        # self.resize(200, 71)
-        # self.setMinimumSize(QtCore.QSize(200, 71))
-        # self.setMaximumSize(QtCore.QSize(200, 71))
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        # icon = QtGui.QIcon()
-        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # self.setWindowIcon(icon)
-        self.layout = QVBoxLayout(self)
-
-        # logs_list
-        self.logs_list = QListView()
-        model = QtGui.QStandardItemModel()
-        self.logs_list.setModel(model)
-
-        for entry in logs:
-            item = QtGui.QStandardItem(entry)
-            model.appendRow(item)
-
-        # accept button
-        self.accept_btn = QPushButton()
-        self.accept_btn.setText('Accept')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # add all to the GUI
-        self.layout.addWidget(QLabel("Logs"))
-        self.layout.addWidget(self.logs_list)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle(name)
-
-    def accept_click(self):
-        self.accept()
 
 
 class MainGUI(QMainWindow):
@@ -1286,9 +1157,15 @@ class MainGUI(QMainWindow):
                                parent=self.ui.dataStructureTableView, editable=True)
 
         elif elm_type == 'Branches':
+
+            catalogue_dict = {'Overhead lines': self.circuit.overhead_line_types,
+                              'Transformers': self.circuit.transformer_types}
+
             elm = Branch(None, None)
-            mdl = ObjectsModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1, 2])
+            mdl = BranchObjectModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
+                                    parent=self.ui.dataStructureTableView, editable=True,
+                                    non_editable_indices=[1, 2, 14],
+                                    catalogue_dict=catalogue_dict)
 
         elif elm_type == 'Loads':
             elm = Load()

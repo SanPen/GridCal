@@ -549,17 +549,72 @@
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_23">
                    <item>
-                    <widget class="QLabel" name="label_4">
-                     <property name="text">
-                      <string>Elements data</string>
+                    <widget class="QSplitter" name="splitter_4">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
                      </property>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <widget class="QFrame" name="frame_38">
+                      <property name="frameShape">
+                       <enum>QFrame::StyledPanel</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_35">
+                       <item>
+                        <widget class="QLabel" name="label_4">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="text">
+                          <string>Elements data</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QTableView" name="dataStructureTableView"/>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QFrame" name="templatesFrame">
+                      <property name="frameShape">
+                       <enum>QFrame::StyledPanel</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_33">
+                       <item>
+                        <widget class="QLabel" name="label_53">
+                         <property name="text">
+                          <string>Element Templates</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QTreeView" name="treeView"/>
+                       </item>
+                      </layout>
+                     </widget>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QTableView" name="dataStructureTableView"/>
-                   </item>
-                   <item>
                     <widget class="QFrame" name="frame_12">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="frameShape">
                       <enum>QFrame::StyledPanel</enum>
                      </property>
@@ -583,6 +638,17 @@
                        <number>1</number>
                       </property>
                       <item>
+                       <widget class="QPushButton" name="setValueToColumnButton">
+                        <property name="text">
+                         <string>Set value to column</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/white_icons/copy.svg</normaloff>:/Icons/white_icons/copy.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <spacer name="horizontalSpacer_3">
                         <property name="orientation">
                          <enum>Qt::Horizontal</enum>
@@ -596,13 +662,16 @@
                        </spacer>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="setValueToColumnButton">
+                       <widget class="QPushButton" name="viewTemplatesButton">
                         <property name="text">
-                         <string>Set value to column</string>
+                         <string>View templates</string>
                         </property>
-                        <property name="icon">
-                         <iconset resource="icons.qrc">
-                          <normaloff>:/Icons/white_icons/copy.svg</normaloff>:/Icons/white_icons/copy.svg</iconset>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="assignTemplateButton">
+                        <property name="text">
+                         <string>Assign template</string>
                         </property>
                        </widget>
                       </item>

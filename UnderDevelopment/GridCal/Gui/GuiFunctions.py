@@ -20,6 +20,65 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import *
 
 from GridCal.Engine.CalculationEngine import BranchTypeConverter, BranchType
+from GridCal.Engine.ObjectTypes import BranchTemplate
+
+
+class TreeDelegate(QItemDelegate):
+    commitData = QtCore.pyqtSignal(object)
+    """
+    A delegate that places a fully functioning QComboBox in every
+    cell of the column to which it's applied
+    """
+    def __init__(self, parent, data=dict()):
+        """
+        Constructoe
+        :param parent: QTableView parent object
+        :param objects: List of objects to set. i.e. [True, False]
+        :param object_names: List of Object names to display. i.e. ['True', 'False']
+        """
+        QItemDelegate.__init__(self, parent)
+
+        # dictionary of lists
+        self.data = data
+
+    @QtCore.pyqtSlot()
+    def double_click(self):
+        print('double clicked!')
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        tree = QTreeView(parent)
+
+        model = QStandardItemModel()
+        model.setHorizontalHeaderLabels(['Template'])
+
+        for key in self.data.keys():
+            # add parent node
+            parent1 = QStandardItem(str(key))
+
+            # add children to parent
+            for elm in self.data[key]:
+                child1 = QStandardItem(str(elm))
+                parent1.appendRow([child1])
+
+            model.appendRow(parent1)
+
+        tree.setModel(model)
+        tree.doubleClicked.connect(self.double_click)
+        return tree
+
+    def setEditorData(self, editor, index):
+
+        print(editor)
+        print(index)
+
+    def setModelData(self, editor, model, index):
+
+        print(editor)
+        print(model)
+        print(index)
+
+        # model.setData(index, self.object_names[editor.currentIndex()])
 
 
 class ComboDelegate(QItemDelegate):
@@ -285,7 +344,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     Class to populate a Qt table view with the properties of objects
     """
     def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False,
-                 non_editable_indices=list(),  transposed=False, check_unique=[]):
+                 non_editable_indices=list(),  transposed=False, check_unique=list()):
         """
 
         :param objects: list of objects associated to the editor
@@ -344,6 +403,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
             if tpe is BranchType:
                 conv = BranchTypeConverter(None)
+                delegate = ComboDelegate(self.parent, conv.values, conv.options)
+                F(i, delegate)
+
+            if tpe is BranchTemplate:
                 delegate = ComboDelegate(self.parent, conv.values, conv.options)
                 F(i, delegate)
 
@@ -553,6 +616,70 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             else:
                 pass  # the column cannot be edited
 
+
+class BranchObjectModel(ObjectsModel):
+
+    def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False,
+                 non_editable_indices=list(),  transposed=False, check_unique=list(), catalogue_dict=dict()):
+
+        # type templates catalogue
+        self.catalogue_dict = catalogue_dict
+
+        # ObjectsModel.__init__(self, objects, attributes, attr_units, attr_types, parent=parent,
+        #                       editable=editable, non_editable_indices=non_editable_indices,
+        #                       transposed=transposed, check_unique=check_unique)
+
+        super(BranchObjectModel, self).__init__(objects, attributes, attr_units, attr_types, parent=parent,
+                                                editable=editable, non_editable_indices=non_editable_indices,
+                                                transposed=transposed, check_unique=check_unique)
+
+
+
+    def set_delegates(self):
+        """
+        Set the cell editor types depending on the attribute_types array
+        :return:
+        """
+
+        if self.transposed:
+            F = self.parent.setItemDelegateForRow
+        else:
+            F = self.parent.setItemDelegateForColumn
+
+        for i in range(self.c):
+            tpe = self.attribute_types[self.attributes[i]]
+
+            if tpe is bool:
+                delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+                F(i, delegate)
+
+            if tpe is BranchType:
+                conv = BranchTypeConverter(None)
+                delegate = ComboDelegate(self.parent, conv.values, conv.options)
+                F(i, delegate)
+
+            elif tpe is BranchTemplate:
+                delegate = TreeDelegate(parent=self.parent, data=self.catalogue_dict)
+                F(i, delegate)
+
+            elif tpe is float:
+                delegate = FloatDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is str:
+                delegate = TextDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is complex:
+                delegate = ComplexDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is None:
+                F(i, None)
+                if len(self.non_editable_indices) == 0:
+                    self.non_editable_indices.append(i)
+            else:
+                pass
 
 class ProfilesModel(QtCore.QAbstractTableModel):
     """

@@ -37,7 +37,6 @@ from sklearn.ensemble import RandomForestRegressor
 from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox
 
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
@@ -47,8 +46,8 @@ from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
 from GridCal.Engine.Numerical.DynamicModels import DynamicModels, dynamic_simulation
-
-from GridCal.Engine.object_types import *
+from GridCal.Engine.ObjectTypes import TransformerType, Tower, BranchTemplate
+from GridCal.Gui.GeneralDialogues import *
 
 ########################################################################################################################
 # Set Matplotlib global parameters
@@ -106,6 +105,7 @@ class BranchTypeConverter:
                         'transformer',
                         'switch',
                         'reactance']
+
         self.values = [BranchType.Branch,
                        BranchType.Line,
                        BranchType.Transformer,
@@ -649,7 +649,7 @@ class ReliabilityDevice:
 class Bus:
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
-                 active=True, is_slack=False, area='Default', zone='Default', substation='Default'):
+                 active=True, is_slack=False, area='Defualt', zone='Default', substation='Default'):
         """
         Bus  constructor
         :param name: name of the bus
@@ -1253,7 +1253,7 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line, length=1, template_type=None):
+                 branch_type: BranchType=BranchType.Line, length=1, type_obj=BranchTemplate()):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -1268,20 +1268,24 @@ class Branch(ReliabilityDevice):
         @param mttr: Mean time to repair
         @param branch_type: Is the branch a transformer?
         @param length: eventual line length in km
-        @param template_type: template from the catalogue (Tower, TransformerType, etc...)
+        @param type_obj: Type object template (i.e. Tower, TransformerType, etc...)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
 
         self.name = name
 
+        # Identifier of this element type
         self.type_name = 'Branch'
 
+        # list of properties that hold a profile
         self.properties_with_profile = None
 
+        # connectivity
         self.bus_from = bus_from
         self.bus_to = bus_to
 
+        # Is the branch active?
         self.active = active
 
         # List of measurements
@@ -1296,6 +1300,7 @@ class Branch(ReliabilityDevice):
         self.G = g
         self.B = b
 
+        # tap changer object
         self.tap_changer = TapChanger()
 
         if tap != 0:
@@ -1306,21 +1311,20 @@ class Branch(ReliabilityDevice):
 
         self.angle = shift_angle
 
+        # branch rating in MVA
         self.rate = rate
 
-        # Branch type: Transformer, Line, Branch, etc...
+        # branch type: Line, Transformer, etc...
         self.branch_type = branch_type
 
-        # template from the catalogue (Tower, TransformerType, etc...)
-        self.template_type = template_type
-
-        self.type_obj = None
+        # type template
+        self.type_obj = type_obj
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'length', 'tap_module', 'angle', 'branch_type', 'template_type']
+                             'tap_module', 'angle', 'branch_type', 'type_obj']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'km', 'p.u.', 'rad', '', '']
+                      'p.u.', 'rad', '', '']
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
@@ -1342,11 +1346,10 @@ class Branch(ReliabilityDevice):
                            'X': float,
                            'G': float,
                            'B': float,
-                           'length': float,
                            'tap_module': float,
                            'angle': float,
                            'branch_type': BranchType,
-                           'template_type': list}
+                           'type_obj': BranchTemplate}
 
     def branch_type_converter(self, val_string):
 
@@ -1381,8 +1384,7 @@ class Branch(ReliabilityDevice):
                    mttf=self.mttf,
                    mttr=self.mttr,
                    branch_type=self.branch_type,
-                   length=self.length,
-                   template_type=self.template_type)
+                   type_obj=self.type_obj)
 
         b.measurements = self.measurements
 
@@ -1471,30 +1473,51 @@ class Branch(ReliabilityDevice):
 
         return f, t
 
-    def apply_transformer_type(self, obj: TransformerType):
+    def apply_type(self, obj, Sbase):
         """
         Apply a transformer type definition to this object
         Args:
-            obj: TransformerType object
+            obj: TransformerType or Tower object
         """
-        z_series, zsh = obj.get_impedances()
 
-        y_shunt = 1 / zsh
+        if type(obj) is TransformerType:
 
-        self.R = np.round(z_series.real, 6)
-        self.X = np.round(z_series.imag, 6)
-        self.G = np.round(y_shunt.real, 6)
-        self.B = np.round(y_shunt.imag, 6)
+            if self.branch_type == BranchType.Transformer:
+                z_series, zsh = obj.get_impedances()
 
-        self.type_obj = obj
+                y_shunt = 1 / zsh
 
-        self.rate = obj.Nominal_power
+                self.R = np.round(z_series.real, 6)
+                self.X = np.round(z_series.imag, 6)
+                self.G = np.round(y_shunt.real, 6)
+                self.B = np.round(y_shunt.imag, 6)
 
-        self.branch_type = True
+                self.rate = obj.Nominal_power
 
-    def apply_overhead_line(self, obj: Tower):
+                self.type_obj = obj
+                self.branch_type = BranchType.Transformer
+            else:
+                raise Exception('You are trying to apply a transformer type to a non-transformer branch')
 
-        pass
+        elif type(obj) is Tower:
+
+            if self.branch_type == BranchType.Line:
+                Vn = self.bus_to.Vnom
+                Zbase = (Vn * Vn) / Sbase
+                Ybase = 1 / Zbase
+
+                z = obj.seq_resistance / Zbase
+                y = obj.seq_admittance / Ybase
+
+                self.R = np.round(z.real, 6)
+                self.X = np.round(z.imag, 6)
+                self.G = np.round(y.real, 6)
+                self.B = np.round(y.imag, 6)
+
+                self.type_obj = obj
+                self.branch_type = BranchType.Line
+            else:
+                raise Exception('You are trying to apply an Overhead line type to a non-line branch')
 
     def get_save_data(self):
         """
@@ -1503,14 +1526,13 @@ class Branch(ReliabilityDevice):
         """
         conv = BranchTypeConverter(None)
 
-        if self.template_type is not None:
-            template_name = self.template_type.name
+        if self.type_obj is None:
+            type_obj = ''
         else:
-            template_name = None
+            type_obj = self.type_obj.name
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle,
-                conv.inv_conv[self.branch_type], template_name]
+                self.R, self.X, self.G, self.B, self.tap_module, self.angle, conv.inv_conv[self.branch_type], type_obj]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1533,8 +1555,7 @@ class Branch(ReliabilityDevice):
                 'b': self.B,
                 'tap_module': self.tap_module,
                 'tap_angle': self.angle,
-                'branch_type': self.branch_type,
-                'template_type': self.template_type}
+                'branch_type': self.branch_type}
 
     def __str__(self):
         return self.name
