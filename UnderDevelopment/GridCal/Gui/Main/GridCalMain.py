@@ -2619,6 +2619,12 @@ class MainGUI(QMainWindow):
             if col > -1:
                 # print(idx.row(), idx.column())
                 mdl.copy_to_column(idx)
+                # update the view
+                self.view_objects_data()
+            else:
+                self.msg('Select some element to serve as source to copy', 'Set value to column')
+        else:
+            pass
 
     def display_grid_analysis(self):
         """
@@ -2853,6 +2859,35 @@ class MainGUI(QMainWindow):
         """
         print('assign_template')
 
+        indices = self.ui.dataStructureTableView.selectedIndexes()
+        tpe = self.ui.catalogueTreeView.selectedIndexes()
+
+        if len(tpe) > 0:
+
+            if len(indices) > 0:
+
+                # get template type
+                type_name = self.ui.catalogueTreeView.selectedIndexes()[0].data()
+                d = self.circuit.get_templates_dictionary()
+                tpe = d[type_name]
+
+                # apply template
+                for idx in indices:
+                    i = idx.row()
+                    self.circuit.branches[i].apply_type(tpe, Sbase=self.circuit.Sbase)
+
+                # update the view
+                self.view_objects_data()
+
+            else:
+
+                self.msg('Select some branches to apply the template to.\nMake sure that they match the template type.',
+                         'Apply template')
+
+        else:
+
+            self.msg('Select a template.',
+                     'Apply template')
 
 def run():
     """

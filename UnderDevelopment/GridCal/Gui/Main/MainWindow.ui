@@ -608,6 +608,10 @@
                          <property name="text">
                           <string>View templates</string>
                          </property>
+                         <property name="icon">
+                          <iconset resource="icons.qrc">
+                           <normaloff>:/Icons/white_icons/squares.svg</normaloff>:/Icons/white_icons/squares.svg</iconset>
+                         </property>
                         </widget>
                        </item>
                        <item>
@@ -3443,7 +3447,11 @@ points from time series</string>
                   <string>Add value to the profile</string>
                  </property>
                  <property name="text">
-                  <string>+</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/white_icons/plus.svg</normaloff>:/Icons/white_icons/plus.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -3453,7 +3461,11 @@ points from time series</string>
                   <string>Subtract value from the profile</string>
                  </property>
                  <property name="text">
-                  <string>-</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/white_icons/minus.svg</normaloff>:/Icons/white_icons/minus.svg</iconset>
                  </property>
                 </widget>
                </item>

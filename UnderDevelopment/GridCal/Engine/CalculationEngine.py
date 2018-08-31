@@ -2933,6 +2933,9 @@ class Circuit:
         # List of transformer types
         self.transformer_types = list()
 
+        # list of cable types
+        self.cable_types = list()
+
         # Object with the necessary inputs for a power flow study
         self.power_flow_input = None
 
@@ -3364,6 +3367,16 @@ class MultiCircuit(Circuit):
         for dev in self.objects_with_profiles:
             if dev.properties_with_profile is not None:
                 self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
+
+    def get_templates_dictionary(self):
+
+        d = dict()
+        tpes = [self.overhead_line_types, self.transformer_types, self.cable_types]
+        for group in tpes:
+            for elm in group:
+                d[elm.name] = elm
+
+        return d
 
     def get_json_dict(self, id):
         """
