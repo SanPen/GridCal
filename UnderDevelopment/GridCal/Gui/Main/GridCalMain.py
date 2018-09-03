@@ -296,6 +296,8 @@ class MainGUI(QMainWindow):
 
         self.ui.assignTemplateButton.clicked.connect(self.assign_template)
 
+        self.ui.processTemplatesPushButton.clicked.connect(self.process_templates)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -400,7 +402,7 @@ class MainGUI(QMainWindow):
 
         """
         self.ui.viewTemplatesButton.setVisible(value)
-        # self.ui.assignTemplateButton.setVisible(value)
+        self.ui.processTemplatesPushButton.setVisible(value)
 
     def view_template_toggle(self):
 
@@ -2999,6 +3001,18 @@ class MainGUI(QMainWindow):
 
             self.msg('Select a template.',
                      'Apply template')
+
+    def process_templates(self):
+        """
+        Process all branches templates
+        """
+        if self.circuit is not None:
+            logger = self.circuit.apply_all_branch_types()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Process templates', logger)
+                dlg.exec_()
+
 
 def run():
     """

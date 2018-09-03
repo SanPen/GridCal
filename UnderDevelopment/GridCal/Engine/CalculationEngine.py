@@ -1508,8 +1508,8 @@ class Branch(ReliabilityDevice):
                 Zbase = (Vn * Vn) / Sbase
                 Ybase = 1 / Zbase
 
-                z = obj.seq_resistance / Zbase
-                y = obj.seq_admittance / Ybase
+                z = obj.seq_resistance * self.length / Zbase
+                y = obj.seq_admittance * self.length / Ybase
 
                 self.R = np.round(z.real, 6)
                 self.X = np.round(z.imag, 6)
@@ -1527,8 +1527,8 @@ class Branch(ReliabilityDevice):
             Zbase = (Vn * Vn) / Sbase
             Ybase = 1 / Zbase
 
-            z = obj.seq_resistance / Zbase
-            y = obj.seq_admittance / Ybase
+            z = obj.seq_resistance * self.length / Zbase
+            y = obj.seq_admittance * self.length / Ybase
 
             self.R = np.round(z.real, 6)
             self.X = np.round(z.imag, 6)
