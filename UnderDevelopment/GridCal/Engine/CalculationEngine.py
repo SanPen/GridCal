@@ -46,7 +46,8 @@ from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.Numerical.SE import solve_se_lm
 from GridCal.Engine.Numerical.DynamicModels import DynamicModels, dynamic_simulation
-from GridCal.Engine.ObjectTypes import TransformerType, Tower, BranchTemplate
+from GridCal.Engine.ObjectTypes import TransformerType, Tower, BranchTemplate, BranchType, \
+                                            UndergroundLineType, SequenceLineType, Wire
 from GridCal.Gui.GeneralDialogues import *
 
 ########################################################################################################################
@@ -86,12 +87,7 @@ class BusMode(Enum):
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
 
 
-class BranchType(Enum):
-    Branch = 'branch',
-    Line = 'line',
-    Transformer = 'transformer',
-    Reactance = 'reactance',
-    Switch = 'switch'
+
 
 
 class BranchTypeConverter:
@@ -456,7 +452,7 @@ def load_from_xls(filename):
     allowed_data_sheets = {'Conf': None,
                            'config': None,
                            'bus': None,
-                           'branch':None,
+                           'branch': None,
                            'load': None,
                            'load_Sprof': complex,
                            'load_Iprof': complex,
@@ -470,7 +466,12 @@ def load_from_xls(filename):
                            'CtrlGen_Vset_profiles': float,
                            'CtrlGen_P_profiles': float,
                            'shunt': None,
-                           'shunt_Y_profiles': complex}
+                           'shunt_Y_profiles': complex,
+                           'wires': None,
+                           'overhead_line_types': None,
+                           'underground_cable_types': None,
+                           'sequence_line_types': None,
+                           'transformer_types': None}
 
     # check the validity of this excel file
     for name in names:
@@ -1473,7 +1474,7 @@ class Branch(ReliabilityDevice):
 
         return f, t
 
-    def apply_type(self, obj, Sbase):
+    def apply_type(self, obj, Sbase, logger=list()):
         """
         Apply a transformer type definition to this object
         Args:
@@ -1494,8 +1495,9 @@ class Branch(ReliabilityDevice):
 
                 self.rate = obj.Nominal_power
 
-                self.type_obj = obj
-                self.branch_type = BranchType.Transformer
+                if obj != self.type_obj:
+                    self.type_obj = obj
+                    self.branch_type = BranchType.Transformer
             else:
                 raise Exception('You are trying to apply a transformer type to a non-transformer branch')
 
@@ -1514,10 +1516,46 @@ class Branch(ReliabilityDevice):
                 self.G = np.round(y.real, 6)
                 self.B = np.round(y.imag, 6)
 
-                self.type_obj = obj
-                self.branch_type = BranchType.Line
+                if obj != self.type_obj:
+                    self.type_obj = obj
+                    self.branch_type = BranchType.Line
             else:
                 raise Exception('You are trying to apply an Overhead line type to a non-line branch')
+
+        elif type(obj) is UndergroundLineType:
+            Vn = self.bus_to.Vnom
+            Zbase = (Vn * Vn) / Sbase
+            Ybase = 1 / Zbase
+
+            z = obj.seq_resistance / Zbase
+            y = obj.seq_admittance / Ybase
+
+            self.R = np.round(z.real, 6)
+            self.X = np.round(z.imag, 6)
+            self.G = np.round(y.real, 6)
+            self.B = np.round(y.imag, 6)
+
+            if obj != self.type_obj:
+                self.type_obj = obj
+                self.branch_type = BranchType.Line
+
+        elif type(obj) is SequenceLineType:
+
+            Vn = self.bus_to.Vnom
+            Zbase = (Vn * Vn) / Sbase
+            Ybase = 1 / Zbase
+
+            self.R = np.round(obj.R * self.length / Zbase, 6)
+            self.X = np.round(obj.X * self.length / Zbase, 6)
+            self.G = np.round(obj.G * self.length / Ybase, 6)
+            self.B = np.round(obj.B * self.length / Ybase, 6)
+
+            if obj != self.type_obj:
+                self.type_obj = obj
+                self.branch_type = BranchType.Line
+        else:
+
+            logger.append(self.name + ' the object type template was not recognised')
 
     def get_save_data(self):
         """
@@ -1529,7 +1567,7 @@ class Branch(ReliabilityDevice):
         if self.type_obj is None:
             type_obj = ''
         else:
-            type_obj = self.type_obj.name
+            type_obj = str(self.type_obj)
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.tap_module, self.angle, conv.inv_conv[self.branch_type], type_obj]
@@ -2930,11 +2968,14 @@ class Circuit:
         # list of wire types
         self.wire_types = list()
 
+        # underground cable lines
+        self.underground_cable_types = list()
+
+        # sequence modelled lines
+        self.sequence_line_types = list()
+
         # List of transformer types
         self.transformer_types = list()
-
-        # list of cable types
-        self.cable_types = list()
 
         # Object with the necessary inputs for a power flow study
         self.power_flow_input = None
@@ -3368,13 +3409,63 @@ class MultiCircuit(Circuit):
             if dev.properties_with_profile is not None:
                 self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
 
-    def get_templates_dictionary(self):
+    def get_catalogue_dict(self, branches_only=False):
+        """
+        Returns a dictionary with the catalogue types and the associated list of objects
+        :param branches_only: only branch types
+        :return: dictionary
+        """
+        # 'Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers'
+
+        if branches_only:
+
+            catalogue_dict = {'Overhead lines': self.overhead_line_types,
+                              'Transformers': self.transformer_types,
+                              'Underground lines': self.underground_cable_types,
+                              'Sequence lines': self.sequence_line_types}
+        else:
+            catalogue_dict = {'Wires': self.wire_types,
+                              'Overhead lines': self.overhead_line_types,
+                              'Underground lines': self.underground_cable_types,
+                              'Sequence lines': self.sequence_line_types,
+                              'Transformers': self.transformer_types}
+
+        return catalogue_dict
+
+    def get_catalogue_dict_by_name(self, type_class=None):
 
         d = dict()
-        tpes = [self.overhead_line_types, self.transformer_types, self.cable_types]
-        for group in tpes:
-            for elm in group:
-                d[elm.name] = elm
+
+        # ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
+
+        if type_class is None:
+            tpes = [self.overhead_line_types,
+                    self.underground_cable_types,
+                    self.wire_types,
+                    self.transformer_types,
+                    self.sequence_line_types]
+
+        elif type_class == 'Wires':
+            tpes = self.wire_types
+
+        elif type_class == 'Overhead lines':
+            tpes = self.overhead_line_types
+
+        elif type_class == 'Underground lines':
+            tpes = self.underground_cable_types
+
+        elif type_class == 'Sequence lines':
+            tpes = self.sequence_line_types
+
+        elif type_class == 'Transformers':
+            tpes = self.transformer_types
+
+        else:
+            tpes = list()
+
+        # make dictionary
+        for tpe in tpes:
+            d[tpe.name] = tpe
 
         return d
 
@@ -3411,7 +3502,7 @@ class MultiCircuit(Circuit):
                     interpret_data_v1(self, ppc)
                     return logger
                 elif ppc['version'] == 2.0:
-                    self.interpret_data_v2(ppc)
+                    self.load_excel(ppc)
                     return logger
                 else:
                     warn('The file could not be processed')
@@ -3422,18 +3513,21 @@ class MultiCircuit(Circuit):
                 circ = dgs_to_circuit(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
+                self.assign_circuit(circ)
 
             elif file_extension.lower() == '.m':
                 from GridCal.Engine.Importers.matpower_parser import parse_matpower_file
                 circ = parse_matpower_file(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
+                self.assign_circuit(circ)
 
             elif file_extension.lower() == '.json':
                 from GridCal.Engine.Importers.JSON_parser import parse_json
                 circ = parse_json(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
+                self.assign_circuit(circ)
 
             elif file_extension.lower() == '.raw':
                 from GridCal.Engine.Importers.PSS_Parser import PSSeParser
@@ -3441,14 +3535,14 @@ class MultiCircuit(Circuit):
                 circ = parser.circuit
                 self.buses = circ.buses
                 self.branches = circ.branches
+                self.assign_circuit(circ)
                 logger = parser.logger
 
             elif file_extension.lower() == '.xml':
                 from GridCal.Engine.Importers.CIM import CIMImport
                 parser = CIMImport()
                 circ = parser.load_cim_file(filename)
-                self.buses = circ.buses
-                self.branches = circ.branches
+                self.assign_circuit(circ)
                 logger = parser.logger
 
         else:
@@ -3457,7 +3551,18 @@ class MultiCircuit(Circuit):
 
         return logger
 
-    def interpret_data_v2(self, data):
+    def assign_circuit(self, circ):
+        """
+        Assign a circuit object to this object
+        :param circ: instance of MultiCircuit or Circuit
+        """
+        self.buses = circ.buses
+        self.branches = circ.branches
+        self.name = circ.name
+        self.Sbase = circ.Sbase
+        self.fBase = circ.fBase
+
+    def load_excel(self, data):
         """
         Interpret the new file version
         Args:
@@ -3481,6 +3586,8 @@ class MultiCircuit(Circuit):
 
         self.time_profile = None
 
+        self.logger = list()
+
         # common function
         def set_object_attributes(obj_, attr_list, values):
             for a, attr in enumerate(attr_list):
@@ -3500,203 +3607,294 @@ class MultiCircuit(Circuit):
                 else:
                     warn(str(obj_) + ' has no ' + attr + ' property.')
 
-        # Add the buses
-        lst = data['bus']
-        hdr = lst.columns.values
-        vals = lst.values
-        bus_dict = dict()
-        for i in range(len(lst)):
-            obj = Bus()
-            set_object_attributes(obj, hdr, vals[i, :])
-            bus_dict[obj.name] = obj
-            self.add_bus(obj)
+        # Add the buses ################################################################################################
+        if 'bus' in data.keys():
+            lst = data['bus']
+            hdr = lst.columns.values
+            vals = lst.values
+            bus_dict = dict()
+            for i in range(len(lst)):
+                obj = Bus()
+                set_object_attributes(obj, hdr, vals[i, :])
+                bus_dict[obj.name] = obj
+                self.add_bus(obj)
+        else:
+            self.logger.append('No buses in the file!')
 
-        # Add the branches
-        lst = data['branch']
+        # Add the branches #############################################################################################
+        if 'branch' in data.keys():
+            lst = data['branch']
 
-        # fix the old 'is_transformer' property
-        if 'is_transformer' in lst.columns.values:
-            lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
-            lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
+            # fix the old 'is_transformer' property
+            if 'is_transformer' in lst.columns.values:
+                lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
+                lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
 
-        bus_from = lst['bus_from'].values
-        bus_to = lst['bus_to'].values
-        hdr = lst.columns.values
-        hdr = delete(hdr, argwhere(hdr == 'bus_from'))
-        hdr = delete(hdr, argwhere(hdr == 'bus_to'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
+            bus_from = lst['bus_from'].values
+            bus_to = lst['bus_to'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus_from'))
+            hdr = delete(hdr, argwhere(hdr == 'bus_to'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                try:
+                    obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
 
-            try:
-                obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
-            except KeyError as ex:
-                raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
+                set_object_attributes(obj, hdr, vals[i, :])
+                self.add_branch(obj)
 
-            set_object_attributes(obj, hdr, vals[i, :])
-            self.add_branch(obj)
+        else:
+            self.logger.append('No branches in the file!')
 
-        # add the loads
-        lst = data['load']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
-        hdr = delete(hdr, argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
-            obj = Load()
-            set_object_attributes(obj, hdr, vals[i, :])
+        # add the loads ################################################################################################
+        if 'load' in data.keys():
+            lst = data['load']
+            bus_from = lst['bus'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                obj = Load()
+                set_object_attributes(obj, hdr, vals[i, :])
 
-            if 'load_Sprof' in data.keys():
-                val = [complex(v) for v in data['load_Sprof'].values[:, i]]
-                idx = data['load_Sprof'].index
-                obj.Sprof = pd.DataFrame(data=val, index=idx)
+                if 'load_Sprof' in data.keys():
+                    val = [complex(v) for v in data['load_Sprof'].values[:, i]]
+                    idx = data['load_Sprof'].index
+                    obj.Sprof = pd.DataFrame(data=val, index=idx)
 
-                if self.time_profile is None:
-                    self.time_profile = idx
+                    if self.time_profile is None:
+                        self.time_profile = idx
 
-            if 'load_Iprof' in data.keys():
-                val = [complex(v) for v in data['load_Iprof'].values[:, i]]
-                idx = data['load_Iprof'].index
-                obj.Iprof = pd.DataFrame(data=val, index=idx)
+                if 'load_Iprof' in data.keys():
+                    val = [complex(v) for v in data['load_Iprof'].values[:, i]]
+                    idx = data['load_Iprof'].index
+                    obj.Iprof = pd.DataFrame(data=val, index=idx)
 
-                if self.time_profile is None:
-                    self.time_profile = idx
+                    if self.time_profile is None:
+                        self.time_profile = idx
 
-            if 'load_Zprof' in data.keys():
-                val = [complex(v) for v in data['load_Zprof'].values[:, i]]
-                idx = data['load_Zprof'].index
-                obj.Zprof = pd.DataFrame(data=val, index=idx)
+                if 'load_Zprof' in data.keys():
+                    val = [complex(v) for v in data['load_Zprof'].values[:, i]]
+                    idx = data['load_Zprof'].index
+                    obj.Zprof = pd.DataFrame(data=val, index=idx)
 
-                if self.time_profile is None:
-                    self.time_profile = idx
+                    if self.time_profile is None:
+                        self.time_profile = idx
 
-            try:
-                bus = bus_dict[str(bus_from[i])]
-            except KeyError as ex:
-                raise Exception(str(i) + ': Load bus is not in the buses list.\n' + str(ex))
+                try:
+                    bus = bus_dict[str(bus_from[i])]
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Load bus is not in the buses list.\n' + str(ex))
 
-            if obj.name == 'Load':
-                obj.name += str(len(bus.loads) + 1) + '@' + bus.name
+                if obj.name == 'Load':
+                    obj.name += str(len(bus.loads) + 1) + '@' + bus.name
 
-            obj.bus = bus
-            bus.loads.append(obj)
+                obj.bus = bus
+                bus.loads.append(obj)
+        else:
+            self.logger.append('No loads in the file!')
 
-        # add the controlled generators
-        lst = data['controlled_generator']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
-        hdr = delete(hdr, argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
-            obj = ControlledGenerator()
-            set_object_attributes(obj, hdr, vals[i, :])
+        # add the controlled generators ################################################################################
+        if 'controlled_generator' in data.keys():
+            lst = data['controlled_generator']
+            bus_from = lst['bus'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                obj = ControlledGenerator()
+                set_object_attributes(obj, hdr, vals[i, :])
 
-            if 'CtrlGen_P_profiles' in data.keys():
-                val = data['CtrlGen_P_profiles'].values[:, i]
-                idx = data['CtrlGen_P_profiles'].index
-                # obj.Pprof = pd.DataFrame(data=val, index=idx)
-                obj.create_P_profile(index=idx, arr=val)
+                if 'CtrlGen_P_profiles' in data.keys():
+                    val = data['CtrlGen_P_profiles'].values[:, i]
+                    idx = data['CtrlGen_P_profiles'].index
+                    # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                    obj.create_P_profile(index=idx, arr=val)
 
-            if 'CtrlGen_Vset_profiles' in data.keys():
-                val = data['CtrlGen_Vset_profiles'].values[:, i]
-                idx = data['CtrlGen_Vset_profiles'].index
-                obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+                if 'CtrlGen_Vset_profiles' in data.keys():
+                    val = data['CtrlGen_Vset_profiles'].values[:, i]
+                    idx = data['CtrlGen_Vset_profiles'].index
+                    obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            try:
-                bus = bus_dict[str(bus_from[i])]
-            except KeyError as ex:
-                raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
+                try:
+                    bus = bus_dict[str(bus_from[i])]
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
-            if obj.name == 'gen':
-                obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
+                if obj.name == 'gen':
+                    obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
 
-            obj.bus = bus
-            bus.controlled_generators.append(obj)
+                obj.bus = bus
+                bus.controlled_generators.append(obj)
+        else:
+            self.logger.append('No controlled generator in the file!')
 
-        # add the batteries
-        lst = data['battery']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
-        hdr = delete(hdr, argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
-            obj = Battery()
-            set_object_attributes(obj, hdr, vals[i, :])
+        # add the batteries ############################################################################################
+        if 'battery' in data.keys():
+            lst = data['battery']
+            bus_from = lst['bus'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                obj = Battery()
+                set_object_attributes(obj, hdr, vals[i, :])
 
-            if 'battery_P_profiles' in data.keys():
-                val = data['battery_P_profiles'].values[:, i]
-                idx = data['battery_P_profiles'].index
-                # obj.Pprof = pd.DataFrame(data=val, index=idx)
-                obj.create_P_profile(index=idx, arr=val)
+                if 'battery_P_profiles' in data.keys():
+                    val = data['battery_P_profiles'].values[:, i]
+                    idx = data['battery_P_profiles'].index
+                    # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                    obj.create_P_profile(index=idx, arr=val)
 
-            if 'battery_Vset_profiles' in data.keys():
-                val = data['battery_Vset_profiles'].values[:, i]
-                idx = data['battery_Vset_profiles'].index
-                obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+                if 'battery_Vset_profiles' in data.keys():
+                    val = data['battery_Vset_profiles'].values[:, i]
+                    idx = data['battery_Vset_profiles'].index
+                    obj.Vsetprof = pd.DataFrame(data=val, index=idx)
 
-            try:
-                bus = bus_dict[str(bus_from[i])]
-            except KeyError as ex:
-                raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
+                try:
+                    bus = bus_dict[str(bus_from[i])]
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
 
-            if obj.name == 'batt':
-                obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
+                if obj.name == 'batt':
+                    obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
 
-            obj.bus = bus
-            bus.batteries.append(obj)
+                obj.bus = bus
+                bus.batteries.append(obj)
+        else:
+            self.logger.append('No battery in the file!')
 
-        # add the static generators
-        lst = data['static_generator']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
-        hdr = delete(hdr, argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
-            obj = StaticGenerator()
-            set_object_attributes(obj, hdr, vals[i, :])
+        # add the static generators ####################################################################################
+        if 'static_generator' in data.keys():
+            lst = data['static_generator']
+            bus_from = lst['bus'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                obj = StaticGenerator()
+                set_object_attributes(obj, hdr, vals[i, :])
 
-            if 'static_generator_Sprof' in data.keys():
-                val = data['static_generator_Sprof'].values[:, i]
-                idx = data['static_generator_Sprof'].index
-                obj.Sprof = pd.DataFrame(data=val, index=idx)
+                if 'static_generator_Sprof' in data.keys():
+                    val = data['static_generator_Sprof'].values[:, i]
+                    idx = data['static_generator_Sprof'].index
+                    obj.Sprof = pd.DataFrame(data=val, index=idx)
 
-            try:
-                bus = bus_dict[str(bus_from[i])]
-            except KeyError as ex:
-                raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
+                try:
+                    bus = bus_dict[str(bus_from[i])]
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
 
-            if obj.name == 'StaticGen':
-                obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
+                if obj.name == 'StaticGen':
+                    obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
 
-            obj.bus = bus
-            bus.static_generators.append(obj)
+                obj.bus = bus
+                bus.static_generators.append(obj)
+        else:
+            self.logger.append('No static generator in the file!')
 
-        # add the shunts
-        lst = data['shunt']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
-        hdr = delete(hdr, argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
-            obj = Shunt()
-            set_object_attributes(obj, hdr, vals[i, :])
+        # add the shunts ###############################################################################################
+        if 'shunt' in data.keys():
+            lst = data['shunt']
+            bus_from = lst['bus'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                obj = Shunt()
+                set_object_attributes(obj, hdr, vals[i, :])
 
-            if 'shunt_Y_profiles' in data.keys():
-                val = data['shunt_Y_profiles'].values[:, i]
-                idx = data['shunt_Y_profiles'].index
-                obj.Yprof = pd.DataFrame(data=val, index=idx)
+                if 'shunt_Y_profiles' in data.keys():
+                    val = data['shunt_Y_profiles'].values[:, i]
+                    idx = data['shunt_Y_profiles'].index
+                    obj.Yprof = pd.DataFrame(data=val, index=idx)
 
-            try:
-                bus = bus_dict[str(bus_from[i])]
-            except KeyError as ex:
-                raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
+                try:
+                    bus = bus_dict[str(bus_from[i])]
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
 
-            if obj.name == 'shunt':
-                obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
+                if obj.name == 'shunt':
+                    obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
 
-            obj.bus = bus
-            bus.shunts.append(obj)
+                obj.bus = bus
+                bus.shunts.append(obj)
+        else:
+            self.logger.append('No shunt in the file!')
 
-        # print('Done!')
+        # Add the wires ################################################################################################
+        if 'wires' in data.keys():
+            lst = data['wires']
+            hdr = lst.columns.values
+            vals = lst.values
+            for i in range(len(lst)):
+                obj = Wire()
+                set_object_attributes(obj, hdr, vals[i, :])
+                self.add_wire(obj)
+        else:
+            self.logger.append('No wires in the file!')
+
+        # Add the overhead_line_types ##################################################################################
+        if 'overhead_line_types' in data.keys():
+            lst = data['overhead_line_types']
+
+            for tower_name in lst['tower_name'].unique():
+                obj = Tower()
+                vals = lst[lst['tower_name'] == tower_name].values
+
+                # set the tower values
+                set_object_attributes(obj, obj.edit_headers, vals[0, :])
+
+                # add the wires
+                for i in range(vals.shape[0]):
+                    wire = Wire()
+                    set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.edit_headers):])
+                    obj.wires.append(wire)
+
+                self.add_overhead_line(obj)
+        else:
+            self.logger.append('No overhead_line_types in the file!')
+
+        # Add the wires ################################################################################################
+        if 'underground_cable_types' in data.keys():
+            lst = data['underground_cable_types']
+            hdr = lst.columns.values
+            vals = lst.values
+            # for i in range(len(lst)):
+            #     obj = UndergroundLineType()
+            #     set_object_attributes(obj, hdr, vals[i, :])
+            #     self.underground_cable_types.append(obj)
+        else:
+            self.logger.append('No underground_cable_types in the file!')
+
+        # Add the sequence line types ##################################################################################
+        if 'sequence_line_types' in data.keys():
+            lst = data['sequence_line_types']
+            hdr = lst.columns.values
+            vals = lst.values
+            for i in range(len(lst)):
+                obj = SequenceLineType()
+                set_object_attributes(obj, hdr, vals[i, :])
+                self.add_sequence_line(obj)
+        else:
+            self.logger.append('No sequence_line_types in the file!')
+
+        # Add the transformer types ####################################################################################
+        if 'transformer_types' in data.keys():
+            lst = data['transformer_types']
+            hdr = lst.columns.values
+            vals = lst.values
+            for i in range(len(lst)):
+                obj = TransformerType()
+                set_object_attributes(obj, hdr, vals[i, :])
+                self.add_transformer_type(obj)
+        else:
+            self.logger.append('No transformer_types in the file!')
+
+        # Other actions ################################################################################################
+        self.logger += self.apply_all_branch_types()
 
     def save_file(self, file_path):
         """
@@ -3908,8 +4106,79 @@ class MultiCircuit(Circuit):
 
             dfs['shunt'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
+        # wires ########################################################################################################
 
-        # flush-save
+        elements = self.wire_types
+        headers = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0, phase=0).edit_headers
+
+        if len(elements) > 0:
+            obj = list()
+            for elm in elements:
+                obj.append(elm.get_save_data())
+
+            dfs['wires'] = pd.DataFrame(data=obj, columns=headers)
+        else:
+            dfs['wires'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+        # overhead cable types ######################################################################################
+
+        elements = self.overhead_line_types
+        headers = Tower().get_save_headers()
+
+        if len(elements) > 0:
+            obj = list()
+            for elm in elements:
+                elm.get_save_data(dta_list=obj)
+
+            dfs['overhead_line_types'] = pd.DataFrame(data=obj, columns=headers)
+        else:
+            dfs['overhead_line_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+        # underground cable types ######################################################################################
+
+        elements = self.underground_cable_types
+        headers = UndergroundLineType().edit_headers
+
+        if len(elements) > 0:
+            obj = list()
+            for elm in elements:
+                obj.append(elm.get_save_data())
+
+            dfs['underground_cable_types'] = pd.DataFrame(data=obj, columns=headers)
+        else:
+            dfs['underground_cable_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+        # sequence line types ##########################################################################################
+
+        elements = self.sequence_line_types
+        headers = SequenceLineType().edit_headers
+
+        if len(elements) > 0:
+            obj = list()
+            hdr = list()
+            for elm in elements:
+                obj.append(elm.get_save_data())
+
+            dfs['sequence_line_types'] = pd.DataFrame(data=obj, columns=headers)
+        else:
+            dfs['sequence_line_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+        # transformer types ############################################################################################
+
+        elements = self.transformer_types
+        headers = TransformerType().edit_headers
+
+        if len(elements) > 0:
+            obj = list()
+            hdr = list()
+            for elm in elements:
+                obj.append(elm.get_save_data())
+
+            dfs['transformer_types'] = pd.DataFrame(data=obj, columns=headers)
+        else:
+            dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+        # flush-save ###################################################################################################
         writer = pd.ExcelWriter(file_path)
         for key in dfs.keys():
             dfs[key].to_excel(writer, key)
@@ -4280,6 +4549,65 @@ class MultiCircuit(Circuit):
         bus.shunts.append(api_obj)
 
         return api_obj
+
+    def add_wire(self, obj: Wire):
+        """
+        Add wire object
+        :param obj: Wire object
+        """
+        self.wire_types.append(obj)
+
+    def delete_wire(self, i):
+        """
+        Remove wire
+        :param i: index
+        """
+        self.wire_types.pop(i)
+
+    def add_overhead_line(self, obj: Tower):
+        """
+        Add overhead line
+        :param obj: Tower object
+        """
+        self.overhead_line_types.append(obj)
+
+    def delete_overhead_line(self, i):
+
+        self.overhead_line_types.pop(i)
+
+    def add_underground_line(self, obj: UndergroundLineType):
+
+        self.underground_cable_types.append(obj)
+
+    def delete_underground_line(self, i):
+
+        self.underground_cable_types.pop(i)
+
+    def add_sequence_line(self, obj: SequenceLineType):
+
+        self.sequence_line_types.append(obj)
+
+    def delete_sequence_line(self, i):
+
+        self.sequence_line_types.pop(i)
+
+    def add_transformer_type(self, obj: TransformerType):
+
+        self.transformer_types.append(obj)
+
+    def delete_transformer_type(self, i):
+
+        self.transformer_types.pop(i)
+
+    def apply_all_branch_types(self):
+        """
+        Apply all the branch types
+        """
+        logger = list()
+        for branch in self.branches:
+            branch.apply_type(branch.type_obj, self.Sbase, logger=logger)
+
+        return logger
 
     def plot_graph(self, ax=None):
         """

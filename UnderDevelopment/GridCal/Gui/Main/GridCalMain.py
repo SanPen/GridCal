@@ -17,7 +17,7 @@ from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Engine.ObjectTypes import Tower, Wire, TransformerType
+from GridCal.Engine.ObjectTypes import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI
@@ -325,6 +325,10 @@ class MainGUI(QMainWindow):
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
+
+        # doubleSpinBox
+        self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
+        self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
         ################################################################################################################
         # Color maps
@@ -830,7 +834,15 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Creating schematic...')
             QtGui.QGuiApplication.processEvents()
             self.create_schematic_from_api(explode_factor=1)
+
+            # set circuit name
             self.grid_editor.name_label.setText(self.circuit.name)
+
+            # set base magnitudes
+            self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
+            self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+
+            # set circuit comments
             try:
                 self.ui.comments_textEdit.setText(self.circuit.comments)
             except:
@@ -1243,8 +1255,8 @@ class MainGUI(QMainWindow):
         """
         Fill the Catalogue tree view with the catalogue types
         """
-        catalogue_dict = {'Overhead lines': self.circuit.overhead_line_types,
-                          'Transformers': self.circuit.transformer_types}
+
+        catalogue_dict = self.circuit.get_catalogue_dict(branches_only=True)
 
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Template'])
@@ -2438,15 +2450,21 @@ class MainGUI(QMainWindow):
         self.ui.result_type_listView.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
 
+        self.ui.catalogueTableView.setModel(None)
+
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.tableView.setModel(None)
         self.ui.transient_events_tableView.setModel(None)
 
         self.ui.dataStructureTableView.setModel(None)
+        self.ui.catalogueTreeView.setModel(None)
 
         self.ui.resultsPlot.clear(force=True)
         # self.ui.resultsPlot.canvas.fig.clear()
         self.ui.resultsPlot.get_figure().set_facecolor('white')
+
+        self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
+        self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
 
     def update_available_results_in_the_study(self):
         """
@@ -2662,6 +2680,13 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def change_circuit_base(self):
+        """
+        Update the circuit base values from the UI
+        """
+        self.circuit.Sbase = self.ui.sbase_doubleSpinBox.value()
+        self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
+
     def profile_sliders_changed(self):
         """
         Correct sliders if they change
@@ -2694,15 +2719,30 @@ class MainGUI(QMainWindow):
             if tpe == 'Overhead lines':
 
                 obj = Tower()
-                obj.name = 'Tower_' + str(len(self.circuit.overhead_line_types))
-                self.circuit.overhead_line_types.append(obj)
+                obj.frequency = self.circuit.fBase
+                obj.tower_name = 'Tower_' + str(len(self.circuit.overhead_line_types))
+                self.circuit.add_overhead_line(obj)
+                something_happened = True
+
+            elif tpe == 'Underground lines':
+
+                name = 'Cable_' + str(len(self.circuit.underground_cable_types))
+                obj = UndergroundLineType(name=name)
+                self.circuit.add_underground_line(obj)
+                something_happened = True
+
+            elif tpe == 'Sequence lines':
+
+                name = 'SequenceLine_' + str(len(self.circuit.sequence_line_types))
+                obj = SequenceLineType(name=name)
+                self.circuit.add_sequence_line(obj)
                 something_happened = True
 
             elif tpe == 'Wires':
 
                 name = 'Wire_' + str(len(self.circuit.wire_types))
                 obj = Wire(name=name, xpos=0, ypos=0, gmr=0.01, r=0.01, x=0, phase=1)
-                self.circuit.wire_types.append(obj)
+                self.circuit.add_wire(obj)
                 something_happened = True
 
             elif tpe == 'Transformers':
@@ -2711,7 +2751,7 @@ class MainGUI(QMainWindow):
                 obj = TransformerType(HV_nominal_voltage=10, LV_nominal_voltage=0.4, Nominal_power=2,
                                       Copper_losses=0.8, Iron_losses=0.1, No_load_current=0.1, Short_circuit_voltage=0.1,
                                       GR_hv1=0.5, GX_hv1=0.5, name=name)
-                self.circuit.transformer_types.append(obj)
+                self.circuit.add_transformer_type(obj)
                 something_happened = True
 
             else:
@@ -2784,17 +2824,27 @@ class MainGUI(QMainWindow):
             if idx > -1:
                 if tpe == 'Overhead lines':
 
-                    self.circuit.overhead_line_types.pop(idx)
+                    self.circuit.delete_overhead_line(idx)
+                    something_happened = True
+
+                elif tpe == 'Underground lines':
+
+                    self.circuit.delete_underground_line(idx)
+                    something_happened = True
+
+                elif tpe == 'Sequence lines':
+
+                    self.circuit.delete_sequence_line(idx)
                     something_happened = True
 
                 elif tpe == 'Wires':
 
-                    self.circuit.wire_types.pop(idx)
+                    self.circuit.delete_wire(idx)
                     something_happened = True
 
                 elif tpe == 'Transformers':
 
-                    self.circuit.transformer_types.pop(idx)
+                    self.circuit.delete_transformer_type(idx)
                     something_happened = True
 
                 else:
@@ -2823,6 +2873,22 @@ class MainGUI(QMainWindow):
                                    elm.edit_headers, elm.units, elm.edit_types,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
+                                   check_unique=['tower_name'])
+
+            elif tpe == 'Underground lines':
+                elm = UndergroundLineType()
+                mdl = ObjectsModel(self.circuit.underground_cable_types,
+                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   parent=self.ui.catalogueTableView, editable=True,
+                                   non_editable_indices=elm.non_editable_indices,
+                                   check_unique=['name'])
+
+            elif tpe == 'Sequence lines':
+                elm = SequenceLineType()
+                mdl = ObjectsModel(self.circuit.sequence_line_types,
+                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   parent=self.ui.catalogueTableView, editable=True,
+                                   non_editable_indices=elm.non_editable_indices,
                                    check_unique=['name'])
             elif tpe == 'Wires':
                 elm = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0)
@@ -2830,7 +2896,7 @@ class MainGUI(QMainWindow):
                                    elm.edit_headers, elm.units, elm.edit_types,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
-                                   check_unique=['name'])
+                                   check_unique=['wire_name'])
 
             elif tpe == 'Transformers':
                 elm = TransformerType(HV_nominal_voltage=10, LV_nominal_voltage=10, Nominal_power=10,
@@ -2853,11 +2919,56 @@ class MainGUI(QMainWindow):
 
     def assign_template(self):
         """
-
         Returns:
 
         """
-        print('assign_template')
+        logger = list()
+
+        if len(self.ui.catalogueTreeView.selectedIndexes()) > 0:
+
+            # tree parent (category, i.e. Transformers)
+            type_class = self.ui.catalogueTreeView.selectedIndexes()[0].parent().data()
+
+            if type_class is not None:
+
+                # template object name
+                tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data()
+
+                # get catalogue dictionary of the selected type
+                branch_type_dict = self.circuit.get_catalogue_dict_by_name(type_class=type_class)
+
+                # is the name in the catalogue?
+                if tpe_name in branch_type_dict.keys():
+
+                    # get the actual object from the types dictionary
+                    branch_type = branch_type_dict[tpe_name]
+
+                    # for each unique row index
+                    unique_rows = set([i.row() for i in self.ui.dataStructureTableView.selectedIndexes()])
+                    for i in unique_rows:
+
+                        # if the template and the branch types match...
+                        if self.circuit.branches[i].branch_type == branch_type.tpe:
+
+                            # apply the branch type
+                            self.circuit.branches[i].apply_type(branch_type, Sbase=self.circuit.Sbase)
+
+                        else:
+                            logger.append(str(branch_type) + '->' + self.circuit.branches[i].name + '[' + str(i)
+                                          + ']: The type does not match the branch type!')
+
+                    if len(logger) > 0:
+                        dlg = LogsDialogue('Assign branch template', logger)
+                        dlg.exec_()
+
+                else:
+                    self.msg(tpe_name + ' is not in the types', 'Assign branch type')
+                    # update catalogue displayed
+
+            else:
+                self.msg('Select a type from the catalogue not the generic category', 'Assign branch type')
+        else:
+            self.msg('Select a type from the catalogue', 'Assign branch type')
 
         indices = self.ui.dataStructureTableView.selectedIndexes()
         tpe = self.ui.catalogueTreeView.selectedIndexes()

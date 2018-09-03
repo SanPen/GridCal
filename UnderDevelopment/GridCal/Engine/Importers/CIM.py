@@ -39,6 +39,8 @@ class GeneralContainer:
 
         self.base_voltage = list()
 
+        self.containers = list()
+
     def parse_line(self, line):
         """
         Parse xml line that eligibly belongs to this object
@@ -272,7 +274,7 @@ class CIMCircuit:
         # otherwise, this is neither the beginning nor the end of an object
         return False, False, ""
 
-    def find_references(self):
+    def find_references(self, recognised=set()):
         """
         Replaces the references of the classes given
         :return:
@@ -284,49 +286,65 @@ class CIMCircuit:
             # for each property in the element
             # for prop in element.properties.keys():
             for prop, ref_code in element.properties.items():
-                # if the property is in the selected classes
-                # if prop in classes:
 
-                # get the reference
-                # ref_code = element.properties[prop]
-
+                # if the value of the property is in the object ID references...
                 if ref_code in self.elm_dict.keys():
+
                     # replace the reference by the corresponding object properties
                     obj_idx = self.elm_dict[ref_code]
                     ref_obj = self.elements[obj_idx]
                     # element.properties[prop] = ref_obj
 
+                    # add the element type to the recognised types because it is in the referenced dictionary
+                    recognised.add(element.tpe)
+
                     # A terminal points at an equipment with the property ConductingEquipment
                     # A terminal points at a bus (topological node) with the property TopologicalNode
                     if prop in ['ConductingEquipment', 'TopologicalNode', 'ConnectivityNode']:
                         ref_obj.terminals.append(element)
+                        recognised.add(prop)
 
-                    if prop in ['BaseVoltage']:
+                    if prop in ['BaseVoltage', 'VoltageLevel']:
                         element.base_voltage.append(ref_obj)
+                        recognised.add(prop)
+
+                    if prop in ['EquipmentContainer']:
+                        element.containers.append(ref_obj)
+                        recognised.add(ref_obj.tpe)
 
                     # the winding points at the transformer with the property PowerTransformer
                     if ref_obj.tpe == 'PowerTransformer':
                         if prop in ['PowerTransformer']:
                             ref_obj.windings.append(element)
+                            recognised.add(prop)
+                        recognised.add(ref_obj.tpe)
 
                     # The tap changer points at the winding with the property TransformerWinding
                     if ref_obj.tpe in ['TransformerWinding', 'PowerTransformerEnd']:
                         if prop in ['TransformerWinding', 'PowerTransformerEnd']:
                             ref_obj.tap_changers.append(element)
+                            recognised.add(prop)
+                        recognised.add(ref_obj.tpe)
 
                     # the synchronous generator references 3 types of objects
                     if element.tpe == 'SynchronousMachine':
                         if prop in ['BaseVoltage']:
                             element.base_voltage.append(ref_obj)
+                            recognised.add(prop)
                         if prop in ['RegulatingControl']:
                             element.regulating_control.append(ref_obj)
+                            recognised.add(prop)
                         if prop in ['GeneratingUnit']:
                             element.generating_unit.append(ref_obj)
+                            recognised.add(prop)
+                        recognised.add(element.tpe)
 
                     # a Conform load points at LoadResponseCharacteristic with the property LoadResponse
                     if element.tpe == 'ConformLoad':
                         if prop in ['LoadResponse']:
                             element.load_response_characteristics.append(ref_obj)
+                            recognised.add(prop)
+                        recognised.add(element.tpe)
 
                     # if element.tpe == 'ACLineSegment':
                     #     if prop in ['BaseVoltage']:
@@ -1058,12 +1076,24 @@ class CIMImport:
         if topology_file is not None:
             cim.parse_file(topology_file)
 
+        # set of used classes
+        recognised = set()
+
         # replace CIM references in the CIM objects
-        cim.find_references()
+        cim.find_references(recognised=recognised)
+
+        # Model
+        if 'Model' in cim.elements_by_type.keys():
+            for elm in cim.elements_by_type['Model']:
+                circuit.name = elm.properties['description']
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
 
         # Terminals
         T_dict = dict()
         if 'Terminal' in cim.elements_by_type.keys():
+
             for elm in cim.elements_by_type['Terminal']:
                 if 'name' in elm.properties:
                     name = elm.properties['name']
@@ -1073,6 +1103,9 @@ class CIMImport:
                 # T = Bus(name=name)
                 T_dict[elm.id] = elm
                 # circuit.add_bus(T)
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
 
         else:
             self.logger.append('There are no Terminals!!!!!')
@@ -1084,11 +1117,18 @@ class CIMImport:
             for elm in self.get_elements(cim.elements_by_type, cim_nodes):
                 name = elm.properties['name']
 
-                Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                if len(elm.base_voltage) > 0:
+                    Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                else:
+                    self.logger.append(elm.tpe + ':' + name + ' has no nominal voltage associated.')
+                    Vnom = 0
 
                 CN = Bus(name=name, vnom=Vnom)
                 CN_dict[elm.id] = CN
                 circuit.add_bus(CN)
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
         else:
             self.logger.append('There are no TopologicalNodes nor ConnectivityNodes!!!!!')
 
@@ -1103,6 +1143,9 @@ class CIMImport:
                 for term in elm.terminals:
                     T = T_dict[term.id]
                     self.add_node_terminal_relation(CN, T)
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
         else:
             self.logger.append('No topological nodes: The grid MUST have topological Nodes')
 
@@ -1112,6 +1155,9 @@ class CIMImport:
                 T1 = T_dict[elm.terminals[0].id]  # get the terminal of the bus bar section
                 CN = self.terminal_node[T1][0]  # get the connectivity node of the terminal
                 CN.is_bus = True  # the connectivity node has a BusbarSection attached, hence it is a real bus
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
         else:
             self.logger.append("No BusbarSections: There is no chance to reduce the grid")
 
@@ -1161,113 +1207,123 @@ class CIMImport:
 
                     circuit.add_branch(line)
 
+                # add class to recognised objects
+                recognised.add(elm.tpe)
+
         # PowerTransformer
         if 'PowerTransformer' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['PowerTransformer']:
 
-                assert(len(elm.windings) == 2)
-
-                if len(elm.windings[0].terminals) > 0:
-                    T1 = T_dict[elm.windings[0].terminals[0].id]
-                    T2 = T_dict[elm.windings[1].terminals[0].id]
-                elif len(elm.terminals) == 2:
-                    T1 = T_dict[elm.terminals[0].id]
-                    T2 = T_dict[elm.terminals[1].id]
-                else:
-                    raise Exception('Check element' + elm.id)
-
-                B1 = self.terminal_node[T1][0]
-                B2 = self.terminal_node[T2][0]
-
-                # reset the values for the new object
-                R = 0
-                X = 0
-                G = 0
-                B = 0
-                R0 = 0
-                X0 = 0
-                G0 = 0
-                B0 = 0
-                taps = [None] * 2
-                RATE = 0
-                # convert every winding to per unit and add it into a PI model
-                for i in range(2):
-                    r = float(elm.windings[i].properties['r'])
-                    x = float(elm.windings[i].properties['x'])
-
-                    try:
-                        g = float(elm.windings[i].properties['g'])
-                        b = float(elm.windings[i].properties['b'])
-                    except Exception as e:
-                        g = 0
-                        b = 0
-                        self.logger.append('No shunt components in ' + elm.windings[i].id)
-
-                    try:
-                        r0 = float(elm.windings[i].properties['r0'])
-                        x0 = float(elm.windings[i].properties['x0'])
-                        g0 = float(elm.windings[i].properties['g0'])
-                        b0 = float(elm.windings[i].properties['b0'])
-                    except Exception as e:
-                        r0 = 0
-                        x0 = 0
-                        g0 = 0
-                        b0 = 0
-                        self.logger.append('No zero sequence components in ' + elm.id)
-
-                    S = float(elm.windings[i].properties['ratedS'])
-                    RATE += S
-
-                    try:
-                        V = float(elm.windings[i].properties['ratedU'])
-                    except Exception as e:
-                        self.logger.append('No ratedU in ' + elm.windings[i].id + ' this is mandatory')
-                        try:
-                            V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
-                        except Exception as e2:
-                            self.logger.append('No voltage in ' + elm.windings[i].id + 'whatsoever, this causes an error')
-
-                    if len(elm.windings[i].tap_changers) > 0:
-                        Vnom = float(elm.windings[i].tap_changers[0].properties['neutralU'])
-                        tap_dir = float(elm.windings[i].tap_changers[0].properties['normalStep'])
-                        Vinc = float(elm.windings[i].tap_changers[0].properties['stepVoltageIncrement'])
-                        taps[i] = (Vnom + tap_dir * Vnom * (Vinc / 100.0)) / Vnom
-                    else:
-                        taps[i] = 1.0
-
-                    Zbase = (V * V) / S
-                    Ybase = 1.0 / Zbase
-
-                    R += r / Zbase
-                    R0 += r0 / Zbase
-                    X += x / Zbase
-                    X0 += x0 / Zbase
-
-                    G += g / Ybase
-                    G0 += g0 / Ybase
-                    B += b / Ybase
-                    B0 += b0 / Ybase
-
+                # assert(len(elm.windings) == 2)
                 name = elm.properties['name']
 
-                tap_m = taps[0] * taps[1]
+                if len(elm.windings) == 2:
 
-                line = Branch(bus_from=B1,
-                              bus_to=B2,
-                              name=name,
-                              r=R,
-                              x=X,
-                              g=G,
-                              b=B,
-                              rate=RATE,
-                              tap=tap_m,
-                              shift_angle=0,
-                              active=True,
-                              mttf=0,
-                              mttr=0,
-                              branch_type=BranchType.Transformer)
+                    if len(elm.windings[0].terminals) > 0:
+                        T1 = T_dict[elm.windings[0].terminals[0].id]
+                        T2 = T_dict[elm.windings[1].terminals[0].id]
+                    elif len(elm.terminals) == 2:
+                        T1 = T_dict[elm.terminals[0].id]
+                        T2 = T_dict[elm.terminals[1].id]
+                    else:
+                        raise Exception('Check element' + elm.id)
 
-                circuit.add_branch(line)
+                    B1 = self.terminal_node[T1][0]
+                    B2 = self.terminal_node[T2][0]
+
+                    # reset the values for the new object
+                    R = 0
+                    X = 0
+                    G = 0
+                    B = 0
+                    R0 = 0
+                    X0 = 0
+                    G0 = 0
+                    B0 = 0
+                    taps = [None] * 2
+                    RATE = 0
+                    # convert every winding to per unit and add it into a PI model
+                    for i in range(2):
+                        r = float(elm.windings[i].properties['r'])
+                        x = float(elm.windings[i].properties['x'])
+
+                        try:
+                            g = float(elm.windings[i].properties['g'])
+                            b = float(elm.windings[i].properties['b'])
+                        except Exception as e:
+                            g = 0
+                            b = 0
+                            self.logger.append('No shunt components in ' + elm.windings[i].id)
+
+                        try:
+                            r0 = float(elm.windings[i].properties['r0'])
+                            x0 = float(elm.windings[i].properties['x0'])
+                            g0 = float(elm.windings[i].properties['g0'])
+                            b0 = float(elm.windings[i].properties['b0'])
+                        except Exception as e:
+                            r0 = 0
+                            x0 = 0
+                            g0 = 0
+                            b0 = 0
+                            self.logger.append('No zero sequence components in ' + elm.id)
+
+                        S = float(elm.windings[i].properties['ratedS'])
+                        RATE += S
+
+                        try:
+                            V = float(elm.windings[i].properties['ratedU'])
+                        except Exception as e:
+                            self.logger.append('No ratedU in ' + elm.windings[i].id + ' this is mandatory')
+                            try:
+                                V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
+                            except Exception as e2:
+                                self.logger.append('No voltage in ' + elm.windings[i].id + 'whatsoever, this causes an error')
+
+                        if len(elm.windings[i].tap_changers) > 0:
+                            Vnom = float(elm.windings[i].tap_changers[0].properties['neutralU'])
+                            tap_dir = float(elm.windings[i].tap_changers[0].properties['normalStep'])
+                            Vinc = float(elm.windings[i].tap_changers[0].properties['stepVoltageIncrement'])
+                            taps[i] = (Vnom + tap_dir * Vnom * (Vinc / 100.0)) / Vnom
+                        else:
+                            taps[i] = 1.0
+
+                        Zbase = (V * V) / S
+                        Ybase = 1.0 / Zbase
+
+                        R += r / Zbase
+                        R0 += r0 / Zbase
+                        X += x / Zbase
+                        X0 += x0 / Zbase
+
+                        G += g / Ybase
+                        G0 += g0 / Ybase
+                        B += b / Ybase
+                        B0 += b0 / Ybase
+
+                    # sum the taps
+                    tap_m = taps[0] * taps[1]
+
+                    line = Branch(bus_from=B1,
+                                  bus_to=B2,
+                                  name=name,
+                                  r=R,
+                                  x=X,
+                                  g=G,
+                                  b=B,
+                                  rate=RATE,
+                                  tap=tap_m,
+                                  shift_angle=0,
+                                  active=True,
+                                  mttf=0,
+                                  mttr=0,
+                                  branch_type=BranchType.Transformer)
+
+                    circuit.add_branch(line)
+                else:
+                    self.logger.append(elm.tpe + ':' + name + ' has not 2 windings associated.')
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
 
         # Switches
         cim_switches = ['Switch', 'Disconnector', 'Breaker', 'LoadBreakSwitch']
@@ -1305,6 +1361,9 @@ class CIMImport:
 
                 circuit.add_branch(line)
 
+                # add class to recognised objects
+                recognised.add(elm.tpe)
+
         # Loads
         cim_loads = ['ConformLoad', 'EnergyConsumer']
         if self.any_in_dict(cim.elements_by_type, cim_loads):
@@ -1334,6 +1393,9 @@ class CIMImport:
                             power=complex(p, q))
                 circuit.add_load(B1, load)
 
+                # add class to recognised objects
+                recognised.add(elm.tpe)
+
         # shunts
         if 'ShuntCompensator' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ShuntCompensator']:
@@ -1350,6 +1412,9 @@ class CIMImport:
 
                 sh = Shunt(name=name, admittance=complex(g, b))
                 circuit.add_shunt(B1, sh)
+
+                # add class to recognised objects
+                recognised.add(elm.tpe)
 
         # Generators
         if 'SynchronousMachine' in cim.elements_by_type.keys():
@@ -1398,6 +1463,14 @@ class CIMImport:
                                           voltage_module=vset)
                 circuit.add_controlled_generator(B1, gen)
 
+                # add class to recognised objects
+                recognised.add(elm.tpe)
+
+        # log the unused types
+        for tpe in cim.elements_by_type.keys():
+            if tpe not in recognised:
+                self.logger.append(tpe + ' was not explicitly used in parsing the file.')
+
         return circuit
 
 
@@ -1419,11 +1492,15 @@ if __name__ == '__main__':
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
     # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Australia.xml'
     # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE 57.xml'
-    fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xlsx'
+    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xlsx'
+    fname = 'C:\\Users\\spenate\\Desktop\\pruebaExportMAPANGA.xml'
     print('Reading...')
-    grid.load_file(fname)
+    logger = grid.load_file(fname)
 
-    grid.save_cim('D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xml')
+    for entry in logger:
+        print(entry)
+
+    # grid.save_cim('D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xml')
 
     # grid.save_cim('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE_14_GridCal.xml')
     # grid.save_cim('C:\\Users\\spenate\\Documents\\PROYECTOS\\SCADA_microgrid\\CIM\\newton\\IEEE_30_Bus.xml')

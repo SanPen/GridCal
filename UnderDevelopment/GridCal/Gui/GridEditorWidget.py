@@ -2591,7 +2591,7 @@ class GridEditor(QSplitter):
         self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
                              'Controlled Generators', 'Batteries', 'Shunts']
 
-        self.catalogue_types = ['Wires', 'Overhead lines', 'Transformers']
+        self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
 
         # Actual libraryView object
         self.libraryBrowserView.setModel(self.libraryModel)
