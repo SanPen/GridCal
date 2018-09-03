@@ -56,7 +56,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         else:
             self.tower = tower
 
-        self.ui.name_lineEdit.setText(self.tower.name)
+        self.ui.name_lineEdit.setText(self.tower.tower_name)
         self.ui.rho_doubleSpinBox.setValue(self.tower.earth_resistivity)
 
         # set models
