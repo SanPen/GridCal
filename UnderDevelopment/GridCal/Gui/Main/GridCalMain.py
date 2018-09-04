@@ -2921,8 +2921,7 @@ class MainGUI(QMainWindow):
 
     def assign_template(self):
         """
-        Returns:
-
+        Assign the selected branch templates
         """
         logger = list()
 
@@ -2971,36 +2970,6 @@ class MainGUI(QMainWindow):
                 self.msg('Select a type from the catalogue not the generic category', 'Assign branch type')
         else:
             self.msg('Select a type from the catalogue', 'Assign branch type')
-
-        indices = self.ui.dataStructureTableView.selectedIndexes()
-        tpe = self.ui.catalogueTreeView.selectedIndexes()
-
-        if len(tpe) > 0:
-
-            if len(indices) > 0:
-
-                # get template type
-                type_name = self.ui.catalogueTreeView.selectedIndexes()[0].data()
-                d = self.circuit.get_templates_dictionary()
-                tpe = d[type_name]
-
-                # apply template
-                for idx in indices:
-                    i = idx.row()
-                    self.circuit.branches[i].apply_type(tpe, Sbase=self.circuit.Sbase)
-
-                # update the view
-                self.view_objects_data()
-
-            else:
-
-                self.msg('Select some branches to apply the template to.\nMake sure that they match the template type.',
-                         'Apply template')
-
-        else:
-
-            self.msg('Select a template.',
-                     'Apply template')
 
     def process_templates(self):
         """

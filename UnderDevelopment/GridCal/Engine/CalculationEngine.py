@@ -1322,10 +1322,10 @@ class Branch(ReliabilityDevice):
         self.type_obj = type_obj
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'tap_module', 'angle', 'branch_type', 'type_obj']
+                             'length', 'tap_module', 'angle', 'branch_type', 'type_obj']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'p.u.', 'rad', '', '']
+                      'km', 'p.u.', 'rad', '', '']
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
@@ -1347,13 +1347,18 @@ class Branch(ReliabilityDevice):
                            'X': float,
                            'G': float,
                            'B': float,
+                           'length': float,
                            'tap_module': float,
                            'angle': float,
                            'branch_type': BranchType,
                            'type_obj': BranchTemplate}
 
     def branch_type_converter(self, val_string):
-
+        """
+        function to convert the branch type string into the BranchType
+        :param val_string:
+        :return: branch type conversion
+        """
         return self.conv[val_string.lower()]
 
     def copy(self, bus_dict=None):
@@ -1423,7 +1428,7 @@ class Branch(ReliabilityDevice):
         y_shunt = complex(self.G, self.B)
         tap = self.tap_module * exp(-1j * self.angle)
         Ysh = y_shunt / 2
-        if abs(z_series) > 0:
+        if np.abs(z_series) > 0:
             Ys = 1 / z_series
         else:
             raise ValueError("The impedance at " + self.name + " is zero")
@@ -1570,7 +1575,8 @@ class Branch(ReliabilityDevice):
             type_obj = str(self.type_obj)
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.tap_module, self.angle, conv.inv_conv[self.branch_type], type_obj]
+                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle,
+                conv.inv_conv[self.branch_type], type_obj]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1591,6 +1597,7 @@ class Branch(ReliabilityDevice):
                 'x': self.X,
                 'g': self.G,
                 'b': self.B,
+                'length': self.length,
                 'tap_module': self.tap_module,
                 'tap_angle': self.angle,
                 'branch_type': self.branch_type}
@@ -3581,6 +3588,9 @@ class MultiCircuit(Circuit):
         # set the base magnitudes
         self.Sbase = data['baseMVA']
 
+        # dictionary of branch types [name] -> type object
+        branch_types = dict()
+
         # Set comments
         self.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
@@ -3620,33 +3630,6 @@ class MultiCircuit(Circuit):
                 self.add_bus(obj)
         else:
             self.logger.append('No buses in the file!')
-
-        # Add the branches #############################################################################################
-        if 'branch' in data.keys():
-            lst = data['branch']
-
-            # fix the old 'is_transformer' property
-            if 'is_transformer' in lst.columns.values:
-                lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
-                lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
-
-            bus_from = lst['bus_from'].values
-            bus_to = lst['bus_to'].values
-            hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus_from'))
-            hdr = delete(hdr, argwhere(hdr == 'bus_to'))
-            vals = lst[hdr].values
-            for i in range(len(lst)):
-                try:
-                    obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
-                except KeyError as ex:
-                    raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
-
-                set_object_attributes(obj, hdr, vals[i, :])
-                self.add_branch(obj)
-
-        else:
-            self.logger.append('No branches in the file!')
 
         # add the loads ################################################################################################
         if 'load' in data.keys():
@@ -3854,6 +3837,7 @@ class MultiCircuit(Circuit):
                     obj.wires.append(wire)
 
                 self.add_overhead_line(obj)
+                branch_types[str(obj)] = obj
         else:
             self.logger.append('No overhead_line_types in the file!')
 
@@ -3866,6 +3850,7 @@ class MultiCircuit(Circuit):
             #     obj = UndergroundLineType()
             #     set_object_attributes(obj, hdr, vals[i, :])
             #     self.underground_cable_types.append(obj)
+            #     branch_types[str(obj)] = obj
         else:
             self.logger.append('No underground_cable_types in the file!')
 
@@ -3878,6 +3863,7 @@ class MultiCircuit(Circuit):
                 obj = SequenceLineType()
                 set_object_attributes(obj, hdr, vals[i, :])
                 self.add_sequence_line(obj)
+                branch_types[str(obj)] = obj
         else:
             self.logger.append('No sequence_line_types in the file!')
 
@@ -3890,8 +3876,44 @@ class MultiCircuit(Circuit):
                 obj = TransformerType()
                 set_object_attributes(obj, hdr, vals[i, :])
                 self.add_transformer_type(obj)
+                branch_types[str(obj)] = obj
         else:
             self.logger.append('No transformer_types in the file!')
+
+        # Add the branches #############################################################################################
+        if 'branch' in data.keys():
+            lst = data['branch']
+
+            # fix the old 'is_transformer' property
+            if 'is_transformer' in lst.columns.values:
+                lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
+                lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
+
+            bus_from = lst['bus_from'].values
+            bus_to = lst['bus_to'].values
+            hdr = lst.columns.values
+            hdr = delete(hdr, argwhere(hdr == 'bus_from'))
+            hdr = delete(hdr, argwhere(hdr == 'bus_to'))
+            vals = lst[hdr].values
+            for i in range(len(lst)):
+                try:
+                    obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
+                except KeyError as ex:
+                    raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
+
+                set_object_attributes(obj, hdr, vals[i, :])
+
+                # correct the branch template object
+                template_name = str(obj.type_obj)
+                if template_name in branch_types.keys():
+                    obj.type_obj = branch_types[template_name]
+                    print(template_name, 'updtaed!')
+
+                # set the branch
+                self.add_branch(obj)
+
+        else:
+            self.logger.append('No branches in the file!')
 
         # Other actions ################################################################################################
         self.logger += self.apply_all_branch_types()

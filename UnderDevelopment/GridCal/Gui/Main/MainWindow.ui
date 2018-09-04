@@ -700,6 +700,10 @@
                          <property name="text">
                           <string>Assign</string>
                          </property>
+                         <property name="icon">
+                          <iconset resource="icons.qrc">
+                           <normaloff>:/Icons/white_icons/gear.svg</normaloff>:/Icons/white_icons/gear.svg</iconset>
+                         </property>
                         </widget>
                        </item>
                       </layout>
@@ -3935,7 +3939,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1212</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
