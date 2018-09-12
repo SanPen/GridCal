@@ -289,9 +289,9 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     :param Ybus: 
     :param Yf: 
     :param Yt: 
-    :param f: 
-    :param t: 
-    :param inputs: 
+    :param f: array with the from bus indices of all the branches
+    :param t: array with the to bus indices of all the branches
+    :param inputs: state estimation imput instance (contains the measurements)
     :param ref: 
     :param pq: 
     :param pv: 
@@ -398,6 +398,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
         iter_ += 1
 
     return V, err, converged
+
 
 if __name__ == '__main__':
 

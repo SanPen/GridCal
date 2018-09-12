@@ -3822,22 +3822,24 @@ class MultiCircuit(Circuit):
         # Add the overhead_line_types ##################################################################################
         if 'overhead_line_types' in data.keys():
             lst = data['overhead_line_types']
+            if data['overhead_line_types'].values.shape[0] > 0:
+                for tower_name in lst['tower_name'].unique():
+                    obj = Tower()
+                    vals = lst[lst['tower_name'] == tower_name].values
 
-            for tower_name in lst['tower_name'].unique():
-                obj = Tower()
-                vals = lst[lst['tower_name'] == tower_name].values
+                    # set the tower values
+                    set_object_attributes(obj, obj.edit_headers, vals[0, :])
 
-                # set the tower values
-                set_object_attributes(obj, obj.edit_headers, vals[0, :])
+                    # add the wires
+                    for i in range(vals.shape[0]):
+                        wire = Wire()
+                        set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.edit_headers):])
+                        obj.wires.append(wire)
 
-                # add the wires
-                for i in range(vals.shape[0]):
-                    wire = Wire()
-                    set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.edit_headers):])
-                    obj.wires.append(wire)
-
-                self.add_overhead_line(obj)
-                branch_types[str(obj)] = obj
+                    self.add_overhead_line(obj)
+                    branch_types[str(obj)] = obj
+            else:
+                pass
         else:
             self.logger.append('No overhead_line_types in the file!')
 

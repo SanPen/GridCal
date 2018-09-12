@@ -717,7 +717,7 @@ if __name__ == '__main__':
 
     # Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd
     v, err = helm(Y=circuit.power_flow_input.Ybus,
-                  Ys= circuit.power_flow_input.Yseries,
+                  Ys=circuit.power_flow_input.Yseries,
                   Ysh=circuit.power_flow_input.Yshunt,
                   max_coefficient_count=30,
                   S=circuit.power_flow_input.Sbus,
