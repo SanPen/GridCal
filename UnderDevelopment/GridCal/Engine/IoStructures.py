@@ -1,0 +1,1254 @@
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import pickle as pkl
+from warnings import warn
+import pandas as pd
+from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
+    r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
+from pySOT import *
+from pyDOE import lhs
+from scipy.sparse import csc_matrix, lil_matrix
+from matplotlib import pyplot as plt
+from sklearn.ensemble import RandomForestRegressor
+
+from GridCal.Engine.PlotConfig import LINEWIDTH
+from GridCal.Engine.BasicStructures import CDF
+from GridCal.Engine.Numerical.JacobianBased import Jacobian
+from GridCal.Engine.BasicStructures import BusMode
+
+
+class PowerFlowInput:
+
+    def __init__(self, n, m):
+        """
+        Power Flow study input values
+        @param n: Number of buses
+        @param m: Number of branches
+        """
+        self.n = n
+
+        self.m = m
+
+        # Array of integer values representing the buses types
+        self.types = zeros(n, dtype=int)
+
+        self.ref = None
+
+        self.pv = None
+
+        self.pq = None
+
+        self.sto = None
+
+        self.pqpv = None
+
+        # Branch admittance matrix with the from buses
+        self.Yf = lil_matrix((m, n), dtype=complex)
+
+        # Branch admittance matrix with the to buses
+        self.Yt = lil_matrix((m, n), dtype=complex)
+
+        # Array with the 'from' index of the from bus of each branch
+        self.F = zeros(m, dtype=int)
+
+        # Array with the 'to' index of the from bus of each branch
+        self.T = zeros(m, dtype=int)
+
+        # array to store a 1 for the active branches
+        self.active_branches = zeros(m, dtype=int)
+
+        # Full admittance matrix (will be converted to sparse)
+        self.Ybus = lil_matrix((n, n), dtype=complex)
+
+        # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
+        self.Zbus = None
+
+        # Admittance matrix of the series elements (will be converted to sparse)
+        self.Yseries = lil_matrix((n, n), dtype=complex)
+
+        # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
+        self.Yshunt = zeros(n, dtype=complex)
+
+        # Jacobian matrix 1 for the fast-decoupled power flow
+        self.B1 = lil_matrix((n, n), dtype=double)
+
+        # Jacobian matrix 2 for the fast-decoupled power flow
+        self.B2 = lil_matrix((n, n), dtype=double)
+
+        # Array of line-line nominal voltages of the buses
+        self.Vnom = zeros(n)
+
+        # Currents at the buses array
+        self.Ibus = zeros(n, dtype=complex)
+
+        # Powers at the buses array
+        self.Sbus = zeros(n, dtype=complex)
+
+        # Voltages at the buses array
+        self.Vbus = zeros(n, dtype=complex)
+
+        self.Vmin = zeros(n, dtype=double)
+
+        self.Vmax = zeros(n, dtype=double)
+
+        self.Qmin = ones(n, dtype=double) * -9999
+
+        self.Qmax = ones(n, dtype=double) * 9999
+
+        self.branch_rates = zeros(m)
+
+        self.bus_names = zeros(n, dtype=object)
+
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
+
+    def compile(self):
+        """
+        Make the matrices sparse
+        Create the ref, pv and pq lists
+        @return:
+        """
+        self.Yf = csc_matrix(self.Yf)
+        self.Yt = csc_matrix(self.Yt)
+        self.Ybus = csc_matrix(self.Ybus)
+        self.Yseries = csc_matrix(self.Yseries)
+        self.B1 = csc_matrix(self.B1)
+        self.B2 = csc_matrix(self.B2)
+        # self.Yshunt = sparse(self.Yshunt)  No need to make it sparse, it is a vector already
+        # compile the types lists from the types vector
+        self.compile_types()
+
+    def mismatch(self, V, Sbus):
+        """
+        Compute the power flow mismatch
+        @param V: Voltage array (calculated)
+        @param Sbus: Power array (especified)
+        @return: mismatch of the computed solution
+        """
+        Scalc = V * conj(self.Ybus * V)
+        mis = Scalc - Sbus  # compute the mismatch
+        F = r_[mis[self.pv].real,
+               mis[self.pq].real,
+               mis[self.pq].imag]
+
+        # check tolerance
+        normF = linalg.norm(F, Inf)
+
+        return normF
+
+    def compile_types(self, types_new=None):
+        """
+        Compile the types
+        @return:
+        """
+        if types_new is not None:
+            self.types = types_new.copy()
+        self.pq = where(self.types == BusMode.PQ.value[0])[0]
+        self.pv = where(self.types == BusMode.PV.value[0])[0]
+        self.ref = where(self.types == BusMode.REF.value[0])[0]
+        self.sto = where(self.types == BusMode.STO_DISPATCH.value)[0]
+
+        if len(self.ref) == 0:  # there is no slack!
+
+            if len(self.pv) == 0:  # there are no pv neither -> blackout grid
+
+                warn('There are no slack nodes selected')
+
+            else:  # select the first PV generator as the slack
+
+                mx = max(self.Sbus[self.pv])
+                if mx > 0:
+                    # find the generator that is injecting the most
+                    i = where(self.Sbus == mx)[0][0]
+
+                else:
+                    # all the generators are injecting zero, pick the first pv
+                    i = self.pv[0]
+
+                # delete the selected pv bus from the pv list and put it in the slack list
+                self.pv = delete(self.pv, where(self.pv == i)[0])
+                self.ref = [i]
+                # print('Setting bus', i, 'as slack')
+
+            self.ref = ndarray.flatten(array(self.ref))
+            self.types[self.ref] = BusMode.REF.value[0]
+        else:
+            pass  # no problem :)
+
+        self.pqpv = r_[self.pq, self.pv]
+        self.pqpv.sort()
+        pass
+
+    def set_from(self, obj, bus_idx, br_idx):
+        """
+        Copy data from other PowerFlowInput object
+        @param obj: PowerFlowInput instance
+        @param bus_idx: original bus indices
+        @param br_idx: original branch indices
+        @return:
+        """
+        self.types[bus_idx] = obj.types
+
+        self.bus_names[bus_idx] = obj.bus_names
+
+        # self.ref = None
+        #
+        # self.pv = None
+        #
+        # self.pq = None
+        #
+        # self.sto = None
+
+        # Branch admittance matrix with the from buses
+        self.Yf[br_idx, :][:, bus_idx] = obj.Yf.todense()
+
+        # Branch admittance matrix with the to buses
+        self.Yt[br_idx, :][:, bus_idx] = obj.Yt.todense()
+
+        # Array with the 'from' index of the from bus of each branch
+        self.F[br_idx] = obj.F
+
+        # Array with the 'to' index of the from bus of each branch
+        self.T[br_idx] = obj.T
+
+        # array to store a 1 for the active branches
+        self.active_branches[br_idx] = obj.active_branches
+
+        # Full admittance matrix (will be converted to sparse)
+        self.Ybus[bus_idx, :][:, bus_idx] = obj.Ybus.todense()
+
+        # Admittance matrix of the series elements (will be converted to sparse)
+        self.Yseries[bus_idx, :][:, bus_idx] = obj.Yseries.todense()
+
+        # Admittance matrix of the shunt elements (will be converted to sparse)
+        self.Yshunt[bus_idx] = obj.Yshunt
+
+        # Currents at the buses array
+        self.Ibus[bus_idx] = obj.Ibus
+
+        # Powers at the buses array
+        self.Sbus[bus_idx] = obj.Sbus
+
+        # Voltages at the buses array
+        self.Vbus[bus_idx] = obj.Vbus
+
+        self.Vmin[bus_idx] = obj.Vmin
+
+        self.Vmax[bus_idx] = obj.Vmax
+
+        # self.Qmin = ones(n, dtype=double) * -9999
+        #
+        # self.Qmax = ones(n, dtype=double) * 9999
+
+        self.branch_rates[br_idx] = obj.branch_rates
+
+        self.compile()
+
+    def get_structure(self, structure_type):
+        """
+        Get a DataFrame with the input
+        Args:
+            structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
+
+        Returns: Pandas DataFrame
+        """
+
+        if structure_type == 'Vbus':
+
+            df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Sbus':
+            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ibus':
+            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ybus':
+            df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Yshunt':
+            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Yseries':
+            df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Types':
+            df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
+
+        elif structure_type == 'Jacobian':
+
+            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
+
+            """
+            J11 = dS_dVa[array([pvpq]).T, pvpq].real
+            J12 = dS_dVm[array([pvpq]).T, pq].real
+            J21 = dS_dVa[array([pq]).T, pvpq].imag
+            J22 = dS_dVm[array([pq]).T, pq].imag
+            """
+            npq = len(self.pq)
+            npv = len(self.pv)
+            npqpv = npq + npv
+            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
+            rows = cols
+            df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
+
+        else:
+
+            raise Exception('PF input: structure type not found')
+
+        return df
+
+    def copy(self):
+
+        cpy = PowerFlowInput(self.n, self.m)
+
+        cpy.types = self.types.copy()
+
+        cpy.ref = self.ref.copy()
+
+        cpy.pv = self.pv.copy()
+
+        cpy.pq = self.pq.copy()
+
+        cpy.sto = self.sto.copy()
+
+        cpy.pqpv = self.pqpv.copy()
+
+        # Branch admittance matrix with the from buses
+        cpy.Yf = self.Yf.copy()
+
+        # Branch admittance matrix with the to buses
+        cpy.Yt = self.Yt.copy()
+
+        # Array with the 'from' index of the from bus of each branch
+        cpy.F = self.F.copy()
+
+        # Array with the 'to' index of the from bus of each branch
+        cpy.T = self.T.copy()
+
+        # array to store a 1 for the active branches
+        cpy.active_branches = self.active_branches.copy()
+
+        # Full admittance matrix (will be converted to sparse)
+        cpy.Ybus = self.Ybus.copy()
+
+        # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
+        # self.Zbus = None
+
+        # Admittance matrix of the series elements (will be converted to sparse)
+        cpy.Yseries = self.Yseries.copy()
+
+        # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
+        cpy.Yshunt = self.Yshunt.copy()
+
+        # Jacobian matrix 1 for the fast-decoupled power flow
+        cpy.B1 = self.B1.copy()
+
+        # Jacobian matrix 2 for the fast-decoupled power flow
+        cpy.B2 = self.B2.copy()
+
+        # Array of line-line nominal voltages of the buses
+        cpy.Vnom = self.Vnom.copy()
+
+        # Currents at the buses array
+        cpy.Ibus = self.Ibus.copy()
+
+        # Powers at the buses array
+        cpy.Sbus = self.Sbus.copy()
+
+        # Voltages at the buses array
+        cpy.Vbus = self.Vbus.copy()
+
+        cpy.Vmin = self.Vmin.copy()
+
+        cpy.Vmax = self.Vmax.copy()
+
+        cpy.Qmin = self.Qmin.copy()
+
+        cpy.Qmax = self.Qmax.copy()
+
+        cpy.branch_rates = self.branch_rates.copy()
+
+        cpy.bus_names = self.bus_names.copy()
+
+        cpy.available_structures = self.available_structures.copy()
+
+        return cpy
+
+
+class PowerFlowResults:
+
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
+                 converged=None, Qpv=None, inner_it=None, outer_it=None, elapsed=None, methods=None):
+        """
+
+        @param voltage: Voltages array (p.u.)
+        @param Sbranch: Branches power array (MVA)
+        @param Ibranch: Branches current array (p.u.)
+        @param loading: Branches loading array (p.u.)
+        @param losses: Branches losses array (MW)
+        @param error: power flow error value
+        @param converged: converged (True / False)
+        @param Qpv: Reactive power at the PV nodes array (p.u.)
+        """
+        self.Sbus = Sbus
+
+        self.voltage = voltage
+
+        self.Sbranch = Sbranch
+
+        self.Ibranch = Ibranch
+
+        self.loading = loading
+
+        self.losses = losses
+
+        self.error = error
+
+        self.converged = converged
+
+        self.Qpv = Qpv
+
+        self.overloads = None
+
+        self.overvoltage = None
+
+        self.undervoltage = None
+
+        self.overloads_idx = None
+
+        self.overvoltage_idx = None
+
+        self.undervoltage_idx = None
+
+        self.buses_useful_for_storage = None
+
+        self.available_results = ['Bus voltage',
+                                  # 'Bus voltage (polar)',
+                                  'Branch power', 'Branch current',
+                                  'Branch_loading', 'Branch losses']
+
+        self.plot_bars_limit = 100
+
+        self.inner_iterations = inner_it
+
+        self.outer_iterations = outer_it
+
+        self.elapsed = elapsed
+
+        self.methods = methods
+
+    def copy(self):
+        """
+        Return a copy of this
+        @return:
+        """
+        return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
+                                Ibranch=self.Ibranch, loading=self.loading,
+                                losses=self.losses, error=self.error,
+                                converged=self.converged, Qpv=self.Qpv, inner_it=self.inner_iterations,
+                                outer_it=self.outer_iterations, elapsed=self.elapsed, methods=self.methods)
+
+    def initialize(self, n, m):
+        """
+        Initialize the arrays
+        @param n: number of buses
+        @param m: number of branches
+        @return:
+        """
+        self.Sbus = zeros(n, dtype=complex)
+
+        self.voltage = zeros(n, dtype=complex)
+
+        self.overvoltage = zeros(n, dtype=complex)
+
+        self.undervoltage = zeros(n, dtype=complex)
+
+        self.Sbranch = zeros(m, dtype=complex)
+
+        self.Ibranch = zeros(m, dtype=complex)
+
+        self.loading = zeros(m, dtype=complex)
+
+        self.losses = zeros(m, dtype=complex)
+
+        self.overloads = zeros(m, dtype=complex)
+
+        self.error = list()
+
+        self.converged = list()
+
+        self.buses_useful_for_storage = list()
+
+        self.plot_bars_limit = 100
+
+        self.inner_iterations = list()
+
+        self.outer_iterations = list()
+
+        self.elapsed = list()
+
+        self.methods = list()
+
+    def apply_from_island(self, results, b_idx, br_idx):
+        """
+        Apply results from another island circuit to the circuit results represented here
+        @param results: PowerFlowResults
+        @param b_idx: bus original indices
+        @param br_idx: branch original indices
+        @return:
+        """
+        self.Sbus[b_idx] = results.Sbus
+
+        self.voltage[b_idx] = results.voltage
+
+        # self.overvoltage[b_idx] = results.overvoltage
+
+        # self.undervoltage[b_idx] = results.undervoltage
+
+        self.Sbranch[br_idx] = results.Sbranch
+
+        self.Ibranch[br_idx] = results.Ibranch
+
+        self.loading[br_idx] = results.loading
+
+        self.losses[br_idx] = results.losses
+
+        # self.overloads[br_idx] = results.overloads
+
+        # if results.error > self.error:
+        self.error.append(results.error)
+
+        self.converged.append(results.converged)
+
+        self.inner_iterations.append(results.inner_iterations)
+
+        self.outer_iterations.append(results.outer_iterations)
+
+        self.elapsed.append(results.elapsed)
+
+        self.methods.append(results.methods)
+
+        # self.converged = self.converged and results.converged
+
+        # if results.buses_useful_for_storage is not None:
+        #     self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
+
+    def check_limits(self, inputs: PowerFlowInput, wo=1, wv1=1, wv2=1):
+        """
+        Check the grid violations
+        @param inputs: PowerFlowInput object
+        @return: summation of the deviations
+        """
+        # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
+        br_idx = where(self.loading > 1)[0]
+        bb_f = inputs.F[br_idx]
+        bb_t = inputs.T[br_idx]
+        self.overloads = self.loading[br_idx]
+
+        # Over and under voltage values in the indices where it occurs
+        vo_idx = where(self.voltage > inputs.Vmax)[0]
+        self.overvoltage = (self.voltage - inputs.Vmax)[vo_idx]
+        vu_idx = where(self.voltage < inputs.Vmin)[0]
+        self.undervoltage = (inputs.Vmin - self.voltage)[vu_idx]
+
+        self.overloads_idx = br_idx
+
+        self.overvoltage_idx = vo_idx
+
+        self.undervoltage_idx = vu_idx
+
+        self.buses_useful_for_storage = list(set(r_[vo_idx, vu_idx, bb_f, bb_t]))
+
+        return abs(wo * sum(self.overloads) + wv1 * sum(self.overvoltage) + wv2 * sum(self.undervoltage))
+
+    def get_convergence_report(self):
+
+        res = 'converged' + str(self.converged)
+
+        res += '\n\tinner_iterations: ' + str(self.inner_iterations)
+
+        res += '\n\touter_iterations: ' + str(self.outer_iterations)
+
+        res += '\n\terror: ' + str(self.error)
+
+        res += '\n\telapsed: ' + str(self.elapsed)
+
+        res += '\n\tmethods: ' + str(self.methods)
+
+        return res
+
+    def plot(self, result_type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        Args:
+            result_type:
+            ax:
+            indices:
+            names:
+
+        Returns:
+
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None and names is not None:
+            indices = array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            y_label = ''
+            title = ''
+            polar = False
+            if result_type == 'Bus voltage':
+                y = self.voltage[indices]
+                y_label = '(p.u.)'
+                title = 'Bus voltage '
+                polar = False
+
+            if result_type == 'Bus voltage (polar)':
+                y = self.voltage[indices]
+                y_label = '(p.u.)'
+                title = 'Bus voltage '
+                polar = True
+
+            elif result_type == 'Branch power':
+                y = self.Sbranch[indices]
+                y_label = '(MVA)'
+                title = 'Branch power '
+                polar = False
+
+            elif result_type == 'Branch current':
+                y = self.Ibranch[indices]
+                y_label = '(p.u.)'
+                title = 'Branch current '
+                polar = False
+
+            elif result_type == 'Branch_loading':
+                y = self.loading[indices] * 100
+                y_label = '(%)'
+                title = 'Branch loading '
+                polar = False
+
+            elif result_type == 'Branch losses':
+                y = self.losses[indices]
+                y_label = '(MVA)'
+                title = 'Branch losses '
+                polar = False
+
+            else:
+                pass
+
+            # plot
+            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            if len(df.columns) < self.plot_bars_limit:
+                df.abs().plot(ax=ax, kind='bar')
+            else:
+                df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+            ax.set_ylabel(y_label)
+            ax.set_title(title)
+
+            return df
+
+        else:
+            return None
+
+    def export_all(self):
+        """
+        Exports all the results to DataFrames
+        :return: Bus results, Branch reuslts
+        """
+
+        # buses results
+        vm = np.abs(self.voltage)
+        va = np.angle(self.voltage)
+        vr = self.voltage.real
+        vi = self.voltage.imag
+        bus_data = c_[vr, vi, vm, va]
+        bus_cols = ['Real voltage (p.u.)', 'Imag Voltage (p.u.)', 'Voltage module (p.u.)', 'Voltage angle (rad)']
+        df_bus = pd.DataFrame(data=bus_data, columns=bus_cols)
+
+        # branch results
+        sr = self.Sbranch.real
+        si = self.Sbranch.imag
+        sm = np.abs(self.Sbranch)
+        ld = np.abs(self.loading)
+        ls = np.abs(self.losses)
+
+        branch_data = c_[sr, si, sm, ld, ls]
+        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)', 'Losses (MVA)']
+        df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
+
+        return df_bus, df_branch
+
+
+class TimeSeriesInput:
+
+    def __init__(self, s_profile: pd.DataFrame = None, i_profile: pd.DataFrame = None, y_profile: pd.DataFrame = None):
+        """
+        Time series input
+        @param s_profile: DataFrame with the profile of the injected power at the buses
+        @param i_profile: DataFrame with the profile of the injected current at the buses
+        @param y_profile: DataFrame with the profile of the shunt admittance at the buses
+        """
+
+        # master time array. All the profiles must match its length
+        self.time_array = None
+
+        self.Sprof = s_profile
+        self.Iprof = i_profile
+        self.Yprof = y_profile
+
+        # Array of load admittances (shunt)
+        self.Y = None
+
+        # Array of load currents
+        self.I = None
+
+        # Array of aggregated bus power (loads, generators, storage, etc...)
+        self.S = None
+
+        # is this timeSeriesInput valid? typically it is valid after compiling it
+        self.valid = False
+
+    def compile(self):
+        """
+        Generate time-consistent arrays
+        @return:
+        """
+        cols = list()
+        self.valid = False
+        merged = None
+        for p in [self.Sprof, self.Iprof, self.Yprof]:
+            if p is None:
+                cols.append(None)
+            else:
+                if merged is None:
+                    merged = p
+                else:
+                    merged = pd.concat([merged, p], axis=1)
+                cols.append(p.columns)
+                self.valid = True
+
+        # by merging there could have been time inconsistencies that would produce NaN
+        # to solve it we "interpolate" by replacing the NaN by the nearest value
+        if merged is not None:
+            merged.interpolate(method='nearest', axis=0, inplace=True)
+
+            t, n = merged.shape
+
+            # pick the merged series time
+            self.time_array = merged.index.values
+
+            # Array of aggregated bus power (loads, generators, storage, etc...)
+            if cols[0] is not None:
+                self.S = merged[cols[0]].values
+            else:
+                self.S = zeros((t, n), dtype=complex)
+
+            # Array of load currents
+            if cols[1] is not None:
+                self.I = merged[cols[1]].values
+            else:
+                self.I = zeros((t, n), dtype=complex)
+
+            # Array of load admittances (shunt)
+            if cols[2] is not None:
+                self.Y = merged[cols[2]].values
+            else:
+                self.Y = zeros((t, n), dtype=complex)
+
+    def get_at(self, t):
+        """
+        Returns the necessary values
+        @param t: time index
+        @return:
+        """
+        return self.Y[t, :], self.I[t, :], self.S[t, :]
+
+    def get_from_buses(self, bus_idx):
+        """
+
+        @param bus_idx:
+        @return:
+        """
+        ts = TimeSeriesInput()
+        ts.S = self.S[:, bus_idx]
+        ts.I = self.I[:, bus_idx]
+        ts.Y = self.Y[:, bus_idx]
+        ts.valid = True
+        return ts
+
+    def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):
+        """
+
+        :param res: TimeSeriesInput
+        :param bus_original_idx:
+        :param branch_original_idx:
+        :param nbus_full:
+        :param nbranch_full:
+        :return:
+        """
+
+        if res is not None:
+            if self.Sprof is None:
+                self.time_array = res.time_array
+                # t = len(self.time_array)
+                self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+                self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
+                self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+
+            self.Sprof[res.Sprof.columns.values] = res.Sprof
+            self.Iprof[res.Iprof.columns.values] = res.Iprof
+            self.Yprof[res.Yprof.columns.values] = res.Yprof
+
+    def copy(self):
+
+        cpy = TimeSeriesInput()
+
+        # master time array. All the profiles must match its length
+        cpy.time_array = self.time_array
+
+        cpy.Sprof = self.Sprof.copy()
+        cpy.Iprof = self.Iprof.copy()
+        cpy.Yprof = self.Yprof.copy()
+
+        # Array of load admittances (shunt)
+        cpy.Y = self.Y.copy()
+
+        # Array of load currents
+        cpy.I = self.I.copy()
+
+        # Array of aggregated bus power (loads, generators, storage, etc...)
+        cpy.S = self.S.copy()
+
+        # is this timeSeriesInput valid? typically it is valid after compiling it
+        cpy.valid = self.valid
+
+        return cpy
+
+
+class MonteCarloInput:
+
+    def __init__(self, n, Scdf, Icdf, Ycdf):
+        """
+        Monte carlo input constructor
+        @param n: number of nodes
+        @param Scdf: Power cumulative density function
+        @param Icdf: Current cumulative density function
+        @param Ycdf: Admittances cumulative density function
+        """
+
+        # number of nodes
+        self.n = n
+
+        self.Scdf = Scdf
+
+        self.Icdf = Icdf
+
+        self.Ycdf = Ycdf
+
+    def __call__(self, samples=0, use_latin_hypercube=False):
+        """
+        Call this object
+        :param samples: number of samples
+        :param use_latin_hypercube: use Latin Hypercube to sample
+        :return: Time series object
+        """
+        if use_latin_hypercube:
+
+            lhs_points = lhs(self.n, samples=samples, criterion='center')
+
+            if samples > 0:
+                S = zeros((samples, self.n), dtype=complex)
+                I = zeros((samples, self.n), dtype=complex)
+                Y = zeros((samples, self.n), dtype=complex)
+
+                for i in range(self.n):
+                    if self.Scdf[i] is not None:
+                        S[:, i] = self.Scdf[i].get_at(lhs_points[:, i])
+
+        else:
+            if samples > 0:
+                S = zeros((samples, self.n), dtype=complex)
+                I = zeros((samples, self.n), dtype=complex)
+                Y = zeros((samples, self.n), dtype=complex)
+
+                for i in range(self.n):
+                    if self.Scdf[i] is not None:
+                        S[:, i] = self.Scdf[i].get_sample(samples)
+            else:
+                S = zeros(self.n, dtype=complex)
+                I = zeros(self.n, dtype=complex)
+                Y = zeros(self.n, dtype=complex)
+
+                for i in range(self.n):
+                    if self.Scdf[i] is not None:
+                        S[i] = complex(self.Scdf[i].get_sample()[0])
+
+        time_series_input = TimeSeriesInput()
+        time_series_input.S = S
+        time_series_input.I = I
+        time_series_input.Y = Y
+        time_series_input.valid = True
+
+        return time_series_input
+
+    def get_at(self, x):
+        """
+        Get samples at x
+        Args:
+            x: values in [0, 1] to sample the CDF
+
+        Returns: Time series object
+        """
+        S = zeros((1, self.n), dtype=complex)
+        I = zeros((1, self.n), dtype=complex)
+        Y = zeros((1, self.n), dtype=complex)
+
+        for i in range(self.n):
+            if self.Scdf[i] is not None:
+                S[:, i] = self.Scdf[i].get_at(x[i])
+
+        time_series_input = TimeSeriesInput()
+        time_series_input.S = S
+        time_series_input.I = I
+        time_series_input.Y = Y
+        time_series_input.valid = True
+
+        return time_series_input
+
+
+class MonteCarloResults:
+
+    def __init__(self, n, m, p=0):
+        """
+        Constructor
+        @param n: number of nodes
+        @param m: number of branches
+        @param p: number of points (rows)
+        """
+
+        self.n = n
+
+        self.m = m
+
+        self.S_points = zeros((p, n), dtype=complex)
+
+        self.V_points = zeros((p, n), dtype=complex)
+
+        self.I_points = zeros((p, m), dtype=complex)
+
+        self.loading_points = zeros((p, m), dtype=complex)
+
+        # self.Vstd = zeros(n, dtype=complex)
+
+        self.error_series = list()
+
+        self.voltage = zeros(n)
+        self.current = zeros(m)
+        self.loading = zeros(m)
+        self.sbranch = zeros(m)
+        self.losses = zeros(m)
+
+        # magnitudes standard deviation convergence
+        self.v_std_conv = None
+        self.c_std_conv = None
+        self.l_std_conv = None
+
+        # magnitudes average convergence
+        self.v_avg_conv = None
+        self.c_avg_conv = None
+        self.l_avg_conv = None
+
+        self.available_results = ['Bus voltage avg', 'Bus voltage std',
+                                  'Branch current avg', 'Branch current std',
+                                  'Branch loading avg', 'Branch loading std',
+                                  'Bus voltage CDF', 'Branch loading CDF']
+
+    def append_batch(self, mcres):
+        """
+        Append a batch (a MonteCarloResults object) to this object
+        @param mcres: MonteCarloResults object
+        @return:
+        """
+        self.S_points = vstack((self.S_points, mcres.S_points))
+        self.V_points = vstack((self.V_points, mcres.V_points))
+        self.I_points = vstack((self.I_points, mcres.I_points))
+        self.loading_points = vstack((self.loading_points, mcres.loading_points))
+
+    def get_voltage_sum(self):
+        """
+        Return the voltage summation
+        @return:
+        """
+        return self.V_points.sum(axis=0)
+
+    def compile(self):
+        """
+        Compiles the final Monte Carlo values by running an online mean and
+        @return:
+        """
+        p, n = self.V_points.shape
+        ni, m = self.I_points.shape
+        step = 1
+        nn = int(floor(p / step) + 1)
+        self.v_std_conv = zeros((nn, n))
+        self.c_std_conv = zeros((nn, m))
+        self.l_std_conv = zeros((nn, m))
+        self.v_avg_conv = zeros((nn, n))
+        self.c_avg_conv = zeros((nn, m))
+        self.l_avg_conv = zeros((nn, m))
+
+        v_mean = zeros(n)
+        c_mean = zeros(m)
+        l_mean = zeros(m)
+        v_std = zeros(n)
+        c_std = zeros(m)
+        l_std = zeros(m)
+
+        for t in range(1, p, step):
+            v_mean_prev = v_mean.copy()
+            c_mean_prev = c_mean.copy()
+            l_mean_prev = l_mean.copy()
+
+            v = abs(self.V_points[t, :])
+            c = abs(self.I_points[t, :])
+            l = abs(self.loading_points[t, :])
+
+            v_mean += (v - v_mean) / t
+            v_std += (v - v_mean) * (v - v_mean_prev)
+            self.v_avg_conv[t] = v_mean
+            self.v_std_conv[t] = v_std / t
+
+            c_mean += (c - c_mean) / t
+            c_std += (c - c_mean) * (c - c_mean_prev)
+            self.c_std_conv[t] = c_std / t
+            self.c_avg_conv[t] = c_mean
+
+            l_mean += (l - l_mean) / t
+            l_std += (l - l_mean) * (l - l_mean_prev)
+            self.l_std_conv[t] = l_std / t
+            self.l_avg_conv[t] = l_mean
+
+        self.voltage = self.v_avg_conv[-2]
+        self.current = self.c_avg_conv[-2]
+        self.loading = self.l_avg_conv[-2]
+
+    def save(self, fname):
+        """
+        Export as pickle
+        Args:
+            fname:
+
+        Returns:
+
+        """
+        data = [self.S_points, self.V_points, self.I_points]
+
+        with open(fname, "wb") as output_file:
+            pkl.dump(data, output_file)
+
+    def open(self, fname):
+        """
+        open pickle
+        Args:
+            fname: file name
+        Returns: true if succeeded, false otherwise
+
+        """
+        if os.path.exists(fname):
+            with open(fname, "rb") as input_file:
+                self.S_points, self.V_points, self.I_points = pkl.load(input_file)
+            return True
+        else:
+            warn(fname + " not found")
+            return False
+
+    def query_voltage(self, power_array):
+        """
+        Fantastic function that allows to query the voltage from the sampled points without having to run power flows
+        Args:
+            power_array: power injections vector
+
+        Returns: Interpolated voltages vector
+        """
+        x_train = np.hstack((self.S_points.real, self.S_points.imag))
+        y_train = np.hstack((self.V_points.real, self.V_points.imag))
+        x_test = np.hstack((power_array.real, power_array.imag))
+
+        n, d = x_train.shape
+
+        # #  declare PCA reductor
+        # red = PCA()
+        #
+        # # Train PCA
+        # red.fit(x_train, y_train)
+        #
+        # # Reduce power dimensions
+        # x_train = red.transform(x_train)
+
+        # model = MLPRegressor(hidden_layer_sizes=(10*n, n, n, n), activation='relu', solver='adam', alpha=0.0001,
+        #                      batch_size=2, learning_rate='constant', learning_rate_init=0.01, power_t=0.5,
+        #                      max_iter=3, shuffle=True, random_state=None, tol=0.0001, verbose=True,
+        #                      warm_start=False, momentum=0.9, nesterovs_momentum=True, early_stopping=False,
+        #                      validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+
+        # algorithm : {‘auto’, ‘ball_tree’, ‘kd_tree’, ‘brute’},
+        # model = KNeighborsRegressor(n_neighbors=4, algorithm='brute', leaf_size=16)
+
+        model = RandomForestRegressor(10)
+
+        # model = DecisionTreeRegressor()
+
+        # model = LinearRegression()
+
+        model.fit(x_train, y_train)
+
+        y_pred = model.predict(x_test)
+
+        return y_pred[:, :int(d / 2)] + 1j * y_pred[:, int(d / 2):d]
+
+    def get_index_loading_cdf(self, max_val=1.0):
+        """
+        Find the elements where the CDF is greater or equal to a velue
+        :param max_val: value to compare
+        :return: indices, associated probability
+        """
+
+        # turn the loading real values into CDF
+        cdf = CDF(np.abs(self.loading_points.real[:, :]))
+
+        n = cdf.arr.shape[1]
+        idx = list()
+        val = list()
+        prob = list()
+        for i in range(n):
+            # Find the indices that surpass max_val
+            many_idx = np.where(cdf.arr[:, i] > max_val)[0]
+
+            # if there are indices, pick the first; store it and its associated probability
+            if len(many_idx) > 0:
+                idx.append(i)
+                val.append(cdf.arr[many_idx[0], i])
+                prob.append(1 - cdf.prob[many_idx[0]])  # the CDF stores the chance of beign leq than the value, hence the overload is the complementary
+
+        return idx, val, prob, cdf.arr[-1, :]
+
+    def plot(self, result_type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        :param result_type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        p, n = self.V_points.shape
+
+        if indices is None:
+            if names is None:
+                indices = arange(0, n, 1)
+                labels = None
+            else:
+                indices = array(range(len(names)))
+                labels = names[indices]
+        else:
+            labels = names[indices]
+
+        if len(indices) > 0:
+
+            y_label = ''
+            title = ''
+            if result_type == 'Bus voltage avg':
+                y = self.v_avg_conv[1:-1, indices]
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
+                title = 'Bus voltage \naverage convergence'
+
+            elif result_type == 'Branch current avg':
+                y = self.c_avg_conv[1:-1, indices]
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
+                title = 'Bus current \naverage convergence'
+
+            elif result_type == 'Branch loading avg':
+                y = self.l_avg_conv[1:-1, indices]
+                y_label = '(%)'
+                x_label = 'Sampling points'
+                title = 'Branch loading \naverage convergence'
+
+            elif result_type == 'Bus voltage std':
+                y = self.v_std_conv[1:-1, indices]
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
+                title = 'Bus voltage standard \ndeviation convergence'
+
+            elif result_type == 'Branch current std':
+                y = self.c_std_conv[1:-1, indices]
+                y_label = '(p.u.)'
+                x_label = 'Sampling points'
+                title = 'Bus current standard \ndeviation convergence'
+
+            elif result_type == 'Branch loading std':
+                y = self.l_std_conv[1:-1, indices]
+                y_label = '(%)'
+                x_label = 'Sampling points'
+                title = 'Branch loading standard \ndeviation convergence'
+
+            elif result_type == 'Bus voltage CDF':
+                cdf = CDF(np.abs(self.V_points[:, indices]))
+                cdf.plot(ax=ax)
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
+                title = 'Bus voltage'
+
+            elif result_type == 'Branch loading CDF':
+                cdf = CDF(np.abs(self.loading_points.real[:, indices]))
+                cdf.plot(ax=ax)
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
+                title = 'Branch loading'
+
+            else:
+                pass
+
+            if 'CDF' not in result_type:
+                df = pd.DataFrame(data=y, columns=labels)
+
+                if len(df.columns) > 10:
+                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+                else:
+                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+            else:
+                df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
+
+            ax.set_title(title)
+            ax.set_ylabel(y_label)
+            ax.set_xlabel(x_label)
+
+            return df
+
+        else:
+            return None
