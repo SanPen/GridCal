@@ -21,6 +21,7 @@ from GridCal.Engine.ObjectTypes import Tower, Wire, TransformerType, SequenceLin
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.GeneralDialogues import *
 
 from GridCal.Engine.BlackOutDriver import *
 from GridCal.Engine.IoStructures import *
@@ -1416,6 +1417,9 @@ class MainGUI(QMainWindow):
         elif dev_type == 'Shunt':
             objects = self.circuit.get_shunts()
             also_reactive_power = True
+        else:
+            objects = list()
+            also_reactive_power = False
 
         if len(objects) > 0:
             dialogue = ProfileInputGUI(parent=self,
@@ -1480,25 +1484,28 @@ class MainGUI(QMainWindow):
 
         elif dev_type == 'Shunt':
             objects = self.circuit.get_shunts()
+        else:
+            objects = list()
 
         # Assign profiles
-        attr = objects[0].profile_attr[magnitude]
-        if operation == '+':
-            for i, elm in enumerate(objects):
-                setattr(elm, attr, getattr(elm, attr) + value)
-        elif operation == '-':
-            for i, elm in enumerate(objects):
-                setattr(elm, attr, getattr(elm, attr) - value)
-        elif operation == '*':
-            for i, elm in enumerate(objects):
-                setattr(elm, attr, getattr(elm, attr) * value)
-        elif operation == '/':
-            for i, elm in enumerate(objects):
-                setattr(elm, attr, getattr(elm, attr) / value)
-        else:
-            raise Exception('Operation not supported: ' + str(operation))
+        if len(objects) > 0:
+            attr = objects[0].profile_attr[magnitude]
+            if operation == '+':
+                for i, elm in enumerate(objects):
+                    setattr(elm, attr, getattr(elm, attr) + value)
+            elif operation == '-':
+                for i, elm in enumerate(objects):
+                    setattr(elm, attr, getattr(elm, attr) - value)
+            elif operation == '*':
+                for i, elm in enumerate(objects):
+                    setattr(elm, attr, getattr(elm, attr) * value)
+            elif operation == '/':
+                for i, elm in enumerate(objects):
+                    setattr(elm, attr, getattr(elm, attr) / value)
+            else:
+                raise Exception('Operation not supported: ' + str(operation))
 
-        self.display_profiles()
+            self.display_profiles()
 
     def plot_profiles(self):
         """
