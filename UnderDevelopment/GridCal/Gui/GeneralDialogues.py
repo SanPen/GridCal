@@ -22,18 +22,18 @@ def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
     """
-    list_model = QtCore.QStandardItemModel()
+    list_model = QtGui.QStandardItemModel()
     if lst is not None:
         if not checks:
             for val in lst:
                 # for the list model
-                item = QtCore.QStandardItem(str(val))
+                item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 list_model.appendRow(item)
         else:
             for val in lst:
                 # for the list model
-                item = QtCore.QStandardItem(str(val))
+                item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 item.setCheckable(True)
                 item.setCheckState(QtCore.Qt.Checked)
@@ -66,7 +66,7 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
         # calendar
         self.calendar = QtWidgets.QDateTimeEdit()
         d = datetime.today()
-        self.calendar.setDateTime(QtWidgets.QDateTime(d.year, 1, 1, 00, 00, 00))
+        self.calendar.setDateTime(QtCore.QDateTime(d.year, 1, 1, 00, 00, 00))
 
         # number of time steps
         self.steps_spinner = QtWidgets.QSpinBox()
