@@ -25,7 +25,7 @@ import json
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
-
+from scipy.sparse import lil_matrix, csc_matrix
 
 from pySOT import *
 
@@ -832,6 +832,26 @@ class Bus:
         for elm in self.batteries + self.controlled_generators:
             elm.apply_lp_profile(Sbase)
 
+    def merge(self, other_bus):
+
+        # List of load s attached to this bus
+        self.loads += other_bus.loads
+
+        # List of Controlled generators attached to this bus
+        self.controlled_generators += other_bus.controlled_generators
+
+        # List of shunt s attached to this bus
+        self.shunts += other_bus.shunts
+
+        # List of batteries attached to this bus
+        self.batteries += other_bus.batteries
+
+        # List of static generators attached tot this bus
+        self.static_generators += other_bus.static_generators
+
+        # List of measurements
+        self.measurements += other_bus.measurements
+
     def __str__(self):
         return self.name
 
@@ -1055,7 +1075,7 @@ class Branch(ReliabilityDevice):
         self.tap_changer.tap_down()
         self.tap_module = self.tap_changer.get_tap()
 
-    def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, i, f, t):
+    def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, C, i, f, t):
         """
 
         Modify the circuit admittance matrices with the admittances of this branch
@@ -1066,6 +1086,7 @@ class Branch(ReliabilityDevice):
         @param Yt: Admittance matrix of the branches with the to buses
         @param B1: Jacobian 1 for the fast-decoupled power flow
         @param B1: Jacobian 2 for the fast-decoupled power flow
+        @:param C: Branch-Bus connectivity matrix
         @param i: index of the branch in the circuit
         @return: Nothing, the inputs are implicitly modified
         """
@@ -1097,6 +1118,10 @@ class Branch(ReliabilityDevice):
         Yf[i, t] += Yft
         Yt[i, f] += Ytf
         Yt[i, t] += Ytt
+
+        # Connectivity matrix
+        C[i, f] = 1
+        C[i, t] = -1
 
         # Y shunt
         Yshunt[f] += Yff_sh
@@ -2809,6 +2834,9 @@ class Circuit:
         # Compile the branches
         for i in range(m):
 
+            # pick the name
+            power_flow_input.branch_names[i] = self.branches[i].name
+
             if self.branches[i].active:
 
                 # get the from and to bus indices
@@ -2823,6 +2851,7 @@ class Circuit:
                                                  Yt=power_flow_input.Yt,
                                                  B1=power_flow_input.B1,
                                                  B2=power_flow_input.B2,
+                                                 C=power_flow_input.C,
                                                  i=i, f=f, t=t)
 
                 # Add graph edge (automatically adds the vertices)
@@ -2834,6 +2863,12 @@ class Circuit:
                 # Arrays with the from and to indices per bus
                 power_flow_input.F[i] = f
                 power_flow_input.T[i] = t
+
+                # branches to remove (optionally, add the generic branches as candidates to be removed...)
+                if self.branches[i].branch_type == BranchType.Branch:
+                    power_flow_input.branches_to_remove_idx.append(i)
+                else:
+                    power_flow_input.branches_to_keep_idx.append(i)
 
             # fill rate
             if self.branches[i].rate > 0:
@@ -3991,6 +4026,88 @@ class MultiCircuit(Circuit):
             isl_idx += 1
 
         return logger
+
+    def reduce(self, rx_criteria=True, rx_threshold=1e-5, type_criteria=True, selected_type=BranchType.Branch):
+        """
+        Perform a grid reduction
+        :param rx_criteria: shall the branches be selected by r+x criteria? (lower than the rx threshold are removed)
+        :param rx_threshold: rx threshold value in p.u.
+        :param type_criteria: shell the branches be selected by the branch type criteria?
+        :param selected_type: branch type to choose
+        :return:
+        """
+        # form C
+        threshold = 1e-5
+        m = len(self.branches)
+        n = len(self.buses)
+        C = lil_matrix((m, n), dtype=int)
+        buses_dict = {bus: i for i, bus in enumerate(self.buses)}
+        branches_to_keep_idx = list()
+        branches_to_remove_idx = list()
+
+        for i in range(len(self.branches)):
+            # get the from and to bus indices
+            f = buses_dict[self.branches[i].bus_from]
+            t = buses_dict[self.branches[i].bus_to]
+            C[i, f] = 1
+            C[i, t] = -1
+
+            # check if to select the branch for removal
+            chosen_to_be_removed = False
+
+            if rx_criteria:
+                rx = self.branches[i].R + self.branches[i].X
+                if rx < threshold:
+                    branches_to_remove_idx.append(i)
+                    chosen_to_be_removed = True
+
+            if type_criteria and not chosen_to_be_removed:
+                if self.branches[i].branch_type == selected_type:
+                    branches_to_remove_idx.append(i)
+                    chosen_to_be_removed = True
+
+            if not chosen_to_be_removed:
+                branches_to_keep_idx.append(i)
+
+        C = csc_matrix(C)
+
+        # reduction
+        C1 = C[branches_to_keep_idx, :]  # branch_cn of the real branches (after applying the branch states)
+        C2 = C[branches_to_remove_idx, :]  # branch_cn of the switches (after applying the branch states)
+        B = C1 * C2.T * C2  # this is the reduced branch-bus matrix (the buses are not reduced yet...)
+
+        df_B = pd.DataFrame(B.todense(),
+                            columns=self.circuits[0].power_flow_input.bus_names,
+                            index=self.circuits[0].power_flow_input.branch_names[branches_to_keep_idx])
+
+        print(df_B)
+
+        '''
+        Now, we need to determine which buses to keep...
+        '''
+
+        # B is a CSC matrix
+        buses_to_keep = list()
+        for j in range(B.shape[1]):  # column index
+
+            bus_occurrences = 0  # counter
+
+            for k in range(B.indptr[j], B.indptr[j + 1]):
+                # i = B.indices[k]  # row index
+                # val = B.data[k]  # value
+                bus_occurrences += 1
+
+            # if the bus appeared more than one time in the column of B, then we propose to keep it
+            if bus_occurrences > 1:
+                buses_to_keep.append(j)
+
+        B2 = B[:, buses_to_keep]  # this is the reduced branch-bus matrix
+
+        df_B2 = pd.DataFrame(B2.todense(),
+                             columns=self.circuits[0].power_flow_input.bus_names[buses_to_keep],
+                             index=self.circuits[0].power_flow_input.branch_names[branches_to_keep_idx])
+
+        print(df_B2)
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """

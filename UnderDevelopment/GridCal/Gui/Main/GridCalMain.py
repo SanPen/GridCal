@@ -34,6 +34,7 @@ from GridCal.Engine.StochasticDriver import *
 from GridCal.Engine.TimeSeriesDriver import *
 from GridCal.Engine.TransientStabilityDriver import *
 from GridCal.Engine.VoltageCollapseDriver import *
+from GridCal.Engine.TopologyDriver import TopologyReduction
 
 import os.path
 import platform
@@ -124,6 +125,10 @@ class MainGUI(QMainWindow):
                               'spring_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
+        # branch types for reduction
+        mdl = get_list_model(BranchTypeConverter(BranchType.Branch).options)
+        self.ui.removeByTypeComboBox.setModel(mdl)
+
         # solvers dictionary
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
@@ -177,6 +182,7 @@ class MainGUI(QMainWindow):
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
+        self.topology_reduction = None
 
         self.results_df = None
 
@@ -250,6 +256,8 @@ class MainGUI(QMainWindow):
         self.ui.actionExport_all_the_device_s_profiles.triggered.connect(self.export_object_profiles)
 
         self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
+
+        self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
 
         # Buttons
 
@@ -789,7 +797,7 @@ class MainGUI(QMainWindow):
 
                 # add the widgets
                 self.ui.schematic_layout.addWidget(self.grid_editor)
-                self.ui.splitter_8.setStretchFactor(1, 15)
+                # self.ui.splitter_8.setStretchFactor(1, 15)
 
                 # clear the results
                 self.ui.resultsPlot.clear()
@@ -2374,6 +2382,57 @@ class MainGUI(QMainWindow):
                 self.msg('There are no time series.\nLoad time series are needed for this simulation.')
         else:
             pass
+
+    def reduce_grid(self):
+        """
+        Reduce grid by removing branches and nodes according to the selected options
+        """
+
+        if len(self.circuit.buses) > 0:
+
+            # compute the options
+            rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
+            exponent = self.ui.rxThresholdSpinBox.value()
+            rx_threshold = 1.0 / (10.0**exponent)
+            type_criteria = self.ui.removeByTypeCheckBox.isChecked()
+            selected_type_txt = self.ui.removeByTypeComboBox.currentText()
+            selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
+
+            if rx_criteria or type_criteria:
+
+                # ask for confirmation
+                reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to reduce the grid?',
+                                             QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+
+                    self.LOCK()
+
+                    # reduce the grid
+                    self.topology_reduction = TopologyReduction(grid=self.circuit,
+                                                                rx_criteria=rx_criteria,
+                                                                rx_threshold=rx_threshold,
+                                                                type_criteria=type_criteria,
+                                                                selected_type=selected_type)
+
+                    # Set the time series run options
+                    self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
+                    self.topology_reduction.done_signal.connect(self.UNLOCK)
+                    self.topology_reduction.done_signal.connect(self.post_reduce_grid)
+
+                    self.topology_reduction.start()
+                else:
+                    pass
+
+            else:
+                self.msg('Select at least one reduction option in the topology settings', 'Topological grid reduction')
+        else:
+            pass
+
+    def post_reduce_grid(self):
+
+        self.create_schematic_from_api(explode_factor=1)
 
     def set_cancel_state(self):
         """

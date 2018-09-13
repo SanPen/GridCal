@@ -56,6 +56,9 @@ class PowerFlowInput:
 
         self.pqpv = None
 
+        # Branch-Bus connectivity matrix
+        self.C = lil_matrix((m, n), dtype=int)
+
         # Branch admittance matrix with the from buses
         self.Yf = lil_matrix((m, n), dtype=complex)
 
@@ -113,6 +116,11 @@ class PowerFlowInput:
 
         self.bus_names = zeros(n, dtype=object)
 
+        self.branch_names = zeros(m, dtype=object)
+
+        self.branches_to_remove_idx = list()
+        self.branches_to_keep_idx = list()
+
         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
 
     def compile(self):
@@ -121,6 +129,7 @@ class PowerFlowInput:
         Create the ref, pv and pq lists
         @return:
         """
+        self.C = csc_matrix(self.C)
         self.Yf = csc_matrix(self.Yf)
         self.Yt = csc_matrix(self.Yt)
         self.Ybus = csc_matrix(self.Ybus)
@@ -211,6 +220,9 @@ class PowerFlowInput:
         # self.pq = None
         #
         # self.sto = None
+
+        # Branch-Bus connectivity matrix
+        self.C[br_idx, :][:, bus_idx] = obj.C.todense()
 
         # Branch admittance matrix with the from buses
         self.Yf[br_idx, :][:, bus_idx] = obj.Yf.todense()

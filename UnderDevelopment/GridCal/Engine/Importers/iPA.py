@@ -112,7 +112,7 @@ def load_iPA(file_name):
             else:
                 bus = bus1
 
-            p = entry['P']  # power in kW
+            p = entry['P']  # power in MW
             q = entry['Q']
             elm = Load(name=str(identifier), power=complex(p, q) * 1e-3)
             circuit.add_load(bus, elm)
@@ -150,4 +150,6 @@ if __name__ == '__main__':
 
     circuit = load_iPA(file_name=fname)
 
-    circuit.save_excel(fname + '.xlsx')
+    circuit.save_excel(fname + '_assuming_kW.xlsx')
+
+    pass
