@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+# GUI imports
 from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
@@ -23,19 +24,20 @@ from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 
+# Engine imports
 from GridCal.Engine.BlackOutDriver import *
 from GridCal.Engine.IoStructures import *
-from GridCal.Engine.OpfDriver import *
+# from GridCal.Engine.OpfDriver import *
 from GridCal.Engine.OpfTimeSeriesDriver import *
-from GridCal.Engine.OptimizationDriver import *
+# from GridCal.Engine.OptimizationDriver import *
 from GridCal.Engine.PowerFlowDriver import *
 from GridCal.Engine.ShortCircuitDriver import *
-from GridCal.Engine.StateEstimationDriver import *
+# from GridCal.Engine.StateEstimationDriver import *
 from GridCal.Engine.StochasticDriver import *
 from GridCal.Engine.TimeSeriesDriver import *
 from GridCal.Engine.TransientStabilityDriver import *
 from GridCal.Engine.VoltageCollapseDriver import *
-from GridCal.Engine.TopologyDriver import TopologyReduction
+from GridCal.Engine.TopologyDriver import TopologyReduction, TopologyReductionOptions
 
 import os.path
 import platform
@@ -2415,12 +2417,13 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
+                    options = TopologyReductionOptions(rx_criteria=rx_criteria,
+                                                       rx_threshold=rx_threshold,
+                                                       type_criteria=type_criteria,
+                                                       selected_type=selected_type)
+
                     # reduce the grid
-                    self.topology_reduction = TopologyReduction(grid=self.circuit,
-                                                                rx_criteria=rx_criteria,
-                                                                rx_threshold=rx_threshold,
-                                                                type_criteria=type_criteria,
-                                                                selected_type=selected_type)
+                    self.topology_reduction = TopologyReduction(grid=self.circuit, options=options)
 
                     # Set the time series run options
                     self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)

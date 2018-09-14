@@ -48,8 +48,6 @@ from GridCal.Engine.ObjectTypes import TransformerType, Tower, BranchTemplate, B
 # Enumerations
 ########################################################################################################################
 
-
-
 class BranchTypeConverter:
 
     def __init__(self, tpe: BranchType):
@@ -3209,12 +3207,30 @@ class MultiCircuit(Circuit):
                 self.branches = circ.branches
                 self.assign_circuit(circ)
 
-            elif file_extension.lower() == '.json':
-                from GridCal.Engine.Importers.JSON_parser import parse_json
-                circ = parse_json(filename)
+            elif file_extension.lower() == '.dpx':
+                from GridCal.Engine.Importers.DPX import load_dpx
+                circ, logger = load_dpx(filename)
                 self.buses = circ.buses
                 self.branches = circ.branches
                 self.assign_circuit(circ)
+
+            elif file_extension.lower() == '.json':
+
+                # the json file can be the GridCAl one or the iPA one...
+                data = json.load(open(filename))
+
+                if 'Red' in data.keys():
+                    from GridCal.Engine.Importers.iPA import load_iPA
+                    circ = load_iPA(filename)
+                    self.buses = circ.buses
+                    self.branches = circ.branches
+                    self.assign_circuit(circ)
+                else:
+                    from GridCal.Engine.Importers.JSON_parser import parse_json
+                    circ = parse_json(filename)
+                    self.buses = circ.buses
+                    self.branches = circ.branches
+                    self.assign_circuit(circ)
 
             elif file_extension.lower() == '.raw':
                 from GridCal.Engine.Importers.PSS_Parser import PSSeParser

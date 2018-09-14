@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import chardet
+from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, ControlledGenerator, Battery, BranchType
 
 
 class DPXbase:
@@ -10,7 +12,7 @@ class DPXbase:
         self.cols = columns
         self.data = data
 
-    def add_row(self, data_row):
+    def append(self, data_row):
 
         self.data.append(data_row)
 
@@ -84,14 +86,19 @@ def load_dpx(file_name):
     :return: MultiCircuit
     """
 
+    circuit = MultiCircuit()
+
     logger = list()
 
     structures_dict = dict()
 
     current_block = None
 
+    # make a guess of the file encoding
+    detection = chardet.detect(open(file_name, "rb").read())
+
     # parse the data into the structures
-    with open(file_name) as f:
+    with open(file_name, 'r', encoding=detection['encoding']) as f:
         for line in f:
 
             if ':' in line and ',' not in line:
@@ -106,51 +113,72 @@ def load_dpx(file_name):
 
                 if len(values) > 1:
 
-                    # check the if the block has been created
-                    if current_block not in structures_dict.keys():
-                        structures_dict[current_block] = dict()
+                    if current_block in ['CatalogNode', 'CatalogBranch', 'Areas', 'Sites', 'Nodes', 'Branches']:  # blocks with further categorization
 
-                    # parse the data
-                    if current_block in ['CatalogNode', 'CatalogBranch', '']:
-                        # blocks with header marker
+                        # check the if the block has been created
+                        if current_block not in structures_dict.keys():
+                            structures_dict[current_block] = dict()
 
                         marker = values[0]
                         data = [val.strip().replace("'", "") for val in values[1:]]
                         if marker not in structures_dict[current_block].keys():
-                            structures_dict[current_block][marker] = DPXbase(tpe=marker)
+                            # structures_dict[current_block][marker] = DPXbase(tpe=marker)
+                            structures_dict[current_block][marker] = list()
 
                         # add the data
-                        structures_dict[current_block][marker].add_row(data)
+                        structures_dict[current_block][marker].append(data)
 
-                    elif current_block in ['CatalogUGen', 'Parameters']:
-                        # blocks without header marker
-                        pass
+                    elif current_block in ['CatalogUGen', 'Parameters']:  # blocks without further categorization
 
-                    elif current_block in ['Areas', 'Sites']:
-                        # blocks without header marker
-                        pass
+                        # check the if the block has been created
+                        if current_block not in structures_dict.keys():
+                            structures_dict[current_block] = list()
 
-                    elif current_block in ['Nodes', 'Branches']:
-                        # blocks without header marker
-                        pass
+                        # correct the values
+                        data = [val.strip().replace("'", "") for val in values]
 
-                    elif current_block in ['DrawObjs', 'Panels']:
-                        # blocks without header marker
-                        pass
+                        # insert the data
+                        structures_dict[current_block].append(data)
 
                     else:
-                        logger.append('Block ' + current_block + ' unknown')
+                        # append an entry to the logger
+                        logger.append('Unknown block: ' + current_block)
+
+                    # # parse the data
+                    # if current_block in ['CatalogNode', 'CatalogBranch', '']:
+                    #     # blocks with header marker
+                    #     pass
+                    #
+                    # elif current_block in ['CatalogUGen', 'Parameters']:
+                    #     # blocks without header marker
+                    #     pass
+                    #
+                    # elif current_block in ['Areas', 'Sites']:
+                    #     # blocks without header marker
+                    #     pass
+                    #
+                    # elif current_block in ['Nodes', 'Branches']:
+                    #     # blocks without header marker
+                    #     pass
+                    #
+                    # elif current_block in ['DrawObjs', 'Panels']:
+                    #     # blocks without header marker
+                    #     pass
+                    #
+                    # else:
+                    #     logger.append('Block ' + current_block + ' unknown')
 
                 else:
                     logger.append('Unrecognized line: ' + line)
 
-    return structures_dict, logger
+    return circuit, logger
 
 
 if __name__ == '__main__':
 
-    fname = 'example.dpx'
+    # fname = 'example.dpx'
+    fname = '/media/santi/Pincho/grids sensible/Sensible/Portugueses/evora.dpx'
 
-    parsed_data, logger = load_dpx(file_name=fname)
+    circuit_, logger = load_dpx(file_name=fname)
 
     pass

@@ -32,6 +32,21 @@ def reduce_grid(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
 
 def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
                       type_criteria=True, selected_type=BranchType.Branch):
+    """
+    Remove the first branch found to be removed.
+    this function is meant to be called until it returns false
+    Args:
+        circuit: Circuit to modify in-place
+        rx_criteria: use the r+x threshold to select branches?
+        rx_threshold: r+x threshold
+        type_criteria: use the branch type criteria to remove branches?
+        selected_type: branch type
+
+    Returns:
+        - Was any branch deleted? (True / False)
+        - Number of branches found to be deleted
+        - name of the branch
+    """
 
     # form C
     m = len(circuit.branches)
@@ -83,11 +98,11 @@ def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5
         # get the number of paths
         n_paths = len(list(all_simple_paths(graph, f, t)))
 
-        print('Deleting: ', circuit.branches[br_idx].name)
+        # print('Deleting: ', circuit.branches[br_idx].name)
 
         if n_paths == 1:
 
-            print('\tMerging', bus_f.name, bus_t.name)
+            # print('\tMerging', bus_f.name, bus_t.name)
 
             # removing the bus f
             branches = get_branches_of_bus(C, f)
@@ -111,7 +126,7 @@ def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5
             circuit.branches.pop(br_idx)
 
         else:
-            print('\tsimple_delete')
+            # print('\tsimple_delete')
             # remove the branch and that's it
             circuit.branches.pop(br_idx)
 
@@ -120,29 +135,40 @@ def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5
         return False, len(branches_to_remove_idx), ''
 
 
-class TopologyReduction(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+class TopologyReductionOptions:
 
-    def __init__(self, grid: MultiCircuit, rx_criteria=False, rx_threshold=1e-5,
+    def __init__(self, rx_criteria=False, rx_threshold=1e-5,
                  type_criteria=True, selected_type=BranchType.Branch):
         """
-        Topology reduction driver
-        :param grid: MultiCircuit instance
+        Topology reduction options
         :param rx_criteria:
         :param rx_threshold:
         :param type_criteria:
         :param selected_type:
         """
-        QThread.__init__(self)
-
-        self.grid = grid
 
         self.rx_criteria = rx_criteria
         self.rx_threshold = rx_threshold
         self.type_criteria = type_criteria
         self.selected_type = selected_type
+
+
+class TopologyReduction(QThread):
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, grid: MultiCircuit, options: TopologyReductionOptions):
+        """
+        Topology reduction driver
+        :param grid: MultiCircuit instance
+        :param options:
+        """
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.options = options
 
         self.__cancel__ = False
 
@@ -161,17 +187,18 @@ class TopologyReduction(QThread):
 
             # delete branch
             deleted_any, n_left, br_name = reduce_grid_brute(circuit=self.grid,
-                                                             rx_criteria=self.rx_criteria,
-                                                             rx_threshold=self.rx_threshold,
-                                                             type_criteria=self.type_criteria,
-                                                             selected_type=self.selected_type)
+                                                             rx_criteria=self.options.rx_criteria,
+                                                             rx_threshold=self.options.rx_threshold,
+                                                             type_criteria=self.options.type_criteria,
+                                                             selected_type=self.options.selected_type)
 
             if i == 0:
                 total = n_left
 
-            self.progress_text.emit('Deleted ' + br_name)
-            progress = (i+1) / total * 100
-            self.progress_signal.emit(progress)
+            if deleted_any:
+                self.progress_text.emit('Removed branch ' + br_name)
+                progress = (i+1) / total * 100
+                self.progress_signal.emit(progress)
 
             # increase counter
             i += 1
