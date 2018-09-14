@@ -16,6 +16,7 @@ You can install GridCal as a separated standalone program without having to both
 
 [GridCal for linux x64](https://mega.nz/#!m4YUhICZ!c5bLncNwqCQG3H6p0ST4qnSP1GTii-44_di06RGSV-o)
 
+Remember to update the program to the latest version once installed. You'll find an update script in the installation folder.
 
 # Python package installation
 
@@ -172,6 +173,8 @@ Some of the features you'll find already are:
 - Overhead line construction from wire scheme.
 
 - Device templates (lines and transformers).
+
+- Grid reduction based on branch type or branch impedance values
 
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
 
