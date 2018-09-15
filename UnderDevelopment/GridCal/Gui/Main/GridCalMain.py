@@ -825,7 +825,7 @@ class MainGUI(QMainWindow):
         process to open a file without asking
         :return:
         """
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
         # call dialog to select the file
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',

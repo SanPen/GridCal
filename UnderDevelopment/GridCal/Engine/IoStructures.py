@@ -123,6 +123,8 @@ class PowerFlowInput:
 
         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
 
+        self.logger = list()
+
     def compile(self):
         """
         Make the matrices sparse
@@ -175,6 +177,7 @@ class PowerFlowInput:
             if len(self.pv) == 0:  # there are no pv neither -> blackout grid
 
                 warn('There are no slack nodes selected')
+                self.logger.append('There are no slack nodes selected')
 
             else:  # select the first PV generator as the slack
 

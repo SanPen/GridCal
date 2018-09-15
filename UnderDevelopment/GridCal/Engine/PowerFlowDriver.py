@@ -111,10 +111,12 @@ class PowerFlowMP:
 
         self.last_V = None
 
+        self.logger = list()
+
         self.__cancel__ = False
 
     @staticmethod
-    def compile_types(Sbus, types=None):
+    def compile_types(Sbus, types=None, logger=list()):
         """
         Compile the types
         @return:
@@ -130,6 +132,7 @@ class PowerFlowMP:
             if len(pv) == 0:  # there are no pv neither -> blackout grid
 
                 warn('There are no slack nodes selected')
+                logger.append('There are no slack nodes selected')
 
             else:  # select the first PV generator as the slack
 
@@ -191,6 +194,7 @@ class PowerFlowMP:
                 any_control_issue = False
                 converged = True
                 warn('Not solving power flow because there is no slack bus')
+                self.logger.append('Not solving power flow because there is no slack bus')
             else:
                 # type HELM
                 if solver_type == SolverType.HELM:

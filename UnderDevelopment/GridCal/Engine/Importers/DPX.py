@@ -1,93 +1,214 @@
 import pandas as pd
 import numpy as np
 import chardet
-from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, ControlledGenerator, Battery, BranchType
+from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, ControlledGenerator, Battery, BranchType, StaticGenerator
 
 
-class DPXbase:
-
-    def __init__(self, tpe='', data=list(), columns=list()):
-
-        self.tpe = tpe
-        self.cols = columns
-        self.data = data
-
-    def append(self, data_row):
-
-        self.data.append(data_row)
-
-    def get_data_frame(self):
-
-        return pd.DataFrame(data=self.data, columns=self.cols)
-
-    def copy(self):
-
-        return DPXbase(self.data, self.cols)
-
-# """
-# PT Posto de transformação de distribuição
-# PTC Posto de transformação de cliente
-# TT Transformador de tensão
-# """
-#
-# # PT and PTC
-# # EQ: equipment code
-# # SNOM: nominal power in p.u. (on base 100 MVA)
-# # COST: cost in €
-# PT  = DPXbase(data=[], columns=['EQ', 'SNOM', 'COST'])
-# PTC = DPXbase(data=[], columns=['EQ', 'SNOM', 'COST'])
-#
-# # TT
-# # EQ; equipment code
-# # DESC: Description
-# # VNOM: Nominal voltage of the primary in kV
-# # TAP100: tap value at 1.00 pu (bool)
-# # TAP105: tap value at 1.05 pu (bool)
-# # TAP110: tap value at 1.10 pu (bool)
-# # Vnompw: nominal voltage of the protection winding
-# # RBPW: Potência de precisão do enrolamento de protecção (VA)
-# # CLASSPW: Classe de precisão do enrolamento de protecção
-# # ODW: Existência de enrolamento para ligação em triângulo aberto
-# # VNOMDW; Tensão nominal do enrolamento de triângulo aberto (existe apenas se ODW = 1)
-# # RBDW: Potência de precisão do enrolamento de triângulo aberto (existe apenas se ODW = 1) in VA
-# # CLASSDW: Classe de precisão do enrolamento de triângulo aberto (existe apenas se ODW = 1)
-# # COST; cost in €
-# TT = DPXbase(data=[], columns=['EQ', 'DESC', 'VNOM',
-#                                'TAP100', 'TAP105', 'TAP110',
-#                                'Vnompw', 'RBPW', 'CLASSPW', 'ODW',
-#                                'VNOMDW', 'RBDW', 'CLASSDW', 'COST'])
-#
-# # CAP: Capacitor
-# # EQ; equipment code
-# # DESC: Description
-# # VNOM: Nominal voltage of the primary in kV
-# # REAC: reactance in pu on SBASE = 100 MVA
-# CAP = DPXbase(data=[], columns=['EQ', 'DESC', 'VNOM', 'REAC'])
-#
-# # IND: Inductor
-# # EQ; equipment code
-# # DESC: Description
-# # VNOM: Nominal voltage of the primary in kV
-# # REAC: reactance in pu on SBASE = 100 MVA
-# IND = DPXbase(data=[], columns=['EQ', 'DESC', 'VNOM', 'REAC'])
-#
-#
-# structures_dict['PT'] = PT
-# structures_dict['PTC'] = PTC
-# structures_dict['TT'] = TT
-# structures_dict['CAP'] = CAP
-# structures_dict['IND'] = IND
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
 
 
-def load_dpx(file_name):
+__headers__ = dict()
+
+
+########################################################################################################################
+# CatalogBranch block
+__headers__['CatalogBranch'] = dict()
+
+
+__headers__['CatalogBranch']['CAP'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'REAC']
+
+__headers__['CatalogBranch']['DISJ'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RAT', 'FRATSH', 'FRATME', 'RATOFF', 'RATON',
+                                        'RATONA', 'TOP', 'ISOLT']
+
+__headers__['CatalogBranch']['FUS'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RAT', 'FRATSH', 'FRATME', 'RATOFF', 'RATON',
+                                       'FUS_IN', 'FUS_INF', 'FUS_IF', 'FUS_I5S', 'FUS_I01S', 'FUS_001S']
+
+__headers__['CatalogBranch']['IND'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'REAC']
+
+__headers__['CatalogBranch']['INTR'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RAT', 'FRATSH', 'FRATME', 'RATOFF', 'RATON']
+
+__headers__['CatalogBranch']['LINE'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'TYPE', 'SEC', 'SECIP', 'SECN', 'RATTYP',
+                                        'RATSUM', 'RATWIN', 'FRATSH', 'FRATME', 'FRAT1S', 'R', 'RIP', 'RN',
+                                        'K', 'X', 'B', 'R0', 'X0', 'B0', 'COST']
+
+__headers__['CatalogBranch']['SECC'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RAT', 'FRATSH', 'FRATME', 'RATOFF', 'RATON']
+
+__headers__['CatalogBranch']['TI'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'TOR']  # fuck the rest, having variable number of properties is bad design
+
+__headers__['CatalogBranch']['XFORM1'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2', 'VNOM3',
+                                          'SNOMTYP1', 'SNOMSUM1','SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1',  'RD1', 'XD1',
+                                          'RH1', 'XH1',
+                                          'SNOMTYP2', 'SNOMSUM2', 'SNOMWIN2', 'NATAP2', 'MAX2', 'MIN2', 'RD2', 'XD2',
+                                          'RH2', 'XH2', 'RDC', 'XDC', 'RHC', 'XHC',
+                                          'SNOMTYP3', 'SNOMSUM3', 'SNOMWIN3', 'NATAP3', 'MAX3', 'MIN3', 'RD3', 'XD3',
+                                          'RH3', 'XH3', 'G', 'B', 'G0', 'B0', 'POC', 'IOC', 'USC12', 'PSC12',
+                                          'USC13', 'PSC13', 'USC23', 'PSC23', 'P1P2', 'P1P3', 'P2P3', 'FAB', 'MOD',
+                                          'PYEAR', 'TYPE']
+
+__headers__['CatalogBranch']['XFORM2'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2', 'VNOM3',
+                                          'SNOMTYP1', 'SNOMSUM1','SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1',  'RD1', 'XD1',
+                                          'RH1', 'XH1',
+                                          'SNOMTYP2', 'SNOMSUM2', 'SNOMWIN2', 'NATAP2', 'MAX2', 'MIN2', 'RD2', 'XD2',
+                                          'RH2', 'XH2', 'RDC', 'XDC', 'RHC', 'XHC',
+                                          'SNOMTYP3', 'SNOMSUM3', 'SNOMWIN3', 'NATAP3', 'MAX3', 'MIN3', 'RD3', 'XD3',
+                                          'RH3', 'XH3', 'G', 'B', 'G0', 'B0', 'POC', 'IOC', 'USC12', 'PSC12',
+                                          'USC13', 'PSC13', 'USC23', 'PSC23', 'P1P2', 'P1P3', 'P2P3', 'FAB', 'MOD',
+                                          'PYEAR', 'TYPE']
+
+__headers__['CatalogBranch']['XFORM3'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2', 'VNOM3',
+                                          'SNOMTYP1', 'SNOMSUM1','SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1',  'RD1', 'XD1',
+                                          'RH1', 'XH1',
+                                          'SNOMTYP2', 'SNOMSUM2', 'SNOMWIN2', 'NATAP2', 'MAX2', 'MIN2', 'RD2', 'XD2',
+                                          'RH2', 'XH2', 'RDC', 'XDC', 'RHC', 'XHC',
+                                          'SNOMTYP3', 'SNOMSUM3', 'SNOMWIN3', 'NATAP3', 'MAX3', 'MIN3', 'RD3', 'XD3',
+                                          'RH3', 'XH3', 'G', 'B', 'G0', 'B0', 'POC', 'IOC', 'USC12', 'PSC12',
+                                          'USC13', 'PSC13', 'USC23', 'PSC23', 'P1P2', 'P1P3', 'P2P3', 'FAB', 'MOD',
+                                          'PYEAR', 'TYPE']
+
+__headers__['CatalogBranch']['ZN'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RZN', 'RXN', 'COST']
+
+
+########################################################################################################################
+# nodes block
+__headers__['Nodes'] = dict()
+
+# Airline support post
+__headers__['Nodes']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+            
+# Cabinet (only for low voltage)
+__headers__['Nodes']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
+            
+# Connection
+__headers__['Nodes']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+            
+# Neutral connection
+__headers__['Nodes']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+
+# Network Equivalent
+__headers__['Nodes']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',
+                                 'SEPNET', 'AUTOUP', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11',
+                                 'HARM13', 'NOGRW', 'RS', 'XS', 'R1', 'X1', 'R2', 'X2', 'RH', 'XH', 'COM']
+
+# Generator
+__headers__['Nodes']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'MODEL', 'VMIN', 'VMAX',
+                               'V', 'ENAB', 'P', 'Q', 'QMIN', 'QMAX', 'ELAST', 'HTYP', 'HARM5', 'HARM7', 'HARM11',
+                               'HARM13', 'VNOM', 'RAT', 'TGEN', 'COST', 'YEAR']
+
+# Charging (only for low voltage)
+__headers__['Nodes']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+                                'NCMPLAN']   # fill to fit...
+            
+# Transformation station
+__headers__['Nodes']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
+                          'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'NOGRW',
+                          'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3', 'MCOST3',
+                          'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
+            
+# Customer transformation office
+__headers__['Nodes']['PTC'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
+                          'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'NOGRW',
+                          'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3', 'MCOST3',
+                          'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
+            
+# Reference node
+__headers__['Nodes']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
+                               'COST', 'TGEN', 'YEAR']
+            
+# Voltage Transformer
+__headers__['Nodes']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+                              'DISABLE', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'EQEXIST', 'TAP', 'YEAR', 'ID_AUX']
+    
+
+########################################################################################################################
+# Branches block
+__headers__['Branches'] = dict()
+
+
+# Condenser series or shunt
+__headers__['Branches']['CAP'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'EQ', 'YEAR']
+            
+# Breaker
+__headers__['Branches']['DISJ'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
+                               'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'CONTROL']
+            
+# Estimator
+__headers__['Branches']['ESTIM'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT']
+
+# Fuse
+__headers__['Branches']['FUS'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
+                                  'TRECONF', 'TREPAIR', 'EQ', 'YEAR']
+            
+# Inductance series or shunt
+__headers__['Branches']['IND'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'EQ', 'YEAR']
+            
+# Switch
+__headers__['Branches']['INTR'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
+                                   'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
+            
+# Lines, cables and bars
+# fill until it fits or truncate the data
+__headers__['Branches']['LINE'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'COLOR', 'GEOLEN', 'LEN', 'STAT',
+                                   'PERM', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'EQEXIST', 'NPOSS',
+                                   'CHOOSEQ', 'INSRTCOST', 'EQPOSS1', 'MATCOST1', 'EQPOSS2', 'MATCOST2', 'EQPOSS3',
+                                   'MATCOST3', 'NCOOG', 'GX1', 'GY1', 'GX2', 'GY2']
+            
+# Disconnector
+__headers__['Branches']['SECC'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
+                               'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
+            
+# Intensity Transformer
+__headers__['Branches']['TI'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT', 'EXIST', 'STAT', 'PERM',
+                             'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'TAP1', 'TAP2', 'YEAR']
+            
+# Self-transformer
+__headers__['Branches']['XFORM1'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N', 'EXIST',
+                                     'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1', 'XE1',
+                                     'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL', 'SETV',
+                                     'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
+            
+# 2-winding transformer
+__headers__['Branches']['XFORM2'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N', 'EXIST',
+                                     'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1', 'XE1',
+                                     'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL', 'SETV',
+                                     'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
+            
+# 3-winding transformer
+__headers__['Branches']['XFORM3'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N', 'EXIST',
+                                     'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1', 'XE1',
+                                     'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL', 'SETV',
+                                     'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
+            
+# Neutral impedance
+__headers__['Branches']['ZN'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
+                                 'TRECONF', 'TREPAIR', 'EQ', 'YEAR']
+
+
+
+def reformat(val):
     """
-    Read DPX file
-    :param file_name: file name
-    :return: MultiCircuit
+    Pick string and give it format
+    :param val: string value
+    :return: int, float or string
     """
+    try:
+        x = int(val)
+    except:
+        try:
+            x = float(val)
+        except:
+            x = val
+    return x
 
-    circuit = MultiCircuit()
 
+
+def read_dpx_data(file_name):
+    """
+    Read the DPX file into a structured dictionary
+    :param file_name:
+    :return:
+    """
     logger = list()
 
     structures_dict = dict()
@@ -109,18 +230,19 @@ def load_dpx(file_name):
             else:
                 # Data
 
-                values = line.split(',')
+                values = line.replace(",", "").split('\t')
 
                 if len(values) > 1:
 
-                    if current_block in ['CatalogNode', 'CatalogBranch', 'Areas', 'Sites', 'Nodes', 'Branches']:  # blocks with further categorization
+                    if current_block in ['CatalogNode', 'CatalogBranch', 'Areas', 'Sites', 'Nodes',
+                                         'Branches']:  # blocks with further categorization
 
                         # check the if the block has been created
                         if current_block not in structures_dict.keys():
                             structures_dict[current_block] = dict()
 
                         marker = values[0]
-                        data = [val.strip().replace("'", "") for val in values[1:]]
+                        data = [reformat(val.strip().replace("'", "")) for val in values[1:]]
                         if marker not in structures_dict[current_block].keys():
                             # structures_dict[current_block][marker] = DPXbase(tpe=marker)
                             structures_dict[current_block][marker] = list()
@@ -135,7 +257,7 @@ def load_dpx(file_name):
                             structures_dict[current_block] = list()
 
                         # correct the values
-                        data = [val.strip().replace("'", "") for val in values]
+                        data = [reformat(val.strip().replace("'", "")) for val in values]
 
                         # insert the data
                         structures_dict[current_block].append(data)
@@ -144,40 +266,430 @@ def load_dpx(file_name):
                         # append an entry to the logger
                         logger.append('Unknown block: ' + current_block)
 
-                    # # parse the data
-                    # if current_block in ['CatalogNode', 'CatalogBranch', '']:
-                    #     # blocks with header marker
-                    #     pass
-                    #
-                    # elif current_block in ['CatalogUGen', 'Parameters']:
-                    #     # blocks without header marker
-                    #     pass
-                    #
-                    # elif current_block in ['Areas', 'Sites']:
-                    #     # blocks without header marker
-                    #     pass
-                    #
-                    # elif current_block in ['Nodes', 'Branches']:
-                    #     # blocks without header marker
-                    #     pass
-                    #
-                    # elif current_block in ['DrawObjs', 'Panels']:
-                    #     # blocks without header marker
-                    #     pass
-                    #
-                    # else:
-                    #     logger.append('Block ' + current_block + ' unknown')
-
                 else:
                     logger.append('Unrecognized line: ' + line)
+
+    return structures_dict, logger
+
+
+def repack(data_structures, logger=list(), verbose=False):
+    """
+    Pack the values as DataFrames with headers where available
+    :param data_structures: Raw data structures
+    :param logger: logger (inherited)
+    :return:
+    """
+    for current_block in data_structures.keys():
+
+        # parse the data
+        if current_block in ['CatalogNode']:
+            # blocks with header marker
+            pass
+
+        elif current_block in ['CatalogUGen', 'Parameters']:
+            # blocks without header marker
+            pass
+
+        elif current_block in ['Areas', 'Sites']:
+            # blocks without header marker
+            pass
+
+        elif current_block in ['Nodes', 'Branches', 'CatalogBranch']:  # blocks without header marker
+
+            # repack the data with headers
+            for tpe in data_structures[current_block].keys():
+                hdr = __headers__[current_block][tpe][1:]
+                data = data_structures[current_block][tpe]
+                try:
+                    data = np.array(data)[:, :len(hdr)]  # truncate to the length of hdr
+                except:
+                    # each line does have different lengths (shitty format...)
+
+                    data2 = list()
+
+                    # determine the maximum length
+                    lmax = 0
+                    for i in range(len(data)):
+                        l = len(data[i])
+                        if l > lmax:
+                            lmax = l
+
+                    # format all to have Lmax length
+                    for i in range(len(data)):
+                        line = data[i]
+                        l = len(line)
+                        d = lmax - l
+                        fill = [0] * d
+                        data2.append(line + fill)
+
+                    data = np.array(data2)[:, :len(hdr)]
+
+                # extend the data
+                if data.shape[1] < len(hdr):
+                    d = len(hdr) - data.shape[1]
+                    data = np.c_[data, np.zeros((data.shape[0], d))]
+
+                df = pd.DataFrame(data=data, columns=hdr)
+                data_structures[current_block][tpe] = df
+
+                if verbose:
+                    print('\n', current_block, ' -> ',  tpe)
+                    print(df)
+
+        elif current_block in ['DrawObjs', 'Panels']:
+            # blocks without header marker
+            pass
+
+        else:
+            logger.append('Block ' + current_block + ' unknown')
+
+    return data_structures, logger
+
+
+def load_dpx(file_name,contraction_factor=1000):
+    """
+    Read DPX file
+    :param file_name: file name
+    :return: MultiCircuit
+    """
+
+    circuit = MultiCircuit()
+
+    Sbase = 100
+    circuit.Sbase = Sbase
+
+    # read the raw data into a structured dictionary
+    print('Reading file...')
+    structures_dict, logger = read_dpx_data(file_name=file_name)
+
+    # format the read data
+    print('Packing data...')
+    data_structures, logger = repack(data_structures=structures_dict, logger=logger)
+
+    buses_id_dict = dict()
+    #  create nodes
+    for tpe in data_structures['Nodes']:
+        # Airline support post
+        # __headers__['Nodes']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+        # __headers__['Nodes']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
+        # __headers__['Nodes']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+        # __headers__['Nodes']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+        # __headers__['Nodes']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'NCMPLAN']  # fill to fit...
+        if tpe in ['APOIO', 'ARM', 'CX', 'CXN', 'LOAD']:
+            df = data_structures['Nodes'][tpe]
+
+            for i in range(df.shape[0]):
+                name = 'B' + str(len(circuit.buses)+1) + '_' + str(df['NAME'].values[i])
+                Vnom = float(df['VBASE'].values[i])
+                x = float(df['GX'].values[i]) / contraction_factor
+                y = float(df['GY'].values[i]) / contraction_factor
+                id_ = df['ID'].values[i]
+                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+
+                circuit.add_bus(bus)
+                buses_id_dict[id_] = bus
+
+
+        # Network Equivalent
+        # __headers__['Nodes']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',
+        #                                  'SEPNET', 'AUTOUP', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7',
+        #                                  'HARM11',
+        #                                  'HARM13', 'NOGRW', 'RS', 'XS', 'R1', 'X1', 'R2', 'X2', 'RH', 'XH', 'COM']
+        elif tpe == 'EQUIV':
+            df = data_structures['Nodes'][tpe]
+
+            for i in range(df.shape[0]):
+                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                Vnom = float(df['VBASE'].values[i])
+                x = float(df['GX'].values[i]) / contraction_factor
+                y = float(df['GY'].values[i]) / contraction_factor
+                id_ = df['ID'].values[i]
+                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
+                circuit.add_bus(bus)
+                buses_id_dict[id_] = bus
+
+                name = 'LD' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
+                p = float(df['P'].values[i]) * Sbase
+                q = float(df['Q'].values[i]) * Sbase
+                load = Load(name=name, power=complex(p, q))
+
+                circuit.add_load(bus, load)
+
+        # Generator
+        # __headers__['Nodes']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'MODEL', 'VMIN',
+        #                                'VMAX',
+        #                                'V', 'ENAB', 'P', 'Q', 'QMIN', 'QMAX', 'ELAST', 'HTYP', 'HARM5', 'HARM7',
+        #                                'HARM11',
+        #                                'HARM13', 'VNOM', 'RAT', 'TGEN', 'COST', 'YEAR']
+        elif tpe == 'GEN':
+            df = data_structures['Nodes'][tpe]
+
+            for i in range(df.shape[0]):
+                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                Vnom = float(df['VBASE'].values[i])
+                x = float(df['GX'].values[i]) / contraction_factor
+                y = float(df['GY'].values[i]) / contraction_factor
+                id_ = df['ID'].values[i]
+                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                circuit.add_bus(bus)
+                buses_id_dict[id_] = bus
+
+                mode = int(df['MODEL'].values[i])
+
+                if mode == 1:
+                    name = 'GEN' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
+                    p = float(df['P'].values[i]) * Sbase
+                    q = float(df['Q'].values[i]) * Sbase
+                    v = float(df['V'].values[i])   # p.u.
+                    gen = ControlledGenerator(name=name, active_power=p, voltage_module=v)
+
+                    circuit.add_controlled_generator(bus, gen)
+                else:
+                    name = 'GENSTAT' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
+                    p = float(df['P'].values[i]) * Sbase
+                    q = float(df['Q'].values[i]) * Sbase
+                    gen = StaticGenerator(name=name, power=complex(p, q))
+                    circuit.add_static_generator(bus, gen)
+
+        # Transformation station
+        # __headers__['Nodes']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+        #                               'ZONE',
+        #                               'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13',
+        #                               'NOGRW',
+        #                               'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2',
+        #                               'EQPOSS3', 'MCOST3',
+        #                               'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
+        elif tpe in ['PT', 'PTC']:
+
+            df = data_structures['Nodes'][tpe]
+
+            for i in range(df.shape[0]):
+
+                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                Vnom = float(df['VBASE'].values[i])
+                x = float(df['GX'].values[i]) / contraction_factor
+                y = float(df['GY'].values[i]) / contraction_factor
+                id_ = df['ID'].values[i]
+                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+
+                name = 'LD' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                p = float(df['P'].values[i]) * Sbase
+                q = float(df['Q'].values[i]) * Sbase
+                load = Load(name=name, power=complex(p, q))
+
+                circuit.add_bus(bus)
+                circuit.add_load(bus, load)
+                buses_id_dict[id_] = bus
+
+        # Reference node
+        # __headers__['Nodes']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
+        #                                'COST', 'TGEN', 'YEAR']
+        elif tpe == 'REF':
+            df = data_structures['Nodes'][tpe]
+
+            for i in range(df.shape[0]):
+                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                Vnom = float(df['VBASE'].values[i])
+                x = float(df['GX'].values[i]) / contraction_factor
+                y = float(df['GY'].values[i]) / contraction_factor
+                id_ = df['ID'].values[i]
+                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
+
+                circuit.add_bus(bus)
+                buses_id_dict[id_] = bus
+
+        # Voltage Transformer
+        # __headers__['Nodes']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+        #                               'DISABLE', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'EQEXIST', 'TAP', 'YEAR',
+        #                               'ID_AUX']
+        elif tpe == 'TT':
+            df = data_structures['Nodes'][tpe]
+
+            for i in range(df.shape[0]):
+                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                Vnom = float(df['VBASE'].values[i])
+                x = float(df['GX'].values[i]) / contraction_factor
+                y = float(df['GY'].values[i]) / contraction_factor
+                id_ = df['ID'].values[i]
+                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+
+                circuit.add_bus(bus)
+                buses_id_dict[id_] = bus
+
+        else:
+            logger.append(tpe + ' not recognised under Nodes')
+
+    # create branches
+    for tpe in data_structures['Branches']:
+
+        # Condenser series or shunt
+        # __headers__['Branches']['CAP'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'EQ', 'YEAR']
+        if tpe in ['CAP', 'IND']:
+
+            df = data_structures['Branches'][tpe]
+
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+
+                # get equipment reference in the catalogue
+                eq_id = df['EQ'].values[i]
+                df_cat = data_structures['CatalogBranch'][tpe]
+                cat_elm = df_cat[df_cat['EQ'] == eq_id]
+
+                try:
+                    x = float(cat_elm['REAC'].values[0]) * Sbase
+                except:
+                    x = 1e-20
+
+                br = Branch(bus_from=b1, bus_to=b2, name=name, x=x,  branch_type=BranchType.Branch)
+                circuit.add_branch(br)
+
+
+        # Estimator
+        # __headers__['Branches']['ESTIM'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT']
+        if tpe in ['ESTIM']:
+            df = data_structures['Branches'][tpe]
+
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Branch)
+                circuit.add_branch(br)
+
+        # Breaker
+        # __headers__['Branches']['DISJ'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
+        #                                    'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'CONTROL']
+
+        # Fuse
+        # __headers__['Branches']['FUS'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
+        #                                   'TISOL','TRECONF', 'TREPAIR', 'EQ', 'YEAR']
+
+        # Switch
+        # __headers__['Branches']['INTR'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
+        #                                    'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
+
+        # Disconnector
+        # __headers__['Branches']['SECC'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
+        #                                    'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
+        if tpe in ['DISJ', 'FUS', 'INTR', 'SECC']:
+            df = data_structures['Branches'][tpe]
+
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Switch)
+                circuit.add_branch(br)
+
+        # Lines, cables and bars
+        # fill until it fits or truncate the data
+        # __headers__['Branches']['LINE'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'COLOR', 'GEOLEN', 'LEN',
+        #                                    'STAT',
+        #                                    'PERM', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'EQEXIST', 'NPOSS',
+        #                                    'CHOOSEQ', 'INSRTCOST', 'EQPOSS1', 'MATCOST1', 'EQPOSS2', 'MATCOST2',
+        #                                    'EQPOSS3',
+        #                                    'MATCOST3', 'NCOOG', 'GX1', 'GY1', 'GX2', 'GY2']
+        if tpe in ['LINE']:
+            df = data_structures['Branches'][tpe]
+
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+
+                length = float(df['LEN'].values[i])
+
+                # get equipment reference in the catalogue
+                eq_id = df['EQEXIST'].values[i]
+                df_cat = data_structures['CatalogBranch'][tpe]
+                cat_elm = df_cat[df_cat['EQ'] == eq_id]
+
+                try:
+                    r = float(cat_elm['R'].values[0]) * length / 1000
+                except:
+                    r = 1e-20
+                try:
+                    x = float(cat_elm['X'].values[0]) * length / 1000
+                except:
+                    x = 1e-20
+                try:
+                    b = float(cat_elm['B'].values[0]) * length / 1000
+                except:
+                    b = 1e-20
+
+                # correct for zero values which are problematic
+                r = r if r > 0.0 else 1e-20
+                x = x if x > 0.0 else 1e-20
+                b = b if b > 0.0 else 1e-20
+
+                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, branch_type=BranchType.Line)
+                circuit.add_branch(br)
+
+
+        # Intensity Transformer
+        # __headers__['Branches']['TI'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT', 'EXIST', 'STAT',
+        #                                  'PERM', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'TAP1', 'TAP2', 'YEAR']
+        if tpe in ['TT']:
+            df = data_structures['Branches'][tpe]
+
+        # Self-transformer
+        # __headers__['Branches']['XFORM1'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
+        #                                      'EXIST',
+        #                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1',
+        #                                      'XE1',
+        #                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL',
+        #                                      'SETV',
+        #                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
+        if tpe in ['XFORM1']:
+            df = data_structures['Branches'][tpe]
+
+        # 2-winding transformer
+        # __headers__['Branches']['XFORM2'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
+        #                                      'EXIST',
+        #                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1',
+        #                                      'XE1',
+        #                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL',
+        #                                      'SETV',
+        #                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
+        if tpe in ['XFORM2']:
+            df = data_structures['Branches'][tpe]
+
+        # 3-winding transformer
+        # __headers__['Branches']['XFORM3'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
+        #                                      'EXIST',
+        #                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1',
+        #                                      'XE1',
+        #                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL',
+        #                                      'SETV',
+        #                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
+        if tpe in ['XFORM1']:
+            df = data_structures['Branches'][tpe]
+
+        # Neutral impedance
+        # __headers__['Branches']['ZN'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
+        #                                  'TISOL','TRECONF', 'TREPAIR', 'EQ', 'YEAR']
+        if tpe in ['ZN']:
+            df = data_structures['Branches'][tpe]
+
 
     return circuit, logger
 
 
 if __name__ == '__main__':
 
-    # fname = 'example.dpx'
-    fname = '/media/santi/Pincho/grids sensible/Sensible/Portugueses/evora.dpx'
+    fname = 'example.dpx'
+    # fname = '/media/santi/Pincho/grids sensible/Sensible/Portugueses/evora.dpx'
 
     circuit_, logger = load_dpx(file_name=fname)
 

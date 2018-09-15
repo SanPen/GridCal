@@ -71,6 +71,7 @@ def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5
         if rx_criteria:
             rx = circuit.branches[i].R + circuit.branches[i].X
             if rx < rx_threshold:
+                print(i, '->', rx, '<', rx_threshold)
                 branches_to_remove_idx.append(i)
                 chosen_to_be_removed = True
 
