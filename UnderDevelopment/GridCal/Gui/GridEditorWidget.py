@@ -2757,9 +2757,10 @@ class GridEditor(QSplitter):
 
         # print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
-        h = max_y - min_y + 100
-        w = max_x - min_x + 100
-        self.diagramScene.setSceneRect(min_x, min_y, w, h)
+        # h = max_y - min_y + 100
+        # w = max_x - min_x + 100
+        # self.diagramScene.setSceneRect(min_x, min_y, w, h)
+        self.set_limits(min_x, max_x, min_y, max_y)
 
     def smaller_nodes(self):
         """
@@ -2809,6 +2810,13 @@ class GridEditor(QSplitter):
                     min_y = min(min_y, y)
 
         # print('(', min_x, min_y, ')(', max_x, max_y, ')')
+
+        # h = max_y - min_y + 100
+        # w = max_x - min_x + 100
+        # self.diagramScene.setSceneRect(min_x, min_y, w, h)
+        self.set_limits(min_x, max_x, min_y, max_y)
+
+    def set_limits(self, min_x, max_x, min_y, max_y):
 
         h = max_y - min_y + 100
         w = max_x - min_x + 100

@@ -1106,14 +1106,34 @@ class MainGUI(QMainWindow):
         self.grid_editor.diagramView.scene_.clear()
         self.grid_editor.circuit = self.circuit  # set pointer to the circuit
 
+        # set "infinite" limits for the figure
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
         # first create the buses
         for bus in self.circuit.buses:
             # print(bus.x, bus.y)
             graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
             graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+
+            # get the item position
+            x = graphic_obj.pos().x()
+            y = graphic_obj.pos().y()
+
+            # compute the boundaries of the grid
+            max_x = max(max_x, x)
+            min_x = min(min_x, x)
+            max_y = max(max_y, y)
+            min_y = min(min_y, y)
+
             bus.graphic_obj = graphic_obj
             bus.graphic_obj.create_children_icons()
             bus.graphic_obj.arrange_children()
+
+        # set the figure limits
+        self.grid_editor.set_limits(min_x, max_x, min_y, max_y)
 
         for branch in self.circuit.branches:
             terminal_from = branch.bus_from.graphic_obj.terminal

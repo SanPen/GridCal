@@ -420,7 +420,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
     def link_to_all(self):
         """
-        Links the selected origin with the selected destinations
+        Links the selected origin with all the destinations
         """
 
         if len(self.ui.sources_list.selectedIndexes()) > 0:
@@ -557,7 +557,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    window = ProfileInputGUI(list_of_objects=[None] * 10, AlsoReactivePower=False)
+    window = ProfileInputGUI(list_of_objects=['Test object'] * 10, AlsoReactivePower=False)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
