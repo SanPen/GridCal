@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -65,14 +65,17 @@ class Ui_Dialog(object):
         self.frame_10.setObjectName("frame_10")
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.frame_10)
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.label_3 = QtWidgets.QLabel(self.frame_10)
-        self.label_3.setObjectName("label_3")
-        self.horizontalLayout_7.addWidget(self.label_3)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_7.addItem(spacerItem1)
         self.autolink_button = QtWidgets.QPushButton(self.frame_10)
         self.autolink_button.setObjectName("autolink_button")
         self.horizontalLayout_7.addWidget(self.autolink_button)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_7.addItem(spacerItem1)
+        self.assign_to_all_pushButton = QtWidgets.QPushButton(self.frame_10)
+        self.assign_to_all_pushButton.setObjectName("assign_to_all_pushButton")
+        self.horizontalLayout_7.addWidget(self.assign_to_all_pushButton)
+        self.assign_to_selection_pushButton = QtWidgets.QPushButton(self.frame_10)
+        self.assign_to_selection_pushButton.setObjectName("assign_to_selection_pushButton")
+        self.horizontalLayout_7.addWidget(self.assign_to_selection_pushButton)
         self.clear_selection_button = QtWidgets.QPushButton(self.frame_10)
         self.clear_selection_button.setObjectName("clear_selection_button")
         self.horizontalLayout_7.addWidget(self.clear_selection_button)
@@ -157,8 +160,9 @@ class Ui_Dialog(object):
         self.open_button.setText(_translate("Dialog", "Import"))
         self.label_5.setText(_translate("Dialog", "Units"))
         self.normalized_checkBox.setText(_translate("Dialog", "normalized"))
-        self.label_3.setText(_translate("Dialog", "Asignation"))
         self.autolink_button.setText(_translate("Dialog", "Auto-link"))
+        self.assign_to_all_pushButton.setText(_translate("Dialog", "Assign to all"))
+        self.assign_to_selection_pushButton.setText(_translate("Dialog", "Assign to selection"))
         self.clear_selection_button.setText(_translate("Dialog", "Clear selection"))
         self.set_multiplier_button.setText(_translate("Dialog", "Set multiplier"))
         self.set_cosfi_button.setText(_translate("Dialog", "Set cos(φ)"))

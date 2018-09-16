@@ -2726,6 +2726,11 @@ class GridEditor(QSplitter):
                     y = item.pos().y() * self.expand_factor
                     item.setPos(QPointF(x, y))
 
+                    # apply changes to the API objects
+                    if item.api_object is not None:
+                        item.api_object.x = x
+                        item.api_object.y = y
+
                     max_x = max(max_x, x)
                     min_x = min(min_x, x)
                     max_y = max(max_y, y)
@@ -2744,6 +2749,11 @@ class GridEditor(QSplitter):
                     min_x = min(min_x, x)
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
+
+                    # apply changes to the API objects
+                    if item.api_object is not None:
+                        item.api_object.x = x
+                        item.api_object.y = y
 
         # print('(', min_x, min_y, ')(', max_x, max_y, ')')
 
@@ -2770,6 +2780,11 @@ class GridEditor(QSplitter):
                     y = item.pos().y() / self.expand_factor
                     item.setPos(QPointF(x, y))
 
+                    # apply changes to the API objects
+                    if item.api_object is not None:
+                        item.api_object.x = x
+                        item.api_object.y = y
+
                     max_x = max(max_x, x)
                     min_x = min(min_x, x)
                     max_y = max(max_y, y)
@@ -2782,6 +2797,11 @@ class GridEditor(QSplitter):
                     x = item.pos().x() / self.expand_factor
                     y = item.pos().y() / self.expand_factor
                     item.setPos(QPointF(x, y))
+
+                    # apply changes to the API objects
+                    if item.api_object is not None:
+                        item.api_object.x = x
+                        item.api_object.y = y
 
                     max_x = max(max_x, x)
                     min_x = min(min_x, x)

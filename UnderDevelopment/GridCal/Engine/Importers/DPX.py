@@ -358,6 +358,8 @@ def load_dpx(file_name,contraction_factor=1000):
     Sbase = 100
     circuit.Sbase = Sbase
 
+    SQRT3 = np.sqrt(3)
+
     # read the raw data into a structured dictionary
     print('Reading file...')
     structures_dict, logger = read_dpx_data(file_name=file_name)
@@ -628,20 +630,39 @@ def load_dpx(file_name,contraction_factor=1000):
                 except:
                     b = 1e-20
 
+                Imax = float(cat_elm['RATTYP'].values[0]) / 1000.0  # pass from A to kA
+                Vnom = float(cat_elm['VNOM'].values[0])  # kV
+                Smax = Imax * Vnom * SQRT3  # MVA
                 # correct for zero values which are problematic
                 r = r if r > 0.0 else 1e-20
                 x = x if x > 0.0 else 1e-20
                 b = b if b > 0.0 else 1e-20
 
-                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, branch_type=BranchType.Line)
+                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, rate=Smax, length=length,
+                            branch_type=BranchType.Line)
                 circuit.add_branch(br)
 
 
         # Intensity Transformer
         # __headers__['Branches']['TI'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT', 'EXIST', 'STAT',
         #                                  'PERM', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'TAP1', 'TAP2', 'YEAR']
-        if tpe in ['TT']:
+        if tpe in ['TI']:
             df = data_structures['Branches'][tpe]
+
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+
+                # get equipment reference in the catalogue
+                eq_id = df['EQ'].values[i]
+                df_cat = data_structures['CatalogBranch'][tpe]
+                cat_elm = df_cat[df_cat['EQ'] == eq_id]
+
+                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Transformer)
+                circuit.add_branch(br)
 
         # Self-transformer
         # __headers__['Branches']['XFORM1'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
@@ -651,19 +672,46 @@ def load_dpx(file_name,contraction_factor=1000):
         #                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL',
         #                                      'SETV',
         #                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
-        if tpe in ['XFORM1']:
+        if tpe in ['XFORM1', 'XFORM2']:
             df = data_structures['Branches'][tpe]
 
-        # 2-winding transformer
-        # __headers__['Branches']['XFORM2'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
-        #                                      'EXIST',
-        #                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1',
-        #                                      'XE1',
-        #                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL',
-        #                                      'SETV',
-        #                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
-        if tpe in ['XFORM2']:
-            df = data_structures['Branches'][tpe]
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+
+                # get equipment reference in the catalogue
+                # eq_id = df['EQ'].values[i]
+                eq_id = df['XE3'].values[i]  # to correct the bad data formatting these file has...
+                df_cat = data_structures['CatalogBranch'][tpe]
+                cat_elm = df_cat[df_cat['EQ'] == eq_id]
+
+                if cat_elm.shape[0] > 0:
+                    r1 = float(cat_elm['RD1'].values[0])
+                    r2 = float(cat_elm['RD2'].values[0])
+                    x1 = float(cat_elm['XD1'].values[0])
+                    x2 = float(cat_elm['XD2'].values[0])
+
+                    s1 = float(cat_elm['SNOMTYP1'].values[0]) / 1000.0  # from kVA to MVA
+                    s2 = float(cat_elm['SNOMTYP2'].values[0]) / 1000.0  # from kVA to MVA
+
+                    r = r1 + r2
+                    x = x1 + x2
+                    s = s1 + s2
+
+                    r = r if r > 0.0 else 1e-20
+                    x = x if x > 0.0 else 1e-20
+                    s = s if s > 0.0 else 1e-20
+                else:
+                    r = 1e-20
+                    x = 1e-20
+                    s = 1e-20
+                    logger.append('The ' + tpe + ' type ' + eq_id + ' was not found.')
+
+                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, rate=s, branch_type=BranchType.Transformer)
+                circuit.add_branch(br)
 
         # 3-winding transformer
         # __headers__['Branches']['XFORM3'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
@@ -673,8 +721,69 @@ def load_dpx(file_name,contraction_factor=1000):
         #                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL',
         #                                      'SETV',
         #                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
-        if tpe in ['XFORM1']:
+        if tpe in ['XFORM3']:
             df = data_structures['Branches'][tpe]
+
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                id3 = df['ID3'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+                b3 = buses_id_dict[id3]
+
+                # get equipment reference in the catalogue
+                eq_id = df['EQ'].values[i]
+                df_cat = data_structures['CatalogBranch'][tpe]
+                cat_elm = df_cat[df_cat['EQ'] == eq_id]
+
+                r1 = float(cat_elm['RD1'].values[0])
+                r2 = float(cat_elm['RD2'].values[0])
+                r3 = float(cat_elm['RD3'].values[0])
+                x1 = float(cat_elm['XD1'].values[0])
+                x2 = float(cat_elm['XD2'].values[0])
+                x3 = float(cat_elm['XD3'].values[0])
+
+                s1 = float(cat_elm['SNOMTYP1'].values[0]) / 1000.0  # from kVA to MVA
+                s2 = float(cat_elm['SNOMTYP2'].values[0]) / 1000.0  # from kVA to MVA
+                s3 = float(cat_elm['SNOMTYP3'].values[0]) / 1000.0  # from kVA to MVA
+
+                r12 = r1 + r2
+                x12 = x1 + x2
+                s12 = s1 + s2
+
+                r13 = r1 + r3
+                x13 = x1 + x3
+                s13 = s1 + s3
+
+                r23 = r2 + r3
+                x23 = x2 + x3
+                s23 = s2 + s3
+
+                r12 = r12 if r12 > 0.0 else 1e-20
+                x12 = x12 if x12 > 0.0 else 1e-20
+                s12 = s12 if s12 > 0.0 else 1e-20
+
+                r13 = r13 if r13 > 0.0 else 1e-20
+                x13 = x13 if x13 > 0.0 else 1e-20
+                s13 = s13 if s13 > 0.0 else 1e-20
+
+                r23 = r23 if r23 > 0.0 else 1e-20
+                x23 = x23 if x23 > 0.0 else 1e-20
+                s23 = s23 if s23 > 0.0 else 1e-20
+
+                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r12, x=x12, rate=s12,
+                            branch_type=BranchType.Transformer)
+                circuit.add_branch(br)
+
+                br = Branch(bus_from=b1, bus_to=b3, name=name, r=r13, x=x13, rate=s13,
+                            branch_type=BranchType.Transformer)
+                circuit.add_branch(br)
+
+                br = Branch(bus_from=b2, bus_to=b3, name=name, r=r23, x=x23, rate=s23,
+                            branch_type=BranchType.Transformer)
+                circuit.add_branch(br)
 
         # Neutral impedance
         # __headers__['Branches']['ZN'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
@@ -682,7 +791,16 @@ def load_dpx(file_name,contraction_factor=1000):
         if tpe in ['ZN']:
             df = data_structures['Branches'][tpe]
 
+            for i in range(df.shape[0]):
+                name = df['NAME'].values[i]
+                id1 = df['ID1'].values[i]
+                id2 = df['ID2'].values[i]
+                b1 = buses_id_dict[id1]
+                b2 = buses_id_dict[id2]
+                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Branch)
+                circuit.add_branch(br)
 
+    # return the circuit and the logs
     return circuit, logger
 
 
@@ -693,4 +811,5 @@ if __name__ == '__main__':
 
     circuit_, logger = load_dpx(file_name=fname)
 
-    pass
+    for l in logger:
+        print(l)

@@ -356,6 +356,8 @@ class MainGUI(QMainWindow):
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
+        self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
+
         ################################################################################################################
         # Color maps
         ################################################################################################################
@@ -2770,6 +2772,16 @@ class MainGUI(QMainWindow):
         """
         self.circuit.Sbase = self.ui.sbase_doubleSpinBox.value()
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
+
+    def explosion_factor_change(self):
+        """
+        Chenge the node explosion factor
+        """
+        if self.grid_editor is not None:
+
+            self.grid_editor.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
+
+            print('Explosion factor changed to:', self.grid_editor.expand_factor)
 
     def profile_sliders_changed(self):
         """

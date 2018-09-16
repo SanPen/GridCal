@@ -109,9 +109,9 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
-               <widget class="QLabel" name="label_3">
+               <widget class="QPushButton" name="autolink_button">
                 <property name="text">
-                 <string>Asignation</string>
+                 <string>Auto-link</string>
                 </property>
                </widget>
               </item>
@@ -129,9 +129,16 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="autolink_button">
+               <widget class="QPushButton" name="assign_to_all_pushButton">
                 <property name="text">
-                 <string>Auto-link</string>
+                 <string>Assign to all</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="assign_to_selection_pushButton">
+                <property name="text">
+                 <string>Assign to selection</string>
                 </property>
                </widget>
               </item>

@@ -24,9 +24,11 @@ class PandasModel(QtCore.QAbstractTableModel):
         self.index = data.index.values
         self.r, self.c = np.shape(self._data)
         self.isDate = False
-        if isinstance(self.index[0], np.datetime64):
-            self.index = pd.to_datetime(self.index)
-            self.isDate = True
+
+        if len(self.index) > 0:
+            if isinstance(self.index[0], np.datetime64):
+                self.index = pd.to_datetime(self.index)
+                self.isDate = True
 
         self.formatter = lambda x: "%.2f" % x
 
@@ -169,6 +171,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
         self.ui.set_cosfi_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Cosfi))
         self.ui.autolink_button.clicked.connect(self.auto_link)
+        self.ui.assign_to_selection_pushButton.clicked.connect(self.link_to_selection)
+        self.ui.assign_to_all_pushButton.clicked.connect(self.link_to_all)
         self.ui.doit_button.clicked.connect(self.do_it)
 
         # double click
@@ -393,6 +397,46 @@ class ProfileInputGUI(QtWidgets.QDialog):
             idx_o += 1
         self.display_associations()
 
+    def link_to_selection(self):
+        """
+        Links the selected origin with the selected destinations
+        """
+
+        if len(self.ui.sources_list.selectedIndexes()) > 0:
+            idx_s = self.ui.sources_list.selectedIndexes()[0].row()
+
+            scale = self.get_multiplier()
+            cosfi = 0.9
+            mult = 1
+            scale = self.get_multiplier()
+
+            # set of different rows
+            sel_rows = {item.row() for item in self.ui.assignation_table.selectedIndexes()}
+
+            for idx_o in sel_rows:
+                self.make_association(idx_s, idx_o, scale, cosfi, mult)
+
+            self.display_associations()
+
+    def link_to_all(self):
+        """
+        Links the selected origin with the selected destinations
+        """
+
+        if len(self.ui.sources_list.selectedIndexes()) > 0:
+            idx_s = self.ui.sources_list.selectedIndexes()[0].row()
+            cosfi = 0.9
+            mult = 1
+            scale = self.get_multiplier()
+
+            # set of different rows
+            n_rows = self.ui.assignation_table.model().rowCount()
+
+            for idx_o in range(n_rows):
+                self.make_association(idx_s, idx_o, scale, cosfi, mult)
+
+            self.display_associations()
+
     def get_profile(self, parent=None, labels=None, alsoQ=None):
         """
         Return ths assigned profiles
@@ -513,7 +557,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    window = ProfileInputGUI(list_of_objects=[], AlsoReactivePower=False)
+    window = ProfileInputGUI(list_of_objects=[None] * 10, AlsoReactivePower=False)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
