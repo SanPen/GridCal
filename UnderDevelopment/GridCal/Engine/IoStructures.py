@@ -668,7 +668,11 @@ class PowerFlowResults:
                 polar = False
 
             else:
-                pass
+                n = len(labels)
+                y = np.zeros(n)
+                x_label = ''
+                y_label = ''
+                title = ''
 
             # plot
             df = pd.DataFrame(data=y, index=labels, columns=[result_type])

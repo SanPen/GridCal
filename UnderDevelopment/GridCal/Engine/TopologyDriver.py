@@ -68,17 +68,26 @@ def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5
         # check if to select the branch for removal
         chosen_to_be_removed = False
 
-        if rx_criteria:
-            rx = circuit.branches[i].R + circuit.branches[i].X
-            if rx < rx_threshold:
-                print(i, '->', rx, '<', rx_threshold)
-                branches_to_remove_idx.append(i)
-                chosen_to_be_removed = True
+        if type_criteria:
 
-        if type_criteria and not chosen_to_be_removed:
+            # is this branch of the selected type?
             if circuit.branches[i].branch_type == selected_type:
-                branches_to_remove_idx.append(i)
-                chosen_to_be_removed = True
+
+                # am I looking for branches of this type under an r+x threshold?
+                if rx_criteria:
+
+                    rx = circuit.branches[i].R + circuit.branches[i].X
+
+                    # if the r+x criteria is met, add it
+                    if rx < rx_threshold:
+                        print(i, '->', rx, '<', rx_threshold)
+                        branches_to_remove_idx.append(i)
+                        chosen_to_be_removed = True
+
+                else:
+                    # Add the branch because it was selected and there is no further criteria
+                    branches_to_remove_idx.append(i)
+                    chosen_to_be_removed = True
 
         if not chosen_to_be_removed:
             branches_to_keep_idx.append(i)

@@ -16,6 +16,7 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt, Image
 import sip
@@ -2859,10 +2860,39 @@ class GridEditor(QSplitter):
         :return:
         """
 
-        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-        image.fill(Qt.transparent)
-        painter = QPainter(image)
-        painter.setRenderHint(QPainter.Antialiasing)
-        self.diagramScene.render(painter)
-        image.save(filename)
-        painter.end()
+        name, extension = os.path.splitext(filename.lower())
+
+        if extension == '.png':
+            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+            image.fill(Qt.transparent)
+            painter = QPainter(image)
+            painter.setRenderHint(QPainter.Antialiasing)
+            self.diagramScene.render(painter)
+            image.save(filename)
+            painter.end()
+
+        elif extension == '.svg':
+            """
+            QSvgGenerator svgGen;
+
+            svgGen.setFileName( "/home/nikolay/scene2svg.svg" );
+            svgGen.setSize(QSize(200, 200));
+            svgGen.setViewBox(QRect(0, 0, 200, 200));
+            svgGen.setTitle(tr("SVG Generator Example Drawing"));
+            svgGen.setDescription(tr("An SVG drawing created by the SVG Generator ", "Example provided with Qt."));
+            
+            QPainter painter( &svgGen );
+            scene.render( &painter );
+            """
+            svg_gen = QSvgGenerator()
+            svg_gen.setFileName(filename)
+            svg_gen.setSize(QSize(w, h))
+            svg_gen.setViewBox(QRect(0, 0, w, h))
+            svg_gen.setTitle("Electrical grid schematic")
+            svg_gen.setDescription("An SVG drawing created by GridCal")
+
+            painter = QPainter(svg_gen)
+            self.diagramScene.render(painter)
+            painter.end()
+        else:
+            pass

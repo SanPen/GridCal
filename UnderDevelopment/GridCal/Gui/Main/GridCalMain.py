@@ -1074,22 +1074,25 @@ class MainGUI(QMainWindow):
         if self.grid_editor is not None:
 
             # declare the allowed file types
-            files_types = "Png (*.png)"
+            files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
+            # files_types = 'PDF (*.pdf)'
+
+            fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',
-                                                                  self.project_directory, files_types)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename is not "":
 
                 name, file_extension = os.path.splitext(filename)
 
-                extension = dict()
-                extension['Png (*.png)'] = '.png'
-
-                # add the file extension if needed
-                if file_extension == '':
-                    filename = name + extension[type_selected]
+                # extension = dict()
+                # extension['Png (*.png)'] = '.png'
+                # # extension['PDF (*.pdf)'] = '.pdf'
+                #
+                # # add the file extension if needed
+                # if file_extension == '':
+                #     filename = name + extension[type_selected]
 
                 # save in factor * K
                 factor = self.ui.resolution_factor_spinBox.value()
