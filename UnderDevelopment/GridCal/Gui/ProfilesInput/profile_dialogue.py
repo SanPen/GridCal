@@ -1,6 +1,7 @@
 import os
 import string
 import sys
+from random import randint
 from enum import Enum
 
 import numpy as np
@@ -171,6 +172,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
         self.ui.set_cosfi_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Cosfi))
         self.ui.autolink_button.clicked.connect(self.auto_link)
+        self.ui.rnd_link_pushButton.clicked.connect(self.rnd_link)
         self.ui.assign_to_selection_pushButton.clicked.connect(self.link_to_selection)
         self.ui.assign_to_all_pushButton.clicked.connect(self.link_to_all)
         self.ui.doit_button.clicked.connect(self.do_it)
@@ -396,6 +398,42 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             idx_o += 1
         self.display_associations()
+
+    def rnd_link(self):
+        """
+        Random link
+        """
+        scale = self.get_multiplier()
+        cosfi = 0.9
+        mult = 1
+        scale = self.get_multiplier()
+
+        if self.ui.sources_list.model().rowCount() > 0:
+            # make a list of the source indices
+            source_indices = [i for i in range(self.ui.sources_list.model().rowCount())]
+
+            # make a list of the destination indices
+            destination_indices = [i for i in range(self.ui.assignation_table.model().rowCount())]
+
+            # while there are elements in the destination indices
+            while len(destination_indices) > 0:
+
+                # pick a random source
+                rnd_idx_s = randint(0, len(source_indices)-1)
+
+                # pick and delete a random destination
+                rnd_idx_o = randint(0, len(destination_indices)-1)
+
+                # get the actual index
+                idx_s = source_indices[rnd_idx_s]
+
+                # get the actual index
+                idx_o = destination_indices.pop(rnd_idx_o)
+
+                # make the association
+                self.make_association(idx_s, idx_o, scale, cosfi, mult)
+
+            self.display_associations()
 
     def link_to_selection(self):
         """

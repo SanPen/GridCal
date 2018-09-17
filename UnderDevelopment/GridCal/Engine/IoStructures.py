@@ -1247,7 +1247,9 @@ class MonteCarloResults:
                 title = 'Branch loading'
 
             else:
-                pass
+                x_label = ''
+                y_label = ''
+                title = ''
 
             if 'CDF' not in result_type:
                 df = pd.DataFrame(data=y, columns=labels)

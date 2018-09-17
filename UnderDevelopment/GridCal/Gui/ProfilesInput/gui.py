@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -19,6 +19,7 @@ class Ui_Dialog(object):
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.tab)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.splitter = QtWidgets.QSplitter(self.tab)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
@@ -68,6 +69,9 @@ class Ui_Dialog(object):
         self.autolink_button = QtWidgets.QPushButton(self.frame_10)
         self.autolink_button.setObjectName("autolink_button")
         self.horizontalLayout_7.addWidget(self.autolink_button)
+        self.rnd_link_pushButton = QtWidgets.QPushButton(self.frame_10)
+        self.rnd_link_pushButton.setObjectName("rnd_link_pushButton")
+        self.horizontalLayout_7.addWidget(self.rnd_link_pushButton)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_7.addItem(spacerItem1)
         self.assign_to_all_pushButton = QtWidgets.QPushButton(self.frame_10)
@@ -111,6 +115,7 @@ class Ui_Dialog(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.tab_2)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.splitter_3 = QtWidgets.QSplitter(self.tab_2)
         self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
@@ -161,6 +166,7 @@ class Ui_Dialog(object):
         self.label_5.setText(_translate("Dialog", "Units"))
         self.normalized_checkBox.setText(_translate("Dialog", "normalized"))
         self.autolink_button.setText(_translate("Dialog", "Auto-link"))
+        self.rnd_link_pushButton.setText(_translate("Dialog", "Random-link"))
         self.assign_to_all_pushButton.setText(_translate("Dialog", "Assign to all"))
         self.assign_to_selection_pushButton.setText(_translate("Dialog", "Assign to selection"))
         self.clear_selection_button.setText(_translate("Dialog", "Clear selection"))
