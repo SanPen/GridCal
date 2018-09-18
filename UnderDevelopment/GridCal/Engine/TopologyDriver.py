@@ -1,4 +1,5 @@
 from GridCal.Engine.CalculationEngine import MultiCircuit, BranchType
+
 from networkx import DiGraph, all_simple_paths
 import numpy as np
 import pandas as pd
@@ -21,39 +22,57 @@ def get_branches_of_bus(B, j):
     return [B.indices[k] for k in range(B.indptr[j], B.indptr[j + 1])]
 
 
-def reduce_grid(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
-                type_criteria=True, selected_type=BranchType.Branch):
+def select_branches_to_reduce(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
+                              selected_types=BranchType.Branch):
+    """
+    Find branches to remove
+    Args:
+        circuit: Circuit to modify in-place
+        rx_criteria: use the r+x threshold to select branches?
+        rx_threshold: r+x threshold
+        selected_types: branch types to select
+    """
 
-    deleted_any = True
-    while deleted_any:
-        deleted_any = reduce_grid_brute(circuit=circuit, rx_criteria=rx_criteria, rx_threshold=rx_threshold,
-                                        type_criteria=type_criteria, selected_type=selected_type)
+    branches_to_remove_idx = list()
+
+    for i in range(len(circuit.branches)):
+
+        # is this branch of the selected type?
+        if circuit.branches[i].branch_type in selected_types:
+
+            # Am I filtering by r+x threshold?
+            if rx_criteria:
+
+                # compute the r+x ratio
+                rx = circuit.branches[i].R + circuit.branches[i].X
+
+                # if the r+x criteria is met, add it
+                if rx < rx_threshold:
+                    print(i, '->', rx, '<', rx_threshold)
+                    branches_to_remove_idx.append(i)
+
+            else:
+                # Add the branch because it was selected and there is no further criteria
+                branches_to_remove_idx.append(i)
+
+    return branches_to_remove_idx
 
 
-def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
-                      type_criteria=True, selected_type=BranchType.Branch):
+def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     """
     Remove the first branch found to be removed.
     this function is meant to be called until it returns false
     Args:
         circuit: Circuit to modify in-place
-        rx_criteria: use the r+x threshold to select branches?
-        rx_threshold: r+x threshold
-        type_criteria: use the branch type criteria to remove branches?
-        selected_type: branch type
+        removed_br_idx: branch index
 
-    Returns:
-        - Was any branch deleted? (True / False)
-        - Number of branches found to be deleted
-        - name of the branch
+    Returns: Nothing
     """
 
     # form C
     m = len(circuit.branches)
     n = len(circuit.buses)
     buses_dict = {bus: i for i, bus in enumerate(circuit.buses)}
-    branches_to_keep_idx = list()
-    branches_to_remove_idx = list()
     C = lil_matrix((m, n), dtype=int)
     graph = DiGraph()
 
@@ -65,102 +84,78 @@ def reduce_grid_brute(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5
         C[i, f] = 1
         C[i, t] = -1
 
-        # check if to select the branch for removal
-        chosen_to_be_removed = False
-
-        if type_criteria:
-
-            # is this branch of the selected type?
-            if circuit.branches[i].branch_type == selected_type:
-
-                # am I looking for branches of this type under an r+x threshold?
-                if rx_criteria:
-
-                    rx = circuit.branches[i].R + circuit.branches[i].X
-
-                    # if the r+x criteria is met, add it
-                    if rx < rx_threshold:
-                        print(i, '->', rx, '<', rx_threshold)
-                        branches_to_remove_idx.append(i)
-                        chosen_to_be_removed = True
-
-                else:
-                    # Add the branch because it was selected and there is no further criteria
-                    branches_to_remove_idx.append(i)
-                    chosen_to_be_removed = True
-
-        if not chosen_to_be_removed:
-            branches_to_keep_idx.append(i)
-
     C = csc_matrix(C)
 
-    # atempt to remove
-    if len(branches_to_remove_idx) > 0:
+    # get branch buses
+    bus_f = circuit.branches[removed_br_idx].bus_from
+    bus_t = circuit.branches[removed_br_idx].bus_to
+    f = buses_dict[bus_f]
+    t = buses_dict[bus_t]
 
-        # get the first index
-        br_idx = branches_to_remove_idx[0]
-        br_name = circuit.branches[br_idx].name
-        bus_f = circuit.branches[br_idx].bus_from
-        bus_t = circuit.branches[br_idx].bus_to
-        f = buses_dict[bus_f]
-        t = buses_dict[bus_t]
+    removed_bus = None
+    removed_branch = None
+    updated_bus = None
+    updated_branches = list()
 
-        # get the number of paths
-        n_paths = len(list(all_simple_paths(graph, f, t)))
+    # get the number of paths
+    n_paths = len(list(all_simple_paths(graph, f, t)))
 
-        # print('Deleting: ', circuit.branches[br_idx].name)
+    # print('Deleting: ', circuit.branches[br_idx].name)
 
-        if n_paths == 1:
+    if n_paths == 1:
 
-            # print('\tMerging', bus_f.name, bus_t.name)
+        # get the branches that are connected to the bus f
+        adjacent_br_idx = get_branches_of_bus(C, f)
 
-            # removing the bus f
-            branches = get_branches_of_bus(C, f)
+        for k in adjacent_br_idx:
 
-            for k in branches:
-                f2 = buses_dict[circuit.branches[k].bus_from]
-                t2 = buses_dict[circuit.branches[k].bus_to]
+            # get the indices of the buses
+            f2 = buses_dict[circuit.branches[k].bus_from]
+            t2 = buses_dict[circuit.branches[k].bus_to]
 
-                if f2 == f:
-                    circuit.branches[k].bus_from = bus_t
-                elif t2 == t2:
-                    circuit.branches[k].bus_to = bus_t
+            # re-assign the right bus
+            if f2 == f:
+                circuit.branches[k].bus_from = bus_t
+            elif t2 == t2:
+                circuit.branches[k].bus_to = bus_t
 
-            # merge buses
-            bus_t.merge(bus_f)
+            # copy the state of the removed branch
+            circuit.branches[k].active = circuit.branches[removed_br_idx].active
 
-            # delete bus
-            circuit.buses.pop(f)
+            # remember the updated branches
+            updated_branches.append(circuit.branches[k])
 
-            # remove the branch and that's it
-            circuit.branches.pop(br_idx)
+        # merge buses
+        bus_t.merge(bus_f)
+        updated_bus = bus_t
 
-        else:
-            # print('\tsimple_delete')
-            # remove the branch and that's it
-            circuit.branches.pop(br_idx)
+        # delete bus
+        removed_bus = circuit.buses.pop(f)
 
-        return True, len(branches_to_remove_idx), br_name
+        # remove the branch and that's it
+        removed_branch = circuit.branches.pop(removed_br_idx)
+
     else:
-        return False, len(branches_to_remove_idx), ''
+        # remove the branch and that's it
+        removed_branch = circuit.branches.pop(removed_br_idx)
+
+    # return the removed branch and the possible removed bus
+    return removed_branch, removed_bus, updated_bus, updated_branches
 
 
 class TopologyReductionOptions:
 
-    def __init__(self, rx_criteria=False, rx_threshold=1e-5,
-                 type_criteria=True, selected_type=BranchType.Branch):
+    def __init__(self, rx_criteria=False, rx_threshold=1e-5, selected_types=BranchType.Branch):
         """
         Topology reduction options
         :param rx_criteria:
         :param rx_threshold:
-        :param type_criteria:
-        :param selected_type:
+        :param selected_types:
         """
 
         self.rx_criteria = rx_criteria
         self.rx_threshold = rx_threshold
-        self.type_criteria = type_criteria
-        self.selected_type = selected_type
+        self.selected_type = selected_types
 
 
 class TopologyReduction(QThread):
@@ -168,7 +163,7 @@ class TopologyReduction(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: TopologyReductionOptions):
+    def __init__(self, grid: MultiCircuit, branch_indices):
         """
         Topology reduction driver
         :param grid: MultiCircuit instance
@@ -178,7 +173,7 @@ class TopologyReduction(QThread):
 
         self.grid = grid
 
-        self.options = options
+        self.br_to_remove = branch_indices
 
         self.__cancel__ = False
 
@@ -188,31 +183,25 @@ class TopologyReduction(QThread):
         @return:
         """
         self.progress_signal.emit(0.0)
+        self.progress_text.emit('Detecting which branches to remove...')
 
-        deleted_any = True
-        i = 0
-        total = 1
+        # sort the branches in reverse order
+        self.br_to_remove.sort(reverse=True)
 
-        while deleted_any:
+        total = len(self.br_to_remove)
+
+        # for every branch in reverse order...
+        for i, br_idx in enumerate(self.br_to_remove):
 
             # delete branch
-            deleted_any, n_left, br_name = reduce_grid_brute(circuit=self.grid,
-                                                             rx_criteria=self.options.rx_criteria,
-                                                             rx_threshold=self.options.rx_threshold,
-                                                             type_criteria=self.options.type_criteria,
-                                                             selected_type=self.options.selected_type)
+            reduce_grid_brute(circuit=self.grid, removed_br_idx=br_idx)
 
-            if i == 0:
-                total = n_left
+            # display progress
+            self.progress_text.emit('Removed branch ' + self.grid.branches[br_idx].name)
+            progress = (i+1) / total * 100
+            self.progress_signal.emit(progress)
 
-            if deleted_any:
-                self.progress_text.emit('Removed branch ' + br_name)
-                progress = (i+1) / total * 100
-                self.progress_signal.emit(progress)
-
-            # increase counter
-            i += 1
-
+        # display progress
         self.progress_text.emit('Done')
         self.progress_signal.emit(0.0)
         self.done_signal.emit()

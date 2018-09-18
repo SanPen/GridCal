@@ -23,7 +23,7 @@ import sip
 
 from GridCal.Engine.CalculationEngine import *
 from GridCal.Gui.GuiFunctions import *
-
+from GridCal.Engine.TopologyDriver import reduce_grid_brute
 
 '''
 Dependencies:
@@ -498,16 +498,22 @@ class BranchGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
+    def remove_symbol(self):
+
+        for elm in [self.symbol, self.c1, self.c2, self.c0]:
+            if elm is not None:
+                self.diagramScene.removeItem(elm)
+                # sip.delete(elm)
+                elm = None
+
     def update_symbol(self):
         """
         Make the branch symbol
         :return:
         """
 
-        if self.symbol is not None:
-            self.diagramScene.removeItem(self.symbol)
-            sip.delete(self.symbol)
-            self.symbol = None
+        # remove the symbol of the branch
+        self.remove_symbol()
 
         if self.api_object.branch_type == BranchType.Transformer:
             self.make_transformer_symbol()
@@ -626,6 +632,11 @@ class BranchGraphicItem(QGraphicsLineItem):
             ra5 = menu.addAction('Tap down')
             ra5.triggered.connect(self.tap_down)
 
+        menu.addSeparator()
+
+        re = menu.addAction('Reduce')
+        re.triggered.connect(self.reduce)
+
         menu.exec_(event.screenPos())
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
@@ -662,6 +673,51 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         self.diagramScene.circuit.delete_branch(self.api_object)
         self.diagramScene.removeItem(self)
+
+    def reduce(self):
+        """
+        Reduce this branch
+        """
+
+        # get the index of the branch
+        br_idx = self.diagramScene.circuit.branches.index(self.api_object)
+
+        # call the reduction routine
+        removed_branch, removed_bus, \
+            updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
+
+        # remove the reduced branch
+        removed_branch.graphic_obj.remove_symbol()
+        self.diagramScene.removeItem(removed_branch.graphic_obj)
+
+        # update the buses (the deleted one and the updated one)
+        if removed_bus is not None:
+            # merge the removed bus with the remaining one
+            updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+
+            # remove the updated bus children
+            for g in updated_bus.graphic_obj.shunt_children:
+                self.diagramScene.removeItem(g.nexus)
+                self.diagramScene.removeItem(g)
+            # re-draw the children
+            updated_bus.graphic_obj.create_children_icons()
+
+            # remove bus
+            for g in removed_bus.graphic_obj.shunt_children:
+                self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
+            self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
+
+            #
+            # updated_bus.graphic_obj.update()
+
+        for br in updated_branches:
+            # remove the branch from the schematic
+            self.diagramScene.removeItem(br.graphic_obj)
+            # add the branch to the schematic with the rerouting and all
+            self.diagramScene.parent_.add_branch(br)
+            # update both buses
+            br.bus_from.graphic_obj.update()
+            br.bus_to.graphic_obj.update()
 
     def remove_widget(self):
         """
@@ -1930,6 +1986,17 @@ class BusGraphicItem(QGraphicsRectItem):
         self.tile.setBrush(brush)
         self.terminal.setBrush(brush)
 
+    def merge(self, other_bus_graphic):
+
+        self.shunt_children += other_bus_graphic.shunt_children
+
+    def update(self):
+        """
+        Update the object
+        :return:
+        """
+        self.change_size(self.w, self.h)
+
     def change_size(self, w, h):
         """
         Resize block function
@@ -2756,11 +2823,7 @@ class GridEditor(QSplitter):
                         item.api_object.x = x
                         item.api_object.y = y
 
-        # print('(', min_x, min_y, ')(', max_x, max_y, ')')
-
-        # h = max_y - min_y + 100
-        # w = max_x - min_x + 100
-        # self.diagramScene.setSceneRect(min_x, min_y, w, h)
+        # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
 
     def smaller_nodes(self):
@@ -2810,11 +2873,7 @@ class GridEditor(QSplitter):
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-        # print('(', min_x, min_y, ')(', max_x, max_y, ')')
-
-        # h = max_y - min_y + 100
-        # w = max_x - min_x + 100
-        # self.diagramScene.setSceneRect(min_x, min_y, w, h)
+        # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
 
     def set_limits(self, min_x, max_x, min_y, max_y):
@@ -2849,6 +2908,11 @@ class GridEditor(QSplitter):
             try:
                 x, y = pos[i] * 500
                 bus.graphic_obj.setPos(QPoint(x, y))
+
+                # apply changes to the API objects
+                bus.x = x
+                bus.y = y
+
             except KeyError as ex:
                 warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
 
@@ -2872,18 +2936,6 @@ class GridEditor(QSplitter):
             painter.end()
 
         elif extension == '.svg':
-            """
-            QSvgGenerator svgGen;
-
-            svgGen.setFileName( "/home/nikolay/scene2svg.svg" );
-            svgGen.setSize(QSize(200, 200));
-            svgGen.setViewBox(QRect(0, 0, 200, 200));
-            svgGen.setTitle(tr("SVG Generator Example Drawing"));
-            svgGen.setDescription(tr("An SVG drawing created by the SVG Generator ", "Example provided with Qt."));
-            
-            QPainter painter( &svgGen );
-            scene.render( &painter );
-            """
             svg_gen = QSvgGenerator()
             svg_gen.setFileName(filename)
             svg_gen.setSize(QSize(w, h))
@@ -2896,3 +2948,68 @@ class GridEditor(QSplitter):
             painter.end()
         else:
             pass
+
+    def add_branch(self, branch):
+        """
+        Add branch to the schematic
+        :param branch: Branch object
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+        graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+        branch.graphic_obj = graphic_obj
+
+    def schematic_from_api(self, explode_factor=1.0):
+
+        # clear all
+        self.diagramView.scene_.clear()
+
+        # set "infinite" limits for the figure
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
+        # first create the buses
+        for bus in self.circuit.buses:
+            # print(bus.x, bus.y)
+            graphic_obj = self.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+
+            # get the item position
+            x = graphic_obj.pos().x()
+            y = graphic_obj.pos().y()
+
+            # compute the boundaries of the grid
+            max_x = max(max_x, x)
+            min_x = min(min_x, x)
+            max_y = max(max_y, y)
+            min_y = min(min_y, y)
+
+            bus.graphic_obj = graphic_obj
+            bus.graphic_obj.create_children_icons()
+            bus.graphic_obj.arrange_children()
+
+        # set the figure limits
+        self.set_limits(min_x, max_x, min_y, max_y)
+
+        for branch in self.circuit.branches:
+            terminal_from = branch.bus_from.graphic_obj.terminal
+            terminal_to = branch.bus_to.graphic_obj.terminal
+            graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_obj)
+            terminal_to.hosting_connections.append(graphic_obj)
+            graphic_obj.redraw()
+            branch.graphic_obj = graphic_obj
+
+        # Align lines
+        for bus in self.circuit.buses:
+            bus.graphic_obj.arrange_children()
+
+        #  center the view
+        self.center_nodes()

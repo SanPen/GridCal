@@ -38,6 +38,7 @@ from GridCal.Engine.TimeSeriesDriver import *
 from GridCal.Engine.TransientStabilityDriver import *
 from GridCal.Engine.VoltageCollapseDriver import *
 from GridCal.Engine.TopologyDriver import TopologyReduction, TopologyReductionOptions
+from GridCal.Engine.TopologyDriver import select_branches_to_reduce
 
 import os.path
 import platform
@@ -76,6 +77,48 @@ class ResultTypes(Enum):
     branches_loading = 14,
     gen_reactive_power_pu = 15,
     gen_reactive_power = 16
+
+
+class ElementsDialogue(QtWidgets.QDialog):
+    """
+    Selected elements dialogue window
+    """
+
+    def __init__(self, name, elements: list()):
+        super(ElementsDialogue, self).__init__()
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+        # build elements list
+        self.objects_table = QtWidgets.QTableView()
+
+        if len(elements) > 0:
+            model = ObjectsModel(elements, elements[0].edit_headers, elements[0].units, elements[0].edit_types,
+                                 parent=self.objects_table, editable=False, non_editable_indices=[1, 2, 14])
+
+            self.objects_table.setModel(model)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Proceed')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.layout.addWidget(QtWidgets.QLabel("Logs"))
+        self.layout.addWidget(self.objects_table)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle(name)
+
+        self.accepted = False
+
+    def accept_click(self):
+        self.accepted = True
+        self.accept()
 
 
 class MainGUI(QMainWindow):
@@ -129,8 +172,8 @@ class MainGUI(QMainWindow):
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         # branch types for reduction
-        mdl = get_list_model(BranchTypeConverter(BranchType.Branch).options)
-        self.ui.removeByTypeComboBox.setModel(mdl)
+        mdl = get_list_model(BranchTypeConverter(BranchType.Branch).options, checks=True)
+        self.ui.removeByTypeListView.setModel(mdl)
 
         # solvers dictionary
         self.lp_solvers_dict = OrderedDict()
@@ -1084,16 +1127,6 @@ class MainGUI(QMainWindow):
 
             if filename is not "":
 
-                name, file_extension = os.path.splitext(filename)
-
-                # extension = dict()
-                # extension['Png (*.png)'] = '.png'
-                # # extension['PDF (*.pdf)'] = '.pdf'
-                #
-                # # add the file extension if needed
-                # if file_extension == '':
-                #     filename = name + extension[type_selected]
-
                 # save in factor * K
                 factor = self.ui.resolution_factor_spinBox.value()
                 w = 1920 * factor
@@ -1105,55 +1138,59 @@ class MainGUI(QMainWindow):
         This function explores the API values and draws an schematic layout
         @return:
         """
-        # clear all
-        self.grid_editor.diagramView.scene_.clear()
-        self.grid_editor.circuit = self.circuit  # set pointer to the circuit
+        # set pointer to the circuit
+        self.grid_editor.circuit = self.circuit
 
-        # set "infinite" limits for the figure
-        min_x = sys.maxsize
-        min_y = sys.maxsize
-        max_x = -sys.maxsize
-        max_y = -sys.maxsize
+        self.grid_editor.schematic_from_api(explode_factor=explode_factor)
 
-        # first create the buses
-        for bus in self.circuit.buses:
-            # print(bus.x, bus.y)
-            graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
-            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-
-            # get the item position
-            x = graphic_obj.pos().x()
-            y = graphic_obj.pos().y()
-
-            # compute the boundaries of the grid
-            max_x = max(max_x, x)
-            min_x = min(min_x, x)
-            max_y = max(max_y, y)
-            min_y = min(min_y, y)
-
-            bus.graphic_obj = graphic_obj
-            bus.graphic_obj.create_children_icons()
-            bus.graphic_obj.arrange_children()
-
-        # set the figure limits
-        self.grid_editor.set_limits(min_x, max_x, min_y, max_y)
-
-        for branch in self.circuit.branches:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
-            graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
-            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-            terminal_from.hosting_connections.append(graphic_obj)
-            terminal_to.hosting_connections.append(graphic_obj)
-            graphic_obj.redraw()
-            branch.graphic_obj = graphic_obj
-
-        # Align lines
-        for bus in self.circuit.buses:
-            bus.graphic_obj.arrange_children()
-
-        #  center the view
-        self.grid_editor.center_nodes()
+        # # clear all
+        # self.grid_editor.diagramView.scene_.clear()
+        #
+        # # set "infinite" limits for the figure
+        # min_x = sys.maxsize
+        # min_y = sys.maxsize
+        # max_x = -sys.maxsize
+        # max_y = -sys.maxsize
+        #
+        # # first create the buses
+        # for bus in self.circuit.buses:
+        #     # print(bus.x, bus.y)
+        #     graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+        #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        #
+        #     # get the item position
+        #     x = graphic_obj.pos().x()
+        #     y = graphic_obj.pos().y()
+        #
+        #     # compute the boundaries of the grid
+        #     max_x = max(max_x, x)
+        #     min_x = min(min_x, x)
+        #     max_y = max(max_y, y)
+        #     min_y = min(min_y, y)
+        #
+        #     bus.graphic_obj = graphic_obj
+        #     bus.graphic_obj.create_children_icons()
+        #     bus.graphic_obj.arrange_children()
+        #
+        # # set the figure limits
+        # self.grid_editor.set_limits(min_x, max_x, min_y, max_y)
+        #
+        # for branch in self.circuit.branches:
+        #     terminal_from = branch.bus_from.graphic_obj.terminal
+        #     terminal_to = branch.bus_to.graphic_obj.terminal
+        #     graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
+        #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        #     terminal_from.hosting_connections.append(graphic_obj)
+        #     terminal_to.hosting_connections.append(graphic_obj)
+        #     graphic_obj.redraw()
+        #     branch.graphic_obj = graphic_obj
+        #
+        # # Align lines
+        # for bus in self.circuit.buses:
+        #     bus.graphic_obj.arrange_children()
+        #
+        # #  center the view
+        # self.grid_editor.center_nodes()
 
     def update_map(self):
         """
@@ -2428,46 +2465,69 @@ class MainGUI(QMainWindow):
             rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
             exponent = self.ui.rxThresholdSpinBox.value()
             rx_threshold = 1.0 / (10.0**exponent)
-            type_criteria = self.ui.removeByTypeCheckBox.isChecked()
-            selected_type_txt = self.ui.removeByTypeComboBox.currentText()
-            selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
+            # type_criteria = self.ui.removeByTypeCheckBox.isChecked()
+            # selected_type_txt = self.ui.removeByTypeComboBox.currentText()
+            # selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
 
-            if rx_criteria or type_criteria:
+            # get the selected indices
+            checked = get_checked_indices(self.ui.removeByTypeListView.model())
 
-                # ask for confirmation
-                reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to reduce the grid?',
-                                             QMessageBox.Yes, QMessageBox.No)
+            if len(checked) > 0:
 
-                if reply == QMessageBox.Yes:
+                selected_types = list()
+                for i in checked:
+                    selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
+                    selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
+                    selected_types.append(selected_type)
 
-                    self.LOCK()
+                # compose options
+                options = TopologyReductionOptions(rx_criteria=rx_criteria,
+                                                   rx_threshold=rx_threshold,
+                                                   selected_types=selected_types)
 
-                    options = TopologyReductionOptions(rx_criteria=rx_criteria,
-                                                       rx_threshold=rx_threshold,
-                                                       type_criteria=type_criteria,
-                                                       selected_type=selected_type)
+                # find which branches to remove
+                br_to_remove = select_branches_to_reduce(circuit=self.circuit,
+                                                         rx_criteria=options.rx_criteria,
+                                                         rx_threshold=options.rx_threshold,
+                                                         selected_types=options.selected_type)
+                if len(br_to_remove) > 0:
+                    # raise dialogue
+                    elms = [self.circuit.branches[i] for i in br_to_remove]
+                    diag = ElementsDialogue('Elements to be reduced', elms)
+                    diag.show()
+                    diag.exec_()
 
-                    # reduce the grid
-                    self.topology_reduction = TopologyReduction(grid=self.circuit, options=options)
+                    if diag.accepted:
 
-                    # Set the time series run options
-                    self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
-                    self.topology_reduction.done_signal.connect(self.UNLOCK)
-                    self.topology_reduction.done_signal.connect(self.post_reduce_grid)
+                        self.LOCK()
 
-                    self.topology_reduction.start()
+                        # reduce the grid
+                        self.topology_reduction = TopologyReduction(grid=self.circuit, branch_indices=br_to_remove)
+
+                        # Set the time series run options
+                        self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
+                        self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
+                        self.topology_reduction.done_signal.connect(self.UNLOCK)
+                        self.topology_reduction.done_signal.connect(self.post_reduce_grid)
+
+                        self.topology_reduction.start()
+                    else:
+                        pass
                 else:
-                    pass
-
+                    self.msg('There were no branches identified', 'Topological grid reduction')
             else:
                 self.msg('Select at least one reduction option in the topology settings', 'Topological grid reduction')
         else:
             pass
 
     def post_reduce_grid(self):
-
+        """
+        Actions after reducing
+        :return:
+        """
         self.create_schematic_from_api(explode_factor=1)
+
+        self.clear_results()
 
     def set_cancel_state(self):
         """

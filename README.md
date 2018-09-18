@@ -154,9 +154,7 @@ Some of the features you'll find already are:
 
 - Bifurcation point with predictor-corrector Newton-Raphson.
 
-- Monte Carlo simulation based on the input profiles. (Stochastic power flow)
-
-- Latin Hypercube Sampling based on the input profiles.
+- Monte Carlo / Latin Hypercube stochastic power flow based on the input profiles.
 
 - Blackout cascading in simulation and step by step mode.
 
@@ -174,8 +172,10 @@ Some of the features you'll find already are:
 
 - Device templates (lines and transformers).
 
-- Grid reduction based on branch type or branch impedance values
+- Grid reduction based on branch type and filtering by impedance values
 
-Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and get started.
+- Export the schematic in SVG and PNG formats.
+
+Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and to get started.
 
 Send feedback and requests to santiago.penate.vera@gmail.com.

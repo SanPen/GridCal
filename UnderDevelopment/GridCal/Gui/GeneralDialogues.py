@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
+
 def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
@@ -169,4 +170,6 @@ class LogsDialogue(QtWidgets.QDialog):
 
     def accept_click(self):
         self.accept()
+
+
 

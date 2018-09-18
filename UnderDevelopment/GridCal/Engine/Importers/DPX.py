@@ -587,9 +587,10 @@ def load_dpx(file_name,contraction_factor=1000):
                 name = df['NAME'].values[i]
                 id1 = df['ID1'].values[i]
                 id2 = df['ID2'].values[i]
+                state = bool(int(df['STAT'].values[i]))
                 b1 = buses_id_dict[id1]
                 b2 = buses_id_dict[id2]
-                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Switch)
+                br = Branch(bus_from=b1, bus_to=b2, name=name, active=state, branch_type=BranchType.Switch)
                 circuit.add_branch(br)
 
         # Lines, cables and bars
@@ -641,7 +642,6 @@ def load_dpx(file_name,contraction_factor=1000):
                 br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, rate=Smax, length=length,
                             branch_type=BranchType.Line)
                 circuit.add_branch(br)
-
 
         # Intensity Transformer
         # __headers__['Branches']['TI'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT', 'EXIST', 'STAT',
