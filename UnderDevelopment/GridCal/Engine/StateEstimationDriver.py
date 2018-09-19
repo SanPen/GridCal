@@ -20,7 +20,8 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.Numerical.SE import solve_se_lm
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults, PowerFlowMP
-from GridCal.Engine.CalculationEngine import Circuit, MultiCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit
+from GridCal.Engine.NewEngine import NumericalCircuit
 
 
 class MeasurementType(Enum):
@@ -168,7 +169,7 @@ class StateEstimation(QRunnable):
         self.se_results = None
 
     @staticmethod
-    def collect_measurements(circuit: Circuit):
+    def collect_measurements(circuit: NumericalCircuit):
         """
         Form the input from the circuit measurements
         :return: nothing, the input object is stored in this class

@@ -453,7 +453,7 @@ class TimeSeries(QThread):
                             pass
 
                     # run power flow at the circuit
-                    res = powerflow.run_pf(circuit=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
+                    res = powerflow.run_pf(calculation_inputs=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
 
                     # Recycle voltage solution
                     Vlast = res.voltage
