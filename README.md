@@ -141,7 +141,8 @@ Some of the features you'll find already are:
     - CIM (Common Information Model v16)
 
 - Power flow:
-  - Newton Raphson Iwamoto (robust Newton Raphson).
+  - Robust Newton Raphson in power and current equations.
+  - Newton Raphson Iwamoto (optimal acceleration).
   - Fast Decoupled Power Flow
   - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
