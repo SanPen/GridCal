@@ -215,8 +215,11 @@ class CalculationInputs:
         """
         self.nbus = nbus
         self.nbr = nbr
+        self.ntime = ntime
 
         self.Sbase = 100.0
+
+        self.time_array = None
 
         # resulting matrices (calculation)
         self.Yf = csc_matrix((nbr, nbus), dtype=complex)
@@ -417,6 +420,8 @@ class NumericalCircuit:
         # base power
         self.Sbase = Sbase
 
+        self.time_array = None
+
         # bus
         self.bus_names = np.empty(n_bus, dtype=object)
         self.bus_vnom = np.zeros(n_bus, dtype=float)
@@ -555,6 +560,7 @@ class NumericalCircuit:
             circuit.Ysh_prof = Ysh_prof
             circuit.Sbus_prof = Sbus_prof
             circuit.Ibus_prof = I_prof
+            circuit.time_array = self.time_array
 
         ################################################################################################################
         # Form the admittance matrix
@@ -572,7 +578,7 @@ class NumericalCircuit:
         # form the admittance matrices
         Yf = diags(Yff) * self.C_branch_bus_f + diags(Yft) * self.C_branch_bus_t
         Yt = diags(Ytf) * self.C_branch_bus_f + diags(Ytt) * self.C_branch_bus_t
-        Ybus = self.C_branch_bus_f.T * Yf + self.C_branch_bus_t.T * Yt + diags(Ysh)
+        Ybus = csc_matrix(self.C_branch_bus_f.T * Yf + self.C_branch_bus_t.T * Yt + diags(Ysh))
 
         # assign to the calc element
         circuit.Ybus = Ybus

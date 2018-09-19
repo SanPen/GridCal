@@ -57,43 +57,36 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Short circuit
     ####################################################################################################################
-    # print('\n\n')
-    # print('Short Circuit')
-    # sc_options = ShortCircuitOptions(bus_index=[16])
-    # sc = ShortCircuit(grid, sc_options)
-    # sc.run()
-    #
-    # print('\n\n', grid.name)
-    # print('\t|V|:', abs(grid.short_circuit_results.voltage))
-    # print('\t|Sbranch|:', abs(grid.short_circuit_results.Sbranch))
-    # print('\t|loading|:', abs(grid.short_circuit_results.loading) * 100)
+    print('\n\n')
+    print('Short Circuit')
+    sc_options = ShortCircuitOptions(bus_index=[16])
+    sc = ShortCircuit(grid, sc_options, power_flow.results)
+    sc.run()
+
+    print('\n\n', grid.name)
+    print('\t|V|:', abs(grid.short_circuit_results.voltage))
+    print('\t|Sbranch|:', abs(grid.short_circuit_results.Sbranch))
+    print('\t|loading|:', abs(grid.short_circuit_results.loading) * 100)
 
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
-    # print('Running TS...', '')
-    # ts = TimeSeries(grid=grid, options=options, start=0, end=96)
-    # ts.run()
-    #
-    # if grid.time_series_results is not None:
-    #     print('\n\nVoltages:\n')
-    #     print(grid.time_series_results.voltage)
-    #     print(grid.time_series_results.converged)
-    #     print(grid.time_series_results.error)
-    #
-    #     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-    #     # show()
-    # ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+    print('Running TS...', '')
+    ts = TimeSeries(grid=grid, options=options, start=0, end=96)
+    ts.run()
+
+    # ts_analysis = TimeSeriesResultsAnalysis(ts.results)  # TODO: not working doe to results analysis of overloads etc...
     # lst = np.array(list(range(ts.results.n)), dtype=int)
     # ts.results.plot('Bus voltage', indices=lst, names=lst)
-    #
+    ts.results.plot('Bus voltage', indices=list(range(len(grid.buses))), names=grid.bus_names)
+
     # plt.figure()
     # batteries = grid.get_batteries()
     # batteries[0].power_array.plot(label='Battery power')
     # batteries[0].energy_array.plot(label='Battery energy')
     # plt.legend()
-    #
-    # plt.show()
+
+    plt.show()
 
     ####################################################################################################################
     # Voltage collapse
