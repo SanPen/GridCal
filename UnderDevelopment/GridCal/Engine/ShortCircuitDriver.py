@@ -21,8 +21,9 @@ from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.Numerical.SC import short_circuit_3p
-from GridCal.Engine.CalculationEngine import LINEWIDTH, Circuit, MultiCircuit
+from GridCal.Engine.CalculationEngine import LINEWIDTH, MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults
+from GridCal.Engine.NewEngine import NumericalCircuit
 
 
 ########################################################################################################################
@@ -248,7 +249,7 @@ class ShortCircuit(QRunnable):
 
         self.__cancel__ = False
 
-    def single_short_circuit(self, circuit: Circuit, Vpf):
+    def single_short_circuit(self, circuit: NumericalCircuit, Vpf):
         """
         Run a power flow simulation for a single circuit
         @param circuit:
@@ -284,7 +285,7 @@ class ShortCircuit(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(circuit: Circuit, V):
+    def compute_branch_results(circuit: NumericalCircuit, V):
         """
         Compute the power flows trough the branches
         @param circuit: instance of Circuit

@@ -23,7 +23,8 @@ from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QRunnable
 
-from GridCal.Engine.CalculationEngine import Circuit, MultiCircuit
+from GridCal.Engine.NewEngine import NumericalCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
@@ -541,7 +542,7 @@ class DcOpf:
 
 class AcOpf:
 
-    def __init__(self, circuit: Circuit, options, voltage_band=0.1):
+    def __init__(self, circuit: NumericalCircuit, options, voltage_band=0.1):
         """
         Linearized AC power flow, solved with a linear solver :o
         :param circuit: GridCal Circuit instance
@@ -1336,7 +1337,7 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
-    def single_optimal_power_flow(self, circuit: Circuit, t_idx=None):
+    def single_optimal_power_flow(self, circuit: NumericalCircuit, t_idx=None):
         """
         Run a power flow simulation for a single circuit
         @param circuit: Single island circuit

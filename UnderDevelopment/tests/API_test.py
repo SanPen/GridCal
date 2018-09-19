@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.CalculationEngine import *
+from GridCal.Engine.All import *
 from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
@@ -33,11 +33,9 @@ if __name__ == '__main__':
 
     print('Reading...')
     grid.load_file(fname)
-    grid.compile()
-
-    options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False,
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
                                initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True)
+                               multi_core=False, dispatch_storage=True, control_q=False)
 
     # grid.export_profiles('ppppppprrrrroooofiles.xlsx')
     # exit()
@@ -45,26 +43,16 @@ if __name__ == '__main__':
     ####################################################################################################################
     # PowerFlow
     ####################################################################################################################
-    # print('\n\n')
-    # power_flow = PowerFlow(grid, options)
-    # power_flow.run()
-    #
-    # for c in grid.circuits:
-    #     print(c.name)
-    #     # print(pd.DataFrame(circuit.power_flow_input.Ybus.todense()))
-    #     # print('\tV:', c.power_flow_results.voltage)
-    #     print('\t|V|:', abs(c.power_flow_results.voltage))
-    #     print('\t|Sbranch|:', abs(c.power_flow_results.Sbranch))
-    #     print('\t|loading|:', abs(c.power_flow_results.loading) * 100)
-    #     print('\terr:', c.power_flow_results.error)
-    #     print('\tConv:', c.power_flow_results.converged)
-    #
-    # print('\n\n', grid.name)
-    # print('\t|V|:', abs(grid.power_flow_results.voltage))
-    # print('\t|Sbranch|:', abs(grid.power_flow_results.Sbranch))
-    # print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
-    # print('\terr:', grid.power_flow_results.error)
-    # print('\tConv:', grid.power_flow_results.converged)
+    print('\n\n')
+    power_flow = PowerFlow(grid, options)
+    power_flow.run()
+
+    print('\n\n', grid.name)
+    print('\t|V|:', abs(power_flow.results.voltage))
+    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    print('\t|loading|:', abs(power_flow.results.loading) * 100)
+    print('\tReport')
+    print(power_flow.results.get_report_dataframe())
 
     ####################################################################################################################
     # Short circuit
@@ -83,29 +71,29 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
-    print('Running TS...', '')
-    ts = TimeSeries(grid=grid, options=options, start=0, end=96)
-    ts.run()
-
-    if grid.time_series_results is not None:
-        print('\n\nVoltages:\n')
-        print(grid.time_series_results.voltage)
-        print(grid.time_series_results.converged)
-        print(grid.time_series_results.error)
-
-        # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
-        # show()
-    ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
-    lst = np.array(list(range(ts.results.n)), dtype=int)
-    ts.results.plot('Bus voltage', indices=lst, names=lst)
-
-    plt.figure()
-    batteries = grid.get_batteries()
-    batteries[0].power_array.plot(label='Battery power')
-    batteries[0].energy_array.plot(label='Battery energy')
-    plt.legend()
-
-    plt.show()
+    # print('Running TS...', '')
+    # ts = TimeSeries(grid=grid, options=options, start=0, end=96)
+    # ts.run()
+    #
+    # if grid.time_series_results is not None:
+    #     print('\n\nVoltages:\n')
+    #     print(grid.time_series_results.voltage)
+    #     print(grid.time_series_results.converged)
+    #     print(grid.time_series_results.error)
+    #
+    #     # plot(grid.master_time_array, abs(grid.time_series_results.loading)*100)
+    #     # show()
+    # ts_analysis = TimeSeriesResultsAnalysis(grid.circuits[0].time_series_results)
+    # lst = np.array(list(range(ts.results.n)), dtype=int)
+    # ts.results.plot('Bus voltage', indices=lst, names=lst)
+    #
+    # plt.figure()
+    # batteries = grid.get_batteries()
+    # batteries[0].power_array.plot(label='Battery power')
+    # batteries[0].energy_array.plot(label='Battery energy')
+    # plt.legend()
+    #
+    # plt.show()
 
     ####################################################################################################################
     # Voltage collapse

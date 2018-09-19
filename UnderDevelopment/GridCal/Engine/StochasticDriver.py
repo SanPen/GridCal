@@ -105,7 +105,6 @@ class MonteCarlo(QThread):
             for circuit in self.grid.circuits:
 
                 # set the time series as sampled
-                # c.sample_monte_carlo_batch(batch_size)
                 mc_time_series = circuit.monte_carlo_input(self.batch_size, use_latin_hypercube=False)
                 Vbus = circuit.power_flow_input.Vbus
 
@@ -242,7 +241,6 @@ class MonteCarlo(QThread):
             for c in self.grid.circuits:
 
                 # set the time series as sampled
-                # c.sample_monte_carlo_batch(batch_size)
                 mc_time_series = c.monte_carlo_input(self.batch_size, use_latin_hypercube=False)
                 Vbus = c.power_flow_input.Vbus
 
@@ -252,7 +250,7 @@ class MonteCarlo(QThread):
                     Y, I, S = mc_time_series.get_at(t)
 
                     # res = powerflow.run_at(t, mc=True)
-                    res = powerflow.run_pf(circuit=c, Vbus=Vbus, Sbus=S/Sbase, Ibus=I/Sbase)
+                    res = powerflow.run_pf(calculation_inputs=c, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
 
                     batch_results.S_points[t, c.bus_original_idx] = res.Sbus
                     batch_results.V_points[t, c.bus_original_idx] = res.voltage
@@ -378,7 +376,6 @@ class LatinHypercubeSampling(QThread):
 
             # try:
             # set the time series as sampled in the circuit
-            # c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
             mc_time_series = circuit.monte_carlo_input(batch_size, use_latin_hypercube=True)
             Vbus = circuit.power_flow_input.Vbus
 
@@ -478,7 +475,6 @@ class LatinHypercubeSampling(QThread):
 
             # try:
             # set the time series as sampled in the circuit
-            # c.sample_monte_carlo_batch(batch_size, use_latin_hypercube=True)
             mc_time_series = c.monte_carlo_input(batch_size, use_latin_hypercube=True)
             Vbus = c.power_flow_input.Vbus
 
@@ -489,8 +485,7 @@ class LatinHypercubeSampling(QThread):
                 Y, I, S = mc_time_series.get_at(t)
 
                 # Run the set monte carlo point at 't'
-                # res = power_flow.run_at(t, mc=True)
-                res = power_flow.run_pf(circuit=c, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
+                res = power_flow.run_pf(calculation_inputs=c, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
 
                 # Gather the results
                 lhs_results.S_points[t, c.bus_original_idx] = res.Sbus
@@ -500,12 +495,9 @@ class LatinHypercubeSampling(QThread):
 
                 it += 1
                 self.progress_signal.emit(it / max_iter * 100)
-                # print(it / max_iter * 100)
 
                 if self.__cancel__:
                     break
-            # except Exception as ex:
-            #     print(c.name, ex)
 
             if self.__cancel__:
                 break

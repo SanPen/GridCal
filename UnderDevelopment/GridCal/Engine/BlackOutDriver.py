@@ -19,7 +19,8 @@ import pandas as pd
 import numpy as np
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from GridCal.Engine.CalculationEngine import Circuit, MultiCircuit, LINEWIDTH
+from GridCal.Engine.NewEngine import NumericalCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, PowerFlow, PowerFlowMP
 from GridCal.Engine.StochasticDriver import MonteCarloResults, LatinHypercubeSampling
 
@@ -129,7 +130,7 @@ class Cascading(QThread):
         self.results = CascadingResults(self.cascade_type)
 
     @staticmethod
-    def remove_elements(circuit: Circuit, loading_vector, idx=None):
+    def remove_elements(circuit: NumericalCircuit, loading_vector, idx=None):
         """
         Remove branches based on loading
         Returns:
@@ -147,7 +148,7 @@ class Cascading(QThread):
         # print('Removing:', idx, load[idx])
 
         for i in idx:
-            circuit.branches[i].active = False
+            circuit.branch_states[i] = False
 
         return idx
 

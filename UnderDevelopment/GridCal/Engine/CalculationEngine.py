@@ -38,10 +38,11 @@ from GridCal.Engine.PlotConfig import *
 from GridCal.Engine.BasicStructures import CDF
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.BasicStructures import BusMode
-from GridCal.Engine.IoStructures import PowerFlowInput, TimeSeriesInput, MonteCarloInput
+from GridCal.Engine.IoStructures import TimeSeriesInput, MonteCarloInput
 from GridCal.Engine.Numerical.DynamicModels import DynamicModels
 from GridCal.Engine.ObjectTypes import TransformerType, Tower, BranchTemplate, BranchType, \
                                             UndergroundLineType, SequenceLineType, Wire
+from GridCal.Engine.NewEngine import NumericalCircuit
 
 
 ########################################################################################################################
@@ -90,8 +91,6 @@ class TimeGroups(Enum):
     NoGroup = 0,
     ByDay = 1,
     ByHour = 2
-
-
 
 
 def load_from_xls(filename):
@@ -437,7 +436,7 @@ class Bus:
                 # Nothing special; set it as PQ
                 self.type = BusMode.PQ
 
-        pass
+        return self.type
 
     def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
         """
@@ -1305,6 +1304,11 @@ class Load(ReliabilityDevice):
         # Impedance (Ohm)
         # Z * I = V -> Ohm * kA = kV
         self.Z = impedance
+
+        if impedance.real != 0 or impedance.imag != 0.0:
+            self.Y = 1 / impedance
+        else:
+            self.Y = complex(0, 0)
 
         # Current (kA)
         self.I = current
@@ -2606,15 +2610,16 @@ class Shunt(ReliabilityDevice):
         return self.name
 
 
-class Circuit:
+class MultiCircuit:
 
-    def __init__(self, name='Circuit'):
+    def __init__(self, name=''):
         """
-        Circuit constructor
-        @param name: Name of the circuit
+        Multi Circuit Constructor
         """
 
         self.name = name
+
+        self.comments = ''
 
         # Base power (MVA)
         self.Sbase = 100.0
@@ -2676,255 +2681,107 @@ class Circuit:
         # Bus-Branch graph
         self.graph = None
 
+
+        # self.power_flow_results = PowerFlowResults()
+
+        self.bus_dictionary = dict()
+
+        self.branch_dictionary = dict()
+
+        self.has_time_series = False
+
+        self.bus_names = None
+
+        self.branch_names = None
+
+        self.time_profile = None
+
+        self.objects_with_profiles = [Load(), StaticGenerator(), ControlledGenerator(), Battery(), Shunt()]
+
+        self.profile_magnitudes = dict()
+
+        '''
+        self.type_name = 'Shunt'
+
+        self.properties_with_profile = ['Y']
+        '''
+        for dev in self.objects_with_profiles:
+            if dev.properties_with_profile is not None:
+                self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
+
     def clear(self):
-        """
-        Delete the Circuit content
-        @return:
-        """
-        self.Sbase = 100
+
+        # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
+
+        # array of branch indices in the master circuit
         self.branch_original_idx = list()
+
+        # Should accept buses
         self.buses = list()
+
+        # array of bus indices in the master circuit
         self.bus_original_idx = list()
 
-    def compile(self, time_profile=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False, logger=list()):
-        """
-        Compile the circuit into all the needed arrays:
-            - Ybus matrix
-            - Sbus vector
-            - Vbus vector
-            - etc...
-        """
-
-        # declare length of arrays
-        n = len(self.buses)
-        m = len(self.branches)
-
-        if time_profile is None:
-            t = 0
-        else:
-            t = len(time_profile)
-
-        # declare a graph
-        self.graph = nx.Graph()
-
-        # declare power flow results
-        power_flow_input = PowerFlowInput(n, m)
-
-        # time series inputs
-        S_profile_data = zeros((t, n), dtype=complex)
-        I_profile_data = zeros((t, n), dtype=complex)
-        Y_profile_data = zeros((t, n), dtype=complex)
-        S_prof_names = [None] * n
-        I_prof_names = [None] * n
-        Y_prof_names = [None] * n
-        Scdf_ = [None] * n
-        Icdf_ = [None] * n
-        Ycdf_ = [None] * n
-        time_series_input = None
-        monte_carlo_input = None
-
-        are_cdfs = False
-
-        # Dictionary that helps referencing the nodes
+        # Dictionary relating the bus object to its index. Updated upon compilation
         self.buses_dict = dict()
 
-        # Compile the buses
-        for i in range(n):
+        # List of overhead line objects
+        self.overhead_line_types = list()
 
-            # Add buses dictionary entry
-            self.buses_dict[self.buses[i]] = i
+        # list of wire types
+        self.wire_types = list()
 
-            # set the name
-            power_flow_input.bus_names[i] = self.buses[i].name
+        # underground cable lines
+        self.underground_cable_types = list()
 
-            # assign the nominal voltage value
-            power_flow_input.Vnom[i] = self.buses[i].Vnom
+        # sequence modelled lines
+        self.sequence_line_types = list()
 
-            # Determine the bus type
-            self.buses[i].determine_bus_type()
+        # List of transformer types
+        self.transformer_types = list()
 
-            # compute the bus magnitudes
-            Y, I, S, V, Yprof, Iprof, Sprof, Y_cdf, I_cdf, S_cdf = self.buses[i].get_YISV(use_opf_vals=use_opf_vals,
-                                                                                          dispatch_storage=dispatch_storage)
+        # Object with the necessary inputs for a power flow study
+        self.power_flow_input = None
 
-            # Assign the values to the simulation objects
-            power_flow_input.Vbus[i] = V  # set the bus voltages
-            power_flow_input.Sbus[i] += S  # set the bus power
-            power_flow_input.Ibus[i] += I  # set the bus currents
+        #  containing the power flow results
+        self.power_flow_results = None
 
-            power_flow_input.Ybus[i, i] += Y / self.Sbase  # set the bus shunt impedance in per unit
-            power_flow_input.Yshunt[i] += Y / self.Sbase  # copy the shunt impedance
+        # containing the short circuit results
+        self.short_circuit_results = None
 
-            power_flow_input.types[i] = self.buses[i].type.value[0]  # set type
+        # Object with the necessary inputs for th time series simulation
+        self.time_series_input = None
 
-            power_flow_input.Vmin[i] = self.buses[i].Vmin  # in p.u.
-            power_flow_input.Vmax[i] = self.buses[i].Vmax  # in p.u.
-            power_flow_input.Qmin[i] = self.buses[i].Qmin_sum  # in MVAr
-            power_flow_input.Qmax[i] = self.buses[i].Qmax_sum  # in MVAr
+        # Object with the time series simulation results
+        self.time_series_results = None
 
-            # Compile all the time related variables
+        # Monte Carlo input object
+        self.monte_carlo_input = None
 
-            # compute the time series arrays  ##############################################
+        # Monte Carlo time series batch
+        self.mc_time_series = None
 
-            if Sprof is not None:
-                S_profile_data[:, i] = Sprof.reshape(-1)
-            if Iprof is not None:
-                I_profile_data[:, i] = Iprof.reshape(-1)
-            if Yprof is not None:
-                Y_profile_data[:, i] = Yprof.reshape(-1)
+        # Bus-Branch graph
+        self.graph = None
 
-            S_prof_names[i] = 'Sprof@Bus' + str(i)
-            I_prof_names[i] = 'Iprof@Bus' + str(i)
-            Y_prof_names[i] = 'Yprof@Bus' + str(i)
+        self.bus_dictionary = dict()
 
-            # Store the CDF's for Monte Carlo ##############################################
+        self.branch_dictionary = dict()
 
-            if S_cdf is None and S != complex(0, 0):
-                S_cdf = CDF(array([S]))
+        self.has_time_series = False
 
-            if I_cdf is None and I != complex(0, 0):
-                I_cdf = CDF(array([I]))
+        self.bus_names = None
 
-            if Y_cdf is None and Y != complex(0, 0):
-                Y_cdf = CDF(array([Y]))
+        self.branch_names = None
 
-            if S_cdf is not None or I_cdf is not None or Y_cdf is not None:
-                are_cdfs = True
-
-            Scdf_[i] = S_cdf
-            Icdf_[i] = I_cdf
-            Ycdf_[i] = Y_cdf
-
-        # Compute the base magnitudes
-        # (not needed since I and Y are given in MVA, you can demonstrate that only Sbase is needed to pass to p.u.)
-        # Ibase = self.Sbase / (Vbase * sqrt3)
-        # Ybase = self.Sbase / (Vbase * Vbase)
-
-        # normalize_string the power array
-        power_flow_input.Sbus /= self.Sbase
-
-        # normalize_string the currents array (the I vector was given in MVA at v=1 p.u.)
-        power_flow_input.Ibus /= self.Sbase
-
-        # normalize the admittances array (the Y vector was given in MVA at v=1 p.u.)
-        # At this point only the shunt and load related values are added here
-        # power_flow_input.Ybus /= self.Sbase
-        # power_flow_input.Yshunt /= self.Sbase
-
-        # normalize_string the reactive power limits array (Q was given in MVAr)
-        power_flow_input.Qmax /= self.Sbase
-        power_flow_input.Qmin /= self.Sbase
-
-        # make the profiles as DataFrames
-        S_profile = pd.DataFrame(data=S_profile_data / self.Sbase, columns=S_prof_names, index=time_profile)
-        I_profile = pd.DataFrame(data=I_profile_data / self.Sbase, columns=I_prof_names, index=time_profile)
-        Y_profile = pd.DataFrame(data=Y_profile_data / self.Sbase, columns=Y_prof_names, index=time_profile)
-
-        time_series_input = TimeSeriesInput(S_profile, I_profile, Y_profile)
-        time_series_input.compile()
-
-        if are_cdfs:
-            monte_carlo_input = MonteCarloInput(n, Scdf_, Icdf_, Ycdf_)
-        else:
-            monte_carlo_input = None
-
-        # Compile the branches
-        for i in range(m):
-
-            # pick the name
-            power_flow_input.branch_names[i] = self.branches[i].name
-
-            if self.branches[i].active:
-
-                # get the from and to bus indices
-                f = self.buses_dict[self.branches[i].bus_from]
-                t = self.buses_dict[self.branches[i].bus_to]
-
-                # apply the branch properties to the circuit matrices
-                f, t = self.branches[i].apply_to(Ybus=power_flow_input.Ybus,
-                                                 Yseries=power_flow_input.Yseries,
-                                                 Yshunt=power_flow_input.Yshunt,
-                                                 Yf=power_flow_input.Yf,
-                                                 Yt=power_flow_input.Yt,
-                                                 B1=power_flow_input.B1,
-                                                 B2=power_flow_input.B2,
-                                                 C=power_flow_input.C,
-                                                 i=i, f=f, t=t)
-
-                # Add graph edge (automatically adds the vertices)
-                self.graph.add_edge(f, t)
-
-                # Set the active flag in the active branches array
-                power_flow_input.active_branches[i] = 1
-
-                # Arrays with the from and to indices per bus
-                power_flow_input.F[i] = f
-                power_flow_input.T[i] = t
-
-                # branches to remove (optionally, add the generic branches as candidates to be removed...)
-                if self.branches[i].branch_type == BranchType.Branch:
-                    power_flow_input.branches_to_remove_idx.append(i)
-                else:
-                    power_flow_input.branches_to_keep_idx.append(i)
-
-            # fill rate
-            if self.branches[i].rate > 0:
-                power_flow_input.branch_rates[i] = self.branches[i].rate
-            else:
-                power_flow_input.branch_rates[i] = 1e-6
-                logger.append('The branch ' + str(i) + ' has no rate. Setting 1e-6 to avoid zero division.')
-
-        # Assign the power flow inputs  button
-        power_flow_input.compile()
-        self.power_flow_input = power_flow_input
-        self.time_series_input = time_series_input
-        self.monte_carlo_input = monte_carlo_input
-
-        return logger
-
-    def set_at(self, t, mc=False):
-        """
-        Set the current values given by the profile step of index t
-        @param t: index of the profiles
-        @param mc: Is this being run from MonteCarlo?
-        @return: Nothing
-        """
-        if self.time_series_input is not None:
-            if mc:
-
-                if self.mc_time_series is None:
-                    warn('No monte carlo inputs in island!!!')
-                else:
-                    self.power_flow_input.Sbus = self.mc_time_series.S[t, :] / self.Sbase
-            else:
-                self.power_flow_input.Sbus = self.time_series_input.S[t, :] / self.Sbase
-        else:
-            warn('No time series values')
-
-    def sample_monte_carlo_batch(self, batch_size, use_latin_hypercube=False):
-        """
-        Samples a monte carlo batch as a time series object
-        @param batch_size: size of the batch (integer)
-        @return:
-        """
-        if self.monte_carlo_input is not None:
-            self.mc_time_series = self.monte_carlo_input(batch_size, use_latin_hypercube)
-        else:
-            raise Exception('self.monte_carlo_input is None')
-
-    def sample_at(self, x):
-        """
-        Get samples at x
-        Args:
-            x: values in [0, 1+ to sample the CDF
-
-        Returns:
-
-        """
-        self.mc_time_series = self.monte_carlo_input.get_at(x)
+        self.time_profile = None
 
     def get_loads(self):
+        """
+
+        :return:
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.loads:
@@ -3023,7 +2880,7 @@ class Circuit:
         @return:
         """
 
-        cpy = Circuit()
+        cpy = MultiCircuit()
 
         cpy.name = self.name
 
@@ -3047,52 +2904,6 @@ class Circuit:
         cpy.power_flow_input = self.power_flow_input.copy()
 
         return cpy
-
-    def __str__(self):
-        return self.name
-
-
-class MultiCircuit(Circuit):
-
-    def __init__(self):
-        """
-        Multi Circuit Constructor
-        """
-        Circuit.__init__(self)
-
-        self.name = 'Grid'
-
-        self.comments = ''
-
-        # List of circuits contained within this circuit
-        self.circuits = list()
-
-        # self.power_flow_results = PowerFlowResults()
-
-        self.bus_dictionary = dict()
-
-        self.branch_dictionary = dict()
-
-        self.has_time_series = False
-
-        self.bus_names = None
-
-        self.branch_names = None
-
-        self.objects_with_profiles = [Load(), StaticGenerator(), ControlledGenerator(), Battery(), Shunt()]
-
-        self.time_profile = None
-
-        self.profile_magnitudes = dict()
-
-        '''
-        self.type_name = 'Shunt'
-
-        self.properties_with_profile = ['Y']
-        '''
-        for dev in self.objects_with_profiles:
-            if dev.properties_with_profile is not None:
-                self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
 
     def get_catalogue_dict(self, branches_only=False):
         """
@@ -3960,170 +3771,136 @@ class MultiCircuit(Circuit):
         @return:
         """
 
-        logger = list()
-
         n = len(self.buses)
         m = len(self.branches)
-        self.power_flow_input = PowerFlowInput(n, m)
+        if self.time_profile is not None:
+            n_time = len(self.time_profile)
+        else:
+            n_time = 0
 
-        self.time_series_input = TimeSeriesInput()
+        self.bus_dictionary = dict()
 
-        self.graph = nx.Graph()
+        # Element count
+        n_ld = 0
+        n_ctrl_gen = 0
+        n_sta_gen = 0
+        n_batt = 0
+        n_sh = 0
+        for bus in self.buses:
+            n_ld += len(bus.loads)
+            n_ctrl_gen += len(bus.controlled_generators)
+            n_sta_gen += len(bus.static_generators)
+            n_batt += len(bus.batteries)
+            n_sh += len(bus.shunts)
 
-        self.circuits = list()
+        # declare the numerical circuit
+        circuit = NumericalCircuit(n_bus=n, n_br=m, n_ld=n_ld, n_ctrl_gen=n_ctrl_gen,
+                                   n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
+                                   n_time=n_time,Sbase=self.Sbase)
 
-        self.has_time_series = True
+        # compile the buses and the shunt devices
+        i_ld = 0
+        i_ctrl_gen = 0
+        i_sta_gen = 0
+        i_batt = 0
+        i_sh = 0
+        for i, bus in enumerate(self.buses):
 
-        self.bus_names = zeros(n, dtype=object)
-        self.branch_names = zeros(m, dtype=object)
+            # bus parameters
+            circuit.bus_names[i] = bus.name
+            circuit.bus_vnom[i] = bus.Vnom  # kV
+            circuit.bus_types[i] = bus.determine_bus_type().value[0]
 
-        # create bus dictionary
-        for i in range(n):
-            self.bus_dictionary[self.buses[i]] = i
-            self.bus_names[i] = self.buses[i].name
+            # Add buses dictionary entry
+            self.bus_dictionary[bus] = i
+
+            for elm in bus.loads:
+                circuit.load_names[i_ld] = elm.name
+                circuit.load_power[i_ld] = elm.S
+                circuit.load_current[i_ld] = elm.I
+                circuit.load_admittance[i_ld] = elm.Y
+
+                if n_time > 0:
+                    circuit.load_power_profile[:, i_ld] = elm.Sprof.values[:, 0]
+                    circuit.load_current_profile[:, i_ld] = elm.Iprof.values[:, 0]
+                    circuit.load_admittance_profile[:, i_ld] = np.nan_to_num(1 / elm.Zprof.values[:, 0])
+
+                circuit.C_load_bus[i_ld, i] = 1
+                i_ld += 1
+
+            for elm in bus.static_generators:
+                circuit.static_gen_names[i_sta_gen] = elm.name
+                circuit.static_gen_power[i_sta_gen] = elm.S
+
+                if n_time > 0:
+                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.Sprof.values[:, 0]
+
+                circuit.C_sta_gen_bus[i_sta_gen, i] = 1
+                i_sta_gen += 1
+
+            for elm in bus.controlled_generators:
+                circuit.controlled_gen_names[i_ctrl_gen] = elm.name
+                circuit.controlled_gen_power[i_ctrl_gen] = elm.P
+                circuit.controlled_gen_voltage[i_ctrl_gen] = elm.Vset
+                circuit.controlled_gen_qmin[i_ctrl_gen] = elm.Qmin
+                circuit.controlled_gen_qmax[i_ctrl_gen] = elm.Qmax
+
+                if n_time > 0:
+                    circuit.controlled_gen_power_profile[:, i_ctrl_gen] = elm.Pprof.values[:, 0]
+                    circuit.controlled_gen_voltage_profile[:, i_ctrl_gen] = elm.Vsetprof.values[:, 0]
+
+                circuit.C_ctrl_gen_bus[i_ctrl_gen, i] = 1
+                circuit.V0[i] *= elm.Vset
+                i_ctrl_gen += 1
+
+            for elm in bus.batteries:
+                circuit.battery_names[i_batt] = elm.name
+                circuit.battery_power[i_batt] = elm.P
+                circuit.battery_voltage[i_batt] = elm.Vset
+                circuit.battery_qmin[i_batt] = elm.Qmin
+                circuit.battery_qmax[i_batt] = elm.Qmax
+
+                if n_time > 0:
+                    circuit.battery_power_profile[:, i_batt] = elm.Pprof.values[:, 0]
+                    circuit.battery_voltage_profile[:, i_batt] = elm.Vsetprof.values[:, 0]
+
+                circuit.C_batt_bus[i_batt, i] = 1
+                circuit.V0[i] *= elm.Vset
+                i_batt += 1
+
+            for elm in bus.shunts:
+                circuit.shunt_names[i_sh] = elm.name
+                circuit.shunt_admittance[i_sh] = elm.Y
+
+                if n_time > 0:
+                    circuit.shunt_admittance_profile[:, i_sh] = elm.Yprof.values[:, 0]
+
+                circuit.C_shunt_bus[i_sh, i] = 1
+                i_sh += 1
 
         # Compile the branches
-        for i in range(m):
-            self.branch_names[i] = self.branches[i].name
-            if self.branches[i].active:
-                if self.branches[i].bus_from.active and self.branches[i].bus_to.active:
-                    f = self.bus_dictionary[self.branches[i].bus_from]
-                    t = self.bus_dictionary[self.branches[i].bus_to]
-                    # Add graph edge (automatically adds the vertices)
-                    self.graph.add_edge(f, t, length=self.branches[i].R)
-                    self.branch_dictionary[self.branches[i]] = i
+        for i, branch in enumerate(self.branches):
+            f = self.bus_dictionary[branch.bus_from]
+            t = self.bus_dictionary[branch.bus_to]
 
-        # Split the graph into islands
-        islands = [list(isl) for isl in connected_components(self.graph)]
+            circuit.branch_names[i] = branch.name
+            circuit.branch_states[i] = branch.active
 
-        isl_idx = 0
-        for island in islands:
+            circuit.R[i] = branch.R
+            circuit.X[i] = branch.X
+            circuit.G[i] = branch.G
+            circuit.B[i] = branch.B
+            circuit.br_rates[i] = branch.rate
+            circuit.tap_mod[i] = branch.tap_module
+            circuit.tap_ang[i] = branch.angle
 
-            # Convert island to dictionary
-            isl_dict = dict()
-            for idx in range(len(island)):
-                isl_dict[island[idx]] = idx
+            circuit.C_branch_bus_f[i, f] = 1
+            circuit.C_branch_bus_t[i, t] = 1
 
-            # create circuit of the island
-            circuit = Circuit(name='Island ' + str(isl_idx))
+            if branch.branch_type == BranchType.Switch:
+                circuit.switch_indices.append(i)
 
-            # Set buses of the island
-            circuit.buses = [self.buses[b] for b in island]
-            circuit.bus_original_idx = island
-
-            # set branches of the island
-            for i in range(m):
-                f = self.bus_dictionary[self.branches[i].bus_from]
-                t = self.bus_dictionary[self.branches[i].bus_to]
-                if f in island and t in island:
-                    # Copy the branch into a new
-                    branch = self.branches[i].copy()
-                    # Add the branch to the circuit
-                    circuit.branches.append(branch)
-                    circuit.branch_original_idx.append(i)
-
-            circuit.compile(self.time_profile, use_opf_vals=use_opf_vals, dispatch_storage=dispatch_storage, logger=logger)
-
-            # initialize the multi circuit power flow inputs (for later use in displays and such)
-            self.power_flow_input.set_from(circuit.power_flow_input,
-                                           circuit.bus_original_idx,
-                                           circuit.branch_original_idx)
-
-            # initialize the multi circuit time series inputs (for later use in displays and such)
-            self.time_series_input.apply_from_island(circuit.time_series_input,
-                                                     circuit.bus_original_idx,
-                                                     circuit.branch_original_idx,
-                                                     n, m)
-
-            self.circuits.append(circuit)
-
-            self.has_time_series = self.has_time_series and circuit.time_series_input.valid
-
-            isl_idx += 1
-
-        return logger
-
-    def reduce(self, rx_criteria=True, rx_threshold=1e-5, type_criteria=True, selected_type=BranchType.Branch):
-        """
-        Perform a grid reduction
-        :param rx_criteria: shall the branches be selected by r+x criteria? (lower than the rx threshold are removed)
-        :param rx_threshold: rx threshold value in p.u.
-        :param type_criteria: shell the branches be selected by the branch type criteria?
-        :param selected_type: branch type to choose
-        :return:
-        """
-        # form C
-        threshold = 1e-5
-        m = len(self.branches)
-        n = len(self.buses)
-        C = lil_matrix((m, n), dtype=int)
-        buses_dict = {bus: i for i, bus in enumerate(self.buses)}
-        branches_to_keep_idx = list()
-        branches_to_remove_idx = list()
-
-        for i in range(len(self.branches)):
-            # get the from and to bus indices
-            f = buses_dict[self.branches[i].bus_from]
-            t = buses_dict[self.branches[i].bus_to]
-            C[i, f] = 1
-            C[i, t] = -1
-
-            # check if to select the branch for removal
-            chosen_to_be_removed = False
-
-            if rx_criteria:
-                rx = self.branches[i].R + self.branches[i].X
-                if rx < threshold:
-                    branches_to_remove_idx.append(i)
-                    chosen_to_be_removed = True
-
-            if type_criteria and not chosen_to_be_removed:
-                if self.branches[i].branch_type == selected_type:
-                    branches_to_remove_idx.append(i)
-                    chosen_to_be_removed = True
-
-            if not chosen_to_be_removed:
-                branches_to_keep_idx.append(i)
-
-        C = csc_matrix(C)
-
-        # reduction
-        C1 = C[branches_to_keep_idx, :]  # branch_cn of the real branches (after applying the branch states)
-        C2 = C[branches_to_remove_idx, :]  # branch_cn of the switches (after applying the branch states)
-        B = C1 * C2.T * C2  # this is the reduced branch-bus matrix (the buses are not reduced yet...)
-
-        df_B = pd.DataFrame(B.todense(),
-                            columns=self.circuits[0].power_flow_input.bus_names,
-                            index=self.circuits[0].power_flow_input.branch_names[branches_to_keep_idx])
-
-        print(df_B)
-
-        '''
-        Now, we need to determine which buses to keep...
-        '''
-
-        # B is a CSC matrix
-        buses_to_keep = list()
-        for j in range(B.shape[1]):  # column index
-
-            bus_occurrences = 0  # counter
-
-            for k in range(B.indptr[j], B.indptr[j + 1]):
-                # i = B.indices[k]  # row index
-                # val = B.data[k]  # value
-                bus_occurrences += 1
-
-            # if the bus appeared more than one time in the column of B, then we propose to keep it
-            if bus_occurrences > 1:
-                buses_to_keep.append(j)
-
-        B2 = B[:, buses_to_keep]  # this is the reduced branch-bus matrix
-
-        df_B2 = pd.DataFrame(B2.todense(),
-                             columns=self.circuits[0].power_flow_input.bus_names[buses_to_keep],
-                             index=self.circuits[0].power_flow_input.branch_names[branches_to_keep_idx])
-
-        print(df_B2)
+        return circuit
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """

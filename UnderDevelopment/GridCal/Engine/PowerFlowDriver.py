@@ -17,11 +17,12 @@ from enum import Enum
 from warnings import warn
 from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array
 from pySOT import *
-
+from timeit import default_timer as timer
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.IoStructures import PowerFlowResults
-from GridCal.Engine.CalculationEngine import Circuit, MultiCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit
+from GridCal.Engine.NewEngine import CalculationInputs, CalculationResults
 from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
 from GridCal.Engine.Numerical.HELM import helm
@@ -160,7 +161,7 @@ class PowerFlowMP:
 
         return ref, pq, pv, pqpv
 
-    def single_power_flow(self, circuit: Circuit, solver_type: SolverType, voltage_solution, Sbus, Ibus):
+    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
         """
         Run a power flow simulation for a single circuit
         @param circuit:
@@ -169,7 +170,7 @@ class PowerFlowMP:
         @return:
         """
 
-        original_types = circuit.power_flow_input.types.copy()
+        original_types = circuit.types.copy()
         ref, pq, pv, pqpv = self.compile_types(Sbus, original_types)
 
         any_control_issue = True  # guilty assumption...
@@ -187,7 +188,7 @@ class PowerFlowMP:
 
         while any_control_issue and outer_it < control_max_iter:
 
-            if len(circuit.power_flow_input.ref) == 0:
+            if len(circuit.ref) == 0:
                 voltage_solution = zeros(len(Sbus), dtype=complex)
                 normF = 0
                 Scalc = Sbus.copy()
@@ -201,7 +202,7 @@ class PowerFlowMP:
                     methods.append(SolverType.HELM)
                     voltage_solution, converged, normF, Scalc, it, el = helm(Vbus=voltage_solution,
                                                                              Sbus=Sbus,
-                                                                             Ybus=circuit.power_flow_input.Ybus,
+                                                                             Ybus=circuit.Ybus,
                                                                              pq=pq,
                                                                              pv=pv,
                                                                              ref=ref,
@@ -212,7 +213,7 @@ class PowerFlowMP:
                 # type DC
                 elif solver_type == SolverType.DC:
                     methods.append(SolverType.DC)
-                    voltage_solution, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.power_flow_input.Ybus,
+                    voltage_solution, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.Ybus,
                                                                              Sbus=Sbus,
                                                                              Ibus=Ibus,
                                                                              V0=voltage_solution,
@@ -225,8 +226,8 @@ class PowerFlowMP:
                 elif solver_type == SolverType.LACPF:
                     methods.append(SolverType.LACPF)
 
-                    voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.power_flow_input.Ybus,
-                                                                              Ys=circuit.power_flow_input.Yseries,
+                    voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.Ybus,
+                                                                              Ys=circuit.Yseries,
                                                                               S=Sbus,
                                                                               I=Ibus,
                                                                               Vset=voltage_solution,
@@ -237,7 +238,7 @@ class PowerFlowMP:
                 elif solver_type == SolverType.LM:
                     methods.append(SolverType.LM)
                     voltage_solution, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
-                        Ybus=circuit.power_flow_input.Ybus,
+                        Ybus=circuit.Ybus,
                         Sbus=Sbus,
                         V0=voltage_solution,
                         Ibus=Ibus,
@@ -252,9 +253,9 @@ class PowerFlowMP:
                     voltage_solution, converged, normF, Scalc, it, el = FDPF(Vbus=voltage_solution,
                                                                              Sbus=Sbus,
                                                                              Ibus=Ibus,
-                                                                             Ybus=circuit.power_flow_input.Ybus,
-                                                                             B1=circuit.power_flow_input.B1,
-                                                                             B2=circuit.power_flow_input.B2,
+                                                                             Ybus=circuit.Ybus,
+                                                                             B1=circuit.B1,
+                                                                             B2=circuit.B2,
                                                                              pq=pq,
                                                                              pv=pv,
                                                                              pqpv=pqpv,
@@ -266,7 +267,7 @@ class PowerFlowMP:
                     methods.append(SolverType.NR)
 
                     # Solve NR with the linear AC solution
-                    voltage_solution, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.power_flow_input.Ybus,
+                    voltage_solution, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.Ybus,
                                                                               Sbus=Sbus,
                                                                               V0=voltage_solution,
                                                                               Ibus=Ibus,
@@ -278,7 +279,7 @@ class PowerFlowMP:
                 # Newton-Raphson-Iwamoto
                 elif solver_type == SolverType.IWAMOTO:
                     methods.append(SolverType.IWAMOTO)
-                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.power_flow_input.Ybus,
+                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.Ybus,
                                                                                   Sbus=Sbus,
                                                                                   V0=voltage_solution,
                                                                                   Ibus=Ibus,
@@ -292,7 +293,7 @@ class PowerFlowMP:
                 elif solver_type == SolverType.NRI:
                     methods.append(SolverType.NRI)
                     # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
-                    voltage_solution, converged, normF, Scalc, it, el = NR_I_LS(Ybus=circuit.power_flow_input.Ybus,
+                    voltage_solution, converged, normF, Scalc, it, el = NR_I_LS(Ybus=circuit.Ybus,
                                                                                 Sbus_sp=Sbus,
                                                                                 V0=voltage_solution,
                                                                                 Ibus_sp=Ibus,
@@ -305,7 +306,7 @@ class PowerFlowMP:
                 else:
                     methods.append(SolverType.LM)
                     voltage_solution, converged, \
-                    normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.power_flow_input.Ybus,
+                    normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.Ybus,
                                                                 Sbus=Sbus,
                                                                 V0=voltage_solution,
                                                                 Ibus=Ibus,
@@ -323,9 +324,9 @@ class PowerFlowMP:
                         any_control_issue = self.switch_logic(V=voltage_solution,
                                                               Vset=abs(voltage_solution),
                                                               Q=Scalc.imag,
-                                                              Qmax=circuit.power_flow_input.Qmax,
-                                                              Qmin=circuit.power_flow_input.Qmin,
-                                                              types=circuit.power_flow_input.types,
+                                                              Qmax=circuit.Qmax,
+                                                              Qmin=circuit.Qmin,
+                                                              types=circuit.types,
                                                               original_types=original_types,
                                                               verbose=self.options.verbose)
                         if any_control_issue:
@@ -381,7 +382,7 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def power_flow_post_process(circuit: Circuit, V, only_power=False):
+    def power_flow_post_process(circuit: CalculationInputs, V, only_power=False):
         """
         Compute the power flows trough the branches
         @param circuit: instance of Circuit
@@ -390,25 +391,25 @@ class PowerFlowMP:
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
-        Sbus = circuit.power_flow_input.Sbus
+        Sbus = circuit.Sbus
 
-        vd = circuit.power_flow_input.ref
-        pv = circuit.power_flow_input.pv
+        vd = circuit.ref
+        pv = circuit.pv
 
         # power at the slack nodes
-        Sbus[vd] = V[vd] * conj(circuit.power_flow_input.Ybus[vd, :][:, :].dot(V))
+        Sbus[vd] = V[vd] * conj(circuit.Ybus[vd, :][:, :].dot(V))
 
         # Reactive power at the pv nodes
         P = Sbus[pv].real
-        Q = (V[pv] * conj(circuit.power_flow_input.Ybus[pv, :][:, :].dot(V))).imag
+        Q = (V[pv] * conj(circuit.Ybus[pv, :][:, :].dot(V))).imag
         Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
         if not only_power:
             # Branches current, loading, etc
-            If = circuit.power_flow_input.Yf * V
-            It = circuit.power_flow_input.Yt * V
-            Sf = V[circuit.power_flow_input.F] * conj(If)
-            St = V[circuit.power_flow_input.T] * conj(It)
+            If = circuit.Yf * V
+            It = circuit.Yt * V
+            Sf = (circuit.C_branch_bus_f * V) * conj(If)
+            St = (circuit.C_branch_bus_t * V) * conj(It)
 
             # Branch losses in MVA
             losses = (Sf + St) * circuit.Sbase
@@ -420,12 +421,13 @@ class PowerFlowMP:
             Sbranch = maximum(Sf, St) * circuit.Sbase
 
             # Branch loading in p.u.
-            loading = Sbranch / (circuit.power_flow_input.branch_rates + 1e-9)
+            loading = Sbranch / (circuit.branch_rates + 1e-9)
 
             return Sbranch, Ibranch, loading, losses, Sbus
 
         else:
-            no_val = zeros(len(circuit.branches), dtype=complex)
+            nbr = len(circuit.Vbus)
+            no_val = zeros(nbr, dtype=complex)
             return no_val, no_val, no_val, no_val, Sbus
 
     @staticmethod
@@ -570,20 +572,36 @@ class PowerFlowMP:
         # self.progress_signal.emit(0.0)
         Sbase = self.grid.Sbase
 
-        for circuit in self.grid.circuits:
-            Vbus = circuit.power_flow_input.Vbus
-            Sbus = circuit.power_flow_input.Sbus
-            Ibus = circuit.power_flow_input.Ibus
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
+
+        if len(numerical_circuit.islands) > 1:
+
+            # simulate each island and merge the results
+            for i, calculation_input in enumerate(calculation_inputs):
+                Vbus = calculation_input.Vbus
+                Sbus = calculation_input.Sbus
+                Ibus = calculation_input.Ibus
+
+                # run circuit power flow
+                res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
+
+                bus_original_idx = numerical_circuit.islands[i]
+                branch_original_idx = numerical_circuit.island_branches[i]
+
+                # merge the results from this island
+                results.apply_from_island(res, bus_original_idx, branch_original_idx)
+        else:
+            # only one island
+            Vbus = calculation_inputs[0].Vbus
+            Sbus = calculation_inputs[0].Sbus
+            Ibus = calculation_inputs[0].Ibus
 
             # run circuit power flow
-            res = self.run_pf(circuit, Vbus, Sbus, Ibus)
-
-            circuit.power_flow_results = res
-
-            # merge the results from this island
-            results.apply_from_island(res,
-                                      circuit.bus_original_idx,
-                                      circuit.branch_original_idx)
+            results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
 
         self.last_V = results.voltage  # done inside single_power_flow
 
@@ -594,7 +612,7 @@ class PowerFlowMP:
 
         return results
 
-    def run_pf(self, circuit: Circuit, Vbus, Sbus, Ibus):
+    def run_pf(self, calculation_inputs: CalculationInputs, Vbus, Sbus, Ibus):
         """
         Run a power flow for a circuit
         @return:
@@ -622,8 +640,6 @@ class PowerFlowMP:
         # set worked to false to enter in the loop
         worked = False
 
-
-
         if not worked:
 
             k = 0
@@ -644,7 +660,7 @@ class PowerFlowMP:
                 V0 = Vbus.copy()
 
                 # run power flow
-                results = self.single_power_flow(circuit=circuit,
+                results = self.single_power_flow(circuit=calculation_inputs,
                                                  solver_type=solver,
                                                  voltage_solution=V0,
                                                  Sbus=Sbus,
@@ -677,8 +693,8 @@ class PowerFlowMP:
         results.error = errors
         results.converged = converged_lst
 
-            # check the power flow limits
-        results.check_limits(circuit.power_flow_input)
+        # check the power flow limits
+        # results.check_limits(calculation_inputs)
 
         return results
 
@@ -686,7 +702,7 @@ class PowerFlowMP:
         self.__cancel__ = True
 
 
-def power_flow_worker(t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict):
+def power_flow_worker(t, options: PowerFlowOptions, circuit: CalculationInputs, Vbus, Sbus, Ibus, return_dict):
     """
     Power flow worker to schedule parallel power flows
     :param t: execution index
@@ -758,7 +774,7 @@ class PowerFlow(QRunnable):
         self.results = results
         self.grid.power_flow_results = results
 
-    def run_pf(self, circuit: Circuit, Vbus, Sbus, Ibus):
+    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
         """
         Run a power flow for every circuit
         @return:
