@@ -17,7 +17,7 @@
 import pandas as pd
 from numpy import complex, zeros, ones, array
 import multiprocessing
-
+from timeit import default_timer as timer
 from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
@@ -396,33 +396,45 @@ class TimeSeries(QThread):
         if self.end_ is None:
             self.end_ = nt
 
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
+
         # For every circuit, run the time series
-        for nc, circuit in enumerate(self.grid.circuits):
+        for nc, calculation_input in enumerate(calculation_inputs):
 
             # make a copy of the circuit to allow controls in place
             # circuit = circuit_orig.copy()
 
             # are we dispatching storage? if so, generate a dictionary of battery -> bus index
             # to be able to set the batteries values into the vector S
-            if self.options.dispatch_storage:
-                batteries = list()
-                batteries_bus_idx = list()
-                for k, bus in enumerate(circuit.buses):
-                    for batt in bus.batteries:
-                        batt.reset()  # reset the calculation values
-                        batteries.append(batt)
-                        batteries_bus_idx.append(k)
+
+            # TODO: think how to implement this with the new engine
+            # if self.options.dispatch_storage:
+            #     batteries = list()
+            #     batteries_bus_idx = list()
+            #     for k, bus in enumerate(calculation_input.buses):
+            #         for batt in bus.batteries:
+            #             batt.reset()  # reset the calculation values
+            #             batteries.append(batt)
+            #             batteries_bus_idx.append(k)
 
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
-            # if there are valid profiles...
-            if circuit.time_series_input.valid:
+            # find the original indices
+            bus_original_idx = numerical_circuit.islands[nc]
+            branch_original_idx = numerical_circuit.island_branches[nc]
 
-                nt = len(circuit.time_series_input.time_array)
-                n = len(circuit.buses)
-                m = len(circuit.branches)
+            # if there are valid profiles...
+            if calculation_input.time_array is not None:
+
+                nt = calculation_input.ntime
+                n = calculation_input.nbus
+                m = calculation_input.nbr
                 results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
-                Vlast = circuit.power_flow_input.Vbus
+                Vlast = calculation_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
@@ -434,26 +446,29 @@ class TimeSeries(QThread):
                     # set the power values
                     # if the storage dispatch option is active, the batteries power was not included
                     # it shall be included now, after processing
-                    Y, I, S = circuit.time_series_input.get_at(t)
+                    Y = calculation_input.Ysh_prof[:, t]
+                    I = calculation_input.Ibus_prof[:, t]
+                    S = calculation_input.Sbus_prof[:, t]
 
                     # add the controlled storage power if controlling storage
-                    if self.options.dispatch_storage:
-
-                        if t < self.end_-1:
-                            # compute the time delta: the time values come in nanoseconds
-                            dt = int(circuit.time_series_input.time_array[t+1]
-                                     - circuit.time_series_input.time_array[t]) * 1e-9 / 3600
-
-                        for k, batt in enumerate(batteries):
-
-                            P = batt.get_processed_at(t, dt=dt, store_values=True)
-                            bus_idx = batteries_bus_idx[k]
-                            S[bus_idx] += (P / circuit.Sbase)
-                        else:
-                            pass
+                    # TODO: think how to implement this with the new engine
+                    # if self.options.dispatch_storage:
+                    #
+                    #     if t < self.end_-1:
+                    #         # compute the time delta: the time values come in nanoseconds
+                    #         dt = int(calculation_input.time_series_input.time_array[t+1]
+                    #                  - calculation_input.time_series_input.time_array[t]) * 1e-9 / 3600
+                    #
+                    #     for k, batt in enumerate(batteries):
+                    #
+                    #         P = batt.get_processed_at(t, dt=dt, store_values=True)
+                    #         bus_idx = batteries_bus_idx[k]
+                    #         S[bus_idx] += (P / calculation_input.Sbase)
+                    #     else:
+                    #         pass
 
                     # run power flow at the circuit
-                    res = powerflow.run_pf(calculation_inputs=circuit, Vbus=Vlast, Sbus=S, Ibus=I)
+                    res = powerflow.run_pf(calculation_inputs=calculation_input, Vbus=Vlast, Sbus=S, Ibus=I)
 
                     # Recycle voltage solution
                     Vlast = res.voltage
@@ -463,19 +478,15 @@ class TimeSeries(QThread):
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
-                    self.progress_text.emit('Simulating ' + circuit.name + ' at '
-                                            + str(circuit.time_series_input.time_array[t]))
+                    self.progress_text.emit('Simulating at ' + str(calculation_input.time_array[t]))
                     t += 1
-
-                # store at circuit level
-                circuit.time_series_results = results
 
                 # merge  the circuit's results
                 self.grid.time_series_results.apply_from_island(results,
-                                                                circuit.bus_original_idx,
-                                                                circuit.branch_original_idx,
-                                                                circuit.time_series_input.time_array,
-                                                                circuit.name)
+                                                                bus_original_idx,
+                                                                branch_original_idx,
+                                                                calculation_input.time_array,
+                                                                'TS')
             else:
                 print('There are no profiles')
                 self.progress_text.emit('There are no profiles')

@@ -3796,7 +3796,11 @@ class MultiCircuit:
         # declare the numerical circuit
         circuit = NumericalCircuit(n_bus=n, n_br=m, n_ld=n_ld, n_ctrl_gen=n_ctrl_gen,
                                    n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
-                                   n_time=n_time,Sbase=self.Sbase)
+                                   n_time=n_time, Sbase=self.Sbase)
+
+        # set hte time array profile
+        if n_time > 0:
+            circuit.time_array = self.time_profile
 
         # compile the buses and the shunt devices
         i_ld = 0
@@ -3804,9 +3808,11 @@ class MultiCircuit:
         i_sta_gen = 0
         i_batt = 0
         i_sh = 0
+        self.bus_names = np.zeros(n, dtype=object)
         for i, bus in enumerate(self.buses):
 
             # bus parameters
+            self.bus_names[i] = bus.name
             circuit.bus_names[i] = bus.name
             circuit.bus_vnom[i] = bus.Vnom  # kV
             circuit.bus_types[i] = bus.determine_bus_type().value[0]

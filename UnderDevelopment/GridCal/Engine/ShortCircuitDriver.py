@@ -19,11 +19,12 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
 from scipy.sparse.linalg import inv
 from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from timeit import default_timer as timer
 
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.CalculationEngine import LINEWIDTH, MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults
-from GridCal.Engine.NewEngine import NumericalCircuit
+from GridCal.Engine.NewEngine import NumericalCircuit, CalculationInputs
 
 
 ########################################################################################################################
@@ -249,29 +250,28 @@ class ShortCircuit(QRunnable):
 
         self.__cancel__ = False
 
-    def single_short_circuit(self, circuit: NumericalCircuit, Vpf):
+    def single_short_circuit(self, calculation_inputs: CalculationInputs, Vpf):
         """
         Run a power flow simulation for a single circuit
-        @param circuit:
+        @param calculation_inputs:
         @param Vpf: Power flow voltage
         @return: short circuit results
         """
-        # compute Zbus if needed
-        if circuit.power_flow_input.Zbus is None:
-            # is dense, so no need to store it as sparse
-            circuit.power_flow_input.Zbus = inv(circuit.power_flow_input.Ybus).toarray()
+        # compute Zbus
+        # is dense, so no need to store it as sparse
+        Zbus = inv(calculation_inputs.Ybus).toarray()
 
         # Compute the short circuit
         V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
-                                      Zbus=circuit.power_flow_input.Zbus,
+                                      Zbus=Zbus,
                                       Vbus=Vpf,
-                                      Zf=self.Zf, baseMVA=circuit.Sbase)
+                                      Zf=self.Zf, baseMVA=calculation_inputs.Sbase)
 
         # Compute the branches power
-        Sbranch, Ibranch, loading, losses = self.compute_branch_results(circuit=circuit, V=V)
+        Sbranch, Ibranch, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
-        results = ShortCircuitResults(Sbus=circuit.power_flow_input.Sbus,
+        results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
                                       voltage=V,
                                       Sbranch=Sbranch,
                                       Ibranch=Ibranch,
@@ -285,21 +285,21 @@ class ShortCircuit(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(circuit: NumericalCircuit, V):
+    def compute_branch_results(calculation_inputs: CalculationInputs, V):
         """
         Compute the power flows trough the branches
-        @param circuit: instance of Circuit
+        @param calculation_inputs: instance of Circuit
         @param V: Voltage solution array for the circuit buses
         @return: Sbranch, Ibranch, loading, losses
         """
-        If = circuit.power_flow_input.Yf * V
-        It = circuit.power_flow_input.Yt * V
-        Sf = V[circuit.power_flow_input.F] * conj(If)
-        St = V[circuit.power_flow_input.T] * conj(It)
+        If = calculation_inputs.Yf * V
+        It = calculation_inputs.Yt * V
+        Sf = (calculation_inputs.C_branch_bus_f * V) * conj(If)
+        St = (calculation_inputs.C_branch_bus_t * V) * conj(It)
         losses = Sf - St
         Ibranch = maximum(If, It)
         Sbranch = maximum(Sf, St)
-        loading = Sbranch * circuit.Sbase / circuit.power_flow_input.branch_rates
+        loading = Sbranch * calculation_inputs.Sbase / calculation_inputs.branch_rates
 
         # idx = where(abs(loading) == inf)[0]
         # loading[idx] = 9999
@@ -319,18 +319,28 @@ class ShortCircuit(QRunnable):
         results = ShortCircuitResults()  # yes, reuse this class
         results.initialize(n, m)
         k = 0
-        for circuit in self.grid.circuits:
-            if self.options.verbose:
-                print('Solving ' + circuit.name)
 
-            circuit.short_circuit_results = self.single_short_circuit(circuit=circuit,
-                                                                      Vpf=self.pf_results.voltage[circuit.bus_original_idx])
-            results.apply_from_island(circuit.short_circuit_results,
-                                      circuit.bus_original_idx,
-                                      circuit.branch_original_idx)
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
 
-            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
-            k += 1
+        if len(calculation_inputs) > 1:
+
+            for i, calculation_input in enumerate(calculation_inputs):
+
+                bus_original_idx = numerical_circuit.islands[i]
+                branch_original_idx = numerical_circuit.island_branches[i]
+
+                res = self.single_short_circuit(calculation_inputs=calculation_input,
+                                                Vpf=self.pf_results.voltage[bus_original_idx])
+
+                # merge results
+                results.apply_from_island(res, bus_original_idx, branch_original_idx)
+        else:
+            results = self.single_short_circuit(calculation_inputs=calculation_inputs[0],
+                                                Vpf=self.pf_results.voltage)
 
         self.results = results
         self.grid.short_circuit_results = results
