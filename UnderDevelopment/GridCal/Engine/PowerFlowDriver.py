@@ -20,9 +20,8 @@ from pySOT import *
 from timeit import default_timer as timer
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from GridCal.Engine.IoStructures import PowerFlowResults
+from GridCal.Engine.IoStructures import PowerFlowResults, CalculationInputs
 from GridCal.Engine.CalculationEngine import MultiCircuit
-from GridCal.Engine.NewEngine import CalculationInputs, CalculationResults
 from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
 from GridCal.Engine.Numerical.HELM import helm
@@ -606,7 +605,9 @@ class PowerFlowMP:
         self.last_V = results.voltage  # done inside single_power_flow
 
         # check the limits
-        sum_dev = results.check_limits(numerical_circuit)
+        sum_dev = results.check_limits(F=numerical_circuit.F, T=numerical_circuit.T,
+                                       Vmax=numerical_circuit.Vmax, Vmin=numerical_circuit.Vmin,
+                                       wo=1, wv1=1, wv2=1)
 
         self.results = results
 
@@ -694,7 +695,9 @@ class PowerFlowMP:
         results.converged = converged_lst
 
         # check the power flow limits
-        results.check_limits(calculation_inputs)
+        results.check_limits(F=calculation_inputs.F, T=calculation_inputs.T,
+                             Vmax=calculation_inputs.Vmax, Vmin=calculation_inputs.Vmin,
+                             wo=1, wv1=1, wv2=1)
 
         return results
 
@@ -772,7 +775,6 @@ class PowerFlow(QRunnable):
 
         results = self.pf.run(store_in_island=True)
         self.results = results
-        self.grid.power_flow_results = results
 
     def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
         """

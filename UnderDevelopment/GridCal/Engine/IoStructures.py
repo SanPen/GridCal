@@ -25,7 +25,7 @@ from scipy.sparse import csc_matrix, lil_matrix
 from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 
-from GridCal.Engine.NewEngine import CalculationInputs, NumericalCircuit
+# from GridCal.Engine.NewEngine import NumericalCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.BasicStructures import CDF
 from GridCal.Engine.Numerical.JacobianBased import Jacobian
@@ -405,6 +405,270 @@ from GridCal.Engine.BasicStructures import BusMode
 #         return cpy
 #
 
+class CalculationInputs:
+
+    def __init__(self, nbus, nbr, ntime):
+        """
+        Constructor
+        :param nbus: number of buses
+        :param nbr: number of branches
+        :param ntime: number of time steps
+        """
+        self.nbus = nbus
+        self.nbr = nbr
+        self.ntime = ntime
+
+        self.Sbase = 100.0
+
+        self.time_array = None
+
+        self.original_bus_idx = list()
+        self.original_branch_idx = list()
+
+        # resulting matrices (calculation)
+        self.Yf = csc_matrix((nbr, nbus), dtype=complex)
+        self.Yt = csc_matrix((nbr, nbus), dtype=complex)
+        self.Ybus = csc_matrix((nbus, nbus), dtype=complex)
+        self.Yseries = csc_matrix((nbus, nbus), dtype=complex)
+        self.B1 = csc_matrix((nbus, nbus), dtype=float)
+        self.B2 = csc_matrix((nbus, nbus), dtype=float)
+
+        self.Ysh = np.zeros(nbus, dtype=complex)
+        self.Sbus = np.zeros(nbus, dtype=complex)
+        self.Ibus = np.zeros(nbus, dtype=complex)
+
+        self.Ysh_prof = np.zeros((ntime, nbus), dtype=complex)
+        self.Sbus_prof = np.zeros((ntime, nbus), dtype=complex)
+        self.Ibus_prof = np.zeros((ntime, nbus), dtype=complex)
+
+        self.Vbus = np.ones(nbus, dtype=complex)
+        self.Vmin = np.ones(nbus, dtype=float)
+        self.Vmax = np.ones(nbus, dtype=float)
+        self.types = np.zeros(nbus, dtype=int)
+        self.Qmin = np.zeros(nbus, dtype=float)
+        self.Qmax = np.zeros(nbus, dtype=float)
+
+        self.F = np.zeros(nbr, dtype=int)
+        self.T = np.zeros(nbr, dtype=int)
+
+        self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
+        self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
+
+        self.branch_rates = np.zeros(nbr)
+
+        self.pq = list()
+        self.pv = list()
+        self.ref = list()
+        self.sto = list()
+        self.pqpv = list()
+
+        self.logger =list()
+
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
+
+    def compile_types(self, types_new=None):
+        """
+        Compile the types
+        :param types_new: new array of types to consider
+        :return: Nothing
+        """
+        if types_new is not None:
+            self.types = types_new.copy()
+        self.pq = np.where(self.types == BusMode.PQ.value[0])[0]
+        self.pv = np.where(self.types == BusMode.PV.value[0])[0]
+        self.ref = np.where(self.types == BusMode.REF.value[0])[0]
+        self.sto = np.where(self.types == BusMode.STO_DISPATCH.value)[0]
+
+        if len(self.ref) == 0:  # there is no slack!
+
+            if len(self.pv) == 0:  # there are no pv neither -> blackout grid
+
+                warn('There are no slack nodes selected')
+                self.logger.append('There are no slack nodes selected')
+
+            else:  # select the first PV generator as the slack
+
+                mx = max(self.Sbus[self.pv])
+                if mx > 0:
+                    # find the generator that is injecting the most
+                    i = np.where(self.Sbus == mx)[0][0]
+
+                else:
+                    # all the generators are injecting zero, pick the first pv
+                    i = self.pv[0]
+
+                # delete the selected pv bus from the pv list and put it in the slack list
+                self.pv = np.delete(self.pv, np.where(self.pv == i)[0])
+                self.ref = [i]
+                # print('Setting bus', i, 'as slack')
+
+            self.ref = np.ndarray.flatten(np.array(self.ref))
+            self.types[self.ref] = BusMode.REF.value[0]
+        else:
+            pass  # no problem :)
+
+        self.pqpv = np.r_[self.pq, self.pv]
+        self.pqpv.sort()
+        pass
+
+    def get_island(self, bus_idx, branch_idx):
+        """
+        Get a sub-island
+        :param bus_idx: bus indices of the island
+        :param branch_idx: branch indices of the island
+        :return: CalculationInputs instance
+        """
+        obj = CalculationInputs(len(bus_idx), len(branch_idx))
+
+        obj.Yf = self.Yf[branch_idx, :][:, bus_idx]
+        obj.Yt = self.Yt[branch_idx, :][:, bus_idx]
+        obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx]
+        obj.Yseries = self.Yseries[bus_idx, :][:, bus_idx]
+        obj.B1 = self.B1[bus_idx, :][:, bus_idx]
+        obj.B2 = self.B2[bus_idx, :][:, bus_idx]
+
+        obj.Ysh = self.Ysh[bus_idx]
+        obj.Sbus = self.Sbus[bus_idx]
+        obj.Ibus = self.Ibus[bus_idx]
+        obj.Vbus = self.Vbus[bus_idx]
+        obj.types = self.types[bus_idx]
+        obj.Qmin = self.Qmin[bus_idx]
+        obj.Qmax = self.Qmax[bus_idx]
+        obj.Vmin = self.Vmin[bus_idx]
+        obj.Vmax = self.Vmax[bus_idx]
+
+        obj.F = self.F[branch_idx]
+        obj.T = self.T[branch_idx]
+
+        obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
+        obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
+
+        obj.compile_types()
+
+        return obj
+
+    def compute_branch_results(self, V):
+        """
+        Compute the branch magnitudes from the voltages
+        :param V: Voltage vector solution in p.u.
+        :return: CalculationResults instance with all the grid magnitudes
+        """
+
+        # declare circuit results
+        data = PowerFlowResults(self.nbus, self.nbr)
+
+        # copy the voltage
+        data.V = V
+
+        # power at the slack nodes
+        data.Sbus = self.Sbus.copy()
+        data.Sbus[self.ref] = V[self.ref] * np.conj(self.Ybus[self.ref, :].dot(V))
+
+        # Reactive power at the pv nodes: keep the original P injection and set the calculated reactive power
+        Q = (V[self.pv] * np.conj(self.Ybus[self.pv, :].dot(V))).imag
+
+        data.Sbus[self.pv] = self.Sbus[self.pv].real + 1j * Q
+
+        # Branches current, loading, etc
+        data.If = self.Yf * V
+        data.It = self.Yt * V
+        data.Sf = self.C_branch_bus_f * V * np.conj(data.If)
+        data.St = self.C_branch_bus_t * V * np.conj(data.It)
+
+        # Branch losses in MVA
+        data.losses = (data.Sf + data.St)
+
+        # Branch current in p.u.
+        data.Ibranch = np.maximum(data.If, data.It)
+
+        # Branch power in MVA
+        data.Sbranch = np.maximum(data.Sf, data.St)
+
+        # Branch loading in p.u.
+        data.loading = data.Sbranch / (self.branch_rates + 1e-9)
+
+        return data
+
+    def get_structure(self, structure_type):
+        """
+        Get a DataFrame with the input
+        Args:
+            structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
+
+        Returns: Pandas DataFrame
+        """
+
+        if structure_type == 'Vbus':
+
+            df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Sbus':
+            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ibus':
+            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ybus':
+            df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Yshunt':
+            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Yseries':
+            df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Types':
+            df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
+
+        elif structure_type == 'Jacobian':
+
+            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
+
+            """
+            J11 = dS_dVa[array([pvpq]).T, pvpq].real
+            J12 = dS_dVm[array([pvpq]).T, pq].real
+            J21 = dS_dVa[array([pq]).T, pvpq].imag
+            J22 = dS_dVm[array([pq]).T, pq].imag
+            """
+            npq = len(self.pq)
+            npv = len(self.pv)
+            npqpv = npq + npv
+            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
+            rows = cols
+            df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
+
+        else:
+
+            raise Exception('PF input: structure type not found')
+
+        return df
+
+    def print(self, bus_names):
+        """
+        print in console
+        :return:
+        """
+        # print('\ntypes\n', self.types)
+        # print('\nSbus\n', self.Sbus)
+        # print('\nVbus\n', self.Vbus)
+        # print('\nYsh\n', self.Ysh)
+
+        df_bus = pd.DataFrame(
+            np.c_[self.types, np.abs(self.Vbus), np.angle(self.Vbus), self.Vbus.real, self.Vbus.imag,
+                  self.Sbus.real, self.Sbus.imag, self.Ysh.real, self.Ysh.imag],
+            index=bus_names, columns=['Type', '|V|', 'angle', 're{V}', 'im{V}', 'P', 'Q', 'Gsh', 'Bsh'])
+        # df_bus.sort_index(inplace=True)
+
+        print('\nBus info\n', df_bus)
+
+        if self.nbus < 100:
+            print('\nYbus\n', pd.DataFrame(self.Ybus.todense(), columns=bus_names, index=bus_names))
+
+        print('PQ:', self.pq)
+        print('PV:', self.pv)
+        print('REF:', self.ref)
+
+
 class PowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
@@ -563,7 +827,7 @@ class PowerFlowResults:
         # if results.buses_useful_for_storage is not None:
         #     self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
-    def check_limits(self, circuit: NumericalCircuit, wo=1, wv1=1, wv2=1):
+    def check_limits(self, F, T, Vmax, Vmin, wo=1, wv1=1, wv2=1):
         """
         Check the grid violations on the whole circuit
         @param circuit: PowerFlowInput object
@@ -571,16 +835,16 @@ class PowerFlowResults:
         """
         # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
         br_idx = where(self.loading > 1)[0]
-        bb_f = circuit.F[br_idx]
-        bb_t = circuit.T[br_idx]
+        bb_f = F[br_idx]
+        bb_t = T[br_idx]
         self.overloads = self.loading[br_idx]
 
         # Over and under voltage values in the indices where it occurs
         Vabs = np.abs(self.voltage)
-        vo_idx = where(Vabs > circuit.Vmax)[0]
-        self.overvoltage = (Vabs - circuit.Vmax)[vo_idx]
-        vu_idx = where(Vabs < circuit.Vmin)[0]
-        self.undervoltage = (circuit.Vmin - Vabs)[vu_idx]
+        vo_idx = where(Vabs > Vmax)[0]
+        self.overvoltage = (Vabs - Vmax)[vo_idx]
+        vu_idx = where(Vabs < Vmin)[0]
+        self.undervoltage = (Vmin - Vabs)[vu_idx]
 
         self.overloads_idx = br_idx
 

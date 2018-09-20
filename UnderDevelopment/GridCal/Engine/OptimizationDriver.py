@@ -29,6 +29,7 @@ from poap.controller import SerialController
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlow, PowerFlowOptions
 from GridCal.Engine.IoStructures import MonteCarloResults
+from GridCal.Engine.StochasticDriver import make_monte_carlo_input
 
 ########################################################################################################################
 # Optimization classes
@@ -40,29 +41,29 @@ class Optimize(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, max_iter=1000):
+    def __init__(self, circuit: MultiCircuit, options: PowerFlowOptions, max_iter=1000):
         """
         Constructor
         Args:
-            grid: Grid to cascade
+            circuit: Grid to cascade
             options: Power flow Options
             max_iter: max iterations
         """
 
         QThread.__init__(self)
 
-        self.grid = grid
+        self.circuit = circuit
 
         self.options = options
 
         self.__cancel__ = False
 
         # initialize the power flow
-        self.power_flow = PowerFlow(self.grid, self.options)
+        self.power_flow = PowerFlow(self.circuit, self.options)
 
         self.max_eval = max_iter
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
+        n = len(self.circuit.buses)
+        m = len(self.circuit.branches)
 
         # the dimension is the number of nodes
         self.dim = n
@@ -80,31 +81,36 @@ class Optimize(QThread):
         self.optimization_values = None
         self.it = 0
 
+        # compile
+        # compile circuits
+        self.numerical_circuit = self.circuit.compile()
+        self.numerical_input_islands = self.numerical_circuit.compute()
+
     def objfunction(self, x):
         """
         Objective function to run
         :param x: combinations of values between 0~1
         :return: objective function value, the average voltage in this case
         """
-        Vbus = self.grid.power_flow_input.Vbus
 
         # For every circuit, run the time series
-        for circuit in self.grid.circuits:
+        for numerical_island in self.numerical_input_islands:
             # sample from the CDF give the vector x of values in [0, 1]
             # c.sample_at(x)
-            mc_time_series = circuit.monte_carlo_input.get_at(x)
+            monte_carlo_input = make_monte_carlo_input(numerical_island)
+            mc_time_series = monte_carlo_input.get_at(x)
 
             Y, I, S = mc_time_series.get_at(t=0)
 
             #  run the sampled values
             # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=circuit, Vbus=Vbus, Sbus=S, Ibus=I)
+            res = self.power_flow.run_pf(circuit=numerical_island, Vbus=numerical_island.Vbus, Sbus=S, Ibus=I)
 
             # Y, I, S = circuit.mc_time_series.get_at(0)
-            self.results.S_points[self.it, circuit.bus_original_idx] = S
-            self.results.V_points[self.it, circuit.bus_original_idx] = res.voltage[circuit.bus_original_idx]
-            self.results.I_points[self.it, circuit.branch_original_idx] = res.Ibranch[circuit.branch_original_idx]
-            self.results.loading_points[self.it, circuit.branch_original_idx] = res.loading[circuit.branch_original_idx]
+            self.results.S_points[self.it, numerical_island.original_bus_idx] = S
+            self.results.V_points[self.it, numerical_island.original_bus_idx] = res.voltage[numerical_island.original_bus_idx]
+            self.results.I_points[self.it, numerical_island.original_branch_idx] = res.Ibranch[numerical_island.original_branch_idx]
+            self.results.loading_points[self.it, numerical_island.original_branch_idx] = res.loading[numerical_island.original_branch_idx]
 
         self.it += 1
         prog = self.it / self.max_eval * 100
@@ -121,8 +127,8 @@ class Optimize(QThread):
         @return: Nothing
         """
         self.it = 0
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
+        n = len(self.circuit.buses)
+        m = len(self.circuit.branches)
         self.xlow = zeros(n)  # lower bounds
         self.xup = ones(n)  # upper bounds
         self.progress_signal.emit(0.0)

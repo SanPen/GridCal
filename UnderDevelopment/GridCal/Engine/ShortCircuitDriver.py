@@ -24,7 +24,7 @@ from timeit import default_timer as timer
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.CalculationEngine import LINEWIDTH, MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults
-from GridCal.Engine.NewEngine import NumericalCircuit, CalculationInputs
+from GridCal.Engine.IoStructures import CalculationInputs
 
 
 ########################################################################################################################

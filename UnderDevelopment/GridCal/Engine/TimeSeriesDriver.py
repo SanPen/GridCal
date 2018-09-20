@@ -319,37 +319,28 @@ class TimeSeriesResultsAnalysis:
 
         self.res = results
 
-        self.branch_overload_frequency = None
-        self.bus_undervoltage_frequency = None
-        self.bus_overvoltage_frequency = None
+        self.branch_overload_frequency = zeros(self.res.m)
+        self.bus_under_voltage_frequency = zeros(self.res.n)
+        self.bus_over_voltage_frequency = zeros(self.res.n)
 
-        self.branch_overload_accumulated = None
-        self.bus_undervoltage_accumulated = None
-        self.bus_overvoltage_accumulated = None
+        self.branch_overload_accumulated = zeros(self.res.m, dtype=complex)
+        self.bus_under_voltage_accumulated = zeros(self.res.n, dtype=complex)
+        self.bus_over_voltage_accumulated = zeros(self.res.n, dtype=complex)
 
-        self.buses_selected_for_storage_frequency = None
+        self.buses_selected_for_storage_frequency = zeros(self.res.n)
 
         self.__run__()
 
     def __run__(self):
-        self.branch_overload_frequency = zeros(self.res.m)
-        self.bus_undervoltage_frequency = zeros(self.res.n)
-        self.bus_overvoltage_frequency = zeros(self.res.n)
-
-        self.branch_overload_accumulated = zeros(self.res.m, dtype=complex)
-        self.bus_undervoltage_accumulated = zeros(self.res.n, dtype=complex)
-        self.bus_overvoltage_accumulated = zeros(self.res.n, dtype=complex)
-
-        self.buses_selected_for_storage_frequency = zeros(self.res.n)
 
         for i in range(self.res.start, self.res.end):
             self.branch_overload_frequency[self.res.overloads_idx[i]] += 1
-            self.bus_undervoltage_frequency[self.res.undervoltage_idx[i]] += 1
-            self.bus_overvoltage_frequency[self.res.overvoltage_idx[i]] += 1
+            self.bus_under_voltage_frequency[self.res.undervoltage_idx[i]] += 1
+            self.bus_over_voltage_frequency[self.res.overvoltage_idx[i]] += 1
 
             self.branch_overload_accumulated[self.res.overloads_idx[i]] += self.res.overloads[i]
-            self.bus_undervoltage_accumulated[self.res.undervoltage_idx[i]] += self.res.undervoltage[i]
-            self.bus_overvoltage_accumulated[self.res.overvoltage_idx[i]] += self.res.overvoltage[i]
+            self.bus_under_voltage_accumulated[self.res.undervoltage_idx[i]] += self.res.undervoltage[i]
+            self.bus_over_voltage_accumulated[self.res.overvoltage_idx[i]] += self.res.overvoltage[i]
 
             self.buses_selected_for_storage_frequency[self.res.buses_useful_for_storage[i]] += 1
 
@@ -386,14 +377,14 @@ class TimeSeries(QThread):
         :return:
         """
         # initialize the power flow
-        powerflow = PowerFlowMP(self.grid, self.options)
+        power_flow = PowerFlowMP(self.grid, self.options)
 
         # initialize the grid time series results
         # we will append the island results with another function
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
         if self.end_ is None:
             self.end_ = nt
 
@@ -469,7 +460,7 @@ class TimeSeries(QThread):
                     #         pass
 
                     # run power flow at the circuit
-                    res = powerflow.run_pf(calculation_inputs=calculation_input, Vbus=Vlast, Sbus=S, Ibus=I)
+                    res = power_flow.run_pf(calculation_inputs=calculation_input, Vbus=Vlast, Sbus=S, Ibus=I)
 
                     # Recycle voltage solution
                     Vlast = res.voltage
@@ -483,16 +474,16 @@ class TimeSeries(QThread):
                     t += 1
 
                 # merge  the circuit's results
-                self.grid.time_series_results.apply_from_island(results,
-                                                                bus_original_idx,
-                                                                branch_original_idx,
-                                                                calculation_input.time_array,
-                                                                'TS')
+                time_series_results.apply_from_island(results,
+                                                      bus_original_idx,
+                                                      branch_original_idx,
+                                                      calculation_input.time_array,
+                                                      'TS')
             else:
                 print('There are no profiles')
                 self.progress_text.emit('There are no profiles')
 
-        return self.grid.time_series_results
+        return time_series_results
 
     def run_multi_thread(self):
         """

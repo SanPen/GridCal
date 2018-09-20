@@ -125,7 +125,21 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     rhs = r_[S.real[pvpq], S.imag[pq]]
 
     # solve the linear system
-    x = factorized(Asys)(rhs)
+    try:
+        x = spsolve(Asys, rhs)
+    except Exception as e:
+        voltages_vector = Vset
+        # Calculate the error and check the convergence
+        s_calc = voltages_vector * conj(Y * voltages_vector)
+        # complex power mismatch
+        power_mismatch = s_calc - S
+        # concatenate error by type
+        mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+        # check for convergence
+        norm_f = linalg.norm(mismatch, Inf)
+        end = time.time()
+        elapsed = end - start
+        return voltages_vector, False, norm_f, s_calc, 1, elapsed
 
     # compose the results vector
     voltages_vector = Vset.copy()

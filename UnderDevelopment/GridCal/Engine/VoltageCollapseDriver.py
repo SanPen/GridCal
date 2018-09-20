@@ -20,6 +20,7 @@ from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
+from GridCal.Engine.NewEngine import NumericalCircuit
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 
@@ -178,16 +179,17 @@ class VoltageCollapse(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: VoltageCollapseOptions, inputs: VoltageCollapseInput):
+    def __init__(self, circuit: MultiCircuit,
+                 options: VoltageCollapseOptions, inputs: VoltageCollapseInput):
         """
         VoltageCollapse constructor
-        @param grid:
+        @param circuit: NumericalCircuit instance
         @param options:
         """
         QThread.__init__(self)
 
         # MultiCircuit instance
-        self.grid = grid
+        self.circuit = circuit
 
         # voltage stability options
         self.options = options
@@ -212,22 +214,26 @@ class VoltageCollapse(QThread):
         @return:
         """
         print('Running voltage collapse...')
-        nbus = len(self.grid.buses)
+        nbus = len(self.circuit.buses)
         self.results = VoltageCollapseResults(nbus=nbus)
 
-        for nc, c in enumerate(self.grid.circuits):
+        # compile the numerical circuit
+        numerical_circuit = self.circuit.compile()
+        numerical_input_islands = numerical_circuit.compute()
+
+        for nc, numerical_island in enumerate(numerical_input_islands):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
             Voltage_series, Lambda_series, \
-            normF, success = continuation_nr(Ybus=c.power_flow_input.Ybus,
-                                             Ibus_base=c.power_flow_input.Ibus,
-                                             Ibus_target=c.power_flow_input.Ibus,
-                                             Sbus_base=self.inputs.Sbase[c.bus_original_idx],
-                                             Sbus_target=self.inputs.Starget[c.bus_original_idx],
-                                             V=self.inputs.Vbase[c.bus_original_idx],
-                                             pv=c.power_flow_input.pv,
-                                             pq=c.power_flow_input.pq,
+            normF, success = continuation_nr(Ybus=numerical_island.Ybus,
+                                             Ibus_base=numerical_island.Ibus,
+                                             Ibus_target=numerical_island.Ibus,
+                                             Sbus_base=self.inputs.Sbase[numerical_island.original_bus_idx],
+                                             Sbus_target=self.inputs.Starget[numerical_island.original_bus_idx],
+                                             V=self.inputs.Vbase[numerical_island.original_bus_idx],
+                                             pv=numerical_island.pv,
+                                             pq=numerical_island.pq,
                                              step=self.options.step,
                                              approximation_order=self.options.approximation_order,
                                              adapt_step=self.options.adapt_step,
@@ -246,7 +252,7 @@ class VoltageCollapse(QThread):
             res.error = normF
             res.converged = bool(success)
 
-            self.results.apply_from_island(res, c.bus_original_idx, nbus)
+            self.results.apply_from_island(res, numerical_island.original_bus_idx, nbus)
         print('done!')
         self.progress_text.emit('Done!')
         self.done_signal.emit()

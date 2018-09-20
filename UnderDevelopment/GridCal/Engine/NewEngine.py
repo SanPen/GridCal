@@ -6,6 +6,8 @@ import networkx as nx
 from warnings import warn
 
 from GridCal.Engine.BasicStructures import BusMode
+from GridCal.Engine.IoStructures import CalculationInputs
+from GridCal.Engine.Numerical.JacobianBased import Jacobian
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.expand_frame_repr', False)
@@ -95,311 +97,6 @@ class Graph:
             island.sort()
 
         return islands
-
-
-class CalculationResults:
-
-    def __init__(self, nbus, nbr):
-        """
-        Class to store grid calculated values from Power flow ans State estimation
-        """
-
-        # node voltages vector (p.u.)
-        self.V = np.zeros(nbus, dtype=complex)
-
-        # node power injections (p.u.)
-        self.Sbus = np.zeros(nbus, dtype=complex)
-
-        # branch power injected at the from side (p.u.)
-        self.Sf = np.zeros(nbr, dtype=complex)
-
-        # branch power injected at the to side (p.u.)
-        self.St = np.zeros(nbr, dtype=complex)
-
-        # branch current injected at the from side (p.u.)
-        self.If = np.zeros(nbr, dtype=complex)
-
-        # branch current injected at the to side (p.u.)
-        self.It = np.zeros(nbr, dtype=complex)
-
-        # power flowing through the branch (p.u.)
-        self.Sbranch = np.zeros(nbr, dtype=complex)
-
-        # current flowing through the branch (p.u.)
-        self.Ibranch = np.zeros(nbr, dtype=complex)
-
-        # losses of the branch (p.u.)
-        self.losses = np.zeros(nbr, dtype=complex)
-
-        # did this solution converge?
-        self.converged = False
-
-        # power mismatch of this solution (p.u.)
-        self.error = 0.0
-
-        self.iterations = 0
-
-        self.elapsed = 0
-
-    def merge(self, results, bus_idx, br_idx):
-
-        # node voltages vector (p.u.)
-        self.V[bus_idx] = results.V
-
-        # node power injections (p.u.)
-        self.Sbus[bus_idx] = results.Sbus
-
-        # branch power injected at the from side (p.u.)
-        self.Sf[br_idx] = results.Sf
-
-        # branch power injected at the to side (p.u.)
-        self.St[br_idx] = results.St
-
-        # branch current injected at the from side (p.u.)
-        self.If[br_idx] = results.If
-
-        # branch current injected at the to side (p.u.)
-        self.It[br_idx] = results.It
-
-        # power flowing through the branch (p.u.)
-        self.Sbranch[br_idx] = results.Sbranch
-
-        # current flowing through the branch (p.u.)
-        self.Ibranch[br_idx] = results.Ibranch
-
-        # losses of the branch (p.u.)
-        self.losses[br_idx] = results.losses
-
-        # did this solution converge?
-        self.converged *= results.converged
-
-        # power mismatch of this solution (p.u.)
-        self.error = max(self.error, results.error)
-
-    def print(self, bus_names, branch_names):
-        """
-        Print the results
-        :return:
-        """
-        try:
-
-            df_bus = pd.DataFrame(
-                np.c_[np.abs(self.V), np.angle(self.V), self.V.real, self.V.imag, self.Sbus.real, self.Sbus.imag],
-                index=bus_names, columns=['|V|', 'angle', 're{V}', 'im{V}', 'P', 'Q'])
-            # df_bus.sort_index(inplace=True)
-
-            df_branch = pd.DataFrame(
-                np.c_[self.losses.real, self.losses.imag, self.Sbranch.real, self.Sbranch.imag],
-                index=branch_names, columns=['re{Losses}', 'im{Losses}', 're{S}', 'im{S}'])
-            # df_branch.sort_index(inplace=True)
-
-            print('\nResults')
-            print('Bus results:\n', df_bus)
-            print('\nBranch results:\n', df_branch)
-            print('\nConverged:', self.converged)
-            print('Error:', self.error)
-            print('Iterations:', self.iterations)
-            print('Elapsed:', self.elapsed, 's')
-        except Exception as e:
-            print(e)
-
-
-class CalculationInputs:
-
-    def __init__(self, nbus, nbr, ntime):
-        """
-        Constructor
-        :param nbus: number of buses
-        :param nbr: number of branches
-        :param ntime: number of time steps
-        """
-        self.nbus = nbus
-        self.nbr = nbr
-        self.ntime = ntime
-
-        self.Sbase = 100.0
-
-        self.time_array = None
-
-        # resulting matrices (calculation)
-        self.Yf = csc_matrix((nbr, nbus), dtype=complex)
-        self.Yt = csc_matrix((nbr, nbus), dtype=complex)
-        self.Ybus = csc_matrix((nbus, nbus), dtype=complex)
-
-        self.Ysh = np.zeros(nbus, dtype=complex)
-        self.Sbus = np.zeros(nbus, dtype=complex)
-        self.Ibus = np.zeros(nbus, dtype=complex)
-
-        self.Ysh_prof = np.zeros((ntime, nbus), dtype=complex)
-        self.Sbus_prof = np.zeros((ntime, nbus), dtype=complex)
-        self.Ibus_prof = np.zeros((ntime, nbus), dtype=complex)
-
-        self.Vbus = np.ones(nbus, dtype=complex)
-        self.Vmin = np.ones(nbus, dtype=float)
-        self.Vmax = np.ones(nbus, dtype=float)
-        self.types = np.zeros(nbus, dtype=int)
-        self.Qmin = np.zeros(nbus, dtype=float)
-        self.Qmax = np.zeros(nbus, dtype=float)
-
-        self.F = np.zeros(nbr, dtype=int)
-        self.T = np.zeros(nbr, dtype=int)
-
-        self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
-        self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
-
-        self.branch_rates = np.zeros(nbr)
-
-        self.pq = list()
-        self.pv = list()
-        self.ref = list()
-        self.sto = list()
-        self.pqpv = list()
-
-        self.logger =list()
-
-    def compile_types(self, types_new=None):
-        """
-        Compile the types
-        :param types_new: new array of types to consider
-        :return: Nothing
-        """
-        if types_new is not None:
-            self.types = types_new.copy()
-        self.pq = np.where(self.types == BusMode.PQ.value[0])[0]
-        self.pv = np.where(self.types == BusMode.PV.value[0])[0]
-        self.ref = np.where(self.types == BusMode.REF.value[0])[0]
-        self.sto = np.where(self.types == BusMode.STO_DISPATCH.value)[0]
-
-        if len(self.ref) == 0:  # there is no slack!
-
-            if len(self.pv) == 0:  # there are no pv neither -> blackout grid
-
-                warn('There are no slack nodes selected')
-                self.logger.append('There are no slack nodes selected')
-
-            else:  # select the first PV generator as the slack
-
-                mx = max(self.Sbus[self.pv])
-                if mx > 0:
-                    # find the generator that is injecting the most
-                    i = np.where(self.Sbus == mx)[0][0]
-
-                else:
-                    # all the generators are injecting zero, pick the first pv
-                    i = self.pv[0]
-
-                # delete the selected pv bus from the pv list and put it in the slack list
-                self.pv = np.delete(self.pv, np.where(self.pv == i)[0])
-                self.ref = [i]
-                # print('Setting bus', i, 'as slack')
-
-            self.ref = np.ndarray.flatten(np.array(self.ref))
-            self.types[self.ref] = BusMode.REF.value[0]
-        else:
-            pass  # no problem :)
-
-        self.pqpv = np.r_[self.pq, self.pv]
-        self.pqpv.sort()
-        pass
-
-    def get_island(self, bus_idx, branch_idx):
-        """
-        Get a sub-island
-        :param bus_idx: bus indices of the island
-        :param branch_idx: branch indices of the island
-        :return: CalculationInputs instance
-        """
-        obj = CalculationInputs(len(bus_idx), len(branch_idx))
-
-        obj.Yf = self.Yf[branch_idx, :][:, bus_idx]
-        obj.Yt = self.Yt[branch_idx, :][:, bus_idx]
-        obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx]
-        obj.Ysh = self.Ysh[bus_idx]
-        obj.Sbus = self.Sbus[bus_idx]
-        obj.Ibus = self.Ibus[bus_idx]
-        obj.Vbus = self.Vbus[bus_idx]
-        obj.types = self.types[bus_idx]
-        obj.Qmin = self.Qmin[bus_idx]
-        obj.Qmax = self.Qmax[bus_idx]
-        obj.Vmin = self.Vmin[bus_idx]
-        obj.Vmax = self.Vmax[bus_idx]
-
-        obj.F = self.F[branch_idx]
-        obj.T = self.T[branch_idx]
-
-        obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
-        obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
-
-        obj.compile_types()
-
-        return obj
-
-    def compute_branch_results(self, V):
-        """
-        Compute the branch magnitudes from the voltages
-        :param V: Voltage vector solution in p.u.
-        :return: CalculationResults instance with all the grid magnitudes
-        """
-
-        # declare circuit results
-        data = CalculationResults(self.nbus, self.nbr)
-
-        # copy the voltage
-        data.V = V
-
-        # power at the slack nodes
-        data.Sbus = self.Sbus.copy()
-        data.Sbus[self.ref] = V[self.ref] * np.conj(self.Ybus[self.ref, :].dot(V))
-
-        # Reactive power at the pv nodes: keep the original P injection and set the calculated reactive power
-        Q = (V[self.pv] * np.conj(self.Ybus[self.pv, :].dot(V))).imag
-
-        data.Sbus[self.pv] = self.Sbus[self.pv].real + 1j * Q
-
-        # Branches current, loading, etc
-        data.If = self.Yf * V
-        data.It = self.Yt * V
-        data.Sf = self.C_branch_bus_f * V * np.conj(data.If)
-        data.St = self.C_branch_bus_t * V * np.conj(data.It)
-
-        # Branch losses in MVA
-        data.losses = (data.Sf + data.St)
-
-        # Branch current in p.u.
-        data.Ibranch = np.maximum(data.If, data.It)
-
-        # Branch power in MVA
-        data.Sbranch = np.maximum(data.Sf, data.St)
-
-        # Branch loading in p.u.
-        data.loading = data.Sbranch / (self.branch_rates + 1e-9)
-
-        return data
-
-    def print(self, bus_names):
-        """
-        print in console
-        :return:
-        """
-        # print('\ntypes\n', self.types)
-        # print('\nSbus\n', self.Sbus)
-        # print('\nVbus\n', self.Vbus)
-        # print('\nYsh\n', self.Ysh)
-
-        df_bus = pd.DataFrame(
-            np.c_[self.types, np.abs(self.Vbus), np.angle(self.Vbus), self.Vbus.real, self.Vbus.imag,
-                  self.Sbus.real, self.Sbus.imag, self.Ysh.real, self.Ysh.imag],
-            index=bus_names, columns=['Type', '|V|', 'angle', 're{V}', 'im{V}', 'P', 'Q', 'Gsh', 'Bsh'])
-        # df_bus.sort_index(inplace=True)
-
-        print('\nBus info\n', df_bus)
-
-        if self.nbus < 100:
-            print('\nYbus\n', pd.DataFrame(self.Ybus.todense(), columns=bus_names, index=bus_names))
-
-        print('PQ:', self.pq)
-        print('PV:', self.pv)
-        print('REF:', self.ref)
 
 
 class NumericalCircuit:
@@ -516,6 +213,8 @@ class NumericalCircuit:
         self.islands = list()  # bus indices per island
         self.island_branches = list()  # branch indices per island
 
+        self.calculation_islands = list()
+
     def compute(self):
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
@@ -595,10 +294,54 @@ class NumericalCircuit:
         Yt = diags(Ytf) * self.C_branch_bus_f + diags(Ytt) * self.C_branch_bus_t
         Ybus = csc_matrix(self.C_branch_bus_f.T * Yf + self.C_branch_bus_t.T * Yt + diags(Ysh))
 
+        # branch primitives in vector form
+        Ytts = Ys
+        Yffs = Ytts / (tap * np.conj(tap))
+        Yfts = - Ys / np.conj(tap)
+        Ytfs = - Ys / tap
+
+        # form the admittance matrices of the series elements
+        Yfs = diags(Yffs) * self.C_branch_bus_f + diags(Yfts) * self.C_branch_bus_t
+        Yts = diags(Ytfs) * self.C_branch_bus_f + diags(Ytts) * self.C_branch_bus_t
+        Yseries = csc_matrix(self.C_branch_bus_f.T * Yfs + self.C_branch_bus_t.T * Yts)
+
+        # Form the matrices for fast decoupled
+        '''
+        # B1 for FDPF (no shunts, no resistance, no tap module)
+        b1 = 1.0 / (self.X + 1e-20)
+        B1[f, f] -= b1
+        B1[f, t] -= b1
+        B1[t, f] -= b1
+        B1[t, t] -= b1
+
+        # B2 for FDPF (with shunts, only the tap module)
+        b2 = b1 + self.B
+        B2[f, f] -= (b2 / (tap * conj(tap))).real
+        B2[f, t] -= (b1 / conj(tap)).real
+        B2[t, f] -= (b1 / tap).real
+        B2[t, t] -= b2
+        '''
+        b1 = 1.0 / (self.X + 1e-20)
+        B1f = diags(-b1) * self.C_branch_bus_f + diags(-b1) * self.C_branch_bus_t
+        B1t = diags(-b1) * self.C_branch_bus_f + diags(-b1) * self.C_branch_bus_t
+        B1 = csc_matrix(self.C_branch_bus_f.T * B1f + self.C_branch_bus_t.T * B1t)
+
+        b2 = b1 + self.B
+        b2_ff = -(b2 / (tap * np.conj(tap))).real
+        b2_ft = -(b1 / np.conj(tap)).real
+        b2_tf = -(b1 / tap).real
+        b2_tt = - b2
+        B2f = diags(b2_ff) * self.C_branch_bus_f + diags(b2_ft) * self.C_branch_bus_t
+        B2t = diags(b2_tf) * self.C_branch_bus_f + diags(b2_tt) * self.C_branch_bus_t
+        B2 = csc_matrix(self.C_branch_bus_f.T * B2f + self.C_branch_bus_t.T * B2t)
+
         # assign to the calc element
         circuit.Ybus = Ybus
         circuit.Yf = Yf
         circuit.Yt = Yt
+        circuit.B1 = B1
+        circuit.B2 = B2
+        circuit.Yseries = Yseries
         circuit.C_branch_bus_f = self.C_branch_bus_f
         circuit.C_branch_bus_t = self.C_branch_bus_t
 
@@ -630,6 +373,10 @@ class NumericalCircuit:
                 island_br_idx = self.get_branches_of_the_island(island, C_branch_bus)
                 self.island_branches.append(island_br_idx)
 
+                # set the indices in the island too
+                circuit.original_bus_idx = island
+                circuit.original_branch_idx = island_br_idx
+
                 # get the island circuit (the bus types are computed automatically)
                 circuit = circuit.get_island(island, island_br_idx)
 
@@ -642,11 +389,19 @@ class NumericalCircuit:
             # only one island, no need to split anything
             circuits.append(circuit)
 
+            island = np.arange(start=0, stop=self.nbus, step=1, dtype=int)
+            island_br_idx = np.arange(start=0, stop=self.nbr, step=1, dtype=int)
+
+            # set the indices in the island too
+            circuit.original_bus_idx = island
+            circuit.original_branch_idx = island_br_idx
+
             # append a list with all the branch indices for completeness
-            self.island_branches.append(np.arange(start=0, stop=self.nbr, step=1, dtype=int))
+            self.island_branches.append(island_br_idx)
 
         # return the list of islands
-        return circuits
+        self.calculation_islands = circuits
+        return self.calculation_islands
 
     @staticmethod
     def get_branches_of_the_island(island, C_branch_bus):
@@ -678,6 +433,69 @@ class NumericalCircuit:
         br_idx = br_idx[:n_visited]
 
         return br_idx
+
+    def power_flow_post_process(self, V, only_power=False):
+        """
+        Compute the power flows trough the branches for the complete circuit taking into account the islands
+        @param V: Voltage solution array for the circuit buses
+        @param only_power: compute only the power injection
+        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
+        """
+        Sbranch_all = np.zeros(self.nbr, dtype=complex)
+        Ibranch_all = np.zeros(self.nbr, dtype=complex)
+        loading_all = np.zeros(self.nbr, dtype=complex)
+        losses_all = np.zeros(self.nbr, dtype=complex)
+        Sbus_all = np.zeros(self.nbus, dtype=complex)
+
+        for circuit in self.calculation_islands:
+            # Compute the slack and pv buses power
+            Sbus = circuit.Sbus
+
+            vd = circuit.ref
+            pv = circuit.pv
+
+            # power at the slack nodes
+            Sbus[vd] = V[vd] * np.conj(circuit.Ybus[vd, :][:, :].dot(V))
+
+            # Reactive power at the pv nodes
+            P = Sbus[pv].real
+            Q = (V[pv] * np.conj(circuit.Ybus[pv, :][:, :].dot(V))).imag
+            Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
+
+            if not only_power:
+                # Branches current, loading, etc
+                If = circuit.Yf * V
+                It = circuit.Yt * V
+                Sf = (circuit.C_branch_bus_f * V) * np.conj(If)
+                St = (circuit.C_branch_bus_t * V) * np.conj(It)
+
+                # Branch losses in MVA
+                losses = (Sf + St) * circuit.Sbase
+
+                # Branch current in p.u.
+                Ibranch = np.maximum(If, It)
+
+                # Branch power in MVA
+                Sbranch = np.maximum(Sf, St) * circuit.Sbase
+
+                # Branch loading in p.u.
+                loading = Sbranch / (circuit.branch_rates + 1e-9)
+
+            else:
+                Sbranch = np.zeros(self.nbr, dtype=complex)
+                Ibranch = np.zeros(self.nbr, dtype=complex)
+                loading = np.zeros(self.nbr, dtype=complex)
+                losses = np.zeros(self.nbr, dtype=complex)
+                Sbus = np.zeros(self.nbus, dtype=complex)
+
+            # assign to master
+            Sbranch_all[circuit.original_branch_idx] = Sbranch
+            Ibranch_all[circuit.original_branch_idx] = Ibranch
+            loading_all[circuit.original_branch_idx] = loading
+            losses_all[circuit.original_branch_idx] = losses
+            Sbus_all[circuit.original_bus_idx] = Sbus
+
+        return Sbranch_all, Ibranch_all, loading_all, losses_all, Sbus_all
 
     def print(self, islands_only=False):
         """
