@@ -316,6 +316,7 @@ class TimeSeriesResults(PowerFlowResults):
 class TimeSeriesResultsAnalysis:
 
     def __init__(self, results: TimeSeriesResults):
+
         self.res = results
 
         self.branch_overload_frequency = None

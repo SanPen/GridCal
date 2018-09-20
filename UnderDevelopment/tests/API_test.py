@@ -26,7 +26,8 @@ if __name__ == '__main__':
     # fname = 'lynn5buspq.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     ts = TimeSeries(grid=grid, options=options, start=0, end=96)
     ts.run()
 
-    # ts_analysis = TimeSeriesResultsAnalysis(ts.results)  # TODO: not working doe to results analysis of overloads etc...
+    ts_analysis = TimeSeriesResultsAnalysis(ts.results)  # TODO: not working doe to results analysis of overloads etc...
     # lst = np.array(list(range(ts.results.n)), dtype=int)
     # ts.results.plot('Bus voltage', indices=lst, names=lst)
     ts.results.plot('Bus voltage', indices=list(range(len(grid.buses))), names=grid.bus_names)

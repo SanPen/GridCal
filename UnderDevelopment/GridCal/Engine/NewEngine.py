@@ -235,9 +235,14 @@ class CalculationInputs:
         self.Ibus_prof = np.zeros((ntime, nbus), dtype=complex)
 
         self.Vbus = np.ones(nbus, dtype=complex)
+        self.Vmin = np.ones(nbus, dtype=float)
+        self.Vmax = np.ones(nbus, dtype=float)
         self.types = np.zeros(nbus, dtype=int)
         self.Qmin = np.zeros(nbus, dtype=float)
         self.Qmax = np.zeros(nbus, dtype=float)
+
+        self.F = np.zeros(nbr, dtype=int)
+        self.T = np.zeros(nbr, dtype=int)
 
         self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
         self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
@@ -316,6 +321,11 @@ class CalculationInputs:
         obj.types = self.types[bus_idx]
         obj.Qmin = self.Qmin[bus_idx]
         obj.Qmax = self.Qmax[bus_idx]
+        obj.Vmin = self.Vmin[bus_idx]
+        obj.Vmax = self.Vmax[bus_idx]
+
+        obj.F = self.F[branch_idx]
+        obj.T = self.T[branch_idx]
 
         obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
         obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
@@ -426,10 +436,15 @@ class NumericalCircuit:
         self.bus_names = np.empty(n_bus, dtype=object)
         self.bus_vnom = np.zeros(n_bus, dtype=float)
         self.V0 = np.ones(n_bus, dtype=complex)
+        self.Vmin = np.ones(n_bus, dtype=float)
+        self.Vmax = np.ones(n_bus, dtype=float)
         self.bus_types = np.empty(n_bus, dtype=int)
 
         # branch
         self.branch_names = np.empty(n_br, dtype=object)
+
+        self.F = np.zeros(n_br, dtype=int)
+        self.T = np.zeros(n_br, dtype=int)
 
         self.R = np.zeros(n_br, dtype=float)
         self.X = np.zeros(n_br, dtype=float)

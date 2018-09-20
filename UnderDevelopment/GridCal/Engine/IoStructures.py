@@ -25,7 +25,7 @@ from scipy.sparse import csc_matrix, lil_matrix
 from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 
-from GridCal.Engine.NewEngine import CalculationInputs
+from GridCal.Engine.NewEngine import CalculationInputs, NumericalCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.BasicStructures import CDF
 from GridCal.Engine.Numerical.JacobianBased import Jacobian
@@ -563,23 +563,24 @@ class PowerFlowResults:
         # if results.buses_useful_for_storage is not None:
         #     self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
-    def check_limits(self, inputs: CalculationInputs, wo=1, wv1=1, wv2=1):
+    def check_limits(self, circuit: NumericalCircuit, wo=1, wv1=1, wv2=1):
         """
-        Check the grid violations
-        @param inputs: PowerFlowInput object
+        Check the grid violations on the whole circuit
+        @param circuit: PowerFlowInput object
         @return: summation of the deviations
         """
         # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
         br_idx = where(self.loading > 1)[0]
-        bb_f = inputs.F[br_idx]
-        bb_t = inputs.T[br_idx]
+        bb_f = circuit.F[br_idx]
+        bb_t = circuit.T[br_idx]
         self.overloads = self.loading[br_idx]
 
         # Over and under voltage values in the indices where it occurs
-        vo_idx = where(self.voltage > inputs.Vmax)[0]
-        self.overvoltage = (self.voltage - inputs.Vmax)[vo_idx]
-        vu_idx = where(self.voltage < inputs.Vmin)[0]
-        self.undervoltage = (inputs.Vmin - self.voltage)[vu_idx]
+        Vabs = np.abs(self.voltage)
+        vo_idx = where(Vabs > circuit.Vmax)[0]
+        self.overvoltage = (Vabs - circuit.Vmax)[vo_idx]
+        vu_idx = where(Vabs < circuit.Vmin)[0]
+        self.undervoltage = (circuit.Vmin - Vabs)[vu_idx]
 
         self.overloads_idx = br_idx
 
@@ -589,7 +590,7 @@ class PowerFlowResults:
 
         self.buses_useful_for_storage = list(set(r_[vo_idx, vu_idx, bb_f, bb_t]))
 
-        return abs(wo * sum(self.overloads) + wv1 * sum(self.overvoltage) + wv2 * sum(self.undervoltage))
+        return np.abs(wo * np.sum(self.overloads) + wv1 * np.sum(self.overvoltage) + wv2 * np.sum(self.undervoltage))
 
     def get_convergence_report(self):
 
