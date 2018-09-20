@@ -3815,6 +3815,8 @@ class MultiCircuit:
             self.bus_names[i] = bus.name
             circuit.bus_names[i] = bus.name
             circuit.bus_vnom[i] = bus.Vnom  # kV
+            circuit.Vmax[i] = bus.Vmax
+            circuit.Vmin[i] = bus.Vmin
             circuit.bus_types[i] = bus.determine_bus_type().value[0]
 
             # Add buses dictionary entry
@@ -3888,6 +3890,9 @@ class MultiCircuit:
         for i, branch in enumerate(self.branches):
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
+
+            circuit.F[i] = f
+            circuit.T[i] = t
 
             circuit.branch_names[i] = branch.name
             circuit.branch_states[i] = branch.active

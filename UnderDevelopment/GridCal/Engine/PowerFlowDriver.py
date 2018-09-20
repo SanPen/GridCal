@@ -606,7 +606,7 @@ class PowerFlowMP:
         self.last_V = results.voltage  # done inside single_power_flow
 
         # check the limits
-        # sum_dev = results.check_limits(self.grid.power_flow_input)
+        sum_dev = results.check_limits(numerical_circuit)
 
         self.results = results
 
@@ -694,7 +694,7 @@ class PowerFlowMP:
         results.converged = converged_lst
 
         # check the power flow limits
-        # results.check_limits(calculation_inputs)
+        results.check_limits(calculation_inputs)
 
         return results
 
