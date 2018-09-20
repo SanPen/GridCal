@@ -2658,29 +2658,28 @@ class MultiCircuit:
         self.transformer_types = list()
 
         # Object with the necessary inputs for a power flow study
-        self.power_flow_input = None
+        self.numerical_circuit = None
 
-        #  containing the power flow results
-        self.power_flow_results = None
-
-        # containing the short circuit results
-        self.short_circuit_results = None
-
-        # Object with the necessary inputs for th time series simulation
-        self.time_series_input = None
-
-        # Object with the time series simulation results
-        self.time_series_results = None
-
-        # Monte Carlo input object
-        self.monte_carlo_input = None
-
-        # Monte Carlo time series batch
-        self.mc_time_series = None
+        # #  containing the power flow results
+        # self.power_flow_results = None
+        #
+        # # containing the short circuit results
+        # self.short_circuit_results = None
+        #
+        # # Object with the necessary inputs for th time series simulation
+        # self.time_series_input = None
+        #
+        # # Object with the time series simulation results
+        # self.time_series_results = None
+        #
+        # # Monte Carlo input object
+        # self.monte_carlo_input = None
+        #
+        # # Monte Carlo time series batch
+        # self.mc_time_series = None
 
         # Bus-Branch graph
         self.graph = None
-
 
         # self.power_flow_results = PowerFlowResults()
 
@@ -2742,7 +2741,7 @@ class MultiCircuit:
         self.transformer_types = list()
 
         # Object with the necessary inputs for a power flow study
-        self.power_flow_input = None
+        self.numerical_circuit = None
 
         #  containing the power flow results
         self.power_flow_results = None
@@ -2829,12 +2828,12 @@ class MultiCircuit:
         """
 
         # Initial magnitudes
-        pvpq = r_[self.power_flow_input.pv, self.power_flow_input.pq]
+        pvpq = r_[self.numerical_circuit.pv, self.numerical_circuit.pq]
 
-        J = Jacobian(Ybus=self.power_flow_input.Ybus,
-                     V=self.power_flow_input.Vbus,
-                     Ibus=self.power_flow_input.Ibus,
-                     pq=self.power_flow_input.pq,
+        J = Jacobian(Ybus=self.numerical_circuit.Ybus,
+                     V=self.numerical_circuit.Vbus,
+                     Ibus=self.numerical_circuit.Ibus,
+                     pq=self.numerical_circuit.pq,
                      pvpq=pvpq)
 
         if sparse:
@@ -2851,20 +2850,20 @@ class MultiCircuit:
         cols = ['|V| (p.u.)', 'angle (rad)', 'P (p.u.)', 'Q (p.u.)', 'Qmin', 'Qmax', 'Q ok?']
 
         if self.power_flow_results is not None:
-            q_l = self.power_flow_input.Qmin < self.power_flow_results.Sbus.imag
-            q_h = self.power_flow_results.Sbus.imag < self.power_flow_input.Qmax
+            q_l = self.numerical_circuit.Qmin < self.power_flow_results.Sbus.imag
+            q_h = self.power_flow_results.Sbus.imag < self.numerical_circuit.Qmax
             q_ok = q_l * q_h
             data = c_[np.abs(self.power_flow_results.voltage),
                       np.angle(self.power_flow_results.voltage),
                       self.power_flow_results.Sbus.real,
                       self.power_flow_results.Sbus.imag,
-                      self.power_flow_input.Qmin,
-                      self.power_flow_input.Qmax,
+                      self.numerical_circuit.Qmin,
+                      self.numerical_circuit.Qmax,
                       q_ok.astype(np.bool)]
         else:
             data = [0, 0, 0, 0, 0, 0]
 
-        return pd.DataFrame(data=data, index=self.power_flow_input.bus_names, columns=cols)
+        return pd.DataFrame(data=data, index=self.numerical_circuit.bus_names, columns=cols)
 
     def apply_lp_profiles(self):
         """
@@ -2901,7 +2900,7 @@ class MultiCircuit:
 
         cpy.time_series_input = self.time_series_input.copy()
 
-        cpy.power_flow_input = self.power_flow_input.copy()
+        cpy.numerical_circuit = self.numerical_circuit.copy()
 
         return cpy
 
@@ -3765,12 +3764,28 @@ class MultiCircuit:
 
         writer.save()
 
-    def compile(self, use_opf_vals=False, dispatch_storage=False):
+    def build_graph(self):
         """
-        Divide the grid into the different possible grids
-        @return:
+        Build graph
+        :return: self.graph
         """
+        self.graph = nx.DiGraph()
 
+        for i, branch in enumerate(self.branches):
+            f = self.bus_dictionary[branch.bus_from]
+            t = self.bus_dictionary[branch.bus_to]
+            self.graph.add_edge(f, t)
+
+        return self.graph
+
+    def compile(self, use_opf_vals=False, dispatch_storage=False, logger=list()):
+        """
+        Compile the circuit assets into an equivalent circuit that only contains matrices and vectors for calculation
+        :param use_opf_vals:
+        :param dispatch_storage:
+        :param logger:
+        :return:
+        """
         n = len(self.buses)
         m = len(self.branches)
         if self.time_profile is not None:
@@ -3854,7 +3869,13 @@ class MultiCircuit:
                 circuit.controlled_gen_qmax[i_ctrl_gen] = elm.Qmax
 
                 if n_time > 0:
-                    circuit.controlled_gen_power_profile[:, i_ctrl_gen] = elm.Pprof.values[:, 0]
+                    # power profile
+                    if use_opf_vals:
+                        dta = np.array([x.value() for x in elm.LPVar_P_prof])
+                        circuit.controlled_gen_power_profile[:, i_ctrl_gen] = dta
+                    else:
+                        circuit.controlled_gen_power_profile[:, i_ctrl_gen] = elm.Pprof.values[:, 0]
+                    # Voltage profile
                     circuit.controlled_gen_voltage_profile[:, i_ctrl_gen] = elm.Vsetprof.values[:, 0]
 
                 circuit.C_ctrl_gen_bus[i_ctrl_gen, i] = 1
@@ -3869,7 +3890,13 @@ class MultiCircuit:
                 circuit.battery_qmax[i_batt] = elm.Qmax
 
                 if n_time > 0:
-                    circuit.battery_power_profile[:, i_batt] = elm.Pprof.values[:, 0]
+                    # power profile
+                    if use_opf_vals:
+                        dta = np.array([x.value() for x in elm.LPVar_P_prof])
+                        circuit.battery_power_profile[:, i_batt] = dta
+                    else:
+                        circuit.battery_power_profile[:, i_batt] = elm.Pprof.values[:, 0]
+                    # Voltage profile
                     circuit.battery_voltage_profile[:, i_batt] = elm.Vsetprof.values[:, 0]
 
                 circuit.C_batt_bus[i_batt, i] = 1
@@ -3911,7 +3938,9 @@ class MultiCircuit:
             if branch.branch_type == BranchType.Switch:
                 circuit.switch_indices.append(i)
 
-        return circuit
+        # Assign and return
+        self.numerical_circuit = circuit
+        return self.numerical_circuit
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -4338,10 +4367,10 @@ class MultiCircuit:
         Dispatch either load or generation using a simple equalised share rule of the shedding to be done
         @return: Nothing
         """
-        if self.power_flow_input is not None:
+        if self.numerical_circuit is not None:
 
             # get the total power balance
-            balance = abs(self.power_flow_input.Sbus.sum())
+            balance = abs(self.numerical_circuit.Sbus.sum())
 
             if balance > 0:  # more generation than load, dispatch generation
                 Gmax = 0

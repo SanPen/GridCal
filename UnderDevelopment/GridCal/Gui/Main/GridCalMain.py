@@ -204,7 +204,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = PowerFlowInput(1, 1)
+        pfo = CalculationInputs(1, 1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -728,7 +728,8 @@ class MainGUI(QMainWindow):
         """
 
         try:
-            logger = self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage)
+            logger = list()
+            numerical_circuit = self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage, logger=logger)
 
             if len(logger) > 0:
                 dlg = LogsDialogue('Open file logger', logger)
@@ -764,7 +765,7 @@ class MainGUI(QMainWindow):
 
         if do_it:
             if self.circuit.graph is None:
-                self.compile()
+                self.circuit.build_graph()
 
             alg = dict()
             alg['circular_layout'] = nx.circular_layout
@@ -920,6 +921,8 @@ class MainGUI(QMainWindow):
                 pass
             self.ui.progress_label.setText('Compiling grid...')
             QtGui.QGuiApplication.processEvents()
+
+            # TODO: Correct this function to not to depend on a previous compilation
             self.compile()
 
             if self.circuit.time_profile is not None:
@@ -1051,6 +1054,7 @@ class MainGUI(QMainWindow):
             if filename is not "":
                 if not filename.endswith('.xlsx'):
                     filename += '.xlsx'
+                # TODO: Correct this function
                 self.circuit.export_pf(file_name=filename)
         else:
             pass
@@ -1079,6 +1083,7 @@ class MainGUI(QMainWindow):
             if filename is not "":
                 if not filename.endswith('.xlsx'):
                     filename += '.xlsx'
+                # TODO: correct this function
                 self.circuit.export_profiles(file_name=filename)
         else:
             self.msg('There are no profiles!')
@@ -1107,6 +1112,7 @@ class MainGUI(QMainWindow):
         if filename is not "":
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
+            # TODO: Correct this function to not to depend on a previous compilation
             self.circuit.save_calculation_objects(file_path=filename)
 
     def export_diagram(self):
@@ -1247,7 +1253,7 @@ class MainGUI(QMainWindow):
 
                 for i, branch in enumerate(self.circuit.branches):
 
-                    S = self.circuit.power_flow_results.Sbranch[i]
+                    S = self.power_flow.results.Sbranch[i]
 
                     if branch.rate < 1e-3 or self.ui.rating_override_checkBox.isChecked():
                         r = np.round(abs(S) * factor, 1)
@@ -1363,6 +1369,8 @@ class MainGUI(QMainWindow):
         Simulation data structure clicked
         """
 
+        # TODO: Correct this function to operate correctly with the new engine
+
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1:
@@ -1401,6 +1409,7 @@ class MainGUI(QMainWindow):
 
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
 
+            # TODO: Correct this function to not to depend on a previous compilation
             self.compile()
 
             self.set_up_profile_sliders()
@@ -1691,14 +1700,14 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Compiling the grid...')
             QtGui.QGuiApplication.processEvents()
-            self.compile()
+            # self.compile()  # compiles inside
 
             # get the power flow options from the GUI
             options = self.get_selected_power_flow_options()
 
             # compute the automatic precision
             if self.ui.auto_precision_checkBox.isChecked():
-                lg = np.log10(abs(self.circuit.power_flow_input.Sbus.real))
+                lg = np.log10(abs(self.circuit.numerical_circuit.Sbus.real))
                 lg[lg == -np.inf] = 0
                 tol_idx = int(min(abs(lg))) + 3
                 tolerance = 1.0 / (10.0 ** tol_idx)
@@ -1730,33 +1739,28 @@ class MainGUI(QMainWindow):
         """
         # update the results in the circuit structures
         # print('Post power flow')
-        if self.circuit.power_flow_results is not None:
-            # print('Vbus:\n', abs(self.circuit.power_flow_results.voltage))
-            # print('Sbr:\n', abs(self.circuit.power_flow_results.Sbranch))
-            # print('ld:\n', abs(self.circuit.power_flow_results.loading))
-
+        if self.power_flow.results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
-            self.color_based_of_pf(s_bus=self.circuit.power_flow_results.Sbus,
-                                   s_branch=self.circuit.power_flow_results.Sbranch,
-                                   voltages=self.circuit.power_flow_results.voltage,
-                                   loadings=self.circuit.power_flow_results.loading,
-                                   types=self.circuit.power_flow_input.types,
-                                   losses=self.circuit.power_flow_results.losses)
+            self.color_based_of_pf(s_bus=self.power_flow.results.Sbus,
+                                   s_branch=self.power_flow.results.Sbranch,
+                                   voltages=self.power_flow.results.voltage,
+                                   loadings=self.power_flow.results.loading,
+                                   types=self.circuit.numerical_circuit.bus_types,
+                                   losses=self.power_flow.results.losses)
             self.update_available_results()
 
-            if len(self.circuit.power_flow_results.methods[0]) > 0:
-                data = np.r_[self.circuit.power_flow_results.methods,
-                             self.circuit.power_flow_results.converged,
-                             self.circuit.power_flow_results.error,
-                             self.circuit.power_flow_results.elapsed,
-                             self.circuit.power_flow_results.inner_iterations].transpose()
+            if len(self.power_flow.results.methods) > 0:
+                data = np.c_[self.power_flow.results.methods,
+                             self.power_flow.results.converged,
+                             self.power_flow.results.error,
+                             self.power_flow.results.elapsed,
+                             self.power_flow.results.inner_iterations]
                 col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
                 df = pd.DataFrame(data, columns=col)
 
-                msg_ = 'Power flow converged: \n' \
-                       + df.__str__()
+                msg_ = 'Power flow converged: \n' + df.__str__()
                 self.console_msg(msg_)
 
         else:
@@ -1822,7 +1826,7 @@ class MainGUI(QMainWindow):
         """
         # update the results in the circuit structures
         # print('Post short circuit')
-        if self.circuit.power_flow_results is not None:
+        if self.power_flow.results is not None:
             # print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
             # print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
             # print('ld:\n', abs(self.circuit.short_circuit_results.loading))
@@ -1830,11 +1834,11 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
-            self.color_based_of_pf(s_bus=self.circuit.short_circuit_results.Sbus,
-                                   s_branch=self.circuit.short_circuit_results.Sbranch,
-                                   voltages=self.circuit.short_circuit_results.voltage,
-                                   types=self.circuit.power_flow_input.types,
-                                   loadings=self.circuit.short_circuit_results.loading)
+            self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
+                                   s_branch=self.short_circuit.results.Sbranch,
+                                   voltages=self.short_circuit.results.voltage,
+                                   types=self.circuit.numerical_circuit.bus_types,
+                                   loadings=self.short_circuit.results.loading)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
@@ -1881,20 +1885,18 @@ class MainGUI(QMainWindow):
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
-                    self.compile()
+                    # self.compile()
 
                     n = len(self.circuit.buses)
                     #  compose the base power
-                    Sbase = zeros(n, dtype=complex)
-                    for c in self.circuit.circuits:
-                        Sbase[c.bus_original_idx] = c.power_flow_input.Sbus
+                    Sbase = self.power_flow.results.Sbus
 
                     vc_inputs = VoltageCollapseInput(Sbase=Sbase,
                                                      Vbase=self.power_flow.results.voltage,
                                                      Starget=Sbase * alpha)
 
                     # create object
-                    self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
+                    self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
 
                     # make connections
                     self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1916,17 +1918,16 @@ class MainGUI(QMainWindow):
                     # lock the UI
                     self.LOCK()
 
-                    self.compile()
+                    # self.compile()
 
                     self.power_flow.run_at(start_idx)
 
                     vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
                                                      Vbase=self.power_flow.results.voltage,
-                                                     Starget=self.circuit.time_series_input.Sprof.values[end_idx, :]
-                                                     )
+                                                     Starget=self.circuit.time_series_input.Sprof.values[end_idx, :])
 
                     # create object
-                    self.voltage_stability = VoltageCollapse(grid=self.circuit, options=vc_options, inputs=vc_inputs)
+                    self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
 
                     # make connections
                     self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1950,20 +1951,18 @@ class MainGUI(QMainWindow):
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
                 # Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
-                Sbranch, Ibranch, loading, losses, Sbus = self.power_flow.pf.power_flow_post_process(self.circuit, V)
+                Sbranch, Ibranch, loading, losses, Sbus = self.circuit.numerical_circuit.power_flow_post_process(V)
 
                 self.color_based_of_pf(s_bus=Sbus,
                                        s_branch=Sbranch,
                                        voltages=V,
                                        loadings=loading,
-                                       types=self.circuit.power_flow_input.types)
+                                       types=self.circuit.numerical_circuit.bus_types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
             warn('Something went wrong, There are no power flow results.')
-        self.UNLOCK()
-
         self.UNLOCK()
 
     def run_time_series(self):
@@ -1990,6 +1989,7 @@ class MainGUI(QMainWindow):
 
                 options = self.get_selected_power_flow_options()
 
+                # TODO: Review the compilation to include the OFP values
                 self.compile(use_opf_vals=use_opf_vals, dispatch_storage=options.dispatch_storage)
 
                 start = self.ui.profile_start_slider.value()
@@ -2023,7 +2023,7 @@ class MainGUI(QMainWindow):
             Sbranch = self.circuit.time_series_results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.circuit.power_flow_input.types)
+                                   types=self.circuit.numerical_circuit.bus_types)
 
             self.update_available_results()
 
@@ -2044,7 +2044,7 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                self.compile()
+                # self.compile()  # compiles inside
 
                 options = self.get_selected_power_flow_options()
 
@@ -2080,7 +2080,7 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
                                    loadings=self.monte_carlo.results.loading,
                                    s_branch=self.monte_carlo.results.sbranch,
-                                   types=self.circuit.power_flow_input.types,
+                                   types=self.circuit.numerical_circuit.bus_types,
                                    s_bus=None)
             self.update_available_results()
 
@@ -2101,7 +2101,7 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                self.compile()
+                # self.compile()  # compiles inside
 
                 options = self.get_selected_power_flow_options()
 
@@ -2134,7 +2134,7 @@ class MainGUI(QMainWindow):
         if not self.latin_hypercube_sampling.__cancel__:
             self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
                                    loadings=self.latin_hypercube_sampling.results.loading,
-                                   types=self.circuit.power_flow_input.types,
+                                   types=self.circuit.numerical_circuit.bus_types,
                                    s_branch=self.latin_hypercube_sampling.results.sbranch,
                                    s_bus=None)
             self.update_available_results()
@@ -2185,7 +2185,7 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Compiling the grid...')
             QtGui.QGuiApplication.processEvents()
-            self.compile()
+            # self.compile()  # compiles inside
 
             options = self.get_selected_power_flow_options()
             options.solver_type = SolverType.LM
@@ -2237,7 +2237,7 @@ class MainGUI(QMainWindow):
             # print grid
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
-                                   types=self.circuit.power_flow_input.types,
+                                   types=self.circuit.numerical_circuit.bus_types,
                                    s_branch=results.sbranch,
                                    s_bus=None,
                                    failed_br_idx=br_idx)
@@ -2267,7 +2267,7 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Compiling the grid...')
             QtGui.QGuiApplication.processEvents()
-            self.compile()
+            # self.compile()  # compiles inside
 
             # get the power flow options from the GUI
             load_shedding = self.ui.load_shedding_checkBox.isChecked()
@@ -2304,7 +2304,7 @@ class MainGUI(QMainWindow):
 
                 self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
                                        loadings=self.optimal_power_flow.results.loading,
-                                       types=self.circuit.power_flow_input.types,
+                                       types=self.circuit.numerical_circuit.bus_types,
                                        s_branch=self.optimal_power_flow.results.Sbranch,
                                        s_bus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
@@ -2331,7 +2331,7 @@ class MainGUI(QMainWindow):
                 # Compile the grid
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                self.compile()
+                # self.compile()   # compiles inside
 
                 # gather the simulation options
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
@@ -2372,7 +2372,7 @@ class MainGUI(QMainWindow):
             Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.circuit.power_flow_input.types)
+                                   types=self.circuit.numerical_circuit.bus_types)
 
             self.update_available_results()
 
@@ -2595,10 +2595,11 @@ class MainGUI(QMainWindow):
         self.ui.result_listView.setModel(mdl)
 
         # update the list of islands
-        self.ui.simulation_data_island_comboBox.clear()
-        self.ui.simulation_data_island_comboBox.addItems([str(circuit) for circuit in self.circuit.circuits])
-        if len(self.circuit.circuits) > 0:
-            self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
+        # TODO: Review how to do this
+        # self.ui.simulation_data_island_comboBox.clear()
+        # self.ui.simulation_data_island_comboBox.addItems([str(circuit) for circuit in self.circuit.circuits])
+        # if len(self.circuit.circuits) > 0:
+        #     self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
 
     def clear_results(self):
         """
