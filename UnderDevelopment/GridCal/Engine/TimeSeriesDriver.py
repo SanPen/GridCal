@@ -496,24 +496,30 @@ class TimeSeries(QThread):
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
         if self.end_ is None:
             self.end_ = nt
 
         n_cores = multiprocessing.cpu_count()
 
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
+
         # For every circuit, run the time series
-        for nc, circuit in enumerate(self.grid.circuits):
+        for nc, calculation_input in enumerate(calculation_inputs):
 
             self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
 
-            if circuit.time_series_input.valid:
+            if nt > 0:
 
-                nt = len(circuit.time_series_input.time_array)
-                n = len(circuit.buses)
-                m = len(circuit.branches)
+                nt = calculation_input.ntime
+                n = calculation_input.nbus
+                m = calculation_input.nbr
                 results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
-                Vlast = circuit.power_flow_input.Vbus
+                Vlast = calculation_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
@@ -530,10 +536,13 @@ class TimeSeries(QThread):
                     # launch only n_cores jobs at the time
                     while k < n_cores+2 and (t+k) < nt:
                         # set the power values
-                        Y, I, S = circuit.time_series_input.get_at(t)
+                        # Y, I, S = calculation_input.time_series_input.get_at(t)
+                        Y = calculation_input.Ysh_prof[:, t]
+                        I = calculation_input.Ibus_prof[:, t]
+                        S = calculation_input.Sbus_prof[:, t]
 
                         # run power flow at the circuit
-                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, circuit, Vlast, S, I, return_dict))
+                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, calculation_input, Vlast, S, I, return_dict))
                         jobs.append(p)
                         p.start()
                         k += 1
@@ -552,103 +561,17 @@ class TimeSeries(QThread):
                     # store circuit results at the time index 't'
                     results.set_at(t, return_dict[t])
 
-                # store at circuit level
-                circuit.time_series_results = results
-
                 # merge  the circuit's results
-                self.grid.time_series_results.apply_from_island(results,
-                                                                circuit.bus_original_idx,
-                                                                circuit.branch_original_idx,
-                                                                circuit.time_series_input.time_array,
-                                                                circuit.name)
+                time_series_results.apply_from_island(results,
+                                                      calculation_input.original_bus_idx,
+                                                      calculation_input.original_branch_idx,
+                                                      calculation_input.time_array,
+                                                      'TS multi-thread')
             else:
                 print('There are no profiles')
                 self.progress_text.emit('There are no profiles')
 
-        return self.grid.time_series_results
-
-    def run_multi_thread_map(self):
-        """
-        Run multi thread time series
-        :return:
-        """
-
-        results_ = list()
-        self.completed_processes = 0
-        total_processes = 1
-        def complete(result):
-            results_.append(result)
-            self.completed_processes += 1
-            # print('Progress:', (self.completed_processes / total_processes) * 100)
-            progress = (self.completed_processes / total_processes) * 100
-            self.progress_signal.emit(progress)
-
-        # initialize the grid time series results
-        # we will append the island results with another function
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
-        nt = len(self.grid.time_profile)
-        self.grid.time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
-
-        n_cores = multiprocessing.cpu_count()
-        total_processes = nt
-
-        pool = multiprocessing.Pool()
-
-        # For every circuit, run the time series
-        for nc, circuit in enumerate(self.grid.circuits):
-
-            self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
-
-            if circuit.time_series_input.valid:
-
-                nt = len(circuit.time_series_input.time_array)
-                n = len(circuit.buses)
-                m = len(circuit.branches)
-                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
-                Vlast = circuit.power_flow_input.Vbus
-
-                self.progress_signal.emit(0.0)
-
-                # Start jobs
-                manager = multiprocessing.Manager()
-                return_dict = manager.dict()
-
-                t = 0
-                while t < nt and not self.__cancel__:
-
-                    # set the power values
-                    Y, I, S = circuit.time_series_input.get_at(t)
-
-                    # run power flow at the circuit
-                    pool.apply_async(func=power_flow_worker,
-                                     args=(t, self.options, circuit, Vlast, S, I, return_dict),
-                                     callback=complete)
-                    t += 1
-
-                pool.close()
-                pool.join()
-
-                # collect results
-                self.progress_text.emit('Collecting results...')
-                for t in return_dict.keys():
-                    # store circuit results at the time index 't'
-                    results.set_at(t, return_dict[t])
-
-                # store at circuit level
-                circuit.time_series_results = results
-
-                # merge  the circuit's results
-                self.grid.time_series_results.apply_from_island(results,
-                                                                circuit.bus_original_idx,
-                                                                circuit.branch_original_idx,
-                                                                circuit.time_series_input.time_array,
-                                                                circuit.name)
-            else:
-                print('There are no profiles')
-                self.progress_text.emit('There are no profiles')
-
-        return self.grid.time_series_results
+        return time_series_results
 
     def run(self):
         """

@@ -20,9 +20,11 @@ import numpy as np
 from numpy import complex, zeros, exp, r_, array, angle, c_
 from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 from matplotlib import pyplot as plt
+from timeit import default_timer as timer
 
 from PyQt5.QtCore import QRunnable
 
+from GridCal.Engine.IoStructures import CalculationInputs
 from GridCal.Engine.NewEngine import NumericalCircuit
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
@@ -34,29 +36,31 @@ from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
 # Optimal Power flow classes
 ########################################################################################################################
 
+# TODO: Complete reformulation of the DF-OPF to work with CalculationInputs() instead of Circuit()
+
 class DcOpf:
 
-    def __init__(self, circuit, options):
+    def __init__(self, calculation_input: CalculationInputs, options):
         """
         OPF simple dispatch problem
-        :param circuit: GridCal Circuit instance (remember this must be a connected island)
+        :param calculation_input: GridCal Circuit instance (remember this must be a connected island)
         :param options: OptimalPowerFlowOptions instance
         """
 
-        self.circuit = circuit
+        self.circuit = calculation_input
 
         self.load_shedding = options.load_shedding
 
-        self.Sbase = circuit.Sbase
-        self.B = circuit.power_flow_input.Ybus.imag.tocsr()
-        self.nbus = self.B.shape[0]
-        self.nbranch = len(self.circuit.branches)
+        self.Sbase = calculation_input.Sbase
+        self.B = calculation_input.Ybus.imag.tocsr()
+        self.nbus = calculation_input.nbus
+        self.nbranch = calculation_input.nbr
 
         # node sets
-        self.pqpv = circuit.power_flow_input.pqpv
-        self.pv = circuit.power_flow_input.pv
-        self.vd = circuit.power_flow_input.ref
-        self.pq = circuit.power_flow_input.pq
+        self.pqpv = calculation_input.pqpv
+        self.pv = calculation_input.pv
+        self.vd = calculation_input.ref
+        self.pq = calculation_input.pq
 
         # declare the voltage angles and the possible load shed values
         self.theta = [None] * self.nbus
@@ -1337,19 +1341,19 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
-    def single_optimal_power_flow(self, circuit: NumericalCircuit, t_idx=None):
+    def single_optimal_power_flow(self, calculation_input: CalculationInputs, t_idx=None):
         """
         Run a power flow simulation for a single circuit
-        @param circuit: Single island circuit
+        @param calculation_input: Single island circuit
         @param t_idx: time index, if none the default values are taken
         @return: OptimalPowerFlowResults object
         """
 
         # declare LP problem
         if self.options.solver == SolverType.DC_OPF:
-            problem = DcOpf(circuit, self.options)
+            problem = DcOpf(calculation_input, self.options)
         else:
-            problem = AcOpf(circuit, self.options)
+            problem = AcOpf(calculation_input, self.options)
 
         problem.build(t_idx=t_idx)
         problem.set_loads(t_idx=t_idx)
@@ -1374,22 +1378,28 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
+
         k = 0
-        for circuit in self.grid.circuits:
+        for calculation_input in calculation_inputs:
 
             if self.options.verbose:
-                print('Solving ' + circuit.name)
+                print('Solving ' + calculation_input.name)
 
             # run OPF
-            optimal_power_flow_results, solved = self.single_optimal_power_flow(circuit, t_idx=t_idx)
+            optimal_power_flow_results, solved = self.single_optimal_power_flow(calculation_input, t_idx=t_idx)
 
             # assert the total solvability
             self.all_solved = self.all_solved and solved
 
             # merge island results
             self.results.apply_from_island(optimal_power_flow_results,
-                                           circuit.bus_original_idx,
-                                           circuit.branch_original_idx)
+                                           calculation_input.original_bus_idx,
+                                           calculation_input.original_branch_idx)
 
             # self.progress_signal.emit((k+1) / len(self.grid.circuits))
             k += 1
