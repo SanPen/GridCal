@@ -14,7 +14,10 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.CalculationEngine import *
+from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType
 from matplotlib import pyplot as plt
+
+import os.path, sys
 
 if __name__ == '__main__':
 
@@ -26,13 +29,17 @@ if __name__ == '__main__':
     # fname = 'lynn5buspq.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '..\\..\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 
-    print('Reading...')
-    grid.load_file(fname)
+    if os.path.isfile(fname):
+        print('Reading...')
+        grid.load_file(fname)
+    else:
+        print('Error: File does not exist: {}'.format(fname))
+        sys.exit()
     grid.compile()
 
     options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False,
@@ -45,6 +52,8 @@ if __name__ == '__main__':
     ####################################################################################################################
     # PowerFlow
     ####################################################################################################################
+    # from GridCal.Engine.PowerFlowDriver import PowerFlow
+    #
     # print('\n\n')
     # power_flow = PowerFlow(grid, options)
     # power_flow.run()
@@ -69,6 +78,8 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Short circuit
     ####################################################################################################################
+    # from GridCal.Engine.ShortCircuitDriver import ShortCircuitOptions, ShortCircuit
+    #
     # print('\n\n')
     # print('Short Circuit')
     # sc_options = ShortCircuitOptions(bus_index=[16])
@@ -83,6 +94,8 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
+    from GridCal.Engine.TimeSeriesDriver import TimeSeries, TimeSeriesResultsAnalysis
+    
     print('Running TS...'
           '')
     ts = TimeSeries(grid=grid, options=options, start=0, end=96)
@@ -111,6 +124,8 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
+    # from GridCal.Engine.VoltageCollapseDriver import VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
+    #
     # vc_options = VoltageCollapseOptions()
     # Sbase = zeros(len(grid.buses), dtype=complex)
     # for c in grid.circuits:
