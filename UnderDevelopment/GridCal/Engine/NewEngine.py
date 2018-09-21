@@ -223,6 +223,12 @@ class NumericalCircuit:
         # Declare object to store the calculation inputs
         circuit = CalculationInputs(self.nbus, self.nbr, self.ntime)
 
+        circuit.branch_rates = self.br_rates
+        circuit.F = self.F
+        circuit.T = self.T
+        circuit.bus_names = self.bus_names
+        circuit.branch_names = self.branch_names
+
         ################################################################################################################
         # loads, generators, batteries, etc...
         ################################################################################################################
@@ -251,6 +257,7 @@ class NumericalCircuit:
         circuit.Vbus = self.V0
         circuit.Sbase = self.Sbase
         circuit.types = self.bus_types
+
 
         if self.ntime > 0:
             # Shunts

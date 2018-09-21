@@ -137,6 +137,8 @@ class MainGUI(QMainWindow):
         # Declare circuit
         self.circuit = MultiCircuit()
 
+        self.calculation_inputs_to_display = None
+
         self.project_directory = None
 
         # solvers dictionary
@@ -364,6 +366,8 @@ class MainGUI(QMainWindow):
         self.ui.assignTemplateButton.clicked.connect(self.assign_template)
 
         self.ui.processTemplatesPushButton.clicked.connect(self.process_templates)
+
+        self.ui.compute_simulation_data_pushButton.clicked.connect(self.update_islands_to_display)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1055,9 +1059,9 @@ class MainGUI(QMainWindow):
                 if not filename.endswith('.xlsx'):
                     filename += '.xlsx'
                 # TODO: Correct this function
-                self.circuit.export_pf(file_name=filename)
+                self.circuit.export_pf(file_name=filename, power_flow_results=self.power_flow.results)
         else:
-            pass
+            self.msg('There are no power flow results', 'Save power flow results')
 
     def export_object_profiles(self):
         """
@@ -1092,9 +1096,6 @@ class MainGUI(QMainWindow):
         """
         Export the calculation objects to file
         """
-
-        if self.circuit.graph is None:
-            self.compile()
 
         # declare the allowed file types
         files_types = "Excel file (*.xlsx)"
@@ -1374,12 +1375,11 @@ class MainGUI(QMainWindow):
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1:
-            if self.circuit.graph is None:
-                self.compile()
-
             elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
 
-            df = self.circuit.circuits[i].power_flow_input.get_structure(elm_type)
+            df = self.calculation_inputs_to_display[i].get_structure(elm_type)
+
+            # df = self.circuit.circuits[i].power_flow_input.get_structure(elm_type)
 
             mdl = PandasModel(df)
 
@@ -2016,11 +2016,11 @@ class MainGUI(QMainWindow):
         @return:
         """
 
-        if self.circuit.time_series_results is not None:
+        if self.time_series.results is not None:
 
-            voltage = self.circuit.time_series_results.voltage.max(axis=0)
-            loading = self.circuit.time_series_results.loading.max(axis=0)
-            Sbranch = self.circuit.time_series_results.Sbranch.max(axis=0)
+            voltage = self.time_series.results.voltage.max(axis=0)
+            loading = self.time_series.results.loading.max(axis=0)
+            Sbranch = self.time_series.results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
                                    types=self.circuit.numerical_circuit.bus_types)
@@ -2594,13 +2594,6 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
 
-        # update the list of islands
-        # TODO: Review how to do this
-        # self.ui.simulation_data_island_comboBox.clear()
-        # self.ui.simulation_data_island_comboBox.addItems([str(circuit) for circuit in self.circuit.circuits])
-        # if len(self.circuit.circuits) > 0:
-        #     self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
-
     def clear_results(self):
         """
         Clear the results tab
@@ -3159,6 +3152,32 @@ class MainGUI(QMainWindow):
             if len(logger) > 0:
                 dlg = LogsDialogue('Process templates', logger)
                 dlg.exec_()
+
+    def recompile_circuits_for_display(self):
+        """
+        Recompile the circuits available to display
+        :return:
+        """
+        if self.circuit is not None:
+            print('Compiling...', end='')
+            t1 = timer()
+            numerical_circuit = self.circuit.compile()
+            self.calculation_inputs_to_display = numerical_circuit.compute()
+            print(timer() - t1, 's')
+            return True
+        else:
+            return False
+
+    def update_islands_to_display(self):
+        """
+        Compile the circuit and allow the display of the calculation objects
+        :return:
+        """
+        self.recompile_circuits_for_display()
+        self.ui.simulation_data_island_comboBox.clear()
+        self.ui.simulation_data_island_comboBox.addItems(['Island ' + str(i) for i, circuit in enumerate(self.calculation_inputs_to_display)])
+        if len(self.calculation_inputs_to_display) > 0:
+            self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
 
 
 def run():

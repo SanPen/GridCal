@@ -402,16 +402,14 @@ class TimeSeries(QThread):
 
             # are we dispatching storage? if so, generate a dictionary of battery -> bus index
             # to be able to set the batteries values into the vector S
-
-            # TODO: think how to implement this with the new engine
-            # if self.options.dispatch_storage:
-            #     batteries = list()
-            #     batteries_bus_idx = list()
-            #     for k, bus in enumerate(calculation_input.buses):
-            #         for batt in bus.batteries:
-            #             batt.reset()  # reset the calculation values
-            #             batteries.append(batt)
-            #             batteries_bus_idx.append(k)
+            batteries = list()
+            batteries_bus_idx = list()
+            if self.options.dispatch_storage:
+                for k, bus in enumerate(self.grid.buses):
+                    for batt in bus.batteries:
+                        batt.reset()  # reset the calculation values
+                        batteries.append(batt)
+                        batteries_bus_idx.append(k)
 
             self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
 
@@ -443,21 +441,20 @@ class TimeSeries(QThread):
                     S = calculation_input.Sbus_prof[:, t]
 
                     # add the controlled storage power if controlling storage
-                    # TODO: think how to implement this with the new engine
-                    # if self.options.dispatch_storage:
-                    #
-                    #     if t < self.end_-1:
-                    #         # compute the time delta: the time values come in nanoseconds
-                    #         dt = int(calculation_input.time_series_input.time_array[t+1]
-                    #                  - calculation_input.time_series_input.time_array[t]) * 1e-9 / 3600
-                    #
-                    #     for k, batt in enumerate(batteries):
-                    #
-                    #         P = batt.get_processed_at(t, dt=dt, store_values=True)
-                    #         bus_idx = batteries_bus_idx[k]
-                    #         S[bus_idx] += (P / calculation_input.Sbase)
-                    #     else:
-                    #         pass
+                    if self.options.dispatch_storage:
+
+                        if t < self.end_-1:
+                            # compute the time delta: the time values come in nanoseconds
+                            dt = int(calculation_input.time_array[t+1]
+                                     - calculation_input.time_array[t]) * 1e-9 / 3600
+
+                        for k, batt in enumerate(batteries):
+
+                            P = batt.get_processed_at(t, dt=dt, store_values=True)
+                            bus_idx = batteries_bus_idx[k]
+                            S[bus_idx] += (P / calculation_input.Sbase)
+                        else:
+                            pass
 
                     # run power flow at the circuit
                     res = power_flow.run_pf(calculation_inputs=calculation_input, Vbus=Vlast, Sbus=S, Ibus=I)

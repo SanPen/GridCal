@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -392,9 +392,21 @@ class Ui_mainWindow(object):
         self.label_23 = QtWidgets.QLabel(self.frame_28)
         self.label_23.setObjectName("label_23")
         self.verticalLayout_27.addWidget(self.label_23)
-        self.simulation_data_island_comboBox = QtWidgets.QComboBox(self.frame_28)
+        self.frame_40 = QtWidgets.QFrame(self.frame_28)
+        self.frame_40.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_40.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_40.setObjectName("frame_40")
+        self.formLayout = QtWidgets.QFormLayout(self.frame_40)
+        self.formLayout.setObjectName("formLayout")
+        self.compute_simulation_data_pushButton = QtWidgets.QPushButton(self.frame_40)
+        self.compute_simulation_data_pushButton.setText("")
+        self.compute_simulation_data_pushButton.setIcon(icon9)
+        self.compute_simulation_data_pushButton.setObjectName("compute_simulation_data_pushButton")
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.compute_simulation_data_pushButton)
+        self.simulation_data_island_comboBox = QtWidgets.QComboBox(self.frame_40)
         self.simulation_data_island_comboBox.setObjectName("simulation_data_island_comboBox")
-        self.verticalLayout_27.addWidget(self.simulation_data_island_comboBox)
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.simulation_data_island_comboBox)
+        self.verticalLayout_27.addWidget(self.frame_40)
         self.label_30 = QtWidgets.QLabel(self.frame_28)
         self.label_30.setObjectName("label_30")
         self.verticalLayout_27.addWidget(self.label_30)

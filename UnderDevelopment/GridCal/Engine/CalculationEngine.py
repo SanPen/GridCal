@@ -22,6 +22,7 @@ import networkx as nx
 import pandas as pd
 import pulp
 import json
+from timeit import default_timer as timer
 from networkx import connected_components
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
@@ -3752,14 +3753,20 @@ class MultiCircuit:
         Returns:
 
         """
+
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
+
         writer = pd.ExcelWriter(file_path)
 
-        for c, circuit in enumerate(self.circuits):
+        for c, calc_input in enumerate(calculation_inputs):
 
-            for elm_type in circuit.power_flow_input.available_structures:
-
+            for elm_type in calc_input.available_structures:
                 name = elm_type + '_' + str(c)
-                df = circuit.power_flow_input.get_structure(elm_type).astype(str)
+                df = calc_input.get_structure(elm_type).astype(str)
                 df.to_excel(writer, name)
 
         writer.save()
@@ -3914,7 +3921,11 @@ class MultiCircuit:
                 i_sh += 1
 
         # Compile the branches
+        self.branch_names = np.zeros(m, dtype=object)
         for i, branch in enumerate(self.branches):
+
+            self.branch_names[i] = branch.name
+
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
 
@@ -4240,15 +4251,15 @@ class MultiCircuit:
 
         nx.draw_spring(self.graph, ax=ax)
 
-    def export_pf(self, file_name):
+    def export_pf(self, file_name, power_flow_results):
         """
         Export power flow results to file
         :param file_name: Excel file name
         :return: Nothing
         """
 
-        if self.power_flow_results is not None:
-            df_bus, df_branch = self.power_flow_results.export_all()
+        if power_flow_results is not None:
+            df_bus, df_branch = power_flow_results.export_all()
 
             df_bus.index = self.bus_names
             df_branch.index = self.branch_names

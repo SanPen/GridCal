@@ -425,6 +425,9 @@ class CalculationInputs:
         self.original_bus_idx = list()
         self.original_branch_idx = list()
 
+        self.bus_names = np.empty(self.nbus, dtype=object)
+        self.branch_names = np.empty(self.nbr, dtype=object)
+
         # resulting matrices (calculation)
         self.Yf = csc_matrix((nbr, nbus), dtype=complex)
         self.Yt = csc_matrix((nbr, nbus), dtype=complex)
@@ -539,6 +542,9 @@ class CalculationInputs:
 
         obj.F = self.F[branch_idx]
         obj.T = self.T[branch_idx]
+        obj.branch_rates = self.branch_rates[branch_idx]
+        obj.bus_names = self.bus_names[bus_idx]
+        obj.branch_names = self.branch_names[branch_idx]
 
         obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
         obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
@@ -612,7 +618,7 @@ class CalculationInputs:
             df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
 
         elif structure_type == 'Yshunt':
-            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
+            df = pd.DataFrame(data=self.Ysh, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
 
         elif structure_type == 'Yseries':
             df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
@@ -915,7 +921,7 @@ class PowerFlowResults:
                 title = 'Bus voltage '
                 polar = False
 
-            if result_type == 'Bus voltage (polar)':
+            elif result_type == 'Bus voltage (polar)':
                 y = self.voltage[indices]
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
