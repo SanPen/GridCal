@@ -521,14 +521,14 @@ class CalculationInputs:
         :param branch_idx: branch indices of the island
         :return: CalculationInputs instance
         """
-        obj = CalculationInputs(len(bus_idx), len(branch_idx))
+        obj = CalculationInputs(len(bus_idx), len(branch_idx), self.ntime)
 
-        obj.Yf = self.Yf[branch_idx, :][:, bus_idx]
-        obj.Yt = self.Yt[branch_idx, :][:, bus_idx]
-        obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx]
-        obj.Yseries = self.Yseries[bus_idx, :][:, bus_idx]
-        obj.B1 = self.B1[bus_idx, :][:, bus_idx]
-        obj.B2 = self.B2[bus_idx, :][:, bus_idx]
+        obj.Yf = self.Yf[branch_idx, :][:, bus_idx].copy()
+        obj.Yt = self.Yt[branch_idx, :][:, bus_idx].copy()
+        obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx].copy()
+        obj.Yseries = self.Yseries[bus_idx, :][:, bus_idx].copy()
+        obj.B1 = self.B1[bus_idx, :][:, bus_idx].copy()
+        obj.B2 = self.B2[bus_idx, :][:, bus_idx].copy()
 
         obj.Ysh = self.Ysh[bus_idx]
         obj.Sbus = self.Sbus[bus_idx]
@@ -836,8 +836,15 @@ class PowerFlowResults:
     def check_limits(self, F, T, Vmax, Vmin, wo=1, wv1=1, wv2=1):
         """
         Check the grid violations on the whole circuit
-        @param circuit: PowerFlowInput object
-        @return: summation of the deviations
+        Args:
+            F:
+            T:
+            Vmax:
+            Vmin:
+            wo:
+            wv1:
+            wv2:
+        Returns:summation of the deviations
         """
         # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
         br_idx = where(self.loading > 1)[0]

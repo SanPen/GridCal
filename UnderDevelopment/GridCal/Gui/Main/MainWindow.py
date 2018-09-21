@@ -1983,6 +1983,7 @@ class Ui_mainWindow(object):
         self.catalogue_delete_pushButton.setText(_translate("mainWindow", "Delete"))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.tab_12), _translate("mainWindow", "Types catalogue"))
         self.label_23.setText(_translate("mainWindow", "Island"))
+        self.compute_simulation_data_pushButton.setToolTip(_translate("mainWindow", "Update the islands dispayed"))
         self.label_30.setText(_translate("mainWindow", "Data structures"))
         self.exportSimulationDataButton.setText(_translate("mainWindow", "Export"))
         self.label_31.setText(_translate("mainWindow", "Data table"))
