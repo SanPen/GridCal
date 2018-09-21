@@ -40,7 +40,7 @@ from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
 
 class DcOpf:
 
-    def __init__(self, calculation_input: CalculationInputs, options):
+    def __init__(self, calculation_input: CalculationInputs, buses, branches, options):
         """
         OPF simple dispatch problem
         :param calculation_input: GridCal Circuit instance (remember this must be a connected island)
@@ -48,6 +48,10 @@ class DcOpf:
         """
 
         self.calculation_input = calculation_input
+
+        self.buses = buses
+        self.buses_dict = {bus: i for i, bus in enumerate(buses)}  # dictionary of bus objects given their indices
+        self.branches = branches
 
         self.load_shedding = options.load_shedding
 
@@ -142,7 +146,7 @@ class DcOpf:
             fobj += self.theta[j] * 0.0
 
         # Add the generators cost
-        for k, bus in enumerate(self.calculation_input.buses):
+        for k, bus in enumerate(self.buses):
 
             generators = bus.controlled_generators + bus.batteries
 
@@ -174,7 +178,7 @@ class DcOpf:
         # minimize the branch loading slack if not load shedding
         if not self.load_shedding:
             # Minimize the branch overload slacks
-            for k, branch in enumerate(self.calculation_input.branches):
+            for k, branch in enumerate(self.branches):
                 if branch.active:
                     fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
                     fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
@@ -193,7 +197,7 @@ class DcOpf:
 
             calculated_node_power = 0
             node_power_injection = 0
-            generators = self.calculation_input.buses[i].controlled_generators + self.calculation_input.buses[i].batteries
+            generators = self.buses[i].controlled_generators + self.buses[i].batteries
 
             # add the calculated node power
             for ii in range(self.B.indptr[i], self.B.indptr[i + 1]):
@@ -255,7 +259,7 @@ class DcOpf:
 
             val = 0
             g = 0
-            generators = self.calculation_input.buses[i].controlled_generators + self.calculation_input.buses[i].batteries
+            generators = self.buses[i].controlled_generators + self.buses[i].batteries
 
             # compute the slack node power
             for ii in range(self.B.indptr[i], self.B.indptr[i + 1]):
@@ -283,11 +287,11 @@ class DcOpf:
         # Set the branch limits
         ################################################################################################################
         any_rate_zero = False
-        for k, branch in enumerate(self.calculation_input.branches):
+        for k, branch in enumerate(self.branches):
 
             if branch.active:
-                i = self.calculation_input.buses_dict[branch.bus_from]
-                j = self.calculation_input.buses_dict[branch.bus_to]
+                i = self.buses_dict[branch.bus_from]
+                j = self.buses_dict[branch.bus_to]
 
                 # branch flow
                 Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
@@ -337,7 +341,7 @@ class DcOpf:
                 calculated_node_power = self.s_restrictions[k]
 
                 # add the nodal demand
-                for load in self.calculation_input.buses[i].loads:
+                for load in self.buses[i].loads:
                     if load.active:
                         self.loads[i] += load.S.real / self.Sbase
                     else:
@@ -352,16 +356,16 @@ class DcOpf:
 
                         self.problem.add(
                             calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
-                            self.calculation_input.buses[i].name + '_ct_node_mismatch_' + str(k))
+                            self.buses[i].name + '_ct_node_mismatch_' + str(k))
 
                         # if there is no load at the node, do not allow load shedding
-                        if len(self.calculation_input.buses[i].loads) == 0:
+                        if len(self.buses[i].loads) == 0:
                             self.problem.add(self.load_shed[i] == 0.0,
-                                             self.calculation_input.buses[i].name + '_ct_null_load_shed_' + str(k))
+                                             self.buses[i].name + '_ct_null_load_shed_' + str(k))
 
                     else:
                         self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                         self.calculation_input.buses[i].name + '_ct_node_mismatch_' + str(k))
+                                         self.buses[i].name + '_ct_node_mismatch_' + str(k))
         else:
             # Use the load profile values at index=t_idx
             for k, i in enumerate(self.pqpv):
@@ -371,7 +375,7 @@ class DcOpf:
                 calculated_node_power = self.s_restrictions[k]
 
                 # add the nodal demand
-                for load in self.calculation_input.buses[i].loads:
+                for load in self.buses[i].loads:
                     if load.active:
                         self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
                     else:
@@ -382,16 +386,16 @@ class DcOpf:
 
                     self.problem.add(
                         calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
-                        self.calculation_input.buses[i].name + '_ct_node_mismatch_' + str(k))
+                        self.buses[i].name + '_ct_node_mismatch_' + str(k))
 
                     # if there is no load at the node, do not allow load shedding
-                    if len(self.calculation_input.buses[i].loads) == 0:
+                    if len(self.buses[i].loads) == 0:
                         self.problem.add(self.load_shed[i] == 0.0,
-                                         self.calculation_input.buses[i].name + '_ct_null_load_shed_' + str(k))
+                                         self.buses[i].name + '_ct_null_load_shed_' + str(k))
 
                 else:
                     self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                     self.calculation_input.buses[i].name + '_ct_node_mismatch_' + str(k))
+                                     self.buses[i].name + '_ct_node_mismatch_' + str(k))
 
     def solve(self):
         """
@@ -438,9 +442,9 @@ class DcOpf:
 
         # Set the branch limits
         print('\nBranch flows (in MW)')
-        for k, branch in enumerate(self.calculation_input.branches):
-            i = self.calculation_input.buses_dict[branch.bus_from]
-            j = self.calculation_input.buses_dict[branch.bus_to]
+        for k, branch in enumerate(self.branches):
+            i = self.buses_dict[branch.bus_from]
+            j = self.buses_dict[branch.bus_to]
             if self.theta[i].value() is not None and self.theta[j].value() is not None:
                 F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
             else:
@@ -457,8 +461,8 @@ class DcOpf:
         """
 
         # initialize results object
-        n = len(self.calculation_input.buses)
-        m = len(self.calculation_input.branches)
+        n = len(self.buses)
+        m = len(self.branches)
         res = OptimalPowerFlowResults(is_dc=True)
         res.initialize(n, m)
 
@@ -513,12 +517,12 @@ class DcOpf:
                 res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, res.voltage, only_power=True)
 
                 # Add branches
-                for k, branch in enumerate(self.calculation_input.branches):
+                for k, branch in enumerate(self.branches):
 
                     if branch.active:
                         # get the from and to nodal indices of the branch
-                        i = self.calculation_input.buses_dict[branch.bus_from]
-                        j = self.calculation_input.buses_dict[branch.bus_to]
+                        i = self.buses_dict[branch.bus_from]
+                        j = self.buses_dict[branch.bus_to]
 
                         # compute the power flowing
                         if self.theta[i].value() is not None and self.theta[j].value() is not None:
@@ -546,10 +550,10 @@ class DcOpf:
 
 class AcOpf:
 
-    def __init__(self, circuit: NumericalCircuit, options, voltage_band=0.1):
+    def __init__(self, calculation_input: CalculationInputs, options, buses, branches, voltage_band=0.1):
         """
         Linearized AC power flow, solved with a linear solver :o
-        :param circuit: GridCal Circuit instance
+        :param calculation_input: GridCal Circuit instance
         """
 
         self.vm_low = 1.0 - voltage_band
@@ -557,21 +561,26 @@ class AcOpf:
 
         self.load_shedding = options.load_shedding
 
-        self.circuit = circuit
-        self.Sbase = circuit.Sbase
+        self.calculation_input = calculation_input
+
+        self.buses = buses
+        self.buses_dict = {bus: i for i, bus in enumerate(buses)}
+        self.branches = branches
+
+        self.Sbase = calculation_input.Sbase
 
         # node sets
-        self.pv = circuit.power_flow_input.pv
-        self.pq = circuit.power_flow_input.pq
-        self.vd = circuit.power_flow_input.ref
+        self.pv = calculation_input.pv
+        self.pq = calculation_input.pq
+        self.vd = calculation_input.ref
         self.pvpq = r_[self.pv, self.pq]
         self.pvpqpq = r_[self.pv, self.pq, self.pq]
 
-        Y = circuit.power_flow_input.Ybus
-        self.B = circuit.power_flow_input.Ybus.imag
-        Ys = circuit.power_flow_input.Yseries
-        S = circuit.power_flow_input.Sbus
-        self.V = circuit.power_flow_input.Vbus.copy()
+        Y = calculation_input.Ybus
+        self.B = calculation_input.Ybus.imag
+        Ys = calculation_input.Yseries
+        S = calculation_input.Sbus
+        self.V = calculation_input.Vbus.copy()
 
         # form the system matrix
         A11 = -Ys.imag[self.pvpq, :][:, self.pvpq]
@@ -591,8 +600,8 @@ class AcOpf:
 
         # declare the voltage increments dx
         self.nn = self.sys_mat.shape[0]
-        self.nbranch = len(self.circuit.branches)
-        self.nbus = len(self.circuit.buses)
+        self.nbranch = len(self.branches)
+        self.nbus = len(self.buses)
         self.dx_var = [None] * self.nn
 
         self.flow_ij = [None] * self.nbranch
@@ -667,7 +676,7 @@ class AcOpf:
         #     fobj += self.dx_var[i] * 0.0
 
         # Add the generators cost
-        for k, bus in enumerate(self.circuit.buses):
+        for k, bus in enumerate(self.buses):
 
             generators = bus.controlled_generators + bus.batteries
 
@@ -699,7 +708,7 @@ class AcOpf:
         # minimize the branch loading slack if not load shedding
         if not self.load_shedding:
             # Minimize the branch overload slacks
-            for k, branch in enumerate(self.circuit.branches):
+            for k, branch in enumerate(self.branches):
                 if branch.active:
                     fobj += self.slack_loading_ij_p[k] + self.slack_loading_ij_n[k]
                     fobj += self.slack_loading_ji_p[k] + self.slack_loading_ji_n[k]
@@ -730,7 +739,7 @@ class AcOpf:
 
                 # gather the generators at the node
                 k = self.pvpqpq[i]
-                generators = self.circuit.buses[k].controlled_generators + self.circuit.buses[k].batteries
+                generators = self.buses[k].controlled_generators + self.buses[k].batteries
 
                 # add the generation LP vars
                 if t_idx is None:
@@ -785,7 +794,7 @@ class AcOpf:
 
                 # gather the generators at the node
                 k = self.vd[i]
-                generators = self.circuit.buses[k].controlled_generators + self.circuit.buses[k].batteries
+                generators = self.buses[k].controlled_generators + self.buses[k].batteries
 
                 # add the generation LP vars
                 if t_idx is None:
@@ -822,9 +831,9 @@ class AcOpf:
         ################################################################################################################
         # Set the branch limits: This is the same as in the DC OPF, unless a better approximation is found
         ################################################################################################################
-        for k, branch in enumerate(self.circuit.branches):
-            i = self.circuit.buses_dict[branch.bus_from]
-            j = self.circuit.buses_dict[branch.bus_to]
+        for k, branch in enumerate(self.branches):
+            i = self.buses_dict[branch.bus_from]
+            j = self.buses_dict[branch.bus_to]
 
             if i in self.theta_dict.keys():
                 va_i = self.theta_dict[i]
@@ -876,7 +885,7 @@ class AcOpf:
                 calculated_node_power = self.s_restrictions[k]
 
                 # add the nodal demand
-                for load in self.circuit.buses[i].loads:
+                for load in self.buses[i].loads:
                     if load.active:
                         if k < (npq + npv):
                             self.loads[i] += load.S.real / self.Sbase
@@ -894,16 +903,16 @@ class AcOpf:
 
                         self.problem.add(
                             calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
-                            self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+                            self.buses[i].name + '_ct_node_mismatch_' + str(k))
 
                         # if there is no load at the node, do not allow load shedding
-                        if len(self.circuit.buses[i].loads) == 0:
+                        if len(self.buses[i].loads) == 0:
                             self.problem.add(self.load_shed[i] == 0.0,
-                                             self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+                                             self.buses[i].name + '_ct_null_load_shed_' + str(k))
 
                     else:
                         self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                         self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+                                         self.buses[i].name + '_ct_node_mismatch_' + str(k))
         else:
             # Use the load profile values at index=t_idx
             for k, i in enumerate(self.pvpq):
@@ -913,7 +922,7 @@ class AcOpf:
                 calculated_node_power = self.s_restrictions[k]
 
                 # add the nodal demand
-                for load in self.circuit.buses[i].loads:
+                for load in self.buses[i].loads:
                     if load.active:
                         if k < (npq + npv):
                             self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
@@ -927,16 +936,16 @@ class AcOpf:
 
                     self.problem.add(
                         calculated_node_power == node_power_injection - self.loads[i] + self.load_shed[i],
-                        self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+                        self.buses[i].name + '_ct_node_mismatch_' + str(k))
 
                     # if there is no load at the node, do not allow load shedding
-                    if len(self.circuit.buses[i].loads) == 0:
+                    if len(self.buses[i].loads) == 0:
                         self.problem.add(self.load_shed[i] == 0.0,
-                                         self.circuit.buses[i].name + '_ct_null_load_shed_' + str(k))
+                                         self.buses[i].name + '_ct_null_load_shed_' + str(k))
 
                 else:
                     self.problem.add(calculated_node_power == node_power_injection - self.loads[i],
-                                     self.circuit.buses[i].name + '_ct_node_mismatch_' + str(k))
+                                     self.buses[i].name + '_ct_node_mismatch_' + str(k))
 
     def solve(self):
         """
@@ -1006,7 +1015,7 @@ class AcOpf:
         br_names = [None] * self.nbranch
         for k in range(self.nbranch):
             flows[k] = abs(self.flow_ij[k].value()) * self.Sbase
-            loading[k] = flows[k] / self.circuit.branches[k].rate * 100.0
+            loading[k] = flows[k] / self.branches[k].rate * 100.0
             br_names[k] = 'Branch ' + str(k)
 
         df_f = pd.DataFrame(data=c_[flows, loading],
@@ -1036,8 +1045,8 @@ class AcOpf:
         """
 
         # initialize results object
-        n_bus = len(self.circuit.buses)
-        n_branch = len(self.circuit.branches)
+        n_bus = len(self.buses)
+        n_branch = len(self.branches)
         res = OptimalPowerFlowResults(is_dc=False)
         res.initialize(n_bus, n_branch)
 
@@ -1050,7 +1059,7 @@ class AcOpf:
             if realistic:
                 # Set the values
                 res.Sbranch, res.Ibranch, res.loading, \
-                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, self.V)
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, self.V)
                 res.voltage = self.V
             else:
 
@@ -1058,7 +1067,7 @@ class AcOpf:
                 for i in range(n_bus):
 
                     g = 0.0
-                    generators = self.circuit.buses[i].controlled_generators + self.circuit.buses[i].batteries
+                    generators = self.buses[i].controlled_generators + self.buses[i].batteries
 
                     # Sum the slack generators
                     if t_idx is None:
@@ -1071,24 +1080,24 @@ class AcOpf:
                                 g += gen.LPVar_P_prof[t_idx].value()
 
                     # Set the results (power, load shedding)
-                    res.Sbus[i] = (g - self.loads[i]) * self.circuit.Sbase
+                    res.Sbus[i] = (g - self.loads[i]) * self.calculation_input.Sbase
 
                     if self.load_shed is not None:
                         res.load_shedding[i] = self.load_shed[i].value()
 
                 # Set the values
                 res.Sbranch, res.Ibranch, res.loading, \
-                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.circuit, self.V, only_power=True)
+                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, self.V, only_power=True)
                 res.voltage = self.V
                 angles = angle(self.V)
 
                 # Add branches
-                for k, branch in enumerate(self.circuit.branches):
+                for k, branch in enumerate(self.branches):
 
                     if branch.active:
                         # get the from and to nodal indices of the branch
-                        i = self.circuit.buses_dict[branch.bus_from]
-                        j = self.circuit.buses_dict[branch.bus_to]
+                        i = self.buses_dict[branch.bus_from]
+                        j = self.buses_dict[branch.bus_to]
 
                         # compute the power flowing
                         if angles[i] is not None and angles[j] is not None:
@@ -1341,7 +1350,7 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
-    def single_optimal_power_flow(self, calculation_input: CalculationInputs, t_idx=None):
+    def single_optimal_power_flow(self, calculation_input: CalculationInputs, buses, branches, t_idx=None):
         """
         Run a power flow simulation for a single circuit
         @param calculation_input: Single island circuit
@@ -1351,9 +1360,9 @@ class OptimalPowerFlow(QRunnable):
 
         # declare LP problem
         if self.options.solver == SolverType.DC_OPF:
-            problem = DcOpf(calculation_input, self.options)
+            problem = DcOpf(calculation_input, buses, branches, self.options)
         else:
-            problem = AcOpf(calculation_input, self.options)
+            problem = AcOpf(calculation_input, buses, branches, self.options)
 
         problem.build(t_idx=t_idx)
         problem.set_loads(t_idx=t_idx)
@@ -1384,14 +1393,35 @@ class OptimalPowerFlow(QRunnable):
         calculation_inputs = numerical_circuit.compute()
         print(timer() - t1, 's')
 
-        k = 0
-        for calculation_input in calculation_inputs:
+        if len(calculation_inputs) > 1:
+            for calculation_input in calculation_inputs:
+
+                buses = [self.grid.buses[i] for i in calculation_input.original_bus_idx]
+                branches = [self.grid.branches[i] for i in calculation_input.original_branch_idx]
+
+                if self.options.verbose:
+                    print('Solving ' + calculation_input.name)
+
+                # run OPF
+                optimal_power_flow_results, solved = self.single_optimal_power_flow(calculation_input, buses, branches, t_idx=t_idx)
+
+                # assert the total solvability
+                self.all_solved = self.all_solved and solved
+
+                # merge island results
+                self.results.apply_from_island(optimal_power_flow_results,
+                                               calculation_input.original_bus_idx,
+                                               calculation_input.original_branch_idx)
+        else:
+            # only one island ...
+            calculation_input = calculation_inputs[0]
 
             if self.options.verbose:
                 print('Solving ' + calculation_input.name)
 
             # run OPF
-            optimal_power_flow_results, solved = self.single_optimal_power_flow(calculation_input, t_idx=t_idx)
+            optimal_power_flow_results, solved = self.single_optimal_power_flow(calculation_input, self.grid.buses,
+                                                                                self.grid.branches, t_idx=t_idx)
 
             # assert the total solvability
             self.all_solved = self.all_solved and solved
@@ -1400,9 +1430,6 @@ class OptimalPowerFlow(QRunnable):
             self.results.apply_from_island(optimal_power_flow_results,
                                            calculation_input.original_bus_idx,
                                            calculation_input.original_branch_idx)
-
-            # self.progress_signal.emit((k+1) / len(self.grid.circuits))
-            k += 1
 
         return self.results
 

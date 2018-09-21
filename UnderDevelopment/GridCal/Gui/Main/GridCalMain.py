@@ -1374,7 +1374,7 @@ class MainGUI(QMainWindow):
 
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
-        if i > -1:
+        if i > -1 and len(self.circuit.buses) > 0:
             elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
@@ -1751,16 +1751,9 @@ class MainGUI(QMainWindow):
                                    losses=self.power_flow.results.losses)
             self.update_available_results()
 
-            if len(self.power_flow.results.methods) > 0:
-                data = np.c_[self.power_flow.results.methods,
-                             self.power_flow.results.converged,
-                             self.power_flow.results.error,
-                             self.power_flow.results.elapsed,
-                             self.power_flow.results.inner_iterations]
-                col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
-                df = pd.DataFrame(data, columns=col)
+            for report in self.power_flow.pf.convergence_reports:
 
-                msg_ = 'Power flow converged: \n' + df.__str__()
+                msg_ = 'Power flow converged: \n' + report.__str__() + '\n\n'
                 self.console_msg(msg_)
 
         else:
@@ -2607,6 +2600,9 @@ class MainGUI(QMainWindow):
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
 
+        self.calculation_inputs_to_display = None
+        self.ui.simulation_data_island_comboBox.clear()
+
         self.available_results_dict = dict()
         self.ui.result_listView.setModel(None)
         self.ui.resultsTableView.setModel(None)
@@ -3166,6 +3162,7 @@ class MainGUI(QMainWindow):
             print(timer() - t1, 's')
             return True
         else:
+            self.calculation_inputs_to_display = None
             return False
 
     def update_islands_to_display(self):

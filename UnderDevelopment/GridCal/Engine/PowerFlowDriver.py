@@ -16,6 +16,7 @@
 from enum import Enum
 from warnings import warn
 from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array
+import pandas as pd
 from pySOT import *
 from timeit import default_timer as timer
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
@@ -112,6 +113,8 @@ class PowerFlowMP:
         self.last_V = None
 
         self.logger = list()
+
+        self.convergence_reports = list()
 
         self.__cancel__ = False
 
@@ -425,8 +428,7 @@ class PowerFlowMP:
             return Sbranch, Ibranch, loading, losses, Sbus
 
         else:
-            nbr = len(circuit.Vbus)
-            no_val = zeros(nbr, dtype=complex)
+            no_val = zeros(circuit.nbr, dtype=complex)
             return no_val, no_val, no_val, no_val, Sbus
 
     @staticmethod
@@ -571,6 +573,10 @@ class PowerFlowMP:
         # self.progress_signal.emit(0.0)
         Sbase = self.grid.Sbase
 
+        # columns of the report
+        col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
+        self.convergence_reports.clear()
+
         print('Compiling...', end='')
         t1 = timer()
         numerical_circuit = self.grid.compile()
@@ -593,6 +599,15 @@ class PowerFlowMP:
 
                 # merge the results from this island
                 results.apply_from_island(res, bus_original_idx, branch_original_idx)
+
+                # build the report
+                data = np.c_[results.methods[i],
+                             results.converged[i],
+                             results.error[i],
+                             results.elapsed[i],
+                             results.inner_iterations[i]]
+                df = pd.DataFrame(data, columns=col)
+                self.convergence_reports.append(df)
         else:
             # only one island
             Vbus = calculation_inputs[0].Vbus
@@ -601,6 +616,15 @@ class PowerFlowMP:
 
             # run circuit power flow
             results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
+
+            # build the report
+            data = np.c_[results.methods[0],
+                         results.converged[0],
+                         results.error[0],
+                         results.elapsed[0],
+                         results.inner_iterations[0]]
+            df = pd.DataFrame(data, columns=col)
+            self.convergence_reports.append(df)
 
         self.last_V = results.voltage  # done inside single_power_flow
 

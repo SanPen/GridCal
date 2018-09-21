@@ -258,7 +258,6 @@ class NumericalCircuit:
         circuit.Sbase = self.Sbase
         circuit.types = self.bus_types
 
-
         if self.ntime > 0:
             # Shunts
             Ysh_prof = self.C_shunt_bus.T * (self.shunt_admittance_profile.T / self.Sbase)
@@ -286,8 +285,14 @@ class NumericalCircuit:
         ################################################################################################################
         # Form the admittance matrix
         ################################################################################################################
-        Ys = self.branch_states / (self.R + 1.0j * self.X)
-        GBc = self.branch_states * (self.G + 1.0j * self.B)
+
+        # form the connectivity matrices with the states applied
+        states_dia = diags(self.branch_states)
+        Cf = states_dia * self.C_branch_bus_f
+        Ct = states_dia * self.C_branch_bus_t
+
+        Ys = 1.0 / (self.R + 1.0j * self.X)
+        GBc = self.G + 1.0j * self.B
         tap = self.tap_mod * np.exp(1.0j * self.tap_ang)
 
         # branch primitives in vector form
@@ -297,9 +302,9 @@ class NumericalCircuit:
         Ytf = - Ys / tap
 
         # form the admittance matrices
-        Yf = diags(Yff) * self.C_branch_bus_f + diags(Yft) * self.C_branch_bus_t
-        Yt = diags(Ytf) * self.C_branch_bus_f + diags(Ytt) * self.C_branch_bus_t
-        Ybus = csc_matrix(self.C_branch_bus_f.T * Yf + self.C_branch_bus_t.T * Yt + diags(Ysh))
+        Yf = diags(Yff) * Cf + diags(Yft) * Ct
+        Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
+        Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
 
         # branch primitives in vector form
         Ytts = Ys
@@ -308,9 +313,9 @@ class NumericalCircuit:
         Ytfs = - Ys / tap
 
         # form the admittance matrices of the series elements
-        Yfs = diags(Yffs) * self.C_branch_bus_f + diags(Yfts) * self.C_branch_bus_t
-        Yts = diags(Ytfs) * self.C_branch_bus_f + diags(Ytts) * self.C_branch_bus_t
-        Yseries = csc_matrix(self.C_branch_bus_f.T * Yfs + self.C_branch_bus_t.T * Yts)
+        Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
+        Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
+        Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
 
         # Form the matrices for fast decoupled
         '''
@@ -329,18 +334,18 @@ class NumericalCircuit:
         B2[t, t] -= b2
         '''
         b1 = 1.0 / (self.X + 1e-20)
-        B1f = diags(-b1) * self.C_branch_bus_f + diags(-b1) * self.C_branch_bus_t
-        B1t = diags(-b1) * self.C_branch_bus_f + diags(-b1) * self.C_branch_bus_t
-        B1 = csc_matrix(self.C_branch_bus_f.T * B1f + self.C_branch_bus_t.T * B1t)
+        B1f = diags(-b1) * Cf + diags(-b1) * Ct
+        B1t = diags(-b1) * Cf + diags(-b1) * Ct
+        B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
 
         b2 = b1 + self.B
         b2_ff = -(b2 / (tap * np.conj(tap))).real
         b2_ft = -(b1 / np.conj(tap)).real
         b2_tf = -(b1 / tap).real
         b2_tt = - b2
-        B2f = diags(b2_ff) * self.C_branch_bus_f + diags(b2_ft) * self.C_branch_bus_t
-        B2t = diags(b2_tf) * self.C_branch_bus_f + diags(b2_tt) * self.C_branch_bus_t
-        B2 = csc_matrix(self.C_branch_bus_f.T * B2f + self.C_branch_bus_t.T * B2t)
+        B2f = diags(b2_ff) * Cf + diags(b2_ft) * Ct
+        B2t = diags(b2_tf) * Cf + diags(b2_tt) * Ct
+        B2 = csc_matrix(Cf.T * B2f + Ct.T * B2t)
 
         # assign to the calc element
         circuit.Ybus = Ybus
@@ -349,14 +354,14 @@ class NumericalCircuit:
         circuit.B1 = B1
         circuit.B2 = B2
         circuit.Yseries = Yseries
-        circuit.C_branch_bus_f = self.C_branch_bus_f
-        circuit.C_branch_bus_t = self.C_branch_bus_t
+        circuit.C_branch_bus_f = Cf
+        circuit.C_branch_bus_t = Ct
 
         ################################################################################################################
         # Bus connectivity
         ################################################################################################################
         # branch - bus connectivity
-        C_branch_bus = self.C_branch_bus_f + self.C_branch_bus_t
+        C_branch_bus = Cf + Ct
 
         # Connectivity node - Connectivity node connectivity matrix
         C_bus_bus = C_branch_bus.T * C_branch_bus
@@ -367,47 +372,49 @@ class NumericalCircuit:
         # find the islands of the circuit
         self.islands = Graph(csc_matrix(C_bus_bus)).find_islands()
 
+        # clear the list of circuits
+        self.calculation_islands = list()
+
         # find the branches that belong to each island
-        circuits = list()
         self.island_branches = list()
 
         if len(self.islands) > 1:
 
             # pack the islands
-            for island in self.islands:
+            for island_bus_idx in self.islands:
 
                 # get the branch indices of the island
-                island_br_idx = self.get_branches_of_the_island(island, C_branch_bus)
+                island_br_idx = self.get_branches_of_the_island(island_bus_idx, C_branch_bus)
+                island_br_idx = np.sort(island_br_idx)  # sort
                 self.island_branches.append(island_br_idx)
 
                 # set the indices in the island too
-                circuit.original_bus_idx = island
+                circuit.original_bus_idx = island_bus_idx
                 circuit.original_branch_idx = island_br_idx
 
                 # get the island circuit (the bus types are computed automatically)
-                circuit = circuit.get_island(island, island_br_idx)
+                circuit_island = circuit.get_island(island_bus_idx, island_br_idx)
 
                 # store the island
-                circuits.append(circuit)
+                self.calculation_islands.append(circuit_island)
         else:
             # compile bus types
             circuit.compile_types()
 
             # only one island, no need to split anything
-            circuits.append(circuit)
+            self.calculation_islands.append(circuit)
 
-            island = np.arange(start=0, stop=self.nbus, step=1, dtype=int)
+            island_bus_idx = np.arange(start=0, stop=self.nbus, step=1, dtype=int)
             island_br_idx = np.arange(start=0, stop=self.nbr, step=1, dtype=int)
 
             # set the indices in the island too
-            circuit.original_bus_idx = island
+            circuit.original_bus_idx = island_bus_idx
             circuit.original_branch_idx = island_br_idx
 
             # append a list with all the branch indices for completeness
             self.island_branches.append(island_br_idx)
 
         # return the list of islands
-        self.calculation_islands = circuits
         return self.calculation_islands
 
     @staticmethod
@@ -576,4 +583,14 @@ class NumericalCircuit:
             plt.show()
 
 
+if __name__ == '__main__':
 
+    from GridCal.Engine.CalculationEngine import MultiCircuit
+
+    fname = '/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE 30 - 2 islands.xlsx'
+
+    circuit = MultiCircuit()
+    circuit.load_file(fname)
+
+    num_circ = circuit.compile()
+    circs = num_circ.compute()
