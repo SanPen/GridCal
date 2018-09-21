@@ -611,7 +611,7 @@ class PowerFlowMP:
 
         self.results = results
 
-        return results
+        return self.results
 
     def run_pf(self, calculation_inputs: CalculationInputs, Vbus, Sbus, Ibus):
         """
