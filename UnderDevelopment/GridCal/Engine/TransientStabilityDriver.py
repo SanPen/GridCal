@@ -16,6 +16,7 @@
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
+from timeit import default_timer as timer
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults
 from GridCal.Engine.Numerical.DynamicModels import DynamicModels, dynamic_simulation
@@ -79,16 +80,23 @@ class TransientStability(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running transient stability...')
 
-        for circuit in self.grid.circuits:
-            dynamic_devices = circuit.get_controlled_generators()
-            bus_indices = [circuit.buses_dict[elm.bus] for elm in dynamic_devices]
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
 
-            res = dynamic_simulation(n=len(circuit.buses),
-                                     Vbus=self.pf_res.voltage[circuit.bus_original_idx],
-                                     Sbus=self.pf_res.Sbus[circuit.bus_original_idx],
-                                     Ybus=circuit.power_flow_input.Ybus,
-                                     Sbase=circuit.Sbase,
-                                     fBase=circuit.fBase,
+        for calculation_input in calculation_inputs:
+
+            dynamic_devices = calculation_input.get_controlled_generators()
+            bus_indices = [calculation_input.buses_dict[elm.bus] for elm in dynamic_devices]
+
+            res = dynamic_simulation(n=len(calculation_input.buses),
+                                     Vbus=self.pf_res.voltage[calculation_input.original_bus_idx],
+                                     Sbus=self.pf_res.Sbus[calculation_input.original_bus_idx],
+                                     Ybus=calculation_input.Ybus,
+                                     Sbase=calculation_input.Sbase,
+                                     fBase=calculation_input.fBase,
                                      t_sim=self.options.t_sim,
                                      h=self.options.h,
                                      dynamic_devices=dynamic_devices,

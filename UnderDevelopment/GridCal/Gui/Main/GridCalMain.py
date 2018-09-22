@@ -1751,13 +1751,17 @@ class MainGUI(QMainWindow):
                                    losses=self.power_flow.results.losses)
             self.update_available_results()
 
+            # print convergence reports on the console
             for report in self.power_flow.pf.convergence_reports:
-
                 msg_ = 'Power flow converged: \n' + report.__str__() + '\n\n'
                 self.console_msg(msg_)
 
         else:
-            warn('Something went wrong, There are no power flow results.')
+            if len(self.power_flow.pf.logger) > 0:
+                dlg = LogsDialogue('Power flow', self.power_flow.pf.logger)
+                dlg.exec_()
+
+            self.msg('There are no power flow results.\nIs there any slack bus or controlled generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
         self.UNLOCK()

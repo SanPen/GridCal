@@ -18,6 +18,7 @@ from warnings import warn
 import pandas as pd
 import pulp
 import numpy as np
+from timeit import default_timer as timer
 from numpy import complex, zeros, exp, r_, array, angle, c_, power, vstack, floor, arange
 
 from matplotlib import pyplot as plt
@@ -382,22 +383,25 @@ class LatinHypercubeSampling(QThread):
         lhs_results = MonteCarloResults(n, m, batch_size)
 
         # compile
+        print('Compiling...', end='')
+        t1 = timer()
         numerical_circuit = self.circuit.compile()
-        numerical_input_islands = numerical_circuit.compute()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
 
-        max_iter = batch_size * len(self.circuit.circuits)
+        max_iter = batch_size * len(calculation_inputs)
         Sbase = self.circuit.Sbase
         it = 0
 
         # For every circuit, run the time series
-        for numerical_island in numerical_input_islands:
+        for claculation_input in calculation_inputs:
 
             # try:
             # set the time series as sampled in the circuit
 
-            monte_carlo_input = make_monte_carlo_input(numerical_island)
+            monte_carlo_input = make_monte_carlo_input(claculation_input)
             mc_time_series = monte_carlo_input(batch_size, use_latin_hypercube=True)
-            Vbus = numerical_island.power_flow_input.Vbus
+            Vbus = claculation_input.Vbus
 
             manager = multiprocessing.Manager()
             return_dict = manager.dict()
@@ -415,7 +419,7 @@ class LatinHypercubeSampling(QThread):
 
                     # run power flow at the circuit
                     p = multiprocessing.Process(target=power_flow_worker,
-                                                args=(t, self.options, numerical_island, Vbus, S/Sbase, I/Sbase, return_dict))
+                                                args=(t, self.options, claculation_input, Vbus, S/Sbase, I/Sbase, return_dict))
                     jobs.append(p)
                     p.start()
                     k += 1
@@ -434,10 +438,10 @@ class LatinHypercubeSampling(QThread):
                 # store circuit results at the time index 't'
                 res = return_dict[t]
 
-                lhs_results.S_points[t, numerical_island.bus_original_idx] = res.Sbus
-                lhs_results.V_points[t, numerical_island.bus_original_idx] = res.voltage
-                lhs_results.I_points[t, numerical_island.branch_original_idx] = res.Ibranch
-                lhs_results.loading_points[t, numerical_island.branch_original_idx] = res.loading
+                lhs_results.S_points[t, claculation_input.original_bus_idx] = res.Sbus
+                lhs_results.V_points[t, claculation_input.original_bus_idx] = res.voltage
+                lhs_results.I_points[t, claculation_input.original_branch_idx] = res.Ibranch
+                lhs_results.loading_points[t, claculation_input.original_branch_idx] = res.loading
 
             # except Exception as ex:
             #     print(c.name, ex)

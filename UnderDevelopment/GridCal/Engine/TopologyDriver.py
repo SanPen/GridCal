@@ -76,6 +76,8 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     C = lil_matrix((m, n), dtype=int)
     graph = DiGraph()
 
+    # TODO: Fix the topology reduction with the GC example, see what is going on
+
     for i in range(len(circuit.branches)):
         # get the from and to bus indices
         f = buses_dict[circuit.branches[i].bus_from]
@@ -194,10 +196,11 @@ class TopologyReduction(QThread):
         for i, br_idx in enumerate(self.br_to_remove):
 
             # delete branch
-            reduce_grid_brute(circuit=self.grid, removed_br_idx=br_idx)
+            removed_branch, removed_bus, \
+            updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid, removed_br_idx=br_idx)
 
             # display progress
-            self.progress_text.emit('Removed branch ' + self.grid.branches[br_idx].name)
+            self.progress_text.emit('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)
             progress = (i+1) / total * 100
             self.progress_signal.emit(progress)
 

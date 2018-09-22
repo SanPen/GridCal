@@ -467,7 +467,7 @@ class CalculationInputs:
 
         self.logger =list()
 
-        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', "B'", "B''", 'Types', 'Jacobian']
 
     def compile_types(self, types_new=None):
         """
@@ -622,6 +622,12 @@ class CalculationInputs:
 
         elif structure_type == 'Yseries':
             df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == "B'":
+            df = pd.DataFrame(data=self.B1.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == "B''":
+            df = pd.DataFrame(data=self.B2.toarray(), columns=self.bus_names, index=self.bus_names)
 
         elif structure_type == 'Types':
             df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
