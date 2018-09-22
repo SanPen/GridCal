@@ -311,12 +311,15 @@ class PandasModel(QtCore.QAbstractTableModel):
                 if isinstance(val, str):
                     return val
                 if isinstance(val, complex):
-                    if val.real != 0 and val.imag != 0:
+                    if val.real != 0 or val.imag != 0:
                         return val.__format__(self.format_string)
                     else:
                         return '0'
                 else:
-                    return val.__format__(self.format_string)
+                    if val != 0:
+                        return val.__format__(self.format_string)
+                    else:
+                        return '0'
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
