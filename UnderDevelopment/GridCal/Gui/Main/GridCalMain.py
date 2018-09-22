@@ -2617,7 +2617,6 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.tableView.setModel(None)
-        self.ui.transient_events_tableView.setModel(None)
 
         self.ui.dataStructureTableView.setModel(None)
         self.ui.catalogueTreeView.setModel(None)
