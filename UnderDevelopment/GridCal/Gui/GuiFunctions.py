@@ -307,8 +307,16 @@ class PandasModel(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                # return self.formatter(self._data[index.row(), index.column()])
-                return self.data[index.row(), index.column()].__format__(self.format_string)
+                val = self.data[index.row(), index.column()]
+                if isinstance(val, str):
+                    return val
+                if isinstance(val, complex):
+                    if val.real != 0 and val.imag != 0:
+                        return val.__format__(self.format_string)
+                    else:
+                        return '0'
+                else:
+                    return val.__format__(self.format_string)
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):

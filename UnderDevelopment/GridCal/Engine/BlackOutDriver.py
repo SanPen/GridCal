@@ -15,6 +15,7 @@
 
 from enum import Enum
 from warnings import warn
+from timeit import default_timer as timer
 import pandas as pd
 import numpy as np
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
@@ -153,10 +154,10 @@ class Cascading(QThread):
         return idx
 
     @staticmethod
-    def remove_probability_based(circuit: MultiCircuit, results: MonteCarloResults, max_val, min_prob):
+    def remove_probability_based(numerical_circuit: NumericalCircuit, results: MonteCarloResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
-        :param circuit:
+        :param numerical_circuit:
         :param results:
         :param max_val:
         :param min_prob:
@@ -171,7 +172,7 @@ class Cascading(QThread):
         for i, idx_val in enumerate(idx):
             if prob[i] >= min_prob:
                 any_removed = True
-                circuit.branches[idx_val].active = False
+                numerical_circuit.branch_states[idx_val] = False
                 indices.append(idx_val)
                 criteria = 'Overload probability > ' + str(min_prob)
 
@@ -188,7 +189,7 @@ class Cascading(QThread):
                     idx_val = int(np.where(loading == max(loading))[0][0])
                     criteria = 'Max loading, Overloads not seen'
 
-                circuit.branches[idx_val].active = False
+                numerical_circuit.branch_states[idx_val] = False
                 indices.append(idx_val)
             else:
                 indices = []
@@ -249,10 +250,14 @@ class Cascading(QThread):
 
         self.__cancel__ = False
 
-        self.results = CascadingResults(self.cascade_type)
+        # compile
+        print('Compiling...', end='')
+        t1 = timer()
+        numerical_circuit = self.grid.compile()
+        calculation_inputs = numerical_circuit.compute()
+        print(timer() - t1, 's')
 
-        if len(self.grid.circuits) == 0:
-            self.grid.compile()
+        self.results = CascadingResults(self.cascade_type)
 
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
@@ -267,39 +272,39 @@ class Cascading(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running cascading failure...')
 
-        n_grids = len(self.grid.circuits) + self.max_additional_islands
+        n_grids = len(calculation_inputs) + self.max_additional_islands
         if n_grids > len(self.grid.buses):  # safety check
             n_grids = len(self.grid.buses) - 1
 
         # print('n grids: ', n_grids)
 
         it = 0
-        while len(self.grid.circuits) <= n_grids and it <= n_grids:
+        while len(calculation_inputs) <= n_grids and it <= n_grids:
 
             # For every circuit, run a power flow
             # for c in self.grid.circuits:
-            results = model_simulator.run()
+            model_simulator.run()
             # print(model_simulator.results.get_convergence_report())
 
             # remove grid elements (branches)
-            idx, criteria = self.remove_probability_based(self.grid, results, max_val=1.0, min_prob=0.1)
+            idx, criteria = self.remove_probability_based(numerical_circuit, model_simulator.results, max_val=1.0, min_prob=0.1)
 
             # store the removed indices and the results
-            entry = CascadingReportElement(idx, results, criteria)
+            entry = CascadingReportElement(idx, model_simulator.results, criteria)
             self.results.events.append(entry)
 
             # recompile grid
-            self.grid.compile()
+            calculation_inputs = numerical_circuit.compute()
 
             it += 1
 
-            prog = max(len(self.grid.circuits) / (n_grids+1), it/(n_grids+1))
+            prog = max(len(calculation_inputs) / (n_grids+1), it/(n_grids+1))
             self.progress_signal.emit(prog * 100.0)
 
             if self.__cancel__:
                 break
 
-        print('Grid split into ', len(self.grid.circuits), ' islands after', it, ' steps')
+        print('Grid split into ', len(calculation_inputs), ' islands after', it, ' steps')
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
