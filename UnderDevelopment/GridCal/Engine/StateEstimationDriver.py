@@ -20,8 +20,7 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.Numerical.SE import solve_se_lm
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults, PowerFlowMP
-from GridCal.Engine.CalculationEngine import MultiCircuit
-from GridCal.Engine.NewEngine import NumericalCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit, NumericalCircuit
 
 
 class MeasurementType(Enum):

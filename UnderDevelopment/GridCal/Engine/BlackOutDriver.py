@@ -20,8 +20,7 @@ import pandas as pd
 import numpy as np
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from GridCal.Engine.NewEngine import NumericalCircuit
-from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH
+from GridCal.Engine.CalculationEngine import NumericalCircuit, MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, PowerFlow, PowerFlowMP
 from GridCal.Engine.StochasticDriver import MonteCarloResults, LatinHypercubeSampling
 

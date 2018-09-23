@@ -20,8 +20,7 @@ from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
-from GridCal.Engine.NewEngine import NumericalCircuit
-from GridCal.Engine.CalculationEngine import MultiCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit, NumericalCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 
 

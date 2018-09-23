@@ -25,7 +25,7 @@ import math
 from PyQt5.QtWidgets import *
 
 from GridCal.Gui.LineBuilder.gui import *
-from GridCal.Engine.ObjectTypes import *
+from GridCal.Engine.DeviceTypes import *
 from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 

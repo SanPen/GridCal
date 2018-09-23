@@ -25,8 +25,7 @@ from timeit import default_timer as timer
 from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.IoStructures import CalculationInputs
-from GridCal.Engine.NewEngine import NumericalCircuit
-from GridCal.Engine.CalculationEngine import MultiCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit, NumericalCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
@@ -550,7 +549,7 @@ class DcOpf:
 
 class AcOpf:
 
-    def __init__(self, calculation_input: CalculationInputs, options, buses, branches, voltage_band=0.1):
+    def __init__(self, calculation_input: CalculationInputs, buses, branches, options, voltage_band=0.1):
         """
         Linearized AC power flow, solved with a linear solver :o
         :param calculation_input: GridCal Circuit instance

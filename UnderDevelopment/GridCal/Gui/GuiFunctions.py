@@ -20,7 +20,7 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import *
 
 from GridCal.Engine.CalculationEngine import BranchTypeConverter, BranchType
-from GridCal.Engine.ObjectTypes import BranchTemplate
+from GridCal.Engine.DeviceTypes import BranchTemplate
 
 
 class TreeDelegate(QItemDelegate):

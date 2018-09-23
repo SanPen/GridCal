@@ -18,7 +18,7 @@ from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Engine.ObjectTypes import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
+from GridCal.Engine.DeviceTypes import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI

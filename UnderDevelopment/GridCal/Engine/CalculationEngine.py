@@ -20,78 +20,23 @@ from enum import Enum
 from warnings import warn
 import networkx as nx
 import pandas as pd
-import pulp
 import json
 from timeit import default_timer as timer
-from networkx import connected_components
-from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
-    r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
-from scipy.sparse import lil_matrix, csc_matrix
+import numpy as np
 
-from pySOT import *
+from scipy.sparse import lil_matrix, diags, csc_matrix
 
-
-from matplotlib import pyplot as plt
 
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Numerical.JacobianBased import Jacobian
 from GridCal.Engine.PlotConfig import *
-from GridCal.Engine.BasicStructures import CDF
-from GridCal.Engine.PlotConfig import LINEWIDTH
-from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.IoStructures import TimeSeriesInput, MonteCarloInput
-from GridCal.Engine.Numerical.DynamicModels import DynamicModels
-from GridCal.Engine.ObjectTypes import TransformerType, Tower, BranchTemplate, BranchType, \
+from GridCal.Engine.Devices import *
+from GridCal.Engine.BasicStructures import BusMode
+from GridCal.Engine.IoStructures import CalculationInputs
+from GridCal.Engine.Numerical.JacobianBased import Jacobian
+from GridCal.Engine.DeviceTypes import TransformerType, Tower, BranchTemplate, BranchType, \
                                             UndergroundLineType, SequenceLineType, Wire
-from GridCal.Engine.NewEngine import NumericalCircuit
-
-
-########################################################################################################################
-# Enumerations
-########################################################################################################################
-
-class BranchTypeConverter:
-
-    def __init__(self, tpe: BranchType):
-
-        self.tpe = tpe
-
-        self.options = ['branch',
-                        'line',
-                        'transformer',
-                        'switch',
-                        'reactance']
-
-        self.values = [BranchType.Branch,
-                       BranchType.Line,
-                       BranchType.Transformer,
-                       BranchType.Switch,
-                       BranchType.Reactance]
-
-        self.conv = dict()
-        self.inv_conv = dict()
-
-        for o, v in zip(self.options, self.values):
-            self.conv[o] = v
-            self.inv_conv[v] = o
-
-    def __str__(self):
-        """
-        Convert value to string
-        """
-        return self.inv_conv[self.tpe]
-
-    def __call__(self, str_value):
-        """
-        Convert from string
-        """
-        return self.conv[str_value]
-
-
-class TimeGroups(Enum):
-    NoGroup = 0,
-    ByDay = 1,
-    ByHour = 2
 
 
 def load_from_xls(filename):
@@ -139,49 +84,49 @@ def load_from_xls(filename):
 
             if name.lower() == "conf":
                 df = xl.parse(name)
-                data["baseMVA"] = double(df.values[0, 1])
+                data["baseMVA"] = np.double(df.values[0, 1])
 
             elif name.lower() == "bus":
                 df = xl.parse(name)
-                data["bus"] = nan_to_num(df.values)
+                data["bus"] = np.nan_to_num(df.values)
                 if len(df) > 0:
                     if df.index.values.tolist()[0] != 0:
                         data['bus_names'] = df.index.values.tolist()
 
             elif name.lower() == "gen":
                 df = xl.parse(name)
-                data["gen"] = nan_to_num(df.values)
+                data["gen"] = np.nan_to_num(df.values)
                 if len(df) > 0:
                     if df.index.values.tolist()[0] != 0:
                         data['gen_names'] = df.index.values.tolist()
 
             elif name.lower() == "branch":
                 df = xl.parse(name)
-                data["branch"] = nan_to_num(df.values)
+                data["branch"] = np.nan_to_num(df.values)
                 if len(df) > 0:
                     if df.index.values.tolist()[0] != 0:
                         data['branch_names'] = df.index.values.tolist()
 
             elif name.lower() == "storage":
                 df = xl.parse(name)
-                data["storage"] = nan_to_num(df.values)
+                data["storage"] = np.nan_to_num(df.values)
                 if len(df) > 0:
                     if df.index.values.tolist()[0] != 0:
                         data['storage_names'] = df.index.values.tolist()
 
             elif name.lower() == "lprof":
                 df = xl.parse(name, index_col=0)
-                data["Lprof"] = nan_to_num(df.values)
+                data["Lprof"] = np.nan_to_num(df.values)
                 data["master_time"] = df.index
 
             elif name.lower() == "lprofq":
                 df = xl.parse(name, index_col=0)
-                data["LprofQ"] = nan_to_num(df.values)
+                data["LprofQ"] = np.nan_to_num(df.values)
                 # ppc["master_time"] = df.index.values
 
             elif name.lower() == "gprof":
                 df = xl.parse(name, index_col=0)
-                data["Gprof"] = nan_to_num(df.values)
+                data["Gprof"] = np.nan_to_num(df.values)
                 data["master_time"] = df.index  # it is the same
 
     elif 'config' in names:  # version 2
@@ -192,13 +137,13 @@ def load_from_xls(filename):
                 df = xl.parse('config')
                 idx = df['Property'][df['Property'] == 'BaseMVA'].index
                 if len(idx) > 0:
-                    data["baseMVA"] = double(df.values[idx, 1])
+                    data["baseMVA"] = np.double(df.values[idx, 1])
                 else:
                     data["baseMVA"] = 100
 
                 idx = df['Property'][df['Property'] == 'Version'].index
                 if len(idx) > 0:
-                    data["version"] = double(df.values[idx, 1])
+                    data["version"] = np.double(df.values[idx, 1])
 
                 idx = df['Property'][df['Property'] == 'Name'].index
                 if len(idx) > 0:
@@ -229,908 +174,312 @@ def load_from_xls(filename):
 
     return data
 
-########################################################################################################################
-# Circuit classes
-########################################################################################################################
 
+class Graph:
 
-
-
-
-class ReliabilityDevice:
-
-    def __init__(self, mttf, mttr):
+    def __init__(self, adj):
         """
-        Class to provide reliability derived functionality
-        :param mttf: Mean Time To Failure (h)
-        :param mttr: Mean Time To Repair (h)
+        Graph adapted to work with CSC sparse matrices
+        see: http://www.scipy-lectures.org/advanced/scipy_sparse/csc_matrix.html
+        :param adj: Adjacency matrix in lil format
         """
-        self.mttf = mttf
+        self.node_number = adj.shape[0]
+        self.adj = adj
 
-        self.mttr = mttr
-
-    def get_failure_time(self, n_samples):
+    def find_islands(self):
         """
-        Get an array of possible failure times
-        :param n_samples: number of samples to draw
-        :return: Array of times in hours
-        """
-        return -1.0 * self.mttf * np.log(np.random.rand(n_samples))
-
-    def get_repair_time(self, n_samples):
-        """
-        Get an array of possible repair times
-        :param n_samples: number of samples to draw
-        :return: Array of times in hours
-        """
-        return -1.0 * self.mttr * np.log(np.random.rand(n_samples))
-
-    def get_reliability_events(self, horizon, n_samples):
-        """
-        Get random fail-repair events until a given time horizon in hours
-        :param horizon: maximum horizon in hours
-        :return: list of events
-        """
-        t = zeros(n_samples)
-        events = list()
-        while t.any() < horizon:  # if all event get to the horizon, finnish the sampling
-
-            # simulate failure
-            te = self.get_failure_time(n_samples)
-            if (t + te).any() <= horizon:
-                t += te
-                events.append(t)
-
-            # simulate repair
-            te = self.get_repair_time(n_samples)
-            if (t + te).any() <= horizon:
-                t += te
-                events.append(t)
-
-        return events
-
-
-class Bus:
-
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
-                 active=True, is_slack=False, area='Defualt', zone='Default', substation='Default'):
-        """
-        Bus  constructor
-        :param name: name of the bus
-        :param vnom: nominal voltage in kV
-        :param vmin: minimum per unit voltage (i.e. 0.9)
-        :param vmax: maximum per unit voltage (i.e. 1.1)
-        :param xpos: x position in pixels
-        :param ypos: y position in pixels
-        :param height: height of the graphic object
-        :param width: width of the graphic object
-        :param active: is the bus active?
-        :param is_slack: is this bus a slack bus?
+        Method to get the islands of a graph
+        This is the non-recursive version
+        :return: islands list where each element is a list of the node indices of the island
         """
 
-        self.name = name
+        # Mark all the vertices as not visited
+        visited = np.zeros(self.node_number, dtype=bool)
 
-        self.type_name = 'Bus'
+        # storage structure for the islands (list of lists)
+        islands = list()
 
-        self.properties_with_profile = None
+        # set the island index
+        island_idx = 0
 
-        # Nominal voltage (kV)
-        self.Vnom = vnom
+        # go though all the vertices...
+        for node in range(self.node_number):
 
-        # minimum voltage limit
-        self.Vmin = vmin
+            # if the node has not been visited...
+            if not visited[node]:
 
-        # maximum voltage limit
-        self.Vmax = vmax
+                # add new island, because the recursive process has already visited all the island connected to v
+                # if island_idx >= len(islands):
+                islands.append(list())
 
-        # summation of lower reactive power limits connected
-        self.Qmin_sum = 0
+                # ------------------------------------------------------------------------------------------------------
+                # DFS: store in the island all the reachable vertices from current vertex "node"
+                #
+                # declare a stack with the initial node to visit (node)
+                stack = list()
+                stack.append(node)
 
-        # summation of upper reactive power limits connected
-        self.Qmax_sum = 0
+                while len(stack) > 0:
 
-        # short circuit impedance
-        self.Zf = 0
+                    # pick the first element of the stack
+                    v = stack.pop(0)
 
-        # is the bus active?
-        self.active = active
+                    # if v has not been visited...
+                    if not visited[v]:
 
-        self.area = area
+                        # mark as visited
+                        visited[v] = True
 
-        self.zone = zone
+                        # add element to the island
+                        islands[island_idx].append(v)
 
-        self.substation = substation
-
-        # List of load s attached to this bus
-        self.loads = list()
-
-        # List of Controlled generators attached to this bus
-        self.controlled_generators = list()
-
-        # List of shunt s attached to this bus
-        self.shunts = list()
-
-        # List of batteries attached to this bus
-        self.batteries = list()
-
-        # List of static generators attached tot this bus
-        self.static_generators = list()
-
-        # List of measurements
-        self.measurements = list()
-
-        # Bus type
-        self.type = BusMode.NONE
-
-        # Flag to determine if the bus is a slack bus or not
-        self.is_slack = is_slack
-
-        # if true, the presence of storage devices turn the bus into a Reference bus in practice
-        # So that P +jQ are computed
-        self.dispatch_storage = False
-
-        # position and dimensions
-        self.x = xpos
-        self.y = ypos
-        self.h = height
-        self.w = width
-
-        # associated graphic object
-        self.graphic_obj = None
-
-        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w',
-                             'area', 'zone', 'substation']
-
-        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px',
-                      '', '', '']
-
-        self.edit_types = {'name': str,
-                           'active': bool,
-                           'is_slack': bool,
-                           'Vnom': float,
-                           'Vmin': float,
-                           'Vmax': float,
-                           'Zf': complex,
-                           'x': float,
-                           'y': float,
-                           'h': float,
-                           'w': float,
-                           'area': str,
-                           'zone': str,
-                           'substation': str}
-
-    def determine_bus_type(self):
-        """
-        Infer the bus type from the devices attached to it
-        @return: Nothing
-        """
-
-        gen_on = 0
-        for elm in self.controlled_generators:
-            if elm.active:
-                gen_on += 1
-
-        batt_on = 0
-        for elm in self.batteries:
-            if elm.active:
-                batt_on += 1
-
-        if gen_on > 0:
-
-            if self.is_slack:  # If contains generators and is marked as REF, then set it as REF
-                self.type = BusMode.REF
-            else:  # Otherwise set as PV
-                self.type = BusMode.PV
-
-        elif batt_on > 0:
-
-            if self.dispatch_storage:
-                # If there are storage devices and the dispatchable flag is on, set the bus as dispatchable
-                self.type = BusMode.STO_DISPATCH
-            else:
-                # Otherwise a storage device shall be marked as a voltage controlled bus
-                self.type = BusMode.PV
-        else:
-            if self.is_slack:  # If there is no device but still is marked as REF, then set as REF
-                self.type = BusMode.REF
-            else:
-                # Nothing special; set it as PQ
-                self.type = BusMode.PQ
-
-        return self.type
-
-    def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
-        """
-        Compose the
-            - Z: Impedance attached to the bus
-            - I: Current attached to the bus
-            - S: Power attached to the bus
-            - V: Voltage of the bus
-        All in complex values
-        :param index: index of the Pandas DataFrame
-        :param with_profiles: also fill the profiles
-        :return: Y, I, S, V, Yprof, Iprof, Sprof
-        """
-
-        Y = complex(0, 0)
-        I = complex(0, 0)  # Positive Generates, negative consumes
-        S = complex(0, 0)  # Positive Generates, negative consumes
-        V = complex(1, 0)
-
-        y_profile = None
-        i_profile = None  # Positive Generates, negative consumes
-        s_profile = None  # Positive Generates, negative consumes
-
-        y_cdf = None
-        i_cdf = None  # Positive Generates, negative consumes
-        s_cdf = None  # Positive Generates, negative consumes
-
-        eps = 1e-20
-
-        self.Qmin_sum = 0
-        self.Qmax_sum = 0
-
-        is_v_controlled = False
-
-        # Loads
-        for elm in self.loads:
-
-            if elm.active:
-
-                if elm.Z != complex(0.0, 0.0):
-                    Y += 1 / elm.Z  # Do not touch this one!!!!! it will break the Ybus matrix, when Z=0 -> Y=0 not inf.
-                I -= elm.I  # Reverse sign convention in the load
-                S -= elm.S  # Reverse sign convention in the load
-
-                # Add the profiles
-                if with_profiles:
-
-                    elm_s_prof, elm_i_prof, elm_z_prof = elm.get_profiles(index)
-
-                    if elm_z_prof is not None:
-                        if y_profile is None:
-                            y_profile = 1.0 / (elm_z_prof.values + eps)
-                        else:
-                            y_profile += 1.0 / (elm_z_prof.values + eps)
-
-                    if elm_i_prof is not None:
-                        if i_profile is None:
-                            i_profile = -elm_i_prof.values  # Reverse sign convention in the load
-                        else:
-                            i_profile -= elm_i_prof.values  # Reverse sign convention in the load
-
-                    if elm_s_prof is not None:
-                        if s_profile is None:
-                            s_profile = -elm_s_prof.values  # Reverse sign convention in the load
-                        else:
-                            s_profile -= elm_s_prof.values  # Reverse sign convention in the load
-
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # controlled gen and batteries
-        if dispatch_storage:
-            generators = self.controlled_generators  # do not include batteries
-        else:
-            generators = self.controlled_generators + self.batteries
-
-        for elm in generators:
-
-            if elm.active:
-                # Add the generator active power
-                S += complex(elm.P, 0)
-
-                self.Qmin_sum += elm.Qmin
-                self.Qmax_sum += elm.Qmax
-
-                # Voltage of the bus
-                if not is_v_controlled:
-                    V = complex(elm.Vset, 0)
-                    is_v_controlled = True
-                else:
-                    if elm.Vset != V.real:
-                        raise Exception("Different voltage controlled generators try to control " +
-                                        "the same bus with different voltage set points")
+                        # Add the neighbours of v to the stack
+                        start = self.adj.indptr[v]
+                        end = self.adj.indptr[v + 1]
+                        for i in range(start, end):
+                            k = self.adj.indices[i]  # get the column index in the CSC scheme
+                            if not visited[k]:
+                                stack.append(k)
+                            else:
+                                pass
                     else:
                         pass
+                #
+                # ------------------------------------------------------------------------------------------------------
 
-                # add the power profile
-                if with_profiles:
-                    elm_p_prof, elm_vset_prof = elm.get_profiles(index, use_opf_vals=use_opf_vals)
-                    if elm_p_prof is not None:
-                        if s_profile is None:
-                            s_profile = elm_p_prof.values  # Reverse sign convention in the load
-                        else:
-                            s_profile += elm_p_prof.values
-                else:
-                    pass
+                # increase the islands index, because all the other connected vertices have been visited
+                island_idx += 1
+
             else:
-                warn(elm.name + ' is not active')
+                pass
 
-        # set maximum reactive power limits
-        if self.Qmin_sum == 0:
-            self.Qmin_sum = -999900
-        if self.Qmax_sum == 0:
-            self.Qmax_sum = 999900
+        # sort the islands to maintain raccord
+        for island in islands:
+            island.sort()
+
+        return islands
+
+
+class NumericalCircuit:
+
+    def __init__(self, n_bus, n_br, n_ld, n_ctrl_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase):
+        """
+        Topology constructor
+        :param n_bus: number of nodes
+        :param n_br: number of branches
+        :param n_ld: number of loads
+        :param n_ctrl_gen: number of generators
+        :param n_sta_gen: number of generators
+        :param n_batt: number of generators
+        :param n_sh: number of shunts
+        :param n_time: number of time_steps
+        :param Sbase: circuit base power
+        """
+
+        # number of buses
+        self.nbus = n_bus
+
+        # number of branches
+        self.nbr = n_br
+
+        # number of time steps
+        self.ntime = n_time
+
+        # base power
+        self.Sbase = Sbase
+
+        self.time_array = None
+
+        # bus
+        self.bus_names = np.empty(n_bus, dtype=object)
+        self.bus_vnom = np.zeros(n_bus, dtype=float)
+        self.V0 = np.ones(n_bus, dtype=complex)
+        self.Vmin = np.ones(n_bus, dtype=float)
+        self.Vmax = np.ones(n_bus, dtype=float)
+        self.bus_types = np.empty(n_bus, dtype=int)
+
+        # branch
+        self.branch_names = np.empty(n_br, dtype=object)
+
+        self.F = np.zeros(n_br, dtype=int)
+        self.T = np.zeros(n_br, dtype=int)
+
+        self.R = np.zeros(n_br, dtype=float)
+        self.X = np.zeros(n_br, dtype=float)
+        self.G = np.zeros(n_br, dtype=float)
+        self.B = np.zeros(n_br, dtype=float)
+        self.tap_mod = np.zeros(n_br, dtype=float)
+        self.tap_ang = np.zeros(n_br, dtype=float)
+        self.br_rates = np.zeros(n_br, dtype=float)
+        self.branch_states = np.zeros(n_br, dtype=int)
+
+        self.C_branch_bus_f = lil_matrix((n_br, n_bus), dtype=int)
+        self.C_branch_bus_t = lil_matrix((n_br, n_bus), dtype=int)
+
+        self.switch_indices = list()
+
+        # load
+        self.load_names = np.empty(n_ld, dtype=object)
+        self.load_power = np.zeros(n_ld, dtype=complex)
+        self.load_current = np.zeros(n_ld, dtype=complex)
+        self.load_admittance = np.zeros(n_ld, dtype=complex)
+
+        self.load_power_profile = np.zeros((n_time, n_ld), dtype=complex)
+        self.load_current_profile = np.zeros((n_time, n_ld), dtype=complex)
+        self.load_admittance_profile = np.zeros((n_time, n_ld), dtype=complex)
+
+        self.C_load_bus = lil_matrix((n_ld, n_bus), dtype=int)
+
+        # battery
+        self.battery_names = np.empty(n_batt, dtype=object)
+        self.battery_power = np.zeros(n_batt, dtype=float)
+        self.battery_voltage = np.zeros(n_batt, dtype=float)
+        self.battery_qmin = np.zeros(n_batt, dtype=float)
+        self.battery_qmax = np.zeros(n_batt, dtype=float)
+
+        self.battery_power_profile = np.zeros((n_time, n_batt), dtype=float)
+        self.battery_voltage_profile = np.zeros((n_time, n_batt), dtype=float)
+
+        self.C_batt_bus = lil_matrix((n_batt, n_bus), dtype=int)
+
+        # static generator
+        self.static_gen_names = np.empty(n_sta_gen, dtype=object)
+        self.static_gen_power = np.zeros(n_sta_gen, dtype=complex)
+
+        self.static_gen_power_profile = np.zeros((n_time, n_sta_gen), dtype=complex)
+
+        self.C_sta_gen_bus = lil_matrix((n_sta_gen, n_bus), dtype=int)
+
+        # controlled generator
+        self.controlled_gen_names = np.empty(n_ctrl_gen, dtype=object)
+        self.controlled_gen_power = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_voltage = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_qmin = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_qmax = np.zeros(n_ctrl_gen, dtype=float)
+
+        self.controlled_gen_power_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
+        self.controlled_gen_voltage_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
+
+        self.C_ctrl_gen_bus = lil_matrix((n_ctrl_gen, n_bus), dtype=int)
+
+        # shunt
+        self.shunt_names = np.empty(n_sh, dtype=object)
+        self.shunt_admittance = np.zeros(n_sh, dtype=complex)
+
+        self.shunt_admittance_profile = np.zeros((n_time, n_sh), dtype=complex)
+
+        self.C_shunt_bus = lil_matrix((n_sh, n_bus), dtype=int)
+
+        # Islands indices
+        self.islands = list()  # bus indices per island
+        self.island_branches = list()  # branch indices per island
+
+        self.calculation_islands = list()
+
+    def compute(self):
+        """
+        Compute the cross connectivity matrices to determine the circuit connectivity
+        towards the calculation. Additionally, compute the calculation matrices.
+        """
+        # Declare object to store the calculation inputs
+        circuit = CalculationInputs(self.nbus, self.nbr, self.ntime)
+
+        circuit.branch_rates = self.br_rates
+        circuit.F = self.F
+        circuit.T = self.T
+        circuit.bus_names = self.bus_names
+        circuit.branch_names = self.branch_names
+
+        ################################################################################################################
+        # loads, generators, batteries, etc...
+        ################################################################################################################
 
         # Shunts
-        for elm in self.shunts:
-            if elm.active:
-                Y += elm.Y
-
-                # add profiles
-                if with_profiles:
-                    if elm.Yprof is not None:
-                        if y_profile is None:
-                            y_profile = elm.Yprof.values  # Reverse sign convention in the load
-                        else:
-                            y_profile += elm.Yprof.values
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # Static generators
-        for elm in self.static_generators:
-
-            if elm.active:
-                S += elm.S
-
-                # add profiles
-                if with_profiles:
-                    if elm.Sprof is not None:
-                        if s_profile is None:
-                            s_profile = elm.Sprof.values  # Reverse sign convention in the load
-                        else:
-                            s_profile += elm.Sprof.values
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # Align profiles into a common column sum based on the time axis
-        if s_profile is not None:
-            s_cdf = CDF(s_profile[:, 0])
-
-        if i_profile is not None:
-            i_cdf = CDF(i_profile[:, 0])
-
-        if y_profile is not None:
-            y_cdf = CDF(y_profile[:, 0])
-
-        return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
-
-    def initialize_lp_profiles(self):
-        """
-        Dimention the LP var profiles
-        :return:
-        """
-        for elm in (self.controlled_generators + self.batteries):
-            elm.initialize_lp_vars()
-
-    def plot_profiles(self, ax=None):
-        """
-
-        @param time_idx: Master time profile: usually stored in the circuit
-        @param ax: Figure axis, if not provided one will be created
-        @return:
-        """
-
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            show_fig = True
-        else:
-            show_fig = False
-
-        for elm in self.loads:
-            ax.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
-
-        for elm in self.controlled_generators + self.batteries:
-            ax.plot(elm.Pprof.index, elm.Pprof.values, label=elm.name)
-
-        for elm in self.static_generators:
-            ax.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
-
-        plt.legend()
-        plt.title(self.name)
-        plt.ylabel('MW')
-        if show_fig:
-            plt.show()
-
-    def copy(self):
-        """
-
-        :return:
-        """
-        bus = Bus()
-        bus.name = self.name
-
-        # Nominal voltage (kV)
-        bus.Vnom = self.Vnom
-
-        bus.vmin = self.Vmin
-
-        bus.Vmax = self.Vmax
-
-        bus.Zf = self.Zf
-
-        bus.Qmin_sum = self.Qmin_sum
-
-        bus.Qmax_sum = self.Qmax_sum
-
-        bus.active = self.active
-
-        # List of load s attached to this bus
-        for elm in self.loads:
-            bus.loads.append(elm.copy())
-
-        # List of Controlled generators attached to this bus
-        for elm in self.controlled_generators:
-            bus.controlled_generators.append(elm.copy())
-
-        # List of shunt s attached to this bus
-        for elm in self.shunts:
-            bus.shunts.append(elm.copy())
-
-        # List of batteries attached to this bus
-        for elm in self.batteries:
-            bus.batteries.append(elm.copy())
-
-        # List of static generators attached tot this bus
-        for g in self.static_generators:
-            bus.static_generators.append(g.copy())
-
-        # Bus type
-        bus.type = self.type
-
-        # Flag to determine if the bus is a slack bus or not
-        bus.is_slack = self.is_slack
-
-        # if true, the presence of storage devices turn the bus into a Reference bus in practice
-        # So that P +jQ are computed
-        bus.dispatch_storage = self.dispatch_storage
-
-        bus.x = self.x
-
-        bus.y = self.y
-
-        bus.h = self.h
-
-        bus.w = self.w
-
-        bus.area = self.area
-
-        bus.zone = self.zone
-
-        bus.substation = self.substation
-
-        bus.measurements = self.measurements
-
-        # self.graphic_obj = None
-
-        return bus
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        self.retrieve_graphic_position()
-        return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
-                self.x, self.y, self.h, self.w, self.area, self.zone, self.substation]
-
-    def get_json_dict(self, id):
-        """
-        Return Json-like dictionary
-        :return: 
-        """
-        return {'id': id,
-                'type': 'bus',
-                'phases': 'ps',
-                'name': self.name,
-                'active': self.active,
-                'is_slack': self.is_slack,
-                'Vnom': self.Vnom,
-                'vmin': self.Vmin,
-                'vmax': self.Vmax,
-                'rf': self.Zf.real,
-                'xf': self.Zf.imag,
-                'x': self.x,
-                'y': self.y,
-                'h': self.h,
-                'w': self.w,
-                'area': self.area,
-                'zone': self.zone,
-                'substation': self.substation}
-
-    def set_state(self, t):
-        """
-        Set the profiles state of the objects in this bus to the value given in the profiles at the index t
-        :param t: index of the profile
-        :return:
-        """
-        for elm in self.loads:
-            elm.S = elm.Sprof.values[t, 0]
-            elm.I = elm.Iprof.values[t, 0]
-            elm.Z = elm.Zprof.values[t, 0]
-
-        for elm in self.static_generators:
-            elm.S = elm.Sprof.values[t, 0]
-
-        for elm in self.batteries:
-            elm.P = elm.Pprof.values[t, 0]
-            elm.Vset = elm.Vsetprof.values[t, 0]
-
-        for elm in self.controlled_generators:
-            elm.P = elm.Pprof.values[t, 0]
-            elm.Vset = elm.Vsetprof.values[t, 0]
-
-        for elm in self.shunts:
-            elm.Y = elm.Yprof.values[t, 0]
-
-    def retrieve_graphic_position(self):
-        """
-        Get the position set by the graphic object
-        :return:
-        """
-        if self.graphic_obj is not None:
-            self.x = self.graphic_obj.pos().x()
-            self.y = self.graphic_obj.pos().y()
-            self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
-
-    def delete_profiles(self):
-        """
-        Delete all profiles
-        :return: 
-        """
-        for elm in self.loads:
-            elm.delete_profiles()
-
-        for elm in self.static_generators:
-            elm.delete_profiles()
-
-        for elm in self.batteries:
-            elm.delete_profiles()
-
-        for elm in self.controlled_generators:
-            elm.delete_profiles()
-
-        for elm in self.shunts:
-            elm.delete_profiles()
-
-    def set_profile_values(self, t):
-        """
-        Set the default values from the profiles at time index t
-        :param t: profile time index
-        """
-
-        for elm in self.loads:
-            elm.set_profile_values(t)
-
-        for elm in self.static_generators:
-            elm.set_profile_values(t)
-
-        for elm in self.batteries:
-            elm.set_profile_values(t)
-
-        for elm in self.controlled_generators:
-            elm.set_profile_values(t)
-
-        for elm in self.shunts:
-            elm.set_profile_values(t)
-
-    def apply_lp_profiles(self, Sbase):
-        """
-        Sets the lp solution to the regular generators profile
-        :return:
-        """
-        for elm in self.batteries + self.controlled_generators:
-            elm.apply_lp_profile(Sbase)
-
-    def merge(self, other_bus):
-
-        # List of load s attached to this bus
-        self.loads += other_bus.loads
-
-        # List of Controlled generators attached to this bus
-        self.controlled_generators += other_bus.controlled_generators
-
-        # List of shunt s attached to this bus
-        self.shunts += other_bus.shunts
-
-        # List of batteries attached to this bus
-        self.batteries += other_bus.batteries
-
-        # List of static generators attached tot this bus
-        self.static_generators += other_bus.static_generators
-
-        # List of measurements
-        self.measurements += other_bus.measurements
-
-    def __str__(self):
-        return self.name
-
-
-class TapChanger:
-
-    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
-        """
-        Tap changer
-        Args:
-            taps_up: Number of taps position up
-            taps_down: Number of tap positions down
-            max_reg: Maximum regulation up i.e 1.1 -> +10%
-            min_reg: Maximum regulation down i.e 0.9 -> -10%
-        """
-        self.max_tap = taps_up
-
-        self.min_tap = -taps_down
-
-        self.inc_reg_up = (max_reg - 1.0) / taps_up
-
-        self.inc_reg_down = (1.0 - min_reg) / taps_down
-
-        self.tap = 0
-
-    def tap_up(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap + 1 <= self.max_tap:
-            self.tap += 1
-
-    def tap_down(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap - 1 >= self.min_tap:
-            self.tap -= 1
-
-    def get_tap(self):
-        """
-        Get the tap voltage regulation module
-        """
-        if self.tap == 0:
-            return 1.0
-        elif self.tap > 0:
-            return 1.0 + self.tap * self.inc_reg_up
-        elif self.tap < 0:
-            return 1.0 + self.tap * self.inc_reg_down
-
-    def set_tap(self, tap_module):
-        """
-        Set the integer tap position corresponding to a tap vlaue
-        @param tap_module: value like 1.05
-        """
-        if tap_module == 1.0:
-            self.tap = 0
-        elif tap_module > 1:
-            self.tap = int(round(tap_module - 1.0) / self.inc_reg_up)
-        elif tap_module < 1:
-            self.tap = int(round(1.0 - tap_module) / self.inc_reg_down)
-
-
-class Branch(ReliabilityDevice):
-
-    def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line, length=1, type_obj=BranchTemplate()):
-        """
-        Branch model constructor
-        @param bus_from: Bus Object
-        @param bus_to: Bus Object
-        @param name: name of the branch
-        @param zserie: total branch series impedance in per unit (complex)
-        @param yshunt: total branch shunt admittance in per unit (complex)
-        @param rate: branch rate in MVA
-        @param tap: tap module
-        @param shift_angle: tap shift angle in radians
-        @param mttf: Mean time to failure
-        @param mttr: Mean time to repair
-        @param branch_type: Is the branch a transformer?
-        @param length: eventual line length in km
-        @param type_obj: Type object template (i.e. Tower, TransformerType, etc...)
-        """
-
-        ReliabilityDevice.__init__(self, mttf, mttr)
-
-        self.name = name
-
-        # Identifier of this element type
-        self.type_name = 'Branch'
-
-        # list of properties that hold a profile
-        self.properties_with_profile = None
-
-        # connectivity
-        self.bus_from = bus_from
-        self.bus_to = bus_to
-
-        # Is the branch active?
-        self.active = active
-
-        # List of measurements
-        self.measurements = list()
-
-        # line length in km
-        self.length = length
-
-        # total impedance and admittance in p.u.
-        self.R = r
-        self.X = x
-        self.G = g
-        self.B = b
-
-        # tap changer object
-        self.tap_changer = TapChanger()
-
-        if tap != 0:
-            self.tap_module = tap
-            self.tap_changer.set_tap(self.tap_module)
-        else:
-            self.tap_module = self.tap_changer.get_tap()
-
-        self.angle = shift_angle
-
-        # branch rating in MVA
-        self.rate = rate
-
-        # branch type: Line, Transformer, etc...
-        self.branch_type = branch_type
-
-        # type template
-        self.type_obj = type_obj
-
-        self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'length', 'tap_module', 'angle', 'branch_type', 'type_obj']
-
-        self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'km', 'p.u.', 'rad', '', '']
-
-        # converter for enumerations
-        self.conv = {'branch': BranchType.Branch,
-                     'line': BranchType.Line,
-                     'transformer': BranchType.Transformer,
-                     'switch': BranchType.Switch,
-                     'reactance': BranchType.Reactance}
-
-        self.inv_conv = {val: key for key, val in self.conv.items()}
-
-        self.edit_types = {'name': str,
-                           'bus_from': None,
-                           'bus_to': None,
-                           'active': bool,
-                           'rate': float,
-                           'mttf': float,
-                           'mttr': float,
-                           'R': float,
-                           'X': float,
-                           'G': float,
-                           'B': float,
-                           'length': float,
-                           'tap_module': float,
-                           'angle': float,
-                           'branch_type': BranchType,
-                           'type_obj': BranchTemplate}
-
-    def branch_type_converter(self, val_string):
-        """
-        function to convert the branch type string into the BranchType
-        :param val_string:
-        :return: branch type conversion
-        """
-        return self.conv[val_string.lower()]
-
-    def copy(self, bus_dict=None):
-        """
-        Returns a copy of the branch
-        @return: A new  with the same content as this
-        """
-
-        if bus_dict is None:
-            f = self.bus_from
-            t = self.bus_to
-        else:
-            f = bus_dict[self.bus_from]
-            t = bus_dict[self.bus_to]
-
-        # z_series = complex(self.R, self.X)
-        # y_shunt = complex(self.G, self.B)
-        b = Branch(bus_from=f,
-                   bus_to=t,
-                   name=self.name,
-                   r=self.R,
-                   x=self.X,
-                   g=self.G,
-                   b=self.B,
-                   rate=self.rate,
-                   tap=self.tap_module,
-                   shift_angle=self.angle,
-                   active=self.active,
-                   mttf=self.mttf,
-                   mttr=self.mttr,
-                   branch_type=self.branch_type,
-                   type_obj=self.type_obj)
-
-        b.measurements = self.measurements
-
-        return b
-
-    def tap_up(self):
-        """
-        Move the tap changer one position up
-        """
-        self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap()
-
-    def tap_down(self):
-        """
-        Move the tap changer one position up
-        """
-        self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap()
-
-    def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, C, i, f, t):
-        """
-
-        Modify the circuit admittance matrices with the admittances of this branch
-        @param Ybus: Complete Admittance matrix
-        @param Yseries: Admittance matrix of the series elements
-        @param Yshunt: Admittance matrix of the shunt elements
-        @param Yf: Admittance matrix of the branches with the from buses
-        @param Yt: Admittance matrix of the branches with the to buses
-        @param B1: Jacobian 1 for the fast-decoupled power flow
-        @param B1: Jacobian 2 for the fast-decoupled power flow
-        @:param C: Branch-Bus connectivity matrix
-        @param i: index of the branch in the circuit
-        @return: Nothing, the inputs are implicitly modified
-        """
-        z_series = complex(self.R, self.X)
-        y_shunt = complex(self.G, self.B)
-        tap = self.tap_module * exp(-1j * self.angle)
-        Ysh = y_shunt / 2
-        if np.abs(z_series) > 0:
-            Ys = 1 / z_series
-        else:
-            raise ValueError("The impedance at " + self.name + " is zero")
-
-        Ytt = Ys + Ysh
-        Yff = Ytt / (tap * conj(tap))
-        Yft = - Ys / conj(tap)
+        Ysh = self.C_shunt_bus.T * (self.shunt_admittance / self.Sbase)
+
+        # Loads
+        S = self.C_load_bus.T * (- self.load_power / self.Sbase)
+        I = self.C_load_bus.T * (- self.load_current / self.Sbase)
+        Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase)
+
+        # static generators
+        S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase)
+
+        # controlled generators
+        S += self.C_ctrl_gen_bus.T * (self.controlled_gen_power / self.Sbase)
+
+        # batteries
+        S += self.C_batt_bus.T * (self.battery_power / self.Sbase)
+
+        # assign the values
+        circuit.Ysh = Ysh
+        circuit.Sbus = S
+        circuit.Ibus = I
+        circuit.Vbus = self.V0
+        circuit.Sbase = self.Sbase
+        circuit.types = self.bus_types
+
+        if self.ntime > 0:
+            # Shunts
+            Ysh_prof = self.C_shunt_bus.T * (self.shunt_admittance_profile.T / self.Sbase)
+
+            # Loads
+            I_prof = self.C_load_bus.T * (- self.load_current_profile.T / self.Sbase)
+            Ysh_prof += self.C_load_bus.T * (self.load_admittance_profile.T / self.Sbase)
+
+            Sbus_prof = self.C_load_bus.T * (- self.load_power_profile.T / self.Sbase)
+
+            # static generators
+            Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile.T / self.Sbase)
+
+            # controlled generators
+            Sbus_prof += self.C_ctrl_gen_bus.T * (self.controlled_gen_power_profile.T / self.Sbase)
+
+            # batteries
+            Sbus_prof += self.C_batt_bus.T * (self.battery_power_profile.T / self.Sbase)
+
+            circuit.Ysh_prof = Ysh_prof
+            circuit.Sbus_prof = Sbus_prof
+            circuit.Ibus_prof = I_prof
+            circuit.time_array = self.time_array
+
+        ################################################################################################################
+        # Form the admittance matrix
+        ################################################################################################################
+
+        # form the connectivity matrices with the states applied
+        states_dia = diags(self.branch_states)
+        Cf = states_dia * self.C_branch_bus_f
+        Ct = states_dia * self.C_branch_bus_t
+
+        Ys = 1.0 / (self.R + 1.0j * self.X)
+        GBc = self.G + 1.0j * self.B
+        tap = self.tap_mod * np.exp(1.0j * self.tap_ang)
+
+        # branch primitives in vector form
+        Ytt = Ys + GBc / 2.0
+        Yff = Ytt / (tap * np.conj(tap))
+        Yft = - Ys / np.conj(tap)
         Ytf = - Ys / tap
 
-        Yff_sh = Ysh
-        Ytt_sh = Yff_sh / (tap * conj(tap))
+        # form the admittance matrices
+        Yf = diags(Yff) * Cf + diags(Yft) * Ct
+        Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
+        Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
 
-        # Full admittance matrix
-        Ybus[f, f] += Yff
-        Ybus[f, t] += Yft
-        Ybus[t, f] += Ytf
-        Ybus[t, t] += Ytt
+        # branch primitives in vector form
+        Ytts = Ys
+        Yffs = Ytts / (tap * np.conj(tap))
+        Yfts = - Ys / np.conj(tap)
+        Ytfs = - Ys / tap
 
-        # Y-from and Y-to for the lines power flow computation
-        Yf[i, f] += Yff
-        Yf[i, t] += Yft
-        Yt[i, f] += Ytf
-        Yt[i, t] += Ytt
+        # form the admittance matrices of the series elements
+        Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
+        Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
+        Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
 
-        # Connectivity matrix
-        C[i, f] = 1
-        C[i, t] = -1
-
-        # Y shunt
-        Yshunt[f] += Yff_sh
-        Yshunt[t] += Ytt_sh
-
-        # Y series
-        Yseries[f, f] += Ys / (tap * conj(tap))
-        Yseries[f, t] += Yft
-        Yseries[t, f] += Ytf
-        Yseries[t, t] += Ys
-
+        # Form the matrices for fast decoupled
+        '''
         # B1 for FDPF (no shunts, no resistance, no tap module)
         b1 = 1.0 / (self.X + 1e-20)
         B1[f, f] -= b1
@@ -1144,1471 +493,255 @@ class Branch(ReliabilityDevice):
         B2[f, t] -= (b1 / conj(tap)).real
         B2[t, f] -= (b1 / tap).real
         B2[t, t] -= b2
+        '''
+        b1 = 1.0 / (self.X + 1e-20)
+        B1f = diags(-b1) * Cf + diags(-b1) * Ct
+        B1t = diags(-b1) * Cf + diags(-b1) * Ct
+        B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
 
-        return f, t
+        b2 = b1 + self.B
+        b2_ff = -(b2 / (tap * np.conj(tap))).real
+        b2_ft = -(b1 / np.conj(tap)).real
+        b2_tf = -(b1 / tap).real
+        b2_tt = - b2
+        B2f = diags(b2_ff) * Cf + diags(b2_ft) * Ct
+        B2t = diags(b2_tf) * Cf + diags(b2_tt) * Ct
+        B2 = csc_matrix(Cf.T * B2f + Ct.T * B2t)
 
-    def apply_type(self, obj, Sbase, logger=list()):
+        # assign to the calc element
+        circuit.Ybus = Ybus
+        circuit.Yf = Yf
+        circuit.Yt = Yt
+        circuit.B1 = B1
+        circuit.B2 = B2
+        circuit.Yseries = Yseries
+        circuit.C_branch_bus_f = Cf
+        circuit.C_branch_bus_t = Ct
+
+        ################################################################################################################
+        # Bus connectivity
+        ################################################################################################################
+        # branch - bus connectivity
+        C_branch_bus = Cf + Ct
+
+        # Connectivity node - Connectivity node connectivity matrix
+        C_bus_bus = C_branch_bus.T * C_branch_bus
+
+        ################################################################################################################
+        # Islands
+        ################################################################################################################
+        # find the islands of the circuit
+        self.islands = Graph(csc_matrix(C_bus_bus)).find_islands()
+
+        # clear the list of circuits
+        self.calculation_islands = list()
+
+        # find the branches that belong to each island
+        self.island_branches = list()
+
+        if len(self.islands) > 1:
+
+            # pack the islands
+            for island_bus_idx in self.islands:
+
+                # get the branch indices of the island
+                island_br_idx = self.get_branches_of_the_island(island_bus_idx, C_branch_bus)
+                island_br_idx = np.sort(island_br_idx)  # sort
+                self.island_branches.append(island_br_idx)
+
+                # set the indices in the island too
+                circuit.original_bus_idx = island_bus_idx
+                circuit.original_branch_idx = island_br_idx
+
+                # get the island circuit (the bus types are computed automatically)
+                circuit_island = circuit.get_island(island_bus_idx, island_br_idx)
+
+                # store the island
+                self.calculation_islands.append(circuit_island)
+        else:
+            # compile bus types
+            circuit.compile_types()
+
+            # only one island, no need to split anything
+            self.calculation_islands.append(circuit)
+
+            island_bus_idx = np.arange(start=0, stop=self.nbus, step=1, dtype=int)
+            island_br_idx = np.arange(start=0, stop=self.nbr, step=1, dtype=int)
+
+            # set the indices in the island too
+            circuit.original_bus_idx = island_bus_idx
+            circuit.original_branch_idx = island_br_idx
+
+            # append a list with all the branch indices for completeness
+            self.island_branches.append(island_br_idx)
+
+        # return the list of islands
+        return self.calculation_islands
+
+    @staticmethod
+    def get_branches_of_the_island(island, C_branch_bus):
         """
-        Apply a transformer type definition to this object
-        Args:
-            obj: TransformerType or Tower object
+        Get the branch indices of the island
+        :param island: array of bus indices of the island
+        :param C_branch_bus: connectivity matrix of the branches and the buses
+        :return: array of indices of the branches
         """
 
-        if type(obj) is TransformerType:
+        # faster method
+        A = csc_matrix(C_branch_bus)
+        n = A.shape[0]
+        visited = np.zeros(n, dtype=bool)
+        br_idx = np.zeros(n, dtype=int)
+        n_visited = 0
+        for k in range(len(island)):
+            j = island[k]
 
-            if self.branch_type == BranchType.Transformer:
-                z_series, zsh = obj.get_impedances()
+            for l in range(A.indptr[j], A.indptr[j+1]):
+                i = A.indices[l]  # row index
 
-                y_shunt = 1 / zsh
+                if not visited[i]:
+                    visited[i] = True
+                    br_idx[n_visited] = i
+                    n_visited += 1
 
-                self.R = np.round(z_series.real, 6)
-                self.X = np.round(z_series.imag, 6)
-                self.G = np.round(y_shunt.real, 6)
-                self.B = np.round(y_shunt.imag, 6)
+        # resize vector
+        br_idx = br_idx[:n_visited]
 
-                self.rate = obj.Nominal_power
+        return br_idx
 
-                if obj != self.type_obj:
-                    self.type_obj = obj
-                    self.branch_type = BranchType.Transformer
+    def power_flow_post_process(self, V, only_power=False):
+        """
+        Compute the power flows trough the branches for the complete circuit taking into account the islands
+        @param V: Voltage solution array for the circuit buses
+        @param only_power: compute only the power injection
+        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
+        """
+        Sbranch_all = np.zeros(self.nbr, dtype=complex)
+        Ibranch_all = np.zeros(self.nbr, dtype=complex)
+        loading_all = np.zeros(self.nbr, dtype=complex)
+        losses_all = np.zeros(self.nbr, dtype=complex)
+        Sbus_all = np.zeros(self.nbus, dtype=complex)
+
+        for circuit in self.calculation_islands:
+            # Compute the slack and pv buses power
+            Sbus = circuit.Sbus
+
+            vd = circuit.ref
+            pv = circuit.pv
+
+            # power at the slack nodes
+            Sbus[vd] = V[vd] * np.conj(circuit.Ybus[vd, :][:, :].dot(V))
+
+            # Reactive power at the pv nodes
+            P = Sbus[pv].real
+            Q = (V[pv] * np.conj(circuit.Ybus[pv, :][:, :].dot(V))).imag
+            Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
+
+            if not only_power:
+                # Branches current, loading, etc
+                If = circuit.Yf * V
+                It = circuit.Yt * V
+                Sf = (circuit.C_branch_bus_f * V) * np.conj(If)
+                St = (circuit.C_branch_bus_t * V) * np.conj(It)
+
+                # Branch losses in MVA
+                losses = (Sf + St) * circuit.Sbase
+
+                # Branch current in p.u.
+                Ibranch = np.maximum(If, It)
+
+                # Branch power in MVA
+                Sbranch = np.maximum(Sf, St) * circuit.Sbase
+
+                # Branch loading in p.u.
+                loading = Sbranch / (circuit.branch_rates + 1e-9)
+
             else:
-                raise Exception('You are trying to apply a transformer type to a non-transformer branch')
+                Sbranch = np.zeros(self.nbr, dtype=complex)
+                Ibranch = np.zeros(self.nbr, dtype=complex)
+                loading = np.zeros(self.nbr, dtype=complex)
+                losses = np.zeros(self.nbr, dtype=complex)
+                Sbus = np.zeros(self.nbus, dtype=complex)
 
-        elif type(obj) is Tower:
+            # assign to master
+            Sbranch_all[circuit.original_branch_idx] = Sbranch
+            Ibranch_all[circuit.original_branch_idx] = Ibranch
+            loading_all[circuit.original_branch_idx] = loading
+            losses_all[circuit.original_branch_idx] = losses
+            Sbus_all[circuit.original_bus_idx] = Sbus
 
-            if self.branch_type == BranchType.Line:
-                Vn = self.bus_to.Vnom
-                Zbase = (Vn * Vn) / Sbase
-                Ybase = 1 / Zbase
+        return Sbranch_all, Ibranch_all, loading_all, losses_all, Sbus_all
 
-                z = obj.seq_resistance * self.length / Zbase
-                y = obj.seq_admittance * self.length / Ybase
+    def print(self, islands_only=False):
+        """
+        print the connectivity matrices
+        :return:
+        """
 
-                self.R = np.round(z.real, 6)
-                self.X = np.round(z.imag, 6)
-                self.G = np.round(y.real, 6)
-                self.B = np.round(y.imag, 6)
+        if islands_only:
 
-                if obj != self.type_obj:
-                    self.type_obj = obj
-                    self.branch_type = BranchType.Line
+            print('Islands:')
+            for island in self.islands:
+                print('-' * 180)
+                print('\nIsland:', island)
+                print('\t nodes: ', self.bus_names[island])
+                br_idx = self.get_branches_of_the_island(island)
+                print('\t branches: ', self.branch_names[br_idx])
+
+        else:
+            if self.nbus < 100:
+                # print('\nBus-Terminal\n', pd.DataFrame(self.C_cn_terminal.todense(), index=self.bus_names, columns=self.terminal_names))
+                # print('\nBranch-Terminal-From\n', pd.DataFrame(self.C_branch_terminal_f.todense(), index=self.branch_names, columns=self.terminal_names))
+                # print('\nBranch-Terminal-To\n', pd.DataFrame(self.C_branch_terminal_t.todense(), index=self.branch_names, columns=self.terminal_names))
+                # # print('\nSwitch-Terminal\n', pd.DataFrame(self.C_switch_terminal.todense(), index=self.switch_names, columns=self.terminal_names))
+                # print('\nBranch-States\n', pd.DataFrame(self.branch_states, index=self.branch_names, columns=['States']).transpose())
+
+                # resulting
+                print('\n\n' + '-' * 40 + ' RESULTS ' + '-' * 40 + '\n')
+                # print('\nLoad-Bus\n', pd.DataFrame(self.C_load_bus.todense(), index=self.load_names, columns=self.bus_names))
+                # print('\nShunt-Bus\n', pd.DataFrame(self.C_shunt_bus.todense(), index=self.shunt_names, columns=self.bus_names))
+                # print('\nGen-Bus\n', pd.DataFrame(self.C_gen_bus.todense(), index=self.generator_names, columns=self.bus_names))
+                print('\nCf (Branch from-Bus)\n',
+                      pd.DataFrame(self.calc.C_branch_bus_f.astype(int).todense(), index=self.branch_names, columns=self.bus_names))
+                print('\nCt (Branch to-Bus)\n',
+                      pd.DataFrame(self.calc.C_branch_bus_t.astype(int).todense(), index=self.branch_names, columns=self.bus_names))
+                print('\nBus-Bus (Adjacency matrix: Graph)\n', pd.DataFrame(self.C_bus_bus.todense(), index=self.bus_names, columns=self.bus_names))
+
+                # print('\nYff\n', pd.DataFrame(self.BR_yff, index=self.branch_names, columns=['Yff']))
+                # print('\nYft\n', pd.DataFrame(self.BR_yft, index=self.branch_names, columns=['Yft']))
+                # print('\nYtf\n', pd.DataFrame(self.BR_ytf, index=self.branch_names, columns=['Ytf']))
+                # print('\nYtt\n', pd.DataFrame(self.BR_ytt, index=self.branch_names, columns=['Ytt']))
+
+            if len(self.islands) == 1:
+                self.calc.print(self.bus_names)
+
             else:
-                raise Exception('You are trying to apply an Overhead line type to a non-line branch')
 
-        elif type(obj) is UndergroundLineType:
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
+                print('Islands:')
+                for island in self.islands:
+                    print('-' * 180)
+                    print('\nIsland:', island)
+                    print('\t nodes: ', self.bus_names[island])
+                    br_idx = self.get_branches_of_the_island(island)
+                    print('\t branches: ', self.branch_names[br_idx])
 
-            z = obj.seq_resistance * self.length / Zbase
-            y = obj.seq_admittance * self.length / Ybase
+                    calc_island = self.calc.get_island(island, br_idx)
+                    calc_island.print(self.bus_names[island])
+                print('-' * 180)
 
-            self.R = np.round(z.real, 6)
-            self.X = np.round(z.imag, 6)
-            self.G = np.round(y.real, 6)
-            self.B = np.round(y.imag, 6)
-
-            if obj != self.type_obj:
-                self.type_obj = obj
-                self.branch_type = BranchType.Line
-
-        elif type(obj) is SequenceLineType:
-
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            self.R = np.round(obj.R * self.length / Zbase, 6)
-            self.X = np.round(obj.X * self.length / Zbase, 6)
-            self.G = np.round(obj.G * self.length / Ybase, 6)
-            self.B = np.round(obj.B * self.length / Ybase, 6)
-
-            if obj != self.type_obj:
-                self.type_obj = obj
-                self.branch_type = BranchType.Line
-        else:
-
-            logger.append(self.name + ' the object type template was not recognised')
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        conv = BranchTypeConverter(None)
-
-        if self.type_obj is None:
-            type_obj = ''
-        else:
-            type_obj = str(self.type_obj)
-
-        return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle,
-                conv.inv_conv[self.branch_type], type_obj]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID 
-        :return: 
-        """
-        return {'id': id,
-                'type': 'branch',
-                'phases': 'ps',
-                'name': self.name,
-                'from': bus_dict[self.bus_from],
-                'to': bus_dict[self.bus_to],
-                'active': self.active,
-                'rate': self.rate,
-                'r': self.R,
-                'x': self.X,
-                'g': self.G,
-                'b': self.B,
-                'length': self.length,
-                'tap_module': self.tap_module,
-                'tap_angle': self.angle,
-                'branch_type': self.branch_type}
-
-    def __str__(self):
-        return self.name
-
-
-class Load(ReliabilityDevice):
-
-    def __init__(self, name='Load', impedance=complex(0, 0), current=complex(0, 0), power=complex(0, 0),
-                 impedance_prof=None, current_prof=None, power_prof=None, active=True, mttf=0.0, mttr=0.0):
-        """
-        Load model constructor
-        This model implements the so-called ZIP model
-        composed of an impedance value, a current value and a power value
-        @param impedance: Impedance complex (Ohm)
-        @param current: Current complex (kA)
-        @param power: Power complex (MVA)
-        """
-
-        ReliabilityDevice.__init__(self, mttf, mttr)
-
-        self.name = name
-
-        self.active = active
-
-        self.type_name = 'Load'
-
-        self.properties_with_profile = (['S', 'I', 'Z'], [complex, complex, complex])
-
-        self.graphic_obj = None
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
-
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        self.Z = impedance
-
-        if impedance.real != 0 or impedance.imag != 0.0:
-            self.Y = 1 / impedance
-        else:
-            self.Y = complex(0, 0)
-
-        # Current (kA)
-        self.I = current
-
-        # Power (MVA)
-        # MVA = kV * kA
-        self.S = power
-
-        # impedances profile for this load
-        self.Zprof = impedance_prof
-
-        # Current profiles for this load
-        self.Iprof = current_prof
-
-        # power profile for this load
-        self.Sprof = power_prof
-
-        self.graphic_obj = None
-
-        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MVA', 'MVA', 'MVA', 'h', 'h']  # ['', '', 'Ohm', 'kA', 'MVA']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'Z': complex,
-                           'I': complex,
-                           'S': complex,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'S': self.create_S_profile,
-                          'I': self.create_I_profile,
-                          'Z': self.create_Z_profile}
-
-        self.profile_attr = {'S': 'Sprof',
-                             'I': 'Iprof',
-                             'Z': 'Zprof'}
-
-    def create_profiles(self, index, S=None, I=None, Z=None):
-        """
-        Create the load object default profiles
-        Args:
-            index:
-            steps:
-
-        Returns:
-
-        """
-
-        self.create_S_profile(index, S)
-        self.create_I_profile(index, I)
-        self.create_Z_profile(index, Z)
-
-    def create_S_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index
-            arr: array
-            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-        """
-        if arr_in_pu:
-            dta = arr * self.S
-        else:
-            nt = len(index)
-            dta = ones(nt) * self.S if arr is None else arr
-        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_I_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create current profile based on index
-        Args:
-            index: time index
-            arr: array
-            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-        """
-        if arr_in_pu:
-            dta = arr * self.I
-        else:
-            dta = ones(len(index)) * self.I if arr is None else arr
-        self.Iprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_Z_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create impedance profile based on index
-        Args:
-            index: time index
-            arr: array
-            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-        Returns:
-
-        """
-        if arr_in_pu:
-            dta = arr * self.Z
-        else:
-            dta = ones(len(index)) * self.Z if arr is None else arr
-        self.Zprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Sprof is None:
-                self.create_S_profile(index)
-            if self.Iprof is None:
-                self.create_I_profile(index)
-            if self.Zprof is None:
-                self.create_Z_profile(index)
-        return self.Sprof, self.Iprof, self.Zprof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return: 
-        """
-        self.Sprof = None
-        self.Iprof = None
-        self.Zprof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.S = self.Sprof.values[t]
-        self.I = self.Iprof.values[t]
-        self.Z = self.Zprof.values[t]
-
-    def copy(self):
-
-        load = Load()
-
-        load.name = self.name
-
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        load.Z = self.Z
-
-        # Current (kA)
-        load.I = self.I
-
-        # Power (MVA)
-        # MVA = kV * kA
-        load.S = self.S
-
-        # impedances profile for this load
-        load.Zprof = self.Zprof
-
-        # Current profiles for this load
-        load.Iprof = self.Iprof
-
-        # power profile for this load
-        load.Sprof = self.Sprof
-
-        load.mttf = self.mttf
-
-        load.mttr = self.mttr
-
-        return load
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S), self.mttf, self.mttr]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID 
-        :return: 
-        """
-        return {'id': id,
-                'type': 'load',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'Zr': self.Z.real,
-                'Zi': self.Z.imag,
-                'Ir': self.I.real,
-                'Ii': self.I.imag,
-                'P': self.S.real,
-                'Q': self.S.imag}
-
-    def __str__(self):
-        return self.name
-
-
-class StaticGenerator(ReliabilityDevice):
-
-    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True, mttf=0.0, mttr=0.0):
-        """
-
-        :param name:
-        :param power:
-        :param power_prof:
-        :param active:
-        :param mttf:
-        :param mttr:
-        """
-
-        ReliabilityDevice.__init__(self, mttf, mttr)
-
-        self.name = name
-
-        self.active = active
-
-        self.type_name = 'StaticGenerator'
-
-        self.properties_with_profile = (['S'], [complex])
-
-        self.graphic_obj = None
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
-
-        # Power (MVA)
-        # MVA = kV * kA
-        self.S = power
-
-        # power profile for this load
-        self.Sprof = power_prof
-
-        self.edit_headers = ['name', 'bus', 'active', 'S', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MVA', 'h', 'h']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'S': complex,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'S': self.create_S_profile}
-
-        self.profile_attr = {'S': 'Sprof'}
-
-    def copy(self):
-        """
-
-        :return:
-        """
-        return StaticGenerator(name=self.name, power=self.S, power_prof=self.Sprof)
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, str(self.S), self.mttf, self.mttr]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID 
-        :return: 
-        """
-        return {'id': id,
-                'type': 'static_gen',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'P': self.S.real,
-                'Q': self.S.imag}
-
-    def create_profiles(self, index, S=None):
-        """
-        Create the load object default profiles
-        Args:
-            index:
-            steps:
-
-        Returns:
-
-        """
-        self.create_S_profile(index, S)
-
-    def create_S_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index:
-
-        Returns:
-
-        """
-        if arr_in_pu:
-            dta = arr * self.S
-        else:
-            dta = ones(len(index)) * self.S if arr is None else arr
-        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Sprof is None:
-                self.create_S_profile(index)
-        return self.Sprof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return: 
-        """
-        self.Sprof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.S = self.Sprof.values[t]
-
-    def __str__(self):
-        return self.name
-
-
-class ControlledGenerator(ReliabilityDevice):
-
-    def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
-                 enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0, Xa=0.0,
-                 Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
-                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2, speed_volt=True,
-                 machine_model=DynamicModels.SynchronousGeneratorOrder4):
-        """
-        Voltage controlled generator
-        @param name: Name of the device
-        @param active_power: Active power (MW)
-        @param voltage_module: Voltage set point (p.u.)
-        @param Qmin: minimum reactive power in MVAr
-        @param Qmax: maximum reactive power in MVAr
-        @param Snom: Nominal power in MVA
-        @param power_prof: active power profile (Pandas DataFrame)
-        @param vset_prof: voltage set point profile (Pandas DataFrame)
-        @param active: Is the generator active?
-        @param p_min: minimum dispatchable power in MW
-        @param p_max maximum dispatchable power in MW
-        @param op_cost operational cost in Eur (or other currency) per MW
-        @param enabled_dispatch is the generator enabled for OPF?
-        @param mttf: Mean time to failure
-        @param mttr: Mean time to repair
-        @param Ra: armature resistance (pu)
-        @param Xa: armature reactance (pu)
-        @param Xd: d-axis reactance (p.u.)
-        @param Xq: q-axis reactance (p.u.)
-        @param Xdp: d-axis transient reactance (p.u.)
-        @param Xqp: q-axis transient reactance (p.u.)
-        @param Xdpp: d-axis subtransient reactance (pu)
-        @param Xqpp: q-axis subtransient reactance (pu)
-        @param Td0p: d-axis transient open loop time constant (s)
-        @param Tq0p: q-axis transient open loop time constant (s)
-        @param Td0pp: d-axis subtransient open loop time constant (s)
-        @param Tq0pp: q-axis subtransient open loop time constant (s)
-        @param H: machine inertia constant (MWs/MVA)
-        @param machine_model: Type of machine represented
-        """
-
-        ReliabilityDevice.__init__(self, mttf, mttr)
-
-        # name of the device
-        self.name = name
-
-        # is the device active for simulation?
-        self.active = active
-
-        # is the device active active power dispatch?
-        self.enabled_dispatch = enabled_dispatch
-
-        # type of device
-        self.type_name = 'ControlledGenerator'
-
-        self.machine_model = machine_model
-
-        # graphical object associated to this object
-        self.graphic_obj = None
-
-        # properties that hold a profile
-        self.properties_with_profile = (['P', 'Vset'], [float, float])
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
-
-        # Power (MVA)
-        self.P = active_power
-
-        # Nominal power in MVA (also the machine base)
-        self.Snom = Snom
-
-        # Minimum dispatched power in MW
-        self.Pmin = p_min
-
-        # Maximum dispatched power in MW
-        self.Pmax = p_max
-
-        # power profile for this load in MW
-        self.Pprof = power_prof
-
-        # Voltage module set point (p.u.)
-        self.Vset = voltage_module
-
-        # voltage set profile for this load in p.u.
-        self.Vsetprof = vset_prof
-
-        # minimum reactive power in MVAr
-        self.Qmin = Qmin
-
-        # Maximum reactive power in MVAr
-        self.Qmax = Qmax
-
-        # Cost of operation €/MW
-        self.Cost = op_cost
-
-        # Dynamic vars
-        self.Ra = Ra
-        self.Xa = Xa
-        self.Xd = Xd
-        self.Xq = Xq
-        self.Xdp = Xdp
-        self.Xqp = Xqp
-        self.Xdpp = Xdpp
-        self.Xqpp = Xqpp
-        self.Td0p = Td0p
-        self.Tq0p = Tq0p
-        self.Td0pp = Td0pp
-        self.Tq0pp = Tq0pp
-        self.H = H
-        self.speed_volt = speed_volt
-        # self.base_mva = base_mva  # machine base MVA
-
-        # system base power MVA
-        self.Sbase = Sbase
-
-        # Linear problem generator dispatch power variable (in p.u.)
-        self.lp_name = self.type_name + '_' + self.name + str(id(self))
-
-        # variable to dispatch the power in a Linear program
-        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
-
-        # list of variables of active power dispatch in a series of linear programs
-        self.LPVar_P_prof = None
-
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'P': float,
-                           'Vset': float,
-                           'Snom': float,
-                           'Qmin': float,
-                           'Qmax': float,
-                           'Pmin': float,
-                           'Pmax': float,
-                           'Cost': float,
-                           'enabled_dispatch': bool,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'P': self.create_P_profile,
-                          'Vset': self.create_Vset_profile}
-
-        self.profile_attr = {'P': 'Pprof',
-                             'Vset': 'Vsetprof'}
-
-    def copy(self):
-        """
-        Make a deep copy of this object
-        :return: Copy of this object
-        """
-
-        # make a new instance (separated object in memory)
-        gen = ControlledGenerator()
-
-        gen.name = self.name
-
-        # Power (MVA)
-        # MVA = kV * kA
-        gen.P = self.P
-
-        # is the generator active?
-        gen.active = self.active
-
-        # power profile for this load
-        gen.Pprof = self.Pprof
-
-        # Voltage module set point (p.u.)
-        gen.Vset = self.Vset
-
-        # voltage set profile for this load
-        gen.Vsetprof = self.Vsetprof
-
-        # minimum reactive power in per unit
-        gen.Qmin = self.Qmin
-
-        # Maximum reactive power in per unit
-        gen.Qmax = self.Qmax
-
-        # Nominal power
-        gen.Snom = self.Snom
-
-        # is the generator enabled for dispatch?
-        gen.enabled_dispatch = self.enabled_dispatch
-
-        gen.mttf = self.mttf
-
-        gen.mttr = self.mttr
-
-        return gen
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID 
-        :return: json-compatible dictionary
-        """
-        return {'id': id,
-                'type': 'controlled_gen',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'P': self.P,
-                'vset': self.Vset,
-                'Snom': self.Snom,
-                'qmin': self.Qmin,
-                'qmax': self.Qmax,
-                'Pmin': self.Pmin,
-                'Pmax': self.Pmax,
-                'Cost': self.Cost}
-
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag == 'P':
-            self.create_profiles(index, arr, None)
-        elif mag == 'V':
-            self.create_profiles(index, None, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
-    def create_profiles(self, index, P=None, V=None):
-        """
-        Create the load object default profiles
-        Args:
-            index: time index associated
-            P: Active power (MW)
-            V: voltage set points
-        """
-        self.create_P_profile(index, P)
-        self.create_Vset_profile(index, V)
-
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.P
-        else:
-            dta = ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def initialize_lp_vars(self):
-        """
-        Initialize the LP variables
-        """
-        self.lp_name = self.type_name + '_' + self.name + str(id(self))
-
-        self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
-
-        self.LPVar_P_prof = [
-            pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
-
-    def get_lp_var_profile(self, index):
-        """
-        Get the profile of the LP solved values into a Pandas DataFrame
-        :param index: time index
-        :return: DataFrame with the LP values
-        """
-        dta = [x.value() for x in self.LPVar_P_prof]
-        return pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.Vset
-        else:
-            dta = ones(len(index)) * self.Vset if arr is None else arr
-
-        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None, use_opf_vals=False):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Pprof is None:
-                self.create_P_profile(index)
-            if self.Vsetprof is None:
-                self.create_Vset_profile(index)
-
-        if use_opf_vals:
-            return self.get_lp_var_profile(index), self.Vsetprof
-        else:
-            return self.Pprof, self.Vsetprof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return: 
-        """
-        self.Pprof = None
-        self.Vsetprof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.Pprof.values[t]
-        self.Vset = self.Vsetprof.values[t]
-
-    def apply_lp_vars(self, at=None):
-        """
-        Set the LP vars to the main value or the profile
-        """
-        if self.LPVar_P is not None:
-            if at is None:
-                self.P = self.LPVar_P.value()
-            else:
-                self.Pprof.values[at] = self.LPVar_P.value()
-
-    def apply_lp_profile(self, Sbase):
-        """
-        Set LP profile to the regular profile
-        :return:
-        """
-        n = self.Pprof.shape[0]
-        if self.active and self.enabled_dispatch:
-            for i in range(n):
-                self.Pprof.values[i] = self.LPVar_P_prof[i].value() * Sbase
-        else:
-            # there are no values in the LP vars because this generator is deactivated,
-            # therefore fill the profiles with zeros when asked to copy the lp vars to the power profiles
-            self.Pprof.values = zeros(self.Pprof.shape[0])
-
-    def __str__(self):
-        return self.name
-
-
-# class BatteryController:
-#
-#     def __init__(self, nominal_energy=100000.0, charge_efficiency=0.9, discharge_efficiency=0.9,
-#                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
-#         """
-#         Battery controller constructor
-#         :param charge_efficiency: efficiency when charging
-#         :param discharge_efficiency: efficiency when discharging
-#         :param max_soc: maximum state of charge
-#         :param min_soc: minimum state of charge
-#         :param soc: current state of charge
-#         :param nominal_energy: declared amount of energy in MWh
-#         :param charge_per_cycle: per unit of power to take per cycle when charging
-#         :param discharge_per_cycle: per unit of power to deliver per cycle when charging
-#         """
-#
-#         self.charge_efficiency = charge_efficiency
-#
-#         self.discharge_efficiency = discharge_efficiency
-#
-#         self.max_soc = max_soc
-#
-#         self.min_soc = min_soc
-#
-#         self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
-#
-#         self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
-#
-#         self.discharge_per_cycle = discharge_per_cycle
-#
-#         self.min_energy = nominal_energy * self.min_soc
-#
-#         self.Enom = nominal_energy
-#
-#         self.soc_0 = soc
-#
-#         self.soc = soc
-#
-#         self.energy = self.Enom * self.soc
-#
-#     def reset(self):
-#         """
-#         Set he battery to its initial state
-#         """
-#         self.soc = self.soc_0
-#         self.energy = self.Enom * self.soc
-#         # self.energy_array = zeros(0)
-#         # self.power_array = zeros(0)
-#
-#     def process(self, P, dt, charge_if_needed=False, store_values=True):
-#         """
-#         process a cycle in the battery
-#         :param P: proposed power in MW
-#         :param dt: time increment in hours
-#         :param charge_if_needed: True / False
-#         :param store_values: Store the values into the internal arrays?
-#         :return: Amount of power actually processed in MW
-#         """
-#
-#         # if self.Enom is None:
-#         #     raise Exception('You need to set the battery nominal power!')
-#
-#         if np.isnan(P):
-#             warn('NaN found!!!!!!')
-#
-#         # pick the right efficiency value
-#         if P >= 0.0:
-#             eff = self.discharge_efficiency
-#             # energy_per_cycle = self.nominal_energy * self.discharge_per_cycle
-#         else:
-#             eff = self.charge_efficiency
-#
-#         # amount of energy that the battery can take in a cycle of 1 hour
-#         energy_per_cycle = self.Enom * self.charge_per_cycle
-#
-#         # compute the proposed energy. Later we check how much is actually possible
-#         proposed_energy = self.energy - P * dt * eff
-#
-#         # charge the battery from the grid if the SoC is too low and we are allowing this behaviour
-#         if charge_if_needed and self.soc < self.min_soc_charge:
-#             proposed_energy -= energy_per_cycle / dt  # negative is for charging
-#
-#         # Check the proposed energy
-#         if proposed_energy > self.Enom * self.max_soc:  # Truncated, too high
-#
-#             energy_new = self.Enom * self.max_soc
-#             power_new = (self.energy - energy_new) / (dt * eff)
-#
-#         elif proposed_energy < self.Enom * self.min_soc:  # Truncated, too low
-#
-#             energy_new = self.Enom * self.min_soc
-#             power_new = (self.energy - energy_new) / (dt * eff)
-#
-#         else:  # everything is within boundaries
-#
-#             energy_new = proposed_energy
-#             power_new = P
-#
-#         # Update the state of charge and the energy state
-#         self.soc = energy_new / self.Enom
-#         self.energy = energy_new
-#
-#         return power_new, self.energy
-
-
-class Battery(ControlledGenerator):
-
-    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
-                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
-                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True,
-                 mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
-                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
-                 Ra=0.0, Xa=0.0, Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
-                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2 ):
-        """
-        Battery (Voltage controlled and dispatchable)
-        :param name: Name of the device
-        :param active_power: Active power (MW)
-        :param voltage_module: Voltage set point (p.u.)
-        :param Qmin: minimum reactive power in MVAr
-        :param Qmax: maximum reactive power in MVAr
-        :param Snom: Nominal power in MVA
-        :param Enom: Nominal energy in MWh
-        :param power_prof: active power profile (Pandas DataFrame)
-        :param vset_prof: voltage set point profile (Pandas DataFrame)
-        :param active: Is the generator active?
-        :param p_min: minimum dispatchable power in MW
-        :param p_max maximum dispatchable power in MW
-        :param op_cost operational cost in Eur (or other currency) per MW
-        :param enabled_dispatch is the generator enabled for OPF?
-        :param mttf: Mean time to failure
-        :param mttr: Mean time to repair
-        :param charge_efficiency: efficiency when charging
-        :param discharge_efficiency: efficiency when discharging
-        :param max_soc: maximum state of charge
-        :param min_soc: minimum state of charge
-        :param soc: current state of charge
-        :param charge_per_cycle: per unit of power to take per cycle when charging
-        :param discharge_per_cycle: per unit of power to deliver per cycle when charging
-        """
-        ControlledGenerator.__init__(self, name=name,
-                                     active_power=active_power,
-                                     voltage_module=voltage_module,
-                                     Qmin=Qmin, Qmax=Qmax, Snom=Snom,
-                                     power_prof=power_prof,
-                                     vset_prof=vset_prof,
-                                     active=active,
-                                     p_min=p_min, p_max=p_max,
-                                     op_cost=op_cost,
-                                     Sbase=Sbase,
-                                     enabled_dispatch=enabled_dispatch,
-                                     mttf=mttf,
-                                     mttr=mttr,
-                                     Ra=Ra,
-                                     Xa=Xa,
-                                     Xd=Xd,
-                                     Xq=Xq,
-                                     Xdp=Xdp,
-                                     Xqp=Xqp,
-                                     Xdpp=Xdpp,
-                                     Xqpp=Xqpp,
-                                     Td0p=Td0p,
-                                     Tq0p=Tq0p,
-                                     Td0pp=Td0pp,
-                                     Tq0pp=Tq0pp,
-                                     H=H)
-
-        # type of this device
-        self.type_name = 'Battery'
-
-        self.charge_efficiency = charge_efficiency
-
-        self.discharge_efficiency = discharge_efficiency
-
-        self.max_soc = max_soc
-
-        self.min_soc = min_soc
-
-        self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
-
-        self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
-
-        self.discharge_per_cycle = discharge_per_cycle
-
-        self.min_energy = Enom * self.min_soc
-
-        self.Enom = Enom
-
-        self.soc_0 = soc
-
-        self.soc = soc
-
-        self.energy = self.Enom * self.soc
-
-        self.energy_array = None
-
-        self.power_array = None
-
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
-                             'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency']
-
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh',
-                      'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h',
-                      '', '', '', '', '']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'P': float,
-                           'Vset': float,
-                           'Snom': float,
-                           'Enom': float,
-                           'Qmin': float,
-                           'Qmax': float,
-                           'Pmin': float,
-                           'Pmax': float,
-                           'Cost': float,
-                           'enabled_dispatch': bool,
-                           'mttf': float,
-                           'mttr': float,
-                           'soc_0': float,
-                           'max_soc': float,
-                           'min_soc': float,
-                           'charge_efficiency': float,
-                           'discharge_efficiency': float}
-
-    def copy(self):
-        """
-        Make a copy of this object
-        Returns: Battery instance
-        """
-
-        # create a new instance of the battery
-        batt = Battery()
-
-        batt.name = self.name
-
-        # Power (MVA)
-        # MVA = kV * kA
-        batt.P = self.P
-
-        batt.Pmax = self.Pmax
-
-        batt.Pmin = self.Pmin
-
-        # power profile for this load
-        batt.Pprof = self.Pprof
-
-        # Voltage module set point (p.u.)
-        batt.Vset = self.Vset
-
-        # voltage set profile for this load
-        batt.Vsetprof = self.Vsetprof
-
-        # minimum reactive power in per unit
-        batt.Qmin = self.Qmin
-
-        # Maximum reactive power in per unit
-        batt.Qmax = self.Qmax
-
-        # Nominal power MVA
-        batt.Snom = self.Snom
-
-        # Nominal energy MWh
-        batt.Enom = self.Enom
-
-        # Enable for active power dispatch?
-        batt.enabled_dispatch = self.enabled_dispatch
-
-        batt.mttf = self.mttf
-
-        batt.mttr = self.mttr
-
-        batt.charge_efficiency = self.charge_efficiency
-
-        batt.discharge_efficiency = self.discharge_efficiency
-
-        batt.max_soc = self.max_soc
-
-        batt.min_soc = self.min_soc
-
-        batt.min_soc_charge = self.min_soc_charge  # SoC state to force the battery charge
-
-        batt.charge_per_cycle = self.charge_per_cycle  # charge 10% per cycle
-
-        batt.discharge_per_cycle = self.discharge_per_cycle
-
-        batt.min_energy = self.min_energy
-
-        batt.soc_0 = self.soc
-
-        batt.soc = self.soc
-
-        batt.energy = self.energy
-
-        batt.energy_array = self.energy_array
-
-        batt.power_array = self.power_array
-
-        return batt
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr,
-                self.soc_0, self.max_soc, self.min_soc, self.charge_efficiency, self.discharge_efficiency]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
-        :return: json-compatible dictionary
-        """
-        return {'id': id,
-                'type': 'battery',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'P': self.P,
-                'Vset': self.Vset,
-                'Snom': self.Snom,
-                'Enom': self.Enom,
-                'qmin': self.Qmin,
-                'qmax': self.Qmax,
-                'Pmin': self.Pmin,
-                'Pmax': self.Pmax,
-                'Cost': self.Cost}
-
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.P
-        else:
-            dta = ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-
-    def reset(self):
-        """
-        Set he battery to its initial state
-        """
-        self.soc = self.soc_0
-        self.energy = self.Enom * self.soc
-        dta = self.Pprof.values.copy()
-        index = self.Pprof.index
-        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-
-    def process(self, P, dt, charge_if_needed=False):
-        """
-        process a cycle in the battery
-        :param P: proposed power in MW
-        :param dt: time increment in hours
-        :param charge_if_needed: True / False
-        :param store_values: Store the values into the internal arrays?
-        :return: Amount of power actually processed in MW
-        """
-
-        # if self.Enom is None:
-        #     raise Exception('You need to set the battery nominal power!')
-
-        if np.isnan(P):
-            warn('NaN found!!!!!!')
-
-        # pick the right efficiency value
-        if P >= 0.0:
-            eff = self.discharge_efficiency
-            # energy_per_cycle = self.nominal_energy * self.discharge_per_cycle
-        else:
-            eff = self.charge_efficiency
-
-        # amount of energy that the battery can take in a cycle of 1 hour
-        energy_per_cycle = self.Enom * self.charge_per_cycle
-
-        # compute the proposed energy. Later we check how much is actually possible
-        proposed_energy = self.energy - P * dt * eff
-
-        # charge the battery from the grid if the SoC is too low and we are allowing this behaviour
-        if charge_if_needed and self.soc < self.min_soc_charge:
-            proposed_energy -= energy_per_cycle / dt  # negative is for charging
-
-        # Check the proposed energy
-        if proposed_energy > self.Enom * self.max_soc:  # Truncated, too high
-
-            energy_new = self.Enom * self.max_soc
-            power_new = (self.energy - energy_new) / (dt * eff)
-
-        elif proposed_energy < self.Enom * self.min_soc:  # Truncated, too low
-
-            energy_new = self.Enom * self.min_soc
-            power_new = (self.energy - energy_new) / (dt * eff)
-
-        else:  # everything is within boundaries
-
-            energy_new = proposed_energy
-            power_new = P
-
-        # Update the state of charge and the energy state
-        self.soc = energy_new / self.Enom
-        self.energy = energy_new
-
-        return power_new, self.energy
-
-    def get_processed_at(self, t, dt, store_values=True):
-        """
-        Get the processed power at the time index t
-        :param t: time index
-        :param dt: time step in hours
-        :param store_values: store the values?
-        :return: active power processed by the battery control in MW
-        """
-        power_value = self.Pprof.values[t]
-
-        processed_power, processed_energy = self.process(power_value, dt)
-
-        if store_values:
-            self.energy_array.values[t] = processed_energy
-            self.power_array.values[t] = processed_power
-
-        return processed_power
-
-
-class Shunt(ReliabilityDevice):
-
-    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def plot(self, stop=True):
         """
-        Shunt object
-        Args:
-            name:
-            admittance: Admittance in MVA at 1 p.u. voltage
-            admittance_prof: Admittance profile in MVA at 1 p.u. voltage
-            active: Is active True or False
+        Plot the grid as a graph
+        :param stop: stop the execution while displaying
         """
 
-        ReliabilityDevice.__init__(self, mttf, mttr)
-
-        self.name = name
-
-        self.active = active
-
-        self.type_name = 'Shunt'
-
-        self.properties_with_profile = (['Y'], [complex])
-
-        self.graphic_obj = None
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
-
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        self.Y = admittance
-
-        # admittance profile
-        self.Yprof = admittance_prof
-
-        self.edit_headers = ['name', 'bus', 'active', 'Y', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MVA', 'h', 'h']  # MVA at 1 p.u.
-
-        self.edit_types = {'name': str,
-                           'active': bool,
-                           'bus': None,
-                           'Y': complex,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'Y': self.create_Y_profile}
-
-        self.profile_attr = {'Y': 'Yprof'}
-
-    def copy(self):
-        """
-        Copy of this object
-        :return: a copy of this object
-        """
-        shu = Shunt()
-
-        shu.name = self.name
-
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        shu.Y = self.Y
-
-        # admittance profile
-        shu.Yprof = self.Yprof
-
-        shu.mttf = self.mttf
-
-        shu.mttr = self.mttr
-
-        return shu
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, str(self.Y), self.mttf, self.mttr]
-
-    def get_json_dict(self, id, bus_dict):
-        """
-        Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID 
-        :return: 
-        """
-        return {'id': id,
-                'type': 'shunt',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'g': self.Y.real,
-                'b': self.Y.imag}
-
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag == 'Y':
-            self.create_profiles(index, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
-    def create_profiles(self, index, Y=None):
-        """
-        Create the load object default profiles
-        Args:
-            index: time index to use
-            Y: admittance values
-        Returns: Nothing
-        """
-        self.create_Y_profile(index, Y)
-
-    def create_Y_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index to use
-        Returns: Nothing
-        """
-        if arr_in_pu:
-            dta = arr * self.Y
-        else:
-            dta = ones(len(index)) * self.Y if arr is None else arr
-        self.Yprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Yprof is None:
-                self.create_Y_profile(index)
-        return self.Yprof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return: 
-        """
-        self.Yprof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.Y = self.Yprof.values[t]
+        adjacency_matrix = self.C_bus_bus.todense()
+        mylabels = {i: name for i, name in enumerate(self.bus_names)}
 
-    def __str__(self):
-        return self.name
+        gr = nx.Graph(adjacency_matrix)
+        nx.draw(gr, node_size=500, labels=mylabels, with_labels=True)
+        if stop:
+            plt.show()
 
 
 class MultiCircuit:
@@ -2829,7 +962,7 @@ class MultiCircuit:
         """
 
         # Initial magnitudes
-        pvpq = r_[self.numerical_circuit.pv, self.numerical_circuit.pq]
+        pvpq = np.r_[self.numerical_circuit.pv, self.numerical_circuit.pq]
 
         J = Jacobian(Ybus=self.numerical_circuit.Ybus,
                      V=self.numerical_circuit.Vbus,
@@ -2854,13 +987,13 @@ class MultiCircuit:
             q_l = self.numerical_circuit.Qmin < self.power_flow_results.Sbus.imag
             q_h = self.power_flow_results.Sbus.imag < self.numerical_circuit.Qmax
             q_ok = q_l * q_h
-            data = c_[np.abs(self.power_flow_results.voltage),
-                      np.angle(self.power_flow_results.voltage),
-                      self.power_flow_results.Sbus.real,
-                      self.power_flow_results.Sbus.imag,
-                      self.numerical_circuit.Qmin,
-                      self.numerical_circuit.Qmax,
-                      q_ok.astype(np.bool)]
+            data = np.c_[np.abs(self.power_flow_results.voltage),
+                         np.angle(self.power_flow_results.voltage),
+                         self.power_flow_results.Sbus.real,
+                         self.power_flow_results.Sbus.imag,
+                         self.numerical_circuit.Qmin,
+                         self.numerical_circuit.Qmax,
+                         q_ok.astype(np.bool)]
         else:
             data = [0, 0, 0, 0, 0, 0]
 
@@ -3125,11 +1258,11 @@ class MultiCircuit:
                     warn(str(obj_) + ' has no ' + attr + ' property.')
 
         # Add the buses ################################################################################################
+        bus_dict = dict()
         if 'bus' in data.keys():
             lst = data['bus']
             hdr = lst.columns.values
             vals = lst.values
-            bus_dict = dict()
             for i in range(len(lst)):
                 obj = Bus()
                 set_object_attributes(obj, hdr, vals[i, :])
@@ -3143,7 +1276,7 @@ class MultiCircuit:
             lst = data['load']
             bus_from = lst['bus'].values
             hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
             vals = lst[hdr].values
             for i in range(len(lst)):
                 obj = Load()
@@ -3191,7 +1324,7 @@ class MultiCircuit:
             lst = data['controlled_generator']
             bus_from = lst['bus'].values
             hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
             vals = lst[hdr].values
             for i in range(len(lst)):
                 obj = ControlledGenerator()
@@ -3226,7 +1359,7 @@ class MultiCircuit:
             lst = data['battery']
             bus_from = lst['bus'].values
             hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
             vals = lst[hdr].values
             for i in range(len(lst)):
                 obj = Battery()
@@ -3261,7 +1394,7 @@ class MultiCircuit:
             lst = data['static_generator']
             bus_from = lst['bus'].values
             hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
             vals = lst[hdr].values
             for i in range(len(lst)):
                 obj = StaticGenerator()
@@ -3290,7 +1423,7 @@ class MultiCircuit:
             lst = data['shunt']
             bus_from = lst['bus'].values
             hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
             vals = lst[hdr].values
             for i in range(len(lst)):
                 obj = Shunt()
@@ -3401,8 +1534,8 @@ class MultiCircuit:
             bus_from = lst['bus_from'].values
             bus_to = lst['bus_to'].values
             hdr = lst.columns.values
-            hdr = delete(hdr, argwhere(hdr == 'bus_from'))
-            hdr = delete(hdr, argwhere(hdr == 'bus_to'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus_from'))
+            hdr = np.delete(hdr, np.argwhere(hdr == 'bus_to'))
             vals = lst[hdr].values
             for i in range(len(lst)):
                 try:
@@ -3483,7 +1616,7 @@ class MultiCircuit:
 
                 obj.append(elm.get_save_data())
 
-            dta = array(obj).astype('str')
+            dta = np.array(obj).astype('str')
         else:
             dta = np.zeros((0, len(headers)))
 
@@ -3496,7 +1629,7 @@ class MultiCircuit:
             for elm in self.branches:
                 obj.append(elm.get_save_data())
 
-            dta = array(obj).astype('str')
+            dta = np.array(obj).astype('str')
         else:
             dta = np.zeros((0, len(headers)))
 
@@ -3520,9 +1653,9 @@ class MultiCircuit:
                         i_profiles = elm.Iprof.values
                         z_profiles = elm.Zprof.values
                     else:
-                        s_profiles = c_[s_profiles, elm.Sprof.values]
-                        i_profiles = c_[i_profiles, elm.Iprof.values]
-                        z_profiles = c_[z_profiles, elm.Zprof.values]
+                        s_profiles = np.c_[s_profiles, elm.Sprof.values]
+                        i_profiles = np.c_[i_profiles, elm.Iprof.values]
+                        z_profiles = np.c_[z_profiles, elm.Zprof.values]
 
             dfs['load'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -3547,7 +1680,7 @@ class MultiCircuit:
                     if s_profiles is None and elm.Sprof is not None:
                         s_profiles = elm.Sprof.values
                     else:
-                        s_profiles = c_[s_profiles, elm.Sprof.values]
+                        s_profiles = np.c_[s_profiles, elm.Sprof.values]
 
             dfs['static_generator'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -3573,8 +1706,8 @@ class MultiCircuit:
                         p_profiles = elm.Pprof.values
                         v_set_profiles = elm.Vsetprof.values
                     else:
-                        p_profiles = c_[p_profiles, elm.Pprof.values]
-                        v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
+                        p_profiles = np.c_[p_profiles, elm.Pprof.values]
+                        v_set_profiles = np.c_[v_set_profiles, elm.Vsetprof.values]
             dfs['battery'] = pd.DataFrame(data=obj, columns=headers)
 
             if p_profiles is not None:
@@ -3600,8 +1733,8 @@ class MultiCircuit:
                         p_profiles = elm.Pprof.values
                         v_set_profiles = elm.Vsetprof.values
                     else:
-                        p_profiles = c_[p_profiles, elm.Pprof.values]
-                        v_set_profiles = c_[v_set_profiles, elm.Vsetprof.values]
+                        p_profiles = np.c_[p_profiles, elm.Pprof.values]
+                        v_set_profiles = np.c_[v_set_profiles, elm.Vsetprof.values]
 
             dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -3627,7 +1760,7 @@ class MultiCircuit:
                     if y_profiles is None and elm.Yprof.values is not None:
                         y_profiles = elm.Yprof.values
                     else:
-                        y_profiles = c_[y_profiles, elm.Yprof.values]
+                        y_profiles = np.c_[y_profiles, elm.Yprof.values]
 
             dfs['shunt'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -3981,7 +2114,7 @@ class MultiCircuit:
             index: Time profile
         """
 
-        self.time_profile = array(index)
+        self.time_profile = np.array(index)
 
         for bus in self.buses:
 
