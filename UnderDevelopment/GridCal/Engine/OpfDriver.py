@@ -25,7 +25,7 @@ from timeit import default_timer as timer
 from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.IoStructures import CalculationInputs
-from GridCal.Engine.CalculationEngine import MultiCircuit, NumericalCircuit
+from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
@@ -34,8 +34,6 @@ from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
 ########################################################################################################################
 # Optimal Power flow classes
 ########################################################################################################################
-
-# TODO: Complete reformulation of the DF-OPF to work with CalculationInputs() instead of Circuit()
 
 class DcOpf:
 

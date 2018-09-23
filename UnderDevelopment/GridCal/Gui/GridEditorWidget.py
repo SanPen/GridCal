@@ -2371,7 +2371,7 @@ class MapWidget(QGraphicsRectItem):
         self.lon0 = lon0
         self.zoom = zoom
 
-        print('map:', lat0, lon0, zoom)
+        # print('map:', lat0, lon0, zoom)
 
         # get map
         try:

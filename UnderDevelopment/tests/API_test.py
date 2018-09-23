@@ -25,8 +25,8 @@ if __name__ == '__main__':
     # fname = 'IEEE_30_new.xlsx'
     # fname = 'lynn5buspq.xlsx'
     # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
@@ -73,9 +73,9 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
-    # print('Running TS...', '')
-    # ts = TimeSeries(grid=main_circuit, options=options, start=0, end=96)
-    # ts.run()
+    print('Running TS...', '')
+    ts = TimeSeries(grid=main_circuit, options=options, start=0, end=96)
+    ts.run()
 
     # TODO: not working due to results analysis of overloads etc...
     # ts_analysis = TimeSeriesResultsAnalysis(ts.results)
@@ -83,35 +83,29 @@ if __name__ == '__main__':
     # ts.results.plot('Bus voltage', indices=lst, names=lst)
     # ts.results.plot('Bus voltage', indices=list(range(len(main_circuit.buses))), names=main_circuit.bus_names)
 
-    # plt.figure()
-    # batteries = grid.get_batteries()
-    # batteries[0].power_array.plot(label='Battery power')
-    # batteries[0].energy_array.plot(label='Battery energy')
-    # plt.legend()
-
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
-    # vc_options = VoltageCollapseOptions()
-    #
-    # # just for this test
-    # numeric_circuit = main_circuit.compile()
-    # numeric_inputs = numeric_circuit.compute()
-    # Sbase = zeros(len(main_circuit.buses), dtype=complex)
-    # Vbase = zeros(len(main_circuit.buses), dtype=complex)
-    # for c in numeric_inputs:
-    #     Sbase[c.original_bus_idx] = c.Sbus
-    #     Vbase[c.original_bus_idx] = c.Vbus
-    #
-    # unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-    #
-    # # unitary_vector = random.random(len(grid.buses))
-    # vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-    #                                  Vbase=Vbase,
-    #                                  Starget=Sbase * (1+unitary_vector))
-    # vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
-    # vc.run()
-    # vc.results.plot()
+    vc_options = VoltageCollapseOptions()
+
+    # just for this test
+    numeric_circuit = main_circuit.compile()
+    numeric_inputs = numeric_circuit.compute()
+    Sbase = zeros(len(main_circuit.buses), dtype=complex)
+    Vbase = zeros(len(main_circuit.buses), dtype=complex)
+    for c in numeric_inputs:
+        Sbase[c.original_bus_idx] = c.Sbus
+        Vbase[c.original_bus_idx] = c.Vbus
+
+    unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
+
+    # unitary_vector = random.random(len(grid.buses))
+    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                     Vbase=Vbase,
+                                     Starget=Sbase * (1+unitary_vector))
+    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
+    vc.run()
+    vc.results.plot()
 
     ####################################################################################################################
     # Monte Carlo

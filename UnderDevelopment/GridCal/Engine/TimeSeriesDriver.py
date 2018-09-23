@@ -445,8 +445,7 @@ class TimeSeries(QThread):
 
                         if t < self.end_-1:
                             # compute the time delta: the time values come in nanoseconds
-                            dt = int(calculation_input.time_array[t+1]
-                                     - calculation_input.time_array[t]) * 1e-9 / 3600
+                            dt = (calculation_input.time_array[t+1] - calculation_input.time_array[t]).value * 1e-9 / 3600
 
                         for k, batt in enumerate(batteries):
 
