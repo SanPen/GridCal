@@ -12,3 +12,4 @@ from GridCal.Engine.TransientStabilityDriver import *
 from GridCal.Engine.VoltageCollapseDriver import *
 from GridCal.Engine.TopologyDriver import *
 from GridCal.Engine.TopologyDriver import *
+from GridCal.Engine.GridAnalysis import *

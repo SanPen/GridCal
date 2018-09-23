@@ -39,6 +39,7 @@ from GridCal.Engine.TransientStabilityDriver import *
 from GridCal.Engine.VoltageCollapseDriver import *
 from GridCal.Engine.TopologyDriver import TopologyReduction, TopologyReductionOptions
 from GridCal.Engine.TopologyDriver import select_branches_to_reduce
+from GridCal.Engine.GridAnalysis import TimeSeriesResultsAnalysis
 
 import os.path
 import platform
@@ -234,6 +235,8 @@ class MainGUI(QMainWindow):
 
         self.results_df = None
 
+        self.buses_for_storage = None
+
         self.available_results_dict = None
         self.threadpool = QThreadPool()
         self.threadpool.setMaxThreadCount(cpu_count())
@@ -306,6 +309,8 @@ class MainGUI(QMainWindow):
         self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
 
         self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
+
+        self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
 
         # Buttons
 
@@ -2526,6 +2531,75 @@ class MainGUI(QMainWindow):
 
         self.clear_results()
 
+    def storage_location(self):
+
+        """
+        Add storage markers to the schematic
+        Returns:
+
+        """
+
+        if len(self.circuit.buses) > 0:
+
+            if self.ui.actionStorage_location_suggestion.isChecked():
+
+                if self.time_series is not None:
+
+                    # get the numerical object of the circuit
+                    numeric_circuit = self.circuit.compile()
+
+                    # perform a time series analysis
+                    ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, self.time_series.results)
+
+                    # get the indices of the buses selected for storage
+                    idx = np.where(ts_analysis.buses_selected_for_storage_frequency > 0)[0]
+
+                    if len(idx) > 0:
+
+                        frequencies = ts_analysis.buses_selected_for_storage_frequency[idx]
+
+                        fmax = np.max(frequencies)
+
+                        # prepare the color map
+                        seq = [(0, 'green'),
+                               (0.6, 'orange'),
+                               (1.0, 'red')]
+                        cmap = LinearSegmentedColormap.from_list('vcolors', seq)
+
+                        self.buses_for_storage = list()
+
+                        for i, freq in zip(idx, frequencies):
+
+                            bus = self.circuit.buses[i]
+                            self.buses_for_storage.append(bus)
+
+                            # add a marker to the bus if there are no batteries in it
+                            if bus.graphic_obj.big_marker is None and len(bus.batteries) == 0:
+                                r, g, b, a = cmap(freq / fmax)
+                                color = QColor(r * 255, g * 255, b * 255, a * 255)
+                                bus.graphic_obj.add_big_marker(color=color)
+                    else:
+
+                        self.msg('No problems were detected, therefore no storage is suggested', 'Storage location')
+
+                else:
+                    self.msg('There are no time series simulation, which is needed for this functionality',
+                             'Storage location')
+
+            else:
+
+                # delete the red dots
+                if self.buses_for_storage is not None:
+
+                    for bus in self.buses_for_storage:
+                        # add a marker to the bus...
+                        if bus.graphic_obj.big_marker is not None:
+                            bus.graphic_obj.delete_big_marker()
+                else:
+                    pass
+        else:
+            pass
+
     def set_cancel_state(self):
         """
         Cancel whatever's going on that can be cancelled
@@ -2603,6 +2677,8 @@ class MainGUI(QMainWindow):
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
+
+        self.buses_for_storage = None
 
         self.calculation_inputs_to_display = None
         self.ui.simulation_data_island_comboBox.clear()

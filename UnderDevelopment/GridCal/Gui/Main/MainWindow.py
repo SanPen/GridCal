@@ -1769,6 +1769,12 @@ class Ui_mainWindow(object):
         icon39.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_reduction.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionGrid_Reduction.setIcon(icon39)
         self.actionGrid_Reduction.setObjectName("actionGrid_Reduction")
+        self.actionStorage_location_suggestion = QtWidgets.QAction(mainWindow)
+        self.actionStorage_location_suggestion.setCheckable(True)
+        icon40 = QtGui.QIcon()
+        icon40.addPixmap(QtGui.QPixmap(":/Icons/icons/storage_loc.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionStorage_location_suggestion.setIcon(icon40)
+        self.actionStorage_location_suggestion.setObjectName("actionStorage_location_suggestion")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -1827,6 +1833,7 @@ class Ui_mainWindow(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionDetect_transformers)
         self.toolBar.addAction(self.actionAuto_rate_branches)
+        self.toolBar.addAction(self.actionStorage_location_suggestion)
         self.toolBar.addAction(self.actionGrid_Reduction)
         self.toolBar.addSeparator()
 
@@ -2075,6 +2082,8 @@ class Ui_mainWindow(object):
         self.actionTransient_stability.setShortcut(_translate("mainWindow", "F8"))
         self.actionGrid_Reduction.setText(_translate("mainWindow", "Grid Reduction"))
         self.actionGrid_Reduction.setToolTip(_translate("mainWindow", "Performs a topological grid reduction"))
+        self.actionStorage_location_suggestion.setText(_translate("mainWindow", "Storage location suggestion"))
+        self.actionStorage_location_suggestion.setToolTip(_translate("mainWindow", "Suggest places where storage devices are useful"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *

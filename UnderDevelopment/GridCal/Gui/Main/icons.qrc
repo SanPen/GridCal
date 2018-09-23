@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/storage_loc.svg</file>
     <file>icons/grid_reduction.svg</file>
     <file>icons/dyn.svg</file>
     <file>icons/map.svg</file>

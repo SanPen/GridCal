@@ -62,6 +62,8 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.losses = zeros((nt, m), dtype=complex)
 
+            self.flow_direction = zeros((nt, m), dtype=float)
+
             self.error = zeros(nt)
 
             self.converged = ones(nt, dtype=bool)  # guilty assumption
@@ -92,6 +94,8 @@ class TimeSeriesResults(PowerFlowResults):
             self.loading = None
 
             self.losses = None
+
+            self.flow_direction = None
 
             self.error = None
 
@@ -133,6 +137,8 @@ class TimeSeriesResults(PowerFlowResults):
         self.loading[t, :] = results.loading
 
         self.losses[t, :] = results.losses
+
+        self.flow_direction[t, :] = results.flow_direction
 
         self.error[t] = max(results.error)
 
@@ -311,38 +317,6 @@ class TimeSeriesResults(PowerFlowResults):
 
         else:
             return None
-
-
-class TimeSeriesResultsAnalysis:
-
-    def __init__(self, results: TimeSeriesResults):
-
-        self.res = results
-
-        self.branch_overload_frequency = zeros(self.res.m)
-        self.bus_under_voltage_frequency = zeros(self.res.n)
-        self.bus_over_voltage_frequency = zeros(self.res.n)
-
-        self.branch_overload_accumulated = zeros(self.res.m, dtype=complex)
-        self.bus_under_voltage_accumulated = zeros(self.res.n, dtype=complex)
-        self.bus_over_voltage_accumulated = zeros(self.res.n, dtype=complex)
-
-        self.buses_selected_for_storage_frequency = zeros(self.res.n)
-
-        self.__run__()
-
-    def __run__(self):
-
-        for i in range(self.res.start, self.res.end):
-            self.branch_overload_frequency[self.res.overloads_idx[i]] += 1
-            self.bus_under_voltage_frequency[self.res.undervoltage_idx[i]] += 1
-            self.bus_over_voltage_frequency[self.res.overvoltage_idx[i]] += 1
-
-            self.branch_overload_accumulated[self.res.overloads_idx[i]] += self.res.overloads[i]
-            self.bus_under_voltage_accumulated[self.res.undervoltage_idx[i]] += self.res.undervoltage[i]
-            self.bus_over_voltage_accumulated[self.res.overvoltage_idx[i]] += self.res.overvoltage[i]
-
-            self.buses_selected_for_storage_frequency[self.res.buses_useful_for_storage[i]] += 1
 
 
 class TimeSeries(QThread):

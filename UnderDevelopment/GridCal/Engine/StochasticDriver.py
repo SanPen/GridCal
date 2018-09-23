@@ -201,7 +201,7 @@ class MonteCarlo(QThread):
         mc_results.compile()
 
         # compute the averaged branch magnitudes
-        mc_results.sbranch, _, _, _, _ = numerical_circuit.power_flow_post_process(mc_results.voltage)
+        mc_results.sbranch, _, _, _, _, _ = numerical_circuit.power_flow_post_process(mc_results.voltage)
 
         # print('V mc: ', mc_results.voltage)
 
@@ -300,7 +300,7 @@ class MonteCarlo(QThread):
         # compile results
         self.progress_text.emit('Compiling results...')
         mc_results.compile()
-        mc_results.sbranch, _, _, _, _ = numerical_circuit.power_flow_post_process(mc_results.voltage)
+        mc_results.sbranch, _, _, _, _, _ = numerical_circuit.power_flow_post_process(mc_results.voltage)
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -454,8 +454,8 @@ class LatinHypercubeSampling(QThread):
         lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch, Ibranch, \
-        loading, lhs_results.losses, Sbus = numerical_circuit.power_flow_post_process(lhs_results.voltage)
+        lhs_results.sbranch, Ibranch, loading, \
+        lhs_results.losses, flow_direction,  Sbus = numerical_circuit.power_flow_post_process(lhs_results.voltage)
 
         self.results = lhs_results
 
@@ -538,8 +538,8 @@ class LatinHypercubeSampling(QThread):
         lhs_results.compile()
 
         # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch, Ibranch, \
-        loading, lhs_results.losses, Sbus = numerical_circuit.power_flow_post_process(lhs_results.voltage)
+        lhs_results.sbranch, Ibranch, loading, \
+        lhs_results.losses, flow_direction, Sbus = numerical_circuit.power_flow_post_process(lhs_results.voltage)
 
         self.results = lhs_results
 

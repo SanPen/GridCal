@@ -364,7 +364,8 @@ class PowerFlowMP:
         # ref, pq, pv, pqpv = self.compile_types(original_types)
 
         # Compute the branches power and the slack buses power
-        Sbranch, Ibranch, loading, losses, Sbus = self.power_flow_post_process(circuit=circuit, V=voltage_solution)
+        Sbranch, Ibranch, loading, losses, \
+        flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
@@ -373,6 +374,7 @@ class PowerFlowMP:
                                    Ibranch=Ibranch,
                                    loading=loading,
                                    losses=losses,
+                                   flow_direction=flow_direction,
                                    error=errors,
                                    converged=converged_lst,
                                    Qpv=None,
@@ -384,52 +386,55 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def power_flow_post_process(circuit: CalculationInputs, V, only_power=False):
+    def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False):
         """
         Compute the power flows trough the branches
-        @param circuit: instance of Circuit
+        @param calculation_inputs: instance of Circuit
         @param V: Voltage solution array for the circuit buses
         @param only_power: compute only the power injection
         @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
-        Sbus = circuit.Sbus
+        Sbus = calculation_inputs.Sbus
 
-        vd = circuit.ref
-        pv = circuit.pv
+        vd = calculation_inputs.ref
+        pv = calculation_inputs.pv
 
         # power at the slack nodes
-        Sbus[vd] = V[vd] * conj(circuit.Ybus[vd, :][:, :].dot(V))
+        Sbus[vd] = V[vd] * conj(calculation_inputs.Ybus[vd, :][:, :].dot(V))
 
         # Reactive power at the pv nodes
         P = Sbus[pv].real
-        Q = (V[pv] * conj(circuit.Ybus[pv, :][:, :].dot(V))).imag
+        Q = (V[pv] * conj(calculation_inputs.Ybus[pv, :][:, :].dot(V))).imag
         Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
         if not only_power:
             # Branches current, loading, etc
-            If = circuit.Yf * V
-            It = circuit.Yt * V
-            Sf = (circuit.C_branch_bus_f * V) * conj(If)
-            St = (circuit.C_branch_bus_t * V) * conj(It)
+            If = calculation_inputs.Yf * V
+            It = calculation_inputs.Yt * V
+            Sf = (calculation_inputs.C_branch_bus_f * V) * conj(If)
+            St = (calculation_inputs.C_branch_bus_t * V) * conj(It)
 
             # Branch losses in MVA
-            losses = (Sf + St) * circuit.Sbase
+            losses = (Sf + St) * calculation_inputs.Sbase
+
+            flow_direction = Sf / np.abs(Sf)
 
             # Branch current in p.u.
             Ibranch = maximum(If, It)
 
             # Branch power in MVA
-            Sbranch = maximum(Sf, St) * circuit.Sbase
+            Sbranch = maximum(Sf, St) * calculation_inputs.Sbase
 
             # Branch loading in p.u.
-            loading = Sbranch / (circuit.branch_rates + 1e-9)
+            loading = Sbranch / (calculation_inputs.branch_rates + 1e-9)
 
-            return Sbranch, Ibranch, loading, losses, Sbus
+            return Sbranch, Ibranch, loading, losses, flow_direction, Sbus
 
         else:
-            no_val = zeros(circuit.nbr, dtype=complex)
-            return no_val, no_val, no_val, no_val, Sbus
+            no_val = np.zeros(calculation_inputs.nbr, dtype=complex)
+            flow_direction = np.ones(calculation_inputs.nbr, dtype=complex)
+            return no_val, no_val, no_val, no_val, flow_direction, Sbus
 
     @staticmethod
     def switch_logic(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):

@@ -481,7 +481,7 @@ class DcOpf:
 
                 # Set the values
                 res.Sbranch, res.Ibranch, res.loading, \
-                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, res.voltage)
+                res.losses, res.flow_direction, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, res.voltage)
 
             else:
                 # Add buses
@@ -511,7 +511,7 @@ class DcOpf:
 
                 # Set the values
                 res.Sbranch, res.Ibranch, res.loading, \
-                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, res.voltage, only_power=True)
+                res.losses, res.flow_direction, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, res.voltage, only_power=True)
 
                 # Add branches
                 for k, branch in enumerate(self.branches):
@@ -1056,7 +1056,7 @@ class AcOpf:
             if realistic:
                 # Set the values
                 res.Sbranch, res.Ibranch, res.loading, \
-                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, self.V)
+                res.losses, res.flow_direction, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, self.V)
                 res.voltage = self.V
             else:
 
@@ -1084,7 +1084,7 @@ class AcOpf:
 
                 # Set the values
                 res.Sbranch, res.Ibranch, res.loading, \
-                res.losses, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, self.V, only_power=True)
+                res.losses, res.flow_direction, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input, self.V, only_power=True)
                 res.voltage = self.V
                 angles = angle(self.V)
 
@@ -1167,6 +1167,8 @@ class OptimalPowerFlowResults:
         self.loading = loading
 
         self.losses = losses
+
+        self.flow_direction = None
 
         self.converged = converged
 

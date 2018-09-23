@@ -78,7 +78,8 @@ if __name__ == '__main__':
     ts.run()
 
     # TODO: not working due to results analysis of overloads etc...
-    # ts_analysis = TimeSeriesResultsAnalysis(ts.results)
+    numeric_circuit = main_circuit.compile()
+    ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
     # lst = np.array(list(range(ts.results.n)), dtype=int)
     # ts.results.plot('Bus voltage', indices=lst, names=lst)
     # ts.results.plot('Bus voltage', indices=list(range(len(main_circuit.buses))), names=main_circuit.bus_names)

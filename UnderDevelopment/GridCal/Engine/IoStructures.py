@@ -683,8 +683,9 @@ class CalculationInputs:
 
 class PowerFlowResults:
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, error=None,
-                 converged=None, Qpv=None, inner_it=None, outer_it=None, elapsed=None, methods=None):
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None,
+                 flow_direction=None, error=None, converged=None, Qpv=None, inner_it=None, outer_it=None,
+                 elapsed=None, methods=None):
         """
 
         @param voltage: Voltages array (p.u.)
@@ -707,6 +708,8 @@ class PowerFlowResults:
         self.loading = loading
 
         self.losses = losses
+
+        self.flow_direction = flow_direction
 
         self.error = error
 
@@ -775,6 +778,8 @@ class PowerFlowResults:
 
         self.loading = zeros(m, dtype=complex)
 
+        self.flow_direction = zeros(m, dtype=float)
+
         self.losses = zeros(m, dtype=complex)
 
         self.overloads = zeros(m, dtype=complex)
@@ -818,6 +823,8 @@ class PowerFlowResults:
         self.loading[br_idx] = results.loading
 
         self.losses[br_idx] = results.losses
+
+        self.flow_direction[br_idx] = results.flow_direction
 
         # self.overloads[br_idx] = results.overloads
 

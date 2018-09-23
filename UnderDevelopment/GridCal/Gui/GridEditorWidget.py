@@ -20,6 +20,7 @@ from PyQt5.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt, Image
 import sip
+import numpy as np
 
 from GridCal.Engine.CalculationEngine import *
 from GridCal.Gui.GuiFunctions import *
@@ -240,7 +241,7 @@ class TransformerEditor(QDialog):
         B = self.branch.B
         Sn = self.branch.rate
 
-        zsc = sqrt(R * R + 1 / (X * X))
+        zsc = np.sqrt(R * R + 1 / (X * X))
         Vsc = 100.0 * zsc
         Pcu = R * Sn * 1000.0
 
@@ -252,7 +253,7 @@ class TransformerEditor(QDialog):
             Pfe = 1000.0 * Sn / rfe
 
             k = 1 / (rfe * rfe) + 1 / (xm * xm)
-            I0 = 100.0 * sqrt(k)
+            I0 = 100.0 * np.sqrt(k)
         else:
             Pfe = 0
             I0 = 0
@@ -1969,6 +1970,8 @@ class BusGraphicItem(QGraphicsRectItem):
         # self.setPen(QPen(self.color, self.pen_width, self.style))
         # self.setBrush(self.color)
 
+        self.big_marker = None
+
         self.set_tile_color(self.color)
 
         self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
@@ -1979,10 +1982,30 @@ class BusGraphicItem(QGraphicsRectItem):
         # Update size:
         self.change_size(self.w, self.h)
 
-    # def setPen(self, pen):
-    #     self.tile.setPen(pen)
-    #
+    def add_big_marker(self, color=Qt.red):
+        """
+        Add a big marker to the bus
+        Args:
+            color: Qt Color ot the marker
+        """
+        self.big_marker = QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+        self.big_marker.setBrush(color)
+        self.big_marker.setOpacity(0.5)
+
+    def delete_big_marker(self):
+        """
+        Delete the big marker
+        """
+        if self.big_marker is not None:
+            self.diagramScene.removeItem(self.big_marker)
+            self.big_marker = None
+
     def set_tile_color(self, brush):
+        """
+        Set the color of the title
+        Args:
+            brush:  Qt Color
+        """
         self.tile.setBrush(brush)
         self.terminal.setBrush(brush)
 

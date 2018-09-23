@@ -4130,6 +4130,7 @@ points from time series</string>
    <addaction name="separator"/>
    <addaction name="actionDetect_transformers"/>
    <addaction name="actionAuto_rate_branches"/>
+   <addaction name="actionStorage_location_suggestion"/>
    <addaction name="actionGrid_Reduction"/>
    <addaction name="separator"/>
   </widget>
@@ -4641,6 +4642,21 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>Performs a topological grid reduction</string>
+   </property>
+  </action>
+  <action name="actionStorage_location_suggestion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/storage_loc.svg</normaloff>:/Icons/icons/storage_loc.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Storage location suggestion</string>
+   </property>
+   <property name="toolTip">
+    <string>Suggest places where storage devices are useful</string>
    </property>
   </action>
  </widget>

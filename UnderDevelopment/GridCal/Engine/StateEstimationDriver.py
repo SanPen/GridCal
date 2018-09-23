@@ -245,7 +245,8 @@ class StateEstimation(QRunnable):
                                                 pv=circuit.power_flow_input.pv)
 
             # Compute the branches power and the slack buses power
-            Sbranch, Ibranch, loading, losses, Sbus = PowerFlowMP.power_flow_post_process(circuit=circuit, V=v_sol)
+            Sbranch, Ibranch, loading, \
+            losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=circuit, V=v_sol)
 
             # pack results into a SE results object
             results = StateEstimationResults(Sbus=Sbus,
