@@ -126,10 +126,10 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Latin Hypercube
     ####################################################################################################################
-    # print('Running LHC...')
-    # lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
-    # lhs_sim.run()
-    # lhs_sim.results.plot('Bus voltage avg')
+    print('Running LHC...')
+    lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
+    lhs_sim.run()
+    lhs_sim.results.plot('Bus voltage avg')
 
     ####################################################################################################################
     # Cascading

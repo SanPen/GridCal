@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 import multiprocessing
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from GridCal.Engine.IoStructures import MonteCarloResults, MonteCarloInput, CalculationInputs
+from GridCal.Engine.IoStructures import MonteCarloResults, MonteCarloInput, CalculationInputs, PowerFlowResults
 from GridCal.Engine.CalculationEngine import CDF, MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP, PowerFlowOptions, power_flow_worker
 from GridCal.Engine.TimeSeriesDriver import TimeSeriesResults
@@ -381,27 +381,33 @@ class LatinHypercubeSampling(QThread):
         self.progress_text.emit('Running Latin Hypercube Sampling in parallel using ' + str(n_cores) + ' cores ...')
 
         lhs_results = MonteCarloResults(n, m, batch_size)
+        avg_res = PowerFlowResults()
+        avg_res.initialize(n, m)
 
         # compile
         print('Compiling...', end='')
         t1 = timer()
         numerical_circuit = self.circuit.compile()
-        calculation_inputs = numerical_circuit.compute()
+        numerical_islands = numerical_circuit.compute()
         print(timer() - t1, 's')
 
-        max_iter = batch_size * len(calculation_inputs)
+        max_iter = batch_size * len(numerical_islands)
         Sbase = self.circuit.Sbase
         it = 0
 
         # For every circuit, run the time series
-        for claculation_input in calculation_inputs:
+        for numerical_island in numerical_islands:
 
             # try:
             # set the time series as sampled in the circuit
 
-            monte_carlo_input = make_monte_carlo_input(claculation_input)
+            monte_carlo_input = make_monte_carlo_input(numerical_island)
             mc_time_series = monte_carlo_input(batch_size, use_latin_hypercube=True)
-            Vbus = claculation_input.Vbus
+            Vbus = numerical_island.Vbus
+
+            # short cut the indices
+            b_idx = numerical_island.original_bus_idx
+            br_idx = numerical_island.original_branch_idx
 
             manager = multiprocessing.Manager()
             return_dict = manager.dict()
@@ -419,7 +425,7 @@ class LatinHypercubeSampling(QThread):
 
                     # run power flow at the circuit
                     p = multiprocessing.Process(target=power_flow_worker,
-                                                args=(t, self.options, claculation_input, Vbus, S/Sbase, I/Sbase, return_dict))
+                                                args=(t, self.options, numerical_island, Vbus, S/Sbase, I/Sbase, return_dict))
                     jobs.append(p)
                     p.start()
                     k += 1
@@ -438,10 +444,10 @@ class LatinHypercubeSampling(QThread):
                 # store circuit results at the time index 't'
                 res = return_dict[t]
 
-                lhs_results.S_points[t, claculation_input.original_bus_idx] = res.Sbus
-                lhs_results.V_points[t, claculation_input.original_bus_idx] = res.voltage
-                lhs_results.I_points[t, claculation_input.original_branch_idx] = res.Ibranch
-                lhs_results.loading_points[t, claculation_input.original_branch_idx] = res.loading
+                lhs_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
+                lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
+                lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
 
             # except Exception as ex:
             #     print(c.name, ex)
@@ -449,13 +455,15 @@ class LatinHypercubeSampling(QThread):
             if self.__cancel__:
                 break
 
-        # compile MC results
-        self.progress_text.emit('Compiling results...')
-        lhs_results.compile()
+            # compile MC results
+            self.progress_text.emit('Compiling results...')
+            lhs_results.compile()
 
-        # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch, Ibranch, loading, \
-        lhs_results.losses, flow_direction,  Sbus = numerical_circuit.power_flow_post_process(lhs_results.voltage)
+            # compute the island branch results
+            island_avg_res = numerical_island.compute_branch_results(lhs_results.voltage[b_idx])
+
+            # apply the island averaged results
+            avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
 
         self.results = lhs_results
 
@@ -489,8 +497,9 @@ class LatinHypercubeSampling(QThread):
         self.progress_text.emit('Running Latin Hypercube Sampling...')
 
         lhs_results = MonteCarloResults(n, m, batch_size)
+        avg_res = PowerFlowResults()
+        avg_res.initialize(n, m)
 
-        # compile
         # compile the numerical circuit
         numerical_circuit = self.circuit.compile()
         numerical_input_islands = numerical_circuit.compute()
@@ -508,6 +517,10 @@ class LatinHypercubeSampling(QThread):
             monte_carlo_input = make_monte_carlo_input(numerical_island)
             mc_time_series = monte_carlo_input(batch_size, use_latin_hypercube=True)
             Vbus = numerical_island.Vbus
+
+            # short cut the indices
+            b_idx = numerical_island.original_bus_idx
+            br_idx = numerical_island.original_branch_idx
 
             # run the time series
             for t in range(batch_size):
@@ -533,13 +546,23 @@ class LatinHypercubeSampling(QThread):
             if self.__cancel__:
                 break
 
-        # compile MC results
-        self.progress_text.emit('Compiling results...')
-        lhs_results.compile()
+            # compile MC results
+            self.progress_text.emit('Compiling results...')
+            lhs_results.compile()
+
+            # compute the island branch results
+            island_avg_res = numerical_island.compute_branch_results(lhs_results.voltage[b_idx])
+
+            # apply the island averaged results
+            avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
 
         # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch, Ibranch, loading, \
-        lhs_results.losses, flow_direction, Sbus = numerical_circuit.power_flow_post_process(lhs_results.voltage)
+        lhs_results.sbranch = avg_res.Sbranch
+        # Ibranch = avg_res.Ibranch
+        # loading = avg_res.loading
+        lhs_results.losses = avg_res.losses
+        # flow_direction = avg_res.flow_direction
+        # Sbus = avg_res.Sbus
 
         self.results = lhs_results
 
