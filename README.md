@@ -90,32 +90,32 @@ I use the engine to get the admittance matrix, power injections, etc. and then d
 
 Example:
 ```
-from GridCal.grid.CalculationEngine import *
+from GridCal.Engine.All import *
 
-# Declare a multi-circuit object
+# Declare a multi-circuit object: this is an asset-based circuit representation that is object based
 grid = MultiCircuit()
 
 # Load the IEEE30 bus grid in the circuit object
 grid.load_file('IEEE30.xlsx')
 
-# Compile the grid
-grid.compile()
+# Compile the assets of the MultiCircuit into a numerical equivalent
+numerical_circuit = self.circuit.compile()
 
-# Pick the circuit 0, if there are no islands all the grid elements are in this object.
-# Each island holds its own calculation objects
-circuit = grid.circuits[0]
+# Compute the islands of the numerical circuit (each island is self contained for computation)
+numerical_input_islands = numerical_circuit.compute()
 
-# Print some useful computed vectors and matrices
-print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-print('\nSbus:\n', circuit.power_flow_input.Sbus)
-print('\nIbus:\n', circuit.power_flow_input.Ibus)
-print('\nVbus:\n', circuit.power_flow_input.Vbus)
-print('\ntypes:\n', circuit.power_flow_input.types)
-print('\npq:\n', circuit.power_flow_input.pq)
-print('\npv:\n', circuit.power_flow_input.pv)
-print('\nvd:\n', circuit.power_flow_input.ref)
+for island in numerical_input_islands:
+    # Print some useful computed vectors and matrices
+    print('\nAdmittance matrix:\n', island.Ybus.todense())
+    print('\nAdmittance matrix of the series elements:\n', island.Yseries.todense())
+    print('\nShunt admittances:\n', island.Ysh)
+    print('\nPower injections:\n', island.Sbus)
+    print('\nCurrent injections:\n', island.Ibus)
+    print('\nInitial voltage:\n', island.Vbus)
+    print('\nList of bus types:\n', island.types)
+    print('\nList of PQ buses:\n', island.pq)
+    print('\nList of PV buses:\n', island.pv)
+    print('\nList of Alack buses:\n', island.ref)
 ```
 
 The main logic is to store the grid elements information in objects, and then "compile the objects" to get efficient arrays that represent the grid for calculation.

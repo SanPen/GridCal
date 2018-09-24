@@ -440,9 +440,9 @@ class CalculationInputs:
         self.Sbus = np.zeros(nbus, dtype=complex)
         self.Ibus = np.zeros(nbus, dtype=complex)
 
-        self.Ysh_prof = np.zeros((ntime, nbus), dtype=complex)
-        self.Sbus_prof = np.zeros((ntime, nbus), dtype=complex)
-        self.Ibus_prof = np.zeros((ntime, nbus), dtype=complex)
+        self.Ysh_prof = np.zeros((nbus, ntime), dtype=complex)
+        self.Sbus_prof = np.zeros((nbus, ntime), dtype=complex)
+        self.Ibus_prof = np.zeros((nbus, ntime), dtype=complex)
 
         self.Vbus = np.ones(nbus, dtype=complex)
         self.Vmin = np.ones(nbus, dtype=float)
@@ -523,6 +523,10 @@ class CalculationInputs:
         """
         obj = CalculationInputs(len(bus_idx), len(branch_idx), self.ntime)
 
+        # remember the island original indices
+        obj.original_bus_idx = bus_idx
+        obj.original_branch_idx = branch_idx
+
         obj.Yf = self.Yf[branch_idx, :][:, bus_idx].copy()
         obj.Yt = self.Yt[branch_idx, :][:, bus_idx].copy()
         obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx].copy()
@@ -545,6 +549,10 @@ class CalculationInputs:
         obj.branch_rates = self.branch_rates[branch_idx]
         obj.bus_names = self.bus_names[bus_idx]
         obj.branch_names = self.branch_names[branch_idx]
+
+        obj.Ysh_prof = self.Ysh_prof[bus_idx, :]
+        obj.Sbus_prof = self.Sbus_prof[bus_idx, :]
+        obj.Ibus_prof = self.Ibus_prof[bus_idx, :]
 
         obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
         obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]

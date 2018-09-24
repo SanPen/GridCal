@@ -75,11 +75,11 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.load_shedding[t, :] = res.load_shedding
 
-        self.loading[t, :] = res.loading
+        self.loading[t, :] = np.abs(res.loading)
 
-        self.overloads[t, :] = res.overloads
+        self.overloads[t, :] = np.abs(res.overloads)
 
-        self.losses[t, :] = res.losses
+        self.losses[t, :] =np.abs(res.losses)
 
         self.Sbus[t, :] = res.Sbus
 

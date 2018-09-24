@@ -1393,6 +1393,7 @@ class OptimalPowerFlow(QRunnable):
         print(timer() - t1, 's')
 
         if len(calculation_inputs) > 1:
+
             for calculation_input in calculation_inputs:
 
                 buses = [self.grid.buses[i] for i in calculation_input.original_bus_idx]
@@ -1402,7 +1403,14 @@ class OptimalPowerFlow(QRunnable):
                     print('Solving ' + calculation_input.name)
 
                 # run OPF
-                optimal_power_flow_results, solved = self.single_optimal_power_flow(calculation_input, buses, branches, t_idx=t_idx)
+                if len(calculation_input.ref) > 0:
+                    optimal_power_flow_results, solved = self.single_optimal_power_flow(calculation_input, buses,
+                                                                                        branches, t_idx=t_idx)
+                else:
+                    optimal_power_flow_results = OptimalPowerFlowResults(is_dc=True)
+                    optimal_power_flow_results.initialize(calculation_input.nbus, calculation_input.nbr)
+                    solved = True  # couldn't solve because it was impossible to formulate the problem so we skip it...
+                    warn('The island does not have any slack...')
 
                 # assert the total solvability
                 self.all_solved = self.all_solved and solved

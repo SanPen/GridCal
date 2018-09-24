@@ -24,8 +24,8 @@ if __name__ == '__main__':
     # fname = 'Illinois200Bus.xlsx'
     # fname = 'IEEE_30_new.xlsx'
     # fname = 'lynn5buspq.xlsx'
-    # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+    fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
@@ -59,72 +59,77 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Short circuit
     ####################################################################################################################
-    print('\n\n')
-    print('Short Circuit')
-    sc_options = ShortCircuitOptions(bus_index=[16])
-    sc = ShortCircuit(main_circuit, sc_options, power_flow.results)
-    sc.run()
-
-    print('\n\n', main_circuit.name)
-    print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
-    print('\t|Sbranch|:', abs(main_circuit.short_circuit_results.Sbranch))
-    print('\t|loading|:', abs(main_circuit.short_circuit_results.loading) * 100)
+    # print('\n\n')
+    # print('Short Circuit')
+    # sc_options = ShortCircuitOptions(bus_index=[16])
+    # sc = ShortCircuit(main_circuit, sc_options, power_flow.results)
+    # sc.run()
+    #
+    # print('\n\n', main_circuit.name)
+    # print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
+    # print('\t|Sbranch|:', abs(main_circuit.short_circuit_results.Sbranch))
+    # print('\t|loading|:', abs(main_circuit.short_circuit_results.loading) * 100)
 
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
-    print('Running TS...', '')
-    ts = TimeSeries(grid=main_circuit, options=options, start=0, end=96)
-    ts.run()
+    # print('Running TS...', '')
+    # ts = TimeSeries(grid=main_circuit, options=options, start_=0, end_=96)
+    # ts.run()
+    #
+    # numeric_circuit = main_circuit.compile()
+    # ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
 
-    # TODO: not working due to results analysis of overloads etc...
-    numeric_circuit = main_circuit.compile()
-    ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
-    # lst = np.array(list(range(ts.results.n)), dtype=int)
-    # ts.results.plot('Bus voltage', indices=lst, names=lst)
-    # ts.results.plot('Bus voltage', indices=list(range(len(main_circuit.buses))), names=main_circuit.bus_names)
+    ####################################################################################################################
+    # OPF Time Series
+    ####################################################################################################################
+    # print('Running OPF-TS...', '')
+    # opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False,
+    #                                       solver=SolverType.DC_OPF, realistic_results=False)
+    # opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
+    # opf_ts.run()
 
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
-    vc_options = VoltageCollapseOptions()
-
-    # just for this test
-    numeric_circuit = main_circuit.compile()
-    numeric_inputs = numeric_circuit.compute()
-    Sbase = zeros(len(main_circuit.buses), dtype=complex)
-    Vbase = zeros(len(main_circuit.buses), dtype=complex)
-    for c in numeric_inputs:
-        Sbase[c.original_bus_idx] = c.Sbus
-        Vbase[c.original_bus_idx] = c.Vbus
-
-    unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-
-    # unitary_vector = random.random(len(grid.buses))
-    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                     Vbase=Vbase,
-                                     Starget=Sbase * (1+unitary_vector))
-    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
-    vc.run()
-    vc.results.plot()
+    # vc_options = VoltageCollapseOptions()
+    #
+    # # just for this test
+    # numeric_circuit = main_circuit.compile()
+    # numeric_inputs = numeric_circuit.compute()
+    # Sbase = zeros(len(main_circuit.buses), dtype=complex)
+    # Vbase = zeros(len(main_circuit.buses), dtype=complex)
+    # for c in numeric_inputs:
+    #     Sbase[c.original_bus_idx] = c.Sbus
+    #     Vbase[c.original_bus_idx] = c.Vbus
+    #
+    # unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
+    #
+    # # unitary_vector = random.random(len(grid.buses))
+    # vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+    #                                  Vbase=Vbase,
+    #                                  Starget=Sbase * (1+unitary_vector))
+    # vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
+    # vc.run()
+    # vc.results.plot()
 
     ####################################################################################################################
     # Monte Carlo
     ####################################################################################################################
-    print('Running MC...')
-    mc_sim = MonteCarlo(main_circuit, options, mc_tol=1e-5, max_mc_iter=1000000)
-    mc_sim.run()
-    lst = np.array(list(range(mc_sim.results.n)), dtype=int)
-    mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
-    plt.show()
+    # print('Running MC...')
+    # mc_sim = MonteCarlo(main_circuit, options, mc_tol=1e-5, max_mc_iter=1000000)
+    # mc_sim.run()
+    # lst = np.array(list(range(mc_sim.results.n)), dtype=int)
+    # mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
+    # plt.show()
 
     ####################################################################################################################
     # Latin Hypercube
     ####################################################################################################################
-    print('Running LHC...')
-    lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
-    lhs_sim.run()
-    lhs_sim.results.plot('Bus voltage avg')
+    # print('Running LHC...')
+    # lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
+    # lhs_sim.run()
+    # lhs_sim.results.plot('Bus voltage avg')
 
     ####################################################################################################################
     # Cascading
@@ -150,4 +155,4 @@ if __name__ == '__main__':
     # opt.run()
     # opt.plot()
 
-    plt.show()
+    # plt.show()

@@ -592,27 +592,32 @@ class PowerFlowMP:
 
             # simulate each island and merge the results
             for i, calculation_input in enumerate(calculation_inputs):
-                Vbus = calculation_input.Vbus
-                Sbus = calculation_input.Sbus
-                Ibus = calculation_input.Ibus
 
-                # run circuit power flow
-                res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
+                if len(calculation_input.ref) > 0:
+                    Vbus = calculation_input.Vbus
+                    Sbus = calculation_input.Sbus
+                    Ibus = calculation_input.Ibus
 
-                bus_original_idx = numerical_circuit.islands[i]
-                branch_original_idx = numerical_circuit.island_branches[i]
+                    # run circuit power flow
+                    res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
 
-                # merge the results from this island
-                results.apply_from_island(res, bus_original_idx, branch_original_idx)
+                    bus_original_idx = numerical_circuit.islands[i]
+                    branch_original_idx = numerical_circuit.island_branches[i]
 
-                # build the report
-                data = np.c_[results.methods[i],
-                             results.converged[i],
-                             results.error[i],
-                             results.elapsed[i],
-                             results.inner_iterations[i]]
-                df = pd.DataFrame(data, columns=col)
-                self.convergence_reports.append(df)
+                    # merge the results from this island
+                    results.apply_from_island(res, bus_original_idx, branch_original_idx)
+
+                    # build the report
+                    data = np.c_[results.methods[i],
+                                 results.converged[i],
+                                 results.error[i],
+                                 results.elapsed[i],
+                                 results.inner_iterations[i]]
+                    df = pd.DataFrame(data, columns=col)
+                    self.convergence_reports.append(df)
+                else:
+                    warn('There are no slack nodes in the island ' + str(i))
+                    self.logger.append('There are no slack nodes in the island ' + str(i))
         else:
             # only one island
             Vbus = calculation_inputs[0].Vbus

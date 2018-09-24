@@ -324,7 +324,7 @@ class TimeSeries(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, start=0, end=None):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, start_=0, end_=None):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
@@ -339,9 +339,9 @@ class TimeSeries(QThread):
 
         self.results = None
 
-        self.start_ = start
+        self.start_ = start_
 
-        self.end_ = end
+        self.end_ = end_
 
         self.__cancel__ = False
 
@@ -392,7 +392,7 @@ class TimeSeries(QThread):
             branch_original_idx = numerical_circuit.island_branches[nc]
 
             # if there are valid profiles...
-            if calculation_input.time_array is not None:
+            if self.grid.time_profile is not None:
 
                 nt = calculation_input.ntime
                 n = calculation_input.nbus
@@ -440,7 +440,7 @@ class TimeSeries(QThread):
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
-                    self.progress_text.emit('Simulating at ' + str(calculation_input.time_array[t]))
+                    self.progress_text.emit('Simulating island ' + str(nc) + ' at ' + str(self.grid.time_profile[t]))
                     t += 1
 
                 # merge  the circuit's results

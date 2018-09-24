@@ -549,11 +549,8 @@ class NumericalCircuit:
                 island_br_idx = np.sort(island_br_idx)  # sort
                 self.island_branches.append(island_br_idx)
 
-                # set the indices in the island too
-                circuit.original_bus_idx = island_bus_idx
-                circuit.original_branch_idx = island_br_idx
-
-                # get the island circuit (the bus types are computed automatically)
+                # Get the island circuit (the bus types are computed automatically)
+                # The island original indices are generated within the get_island function
                 circuit_island = circuit.get_island(island_bus_idx, island_br_idx)
 
                 # store the island

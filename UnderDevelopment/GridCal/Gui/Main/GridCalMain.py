@@ -122,6 +122,84 @@ class ElementsDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+class FileOpenThread(QThread):
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, app, file_name):
+        """
+
+        :param app: instance of MainGui
+        """
+        QThread.__init__(self)
+
+        self.app = app
+
+        self.file_name = file_name
+
+        self.valid = False
+
+        self.__cancel__ = False
+
+    def progress_callback(self, val):
+        """
+        Send progress report
+        :param val: lambda value
+        :return: None
+        """
+        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(val) + '...')
+
+    def open_file_process(self, filename):
+        """
+        process to open a file without asking
+        :return:
+        """
+
+        if len(filename) > 0:
+
+            # store the working directory
+            self.app.project_directory = os.path.dirname(filename)
+            # print(filename)
+            self.app.circuit = MultiCircuit()
+
+            path, fname = os.path.split(filename)
+
+            self.progress_text.emit('Loading ' + fname + '...')
+            QtGui.QGuiApplication.processEvents()
+
+            try:
+                logger = self.app.circuit.load_file(filename=filename)
+
+                self.valid = True
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Open file logger', logger)
+                    dlg.exec_()
+
+            except Exception as ex:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
+                self.valid = False
+
+            # post events
+            self.progress_text.emit('Creating schematic...')
+            QtGui.QGuiApplication.processEvents()
+            self.app.create_schematic_from_api(explode_factor=1)
+
+    def run(self):
+        """
+        run the voltage collapse simulation
+        @return:
+        """
+        self.open_file_process(filename=self.file_name)
+
+        self.done_signal.emit()
+
+    def cancel(self):
+        self.__cancel__ = True
+
+
 class MainGUI(QMainWindow):
 
     def __init__(self, parent=None):
@@ -232,6 +310,8 @@ class MainGUI(QMainWindow):
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
         self.topology_reduction = None
+
+        self.open_file_thread_object = None
 
         self.results_df = None
 
@@ -511,19 +591,18 @@ class MainGUI(QMainWindow):
         """
         url = 'https://github.com/SanPen/GridCal'
 
-        msg = 'GridCal\n\n'
-        msg += 'Copyright (C) 2018 Santiago Peñate Vera.\n'
-        msg += 'This program comes with ABSOLUTELY NO WARRANTY. \n'
-        msg += 'This is free software, and you are welcome to redistribute it under certain conditions; \n\n'
-
-        msg += "GridCal is licensed under the GNU general public license V.3 "
-        msg += 'See the license file for more details. \n\n'
+        msg = "Gridcal v" + str(__GridCal_VERSION__) + '\n\n'
 
         msg += "GridCal has been carefully crafted since 2015 to serve as a platform for research and consultancy.\n\n"
 
+        msg += 'This program comes with ABSOLUTELY NO WARRANTY. \n'
+        msg += 'This is free software, and you are welcome to redistribute it under certain conditions; '
+
+        msg += "GridCal is licensed under the GNU general public license V.3 "
+        msg += 'See the license file for more details. \n\n'
         msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
 
-        msg += "Gridcal version " + str(__GridCal_VERSION__) + '\n\n'
+        msg += 'Copyright (C) 2018 Santiago Peñate Vera.\n'
 
         QMessageBox.about(self, "About GridCal", msg)
 
@@ -875,81 +954,6 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def open_file_process(self):
-        """
-        process to open a file without asking
-        :return:
-        """
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
-        # call dialog to select the file
-
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
-                                                              directory=self.project_directory,
-                                                              filter=files_types)
-
-        if len(filename) > 0:
-
-            self.LOCK()
-
-            # store the working directory
-            self.project_directory = os.path.dirname(filename)
-            # print(filename)
-            self.circuit = MultiCircuit()
-
-            self.ui.progress_label.setText('Loading file...')
-            QtGui.QGuiApplication.processEvents()
-
-            try:
-                logger = self.circuit.load_file(filename=filename)
-
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Open file logger', logger)
-                    dlg.exec_()
-
-            except Exception as ex:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
-
-            # logger = self.circuit.load_file(filename=filename)
-
-            self.ui.progress_label.setText('Creating schematic...')
-            QtGui.QGuiApplication.processEvents()
-            self.create_schematic_from_api(explode_factor=1)
-
-            # set circuit name
-            self.grid_editor.name_label.setText(self.circuit.name)
-
-            # set base magnitudes
-            self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
-            self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
-
-            # set circuit comments
-            try:
-                self.ui.comments_textEdit.setText(self.circuit.comments)
-            except:
-                pass
-            self.ui.progress_label.setText('Compiling grid...')
-            QtGui.QGuiApplication.processEvents()
-
-            # TODO: Correct this function to not to depend on a previous compilation
-            self.compile()
-
-            if self.circuit.time_profile is not None:
-                # print('Profiles available')
-                mdl = get_list_model(self.circuit.time_profile)
-                # setup profile sliders
-                self.set_up_profile_sliders()
-            else:
-                mdl = QStandardItemModel()
-            self.ui.profile_time_selection_comboBox.setModel(mdl)
-            self.ui.vs_departure_comboBox.setModel(mdl)
-            self.ui.vs_target_comboBox.setModel(mdl)
-            self.clear_results()
-
-            self.ui.progress_label.setText('Done!')
-            QtGui.QGuiApplication.processEvents()
-            self.UNLOCK()
-
     def open_file(self):
         """
         Open GridCal file
@@ -963,12 +967,79 @@ class MainGUI(QMainWindow):
 
             if reply == QMessageBox.Yes:
 
-                self.open_file_process()
+                self.open_file_threaded()
             else:
                 pass
         else:
             # Just open the file
-            self.open_file_process()
+            self.open_file_threaded()
+
+    def open_file_threaded(self):
+        """
+        Open file from a Qt thread to remain responsive
+        """
+
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
+        # call dialog to select the file
+
+        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
+                                                              directory=self.project_directory,
+                                                              filter=files_types)
+
+        self.LOCK()
+
+        # create thread
+        self.open_file_thread_object = FileOpenThread(app=self, file_name=filename)
+
+        # make connections
+        self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+        self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+        self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+        self.open_file_thread_object.done_signal.connect(self.post_open_file)
+
+        # thread start
+        self.open_file_thread_object.start()
+
+    def post_open_file(self):
+        """
+        Actions to perform after a file has been loaded
+        """
+        if self.open_file_thread_object is not None:
+
+            if self.open_file_thread_object.valid:
+
+                # set circuit name
+                self.grid_editor.name_label.setText(self.circuit.name)
+
+                # set base magnitudes
+                self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
+                self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+
+                # set circuit comments
+                try:
+                    self.ui.comments_textEdit.setText(self.circuit.comments)
+                except:
+                    pass
+
+                # compile the circuit (fast)
+                self.compile()
+
+                if self.circuit.time_profile is not None:
+                    # print('Profiles available')
+                    mdl = get_list_model(self.circuit.time_profile)
+                    # setup profile sliders
+                    self.set_up_profile_sliders()
+                else:
+                    mdl = QStandardItemModel()
+                self.ui.profile_time_selection_comboBox.setModel(mdl)
+                self.ui.vs_departure_comboBox.setModel(mdl)
+                self.ui.vs_target_comboBox.setModel(mdl)
+                self.clear_results()
+
+            else:
+                warn('The file was not valid')
+        else:
+            pass
 
     def save_file(self):
         """
@@ -1095,7 +1166,7 @@ class MainGUI(QMainWindow):
                 # TODO: correct this function
                 self.circuit.export_profiles(file_name=filename)
         else:
-            self.msg('There are no profiles!')
+            self.msg('There are no profiles!', 'Export object profiles')
 
     def export_simulation_data(self):
         """
@@ -1997,7 +2068,7 @@ class MainGUI(QMainWindow):
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1
 
-                self.time_series = TimeSeries(grid=self.circuit, options=options, start=start, end=end)
+                self.time_series = TimeSeries(grid=self.circuit, options=options, start_=start, end_=end)
 
                 # Set the time series run options
                 self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2008,7 +2079,7 @@ class MainGUI(QMainWindow):
                 self.time_series.start()
 
             else:
-                self.msg('There are no time series.')
+                self.msg('There are no time series.', 'Time series')
         else:
             pass
 
@@ -2583,7 +2654,7 @@ class MainGUI(QMainWindow):
                         self.msg('No problems were detected, therefore no storage is suggested', 'Storage location')
 
                 else:
-                    self.msg('There are no time series simulation, which is needed for this functionality',
+                    self.msg('There is no time series simulation.\n It is needed for this functionality.',
                              'Storage location')
 
             else:
@@ -2605,6 +2676,21 @@ class MainGUI(QMainWindow):
         Cancel whatever's going on that can be cancelled
         @return:
         """
+
+        '''
+        self.power_flow = None
+        self.short_circuit = None
+        self.monte_carlo = None
+        self.time_series = None
+        self.voltage_stability = None
+        self.latin_hypercube_sampling = None
+        self.cascade = None
+        self.optimal_power_flow = None
+        self.optimal_power_flow_time_series = None
+        self.transient_stability = None
+        self.topology_reduction = None
+
+        '''
         if self.power_flow is not None:
             self.power_flow.cancel()
 
@@ -2617,8 +2703,17 @@ class MainGUI(QMainWindow):
         if self.voltage_stability is not None:
             self.voltage_stability.cancel()
 
+        if self.monte_carlo is not None:
+            self.monte_carlo.cancel()
+
         if self.latin_hypercube_sampling is not None:
             self.latin_hypercube_sampling.cancel()
+
+        if self.optimal_power_flow_time_series is not None:
+            self.optimal_power_flow_time_series.cancel()
+
+        if self.cascade is not None:
+            self.cascade.cancel()
 
     def update_available_results(self):
         """
