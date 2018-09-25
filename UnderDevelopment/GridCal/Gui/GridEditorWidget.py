@@ -2249,6 +2249,7 @@ class BusGraphicItem(QGraphicsRectItem):
         """
         Set the bus width according to the label text
         """
+        # Todo: fix the resizing on double click
         h = self.terminal.boundingRect().height()
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
