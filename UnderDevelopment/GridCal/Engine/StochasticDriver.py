@@ -241,6 +241,8 @@ class MonteCarlo(QThread):
         numerical_input_islands = numerical_circuit.compute()
 
         mc_results = MonteCarloResults(n, m)
+        avg_res = PowerFlowResults()
+        avg_res.initialize(n, m)
 
         v_sum = zeros(n, dtype=complex)
 
@@ -250,7 +252,7 @@ class MonteCarlo(QThread):
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            batch_results = MonteCarloResults(n, m, self.batch_size)
+            mc_results = MonteCarloResults(n, m, self.batch_size)
 
             # For every circuit, run the time series
             for numerical_island in numerical_input_islands:
@@ -268,15 +270,28 @@ class MonteCarlo(QThread):
                     # res = powerflow.run_at(t, mc=True)
                     res = power_flow.run_pf(calculation_inputs=numerical_island, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
 
-                    batch_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
-                    batch_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                    batch_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
-                    batch_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+                    mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
+                    mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
+                    mc_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                    mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+
+                # short cut the indices
+                b_idx = numerical_island.original_bus_idx
+                br_idx = numerical_island.original_branch_idx
+
+                self.progress_text.emit('Compiling results...')
+                mc_results.compile()
+
+                # compute the island branch results
+                island_avg_res = numerical_island.compute_branch_results(mc_results.voltage[b_idx])
+
+                # apply the island averaged results
+                avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
 
             # Compute the Monte Carlo values
             it += self.batch_size
-            mc_results.append_batch(batch_results)
-            v_sum += batch_results.get_voltage_sum()
+            mc_results.append_batch(mc_results)
+            v_sum += mc_results.get_voltage_sum()
             v_avg = v_sum / it
             v_variance = abs((power(mc_results.V_points - v_avg, 2.0) / (it - 1)).min())
 
@@ -298,9 +313,8 @@ class MonteCarlo(QThread):
             # print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
 
         # compile results
-        self.progress_text.emit('Compiling results...')
-        mc_results.compile()
-        mc_results.sbranch, _, _, _, _, _ = numerical_circuit.power_flow_post_process(mc_results.voltage)
+        mc_results.sbranch = avg_res.Sbranch
+        mc_results.losses = avg_res.losses
 
         # send the finnish signal
         self.progress_signal.emit(0.0)

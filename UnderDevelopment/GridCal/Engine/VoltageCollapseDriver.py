@@ -14,11 +14,12 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
-from numpy import complex, zeros, array
+import numpy as np
 from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
+from GridCal.Engine.IoStructures import PowerFlowResults
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
@@ -86,7 +87,7 @@ class VoltageCollapseInput:
 
 class VoltageCollapseResults:
 
-    def __init__(self, nbus):
+    def __init__(self, nbus, nbr):
         """
         VoltageCollapseResults instance
         @param voltages: Resulting voltages
@@ -101,32 +102,49 @@ class VoltageCollapseResults:
 
         self.converged = False
 
+        self.Sbranch = np.zeros(nbr, dtype=complex)
+
+        self.Ibranch = np.zeros(nbr, dtype=complex)
+
+        self.loading = np.zeros(nbr, dtype=complex)
+
+        self.losses = np.zeros(nbr, dtype=complex)
+
+        self.Sbus = np.zeros(nbus, dtype=complex)
+
         self.available_results = ['Bus voltage']
 
-    def apply_from_island(self, res, bus_original_idx, nbus_full):
+    def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx, branch_original_idx, nbus_full):
         """
         Apply the results of an island to this VoltageCollapseResults instance
-        :param res: VoltageCollapseResults instance of the island
+        :param voltage_collapse_res: VoltageCollapseResults instance of the island
         :param bus_original_idx: indices of the buses in the complete grid
         :param nbus_full: total number of buses in the complete grid
         :return:
         """
 
-        if len(res.voltages) > 0:
-            l, n = res.voltages.shape
+        if len(voltage_collapse_res.voltages) > 0:
+            l, n = voltage_collapse_res.voltages.shape
 
             if self.voltages is None:
-                self.voltages = zeros((l, nbus_full), dtype=complex)
-                self.voltages[:, bus_original_idx] = res.voltages
-                self.lambdas = res.lambdas
+                self.voltages = np.zeros((l, nbus_full), dtype=complex)
+                self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
+                self.lambdas = voltage_collapse_res.lambdas
             else:
                 lprev = self.voltages.shape[0]
                 if l > lprev:
                     vv = self.voltages.copy()
-                    self.voltages = zeros((l, nbus_full), dtype=complex)
+                    self.voltages = np.zeros((l, nbus_full), dtype=complex)
                     self.voltages[0:l, :] = vv
 
-                self.voltages[0:l, bus_original_idx] = res.voltages
+                self.voltages[0:l, bus_original_idx] = voltage_collapse_res.voltages
+
+            # set the branch values
+            self.Sbranch[branch_original_idx] = pf_res.Sbranch
+            self.Ibranch[branch_original_idx] = pf_res.Ibranch
+            self.loading[branch_original_idx] = pf_res.loading
+            self.losses[branch_original_idx] = pf_res.losses
+            self.Sbus[bus_original_idx] = pf_res.Sbus
 
     def plot(self, result_type='Bus voltage', ax=None, indices=None, names=None):
         """
@@ -143,16 +161,16 @@ class VoltageCollapseResults:
             ax = fig.add_subplot(111)
 
         if names is None:
-            names = array(['bus ' + str(i + 1) for i in range(self.voltages.shape[1])])
+            names = np.array(['bus ' + str(i + 1) for i in range(self.voltages.shape[1])])
 
         if indices is None:
-            indices = array(range(len(names)))
+            indices = np.array(range(len(names)))
 
         if len(indices) > 0:
             labels = names[indices]
             ylabel = ''
             if result_type == 'Bus voltage':
-                y = abs(array(self.voltages)[:, indices])
+                y = abs(np.array(self.voltages)[:, indices])
                 x = self.lambdas
                 title = 'Bus voltage'
                 ylabel = '(p.u.)'
@@ -214,7 +232,8 @@ class VoltageCollapse(QThread):
         """
         print('Running voltage collapse...')
         nbus = len(self.circuit.buses)
-        self.results = VoltageCollapseResults(nbus=nbus)
+        nbr = len(self.circuit.branches)
+        self.results = VoltageCollapseResults(nbus=nbus, nbr=nbr)
 
         # compile the numerical circuit
         numerical_circuit = self.circuit.compile()
@@ -224,34 +243,49 @@ class VoltageCollapse(QThread):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
-            Voltage_series, Lambda_series, \
-            normF, success = continuation_nr(Ybus=numerical_island.Ybus,
-                                             Ibus_base=numerical_island.Ibus,
-                                             Ibus_target=numerical_island.Ibus,
-                                             Sbus_base=self.inputs.Sbase[numerical_island.original_bus_idx],
-                                             Sbus_target=self.inputs.Starget[numerical_island.original_bus_idx],
-                                             V=self.inputs.Vbase[numerical_island.original_bus_idx],
-                                             pv=numerical_island.pv,
-                                             pq=numerical_island.pq,
-                                             step=self.options.step,
-                                             approximation_order=self.options.approximation_order,
-                                             adapt_step=self.options.adapt_step,
-                                             step_min=self.options.step_min,
-                                             step_max=self.options.step_max,
-                                             error_tol=1e-3,
-                                             tol=1e-6,
-                                             max_it=20,
-                                             stop_at='NOSE',
-                                             verbose=False,
-                                             call_back_fx=self.progress_callback)
+            if len(numerical_island.ref) > 0:
+                Voltage_series, Lambda_series, \
+                normF, success = continuation_nr(Ybus=numerical_island.Ybus,
+                                                 Ibus_base=numerical_island.Ibus,
+                                                 Ibus_target=numerical_island.Ibus,
+                                                 Sbus_base=self.inputs.Sbase[numerical_island.original_bus_idx],
+                                                 Sbus_target=self.inputs.Starget[numerical_island.original_bus_idx],
+                                                 V=self.inputs.Vbase[numerical_island.original_bus_idx],
+                                                 pv=numerical_island.pv,
+                                                 pq=numerical_island.pq,
+                                                 step=self.options.step,
+                                                 approximation_order=self.options.approximation_order,
+                                                 adapt_step=self.options.adapt_step,
+                                                 step_min=self.options.step_min,
+                                                 step_max=self.options.step_max,
+                                                 error_tol=1e-3,
+                                                 tol=1e-6,
+                                                 max_it=20,
+                                                 stop_at='NOSE',
+                                                 verbose=False,
+                                                 call_back_fx=self.progress_callback)
 
-            res = VoltageCollapseResults(nbus=0)  # nbus can be zero, because all the arrays are going to be overwritten
-            res.voltages = array(Voltage_series)
-            res.lambdas = array(Lambda_series)
-            res.error = normF
-            res.converged = bool(success)
+                # nbus can be zero, because all the arrays are going to be overwritten
+                res = VoltageCollapseResults(nbus=numerical_island.nbus, nbr=numerical_island.nbr)
+                res.voltages = np.array(Voltage_series)
+                res.lambdas = np.array(Lambda_series)
+                res.error = normF
+                res.converged = bool(success)
+            else:
+                res = VoltageCollapseResults(nbus=numerical_island.nbus, nbr=numerical_island.nbr)
+                res.voltages = np.array([[0] * numerical_island.nbus])
+                res.lambdas = np.array([[0] * numerical_island.nbus])
+                res.error = [0]
+                res.converged = True
 
-            self.results.apply_from_island(res, numerical_island.original_bus_idx, nbus)
+            if len(res.voltages) > 0:
+                # compute the island branch results
+                branch_res = numerical_island.compute_branch_results(res.voltages[-1])
+
+                self.results.apply_from_island(res, branch_res, numerical_island.original_bus_idx,
+                                               numerical_island.original_branch_idx, nbus)
+            else:
+                print('No voltage values!')
         print('done!')
         self.progress_text.emit('Done!')
         self.done_signal.emit()

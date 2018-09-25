@@ -906,13 +906,13 @@ class PowerFlowResults:
 
         return res
 
-    def get_report_dataframe(self):
+    def get_report_dataframe(self, island_idx=0):
 
-        data = np.c_[self.methods,
-                     self.converged,
-                     self.error,
-                     self.elapsed,
-                     self.inner_iterations]
+        data = np.c_[self.methods[island_idx],
+                     self.converged[island_idx],
+                     self.error[island_idx],
+                     self.elapsed[island_idx],
+                     self.inner_iterations[island_idx]]
         col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
         df = pd.DataFrame(data, columns=col)
 

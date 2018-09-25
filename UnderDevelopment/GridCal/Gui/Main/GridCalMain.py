@@ -2023,19 +2023,17 @@ class MainGUI(QMainWindow):
 
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
-                # Sbus = V * conj(self.circuit.power_flow_input.Ybus * V)
-                Sbranch, Ibranch, loading, losses, Sbus = self.circuit.numerical_circuit.power_flow_post_process(V)
 
-                self.color_based_of_pf(s_bus=Sbus,
-                                       s_branch=Sbranch,
+                self.color_based_of_pf(s_bus=self.voltage_stability.results.Sbus,
+                                       s_branch=self.voltage_stability.results.Sbranch,
                                        voltages=V,
-                                       loadings=loading,
+                                       loadings=self.voltage_stability.results.loading,
                                        types=self.circuit.numerical_circuit.bus_types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
-            warn('Something went wrong, There are no power flow results.')
+            warn('Something went wrong, There are no voltage stability results.')
         self.UNLOCK()
 
     def run_time_series(self):

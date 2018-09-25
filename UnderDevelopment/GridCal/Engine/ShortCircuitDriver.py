@@ -259,28 +259,45 @@ class ShortCircuit(QRunnable):
         """
         # compute Zbus
         # is dense, so no need to store it as sparse
-        Zbus = inv(calculation_inputs.Ybus).toarray()
+        if calculation_inputs.Ybus.shape[0] > 1:
+            Zbus = inv(calculation_inputs.Ybus).toarray()
 
-        # Compute the short circuit
-        V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
-                                      Zbus=Zbus,
-                                      Vbus=Vpf,
-                                      Zf=self.Zf, baseMVA=calculation_inputs.Sbase)
 
-        # Compute the branches power
-        Sbranch, Ibranch, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
+            # Compute the short circuit
+            V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
+                                          Zbus=Zbus,
+                                          Vbus=Vpf,
+                                          Zf=self.Zf, baseMVA=calculation_inputs.Sbase)
 
-        # voltage, Sbranch, loading, losses, error, converged, Qpv
-        results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
-                                      voltage=V,
-                                      Sbranch=Sbranch,
-                                      Ibranch=Ibranch,
-                                      loading=loading,
-                                      losses=losses,
-                                      SCpower=SCpower,
-                                      error=0,
-                                      converged=True,
-                                      Qpv=None)
+            # Compute the branches power
+            Sbranch, Ibranch, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
+
+            # voltage, Sbranch, loading, losses, error, converged, Qpv
+            results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
+                                          voltage=V,
+                                          Sbranch=Sbranch,
+                                          Ibranch=Ibranch,
+                                          loading=loading,
+                                          losses=losses,
+                                          SCpower=SCpower,
+                                          error=0,
+                                          converged=True,
+                                          Qpv=None)
+        else:
+            nbus = calculation_inputs.Ybus.shape[0]
+            nbr = calculation_inputs.nbr
+
+            # voltage, Sbranch, loading, losses, error, converged, Qpv
+            results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
+                                          voltage=zeros(nbus, dtype=complex),
+                                          Sbranch=zeros(nbr, dtype=complex),
+                                          Ibranch=zeros(nbr, dtype=complex),
+                                          loading=zeros(nbr, dtype=complex),
+                                          losses=zeros(nbr, dtype=complex),
+                                          SCpower=zeros(nbus, dtype=complex),
+                                          error=0,
+                                          converged=True,
+                                          Qpv=None)
 
         return results
 

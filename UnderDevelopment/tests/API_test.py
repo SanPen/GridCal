@@ -24,7 +24,8 @@ if __name__ == '__main__':
     # fname = 'Illinois200Bus.xlsx'
     # fname = 'IEEE_30_new.xlsx'
     # fname = 'lynn5buspq.xlsx'
-    fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
+    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Europe winter 2009 model.xlsx'
+    # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
@@ -59,16 +60,16 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Short circuit
     ####################################################################################################################
-    # print('\n\n')
-    # print('Short Circuit')
-    # sc_options = ShortCircuitOptions(bus_index=[16])
-    # sc = ShortCircuit(main_circuit, sc_options, power_flow.results)
-    # sc.run()
-    #
-    # print('\n\n', main_circuit.name)
-    # print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
-    # print('\t|Sbranch|:', abs(main_circuit.short_circuit_results.Sbranch))
-    # print('\t|loading|:', abs(main_circuit.short_circuit_results.loading) * 100)
+    print('\n\n')
+    print('Short Circuit')
+    sc_options = ShortCircuitOptions(bus_index=[16])
+    sc = ShortCircuit(main_circuit, sc_options, power_flow.results)
+    sc.run()
+
+    print('\n\n', main_circuit.name)
+    print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
+    print('\t|Sbranch|:', abs(main_circuit.short_circuit_results.Sbranch))
+    print('\t|loading|:', abs(main_circuit.short_circuit_results.loading) * 100)
 
     ####################################################################################################################
     # Time Series
@@ -121,15 +122,14 @@ if __name__ == '__main__':
     # mc_sim.run()
     # lst = np.array(list(range(mc_sim.results.n)), dtype=int)
     # mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
-    # plt.show()
 
     ####################################################################################################################
     # Latin Hypercube
     ####################################################################################################################
-    print('Running LHC...')
-    lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
-    lhs_sim.run()
-    lhs_sim.results.plot('Bus voltage avg')
+    # print('Running LHC...')
+    # lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
+    # lhs_sim.run()
+    # lhs_sim.results.plot('Bus voltage avg')
 
     ####################################################################################################################
     # Cascading

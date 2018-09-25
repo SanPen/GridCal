@@ -2899,11 +2899,22 @@ class GridEditor(QSplitter):
         # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
 
-    def set_limits(self, min_x, max_x, min_y, max_y):
-
-        h = max_y - min_y + 100
-        w = max_x - min_x + 100
-        self.diagramScene.setSceneRect(min_x, min_y, w, h)
+    def set_limits(self, min_x, max_x, min_y, max_y, margin_factor=0.1):
+        """
+        Set the picture limits
+        :param min_x: Minimum x value of the buses location
+        :param max_x: Maximum x value of the buses location
+        :param min_y: Minimum y value of the buses location
+        :param max_y: Maximum y value of the buses location
+        :param margin_factor: factor of separation between the buses
+        """
+        dx = max_x - min_x
+        dy = max_y - min_y
+        mx = margin_factor * dx
+        my = margin_factor * dy
+        h = dy + 2 * my
+        w = dx + 2 * mx
+        self.diagramScene.setSceneRect(min_x - mx, min_y - my, w, h)
 
     def center_nodes(self):
         """
@@ -2987,7 +2998,11 @@ class GridEditor(QSplitter):
         branch.graphic_obj = graphic_obj
 
     def schematic_from_api(self, explode_factor=1.0):
-
+        """
+        Generate schematic from the API
+        :param explode_factor: factor to separate the nodes
+        :return: Nothing
+        """
         # clear all
         self.diagramView.scene_.clear()
 
