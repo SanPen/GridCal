@@ -15,7 +15,6 @@
 
 from enum import Enum
 from warnings import warn
-from timeit import default_timer as timer
 import pandas as pd
 import numpy as np
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
@@ -251,10 +250,8 @@ class Cascading(QThread):
 
         # compile
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         self.results = CascadingResults(self.cascade_type)
 

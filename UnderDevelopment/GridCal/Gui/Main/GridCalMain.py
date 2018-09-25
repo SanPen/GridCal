@@ -140,6 +140,10 @@ class FileOpenThread(QThread):
 
         self.valid = False
 
+        self.logger = list()
+
+        self.circuit = None
+
         self.__cancel__ = False
 
     def progress_callback(self, val):
@@ -156,36 +160,27 @@ class FileOpenThread(QThread):
         :return:
         """
 
-        if len(filename) > 0:
+        # print(filename)
+        self.circuit = MultiCircuit()
 
-            # store the working directory
-            self.app.project_directory = os.path.dirname(filename)
-            # print(filename)
-            self.app.circuit = MultiCircuit()
+        path, fname = os.path.split(filename)
 
-            path, fname = os.path.split(filename)
+        self.progress_text.emit('Loading ' + fname + '...')
 
-            self.progress_text.emit('Loading ' + fname + '...')
-            QtGui.QGuiApplication.processEvents()
+        self.logger = list()
 
-            try:
-                logger = self.app.circuit.load_file(filename=filename)
+        try:
+            self.logger += self.circuit.load_file(filename=filename)
 
-                self.valid = True
+            self.valid = True
 
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Open file logger', logger)
-                    dlg.exec_()
+        except Exception as ex:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.logger.append(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
+            self.valid = False
 
-            except Exception as ex:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
-                self.valid = False
-
-            # post events
-            self.progress_text.emit('Creating schematic...')
-            QtGui.QGuiApplication.processEvents()
-            self.app.create_schematic_from_api(explode_factor=1)
+        # post events
+        self.progress_text.emit('Creating schematic...')
 
     def run(self):
         """
@@ -986,19 +981,25 @@ class MainGUI(QMainWindow):
                                                               directory=self.project_directory,
                                                               filter=files_types)
 
-        self.LOCK()
+        if len(filename) > 0:
 
-        # create thread
-        self.open_file_thread_object = FileOpenThread(app=self, file_name=filename)
+            # store the working directory
+            self.project_directory = os.path.dirname(filename)
 
-        # make connections
-        self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
-        self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
-        self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-        self.open_file_thread_object.done_signal.connect(self.post_open_file)
+            # loack the ui
+            self.LOCK()
 
-        # thread start
-        self.open_file_thread_object.start()
+            # create thread
+            self.open_file_thread_object = FileOpenThread(app=self, file_name=filename)
+
+            # make connections
+            self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+            self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+            self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+            self.open_file_thread_object.done_signal.connect(self.post_open_file)
+
+            # thread start
+            self.open_file_thread_object.start()
 
     def post_open_file(self):
         """
@@ -1006,7 +1007,18 @@ class MainGUI(QMainWindow):
         """
         if self.open_file_thread_object is not None:
 
+            if len(self.open_file_thread_object.logger) > 0:
+                if len(self.open_file_thread_object.logger) > 0:
+                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                    dlg.exec_()
+
             if self.open_file_thread_object.valid:
+
+                # assign the loaded circuit
+                self.circuit = self.open_file_thread_object.circuit
+
+                # create schematic
+                self.create_schematic_from_api(explode_factor=1)
 
                 # set circuit name
                 self.grid_editor.name_label.setText(self.circuit.name)
@@ -3328,10 +3340,8 @@ class MainGUI(QMainWindow):
         """
         if self.circuit is not None:
             print('Compiling...', end='')
-            t1 = timer()
             numerical_circuit = self.circuit.compile()
             self.calculation_inputs_to_display = numerical_circuit.compute()
-            print(timer() - t1, 's')
             return True
         else:
             self.calculation_inputs_to_display = None

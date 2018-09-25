@@ -18,7 +18,6 @@ from warnings import warn
 import pandas as pd
 import pulp
 import numpy as np
-from timeit import default_timer as timer
 from numpy import complex, zeros, exp, r_, array, angle, c_, power, vstack, floor, arange
 
 from matplotlib import pyplot as plt
@@ -109,6 +108,8 @@ class MonteCarlo(QThread):
         m = len(self.circuit.branches)
 
         mc_results = MonteCarloResults(n, m)
+        avg_res = PowerFlowResults()
+        avg_res.initialize(n, m)
 
         # compile circuits
         numerical_circuit = self.circuit.compile()
@@ -122,7 +123,7 @@ class MonteCarlo(QThread):
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            batch_results = MonteCarloResults(n, m, self.batch_size)
+            mc_results = MonteCarloResults(n, m, self.batch_size)
 
             # For every circuit, run the time series
             for numerical_island in numerical_input_islands:
@@ -134,6 +135,10 @@ class MonteCarlo(QThread):
 
                 manager = multiprocessing.Manager()
                 return_dict = manager.dict()
+
+                # short cut the indices
+                b_idx = numerical_island.original_bus_idx
+                br_idx = numerical_island.original_branch_idx
 
                 t = 0
                 while t < self.batch_size and not self.__cancel__:
@@ -167,15 +172,25 @@ class MonteCarlo(QThread):
                     # store circuit results at the time index 't'
                     res = return_dict[t]
 
-                    batch_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
-                    batch_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                    batch_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
-                    batch_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+                    mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
+                    mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
+                    mc_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                    mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+
+                # compile MC results
+                self.progress_text.emit('Compiling results...')
+                mc_results.compile()
+
+                # compute the island branch results
+                island_avg_res = numerical_island.compute_branch_results(mc_results.voltage[b_idx])
+
+                # apply the island averaged results
+                avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
 
             # Compute the Monte Carlo values
             it += self.batch_size
-            mc_results.append_batch(batch_results)
-            v_sum += batch_results.get_voltage_sum()
+            mc_results.append_batch(mc_results)
+            v_sum += mc_results.get_voltage_sum()
             v_avg = v_sum / it
             v_variance = abs((power(mc_results.V_points - v_avg, 2.0) / (it - 1)).min())
 
@@ -196,12 +211,9 @@ class MonteCarlo(QThread):
             # print('Vmc:', Vavg)
             # print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
 
-        # compile results
-        self.progress_text.emit('Compiling results...')
-        mc_results.compile()
-
         # compute the averaged branch magnitudes
-        mc_results.sbranch, _, _, _, _, _ = numerical_circuit.power_flow_post_process(mc_results.voltage)
+        mc_results.sbranch = avg_res.Sbranch
+        mc_results.losses = avg_res.losses
 
         # print('V mc: ', mc_results.voltage)
 
@@ -400,10 +412,8 @@ class LatinHypercubeSampling(QThread):
 
         # compile
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.circuit.compile()
         numerical_islands = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         max_iter = batch_size * len(numerical_islands)
         Sbase = self.circuit.Sbase
@@ -479,6 +489,9 @@ class LatinHypercubeSampling(QThread):
             # apply the island averaged results
             avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
 
+        # lhs_results the averaged branch magnitudes
+        lhs_results.sbranch = avg_res.Sbranch
+        lhs_results.losses = avg_res.losses
         self.results = lhs_results
 
         # send the finnish signal

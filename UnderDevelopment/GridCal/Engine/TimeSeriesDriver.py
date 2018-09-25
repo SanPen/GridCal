@@ -17,7 +17,6 @@
 import pandas as pd
 from numpy import complex, zeros, ones, array
 import multiprocessing
-from timeit import default_timer as timer
 from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
@@ -363,10 +362,8 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         # For every circuit, run the time series
         for nc, calculation_input in enumerate(calculation_inputs):
@@ -473,10 +470,8 @@ class TimeSeries(QThread):
         n_cores = multiprocessing.cpu_count()
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         # For every circuit, run the time series
         for nc, calculation_input in enumerate(calculation_inputs):

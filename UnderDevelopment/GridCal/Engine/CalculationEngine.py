@@ -21,7 +21,6 @@ from warnings import warn
 import networkx as nx
 import pandas as pd
 import json
-from timeit import default_timer as timer
 import numpy as np
 
 from scipy.sparse import lil_matrix, diags, csc_matrix
@@ -1885,10 +1884,8 @@ class MultiCircuit:
         """
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         writer = pd.ExcelWriter(file_path)
 

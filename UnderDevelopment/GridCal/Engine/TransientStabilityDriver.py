@@ -16,7 +16,6 @@
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from timeit import default_timer as timer
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults
 from GridCal.Engine.Numerical.DynamicModels import DynamicModels, dynamic_simulation
@@ -81,10 +80,8 @@ class TransientStability(QThread):
         self.progress_text.emit('Running transient stability...')
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         for calculation_input in calculation_inputs:
 

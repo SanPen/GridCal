@@ -20,7 +20,6 @@ import numpy as np
 from numpy import complex, zeros, exp, r_, array, angle, c_
 from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 from matplotlib import pyplot as plt
-from timeit import default_timer as timer
 
 from PyQt5.QtCore import QRunnable
 
@@ -1387,10 +1386,8 @@ class OptimalPowerFlow(QRunnable):
         self.all_solved = True
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         if len(calculation_inputs) > 1:
 

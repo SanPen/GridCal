@@ -19,7 +19,6 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
 from scipy.sparse.linalg import inv
 from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
-from timeit import default_timer as timer
 
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.CalculationEngine import LINEWIDTH, MultiCircuit
@@ -338,10 +337,8 @@ class ShortCircuit(QRunnable):
         k = 0
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         if len(calculation_inputs) > 1:
 

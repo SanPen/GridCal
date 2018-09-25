@@ -18,7 +18,7 @@ from warnings import warn
 from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array
 import pandas as pd
 from pySOT import *
-from timeit import default_timer as timer
+# from timeit import default_timer as timer
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.IoStructures import PowerFlowResults, CalculationInputs
@@ -583,10 +583,8 @@ class PowerFlowMP:
         self.convergence_reports.clear()
 
         print('Compiling...', end='')
-        t1 = timer()
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
-        print(timer() - t1, 's')
 
         if len(numerical_circuit.islands) > 1:
 
