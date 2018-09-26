@@ -1072,25 +1072,31 @@ class MultiCircuit:
 
         elif type_class == 'Wires':
             tpes = self.wire_types
+            name_prop = 'wire_name'
 
         elif type_class == 'Overhead lines':
             tpes = self.overhead_line_types
+            name_prop = 'tower_name'
 
         elif type_class == 'Underground lines':
             tpes = self.underground_cable_types
+            name_prop = 'name'
 
         elif type_class == 'Sequence lines':
             tpes = self.sequence_line_types
+            name_prop = 'name'
 
         elif type_class == 'Transformers':
             tpes = self.transformer_types
+            name_prop = 'name'
 
         else:
             tpes = list()
+            name_prop = 'name'
 
         # make dictionary
         for tpe in tpes:
-            d[tpe.name] = tpe
+            d[getattr(tpe, name_prop)] = tpe
 
         return d
 

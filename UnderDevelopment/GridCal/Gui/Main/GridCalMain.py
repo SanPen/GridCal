@@ -3286,6 +3286,14 @@ class MainGUI(QMainWindow):
                 # template object name
                 tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data()
 
+                # get the compatible BRanch Type that matches the type class
+                compatible_types = {'Wires': None,
+                                    'Overhead lines': BranchType.Line,
+                                    'Underground lines': BranchType.Line,
+                                    'Sequence lines': BranchType.Line,
+                                    'Transformers': BranchType.Line}
+                compatible_type = compatible_types[type_class]
+
                 # get catalogue dictionary of the selected type
                 branch_type_dict = self.circuit.get_catalogue_dict_by_name(type_class=type_class)
 
@@ -3295,12 +3303,13 @@ class MainGUI(QMainWindow):
                     # get the actual object from the types dictionary
                     branch_type = branch_type_dict[tpe_name]
 
+
                     # for each unique row index
                     unique_rows = set([i.row() for i in self.ui.dataStructureTableView.selectedIndexes()])
                     for i in unique_rows:
 
                         # if the template and the branch types match...
-                        if self.circuit.branches[i].branch_type == branch_type.tpe:
+                        if self.circuit.branches[i].branch_type == compatible_type:
 
                             # apply the branch type
                             self.circuit.branches[i].apply_type(branch_type, Sbase=self.circuit.Sbase)
