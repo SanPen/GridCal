@@ -192,7 +192,7 @@ class PSSeBus:
 
         if version == 33:
             n = len(data[0])
-            dta = zeros(13, dtype=object)
+            dta = np.zeros(13, dtype=object)
             dta[0:n] = data[0]
 
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, \
@@ -283,7 +283,7 @@ class PSSeLoad:
         if version == 33:
 
             n = len(data[0])
-            dta = zeros(14, dtype=object)
+            dta = np.zeros(14, dtype=object)
             dta[0:n] = data[0]
 
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
@@ -1059,7 +1059,7 @@ class PSSeTransformer:
             if len(data[0]) == 20:
 
                 n = len(data[0])
-                dta = zeros(21, dtype=object)
+                dta = np.zeros(21, dtype=object)
                 dta[0:n] = data[0]
 
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
@@ -1092,7 +1092,7 @@ class PSSeTransformer:
 
             # line 3: for both types
             n = len(data[2])
-            dta = zeros(17, dtype=object)
+            dta = np.zeros(17, dtype=object)
             dta[0:n] = data[2]
 
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
@@ -1126,7 +1126,7 @@ class PSSeTransformer:
             # Line 1: for both types
 
             n = len(data[0])
-            dta = zeros(20, dtype=object)
+            dta = np.zeros(20, dtype=object)
             dta[0:n] = data[0]
 
             # if len(data[0]) == 20:
@@ -1159,7 +1159,7 @@ class PSSeTransformer:
 
             # line 3: for both types
             n = len(data[2])
-            dta = zeros(17, dtype=object)
+            dta = np.zeros(17, dtype=object)
             dta[0:n] = data[2]
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
              self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta

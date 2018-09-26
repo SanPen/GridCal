@@ -176,7 +176,7 @@ class FileOpenThread(QThread):
 
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.append(str(exc_traceback) + '\n' + str(exc_value), 'File loading')
+            self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
             self.valid = False
 
         # post events
@@ -3302,7 +3302,6 @@ class MainGUI(QMainWindow):
 
                     # get the actual object from the types dictionary
                     branch_type = branch_type_dict[tpe_name]
-
 
                     # for each unique row index
                     unique_rows = set([i.row() for i in self.ui.dataStructureTableView.selectedIndexes()])
