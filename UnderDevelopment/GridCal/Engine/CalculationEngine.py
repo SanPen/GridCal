@@ -1551,7 +1551,7 @@ class MultiCircuit:
                 template_name = str(obj.type_obj)
                 if template_name in branch_types.keys():
                     obj.type_obj = branch_types[template_name]
-                    print(template_name, 'updtaed!')
+                    print(template_name, 'updated!')
 
                 # set the branch
                 self.add_branch(obj)
