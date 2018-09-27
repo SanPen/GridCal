@@ -13,3 +13,6 @@ from GridCal.Engine.VoltageCollapseDriver import *
 from GridCal.Engine.TopologyDriver import *
 from GridCal.Engine.TopologyDriver import *
 from GridCal.Engine.GridAnalysis import *
+from GridCal.Engine.CalculationEngine import *
+from GridCal.Engine.Devices import *
+from GridCal.Engine.DeviceTypes import *

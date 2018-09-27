@@ -454,33 +454,54 @@ class Bus:
         for elm in (self.controlled_generators + self.batteries):
             elm.initialize_lp_vars()
 
-    def plot_profiles(self, ax=None):
+    def plot_profiles(self, ax_load=None, ax_voltage=None, time_series=None, my_index=0):
         """
 
         @param time_idx: Master time profile: usually stored in the circuit
-        @param ax: Figure axis, if not provided one will be created
+        @param ax_load: Figure axis, if not provided one will be created
         @return:
         """
 
-        if ax is None:
+        if ax_load is None:
             fig = plt.figure()
-            ax = fig.add_subplot(111)
+            if time_series is not None:
+                # 2 plots: load + voltage
+                ax_load = fig.add_subplot(211)
+                ax_voltage = fig.add_subplot(212)
+            else:
+                # only 1 plot: load
+                ax_load = fig.add_subplot(111)
+                ax_voltage = None
             show_fig = True
         else:
             show_fig = False
 
         for elm in self.loads:
-            ax.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
+            # ax_load.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
+            elm.Sprof.columns = [elm.name]
+            elm.Sprof.plot(ax=ax_load)
 
         for elm in self.controlled_generators + self.batteries:
-            ax.plot(elm.Pprof.index, elm.Pprof.values, label=elm.name)
+            # ax_load.plot(elm.Pprof.index, elm.Pprof.values, label=elm.name)
+            elm.Pprof.columns = [elm.name]
+            elm.Pprof.plot(ax=ax_load)
 
         for elm in self.static_generators:
-            ax.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
+            # ax_load.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
+            elm.Sprof.columns = [elm.name]
+            elm.Sprof.plot(ax=ax_load)
+
+        if time_series is not None:
+            y = time_series.results.voltage
+            x = time_series.results.time
+            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
+            df.plot(ax=ax_voltage)
 
         plt.legend()
         plt.title(self.name)
-        plt.ylabel('MW')
+        ax_load.set_ylabel('MW')
+        if ax_voltage is not None:
+            ax_voltage.set_ylabel('Voltage (p.u.)')
         if show_fig:
             plt.show()
 

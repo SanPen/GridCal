@@ -644,8 +644,6 @@ class BranchObjectModel(ObjectsModel):
                                                 editable=editable, non_editable_indices=non_editable_indices,
                                                 transposed=transposed, check_unique=check_unique)
 
-
-
     def set_delegates(self):
         """
         Set the cell editor types depending on the attribute_types array
@@ -670,7 +668,8 @@ class BranchObjectModel(ObjectsModel):
                 F(i, delegate)
 
             elif tpe is BranchTemplate:
-                delegate = TreeDelegate(parent=self.parent, data=self.catalogue_dict)
+                # delegate = TreeDelegate(parent=self.parent, data=self.catalogue_dict)
+                delegate = TextDelegate(self.parent)
                 F(i, delegate)
 
             elif tpe is float:
@@ -691,6 +690,7 @@ class BranchObjectModel(ObjectsModel):
                     self.non_editable_indices.append(i)
             else:
                 pass
+
 
 class ProfilesModel(QtCore.QAbstractTableModel):
     """

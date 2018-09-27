@@ -646,10 +646,16 @@ class BranchGraphicItem(QGraphicsLineItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-                           self.api_object.edit_types,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
-                           non_editable_indices=[1, 2])
+        # mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
+        #                    self.api_object.edit_types,
+        #                    parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
+        #                    non_editable_indices=[1, 2])
+
+        mdl = BranchObjectModel([self.api_object], self.api_object.edit_headers,
+                                self.api_object.units, self.api_object.edit_types,
+                                parent=self.diagramScene.parent().object_editor_table,
+                                editable=True, transposed=True,
+                                non_editable_indices=[1, 2, 15])
 
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -2223,9 +2229,13 @@ class BusGraphicItem(QGraphicsRectItem):
 
         @return:
         """
-        # t = self.diagramScene.circuit.master_time_array
-        # self.api_object.plot_profiles(time_idx=t)
-        self.api_object.plot_profiles()
+        # Ridiculously large call to get the main GUI that hosts this bus graphic
+        # time series object from the last simulation
+        ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
+        # get the index of this object
+        i = self.diagramScene.circuit.buses.index(self.api_object)
+        # plot the profiles
+        self.api_object.plot_profiles(ax_load=None, ax_voltage=None, time_series=ts, my_index=i)
 
     def mousePressEvent(self, event):
         """

@@ -1380,15 +1380,11 @@ class MainGUI(QMainWindow):
 
     def view_objects_data(self):
         """
-        on click, display the objects properties
-        Returns:
-
+        On click, display the objects properties
         """
         elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
 
         self.view_template_controls(False)
-
-        # ['Buses', 'Branches', 'Loads', 'Static Generators', 'Controlled Generators', 'Batteries']
 
         if elm_type == 'Buses':
             elm = Bus()
@@ -1402,7 +1398,7 @@ class MainGUI(QMainWindow):
             elm = Branch(None, None)
             mdl = BranchObjectModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
                                     parent=self.ui.dataStructureTableView, editable=True,
-                                    non_editable_indices=[1, 2, 14])
+                                    non_editable_indices=[1, 2, 15])
 
             self.view_template_controls(True)
 
