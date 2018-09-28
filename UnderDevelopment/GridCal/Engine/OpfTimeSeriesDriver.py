@@ -221,10 +221,10 @@ class OptimalPowerFlowTimeSeries(QThread):
         if self.grid.time_profile is not None:
 
             if self.options.solver == SolverType.DC_OPF:
-                self.progress_text.emit('Running DC OPF time series...')
+                base_text = 'Running DC OPF time series'
                 is_dc = True
             else:
-                self.progress_text.emit('Running AC OPF time series...')
+                base_text = 'Running AC OPF time series'
                 is_dc = False
 
             n = len(self.grid.buses)
@@ -245,6 +245,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
                 progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
+                self.progress_text.emit(base_text + ' at ' + str(self.grid.time_profile[t]))
                 t += 1
 
         else:

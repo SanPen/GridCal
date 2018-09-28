@@ -19,6 +19,8 @@ from warnings import warn
 import pandas as pd
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
+from scipy.sparse import hstack as hstack_s, vstack as vstack_s
+from scipy.sparse.linalg import factorized
 from pySOT import *
 from pyDOE import lhs
 from scipy.sparse import csc_matrix, lil_matrix
@@ -457,6 +459,16 @@ class CalculationInputs:
         self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
         self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
 
+        # connectivity matrices used to formulate OPF problems
+        self.C_load_bus = None
+        self.C_batt_bus = None
+        self.C_sta_gen_bus = None
+        self.C_ctrl_gen_bus = None
+        self.C_shunt_bus = None
+
+        # ACPF system matrix factorization
+        self.Asys = None
+
         self.branch_rates = np.zeros(nbr)
 
         self.pq = list()
@@ -557,6 +569,12 @@ class CalculationInputs:
         obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
         obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
 
+        obj.C_load_bus = self.C_load_bus[:, bus_idx]
+        obj.C_batt_bus = self.C_batt_bus[:, bus_idx]
+        obj.C_sta_gen_bus = self.C_sta_gen_bus[:, bus_idx]
+        obj.C_ctrl_gen_bus = self.C_ctrl_gen_bus[:, bus_idx]
+        obj.C_shunt_bus = self.C_shunt_bus[:, bus_idx]
+
         obj.compile_types()
 
         return obj
@@ -602,6 +620,21 @@ class CalculationInputs:
         data.loading = data.Sbranch / (self.branch_rates + 1e-9)
 
         return data
+
+    def build_linear_ac_sys_mat(self):
+        """
+        Get the AC linear approximation matrices
+        :return:
+        """
+        A11 = -self.Yseries.imag[self.pqpv, :][:, self.pqpv]
+        A12 = self.Ybus.real[self.pqpv, :][:, self.pq]
+        A21 = -self.Yseries.real[self.pq, :][:, self.pqpv]
+        A22 = -self.Ybus.imag[self.pq, :][:, self.pq]
+
+        A = vstack_s([hstack_s([A11, A12]),
+                      hstack_s([A21, A22])], format="csc")
+
+        self.Asys = factorized(A)
 
     def get_structure(self, structure_type):
         """

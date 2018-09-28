@@ -322,6 +322,7 @@ class NumericalCircuit:
         self.load_power = np.zeros(n_ld, dtype=complex)
         self.load_current = np.zeros(n_ld, dtype=complex)
         self.load_admittance = np.zeros(n_ld, dtype=complex)
+        self.load_enabled = np.zeros(n_ld, dtype=bool)
 
         self.load_power_profile = np.zeros((n_time, n_ld), dtype=complex)
         self.load_current_profile = np.zeros((n_time, n_ld), dtype=complex)
@@ -335,6 +336,8 @@ class NumericalCircuit:
         self.battery_voltage = np.zeros(n_batt, dtype=float)
         self.battery_qmin = np.zeros(n_batt, dtype=float)
         self.battery_qmax = np.zeros(n_batt, dtype=float)
+        self.battery_enabled = np.zeros(n_batt, dtype=bool)
+        self.battery_dispatchable = np.zeros(n_batt, dtype=bool)
 
         self.battery_power_profile = np.zeros((n_time, n_batt), dtype=float)
         self.battery_voltage_profile = np.zeros((n_time, n_batt), dtype=float)
@@ -344,6 +347,8 @@ class NumericalCircuit:
         # static generator
         self.static_gen_names = np.empty(n_sta_gen, dtype=object)
         self.static_gen_power = np.zeros(n_sta_gen, dtype=complex)
+        self.static_gen_enabled = np.zeros(n_sta_gen, dtype=bool)
+        self.static_gen_dispatchable = np.zeros(n_sta_gen, dtype=bool)
 
         self.static_gen_power_profile = np.zeros((n_time, n_sta_gen), dtype=complex)
 
@@ -355,6 +360,8 @@ class NumericalCircuit:
         self.controlled_gen_voltage = np.zeros(n_ctrl_gen, dtype=float)
         self.controlled_gen_qmin = np.zeros(n_ctrl_gen, dtype=float)
         self.controlled_gen_qmax = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_enabled = np.zeros(n_ctrl_gen, dtype=bool)
+        self.controlled_gen_dispatchable = np.zeros(n_ctrl_gen, dtype=bool)
 
         self.controlled_gen_power_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
         self.controlled_gen_voltage_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
@@ -364,6 +371,7 @@ class NumericalCircuit:
         # shunt
         self.shunt_names = np.empty(n_sh, dtype=object)
         self.shunt_admittance = np.zeros(n_sh, dtype=complex)
+        self.shunt_enabled = np.zeros(n_sh, dtype=bool)
 
         self.shunt_admittance_profile = np.zeros((n_time, n_sh), dtype=complex)
 
@@ -389,6 +397,12 @@ class NumericalCircuit:
         circuit.bus_names = self.bus_names
         circuit.branch_names = self.branch_names
 
+        circuit.C_load_bus = self.C_load_bus
+        circuit.C_batt_bus = self.C_batt_bus
+        circuit.C_sta_gen_bus = self.C_sta_gen_bus
+        circuit.C_ctrl_gen_bus = self.C_ctrl_gen_bus
+        circuit.C_shunt_bus = self.C_shunt_bus
+
         ################################################################################################################
         # loads, generators, batteries, etc...
         ################################################################################################################
@@ -397,18 +411,18 @@ class NumericalCircuit:
         Ysh = self.C_shunt_bus.T * (self.shunt_admittance / self.Sbase)
 
         # Loads
-        S = self.C_load_bus.T * (- self.load_power / self.Sbase)
-        I = self.C_load_bus.T * (- self.load_current / self.Sbase)
-        Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase)
+        S = self.C_load_bus.T * (- self.load_power / self.Sbase * self.load_enabled)
+        I = self.C_load_bus.T * (- self.load_current / self.Sbase * self.load_enabled)
+        Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase * self.load_enabled)
 
         # static generators
-        S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase)
+        S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase * self.static_gen_enabled)
 
         # controlled generators
-        S += self.C_ctrl_gen_bus.T * (self.controlled_gen_power / self.Sbase)
+        S += self.C_ctrl_gen_bus.T * (self.controlled_gen_power / self.Sbase * self.controlled_gen_enabled)
 
         # batteries
-        S += self.C_batt_bus.T * (self.battery_power / self.Sbase)
+        S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_enabled)
 
         # assign the values
         circuit.Ysh = Ysh
@@ -420,22 +434,22 @@ class NumericalCircuit:
 
         if self.ntime > 0:
             # Shunts
-            Ysh_prof = self.C_shunt_bus.T * (self.shunt_admittance_profile.T / self.Sbase)
+            Ysh_prof = self.C_shunt_bus.T * (self.shunt_admittance_profile / self.Sbase * self.shunt_enabled).T
 
             # Loads
-            I_prof = self.C_load_bus.T * (- self.load_current_profile.T / self.Sbase)
-            Ysh_prof += self.C_load_bus.T * (self.load_admittance_profile.T / self.Sbase)
+            I_prof = self.C_load_bus.T * (- self.load_current_profile / self.Sbase * self.load_enabled).T
+            Ysh_prof += self.C_load_bus.T * (self.load_admittance_profile / self.Sbase * self.load_enabled).T
 
-            Sbus_prof = self.C_load_bus.T * (- self.load_power_profile.T / self.Sbase)
+            Sbus_prof = self.C_load_bus.T * (- self.load_power_profile / self.Sbase * self.load_enabled).T
 
             # static generators
-            Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile.T / self.Sbase)
+            Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile / self.Sbase * self.static_gen_enabled).T
 
             # controlled generators
-            Sbus_prof += self.C_ctrl_gen_bus.T * (self.controlled_gen_power_profile.T / self.Sbase)
+            Sbus_prof += self.C_ctrl_gen_bus.T * (self.controlled_gen_power_profile / self.Sbase * self.controlled_gen_enabled).T
 
             # batteries
-            Sbus_prof += self.C_batt_bus.T * (self.battery_power_profile.T / self.Sbase)
+            Sbus_prof += self.C_batt_bus.T * (self.battery_power_profile / self.Sbase * self.battery_enabled).T
 
             circuit.Ysh_prof = Ysh_prof
             circuit.Sbus_prof = Sbus_prof
@@ -1982,6 +1996,7 @@ class MultiCircuit:
                 circuit.load_power[i_ld] = elm.S
                 circuit.load_current[i_ld] = elm.I
                 circuit.load_admittance[i_ld] = elm.Y
+                circuit.load_enabled[i_ld] = elm.active
 
                 if n_time > 0:
                     circuit.load_power_profile[:, i_ld] = elm.Sprof.values[:, 0]
@@ -1994,6 +2009,8 @@ class MultiCircuit:
             for elm in bus.static_generators:
                 circuit.static_gen_names[i_sta_gen] = elm.name
                 circuit.static_gen_power[i_sta_gen] = elm.S
+                circuit.static_gen_enabled[i_sta_gen] = elm.active
+                # circuit.static_gen_dispatchable[i_sta_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
                     circuit.static_gen_power_profile[:, i_sta_gen] = elm.Sprof.values[:, 0]
@@ -2007,6 +2024,8 @@ class MultiCircuit:
                 circuit.controlled_gen_voltage[i_ctrl_gen] = elm.Vset
                 circuit.controlled_gen_qmin[i_ctrl_gen] = elm.Qmin
                 circuit.controlled_gen_qmax[i_ctrl_gen] = elm.Qmax
+                circuit.controlled_gen_enabled[i_ctrl_gen] = elm.active
+                circuit.controlled_gen_dispatchable[i_ctrl_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
                     # power profile
@@ -2028,6 +2047,8 @@ class MultiCircuit:
                 circuit.battery_voltage[i_batt] = elm.Vset
                 circuit.battery_qmin[i_batt] = elm.Qmin
                 circuit.battery_qmax[i_batt] = elm.Qmax
+                circuit.battery_enabled[i_batt] = elm.active
+                circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
 
                 if n_time > 0:
                     # power profile
