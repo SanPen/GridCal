@@ -1012,6 +1012,37 @@ class Branch(ReliabilityDevice):
 
         return f, t
 
+    def get_virtual_taps(self):
+        """
+        Get the branch virtual taps
+
+        The virtual taps generate when a transformer nominal winding voltage differs from the bus nominal voltage
+        Returns:
+            virtual taps at the from and to sides
+        """
+        if self.branch_type == BranchType.Transformer and type(self.type_obj) == TransformerType:
+            # resolve how the transformer is actually connected and set the virtual taps
+            bus_f_v = self.bus_from.Vnom
+            bus_t_v = self.bus_to.Vnom
+
+            dhf = abs(self.type_obj.HV_nominal_voltage - bus_f_v)
+            dht = abs(self.type_obj.HV_nominal_voltage - bus_t_v)
+
+            if dhf < dht:
+                # the HV side is on the from side
+                tpe_f_v = self.type_obj.HV_nominal_voltage
+                tpe_t_v = self.type_obj.LV_nominal_voltage
+            else:
+                # the HV side is on the to side
+                tpe_t_v = self.type_obj.HV_nominal_voltage
+                tpe_f_v = self.type_obj.LV_nominal_voltage
+
+            tap_f = tpe_f_v / bus_f_v
+            tap_t = tpe_t_v / bus_t_v
+            return tap_f, tap_t
+        else:
+            return 1.0, 1.0
+
     def apply_type(self, obj, Sbase, logger=list()):
         """
         Apply a transformer type definition to this object
