@@ -155,3 +155,10 @@ print('\n', br_df)
 # Finally the execution metrics
 print('\nError:', pf.results.error)
 print('Slapsed time (s):', pf.results.elapsed)
+
+
+from tabulate import tabulate
+
+print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
+print()
+print(tabulate(br_df, tablefmt="pipe", headers=br_df.columns.values))
