@@ -3287,7 +3287,7 @@ class MainGUI(QMainWindow):
                                     'Overhead lines': BranchType.Line,
                                     'Underground lines': BranchType.Line,
                                     'Sequence lines': BranchType.Line,
-                                    'Transformers': BranchType.Line}
+                                    'Transformers': BranchType.Transformer}
                 compatible_type = compatible_types[type_class]
 
                 # get catalogue dictionary of the selected type

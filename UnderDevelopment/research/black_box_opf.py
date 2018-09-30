@@ -2,7 +2,7 @@ from GridCal.Engine.All import *
 
 
 # Import the necessary modules
-from pySOT import *
+from pySOT import SymmetricLatinHypercube, RBFInterpolant
 from GridCal.Engine.Replacements.poap_controller import SerialController, ThreadController, BasicWorkerThread
 import numpy as np
 
@@ -103,6 +103,28 @@ class AcOPFBlackBox:
         self.continuous = np.arange(0, dim)
         check_opt_prob(self)
         ################################################################
+
+    def set_fix_state_at(self, t):
+        """
+
+        Args:
+            t: profiles time index
+        """
+        # all the loads apply
+        self.Sfix = self.numerical_circuit.C_load_bus.T * (
+                - self.numerical_circuit.load_power_profile[t, :] / self.numerical_circuit.Sbase * self.numerical_circuit.load_enabled)
+
+        # static generators (all apply)
+        self.Sfix += self.numerical_circuit.C_sta_gen_bus.T * (
+                self.numerical_circuit.static_gen_power_profile[t, :] / self.numerical_circuit.Sbase * self.numerical_circuit.static_gen_enabled)
+
+        # controlled generators
+        self.Sfix += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * (
+                self.numerical_circuit.controlled_gen_power_profile[t, self.gen_s_idx] / self.numerical_circuit.Sbase)
+
+        # batteries
+        self.Sfix += (self.numerical_circuit.C_batt_bus[self.bat_s_idx, :]).T * (
+                self.numerical_circuit.battery_power_profile[t, self.bat_s_idx] / self.numerical_circuit.Sbase)
 
     def objfunction(self, x):
         """
@@ -270,8 +292,8 @@ def solve_opf_dycors_parallel(problem: AcOPFBlackBox, maxeval=1000, nthreads = 4
 if __name__ == '__main__':
 
     main_circuit = MultiCircuit()
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
 
     print('Reading...')
     main_circuit.load_file(fname)

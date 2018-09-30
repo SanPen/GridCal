@@ -1091,8 +1091,10 @@ class Branch(ReliabilityDevice):
             if obj != self.type_obj:
                 self.type_obj = obj
                 self.branch_type = BranchType.Line
+        elif type(obj) is BranchTemplate:
+            # this is the default template that does nothing
+            pass
         else:
-
             logger.append(self.name + ' the object type template was not recognised')
 
     def get_save_data(self):
