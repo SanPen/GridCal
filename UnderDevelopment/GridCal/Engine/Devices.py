@@ -782,7 +782,7 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line, length=1, type_obj=BranchTemplate()):
+                 branch_type: BranchType=BranchType.Line, length=1, template=BranchTemplate()):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -797,7 +797,7 @@ class Branch(ReliabilityDevice):
         @param mttr: Mean time to repair
         @param branch_type: Is the branch a transformer?
         @param length: eventual line length in km
-        @param type_obj: Type object template (i.e. Tower, TransformerType, etc...)
+        @param template: Type object template (i.e. Tower, TransformerType, etc...)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -847,10 +847,10 @@ class Branch(ReliabilityDevice):
         self.branch_type = branch_type
 
         # type template
-        self.type_obj = type_obj
+        self.template = template
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'length', 'tap_module', 'angle', 'branch_type', 'type_obj']
+                             'length', 'tap_module', 'angle', 'branch_type', 'template']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
                       'km', 'p.u.', 'rad', '', '']
@@ -879,7 +879,7 @@ class Branch(ReliabilityDevice):
                            'tap_module': float,
                            'angle': float,
                            'branch_type': BranchType,
-                           'type_obj': BranchTemplate}
+                           'template': BranchTemplate}
 
     def branch_type_converter(self, val_string):
         """
@@ -918,7 +918,7 @@ class Branch(ReliabilityDevice):
                    mttf=self.mttf,
                    mttr=self.mttr,
                    branch_type=self.branch_type,
-                   type_obj=self.type_obj)
+                   template=self.template)
 
         b.measurements = self.measurements
 
@@ -1020,22 +1020,22 @@ class Branch(ReliabilityDevice):
         Returns:
             virtual taps at the from and to sides
         """
-        if self.branch_type == BranchType.Transformer and type(self.type_obj) == TransformerType:
+        if self.branch_type == BranchType.Transformer and type(self.template) == TransformerType:
             # resolve how the transformer is actually connected and set the virtual taps
             bus_f_v = self.bus_from.Vnom
             bus_t_v = self.bus_to.Vnom
 
-            dhf = abs(self.type_obj.HV_nominal_voltage - bus_f_v)
-            dht = abs(self.type_obj.HV_nominal_voltage - bus_t_v)
+            dhf = abs(self.template.HV_nominal_voltage - bus_f_v)
+            dht = abs(self.template.HV_nominal_voltage - bus_t_v)
 
             if dhf < dht:
                 # the HV side is on the from side
-                tpe_f_v = self.type_obj.HV_nominal_voltage
-                tpe_t_v = self.type_obj.LV_nominal_voltage
+                tpe_f_v = self.template.HV_nominal_voltage
+                tpe_t_v = self.template.LV_nominal_voltage
             else:
                 # the HV side is on the to side
-                tpe_t_v = self.type_obj.HV_nominal_voltage
-                tpe_f_v = self.type_obj.LV_nominal_voltage
+                tpe_t_v = self.template.HV_nominal_voltage
+                tpe_f_v = self.template.LV_nominal_voltage
 
             tap_f = tpe_f_v / bus_f_v
             tap_t = tpe_t_v / bus_t_v
@@ -1064,8 +1064,8 @@ class Branch(ReliabilityDevice):
 
                 self.rate = obj.Nominal_power
 
-                if obj != self.type_obj:
-                    self.type_obj = obj
+                if obj != self.template:
+                    self.template = obj
                     self.branch_type = BranchType.Transformer
             else:
                 raise Exception('You are trying to apply a transformer type to a non-transformer branch')
@@ -1085,8 +1085,8 @@ class Branch(ReliabilityDevice):
                 self.G = np.round(y.real, 6)
                 self.B = np.round(y.imag, 6)
 
-                if obj != self.type_obj:
-                    self.type_obj = obj
+                if obj != self.template:
+                    self.template = obj
                     self.branch_type = BranchType.Line
             else:
                 raise Exception('You are trying to apply an Overhead line type to a non-line branch')
@@ -1104,8 +1104,8 @@ class Branch(ReliabilityDevice):
             self.G = np.round(y.real, 6)
             self.B = np.round(y.imag, 6)
 
-            if obj != self.type_obj:
-                self.type_obj = obj
+            if obj != self.template:
+                self.template = obj
                 self.branch_type = BranchType.Line
 
         elif type(obj) is SequenceLineType:
@@ -1119,8 +1119,8 @@ class Branch(ReliabilityDevice):
             self.G = np.round(obj.G * self.length / Ybase, 6)
             self.B = np.round(obj.B * self.length / Ybase, 6)
 
-            if obj != self.type_obj:
-                self.type_obj = obj
+            if obj != self.template:
+                self.template = obj
                 self.branch_type = BranchType.Line
         elif type(obj) is BranchTemplate:
             # this is the default template that does nothing
@@ -1135,14 +1135,14 @@ class Branch(ReliabilityDevice):
         """
         conv = BranchTypeConverter(None)
 
-        if self.type_obj is None:
-            type_obj = ''
+        if self.template is None:
+            template = ''
         else:
-            type_obj = str(self.type_obj)
+            template = str(self.template)
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle,
-                conv.inv_conv[self.branch_type], type_obj]
+                conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
         """

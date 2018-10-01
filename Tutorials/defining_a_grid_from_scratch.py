@@ -93,10 +93,10 @@ grid.add_controlled_generator(bus1, g1)
 br1 = Branch(bus_from=bus1,
              bus_to=bus2,
              name='Line 1-2',
-             r=0.05,   # resistance of the pi model in per unit
-             x=0.11,   # reactance of the pi model in per unit
+             r=0.05,  # resistance of the pi model in per unit
+             x=0.11,  # reactance of the pi model in per unit
              g=1e-20,  # conductance of the pi model in per unit
-             b=0.02,   # susceptance of the pi model in per unit
+             b=0.02,  # susceptance of the pi model in per unit
              rate=50,  # Rate in MVA
              tap=1.0,  # Tap value (value close to 1)
              shift_angle=0,  # Tap angle in radians
@@ -105,7 +105,7 @@ br1 = Branch(bus_from=bus1,
              mttr=0,  # Mean time to recovery
              branch_type=BranchType.Line,  # Branch type tag
              length=1,  # Length in km (to be used with templates)
-             type_obj=BranchTemplate()  # Branch template (The default one is void)
+             template=BranchTemplate()  # Branch template (The default one is void)
              )
 grid.add_branch(br1)
 

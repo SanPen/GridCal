@@ -1263,6 +1263,10 @@ class MultiCircuit:
                 # Hack to change the enabled by active...
                 if attr == 'is_enabled':
                     attr = 'active'
+
+                if attr == 'type_obj':
+                    attr = 'template'
+
                 if hasattr(obj_, attr):
                     conv = obj_.edit_types[attr]  # get the type converter
                     if conv is None:
@@ -1564,9 +1568,9 @@ class MultiCircuit:
                 set_object_attributes(obj, hdr, vals[i, :])
 
                 # correct the branch template object
-                template_name = str(obj.type_obj)
+                template_name = str(obj.template)
                 if template_name in branch_types.keys():
-                    obj.type_obj = branch_types[template_name]
+                    obj.template = branch_types[template_name]
                     print(template_name, 'updtaed!')
 
                 # set the branch
@@ -2394,7 +2398,7 @@ class MultiCircuit:
         """
         logger = list()
         for branch in self.branches:
-            branch.apply_type(branch.type_obj, self.Sbase, logger=logger)
+            branch.apply_type(branch.template, self.Sbase, logger=logger)
 
         return logger
 
