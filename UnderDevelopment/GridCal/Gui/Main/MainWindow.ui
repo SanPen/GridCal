@@ -1626,6 +1626,13 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="faster_and_less_accurate_CheckBox">
+                 <property name="text">
+                  <string>faster and less accurate</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -3429,7 +3436,7 @@ points from time series</string>
       <widget class="QWidget" name="TimeEventsTab">
        <attribute name="icon">
         <iconset resource="icons.qrc">
-         <normaloff>:/Icons/icons/chip.svg</normaloff>:/Icons/icons/chip.svg</iconset>
+         <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Time events</string>

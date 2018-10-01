@@ -958,6 +958,13 @@ class MultiCircuit:
             lst = lst + bus.controlled_generators
         return lst
 
+    def get_controlled_generator_names(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.controlled_generators:
+                lst.append(elm.name)
+        return np.array(lst)
+
     def get_batteries(self):
         lst = list()
         for bus in self.buses:
@@ -965,6 +972,13 @@ class MultiCircuit:
                 elm.bus = bus
             lst = lst + bus.batteries
         return lst
+
+    def get_battery_names(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.batteries:
+                lst.append(elm.name)
+        return np.array(lst)
 
     def get_Jacobian(self, sparse=False):
         """

@@ -41,6 +41,7 @@ from GridCal.Engine.TopologyDriver import TopologyReduction, TopologyReductionOp
 from GridCal.Engine.TopologyDriver import select_branches_to_reduce
 from GridCal.Engine.GridAnalysis import TimeSeriesResultsAnalysis
 
+import gc
 import os.path
 import platform
 import sys
@@ -255,6 +256,7 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
         self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
+        self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
@@ -1099,6 +1101,9 @@ class MainGUI(QMainWindow):
                 if len(logger) > 0:
                     dlg = LogsDialogue('Save file logger', logger)
                     dlg.exec_()
+
+                # call the garbage collector to free memory
+                gc.collect()
 
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -2351,10 +2356,13 @@ class MainGUI(QMainWindow):
             # get the power flow options from the GUI
             load_shedding = self.ui.load_shedding_checkBox.isChecked()
             realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
+            faster_less_accurate = self.ui.faster_and_less_accurate_CheckBox.isChecked()
             solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+
             options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                               solver=solver,
-                                              realistic_results=realistic_results)
+                                              realistic_results=realistic_results,
+                                              faster_less_accurate=faster_less_accurate)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -2413,9 +2421,20 @@ class MainGUI(QMainWindow):
                 # self.compile()   # compiles inside
 
                 # gather the simulation options
+                # load_shedding = self.ui.load_shedding_checkBox.isChecked()
+                # solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+                # options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
+
+                # get the power flow options from the GUI
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
+                realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
+                faster_less_accurate = self.ui.faster_and_less_accurate_CheckBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-                options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
+                options = OptimalPowerFlowOptions(load_shedding=load_shedding,
+                                                  solver=solver,
+                                                  realistic_results=realistic_results,
+                                                  faster_less_accurate=faster_less_accurate)
+
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1
 
@@ -2834,6 +2853,10 @@ class MainGUI(QMainWindow):
                 names = self.circuit.branch_names
             elif 'Load' in study_type:
                 names = self.circuit.bus_names
+            elif 'Controlled' in study_type:
+                names = self.circuit.get_controlled_generator_names()
+            elif 'Batter' in study_type:
+                names = self.circuit.get_battery_names()
             else:
                 names = None
 

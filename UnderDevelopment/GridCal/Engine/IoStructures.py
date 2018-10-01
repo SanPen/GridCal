@@ -1618,3 +1618,212 @@ class MonteCarloResults:
 
         else:
             return None
+
+
+class OptimalPowerFlowResults:
+
+    def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
+                 loading=None, losses=None, converged=None, is_dc=False):
+        """
+        OPF results constructor
+        :param Sbus: bus power injections
+        :param voltage: bus voltages
+        :param load_shedding: load shedding values
+        :param Sbranch: branch power values
+        :param overloads: branch overloading values
+        :param loading: branch loading values
+        :param losses: branch losses
+        :param converged: converged?
+        """
+        self.Sbus = Sbus
+
+        self.voltage = voltage
+
+        self.load_shedding = load_shedding
+
+        self.Sbranch = Sbranch
+
+        self.overloads = overloads
+
+        self.loading = loading
+
+        self.losses = losses
+
+        self.flow_direction = None
+
+        self.converged = converged
+
+        self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
+                                  'Branch loading', 'Branch overloads', 'Load shedding',
+                                  'Controlled generators power', 'Batteries power']
+
+        self.plot_bars_limit = 100
+
+        self.controlled_generator_power = list()  # later converted to numpy array
+
+        self.battery_power = list()  # later converted to numpy array
+
+        self.is_dc = is_dc
+
+    def init_object_results(self, ngen, nbat):
+        """
+        declare the generator results. This is done separately since these results are known at the end of the simulation
+        :param ngen: number of generators
+        :param nbat: number of batteries
+        """
+        self.controlled_generator_power = np.zeros(ngen, dtype=float)
+
+        self.battery_power = np.zeros(nbat, dtype=float)
+
+    def copy(self):
+        """
+        Return a copy of this
+        @return:
+        """
+        return OptimalPowerFlowResults(Sbus=self.Sbus,
+                                       voltage=self.voltage,
+                                       load_shedding=self.load_shedding,
+                                       Sbranch=self.Sbranch,
+                                       overloads=self.overloads,
+                                       loading=self.loading,
+                                       losses=self.losses,
+                                       converged=self.converged)
+
+    def initialize(self, n, m):
+        """
+        Initialize the arrays
+        @param n: number of buses
+        @param m: number of branches
+        @return:
+        """
+        self.Sbus = zeros(n, dtype=complex)
+
+        self.voltage = zeros(n, dtype=complex)
+
+        self.load_shedding = zeros(n, dtype=float)
+
+        self.Sbranch = zeros(m, dtype=complex)
+
+        self.loading = zeros(m, dtype=complex)
+
+        self.overloads = zeros(m, dtype=complex)
+
+        self.losses = zeros(m, dtype=complex)
+
+        self.converged = list()
+
+        self.plot_bars_limit = 100
+
+    def apply_from_island(self, results, b_idx, br_idx):
+        """
+        Apply results from another island circuit to the circuit results represented here
+        @param results: PowerFlowResults
+        @param b_idx: bus original indices
+        @param br_idx: branch original indices
+        @return:
+        """
+        self.Sbus[b_idx] = results.Sbus
+
+        self.voltage[b_idx] = results.voltage
+
+        self.load_shedding[b_idx] = results.load_shedding
+
+        self.Sbranch[br_idx] = results.Sbranch
+
+        self.loading[br_idx] = results.loading
+
+        self.overloads[br_idx] = results.overloads
+
+        self.losses[br_idx] = results.losses
+
+        self.converged.append(results.converged)
+
+    def plot(self, result_type, ax=None, indices=None, names=None):
+        """
+        Plot the results
+        :param result_type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if indices is None:
+            indices = array(range(len(names)))
+
+        if len(indices) > 0:
+            labels = names[indices]
+            y_label = ''
+            title = ''
+            if result_type == 'Bus voltage':
+                if self.is_dc:
+                    y = np.angle(self.voltage[indices])
+                    y_label = '(rad)'
+                    title = 'Bus voltage angle'
+                else:
+                    y = np.abs(self.voltage[indices])
+                    y_label = '(p.u.)'
+                    title = 'Bus voltage'
+
+            elif result_type == 'Branch power':
+                y = self.Sbranch[indices].real
+                y_label = '(MW)'
+                title = 'Branch power '
+
+            elif result_type == 'Bus power':
+                y = self.Sbus[indices].real
+                y_label = '(MW)'
+                title = 'Bus power '
+
+            elif result_type == 'Branch loading':
+                y = np.abs(self.loading[indices] * 100.0)
+                y_label = '(%)'
+                title = 'Branch loading '
+
+            elif result_type == 'Branch overloads':
+                y = np.abs(self.overloads[indices])
+                y_label = '(MW)'
+                title = 'Branch overloads '
+
+            elif result_type == 'Branch losses':
+                y = self.losses[indices].real
+                y_label = '(MW)'
+                title = 'Branch losses '
+
+            elif result_type == 'Load shedding':
+                y = self.load_shedding[indices]
+                y_label = '(MW)'
+                title = 'Load shedding'
+
+            elif result_type == 'Controlled generators power':
+                y = self.controlled_generator_power[indices]
+                y_label = '(MW)'
+                title = 'Controlled generators power'
+
+            elif result_type == 'Batteries power':
+                y = self.battery_power[indices]
+                y_label = '(MW)'
+                title = 'Batteries power'
+
+            else:
+                pass
+
+            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            df.fillna(0, inplace=True)
+
+            if len(df.columns) < self.plot_bars_limit:
+                df.plot(ax=ax, kind='bar')
+            else:
+                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
+            ax.set_ylabel(y_label)
+            ax.set_title(title)
+
+            return df
+
+        else:
+            return None
+
