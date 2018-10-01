@@ -479,7 +479,8 @@ class CalculationInputs:
 
         self.logger =list()
 
-        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', "B'", "B''", 'Types', 'Jacobian']
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', "B'", "B''", 'Types',
+                                     'Jacobian', 'Qmin', 'Qmax']
 
     def compile_types(self, types_new=None):
         """
@@ -672,6 +673,12 @@ class CalculationInputs:
 
         elif structure_type == 'Types':
             df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
+
+        elif structure_type == 'Qmin':
+            df = pd.DataFrame(data=self.Qmin, columns=['Qmin'], index=self.bus_names)
+
+        elif structure_type == 'Qmax':
+            df = pd.DataFrame(data=self.Qmax, columns=['Qmax'], index=self.bus_names)
 
         elif structure_type == 'Jacobian':
 

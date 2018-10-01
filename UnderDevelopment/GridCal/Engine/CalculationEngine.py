@@ -426,6 +426,14 @@ class NumericalCircuit:
         # batteries
         S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_enabled)
 
+        # Qmax
+        q_max = self.C_ctrl_gen_bus.T * (self.controlled_gen_qmax / self.Sbase)
+        q_max += self.C_batt_bus.T * (self.battery_qmax/ self.Sbase)
+
+        # Qmin
+        q_min = self.C_ctrl_gen_bus.T * (self.controlled_gen_qmin / self.Sbase)
+        q_min += self.C_batt_bus.T * (self.battery_qmin / self.Sbase)
+
         # assign the values
         circuit.Ysh = Ysh
         circuit.Sbus = S
@@ -433,6 +441,8 @@ class NumericalCircuit:
         circuit.Vbus = self.V0
         circuit.Sbase = self.Sbase
         circuit.types = self.bus_types
+        circuit.Qmax = q_max
+        circuit.Qmin = q_min
 
         if self.ntime > 0:
             # Shunts
