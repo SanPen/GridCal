@@ -20,7 +20,8 @@ import numpy as np
 from GridCal.Engine.IoStructures import CalculationInputs, OptimalPowerFlowResults
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
-from GridCal.Engine.Numerical.MIP_OPF import AcOpf, DcOpf
+from GridCal.Engine.Numerical.AC_OPF import AcOpf
+from GridCal.Engine.Numerical.DC_OPF import DcOpf
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
 from GridCal.Engine.Numerical.BlackBoxOPF import AcOPFBlackBox, solve_opf_dycors_serial
 

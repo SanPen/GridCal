@@ -600,6 +600,36 @@ class NumericalCircuit:
         # return the list of islands
         return self.calculation_islands
 
+    def get_B(self):
+
+        # Shunts
+        Ysh = self.C_shunt_bus.T * (self.shunt_admittance / self.Sbase)
+
+        # Loads
+        Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase * self.load_enabled)
+
+        # form the connectivity matrices with the states applied
+        states_dia = diags(self.branch_states)
+        Cf = states_dia * self.C_branch_bus_f
+        Ct = states_dia * self.C_branch_bus_t
+
+        Ys = 1.0 / (self.R + 1.0j * self.X)
+        GBc = self.G + 1.0j * self.B
+        tap = self.tap_mod * np.exp(1.0j * self.tap_ang)
+
+        # branch primitives in vector form
+        Ytt = (Ys + GBc / 2.0) / (self.tap_t * self.tap_t)
+        Yff = (Ys + GBc / 2.0) / (self.tap_f * self.tap_f * tap * np.conj(tap))
+        Yft = - Ys / (self.tap_f * self.tap_t * np.conj(tap))
+        Ytf = - Ys / (self.tap_t * self.tap_f * tap)
+
+        # form the admittance matrices
+        Yf = diags(Yff) * Cf + diags(Yft) * Ct
+        Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
+        Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
+
+        return Ybus.imag
+
     @staticmethod
     def get_branches_of_the_island(island, C_branch_bus):
         """

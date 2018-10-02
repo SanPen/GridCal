@@ -648,48 +648,34 @@ class TransformerType:
 
         GXhv = self.GX_hv1
 
-        Zn_hv = (Vhv ** 2) / Sn
-        Zn_lv = (Vlv ** 2) / Sn
+        # Zn_hv = (Vhv ** 2) / Sn
+        # Zn_lv = (Vlv ** 2) / Sn
 
+        # Series impedance
         zsc = Vsc / 100.0
         rsc = (Pcu / 1000.0) / Sn
-        # xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
         xsc = sqrt(zsc ** 2 - rsc ** 2)
 
-        rcu_hv = rsc * self.GR_hv1
-        rcu_lv = rsc * (1 - self.GR_hv1)
+        # rcu_hv = rsc * self.GR_hv1
+        # rcu_lv = rsc * (1 - self.GR_hv1)
+        # xs_hv = xsc * self.GX_hv1
+        # xs_lv = xsc * (1 - self.GX_hv1)
 
-        xs_hv = xsc * self.GX_hv1
-        xs_lv = xsc * (1 - self.GX_hv1)
+        zs = rsc + 1j * xsc
 
+        # Shunt impedance (leakage)
         if Pfe > 0.0 and I0 > 0.0:
             rfe = Sn / (Pfe / 1000.0)
-
             zm = 1.0 / (I0 / 100.0)
-
             xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
-
             rm = sqrt(xm * xm - zm * zm)
         else:
-
-            rfe = 0.0
+            rm = 0.0
             xm = 0.0
 
-        # series impedance
-        # change_hv = (Sbase / Sn) * (Vhv / Vbus_hv)**2
-        # change_lv = (Sbase / Sn) * (Vlv / Vbus_lv)**2
-        # r = rcu_hv * change_hv + rcu_lv * change_lv
-        # x = xs_hv * change_hv + xs_lv * change_lv
-        # z_series = r + 1j * x
+        zsh = rm + 1j * xm
 
-        z_series = rsc + 1j * xsc
-
-        # shunt impedance
-        zl = rm + 1j * xm
-
-        # base_change = Sbase / Sn
-
-        return z_series, zl
+        return zs, zsh
 
     def __str__(self):
         return self.name

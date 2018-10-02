@@ -23,7 +23,8 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import SolverType
 from GridCal.Engine.OpfDriver import OptimalPowerFlowResults, OptimalPowerFlowOptions, OptimalPowerFlow
-from GridCal.Engine.Numerical.MIP_OPF import AcOpf, DcOpf
+from GridCal.Engine.Numerical.AC_OPF import AcOpf
+from GridCal.Engine.Numerical.DC_OPF import DcOpf
 
 
 class OptimalPowerFlowTimeSeriesResults:

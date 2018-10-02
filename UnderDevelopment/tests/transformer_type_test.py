@@ -1,11 +1,10 @@
 from GridCal.Engine.DeviceTypes import TransformerType
 
-# Hormazabal transformer
 
 Vhv = 24  # primary voltage in kV
 Vlv = 0.42  # secondary voltage kV
-Sn = 80  # nominal power in MVA
-Pcc = 300  # short circuit power (copper losses) kW
+Sn = 100  # nominal power in MVA
+Psc = 300  # short circuit power (copper losses) kW
 P0 = 100  # no load power (iron losses) kW
 V0 = 0.8  # no load voltage in %
 Vsc = 8  # short-circuit voltage in %
@@ -13,10 +12,10 @@ Vsc = 8  # short-circuit voltage in %
 obj = TransformerType(hv_nominal_voltage=Vhv,
                       lv_nominal_voltage=Vlv,
                       nominal_power=Sn,
-                      copper_losses=Pcc,
+                      copper_losses=Psc,
+                      short_circuit_voltage=Vsc,
                       iron_losses=P0,
                       no_load_current=V0,
-                      short_circuit_voltage=Vsc,
                       gr_hv1=0.5, gx_hv1=0.5)
 
 Sbase = 100

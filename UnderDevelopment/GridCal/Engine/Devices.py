@@ -1063,7 +1063,7 @@ class Branch(ReliabilityDevice):
                 zsh *= base_change
 
                 # compute the shunt admittance
-                y_shunt = 1 / zsh
+                y_shunt = 1.0 / zsh
 
                 self.R = np.round(z_series.real, 6)
                 self.X = np.round(z_series.imag, 6)
@@ -1828,8 +1828,10 @@ class ControlledGenerator(ReliabilityDevice):
 
         self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
 
-        self.LPVar_P_prof = [
-            pulp.LpVariable(self.lp_name + '_P_' + str(t), self.Pmin / self.Sbase, self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
+        self.LPVar_P_prof = [pulp.LpVariable(self.lp_name + '_P_' + str(t),
+                                             self.Pmin / self.Sbase,
+                                             self.Pmax / self.Sbase)
+                             for t in range(self.Pprof.shape[0])]
 
     def get_lp_var_profile(self, index):
         """
