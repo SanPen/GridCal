@@ -1043,9 +1043,9 @@ class Branch(ReliabilityDevice):
         else:
             return 1.0, 1.0
 
-    def apply_type(self, obj, Sbase, logger=list()):
+    def apply_template(self, obj, Sbase, logger=list()):
         """
-        Apply a transformer type definition to this object
+        Apply a branch template to this object
         Args:
             obj: TransformerType or Tower object
         """
@@ -1053,8 +1053,16 @@ class Branch(ReliabilityDevice):
         if type(obj) is TransformerType:
 
             if self.branch_type == BranchType.Transformer:
+
+                # get the transformer impedance in the base of the transformer
                 z_series, zsh = obj.get_impedances()
 
+                # Change the impedances to the system base
+                base_change = Sbase / obj.Nominal_power
+                z_series *= base_change
+                zsh *= base_change
+
+                # compute the shunt admittance
                 y_shunt = 1 / zsh
 
                 self.R = np.round(z_series.real, 6)

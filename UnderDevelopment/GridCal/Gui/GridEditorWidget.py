@@ -345,22 +345,22 @@ class TransformerEditor(QDialog):
         Pfe = eps if Pfe == 0.0 else Pfe
         I0 = eps if I0 == 0.0 else I0
 
-        tpe = TransformerType(HV_nominal_voltage=Vf,
-                              LV_nominal_voltage=Vt,
-                              Nominal_power=Sn,
-                              Copper_losses=Pcu,
-                              Iron_losses=Pfe,
-                              No_load_current=I0,
-                              Short_circuit_voltage=Vsc,
-                              GR_hv1=0.5,
-                              GX_hv1=0.5)
+        tpe = TransformerType(hv_nominal_voltage=Vf,
+                              lv_nominal_voltage=Vt,
+                              nominal_power=Sn,
+                              copper_losses=Pcu,
+                              iron_losses=Pfe,
+                              no_load_current=I0,
+                              short_circuit_voltage=Vsc,
+                              gr_hv1=0.5,
+                              gx_hv1=0.5)
 
         leakage_impedance, magnetizing_impedance = tpe.get_impedances()
 
         # z_series = leakage_impedance
         # y_shunt = 1 / magnetizing_impedance
 
-        self.branch.apply_type(tpe)
+        self.branch.apply_template(tpe)
 
         self.accept()
 

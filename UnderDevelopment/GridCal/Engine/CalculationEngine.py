@@ -2422,7 +2422,7 @@ class MultiCircuit:
         """
         logger = list()
         for branch in self.branches:
-            branch.apply_type(branch.template, self.Sbase, logger=logger)
+            branch.apply_template(branch.template, self.Sbase, logger=logger)
 
         return logger
 

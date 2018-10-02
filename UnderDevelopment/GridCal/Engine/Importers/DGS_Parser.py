@@ -914,15 +914,15 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                 Smax = Nominal_power[type_idx]
 
                 # Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc
-                tpe = TransformerType(HV_nominal_voltage=HV_nominal_voltage[type_idx],
-                                      LV_nominal_voltage=LV_nominal_voltage[type_idx],
-                                      Nominal_power=Smax,
-                                      Copper_losses=Copper_losses[type_idx],
-                                      Iron_losses=Iron_losses[type_idx],
-                                      No_load_current=No_load_current[type_idx],
-                                      Short_circuit_voltage=Short_circuit_voltage[type_idx],
-                                      GR_hv1=0.5,
-                                      GX_hv1=0.5)
+                tpe = TransformerType(hv_nominal_voltage=HV_nominal_voltage[type_idx],
+                                      lv_nominal_voltage=LV_nominal_voltage[type_idx],
+                                      nominal_power=Smax,
+                                      copper_losses=Copper_losses[type_idx],
+                                      iron_losses=Iron_losses[type_idx],
+                                      no_load_current=No_load_current[type_idx],
+                                      short_circuit_voltage=Short_circuit_voltage[type_idx],
+                                      gr_hv1=0.5,
+                                      gx_hv1=0.5)
 
                 Zs, Zsh = tpe.get_impedances()
 

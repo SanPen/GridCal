@@ -541,22 +541,21 @@ class Tower(QtCore.QAbstractTableModel):
 
 class TransformerType:
 
-    def __init__(self, HV_nominal_voltage=0, LV_nominal_voltage=0, Nominal_power=0, Copper_losses=0, Iron_losses=0,
-                 No_load_current=0, Short_circuit_voltage=0, GR_hv1=0.5, GX_hv1=0.5,
+    def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0, copper_losses=0, iron_losses=0,
+                 no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
                  name='TransformerType', tpe=BranchType.Transformer):
         """
         Constructor
-        @param HV_nominal_voltage: High voltage side nominal voltage (kV)
-        @param LV_nominal_voltage: Low voltage side nominal voltage (kV)
-        @param Nominal_power: Transformer nominal power (MVA)
-        @param Copper_losses: Copper losses (kW)
-        @param Iron_losses: Iron Losses (kW)
-        @param No_load_current: No load current (%)
-        @param Short_circuit_voltage: Short circuit voltage (%)
-        @param GR_hv1:
-        @param GX_hv1:
+        @param hv_nominal_voltage: High voltage side nominal voltage (kV)
+        @param lv_nominal_voltage: Low voltage side nominal voltage (kV)
+        @param nominal_power: Transformer nominal power (MVA)
+        @param copper_losses: Copper losses (kW)  [also known as short circuit power]
+        @param iron_losses: Iron Losses (kW) [also known as no load power]
+        @param no_load_current: No load current (%)
+        @param short_circuit_voltage: Short circuit voltage (%)
+        @param gr_hv1: Resistive contribution to the HV side (default is 50%)
+        @param gx_hv1: Reactive contribution to the HV side (default is 50%)
         """
-        # BranchTemplate.__init__(self, name=name, tpe=BranchType.Transformer)
 
         self.name = name
 
@@ -566,23 +565,23 @@ class TransformerType:
 
         self.properties_with_profile = None
 
-        self.HV_nominal_voltage = HV_nominal_voltage
+        self.HV_nominal_voltage = hv_nominal_voltage
 
-        self.LV_nominal_voltage = LV_nominal_voltage
+        self.LV_nominal_voltage = lv_nominal_voltage
 
-        self.Nominal_power = Nominal_power
+        self.Nominal_power = nominal_power
 
-        self.Copper_losses = Copper_losses
+        self.Copper_losses = copper_losses
 
-        self.Iron_losses = Iron_losses
+        self.Iron_losses = iron_losses
 
-        self.No_load_current = No_load_current
+        self.No_load_current = no_load_current
 
-        self.Short_circuit_voltage = Short_circuit_voltage
+        self.Short_circuit_voltage = short_circuit_voltage
 
-        self.GR_hv1 = GR_hv1
+        self.GR_hv1 = gr_hv1
 
-        self.GX_hv1 = GX_hv1
+        self.GX_hv1 = gx_hv1
 
         self.edit_headers = ['name',
                              'HV_nominal_voltage',
@@ -645,21 +644,23 @@ class TransformerType:
 
         Vsc = self.Short_circuit_voltage
 
-        # GRhv = self.GR_hv1
-        # GXhv = self.GX_hv1
+        GRhv = self.GR_hv1
 
-        # Zn_hv = (Vhv ** 2) / Sn
-        # Zn_lv = (Vlv ** 2) / Sn
+        GXhv = self.GX_hv1
+
+        Zn_hv = (Vhv ** 2) / Sn
+        Zn_lv = (Vlv ** 2) / Sn
 
         zsc = Vsc / 100.0
         rsc = (Pcu / 1000.0) / Sn
         # xsc = 1 / sqrt(zsc ** 2 - rsc ** 2)
         xsc = sqrt(zsc ** 2 - rsc ** 2)
 
-        # rcu_hv = rsc * self.GR_hv1
-        # rcu_lv = rsc * (1 - self.GR_hv1)
-        # xs_hv = xsc * self.GX_hv1
-        # xs_lv = xsc * (1 - self.GX_hv1)
+        rcu_hv = rsc * self.GR_hv1
+        rcu_lv = rsc * (1 - self.GR_hv1)
+
+        xs_hv = xsc * self.GX_hv1
+        xs_lv = xsc * (1 - self.GX_hv1)
 
         if Pfe > 0.0 and I0 > 0.0:
             rfe = Sn / (Pfe / 1000.0)
@@ -668,20 +669,25 @@ class TransformerType:
 
             xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
 
+            rm = sqrt(xm * xm - zm * zm)
         else:
 
             rfe = 0.0
             xm = 0.0
 
         # series impedance
+        # change_hv = (Sbase / Sn) * (Vhv / Vbus_hv)**2
+        # change_lv = (Sbase / Sn) * (Vlv / Vbus_lv)**2
+        # r = rcu_hv * change_hv + rcu_lv * change_lv
+        # x = xs_hv * change_hv + xs_lv * change_lv
+        # z_series = r + 1j * x
+
         z_series = rsc + 1j * xsc
 
-        # y_series = 1.0 / z_series
-
         # shunt impedance
-        zl = rfe + 1j * xm
+        zl = rm + 1j * xm
 
-        # y_shunt = 1.0 / zl
+        # base_change = Sbase / Sn
 
         return z_series, zl
 

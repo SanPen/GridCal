@@ -3120,9 +3120,9 @@ class MainGUI(QMainWindow):
             elif tpe == 'Transformers':
 
                 name = 'XFormer_type_' + str(len(self.circuit.transformer_types))
-                obj = TransformerType(HV_nominal_voltage=10, LV_nominal_voltage=0.4, Nominal_power=2,
-                                      Copper_losses=0.8, Iron_losses=0.1, No_load_current=0.1, Short_circuit_voltage=0.1,
-                                      GR_hv1=0.5, GX_hv1=0.5, name=name)
+                obj = TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
+                                      copper_losses=0.8, iron_losses=0.1, no_load_current=0.1, short_circuit_voltage=0.1,
+                                      gr_hv1=0.5, gx_hv1=0.5, name=name)
                 self.circuit.add_transformer_type(obj)
                 something_happened = True
 
@@ -3271,9 +3271,9 @@ class MainGUI(QMainWindow):
                                    check_unique=['wire_name'])
 
             elif tpe == 'Transformers':
-                elm = TransformerType(HV_nominal_voltage=10, LV_nominal_voltage=10, Nominal_power=10,
-                                      Copper_losses=0, Iron_losses=0, No_load_current=0.1, Short_circuit_voltage=0.1,
-                                      GR_hv1=0.5, GX_hv1=0.5)
+                elm = TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=10, nominal_power=10,
+                                      copper_losses=0, iron_losses=0, no_load_current=0.1, short_circuit_voltage=0.1,
+                                      gr_hv1=0.5, gx_hv1=0.5)
                 mdl = ObjectsModel(self.circuit.transformer_types,
                                    elm.edit_headers, elm.units, elm.edit_types,
                                    parent=self.ui.catalogueTableView, editable=True,
@@ -3330,7 +3330,7 @@ class MainGUI(QMainWindow):
                         if self.circuit.branches[i].branch_type == compatible_type:
 
                             # apply the branch type
-                            self.circuit.branches[i].apply_type(branch_type, Sbase=self.circuit.Sbase)
+                            self.circuit.branches[i].apply_template(branch_type, Sbase=self.circuit.Sbase)
 
                         else:
                             logger.append(str(branch_type) + '->' + self.circuit.branches[i].name + '[' + str(i)

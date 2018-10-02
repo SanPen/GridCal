@@ -42,15 +42,15 @@ if __name__ == '__main__':
     print('I0', I0)
     print('Pfe', Pfe)
 
-    tpe2 = TransformerType(HV_nominal_voltage=Vf,
-                           LV_nominal_voltage=Vt,
-                           Nominal_power=Sn,
-                           Copper_losses=Pcu,
-                           Iron_losses=Pfe,
-                           No_load_current=I0,
-                           Short_circuit_voltage=Vsc,
-                           GR_hv1=0.5,
-                           GX_hv1=0.5)
+    tpe2 = TransformerType(hv_nominal_voltage=Vf,
+                           lv_nominal_voltage=Vt,
+                           nominal_power=Sn,
+                           copper_losses=Pcu,
+                           iron_losses=Pfe,
+                           no_load_current=I0,
+                           short_circuit_voltage=Vsc,
+                           gr_hv1=0.5,
+                           gx_hv1=0.5)
 
     z2, zl2 = tpe2.get_impedances()
     # print(z2)
