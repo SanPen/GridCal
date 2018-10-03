@@ -17,6 +17,7 @@ from warnings import warn
 import pulp
 import numpy as np
 from scipy.sparse import csc_matrix
+import pandas as pd
 
 from GridCal.Engine.BasicStructures import BusMode
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP
@@ -639,17 +640,69 @@ def Cproduct(C, vect):
     return res
 
 
+class DcOpfIsland:
+
+    def __init__(self, nbus, nbr, b_idx):
+        """
+        Intermediate object to store a DC OPF problem
+        :param nbus: Number of buses
+        :param nbr: Number of branches
+        :param b_idx: Buses indices in the original grid
+        """
+
+        # number of nodes
+        self.nbus = nbus
+
+        # number of branches
+        self.nbr = nbr
+
+        # LP problem instance
+        self.problem = pulp.LpProblem("DC optimal power flow", pulp.LpMinimize)
+
+        # calculated node power
+        self.calculated_power = np.zeros(nbus, dtype=object)
+
+        # injection power
+        self.P = np.zeros(nbus, dtype=object)
+
+        # branch flow
+        self.flow = np.zeros(nbr, dtype=object)
+
+        # original bus indices
+        self.b_idx = b_idx
+
+    def copy(self):
+
+        obj = DcOpfIsland(self.nbus, self.nbr, self.b_idx)
+
+        obj.problem = self.problem.copy()
+
+        obj.P = self.P.copy()
+
+        obj.flow = self.flow.copy()
+
+        obj.calculated_power = self.calculated_power
+
+        return obj
+
+
 class DcOpf:
 
     def __init__(self, multi_circuit: MultiCircuit, verbose=False,
                  allow_load_shedding=False, allow_generation_shedding=False):
         """
-
-        :param multi_circuit:
-        :param verbose:
-        :param allow_load_shedding:
-        :param allow_generation_shedding:
+        DC OPF problem
+        :param multi_circuit: multi circuit instance
+        :param verbose: verbose?
+        :param allow_load_shedding: Allow load shedding?
+        :param allow_generation_shedding: Allow generation shedding?
         """
+
+        # list of OP object islands
+        self.opf_islands = list()
+
+        # list of opf islands to solve apart (this allows to split the problem and only assign loads on a series)
+        self.opf_islands_to_solve = list()
 
         # flags
         self.verbose = verbose
@@ -661,16 +714,31 @@ class DcOpf:
         self.numerical_circuit = self.multi_circuit.compile()
         self.islands = self.numerical_circuit.compute()
 
+        # compile the indices
+        # indices of generators that contribute to the static power vector 'S'
+        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.controlled_gen_dispatchable)
+                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+
+        self.bat_s_idx = np.where((np.logical_not(self.numerical_circuit.battery_dispatchable)
+                                   * self.numerical_circuit.battery_enabled) == True)[0]
+
+        # indices of generators that are to be optimized via the solution vector 'x'
+        self.gen_x_idx = np.where((self.numerical_circuit.controlled_gen_dispatchable
+                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+
+        self.bat_x_idx = np.where((self.numerical_circuit.battery_dispatchable
+                                   * self.numerical_circuit.battery_enabled) == True)[0]
+
         # get the devices
-        controlled_generators = self.multi_circuit.get_controlled_generators()
-        batteries = self.multi_circuit.get_batteries()
-        loads = self.multi_circuit.get_loads()
+        self.controlled_generators = self.multi_circuit.get_controlled_generators()
+        self.batteries = self.multi_circuit.get_batteries()
+        self.loads = self.multi_circuit.get_loads()
 
         # shortcuts...
         nbus = self.numerical_circuit.nbus
         nbr = self.numerical_circuit.nbr
-        ngen = len(controlled_generators)
-        nbat = len(batteries)
+        ngen = len(self.controlled_generators)
+        nbat = len(self.batteries)
         Sbase = self.multi_circuit.Sbase
 
         # bus angles
@@ -681,7 +749,7 @@ class DcOpf:
         self.controlled_generators_cost = np.zeros(ngen)
         self.generation_shedding = np.empty(ngen, dtype=object)
 
-        for i, gen in enumerate(controlled_generators):
+        for i, gen in enumerate(self.controlled_generators):
             name = 'GEN_' + gen.name + '_' + str(i)
             pmin = gen.Pmin / Sbase
             pmax = gen.Pmax / Sbase
@@ -692,16 +760,18 @@ class DcOpf:
         # Batteries
         self.battery_P = np.empty(nbat, dtype=object)
         self.battery_cost = np.zeros(nbat)
-        for i, battery in enumerate(batteries):
+        self.battery_lower_bound = np.zeros(nbat)
+        for i, battery in enumerate(self.batteries):
             name = 'BAT_' + battery.name + '_' + str(i)
             pmin = battery.Pmin / Sbase
             pmax = battery.Pmax / Sbase
+            self.battery_lower_bound[i] = pmin
             self.battery_P[i] = pulp.LpVariable(name + '_P', pmin, pmax)
             self.battery_cost[i] = battery.Cost
 
         # load shedding
         self.load_shedding = np.array([pulp.LpVariable("LoadShed_" + load.name + '_' + str(i), 0.0, 1e20)
-                                       for i, load in enumerate(loads)])
+                                       for i, load in enumerate(self.loads)])
 
         # declare the loading slack vars
         self.slack_loading_ij_p = np.empty(nbr, dtype=object)
@@ -713,6 +783,9 @@ class DcOpf:
             self.slack_loading_ji_p[i] = pulp.LpVariable("LoadingSlack_ji_p_" + str(i), 0, 1e20)
             self.slack_loading_ij_n[i] = pulp.LpVariable("LoadingSlack_ij_n_" + str(i), 0, 1e20)
             self.slack_loading_ji_n[i] = pulp.LpVariable("LoadingSlack_ji_n_" + str(i), 0, 1e20)
+
+        self.branch_flows_ij = np.empty(nbr, dtype=object)
+        self.branch_flows_ji = np.empty(nbr, dtype=object)
 
     def build_solvers(self):
         """
@@ -730,92 +803,298 @@ class DcOpf:
         fobj_bat = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus), self.battery_P * self.battery_cost)
 
         # LP variables for the controlled generators
-        P = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus), self.controlled_generators_P)
+        P = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]),
+                     self.controlled_generators_P[self.gen_x_idx])
 
         # LP variables for the batteries
-        P += Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus), self.battery_P)
+        P += Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]),
+                      self.battery_P[self.bat_x_idx])
 
-        # Loads for all the circuits
-        P -= self.numerical_circuit.C_load_bus.T * (self.numerical_circuit.load_power.real / Sbase *
-                                                    self.numerical_circuit.load_enabled)
+        if self.allow_load_shedding:
+            P += Cproduct(csc_matrix(self.numerical_circuit.C_load_bus), self.load_shedding)
 
-        # static generators for all the circuits
-        P += self.numerical_circuit.C_sta_gen_bus.T * (self.numerical_circuit.static_gen_power.real / Sbase *
-                                                       self.numerical_circuit.static_gen_enabled)
+        if self.allow_generation_shedding:
+            P += Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus), self.generation_shedding)
 
-        # controlled generators for all the circuits (enabled and not dispatchable)
-        P += self.numerical_circuit.C_ctrl_gen_bus.T * (self.numerical_circuit.controlled_gen_power / Sbase *
-                                                        self.numerical_circuit.controlled_gen_enabled *
-                                                        np.logical_not(self.numerical_circuit.controlled_gen_dispatchable))
-
+        # angles and branch susceptances
         theta_f = Cproduct(csc_matrix(self.numerical_circuit.C_branch_bus_f.T), self.theta)
         theta_t = Cproduct(csc_matrix(self.numerical_circuit.C_branch_bus_t.T), self.theta)
-
         Btotal = self.numerical_circuit.get_B()
         B_br = np.ravel(Btotal[self.numerical_circuit.F, self.numerical_circuit.T]).T
+        self.branch_flows_ij = B_br * (theta_f - theta_t)
+        self.branch_flows_ji = B_br * (theta_t - theta_f)
 
         for island in self.islands:
 
-            prob = pulp.LpProblem("DC optimal power flow", pulp.LpMinimize)
-
+            # indices shortcuts
             b_idx = island.original_bus_idx
             br_idx = island.original_branch_idx
 
+            # declare an island to store the "open" formulation
+            island_problem = DcOpfIsland(island.nbus, island.nbr, b_idx)
+
+            # set the opf island power
+            island_problem.P = P[b_idx]
+
             # Objective function
             fobj = fobj_gen[b_idx].sum() + fobj_bat[b_idx].sum()
-            prob += fobj
+
+            if self.allow_load_shedding:
+                fobj += self.load_shedding.sum()
+
+            if self.allow_generation_shedding:
+                fobj += self.generation_shedding.sum()
+
+            fobj += self.slack_loading_ij_p[br_idx].sum() + self.slack_loading_ij_n[br_idx].sum()
+            fobj += self.slack_loading_ji_p[br_idx].sum() + self.slack_loading_ji_n[br_idx].sum()
+
+            island_problem.problem += fobj
 
             # susceptance matrix
             B = island.Ybus.imag
 
-            # declare the array of calculated power at all the nodes
-            calculated_power = np.zeros(island.nbus, dtype=object)
-
             # calculated power at the non-slack nodes
-            calculated_power[island.pqpv] = Cproduct(B[island.pqpv, :][:, island.pqpv].T, self.theta[island.pqpv])
+            island_problem.calculated_power[island.pqpv] = Cproduct(B[island.pqpv, :][:, island.pqpv].T,
+                                                                    self.theta[island.pqpv])
 
             # calculated power at the slack nodes
-            calculated_power[island.ref] = Cproduct(B[island.ref, :][:, island.pqpv].T, self.theta[island.pqpv])
+            island_problem.calculated_power[island.ref] = Cproduct(B[:, island.ref], self.theta)
 
             # rating restrictions -> Bij * (theta_i - theta_j), for the island branches
-            rating_restriction_ft = B_br[br_idx] * (theta_f[br_idx] - theta_t[br_idx])
-            rating_restriction_tf = B_br[br_idx] * (theta_t[br_idx] - theta_f[br_idx])
+            branch_flow_ft = self.branch_flows_ij[br_idx]
+            branch_flow_tf = self.branch_flows_ji[br_idx]
 
-            # modify the restrictions is there is load shedding
-            if self.allow_load_shedding:
-                rating_restriction_ft += self.slack_loading_ij_p[br_idx] - self.slack_loading_ij_n[br_idx]
-                rating_restriction_tf += self.slack_loading_ji_p[br_idx] - self.slack_loading_ji_n[br_idx]
+            # modify the flow restrictions to allow overloading but penalizing it
+            branch_flow_ft += self.slack_loading_ij_p[br_idx] - self.slack_loading_ij_n[br_idx]
+            branch_flow_tf += self.slack_loading_ji_p[br_idx] - self.slack_loading_ji_n[br_idx]
 
             # add the rating restrictions to the problem
             for i in range(island.nbr):
+                name1 = 'ct_br_flow_ji_' + str(i)
+                name2 = 'ct_br_flow_ij_' + str(i)
+                island_problem.problem.addConstraint(branch_flow_ft[i] <= island.branch_rates[i] / Sbase, name2)
+                island_problem.problem.addConstraint(branch_flow_tf[i] <= island.branch_rates[i] / Sbase, name1)
 
-                prob.addConstraint(rating_restriction_ft[i] <= island.branch_rates[i] / Sbase)
-                prob.addConstraint(rating_restriction_tf[i] <= island.branch_rates[i] / Sbase)
+            # set the slack angles to zero
+            for i in island.ref:
+                island_problem.problem.addConstraint(self.theta[i] == 0)
 
-            prob.solve()
-            print("Status:", pulp.LpStatus[prob.status])
+            # store the problem to extend it later
+            self.opf_islands.append(island_problem)
 
-            # The optimised objective function value is printed to the screen
-            print("Cost =", pulp.value(prob.objective), '€')
-            pass
-
-    def solve(self):
+    def set_state(self, load_power, static_gen_power, controlled_gen_power,
+                  force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
         """
-        Solve all islands
-        :return:
+
+        :param load_power: vector of load power (same size as the number of loads)
+        :param static_gen_power: vector of static generators load (same size as the static gen objects)
+        :param controlled_gen_power: vector of controlled generators power (same size as the ctrl. generatos)
+        :param force_batteries_to_charge: shall we force batteries to charge?
+        :param bat_idx: battery indices that shall be forced to charge
         """
-        pass
+        # Sbase shortcut
+        Sbase = self.numerical_circuit.Sbase
+
+        # Loads for all the circuits
+        P = - self.numerical_circuit.C_load_bus.T * (load_power.real / Sbase * self.numerical_circuit.load_enabled)
+
+        # static generators for all the circuits
+        P += self.numerical_circuit.C_sta_gen_bus.T * (static_gen_power.real / Sbase *
+                                                       self.numerical_circuit.static_gen_enabled)
+
+        # controlled generators for all the circuits (enabled and not dispatcheable)
+        P += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * \
+             (controlled_gen_power[self.gen_s_idx] / Sbase)
+
+        if force_batteries_to_charge:
+            battery_charge_restrictions = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[bat_idx, :]),
+                                                   self.battery_P[bat_idx])
+
+            battery_charge_amount = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[bat_idx, :]),
+                                             self.battery_lower_bound * battery_loading_pu)
+
+        # set the power at each island
+        self.opf_islands_to_solve = list()
+        for k, island_problem in enumerate(self.opf_islands):
+
+            # perform a copy of the island
+            island_copy = island_problem.copy()
+
+            # modify the power injections at the island nodes
+            island_copy.P += P[island_copy.b_idx]
+
+            # set all the power balance restrictions -> (Calculated power == injections power)
+            for i in range(island_copy.nbus):
+                name = 'ct_node_mismatch_' + str(i)
+                island_copy.problem.addConstraint(island_copy.calculated_power[i] == island_copy.P[i], name)
+
+            if force_batteries_to_charge:
+
+                # re-pack the restrictions for the island
+                battery_charge_restrictions_is = battery_charge_restrictions[island_copy.b_idx]
+
+                # Assign the restrictions
+                for i in range(island_copy.nbus):
+                    if battery_charge_restrictions_is[i] != 0:
+                        island_copy.problem.addConstraint(battery_charge_restrictions_is[i] <= battery_charge_amount[i])
+
+            # store the island copy
+            self.opf_islands_to_solve.append(island_copy)
+
+    def set_default_state(self):
+        """
+        Set the default loading state
+        """
+        self.set_state(load_power=self.numerical_circuit.load_power,
+                       static_gen_power=self.numerical_circuit.static_gen_power,
+                       controlled_gen_power=self.numerical_circuit.controlled_gen_power)
+
+    def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
+        """
+        Set the problem state at at time index
+        :param t: time index
+        """
+        self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
+                       static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
+                       controlled_gen_power=self.numerical_circuit.controlled_gen_power_profile[t, :],
+                       force_batteries_to_charge=force_batteries_to_charge,
+                       bat_idx=bat_idx,
+                       battery_loading_pu=battery_loading_pu)
+
+    def solve(self, verbose=False):
+        """
+        Solve all islands (the results remain in the variables...)
+        """
+        for island_problem in self.opf_islands_to_solve:
+
+            # solve island
+            island_problem.problem.solve()
+
+            if verbose:
+                print("Status:", pulp.LpStatus[island_problem.problem.status])
+
+                # The optimised objective function value is printed to the screen
+                print("Cost =", pulp.value(island_problem.problem.objective), '€')
+
+        if verbose:
+            if self.allow_load_shedding:
+                val = pulp.value(self.load_shedding.sum())
+                print('Load shed:', val)
+
+            if self.allow_generation_shedding:
+                val = pulp.value(self.generation_shedding.sum())
+                print('Generation shed:', val)
+
+            val = pulp.value(self.slack_loading_ij_p.sum())
+            val += pulp.value(self.slack_loading_ji_p.sum())
+            val += pulp.value(self.slack_loading_ij_n.sum())
+            val += pulp.value(self.slack_loading_ji_n.sum())
+            print('Overloading:', val)
+
+            print('Batteries power:', self.get_batteries_power().sum())
+
+    def save(self):
+        """
+        Save all the problem instances
+        """
+        for i, island_problem in enumerate(self.opf_islands_to_solve):
+            island_problem.problem.writeLP('dc_opf_island_' + str(i) + '.lp')
+
+    def get_voltage(self):
+        """
+        Get the complex voltage composition from the LP angles solution
+        """
+        Va = np.array([elm.value() for elm in self.theta])
+        Vm = np.abs(self.numerical_circuit.V0)
+        return Vm * np.exp(1j * Va)
+
+    def get_branch_flows(self):
+        """
+        Return the DC branch flows
+        :return: numpy array
+        """
+        return np.array([pulp.value(eq) for eq in self.branch_flows_ij])
+
+    def get_batteries_power(self):
+        """
+        Get array of battery dispatched power
+        """
+        return np.array([elm.value() for elm in self.battery_P])
+
+    def get_controlled_generation(self):
+        """
+        Get array of controlled generators power
+        """
+        return np.array([elm.value() for elm in self.controlled_generators_P])
+
+    def get_gen_results_df(self):
+        """
+        Get the generation values DataFrame
+        """
+        # Sbase shortcut
+        Sbase = self.numerical_circuit.Sbase
+
+        data = [elm.value() * Sbase for elm in np.r_[self.controlled_generators_P, self.battery_P]]
+        index = [elm.name for elm in (self.controlled_generators + self.batteries)]
+
+        df = pd.DataFrame(data=data, index=index, columns=['Power (MW)'])
+
+        return df
+
+    def get_voltage_results_df(self):
+        """
+        Get the voltage angles DataFrame
+        """
+        data = [elm.value() for elm in self.theta]
+
+        df = pd.DataFrame(data=data, index=self.numerical_circuit.bus_names, columns=['Angles (deg)'])
+
+        return df
+
+    def get_branch_flows_df(self):
+        """
+        Get hte DC branch flows DataFrame
+        """
+        # Sbase shortcut
+        Sbase = self.numerical_circuit.Sbase
+
+        data = self.get_branch_flows() * Sbase
+
+        df = pd.DataFrame(data=data, index=self.numerical_circuit.branch_names, columns=['Branch flow (MW)'])
+
+        return df
 
 
 if __name__ == '__main__':
 
     main_circuit = MultiCircuit()
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\lynn5buspv.xlsx'
     fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    # fname = 'C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Report\\Test3 - Batteries\\Evora test 3 with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
 
     print('Reading...')
     main_circuit.load_file(fname)
 
-    problem = DcOpf(main_circuit)
+    problem = DcOpf(main_circuit, allow_load_shedding=True, allow_generation_shedding=True)
 
+    # run default state
     problem.build_solvers()
+    problem.set_default_state()
+    problem.solve(verbose=True)
+    problem.save()
+
+    res_df = problem.get_gen_results_df()
+    print(res_df)
+
+    res_df = problem.get_voltage_results_df()
+    print(res_df)
+
+    res_df = problem.get_branch_flows_df()
+    print(res_df)
+
+    # run time series
+    for t in range(len(main_circuit.time_profile)):
+        print(t)
+        problem.set_state_at(t, force_batteries_to_charge=True, bat_idx=[], battery_loading_pu=0.01)
+        problem.solve(verbose=True)

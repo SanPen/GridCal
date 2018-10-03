@@ -1828,10 +1828,9 @@ class ControlledGenerator(ReliabilityDevice):
 
         self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
 
-        self.LPVar_P_prof = [pulp.LpVariable(self.lp_name + '_P_' + str(t),
-                                             self.Pmin / self.Sbase,
-                                             self.Pmax / self.Sbase)
-                             for t in range(self.Pprof.shape[0])]
+        # self.LPVar_P_prof = [pulp.LpVariable(self.lp_name + '_P_' + str(t),
+        #                                      self.Pmin / self.Sbase,
+        #                                      self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
 
     def get_lp_var_profile(self, index):
         """

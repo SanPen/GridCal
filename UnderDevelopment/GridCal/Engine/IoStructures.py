@@ -635,7 +635,13 @@ class CalculationInputs:
         A = vstack_s([hstack_s([A11, A12]),
                       hstack_s([A21, A22])], format="csc")
 
+        # form the slack system matrix
+        A11s = -self.Yseries.imag[self.ref, :][:, self.pqpv]
+        A12s = self.Ybus.real[self.ref, :][:, self.pq]
+        A_slack = hstack_s([A11s, A12s], format="csr")
+
         self.Asys = factorized(A)
+        return A, A_slack
 
     def get_structure(self, structure_type):
         """

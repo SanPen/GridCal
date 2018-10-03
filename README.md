@@ -79,13 +79,13 @@ The GUI should pop up.
 
 You can use the calculation engine directly or from other applications:
 
-`from GridCal.grid.CalculationEngine import *`
+`from GridCal.Engine.All import *`
 
-Then you can create the grid objects and access the simulation objects as demonstrated in the test scripts in the test folder.
+There are tutorials available at the folder:
 
-`GridCal/UnderDevelopment/GridCal/tests/`
+`GridCal/Tutorials/`
 
-I use the engine to get the admittance matrix, power injections, etc. and then do research without having to worry about getting those vectors and matrices right since they are well calculated in the engine.
+The circuit internal calculation matrices divided by islands are accessible. You can use those matrices and vector to do research.
 
 
 Example:

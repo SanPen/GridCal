@@ -15,23 +15,27 @@ from GridCal.Engine.CalculationEngine import *
 
 class DcOpf:
 
-    def __init__(self, circuit: Circuit):
+    def __init__(self, multi_circuit: MultiCircuit):
         """
         OPF simple dispatch problem
-        :param circuit: GridCal Circuit instance (remember this must be a connected island)
+        :param multi_circuit: GridCal Circuit instance (remember this must be a connected island)
         """
 
-        self.circuit = circuit
+        self.multi_circuit = multi_circuit
 
-        self.Sbase = circuit.Sbase
-        self.B = circuit.power_flow_input.Ybus.imag.tocsr()
+        # circuit compilation
+        self.numerical_circuit = self.multi_circuit.compile()
+        self.islands = self.numerical_circuit.compute()
+
+        self.Sbase = multi_circuit.Sbase
+        self.B = csc_matrix(self.numerical_circuit.get_B())
         self.nbus = self.B.shape[0]
 
         # node sets
-        self.pqpv = circuit.power_flow_input.pqpv
-        self.pv = circuit.power_flow_input.pv
-        self.vd = circuit.power_flow_input.ref
-        self.pq = circuit.power_flow_input.pq
+        self.pqpv = self.islands[0].pqpv
+        self.pv = self.islands[0].pv
+        self.vd = self.islands[0].ref
+        self.pq = self.islands[0].pq
 
         # declare the voltage angles
         self.theta = [None] * self.nbus
@@ -75,7 +79,7 @@ class DcOpf:
             fobj += self.theta[j] * 0.0
 
         # Add the generators cost
-        for bus in self.circuit.buses:
+        for bus in self.multi_circuit.buses:
 
             # check that there are at least one generator at the slack node
             if len(bus.controlled_generators) == 0 and bus.type == BusMode.REF:
@@ -85,7 +89,7 @@ class DcOpf:
             for gen in bus.controlled_generators:
 
                 # create the generation variable
-                gen.make_lp_vars("Gen" + gen.name + '_' + bus.name)
+                gen.initialize_lp_vars()
 
                 # add the variable to the objective function
                 fobj += gen.LPVar_P * gen.Cost
@@ -111,11 +115,11 @@ class DcOpf:
                     s += self.B.data[ii] * self.theta[j]
 
             # add the generation LP vars
-            for gen in self.circuit.buses[i].controlled_generators:
+            for gen in self.multi_circuit.buses[i].controlled_generators:
                 d += gen.LPVar_P
 
             # add the nodal demand
-            for load in self.circuit.buses[i].loads:
+            for load in self.multi_circuit.buses[i].loads:
                 d -= load.S.real / self.Sbase
 
             prob.add(s == d, 'ct_node_mismatch_' + str(i))
@@ -139,7 +143,7 @@ class DcOpf:
                 val += self.B.data[ii] * self.theta[j]
 
             # Sum the slack generators
-            for gen in self.circuit.buses[i].controlled_generators:
+            for gen in self.multi_circuit.buses[i].controlled_generators:
                 g += gen.LPVar_P
 
             # the sum of the slack node generators must be equal to the slack node power
@@ -148,9 +152,10 @@ class DcOpf:
         ################################################################################################################
         # Set the branch limits
         ################################################################################################################
-        for k, branch in enumerate(self.circuit.branches):
-            i = self.circuit.buses_dict[branch.bus_from]
-            j = self.circuit.buses_dict[branch.bus_to]
+        buses_dict = {bus: i for i, bus in enumerate(self.multi_circuit.buses)}
+        for k, branch in enumerate(self.multi_circuit.branches):
+            i = buses_dict[branch.bus_from]
+            j = buses_dict[branch.bus_to]
             # branch flow
             Fij = self.B[i, j] * (self.theta[i] - self.theta[j])
             Fji = self.B[i, j] * (self.theta[j] - self.theta[i])
@@ -187,9 +192,10 @@ class DcOpf:
 
         # Set the branch limits
         print('\nBranch flows (in MW)')
-        for k, branch in enumerate(self.circuit.branches):
-            i = self.circuit.buses_dict[branch.bus_from]
-            j = self.circuit.buses_dict[branch.bus_to]
+        buses_dict = {bus: i for i, bus in enumerate(self.multi_circuit.buses)}
+        for k, branch in enumerate(self.multi_circuit.branches):
+            i = buses_dict[branch.bus_from]
+            j = buses_dict[branch.bus_to]
             if self.theta[i].value() is not None and self.theta[j].value() is not None:
                 F = self.B[i, j] * (self.theta[i].value() - self.theta[j].value()) * self.Sbase
             else:
@@ -205,11 +211,7 @@ if __name__ == '__main__':
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('Illinois200Bus.xlsx')
 
-    grid.compile()
-
-    for circuit in grid.circuits:
-
-        # declare and solve problem
-        problem = DcOpf(circuit)
-        problem.solve()
-        problem.print()
+    # declare and solve problem
+    problem = DcOpf(grid)
+    problem.solve()
+    problem.print()

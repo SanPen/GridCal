@@ -192,14 +192,14 @@ if __name__ == '__main__':
     flow_limits = np.array([70, 18, 20, 10, 90, 60, 20])
 
     # Node demands in MW
-    PD = np.array([0.  , 40 , 25, 40, 50])
+    PD = np.array([0.  , 40 , 25, 0, 50])
 
     pq = np.array([1, 2, 4])
     vd = np.array([0])
     pv = np.array([3])
 
     # Generator costs in €/MW (vector for all the nodes...)
-    costs = np.array([250, 0, 0, 200, 0])
+    costs = np.array([0, 0, 0, 0, 0])
 
     # Generator limits in MW (vectors for all the nodes...)
     lower_lim = np.array([0, 0, 0, 0, 0, 0])
