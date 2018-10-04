@@ -1,5 +1,5 @@
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType
-from GridCal.Engine.PowerFlowDriver import PowerFlow
+from GridCal.Engine.PowerFlowDriver import PowerFlowMP
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
 from GridCal.Engine.DeviceTypes import *
@@ -7,15 +7,15 @@ from GridCal.Engine.DeviceTypes import *
 test_name = "test_gridcal_regulator"
 Sbase = 100 # MVA
 
-def complexe(z, XR):
+def get_complex(z, xr):
     """
-    Returns the complex impedance from z (in %) and the X/R ratio.
+    Returns the complex impedance from z and the X/R ratio.
     """
     z = float(abs(z))
-    XR = float(abs(XR))
-    real = (z**2/(1+XR**2))**0.5
+    xr = float(abs(xr))
+    real = (z**2/(1+xr**2))**0.5
     try:
-        imag = (z**2/(1+1/XR**2))**0.5
+        imag = (z**2/(1+1/xr**2))**0.5
     except ZeroDivisionError:
         imag = 0.0
     return complex(real, imag)
@@ -66,7 +66,7 @@ def test_gridcal_regulator():
                          hv_nominal_voltage=100, # kV
                          lv_nominal_voltage=10, # kV
                          nominal_power=s,
-                         copper_losses=complexe(z, xr).real*s*1000/Sbase,
+                         copper_losses=get_complex(z, xr).real*s*1000/Sbase,
                          iron_losses=125,
                          no_load_current=0.5,
                          short_circuit_voltage=z)
@@ -79,7 +79,7 @@ def test_gridcal_regulator():
                          hv_nominal_voltage=10, # kV
                          lv_nominal_voltage=0.6, # kV
                          nominal_power=s,
-                         copper_losses=complexe(z, xr).real*s*1000/Sbase,
+                         copper_losses=get_complex(z, xr).real*s*1000/Sbase,
                          iron_losses=6.25,
                          no_load_current=0.5,
                          short_circuit_voltage=z)
@@ -119,79 +119,18 @@ def test_gridcal_regulator():
         print(f" - bus[{i}]: {b}")
     print()
 
-    while True:
+    grid.compile()
+    options = PowerFlowOptions(SolverType.LM,
+                               verbose=True,
+                               robust=True,
+                               initialize_with_existing_solution=True,
+                               multi_core=True,
+                               control_q=True,
+                               tolerance=1e-6,
+                               max_iter=99)
 
-        grid.compile()
-        options = PowerFlowOptions(SolverType.LM,
-                                   verbose=True,
-                                   robust=True,
-                                   initialize_with_existing_solution=True,
-                                   multi_core=True,
-                                   control_q=True,
-                                   tolerance=1e-6,
-                                   max_iter=99)
-
-        power_flow = PowerFlow(grid, options)
-        power_flow.run()
-
-        stable = True
-        for i, branch in enumerate(grid.branches):
-            if branch.bus_to_regulated:
-                print(f"{branch} has a voltage regulator, checking if it has to act...")
-                for j, bus in enumerate(grid.buses):
-                    if bus.name == branch.bus_to.name:
-                        v = abs(power_flow.results.voltage[j])
-                        print(f"Bus {bus}: U={v}pu, U_set={branch.vset}")
-
-                        if branch.tap_changer.tap > 0:
-                            if branch.vset > v + branch.tap_changer.inc_reg_up/2:
-                                if branch.tap_changer.tap == branch.tap_changer.min_tap:
-                                    print(f"{branch}: Already at lowest tap ({branch.tap_changer.tap}), skipping")
-                                    break
-                                grid.branches[i].tap_down()
-                                print(f"{branch}: Lowering from tap {branch.tap_changer.tap}")
-                                stable = False
-                            elif branch.vset < v - branch.tap_changer.inc_reg_up/2:
-                                if branch.tap_changer.tap == branch.tap_changer.max_tap:
-                                    print(f"{branch}: Already at highest tap ({branch.tap_changer.tap}), skipping")
-                                    break
-                                grid.branches[i].tap_up()
-                                print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
-                                stable = False
-
-                        elif branch.tap_changer.tap < 0:
-                            if branch.vset > v + branch.tap_changer.inc_reg_down/2:
-                                if branch.tap_changer.tap == branch.tap_changer.min_tap:
-                                    print(f"{branch}: Already at lowest tap ({branch.tap_changer.tap}), skipping")
-                                    break
-                                grid.branches[i].tap_down()
-                                print(f"{branch}: Lowering from tap {branch.tap_changer.tap}")
-                                stable = False
-                            elif branch.vset < v - branch.tap_changer.inc_reg_down/2:
-                                if branch.tap_changer.tap == branch.tap_changer.max_tap:
-                                    print(f"{branch}: Already at highest tap ({branch.tap_changer.tap}), skipping")
-                                    break
-                                grid.branches[i].tap_up()
-                                print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
-                                stable = False
-                        else:
-                            if branch.vset > v + branch.tap_changer.inc_reg_up/2:
-                                if branch.tap_changer.tap == branch.tap_changer.min_tap:
-                                    print(f"{branch}: Already at lowest tap ({branch.tap_changer.tap}), skipping")
-                                    break
-                                grid.branches[i].tap_down()
-                                print(f"{branch}: Lowering from tap {branch.tap_changer.tap}")
-                                stable = False
-                            elif branch.vset < v - branch.tap_changer.inc_reg_down/2:
-                                if branch.tap_changer.tap == branch.tap_changer.max_tap:
-                                    print(f"{branch}: Already at highest tap ({branch.tap_changer.tap}), skipping")
-                                    break
-                                grid.branches[i].tap_up()
-                                print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
-                                stable = False
-                        break
-        if stable:
-            break
+    power_flow = PowerFlowMP(grid, options)
+    power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
     solution = [100.0, 105.2, 130.0, 130.1] # Expected solution from GridCal
