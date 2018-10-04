@@ -151,7 +151,7 @@ class OptimalPowerFlow(QRunnable):
                                                    controlled_generation_power=gn * self.grid.Sbase,
                                                    Sbranch=Sbr * self.grid.Sbase,
                                                    overloads=problem.get_overloads(),
-                                                   loading=Sbr * self.grid.Sbase / (problem.numerical_circuit.br_rates + 1e-20) * 100.0,
+                                                   loading=Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0,
                                                    converged=bool(problem.converged))
 
         return self.results

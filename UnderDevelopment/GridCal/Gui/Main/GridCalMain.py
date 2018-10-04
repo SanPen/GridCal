@@ -45,6 +45,7 @@ import gc
 import os.path
 import platform
 import sys
+import datetime
 from collections import OrderedDict
 from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap, Colormap
@@ -804,7 +805,7 @@ class MainGUI(QMainWindow):
         Args:
             msg_: Test message
         """
-        dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
+        dte = datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
     # def compile(self, use_opf_vals=False, dispatch_storage=False):
