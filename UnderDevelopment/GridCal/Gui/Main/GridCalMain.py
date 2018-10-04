@@ -256,7 +256,7 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
         self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
-        self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
+        # self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
@@ -2350,22 +2350,22 @@ class MainGUI(QMainWindow):
             self.LOCK()
 
             self.ui.progress_label.setText('Compiling the grid...')
-            QtGui.QGuiApplication.processEvents()
+            # QtGui.QGuiApplication.processEvents()
             # self.compile()  # compiles inside
 
             # get the power flow options from the GUI
             load_shedding = self.ui.load_shedding_checkBox.isChecked()
             realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
-            faster_less_accurate = self.ui.faster_and_less_accurate_CheckBox.isChecked()
+            generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
             solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
 
             options = OptimalPowerFlowOptions(load_shedding=load_shedding,
+                                              generation_shedding=generation_shedding,
                                               solver=solver,
-                                              realistic_results=realistic_results,
-                                              faster_less_accurate=faster_less_accurate)
+                                              realistic_results=realistic_results)
 
             self.ui.progress_label.setText('Running optimal power flow...')
-            QtGui.QGuiApplication.processEvents()
+            # QtGui.QGuiApplication.processEvents()
             # set power flow object instance
             self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
 
@@ -2387,7 +2387,7 @@ class MainGUI(QMainWindow):
         """
         if self.optimal_power_flow is not None:
 
-            if self.optimal_power_flow.all_solved:
+            if self.optimal_power_flow.results.converged:
 
                 self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
                                        loadings=self.optimal_power_flow.results.loading,
@@ -2428,12 +2428,13 @@ class MainGUI(QMainWindow):
                 # get the power flow options from the GUI
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
                 realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
-                faster_less_accurate = self.ui.faster_and_less_accurate_CheckBox.isChecked()
+                generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+
                 options = OptimalPowerFlowOptions(load_shedding=load_shedding,
+                                                  generation_shedding=generation_shedding,
                                                   solver=solver,
-                                                  realistic_results=realistic_results,
-                                                  faster_less_accurate=faster_less_accurate)
+                                                  realistic_results=realistic_results)
 
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1
@@ -2746,6 +2747,11 @@ class MainGUI(QMainWindow):
         """
         lst = list()
         self.available_results_dict = dict()
+
+        # clear results lists
+        self.ui.result_type_listView.setModel(None)
+        self.ui.result_element_selection_listView.setModel(None)
+
         if self.power_flow is not None:
             lst.append("Power Flow")
             self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
@@ -2852,7 +2858,7 @@ class MainGUI(QMainWindow):
             elif 'Branch' in study_type:
                 names = self.circuit.branch_names
             elif 'Load' in study_type:
-                names = self.circuit.bus_names
+                names = self.circuit.get_load_names()
             elif 'Controlled' in study_type:
                 names = self.circuit.get_controlled_generator_names()
             elif 'Batter' in study_type:

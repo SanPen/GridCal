@@ -567,6 +567,81 @@ class PowerFlowMP:
 
         return Vnew, Qnew, types_new, any_control_issue
 
+    def adjust_tap_changers(self, voltage, buses, branches):
+        """
+        Adjust he transformer taps in the grid
+        :param voltage: voltage vector solution
+        :param buses: list of bus objects
+        :param branches: list of branch objects
+        :return: stable?
+        """
+        stable = True
+        for i, branch in enumerate(branches):
+
+            if branch.bus_to_regulated:
+                print(f"{branch} has a voltage regulator, checking if it has to act...")
+
+                for j, bus in enumerate(buses):
+
+                    if bus.name == branch.bus_to.name:
+                        v = abs(voltage[j])
+                        print(f"Bus {bus}: U={v}pu, U_set={branch.vset}")
+
+                        if branch.tap_changer.tap > 0:
+                            if branch.vset > v + branch.tap_changer.inc_reg_up/2:
+                                if branch.tap_changer.tap == branch.tap_changer.min_tap:
+                                    print(f"{branch}: Already at lowest tap ({branch.tap_changer.tap}), skipping")
+                                    break
+                                branches[i].tap_down()
+                                print(f"{branch}: Lowering from tap {branch.tap_changer.tap}")
+                                stable = False
+
+                        elif branch.vset < v - branch.tap_changer.inc_reg_up/2:
+
+                            if branch.tap_changer.tap == branch.tap_changer.max_tap:
+                                print(f"{branch}: Already at highest tap ({branch.tap_changer.tap}), skipping")
+                                break
+                            branches[i].tap_up()
+                            print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
+                            stable = False
+
+                        elif branch.tap_changer.tap < 0:
+                            if branch.vset > v + branch.tap_changer.inc_reg_down/2:
+                                if branch.tap_changer.tap == branch.tap_changer.min_tap:
+                                    print(f"{branch}: Already at lowest tap ({branch.tap_changer.tap}), skipping")
+                                    break
+                                branches[i].tap_down()
+                                print(f"{branch}: Lowering from tap {branch.tap_changer.tap}")
+                                stable = False
+
+                        elif branch.vset < v - branch.tap_changer.inc_reg_down/2:
+                            if branch.tap_changer.tap == branch.tap_changer.max_tap:
+                                print(f"{branch}: Already at highest tap ({branch.tap_changer.tap}), skipping")
+                                break
+                            branches[i].tap_up()
+                            print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
+                            stable = False
+
+                        else:
+                            if branch.vset > v + branch.tap_changer.inc_reg_up/2:
+                                if branch.tap_changer.tap == branch.tap_changer.min_tap:
+                                    print(f"{branch}: Already at lowest tap ({branch.tap_changer.tap}), skipping")
+                                    break
+                                branches[i].tap_down()
+                                print(f"{branch}: Lowering from tap {branch.tap_changer.tap}")
+                                stable = False
+
+                            elif branch.vset < v - branch.tap_changer.inc_reg_down / 2:
+                                if branch.tap_changer.tap == branch.tap_changer.max_tap:
+                                    print(f"{branch}: Already at highest tap ({branch.tap_changer.tap}), skipping")
+                                    break
+                                branches[i].tap_up()
+                                print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
+                                stable = False
+                        break
+
+        return stable
+
     def run(self, store_in_island=False):
         """
         Pack run_pf for the QThread

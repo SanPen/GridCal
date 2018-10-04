@@ -892,6 +892,8 @@ class AcOpf:
         self.branch_flows_ij = np.empty(nbr, dtype=object)
         self.branch_flows_ji = np.empty(nbr, dtype=object)
 
+        self.converged = True
+
     def build_solvers(self):
         """
         Builds the solvers for each island
@@ -916,10 +918,17 @@ class AcOpf:
                       self.battery_P[self.bat_x_idx])
 
         if self.allow_load_shedding:
-            P += Cproduct(csc_matrix(self.numerical_circuit.C_load_bus), self.load_shedding)
+            load_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_load_bus), self.load_shedding)
+            P += load_shedding_per_bus
+        else:
+            load_shedding_per_bus = np.zeros(self.numerical_circuit.nbus)
 
         if self.allow_generation_shedding:
-            P += Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus), self.generation_shedding)
+            generation_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus),
+                                                   self.generation_shedding)
+            P += generation_shedding_per_bus
+        else:
+            generation_shedding_per_bus = np.zeros(self.numerical_circuit.nbus)
 
         # angles and branch susceptances
         theta_f = Cproduct(csc_matrix(self.numerical_circuit.C_branch_bus_f.T), self.dVa)
@@ -945,10 +954,10 @@ class AcOpf:
             fobj = fobj_gen[b_idx].sum() + fobj_bat[b_idx].sum()
 
             if self.allow_load_shedding:
-                fobj += self.load_shedding.sum()
+                fobj += load_shedding_per_bus[b_idx].sum()
 
             if self.allow_generation_shedding:
-                fobj += self.generation_shedding.sum()
+                fobj += generation_shedding_per_bus[b_idx].sum()
 
             fobj += self.slack_loading_ij_p[br_idx].sum() + self.slack_loading_ij_n[br_idx].sum()
             fobj += self.slack_loading_ji_p[br_idx].sum() + self.slack_loading_ji_n[br_idx].sum()
@@ -1110,10 +1119,13 @@ class AcOpf:
         """
         Solve all islands (the results remain in the variables...)
         """
+        self.converged = True
         for island_problem in self.opf_islands_to_solve:
 
             # solve island
             island_problem.problem.solve()
+
+            self.converged *= island_problem.problem.status
 
             if verbose:
                 print("Status:", pulp.LpStatus[island_problem.problem.status])
@@ -1160,6 +1172,14 @@ class AcOpf:
         """
         return np.array([pulp.value(eq) for eq in self.branch_flows_ij])
 
+    def get_overloads(self):
+        """
+        get the overloads into an array
+        """
+        return np.array([a.value() + b.value() + c.value() + d.value() for a, b, c, d in
+                         zip(self.slack_loading_ij_p, self.slack_loading_ji_p,
+                             self.slack_loading_ij_n, self.slack_loading_ji_n)])
+
     def get_batteries_power(self):
         """
         Get array of battery dispatched power
@@ -1171,6 +1191,18 @@ class AcOpf:
         Get array of controlled generators power
         """
         return np.array([elm.value() for elm in self.controlled_generators_P])
+
+    def get_load_shedding(self):
+        """
+        Load shedding array
+        """
+        return np.array([elm.value() for elm in self.load_shedding])
+
+    def get_generation_shedding(self):
+        """
+        Load shedding array
+        """
+        return np.array([elm.value() for elm in self.generation_shedding])
 
     def get_gen_results_df(self):
         """

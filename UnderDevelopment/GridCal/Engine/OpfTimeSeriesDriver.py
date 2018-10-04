@@ -29,7 +29,7 @@ from GridCal.Engine.Numerical.DC_OPF import DcOpf
 
 class OptimalPowerFlowTimeSeriesResults:
 
-    def __init__(self, n, m, nt, ngen=0, nbat=0, time=None, is_dc=False):
+    def __init__(self, n, m, nt, ngen=0, nbat=0, nload=0, time=None, is_dc=False):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -47,7 +47,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.voltage = zeros((nt, n), dtype=complex)
 
-        self.load_shedding = zeros((nt, n), dtype=float)
+        self.load_shedding = zeros((nt, nload), dtype=float)
 
         self.loading = zeros((nt, m), dtype=float)
 
@@ -59,17 +59,24 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbranch = zeros((nt, m), dtype=complex)
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
+        # self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
+        #                           'Branch loading', 'Branch overloads', 'Load shedding',
+        #                           'Controlled generators power', 'Batteries power']
+
+        self.available_results = ['Bus voltage module', 'Bus voltage angle', 'Branch power',
                                   'Branch loading', 'Branch overloads', 'Load shedding',
-                                  'Controlled generators power', 'Batteries power']
+                                  'Controlled generator shedding',
+                                  'Controlled generator power', 'Battery power']
 
         # self.generators_power = zeros((ng, nt), dtype=complex)
 
         self.controlled_generator_power = np.zeros((nt, ngen), dtype=float)
 
+        self.controlled_generator_shedding = np.zeros((nt, ngen), dtype=float)
+
         self.battery_power = np.zeros((nt, nbat), dtype=float)
 
-        self.is_dc = is_dc
+        self.converged = np.empty(nt, dtype=bool)
 
     def init_object_results(self, ngen, nbat):
         """
@@ -122,16 +129,15 @@ class OptimalPowerFlowTimeSeriesResults:
             labels = names[indices]
             y_label = ''
             title = ''
-            if result_type == 'Bus voltage':
+            if result_type == 'Bus voltage module':
+                y = np.abs(self.voltage[:, indices])
+                y_label = '(p.u.)'
+                title = 'Bus voltage module'
 
-                if self.is_dc:
-                    y = np.angle(self.voltage[:, indices])
-                    y_label = '(rad)'
-                    title = 'Bus voltage angle'
-                else:
-                    y = np.abs(self.voltage[:, indices])
-                    y_label = '(p.u.)'
-                    title = 'Bus voltage'
+            elif result_type == 'Bus voltage angle':
+                y = np.angle(self.voltage[:, indices])
+                y_label = '(Radians)'
+                title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[:, indices].real
@@ -163,15 +169,20 @@ class OptimalPowerFlowTimeSeriesResults:
                 y_label = '(MW)'
                 title = 'Load shedding'
 
-            elif result_type == 'Controlled generators power':
+            elif result_type == 'Controlled generator power':
                 y = self.controlled_generator_power[:, indices]
                 y_label = '(MW)'
-                title = 'Controlled generators power'
+                title = 'Controlled generator power'
 
-            elif result_type == 'Batteries power':
+            elif result_type == 'Controlled generator shedding':
+                y = self.controlled_generator_shedding[:, indices]
+                y_label = '(MW)'
+                title = 'Controlled generator power'
+
+            elif result_type == 'Battery power':
                 y = self.battery_power[:, indices]
                 y_label = '(MW)'
-                title = 'Batteries power'
+                title = 'Battery power'
             else:
                 pass
 
@@ -235,92 +246,62 @@ class OptimalPowerFlowTimeSeries(QThread):
         Run the time series simulation
         @return:
         """
-        # initialize the power flow
-        opf = OptimalPowerFlow(self.grid, self.options)
-
-        # initialize OPF time series LP var profiles
-        self.initialize_lp_vars()
-
-        # initialize the grid time series results
-        # we will append the island results with another function
 
         if self.grid.time_profile is not None:
 
+            # declare the results
+            self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
+                                                             m=len(self.grid.branches),
+                                                             nt=len(self.grid.time_profile),
+                                                             ngen=len(self.grid.get_controlled_generators()),
+                                                             nbat=len(self.grid.get_batteries()),
+                                                             nload=len(self.grid.get_loads()),
+                                                             time=self.grid.time_profile)
+
+            # declare LP problem
             if self.options.solver == SolverType.DC_OPF:
-                base_text = 'Running DC OPF time series'
-                is_dc = True
+                # DC optimal power flow
+                problem = DcOpf(self.grid, verbose=False,
+                                allow_load_shedding=self.options.load_shedding,
+                                allow_generation_shedding=self.options.generation_shedding)
+
+            elif self.options.solver == SolverType.AC_OPF:
+                # AC optimal power flow
+                problem = AcOpf(self.grid, verbose=False,
+                                allow_load_shedding=self.options.load_shedding,
+                                allow_generation_shedding=self.options.generation_shedding)
+
             else:
-                base_text = 'Running AC OPF time series'
-                is_dc = False
+                raise Exception('Not implemented method ' + str(self.options.solver))
 
-            n = len(self.grid.buses)
-            m = len(self.grid.branches)
-            nt = len(self.grid.time_profile)
-            if self.end_ is None:
-                self.end_ = nt
-            self.results = OptimalPowerFlowTimeSeriesResults(n, m, nt, time=self.grid.time_profile, is_dc=is_dc)
+            # Solve
+            problem.build_solvers()
 
-            print('Compiling...', end='')
-            numerical_circuit = self.grid.compile()
-            calculation_inputs = numerical_circuit.compute()
+            t = self.start_
+            while t < self.end_ and not self.__cancel__:
 
-            for calculation_input in calculation_inputs:
+                problem.set_state_at(t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01)
+                problem.solve(verbose=True)
 
-                if len(calculation_input.ref) > 0:
-                    buses = [self.grid.buses[i] for i in calculation_input.original_bus_idx]
-                    branches = [self.grid.branches[i] for i in calculation_input.original_branch_idx]
+                # gather the results
+                # get the branch flows (it is used more than one time)
+                Sbr = problem.get_branch_flows()
 
-                    # declare LP problem
-                    if self.options.solver == SolverType.DC_OPF:
-                        problem = DcOpf(calculation_input, buses, branches, self.options)
+                # gather the results
+                self.results.voltage[t, :] = problem.get_voltage()
+                self.results.load_shedding[t, :] = problem.get_load_shedding()
+                self.results.controlled_generator_shedding[t, :] = problem.get_generation_shedding()
+                self.results.battery_power[t, :] = problem.get_batteries_power()
+                self.results.controlled_generator_power[t, :] = problem.get_controlled_generation()
+                self.results.Sbranch[t, :] = Sbr * self.grid.Sbase
+                self.results.overloads[t, :] = problem.get_overloads()
+                self.results.loading[t, :] = Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0
+                self.results.converged[t] = bool(problem.converged)
 
-                    elif self.options.solver == SolverType.AC_OPF:
-                        problem = AcOpf(calculation_input, buses, branches, self.options)
-
-                    else:
-                        raise Exception('Not implemented method ' + str(self.options.solver))
-                    problem.build(t_idx=None)
-
-                    t = self.start_
-                    while t < self.end_ and not self.__cancel__:
-                        # results
-                        problem_cpy = problem.copy()
-                        problem_cpy.set_loads(t_idx=t)
-                        problem_cpy.solve()
-                        res = problem_cpy.get_results(t_idx=t, realistic=self.options.realistic_results)
-
-                        # res = opf.run_at(t)
-                        self.results.set_at(t, res)
-
-                        progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
-                        self.progress_signal.emit(progress)
-                        self.progress_text.emit(base_text + ' at ' + str(self.grid.time_profile[t]))
-                        t += 1
-                else:
-                    # there are no slack nodes...
-                    pass
-
-            # compile results by object
-            self.progress_text.emit('Collecting generator results...')
-            ngen = len(self.grid.get_controlled_generators())
-            nbat = len(self.grid.get_batteries())
-            self.results.init_object_results(ngen, nbat)
-            gen_idx = 0
-            bat_idx = 0
-            for bus in self.grid.buses:
-                # Generators
-                for elm in bus.controlled_generators:
-                    if elm.active and elm.enabled_dispatch:
-                        for t in range(self.start_, self.end_):
-                            self.results.controlled_generator_power[t, gen_idx] = elm.LPVar_P_prof[t].value()
-                    gen_idx += 1
-
-                # batteries
-                for elm in bus.batteries:
-                    if elm.active and elm.enabled_dispatch:
-                        for t in range(self.start_, self.end_):
-                            self.results.battery_power[t, bat_idx] = elm.LPVar_P_prof[t].value()
-                    bat_idx += 1
+                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
+                self.progress_signal.emit(progress)
+                self.progress_text.emit('Solving OPF at ' + str(self.grid.time_profile[t]))
+                t += 1
 
         else:
             print('There are no profiles')

@@ -1635,8 +1635,9 @@ class MonteCarloResults:
 
 class OptimalPowerFlowResults:
 
-    def __init__(self, Sbus=None, voltage=None, load_shedding=None, Sbranch=None, overloads=None,
-                 loading=None, losses=None, converged=None, is_dc=False):
+    def __init__(self, Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
+                 battery_power=None, controlled_generation_power=None,
+                 Sbranch=None, overloads=None, loading=None, converged=None):
         """
         OPF results constructor
         :param Sbus: bus power injections
@@ -1654,39 +1655,28 @@ class OptimalPowerFlowResults:
 
         self.load_shedding = load_shedding
 
+        self.generation_shedding = generation_shedding
+
         self.Sbranch = Sbranch
 
         self.overloads = overloads
 
         self.loading = loading
 
-        self.losses = losses
+        self.battery_power = battery_power
+
+        self.controlled_generation_power = controlled_generation_power
 
         self.flow_direction = None
 
         self.converged = converged
 
-        self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
+        self.available_results = ['Bus voltage module', 'Bus voltage angle', 'Branch power',
                                   'Branch loading', 'Branch overloads', 'Load shedding',
-                                  'Controlled generators power', 'Batteries power']
+                                  'Controlled generator shedding',
+                                  'Controlled generator power', 'Battery power']
 
         self.plot_bars_limit = 100
-
-        self.controlled_generator_power = list()  # later converted to numpy array
-
-        self.battery_power = list()  # later converted to numpy array
-
-        self.is_dc = is_dc
-
-    def init_object_results(self, ngen, nbat):
-        """
-        declare the generator results. This is done separately since these results are known at the end of the simulation
-        :param ngen: number of generators
-        :param nbat: number of batteries
-        """
-        self.controlled_generator_power = np.zeros(ngen, dtype=float)
-
-        self.battery_power = np.zeros(nbat, dtype=float)
 
     def copy(self):
         """
@@ -1699,7 +1689,9 @@ class OptimalPowerFlowResults:
                                        Sbranch=self.Sbranch,
                                        overloads=self.overloads,
                                        loading=self.loading,
-                                       losses=self.losses,
+                                       generation_shedding=self.generation_shedding,
+                                       battery_power=self.battery_power,
+                                       controlled_generation_power=self.controlled_generation_power,
                                        converged=self.converged)
 
     def initialize(self, n, m):
@@ -1727,38 +1719,14 @@ class OptimalPowerFlowResults:
 
         self.plot_bars_limit = 100
 
-    def apply_from_island(self, results, b_idx, br_idx):
-        """
-        Apply results from another island circuit to the circuit results represented here
-        @param results: PowerFlowResults
-        @param b_idx: bus original indices
-        @param br_idx: branch original indices
-        @return:
-        """
-        self.Sbus[b_idx] = results.Sbus
-
-        self.voltage[b_idx] = results.voltage
-
-        self.load_shedding[b_idx] = results.load_shedding
-
-        self.Sbranch[br_idx] = results.Sbranch
-
-        self.loading[br_idx] = results.loading
-
-        self.overloads[br_idx] = results.overloads
-
-        self.losses[br_idx] = results.losses
-
-        self.converged.append(results.converged)
-
     def plot(self, result_type, ax=None, indices=None, names=None):
         """
         Plot the results
-        :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
-        :return:
+        :param result_type: type of results (string)
+        :param ax: matplotlib axis object
+        :param indices: element indices
+        :param names: element names
+        :return: DataFrame of the results (or None if the result was not understood)
         """
 
         if ax is None:
@@ -1772,15 +1740,15 @@ class OptimalPowerFlowResults:
             labels = names[indices]
             y_label = ''
             title = ''
-            if result_type == 'Bus voltage':
-                if self.is_dc:
-                    y = np.angle(self.voltage[indices])
-                    y_label = '(rad)'
-                    title = 'Bus voltage angle'
-                else:
-                    y = np.abs(self.voltage[indices])
-                    y_label = '(p.u.)'
-                    title = 'Bus voltage'
+            if result_type == 'Bus voltage module':
+                y = np.abs(self.voltage[indices])
+                y_label = '(p.u.)'
+                title = 'Bus voltage module'
+
+            if result_type == 'Bus voltage angle':
+                y = np.angle(self.voltage[indices])
+                y_label = '(Radians)'
+                title = 'Bus voltage angle'
 
             elif result_type == 'Branch power':
                 y = self.Sbranch[indices].real
@@ -1812,15 +1780,20 @@ class OptimalPowerFlowResults:
                 y_label = '(MW)'
                 title = 'Load shedding'
 
-            elif result_type == 'Controlled generators power':
-                y = self.controlled_generator_power[indices]
+            elif result_type == 'Controlled generator shedding':
+                y = self.generation_shedding[indices]
+                y_label = '(MW)'
+                title = 'Controlled generator shedding'
+
+            elif result_type == 'Controlled generator power':
+                y = self.controlled_generation_power[indices]
                 y_label = '(MW)'
                 title = 'Controlled generators power'
 
-            elif result_type == 'Batteries power':
+            elif result_type == 'Battery power':
                 y = self.battery_power[indices]
                 y_label = '(MW)'
-                title = 'Batteries power'
+                title = 'Battery power'
 
             else:
                 pass

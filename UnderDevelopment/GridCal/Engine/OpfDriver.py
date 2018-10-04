@@ -32,18 +32,23 @@ from GridCal.Engine.Numerical.BlackBoxOPF import AcOPFBlackBox, solve_opf_dycors
 
 class OptimalPowerFlowOptions:
 
-    def __init__(self, verbose=False, load_shedding=False, solver=SolverType.DC_OPF, realistic_results=False,
+    def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
+                 solver=SolverType.DC_OPF, realistic_results=False,
                  faster_less_accurate=False):
         """
         OPF options constructor
         :param verbose:
         :param load_shedding:
+        :param generation_shedding:
         :param solver:
         :param realistic_results:
+        :param faster_less_accurate:
         """
         self.verbose = verbose
 
         self.load_shedding = load_shedding
+
+        self.generation_shedding = generation_shedding
 
         self.solver = solver
 
@@ -79,32 +84,6 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
-    def island_mip_opf(self, calculation_input: CalculationInputs, buses, branches, t_idx=None):
-        """
-        Run a power flow simulation for a single circuit
-        @param calculation_input: Single island circuit
-        @param t_idx: time index, if none the default values are taken
-        @return: OptimalPowerFlowResults object
-        """
-
-        # declare LP problem
-        if self.options.solver == SolverType.DC_OPF:
-            problem = DcOpf(calculation_input, buses, branches, self.options)
-
-        elif self.options.solver == SolverType.AC_OPF:
-            problem = AcOpf(calculation_input, buses, branches, self.options)
-
-        else:
-            raise Exception('Not implemented method ' + str(self.options.solver))
-
-        # results
-        problem.build(t_idx=t_idx)
-        problem.set_loads(t_idx=t_idx)
-        problem.solve()
-        res = problem.get_results(t_idx=t_idx, realistic=self.options.realistic_results)
-
-        return res, problem.solved
-
     def opf(self, t_idx=None, collect=True):
         """
         Run a power flow for every circuit
@@ -130,88 +109,40 @@ class OptimalPowerFlow(QRunnable):
 
             # collect the OPF results
             self.results = problem.interpret_x(x_opt)
+
         else:
-            n = len(self.grid.buses)
-            m = len(self.grid.branches)
-            self.results = OptimalPowerFlowResults()
-            self.results.initialize(n, m)
-
-            self.all_solved = True
-
-            print('Compiling...', end='')
-            numerical_circuit = self.grid.compile()
-            calculation_inputs = numerical_circuit.compute()
-
-            if len(calculation_inputs) > 1:
-
-                for calculation_input in calculation_inputs:
-
-                    buses = [self.grid.buses[i] for i in calculation_input.original_bus_idx]
-                    branches = [self.grid.branches[i] for i in calculation_input.original_branch_idx]
-
-                    if self.options.verbose:
-                        print('Solving ' + calculation_input.name)
-
-                    # run OPF
-                    if len(calculation_input.ref) > 0:
-                        optimal_power_flow_results, solved = self.island_mip_opf(calculation_input, buses,
-                                                                                 branches, t_idx=t_idx)
-                    else:
-                        optimal_power_flow_results = OptimalPowerFlowResults(is_dc=True)
-                        optimal_power_flow_results.initialize(calculation_input.nbus, calculation_input.nbr)
-                        solved = True  # couldn't solve because it was impossible to formulate the problem so we skip it...
-                        warn('The island does not have any slack...')
-
-                    # assert the total solvability
-                    self.all_solved = self.all_solved and solved
-
-                    # merge island results
-                    self.results.apply_from_island(optimal_power_flow_results,
-                                                   calculation_input.original_bus_idx,
-                                                   calculation_input.original_branch_idx)
+            if self.options.solver == SolverType.DC_OPF:
+                # DC optimal power flow
+                problem = DcOpf(self.grid, verbose=False,
+                                allow_load_shedding=self.options.load_shedding,
+                                allow_generation_shedding=self.options.generation_shedding)
+            elif self.options.solver == SolverType.AC_OPF:
+                # AC optimal power flow
+                problem = AcOpf(self.grid, verbose=False,
+                                allow_load_shedding=self.options.load_shedding,
+                                allow_generation_shedding=self.options.generation_shedding)
             else:
-                # only one island ...
-                calculation_input = calculation_inputs[0]
+                raise Exception('Solver not recognized ' + str(self.options.solver))
 
-                if self.options.verbose:
-                    print('Solving ' + calculation_input.name)
+            # Solve
+            problem.build_solvers()
+            problem.set_default_state()
+            problem.solve(verbose=True)
 
-                # run OPF
-                optimal_power_flow_results, solved = self.island_mip_opf(calculation_input, self.grid.buses,
-                                                                         self.grid.branches, t_idx=t_idx)
+            # get the branch flows (it is used more than one time)
+            Sbr = problem.get_branch_flows()
 
-                # assert the total solvability
-                self.all_solved = self.all_solved and solved
-
-                # merge island results
-                self.results.apply_from_island(optimal_power_flow_results,
-                                               calculation_input.original_bus_idx,
-                                               calculation_input.original_branch_idx)
-
-            # collect results per generator
-            if collect:
-                print('Collecting generator results')
-                self.results.controlled_generator_power = list()
-                self.results.battery_power = list()
-
-                for bus in self.grid.buses:
-                    # Generators
-                    for elm in bus.controlled_generators:
-                        if elm.active and elm.enabled_dispatch:
-                            self.results.controlled_generator_power.append(elm.LPVar_P.value())
-                        else:
-                            self.results.controlled_generator_power.append(0)
-
-                    # batteries
-                    for elm in bus.batteries:
-                        if elm.active and elm.enabled_dispatch:
-                            self.results.battery_power.append(elm.LPVar_P.value())
-                        else:
-                            self.results.battery_power.append(0)
-
-                # convert the results to a numpy array
-                self.results.controlled_generator_power = np.array(self.results.controlled_generator_power)
-                self.results.battery_power = np.array(self.results.battery_power)
+            # pack the results
+            self.results = OptimalPowerFlowResults(Sbus=None,
+                                                   voltage=problem.get_voltage(),
+                                                   load_shedding=problem.get_load_shedding(),
+                                                   generation_shedding=problem.get_generation_shedding(),
+                                                   battery_power=problem.get_batteries_power(),
+                                                   controlled_generation_power=problem.get_controlled_generation(),
+                                                   Sbranch=Sbr * self.grid.Sbase,
+                                                   overloads=problem.get_overloads(),
+                                                   loading=Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0,
+                                                   converged=bool(problem.converged))
 
         return self.results
 

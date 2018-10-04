@@ -974,6 +974,13 @@ class MultiCircuit:
             lst = lst + bus.loads
         return lst
 
+    def get_load_names(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.loads:
+                lst.append(elm.name)
+        return np.array(lst)
+
     def get_static_generators(self):
         lst = list()
         for bus in self.buses:
@@ -982,6 +989,13 @@ class MultiCircuit:
             lst = lst + bus.static_generators
         return lst
 
+    def get_static_generators_names(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.static_generators:
+                lst.append(elm.name)
+        return np.array(lst)
+
     def get_shunts(self):
         lst = list()
         for bus in self.buses:
@@ -989,6 +1003,13 @@ class MultiCircuit:
                 elm.bus = bus
             lst = lst + bus.shunts
         return lst
+
+    def get_shunt_names(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.shunts:
+                lst.append(elm.name)
+        return np.array(lst)
 
     def get_controlled_generators(self):
         lst = list()
