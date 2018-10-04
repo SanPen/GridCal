@@ -850,6 +850,8 @@ class Branch(ReliabilityDevice):
 
         # type template
         self.template = template
+        self.vset = vset
+        self.bus_to_regulated = bus_to_regulated
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
                              'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'branch_type', 'template']
@@ -858,18 +860,6 @@ class Branch(ReliabilityDevice):
                       'km', 'p.u.', 'rad', '', 'p.u.', '', '']
 
         self.non_editable_indices = [1, 2, 17]
-
-        # regulated bus
-        self.vset = vset
-        if BranchType.Transformer and type(self.template) == TransformerType:
-            if bus_to_regulated:
-                self.bus_to_regulated = True
-            else:
-                self.bus_to_regulated = False
-        elif bus_to_regulated:
-            raise Exception('You are trying to regulated a bus with a non-transformer branch')
-        else:
-            self.bus_to_regulated = False
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
