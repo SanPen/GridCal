@@ -807,28 +807,28 @@ class MainGUI(QMainWindow):
         dte = datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
-    def compile(self, use_opf_vals=False, dispatch_storage=False):
-        """
-        This function compiles the circuit and updates the UI accordingly
-        """
-
-        try:
-            logger = list()
-            numerical_circuit = self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage, logger=logger)
-
-            if len(logger) > 0:
-                dlg = LogsDialogue('Open file logger', logger)
-                dlg.exec_()
-
-        except Exception as ex:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
-
-        if self.circuit.time_profile is not None:
-            mdl = get_list_model(self.circuit.time_profile)
-            self.ui.vs_departure_comboBox.setModel(mdl)
-            self.ui.vs_target_comboBox.setModel(mdl)
-            self.ui.profile_time_selection_comboBox.setModel(mdl)
+    # def compile(self, use_opf_vals=False, dispatch_storage=False):
+    #     """
+    #     This function compiles the circuit and updates the UI accordingly
+    #     """
+    #
+    #     try:
+    #         logger = list()
+    #         numerical_circuit = self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage, logger=logger)
+    #
+    #         if len(logger) > 0:
+    #             dlg = LogsDialogue('Open file logger', logger)
+    #             dlg.exec_()
+    #
+    #     except Exception as ex:
+    #         exc_type, exc_value, exc_traceback = sys.exc_info()
+    #         self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
+    #
+    #     if self.circuit.time_profile is not None:
+    #         mdl = get_list_model(self.circuit.time_profile)
+    #         self.ui.vs_departure_comboBox.setModel(mdl)
+    #         self.ui.vs_target_comboBox.setModel(mdl)
+    #         self.ui.profile_time_selection_comboBox.setModel(mdl)
 
     def auto_layout(self):
         """
@@ -1035,8 +1035,8 @@ class MainGUI(QMainWindow):
                 except:
                     pass
 
-                # compile the circuit (fast)
-                self.compile()
+                # # compile the circuit (fast)
+                # self.compile()
 
                 if self.circuit.time_profile is not None:
                     # print('Profiles available')
@@ -1132,8 +1132,8 @@ class MainGUI(QMainWindow):
         Export power flow results
         """
         if self.power_flow is not None:
-            if self.circuit.graph is None:
-                self.compile()
+            # if self.circuit.graph is None:
+            #     self.compile()
 
             # declare the allowed file types
             files_types = "Excel file (*.xlsx)"
@@ -1161,8 +1161,8 @@ class MainGUI(QMainWindow):
         Export object profiles
         """
         if self.circuit.time_profile is not None:
-            if self.circuit.graph is None:
-                self.compile()
+            # if self.circuit.graph is None:
+            #     self.compile()
 
             # declare the allowed file types
             files_types = "Excel file (*.xlsx)"
@@ -1498,8 +1498,8 @@ class MainGUI(QMainWindow):
 
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
 
-            # TODO: Correct this function to not to depend on a previous compilation
-            self.compile()
+            # # TODO: Correct this function to not to depend on a previous compilation
+            # self.compile()
 
             self.set_up_profile_sliders()
 
@@ -2065,21 +2065,25 @@ class MainGUI(QMainWindow):
 
                 use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
 
-                if self.optimal_power_flow_time_series is None and use_opf_vals:
-                    use_opf_vals = False
-                    self.msg('There are not OPF time series, '
-                             'therefore this operation will continue with the profile stored values.')
-                    self.ui.actionUse_OPF_in_TS.setChecked(False)
+                if self.optimal_power_flow_time_series is None:
+                    if use_opf_vals:
+                        use_opf_vals = False
+                        self.msg('There are not OPF time series, '
+                                 'therefore this operation will continue with the profile stored values.')
+                        self.ui.actionUse_OPF_in_TS.setChecked(False)
+
+                    opf_time_series_results = None
+                else:
+                    opf_time_series_results = self.optimal_power_flow_time_series.results
 
                 options = self.get_selected_power_flow_options()
-
-                # TODO: Review the compilation to include the OFP values
-                self.compile(use_opf_vals=use_opf_vals, dispatch_storage=options.dispatch_storage)
-
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1
 
-                self.time_series = TimeSeries(grid=self.circuit, options=options, start_=start, end_=end)
+                self.time_series = TimeSeries(grid=self.circuit, options=options,
+                                              use_opf_vals=use_opf_vals,
+                                              opf_time_series_results=opf_time_series_results,
+                                              start_=start, end_=end)
 
                 # Set the time series run options
                 self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2154,12 +2158,6 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        # print('post_stochastic')
-        # update the results in the circuit structures
-        # print('Vbus:\n', abs(self.monte_carlo.results.voltage))
-        # print('Ibr:\n', abs(self.monte_carlo.results.current))
-        # print('ld:\n', abs(self.monte_carlo.results.loading))
-
         if not self.monte_carlo.__cancel__:
             self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
                                    loadings=self.monte_carlo.results.loading,
@@ -2349,23 +2347,20 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
             self.LOCK()
 
-            self.ui.progress_label.setText('Compiling the grid...')
-            # QtGui.QGuiApplication.processEvents()
-            # self.compile()  # compiles inside
-
             # get the power flow options from the GUI
             load_shedding = self.ui.load_shedding_checkBox.isChecked()
             realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
             generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
             solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-
+            control_batteries = self.ui.control_batteries_checkBox.isChecked()
             options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                               generation_shedding=generation_shedding,
                                               solver=solver,
-                                              realistic_results=realistic_results)
+                                              realistic_results=realistic_results,
+                                              control_batteries=control_batteries)
 
             self.ui.progress_label.setText('Running optimal power flow...')
-            # QtGui.QGuiApplication.processEvents()
+            QtGui.QGuiApplication.processEvents()
             # set power flow object instance
             self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
 
@@ -2418,23 +2413,18 @@ class MainGUI(QMainWindow):
                 # Compile the grid
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                # self.compile()   # compiles inside
-
-                # gather the simulation options
-                # load_shedding = self.ui.load_shedding_checkBox.isChecked()
-                # solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-                # options = OptimalPowerFlowOptions(load_shedding=load_shedding, solver=solver)
 
                 # get the power flow options from the GUI
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
                 realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
                 generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-
+                control_batteries = self.ui.control_batteries_checkBox.isChecked()
                 options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                                   generation_shedding=generation_shedding,
                                                   solver=solver,
-                                                  realistic_results=realistic_results)
+                                                  realistic_results=realistic_results,
+                                                  control_batteries=control_batteries)
 
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1

@@ -323,7 +323,8 @@ class TimeSeries(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, start_=0, end_=None):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, use_opf_vals=False, opf_time_series_results=None,
+                 start_=0, end_=None):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
@@ -335,6 +336,10 @@ class TimeSeries(QThread):
         self.grid = grid
 
         self.options = options
+
+        self.use_opf_vals = use_opf_vals
+
+        self.opf_time_series_results = opf_time_series_results
 
         self.results = None
 
@@ -362,7 +367,8 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         print('Compiling...', end='')
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
+                                              opf_time_series_results=self.opf_time_series_results)
         calculation_inputs = numerical_circuit.compute()
 
         # For every circuit, run the time series

@@ -33,7 +33,7 @@ from GridCal.Engine.Numerical.BlackBoxOPF import AcOPFBlackBox, solve_opf_dycors
 class OptimalPowerFlowOptions:
 
     def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
-                 solver=SolverType.DC_OPF, realistic_results=False,
+                 solver=SolverType.DC_OPF, realistic_results=False, control_batteries=True,
                  faster_less_accurate=False):
         """
         OPF options constructor
@@ -49,6 +49,8 @@ class OptimalPowerFlowOptions:
         self.load_shedding = load_shedding
 
         self.generation_shedding = generation_shedding
+
+        self. control_batteries = control_batteries
 
         self.solver = solver
 
@@ -131,17 +133,25 @@ class OptimalPowerFlow(QRunnable):
 
             # get the branch flows (it is used more than one time)
             Sbr = problem.get_branch_flows()
+            ld = problem.get_load_shedding()
+            ld[ld == None] = 0
+            bt = problem.get_batteries_power()
+            bt[bt == None] = 0
+            gn = problem.get_controlled_generation()
+            gn[gn == None] = 0
+            gs = problem.get_generation_shedding()
+            gs[gs == None] = 0
 
             # pack the results
             self.results = OptimalPowerFlowResults(Sbus=None,
                                                    voltage=problem.get_voltage(),
-                                                   load_shedding=problem.get_load_shedding(),
-                                                   generation_shedding=problem.get_generation_shedding(),
-                                                   battery_power=problem.get_batteries_power(),
-                                                   controlled_generation_power=problem.get_controlled_generation(),
+                                                   load_shedding=ld * self.grid.Sbase,
+                                                   generation_shedding=gs * self.grid.Sbase,
+                                                   battery_power=bt * self.grid.Sbase,
+                                                   controlled_generation_power=gn * self.grid.Sbase,
                                                    Sbranch=Sbr * self.grid.Sbase,
                                                    overloads=problem.get_overloads(),
-                                                   loading=Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0,
+                                                   loading=Sbr * self.grid.Sbase / (problem.numerical_circuit.br_rates + 1e-20) * 100.0,
                                                    converged=bool(problem.converged))
 
         return self.results
