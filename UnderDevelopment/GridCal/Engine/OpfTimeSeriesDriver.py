@@ -16,7 +16,7 @@
 import pandas as pd
 import numpy as np
 from numpy import complex, zeros,  array
-
+import datetime
 from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -306,7 +306,12 @@ class OptimalPowerFlowTimeSeries(QThread):
             bat_idx = []
             force_batteries_to_charge = False
             dt = 0
+
+            execution_avg_time = 0
+            time_summation = 0
             while t < self.end_ and not self.__cancel__:
+
+                start_time = datetime.datetime.now()
 
                 problem.set_state_at(t, force_batteries_to_charge=force_batteries_to_charge,
                                      bat_idx=bat_idx, battery_loading_pu=0.01,
@@ -347,9 +352,16 @@ class OptimalPowerFlowTimeSeries(QThread):
 
                 self.results.battery_energy[t, :] = E
 
+                end_time = datetime.datetime.now()
+                time_elapsed = end_time - start_time
+                time_summation += time_elapsed.microseconds * 1e-6
+                execution_avg_time = time_summation / (t - self.start_ + 1)
+                remaining = (self.end_ - t) * execution_avg_time
+
                 progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
-                self.progress_text.emit('Solving OPF at ' + str(self.grid.time_profile[t]))
+                self.progress_text.emit('Solving OPF at ' + str(self.grid.time_profile[t]) +
+                                        '\t remaining: ' + str(datetime.timedelta(seconds=remaining)))
                 t += 1
 
         else:
