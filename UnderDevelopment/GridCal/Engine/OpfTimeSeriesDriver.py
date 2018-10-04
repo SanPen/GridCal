@@ -66,7 +66,7 @@ class OptimalPowerFlowTimeSeriesResults:
         self.available_results = ['Bus voltage module', 'Bus voltage angle', 'Branch power',
                                   'Branch loading', 'Branch overloads', 'Load shedding',
                                   'Controlled generator shedding',
-                                  'Controlled generator power', 'Battery power']
+                                  'Controlled generator power', 'Battery power', 'Battery energy']
 
         # self.generators_power = zeros((ng, nt), dtype=complex)
 
@@ -75,6 +75,8 @@ class OptimalPowerFlowTimeSeriesResults:
         self.controlled_generator_shedding = np.zeros((nt, ngen), dtype=float)
 
         self.battery_power = np.zeros((nt, nbat), dtype=float)
+
+        self.battery_energy = np.zeros((nt, nbat), dtype=float)
 
         self.converged = np.empty(nt, dtype=bool)
 
@@ -183,6 +185,12 @@ class OptimalPowerFlowTimeSeriesResults:
                 y = self.battery_power[:, indices]
                 y_label = '(MW)'
                 title = 'Battery power'
+
+            elif result_type == 'Battery energy':
+                y = self.battery_energy[:, indices]
+                y_label = '(MWh)'
+                title = 'Battery energy'
+
             else:
                 pass
 
@@ -274,29 +282,70 @@ class OptimalPowerFlowTimeSeries(QThread):
             else:
                 raise Exception('Not implemented method ' + str(self.options.solver))
 
-            # Solve
+            # build
             problem.build_solvers()
 
+            batteries = self.grid.get_batteries()
+            nbat = len(batteries)
+            E = np.zeros(nbat)
+            E0 = np.zeros(nbat)
+            minE = np.zeros(nbat)
+            maxE = np.zeros(nbat)
+
+            if self.options.control_batteries and (self.end_ - self.start_) > 1:
+                control_batteries = True
+                for i, bat in enumerate(batteries):
+                    E0[i] = bat.Enom * bat.soc_0
+                    minE[i] = bat.min_soc * bat.Enom
+                    maxE[i] = bat.max_soc * bat.Enom
+                E = E0.copy()
+            else:
+                control_batteries = False  # all vectors declared already
+
             t = self.start_
+            bat_idx = []
+            force_batteries_to_charge = False
+            dt = 0
             while t < self.end_ and not self.__cancel__:
 
-                problem.set_state_at(t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01)
+                problem.set_state_at(t, force_batteries_to_charge=force_batteries_to_charge,
+                                     bat_idx=bat_idx, battery_loading_pu=0.01,
+                                     Emin=minE/self.grid.Sbase, Emax=maxE/self.grid.Sbase,
+                                     E=E/self.grid.Sbase, dt=dt)
                 problem.solve(verbose=True)
 
                 # gather the results
                 # get the branch flows (it is used more than one time)
                 Sbr = problem.get_branch_flows()
+                ld = problem.get_load_shedding()
+                ld[ld == None] = 0
+                bt = problem.get_batteries_power()
+                bt[bt == None] = 0
+                gn = problem.get_controlled_generation()
+                gn[gn==None] = 0
+                gs = problem.get_generation_shedding()
+                gs[gs == None] = 0
 
-                # gather the results
                 self.results.voltage[t, :] = problem.get_voltage()
-                self.results.load_shedding[t, :] = problem.get_load_shedding()
-                self.results.controlled_generator_shedding[t, :] = problem.get_generation_shedding()
-                self.results.battery_power[t, :] = problem.get_batteries_power()
-                self.results.controlled_generator_power[t, :] = problem.get_controlled_generation()
+                self.results.load_shedding[t, :] = ld * self.grid.Sbase
+                self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
+                self.results.battery_power[t, :] = bt * self.grid.Sbase
+                self.results.controlled_generator_power[t, :] = gn * self.grid.Sbase
                 self.results.Sbranch[t, :] = Sbr * self.grid.Sbase
                 self.results.overloads[t, :] = problem.get_overloads()
-                self.results.loading[t, :] = Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0
+                self.results.loading[t, :] = Sbr * self.grid.Sbase / (problem.numerical_circuit.br_rates + 1e-20) * 100.0
                 self.results.converged[t] = bool(problem.converged)
+
+                # control batteries energy
+                if control_batteries and t > self.start_:
+                    dt = (self.grid.time_profile[t] - self.grid.time_profile[t - 1]).seconds / 3600  # time delta in hours
+                    dE = self.results.battery_power[t, :] * dt
+                    E -= dE  # negative power(charge) -> more energy
+                    too_low = E <= minE
+                    bat_idx = np.where(too_low == True)[0]  # check which energy values are less or equal to zero
+                    force_batteries_to_charge = bool(len(bat_idx))
+
+                self.results.battery_energy[t, :] = E
 
                 progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)

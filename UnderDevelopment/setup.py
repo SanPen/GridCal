@@ -89,7 +89,8 @@ install_requires = ["numpy>=1.14.0",
                     "smopy>=0.0.6",
                     "chardet>=3.0.4",
                     "scikit-learn>=0.18",
-                    "geopy>=1.16"
+                    "geopy>=1.16",
+                    "pytest>=3.8"
                     ]
 
 if platform.system() == 'Windows':

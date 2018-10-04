@@ -1041,6 +1041,13 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
+    def get_battery_capacities(self):
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.batteries:
+                lst.append(elm.Enom)
+        return np.array(lst)
+
     def get_Jacobian(self, sparse=False):
         """
         Returns the Grid Jacobian matrix
@@ -2013,11 +2020,11 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, use_opf_vals=False, dispatch_storage=False, logger=list()):
+    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()):
         """
         Compile the circuit assets into an equivalent circuit that only contains matrices and vectors for calculation
         :param use_opf_vals:
-        :param dispatch_storage:
+        :param opf_time_series_results:
         :param logger:
         :return:
         """
@@ -2027,6 +2034,9 @@ class MultiCircuit:
             n_time = len(self.time_profile)
         else:
             n_time = 0
+
+        if use_opf_vals and opf_time_series_results is None:
+            raise Exception('You want to use the OPF results but none is passed')
 
         self.bus_dictionary = dict()
 
@@ -2084,6 +2094,10 @@ class MultiCircuit:
                     circuit.load_current_profile[:, i_ld] = elm.Iprof.values[:, 0]
                     circuit.load_admittance_profile[:, i_ld] = np.nan_to_num(1 / elm.Zprof.values[:, 0])
 
+                    if use_opf_vals:
+                        # subtract the load shedding from the generation
+                        circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_ctrl_gen]
+
                 circuit.C_load_bus[i_ld, i] = 1
                 i_ld += 1
 
@@ -2111,10 +2125,11 @@ class MultiCircuit:
                 if n_time > 0:
                     # power profile
                     if use_opf_vals:
-                        dta = np.array([x.value() for x in elm.LPVar_P_prof])
-                        circuit.controlled_gen_power_profile[:, i_ctrl_gen] = dta
+                        circuit.controlled_gen_power_profile[:, i_ctrl_gen] = \
+                            opf_time_series_results.controlled_generator_power[:, i_ctrl_gen]
                     else:
                         circuit.controlled_gen_power_profile[:, i_ctrl_gen] = elm.Pprof.values[:, 0]
+
                     # Voltage profile
                     circuit.controlled_gen_voltage_profile[:, i_ctrl_gen] = elm.Vsetprof.values[:, 0]
 
@@ -2134,8 +2149,8 @@ class MultiCircuit:
                 if n_time > 0:
                     # power profile
                     if use_opf_vals:
-                        dta = np.array([x.value() for x in elm.LPVar_P_prof])
-                        circuit.battery_power_profile[:, i_batt] = dta
+                        circuit.battery_power_profile[:, i_batt] = \
+                            opf_time_series_results.battery_power[:, i_batt]
                     else:
                         circuit.battery_power_profile[:, i_batt] = elm.Pprof.values[:, 0]
                     # Voltage profile

@@ -758,6 +758,7 @@ class DcOpf:
         self.battery_P = np.empty(nbat, dtype=object)
         self.battery_cost = np.zeros(nbat)
         self.battery_lower_bound = np.zeros(nbat)
+        self.numerical_circuit.C_batt_bus = csc_matrix(self.numerical_circuit.C_batt_bus)
         for i, battery in enumerate(self.batteries):
             name = 'BAT_' + battery.name + '_' + str(i)
             pmin = battery.Pmin / Sbase
@@ -889,6 +890,7 @@ class DcOpf:
             self.opf_islands.append(island_problem)
 
     def set_state(self, load_power, static_gen_power, controlled_gen_power,
+                  Emin=None, Emax=None, E=None, dt=0,
                   force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
         """
 
@@ -897,6 +899,7 @@ class DcOpf:
         :param controlled_gen_power: vector of controlled generators power (same size as the ctrl. generatos)
         :param force_batteries_to_charge: shall we force batteries to charge?
         :param bat_idx: battery indices that shall be forced to charge
+        :param battery_loading_pu: amount of the nominal band to charge to use (0.1=10%)
         """
         # Sbase shortcut
         Sbase = self.numerical_circuit.Sbase
@@ -912,12 +915,23 @@ class DcOpf:
         P += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * \
              (controlled_gen_power[self.gen_s_idx] / Sbase)
 
-        if force_batteries_to_charge:
-            battery_charge_restrictions = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[bat_idx, :]),
-                                                   self.battery_P[bat_idx])
+        # storage params per bus
+        if E is not None:
+            E_bus = self.numerical_circuit.C_batt_bus.T * E
+            Emin_bus = self.numerical_circuit.C_batt_bus.T * Emin
+            Emax_bus = self.numerical_circuit.C_batt_bus.T * Emax
+            batteries_at_each_bus_all = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus), self.battery_P)
 
-            battery_charge_amount = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[bat_idx, :]),
-                                             self.battery_lower_bound * battery_loading_pu)
+        if force_batteries_to_charge:
+            batteries_at_each_bus = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[bat_idx, :]),
+                                             self.battery_P[bat_idx])
+
+            battery_charge_amount_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[bat_idx, :]),
+                                                     self.battery_lower_bound * battery_loading_pu)
+
+        else:
+            batteries_at_each_bus = None
+            battery_charge_amount_per_bus = None
 
         # set the power at each island
         self.opf_islands_to_solve = list()
@@ -934,15 +948,25 @@ class DcOpf:
                 name = 'ct_node_mismatch_' + str(i)
                 island_copy.problem.addConstraint(island_copy.calculated_power[i] == island_copy.P[i], name)
 
+            # Set storage energy limits (always)
+            if E is not None:
+                E_bus_is = E_bus[island_copy.b_idx]
+                Emin_bus_is = Emin_bus[island_copy.b_idx]
+                Emax_bus_is = Emax_bus[island_copy.b_idx]
+                for i, bat_P in enumerate(batteries_at_each_bus_all):
+                    if bat_P != 0:
+                        # control the energy
+                        island_copy.problem.addConstraint(E_bus_is[i] - bat_P * dt >= Emin_bus_is[i])
+                        island_copy.problem.addConstraint(E_bus_is[i] - bat_P * dt <= Emax_bus_is[i])
+
             if force_batteries_to_charge:
-
                 # re-pack the restrictions for the island
-                battery_charge_restrictions_is = battery_charge_restrictions[island_copy.b_idx]
-
+                battery_at_each_bus_island = batteries_at_each_bus[island_copy.b_idx]
                 # Assign the restrictions
-                for i in range(island_copy.nbus):
-                    if battery_charge_restrictions_is[i] != 0:
-                        island_copy.problem.addConstraint(battery_charge_restrictions_is[i] <= battery_charge_amount[i])
+                for i, bat_P in enumerate(battery_at_each_bus_island):
+                    if bat_P != 0:
+                        # force the battery to charge
+                        island_copy.problem.addConstraint(bat_P <= battery_charge_amount_per_bus[i])
 
             # store the island copy
             self.opf_islands_to_solve.append(island_copy)
@@ -955,7 +979,8 @@ class DcOpf:
                        static_gen_power=self.numerical_circuit.static_gen_power,
                        controlled_gen_power=self.numerical_circuit.controlled_gen_power)
 
-    def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
+    def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01,
+                     Emin=None, Emax=None, E=None, dt=0):
         """
         Set the problem state at at time index
         :param t: time index
@@ -963,6 +988,7 @@ class DcOpf:
         self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
                        static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
                        controlled_gen_power=self.numerical_circuit.controlled_gen_power_profile[t, :],
+                       Emin=Emin, Emax=Emax, E=E, dt=dt,
                        force_batteries_to_charge=force_batteries_to_charge,
                        bat_idx=bat_idx,
                        battery_loading_pu=battery_loading_pu)
