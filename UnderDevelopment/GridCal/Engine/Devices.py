@@ -798,6 +798,7 @@ class Branch(ReliabilityDevice):
         @param branch_type: Is the branch a transformer?
         @param length: eventual line length in km
         @param template: Type object template (i.e. Tower, TransformerType, etc...)
+        @param bus_to_regulated: Is bus_to regulated by this branch (i.e. transformer)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -858,6 +859,18 @@ class Branch(ReliabilityDevice):
                       'km', 'p.u.', 'rad', '', 'p.u.', '', '']
 
         self.non_editable_indices = [1, 2, 17]
+
+        # regulated bus
+        if BranchType.Transformer and type(self.template) == TransformerType:
+            if bus_to_regulated:
+                self.bus_to_regulated = True
+                self.vset = vset
+            else:
+                self.bus_to_regulated = False
+        elif bus_to_regulated:
+            raise Exception('You are trying to regulated a bus with a non-transformer branch')
+        else:
+            self.bus_to_regulated = False
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
