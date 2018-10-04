@@ -309,6 +309,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             execution_avg_time = 0
             time_summation = 0
+            alpha = 0.5
             while t < self.end_ and not self.__cancel__:
 
                 start_time = datetime.datetime.now()
@@ -355,7 +356,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                 end_time = datetime.datetime.now()
                 time_elapsed = end_time - start_time
                 time_summation += time_elapsed.microseconds * 1e-6
-                execution_avg_time = time_summation / (t - self.start_ + 1)
+                execution_avg_time = (time_summation / (t - self.start_ + 1)) * alpha + execution_avg_time * (1-alpha)
                 remaining = (self.end_ - t) * execution_avg_time
 
                 progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
