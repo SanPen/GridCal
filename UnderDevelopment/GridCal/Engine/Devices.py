@@ -781,8 +781,8 @@ class TapChanger:
 class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line, length=1, template=BranchTemplate()):
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, branch_type: BranchType=BranchType.Line,
+                 length=1, vset=1.0, bus_to_regulated=False, template=BranchTemplate()):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -848,12 +848,16 @@ class Branch(ReliabilityDevice):
 
         # type template
         self.template = template
+        self.bus_to_regulated = bus_to_regulated
+        self.vset = vset
 
         self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'length', 'tap_module', 'angle', 'branch_type', 'template']
+                             'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'branch_type', 'template']
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'km', 'p.u.', 'rad', '', '']
+                      'km', 'p.u.', 'rad', '', 'p.u.', '', '']
+
+        self.non_editable_indices = [1, 2, 17]
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
@@ -865,8 +869,8 @@ class Branch(ReliabilityDevice):
         self.inv_conv = {val: key for key, val in self.conv.items()}
 
         self.edit_types = {'name': str,
-                           'bus_from': None,
-                           'bus_to': None,
+                           'bus_from': Bus,
+                           'bus_to': Bus,
                            'active': bool,
                            'rate': float,
                            'mttf': float,
@@ -878,6 +882,8 @@ class Branch(ReliabilityDevice):
                            'length': float,
                            'tap_module': float,
                            'angle': float,
+                           'bus_to_regulated': bool,
+                           'vset': float,
                            'branch_type': BranchType,
                            'template': BranchTemplate}
 
@@ -917,6 +923,8 @@ class Branch(ReliabilityDevice):
                    active=self.active,
                    mttf=self.mttf,
                    mttr=self.mttr,
+                   bus_to_regulated=self.bus_to_regulated,
+                   vset=self.vset,
                    branch_type=self.branch_type,
                    template=self.template)
 
@@ -937,80 +945,6 @@ class Branch(ReliabilityDevice):
         """
         self.tap_changer.tap_down()
         self.tap_module = self.tap_changer.get_tap()
-
-    def apply_to(self, Ybus, Yseries, Yshunt, Yf, Yt, B1, B2, C, i, f, t):
-        """
-
-        Modify the circuit admittance matrices with the admittances of this branch
-        @param Ybus: Complete Admittance matrix
-        @param Yseries: Admittance matrix of the series elements
-        @param Yshunt: Admittance matrix of the shunt elements
-        @param Yf: Admittance matrix of the branches with the from buses
-        @param Yt: Admittance matrix of the branches with the to buses
-        @param B1: Jacobian 1 for the fast-decoupled power flow
-        @param B1: Jacobian 2 for the fast-decoupled power flow
-        @:param C: Branch-Bus connectivity matrix
-        @param i: index of the branch in the circuit
-        @return: Nothing, the inputs are implicitly modified
-        """
-        z_series = complex(self.R, self.X)
-        y_shunt = complex(self.G, self.B)
-        tap = self.tap_module * np.exp(-1j * self.angle)
-        Ysh = y_shunt / 2
-        if np.abs(z_series) > 0:
-            Ys = 1 / z_series
-        else:
-            raise ValueError("The impedance at " + self.name + " is zero")
-
-        Ytt = Ys + Ysh
-        Yff = Ytt / (tap * np.conj(tap))
-        Yft = - Ys / np.conj(tap)
-        Ytf = - Ys / tap
-
-        Yff_sh = Ysh
-        Ytt_sh = Yff_sh / (tap * np.conj(tap))
-
-        # Full admittance matrix
-        Ybus[f, f] += Yff
-        Ybus[f, t] += Yft
-        Ybus[t, f] += Ytf
-        Ybus[t, t] += Ytt
-
-        # Y-from and Y-to for the lines power flow computation
-        Yf[i, f] += Yff
-        Yf[i, t] += Yft
-        Yt[i, f] += Ytf
-        Yt[i, t] += Ytt
-
-        # Connectivity matrix
-        C[i, f] = 1
-        C[i, t] = -1
-
-        # Y shunt
-        Yshunt[f] += Yff_sh
-        Yshunt[t] += Ytt_sh
-
-        # Y series
-        Yseries[f, f] += Ys / (tap * np.conj(tap))
-        Yseries[f, t] += Yft
-        Yseries[t, f] += Ytf
-        Yseries[t, t] += Ys
-
-        # B1 for FDPF (no shunts, no resistance, no tap module)
-        b1 = 1.0 / (self.X + 1e-20)
-        B1[f, f] -= b1
-        B1[f, t] -= b1
-        B1[t, f] -= b1
-        B1[t, t] -= b1
-
-        # B2 for FDPF (with shunts, only the tap module)
-        b2 = b1 + self.B
-        B2[f, f] -= (b2 / (tap * np.conj(tap))).real
-        B2[f, t] -= (b1 / np.conj(tap)).real
-        B2[t, f] -= (b1 / tap).real
-        B2[t, t] -= b2
-
-        return f, t
 
     def get_virtual_taps(self):
         """
@@ -1149,8 +1083,8 @@ class Branch(ReliabilityDevice):
             template = str(self.template)
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle,
-                conv.inv_conv[self.branch_type], template]
+                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle, self.bus_to_regulated,
+                self.vset, conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1173,6 +1107,8 @@ class Branch(ReliabilityDevice):
                 'b': self.B,
                 'length': self.length,
                 'tap_module': self.tap_module,
+                'bus_to_regulated': self.bus_to_regulated,
+                'vset': self.vset,
                 'tap_angle': self.angle,
                 'branch_type': self.branch_type}
 

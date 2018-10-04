@@ -1403,7 +1403,7 @@ class MainGUI(QMainWindow):
             elm = Branch(None, None)
             mdl = BranchObjectModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
                                     parent=self.ui.dataStructureTableView, editable=True,
-                                    non_editable_indices=[1, 2, 15])
+                                    non_editable_indices=elm.non_editable_indices)
 
             self.view_template_controls(True)
 

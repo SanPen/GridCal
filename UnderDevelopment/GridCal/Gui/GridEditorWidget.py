@@ -655,7 +655,7 @@ class BranchGraphicItem(QGraphicsLineItem):
                                 self.api_object.units, self.api_object.edit_types,
                                 parent=self.diagramScene.parent().object_editor_table,
                                 editable=True, transposed=True,
-                                non_editable_indices=[1, 2, 15])
+                                non_editable_indices=self.api_object.non_editable_indices)
 
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 

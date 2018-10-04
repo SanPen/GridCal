@@ -21,6 +21,7 @@ from PyQt5.QtGui import *
 
 from GridCal.Engine.CalculationEngine import BranchTypeConverter, BranchType
 from GridCal.Engine.DeviceTypes import BranchTemplate
+from GridCal.Engine.Devices import Bus
 
 
 class TreeDelegate(QItemDelegate):
@@ -507,7 +508,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         attr = self.attributes[attr_idx]
         tpe = self.attribute_types[self.attributes[attr_idx]]
 
-        if 'bus' in attr:
+        if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
         elif tpe is BranchType:
             conv = BranchTypeConverter(None)
