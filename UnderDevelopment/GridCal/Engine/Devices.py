@@ -782,7 +782,8 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0,
-                 branch_type: BranchType=BranchType.Line, length=1, template=BranchTemplate()):
+                 branch_type: BranchType=BranchType.Line, length=1, template=BranchTemplate(),
+                 bus_to_regulated=False, vset=1.0):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -798,6 +799,7 @@ class Branch(ReliabilityDevice):
         @param branch_type: Is the branch a transformer?
         @param length: eventual line length in km
         @param template: Type object template (i.e. Tower, TransformerType, etc...)
+        @param bus_to_regulated: Is bus_to regulated by this branch (i.e. transformer)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -854,6 +856,18 @@ class Branch(ReliabilityDevice):
 
         self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
                       'km', 'p.u.', 'rad', '', '']
+
+        # regulated bus
+        if BranchType.Transformer and type(self.template) == TransformerType:
+            if bus_to_regulated:
+                self.bus_to_regulated = True
+                self.vset = vset
+            else:
+                self.bus_to_regulated = False
+        elif bus_to_regulated:
+            raise Exception('You are trying to regulated a bus with a non-transformer branch')
+        else:
+            self.bus_to_regulated = False
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
