@@ -320,49 +320,54 @@ class OptimalPowerFlowTimeSeries(QThread):
                                      E=E/self.grid.Sbase, dt=dt)
                 problem.solve(verbose=True)
 
-                # gather the results
-                # get the branch flows (it is used more than one time)
-                Sbr = problem.get_branch_flows()
-                ld = problem.get_load_shedding()
-                ld[ld == None] = 0
-                bt = problem.get_batteries_power()
-                bt[bt == None] = 0
-                gn = problem.get_controlled_generation()
-                gn[gn==None] = 0
-                gs = problem.get_generation_shedding()
-                gs[gs == None] = 0
 
-                self.results.voltage[t, :] = problem.get_voltage()
-                self.results.load_shedding[t, :] = ld * self.grid.Sbase
-                self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
-                self.results.battery_power[t, :] = bt * self.grid.Sbase
-                self.results.controlled_generator_power[t, :] = gn * self.grid.Sbase
-                self.results.Sbranch[t, :] = Sbr * self.grid.Sbase
-                self.results.overloads[t, :] = problem.get_overloads()
-                self.results.loading[t, :] = Sbr * self.grid.Sbase / (problem.numerical_circuit.br_rates + 1e-20) * 100.0
-                self.results.converged[t] = bool(problem.converged)
+                if problem.converged:
+                    # gather the results
+                    # get the branch flows (it is used more than one time)
+                    Sbr = problem.get_branch_flows()
+                    ld = problem.get_load_shedding()
+                    ld[ld == None] = 0
+                    bt = problem.get_batteries_power()
+                    bt[bt == None] = 0
+                    gn = problem.get_controlled_generation()
+                    gn[gn==None] = 0
+                    gs = problem.get_generation_shedding()
+                    gs[gs == None] = 0
 
-                # control batteries energy
-                if control_batteries and t > self.start_:
-                    dt = (self.grid.time_profile[t] - self.grid.time_profile[t - 1]).seconds / 3600  # time delta in hours
-                    dE = self.results.battery_power[t, :] * dt
-                    E -= dE  # negative power(charge) -> more energy
-                    too_low = E <= minE
-                    bat_idx = np.where(too_low == True)[0]  # check which energy values are less or equal to zero
-                    force_batteries_to_charge = bool(len(bat_idx))
+                    self.results.voltage[t, :] = problem.get_voltage()
+                    self.results.load_shedding[t, :] = ld * self.grid.Sbase
+                    self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
+                    self.results.battery_power[t, :] = bt * self.grid.Sbase
+                    self.results.controlled_generator_power[t, :] = gn * self.grid.Sbase
+                    self.results.Sbranch[t, :] = Sbr
+                    self.results.overloads[t, :] = problem.get_overloads()
+                    self.results.loading[t, :] = Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0
+                    self.results.converged[t] = bool(problem.converged)
 
-                self.results.battery_energy[t, :] = E
+                    # control batteries energy
+                    if control_batteries and t > self.start_:
+                        dt = (self.grid.time_profile[t] - self.grid.time_profile[t - 1]).seconds / 3600  # time delta in hours
+                        dE = self.results.battery_power[t, :] * dt
+                        E -= dE  # negative power(charge) -> more energy
+                        too_low = E <= minE
+                        bat_idx = np.where(too_low == True)[0]  # check which energy values are less or equal to zero
+                        force_batteries_to_charge = bool(len(bat_idx))
+
+                    self.results.battery_energy[t, :] = E
+                else:
+                    print('\nDid not converge!\n')
 
                 end_time = datetime.datetime.now()
                 time_elapsed = end_time - start_time
                 time_summation += time_elapsed.microseconds * 1e-6
-                execution_avg_time = (time_summation / (t - self.start_ + 1)) * alpha + execution_avg_time * (1-alpha)
+                execution_avg_time = (int(time_summation) / (t - self.start_ + 1)) * alpha + execution_avg_time * (1-alpha)
                 remaining = (self.end_ - t) * execution_avg_time
 
                 progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
                 self.progress_text.emit('Solving OPF at ' + str(self.grid.time_profile[t]) +
-                                        '\t remaining: ' + str(datetime.timedelta(seconds=remaining)))
+                                        '\t remaining: ' + str(datetime.timedelta(seconds=remaining)) +
+                                        '\tConverged:' + str(bool(problem.converged)))
                 t += 1
 
         else:

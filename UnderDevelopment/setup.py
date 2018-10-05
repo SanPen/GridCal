@@ -54,7 +54,7 @@ description = "Research Oriented electrical simulation software."
 
 # Python 3.5 or later needed
 if sys.version_info < (3, 6, 0, 'final', 0):
-    raise (SystemExit, 'Python 3.6 or later is required!')
+    raise (SystemExit, 'Python 3.6º or later is required!')
 
 # Build a list of all project modules
 packages = []
