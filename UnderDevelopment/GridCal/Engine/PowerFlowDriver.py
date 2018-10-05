@@ -592,6 +592,7 @@ class PowerFlowMP:
         """
         Change the taps and compute the continuous tap magnitude
         :param voltage: array of bus voltages solution
+        :param T: array of indices of the "to" buses of each branch
         :param bus_to_regulated_idx: array with the indices of the branches that regulate the bus "to"
         :param tap_position: array of branch tap positions
         :param min_tap: array of minimum tap positions
