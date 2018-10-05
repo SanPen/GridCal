@@ -1134,6 +1134,7 @@ class AcOpf:
                        force_batteries_to_charge=force_batteries_to_charge,
                        bat_idx=bat_idx,
                        battery_loading_pu=battery_loading_pu)
+
     def solve(self, verbose=False):
         """
         Solve all islands (the results remain in the variables...)
@@ -1144,7 +1145,8 @@ class AcOpf:
             # solve island
             island_problem.problem.solve()
 
-            self.converged *= island_problem.problem.status
+            if island_problem.problem.status == -1:
+                self.converged = False
 
             if verbose:
                 print("Status:", pulp.LpStatus[island_problem.problem.status])

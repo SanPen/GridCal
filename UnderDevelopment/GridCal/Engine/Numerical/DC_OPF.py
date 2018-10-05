@@ -1003,10 +1003,11 @@ class DcOpf:
             # solve island
             island_problem.problem.solve()
 
-            self.converged *= island_problem.problem.status
+            if island_problem.problem.status == -1:
+                self.converged = False
 
             if verbose:
-                print("Status:", pulp.LpStatus[island_problem.problem.status])
+                print("Status:", pulp.LpStatus[island_problem.problem.status], island_problem.problem.status)
 
                 # The optimised objective function value is printed to the screen
                 print("Cost =", pulp.value(island_problem.problem.objective), '€')

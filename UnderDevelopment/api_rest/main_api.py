@@ -8,7 +8,7 @@ from flask import Flask, jsonify, request
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from GridCal.Engine.CalculationEngine import *
+from GridCal.Engine.All import *
 
 PORT = 5000
 
@@ -23,19 +23,17 @@ node_identifier = str(uuid4()).replace('-', '')
 grid = MultiCircuit()
 
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE_14.xlsx')
 grid.load_file(fname)
 grid.compile()
 
 options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, initialize_with_existing_solution=False)
-power_flow = PowerFlow(grid, options)
 
 
 def run_pf():
     # print('I am working...')
 
-    grid.compile()
+    power_flow = PowerFlow(grid, options)
     power_flow.run()
 
     # for c in grid.circuits:
@@ -74,6 +72,7 @@ def voltages():
 
     :return:
     """
+    run_pf()
     response = {
         'val': abs(grid.power_flow_results.voltage).tolist(),
     }
@@ -146,10 +145,11 @@ def set_load():
     response = {'message': str(S) + ' set to ' + str(loads[idx])}
     return jsonify(response), 200
 
+
 if __name__ == '__main__':
 
-    scheduler = BackgroundScheduler()
-    job = scheduler.add_job(run_pf, 'interval', seconds=1)
-    scheduler.start()
+    # scheduler = BackgroundScheduler()
+    # job = scheduler.add_job(run_pf, 'interval', seconds=1)
+    # scheduler.start()
 
     app.run(host='0.0.0.0', port=PORT)

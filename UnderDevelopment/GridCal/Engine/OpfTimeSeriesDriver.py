@@ -309,7 +309,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             execution_avg_time = 0
             time_summation = 0
-            alpha = 0.5
+            alpha = 0.2
             while t < self.end_ and not self.__cancel__:
 
                 start_time = datetime.datetime.now()
@@ -318,8 +318,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                                      bat_idx=bat_idx, battery_loading_pu=0.01,
                                      Emin=minE/self.grid.Sbase, Emax=maxE/self.grid.Sbase,
                                      E=E/self.grid.Sbase, dt=dt)
-                problem.solve(verbose=True)
-
+                problem.solve(verbose=False)
 
                 if problem.converged:
                     # gather the results
