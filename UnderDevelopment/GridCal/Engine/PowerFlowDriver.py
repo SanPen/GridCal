@@ -606,60 +606,60 @@ class PowerFlowMP:
         for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
 
             j = T[i]  # get the index of the "to" bus of the branch "i"
-
             v = abs(voltage[j])
             print(f"Bus {j}: U={v}pu, U_set={vset[i]}")
 
             if tap_position[i] > 0:
+
                 if vset[i] > v + tap_inc_reg_up[i] / 2:
                     if tap_position[i] == min_tap[i]:
-                        print(f"{i}: Already at lowest tap ({tap_position[i]}), skipping")
-                        break
+                        print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+
                     self.tap_down(tap_position[i], min_tap[i])
-                    print(f"{i}: Lowering from tap {tap_position[i]}")
+                    print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
 
                     if tap_position[i] == max_tap[i]:
-                        print(f"{i}: Already at highest tap ({tap_position[i]}), skipping")
-                        break
+                        print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+
                     self.tap_up(tap_position[i], max_tap[i])
-                    print(f"{i}: Raising from tap {tap_position[i]}")
+                    print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             elif tap_position[i] < 0:
                 if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
-                        print(f"{branch}: Already at lowest tap ({tap_position[i]}), skipping")
-                        break
+                        print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+
                     self.tap_down(tap_position[i], min_tap[i])
-                    print(f"{branch}: Lowering from tap {tap_position[i]}")
+                    print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i]/2:
                     if tap_position[i] == max_tap[i]:
-                        print(f"{branch}: Already at highest tap ({tap_position[i]}), skipping")
-                        break
+                        print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+
                     self.tap_up(tap_position[i], max_tap[i])
-                    print(f"{branch}: Raising from tap {tap_position[i]}")
+                    print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             else:
                 if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
-                        print(f"{branch}: Already at lowest tap ({tap_position[i]}), skipping")
-                        break
+                        print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+
                     self.tap_down(tap_position[i], min_tap[i])
-                    print(f"{branch}: Lowering from tap {tap_position[i]}")
+                    print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i] / 2:
                     if tap_position[i] == max_tap[i]:
-                        print(f"{branch}: Already at highest tap ({tap_position[i]}), skipping")
-                        break
+                        print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+
                     self.tap_up(tap_position[i], max_tap[i])
-                    print(f"{branch}: Raising from tap {tap_position[i]}")
+                    print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
             break
 
