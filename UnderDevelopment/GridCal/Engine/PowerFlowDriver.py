@@ -165,7 +165,7 @@ class PowerFlowMP:
 
         return ref, pq, pv, pqpv
 
-    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
+    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus, island_index=0):
         """
         Run a power flow simulation for a single circuit
         @param circuit:
@@ -178,6 +178,7 @@ class PowerFlowMP:
         ref, pq, pv, pqpv = self.compile_types(Sbus, original_types)
 
         any_control_issue = True  # guilty assumption...
+        regulators_stable = False # Transformers' voltage regulators are stable
 
         control_max_iter = 10
 
@@ -190,7 +191,7 @@ class PowerFlowMP:
         it = list()
         el = list()
 
-        while any_control_issue and outer_it < control_max_iter:
+        while (any_control_issue or not regulators_stable) and outer_it < control_max_iter:
 
             if len(circuit.ref) == 0:
                 voltage_solution = zeros(len(Sbus), dtype=complex)
@@ -344,6 +345,20 @@ class PowerFlowMP:
                     else:
                         # did not check Q limits
                         any_control_issue = False
+
+                    print("Checking voltage regulators...")
+                    branches, regulators_stable = self.adjust_tap_changers(voltage=voltage_solution,
+                                                                           buses=self.grid.buses,
+                                                                           branches=self.grid.branches)
+                    if not regulators_stable:
+                        print("Updating the circuit...")
+                        for j, new_branch in enumerate(branches):
+                            for i, old_branch in enumerate(self.grid.branches):
+                                if old_branch.name == new_branch.name:
+                                    self.grid.branches[i].tap_module = new_branch.tap_module
+                                    numerical_circuit = self.grid.compile()
+                                    circuit = numerical_circuit.compute()[island_index]
+                                    break
                 else:
                     any_control_issue = False
 
@@ -526,10 +541,10 @@ class PowerFlowMP:
 
                 if Vm[i] != Vset[i]:
 
-                    if Q[i] >= Qmax[i]:  # it is still a PQ bus but set Qi = Qimax .
+                    if round(Q[i], 4) >= round(Qmax[i], 4):  # it is still a PQ bus but set Qi = Qimax .
                         Qnew[i] = Qmax[i]
 
-                    elif Q[i] <= Qmin[i]:  # it is still a PQ bus and set Qi = Qimin .
+                    elif round(Q[i], 4) <= round(Qmin[i], 4):  # it is still a PQ bus and set Qi = Qimin .
                         Qnew[i] = Qmin[i]
 
                     else:  # switch back to PV, set Vinew = Viset.
@@ -545,16 +560,16 @@ class PowerFlowMP:
 
             elif types[i] == BusMode.PV.value[0]:
 
-                if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
+                if round(Q[i], 4) >= round(Qmax[i], 4):  # it is switched to PQ and set Qi = Qimax .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
+                        print(f"Bus {i} switched to PQ: Q {round(Q[i], 4)}  Qmax: {round(Qmax[i], 4)}")
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmax[i]
                     any_control_issue = True
 
-                elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
+                elif round(Q[i], 4) <= round(Qmin[i], 4):  # it is switched to PQ and set Qi = Qimin .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
+                        print(f"Bus {i} switched to PQ: Q {round(Q[i], 4)}  Qmin: {round(Qmin[i], 4)}")
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmin[i]
                     any_control_issue = True
@@ -639,8 +654,7 @@ class PowerFlowMP:
                                 print(f"{branch}: Raising from tap {branch.tap_changer.tap}")
                                 stable = False
                         break
-
-        return stable
+        return branches, stable
 
     def run(self, store_in_island=False):
         """
@@ -674,7 +688,7 @@ class PowerFlowMP:
                     Ibus = calculation_input.Ibus
 
                     # run circuit power flow
-                    res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
+                    res = self.run_pf(calculation_input, Vbus, Sbus, Ibus, island_index=i)
 
                     bus_original_idx = numerical_circuit.islands[i]
                     branch_original_idx = numerical_circuit.island_branches[i]
@@ -700,7 +714,7 @@ class PowerFlowMP:
             Ibus = calculation_inputs[0].Ibus
 
             # run circuit power flow
-            results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
+            results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus, 0)
 
             # build the report
             data = np.c_[results.methods[0],
@@ -722,7 +736,7 @@ class PowerFlowMP:
 
         return self.results
 
-    def run_pf(self, calculation_inputs: CalculationInputs, Vbus, Sbus, Ibus):
+    def run_pf(self, calculation_inputs: CalculationInputs, Vbus, Sbus, Ibus, island_index=0):
         """
         Run a power flow for a circuit
         @return:
@@ -774,7 +788,8 @@ class PowerFlowMP:
                                                  solver_type=solver,
                                                  voltage_solution=V0,
                                                  Sbus=Sbus,
-                                                 Ibus=Ibus)
+                                                 Ibus=Ibus,
+                                                 island_index=island_index)
 
                 # did it worked?
                 worked = np.all(results.converged)
