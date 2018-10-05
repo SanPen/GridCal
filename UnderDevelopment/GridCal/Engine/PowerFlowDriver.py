@@ -346,19 +346,19 @@ class PowerFlowMP:
                         # did not check Q limits
                         any_control_issue = False
 
-                    if not any_control_issue:
-                        branches, regulators_stable = self.adjust_tap_changers(voltage=voltage_solution,
-                                                                               buses=self.grid.buses,
-                                                                               branches=self.grid.branches)
-                        if not regulators_stable:
-                            print("Updating the circuit...")
-                            for j, new_branch in enumerate(branches):
-                                for i, old_branch in enumerate(self.grid.branches):
-                                    if old_branch.name == new_branch.name:
-                                        self.grid.branches[i].tap_module = new_branch.tap_module
-                                        numerical_circuit = self.grid.compile()
-                                        circuit = numerical_circuit.compute()[island_index]
-                                        break
+                    print("Checking voltage regulators...")
+                    branches, regulators_stable = self.adjust_tap_changers(voltage=voltage_solution,
+                                                                           buses=self.grid.buses,
+                                                                           branches=self.grid.branches)
+                    if not regulators_stable:
+                        print("Updating the circuit...")
+                        for j, new_branch in enumerate(branches):
+                            for i, old_branch in enumerate(self.grid.branches):
+                                if old_branch.name == new_branch.name:
+                                    self.grid.branches[i].tap_module = new_branch.tap_module
+                                    numerical_circuit = self.grid.compile()
+                                    circuit = numerical_circuit.compute()[island_index]
+                                    break
                 else:
                     any_control_issue = False
 
@@ -541,10 +541,10 @@ class PowerFlowMP:
 
                 if Vm[i] != Vset[i]:
 
-                    if Q[i] >= Qmax[i]:  # it is still a PQ bus but set Qi = Qimax .
+                    if round(Q[i], 4) >= round(Qmax[i], 4):  # it is still a PQ bus but set Qi = Qimax .
                         Qnew[i] = Qmax[i]
 
-                    elif Q[i] <= Qmin[i]:  # it is still a PQ bus and set Qi = Qimin .
+                    elif round(Q[i], 4) <= round(Qmin[i], 4):  # it is still a PQ bus and set Qi = Qimin .
                         Qnew[i] = Qmin[i]
 
                     else:  # switch back to PV, set Vinew = Viset.
@@ -560,16 +560,16 @@ class PowerFlowMP:
 
             elif types[i] == BusMode.PV.value[0]:
 
-                if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
+                if round(Q[i], 4) >= round(Qmax[i], 4):  # it is switched to PQ and set Qi = Qimax .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
+                        print(f"Bus {i} switched to PQ: Q {round(Q[i], 4)}  Qmax: {round(Qmax[i], 4)}")
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmax[i]
                     any_control_issue = True
 
-                elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
+                elif round(Q[i], 4) <= round(Qmin[i], 4):  # it is switched to PQ and set Qi = Qimin .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
+                        print(f"Bus {i} switched to PQ: Q {round(Q[i], 4)}  Qmin: {round(Qmin[i], 4)}")
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmin[i]
                     any_control_issue = True
