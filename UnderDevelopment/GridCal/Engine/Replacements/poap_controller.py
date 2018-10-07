@@ -16,7 +16,7 @@ import heapq
 import threading
 import logging
 import time
-from poap.strategy import EvalRecord
+from GridCal.Engine.Replacements.strategy import EvalRecord
 
 
 # Get module-level logger
