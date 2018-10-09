@@ -249,6 +249,13 @@ class MainGUI(QMainWindow):
                               'spring_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
+        # list of styles
+        plt_styles = plt.style.available
+        self.ui.plt_style_comboBox.setModel(get_list_model(plt_styles))
+
+        if 'fivethirtyeight' in plt_styles:
+            self.ui.plt_style_comboBox.setCurrentText('fivethirtyeight')
+
         # branch types for reduction
         mdl = get_list_model(BranchTypeConverter(BranchType.Branch).options, checks=True)
         self.ui.removeByTypeListView.setModel(mdl)
@@ -478,6 +485,8 @@ class MainGUI(QMainWindow):
         # combobox
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
+        self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
+
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
@@ -525,6 +534,7 @@ class MainGUI(QMainWindow):
         """
         self.lock_ui = val
         self.ui.progress_frame.setVisible(self.lock_ui)
+        QtGui.QGuiApplication.processEvents()
 
     def UNLOCK(self):
         """
@@ -2354,11 +2364,15 @@ class MainGUI(QMainWindow):
             generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
             solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
             control_batteries = self.ui.control_batteries_checkBox.isChecked()
+            load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
+            gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
             options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                               generation_shedding=generation_shedding,
                                               solver=solver,
                                               realistic_results=realistic_results,
-                                              control_batteries=control_batteries)
+                                              control_batteries=control_batteries,
+                                              load_shedding_weight=load_shedding_w,
+                                              generation_shedding_weight=gen_shedding_w)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -2421,11 +2435,15 @@ class MainGUI(QMainWindow):
                 generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 control_batteries = self.ui.control_batteries_checkBox.isChecked()
+                load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
+                gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
                 options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                                   generation_shedding=generation_shedding,
                                                   solver=solver,
                                                   realistic_results=realistic_results,
-                                                  control_batteries=control_batteries)
+                                                  control_batteries=control_batteries,
+                                                  load_shedding_weight=load_shedding_w,
+                                                  generation_shedding_weight=gen_shedding_w)
 
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1
@@ -3381,6 +3399,15 @@ class MainGUI(QMainWindow):
         self.ui.simulation_data_island_comboBox.addItems(['Island ' + str(i) for i, circuit in enumerate(self.calculation_inputs_to_display)])
         if len(self.calculation_inputs_to_display) > 0:
             self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
+
+    def plot_style_change(self):
+        """
+        Change the style
+        :return:
+        """
+        style = self.ui.plt_style_comboBox.currentText()
+        plt.style.use(style)
+        print('Style changed to', style)
 
 
 def run():

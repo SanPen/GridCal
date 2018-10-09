@@ -686,13 +686,16 @@ class DcOpfIsland:
 class DcOpf:
 
     def __init__(self, multi_circuit: MultiCircuit, verbose=False,
-                 allow_load_shedding=False, allow_generation_shedding=False):
+                 allow_load_shedding=False, allow_generation_shedding=False,
+                 load_shedding_weight=10000, generation_shedding_weight=10000):
         """
         DC OPF problem
         :param multi_circuit: multi circuit instance
         :param verbose: verbose?
         :param allow_load_shedding: Allow load shedding?
         :param allow_generation_shedding: Allow generation shedding?
+        :param load_shedding_weight: weight for the load shedding at the objective function
+        :param generation_shedding_weight: weight for the generation shedding at the objective function
         """
 
         # list of OP object islands
@@ -705,6 +708,9 @@ class DcOpf:
         self.verbose = verbose
         self.allow_load_shedding = allow_load_shedding
         self.allow_generation_shedding = allow_generation_shedding
+
+        self.generation_shedding_weight = generation_shedding_weight
+        self.load_shedding_weight = load_shedding_weight
 
         # circuit compilation
         self.multi_circuit = multi_circuit
@@ -797,10 +803,12 @@ class DcOpf:
         Sbase = self.numerical_circuit.Sbase
 
         # objective contributions of generators
-        fobj_gen = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus), self.controlled_generators_P * self.controlled_generators_cost)
+        fobj_gen = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus),
+                            self.controlled_generators_P * self.controlled_generators_cost)
 
         # objective contribution of the batteries
-        fobj_bat = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus), self.battery_P * self.battery_cost)
+        fobj_bat = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus),
+                            self.battery_P * self.battery_cost)
 
         # LP variables for the controlled generators
         P = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]),
@@ -819,7 +827,7 @@ class DcOpf:
         if self.allow_generation_shedding:
             generation_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus),
                                                    self.generation_shedding)
-            P += generation_shedding_per_bus
+            P -= generation_shedding_per_bus
         else:
             generation_shedding_per_bus = np.zeros(self.numerical_circuit.nbus)
 
@@ -847,10 +855,10 @@ class DcOpf:
             fobj = fobj_gen[b_idx].sum() + fobj_bat[b_idx].sum()
 
             if self.allow_load_shedding:
-                fobj += load_shedding_per_bus[b_idx].sum()
+                fobj += load_shedding_per_bus[b_idx].sum() * self.load_shedding_weight
 
             if self.allow_generation_shedding:
-                fobj += generation_shedding_per_bus[b_idx].sum()
+                fobj += generation_shedding_per_bus[b_idx].sum() * self.generation_shedding_weight
 
             fobj += self.slack_loading_ij_p[br_idx].sum() + self.slack_loading_ij_n[br_idx].sum()
             fobj += self.slack_loading_ji_p[br_idx].sum() + self.slack_loading_ji_n[br_idx].sum()

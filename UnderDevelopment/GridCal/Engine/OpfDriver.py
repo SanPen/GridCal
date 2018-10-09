@@ -34,7 +34,7 @@ class OptimalPowerFlowOptions:
 
     def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
                  solver=SolverType.DC_OPF, realistic_results=False, control_batteries=True,
-                 faster_less_accurate=False):
+                 faster_less_accurate=False, generation_shedding_weight=10000, load_shedding_weight=10000):
         """
         OPF options constructor
         :param verbose:
@@ -57,6 +57,10 @@ class OptimalPowerFlowOptions:
         self.realistic_results = realistic_results
 
         self.faster_less_accurate = faster_less_accurate
+
+        self.generation_shedding_weight = generation_shedding_weight
+
+        self.load_shedding_weight = load_shedding_weight
 
 
 class OptimalPowerFlow(QRunnable):
@@ -117,12 +121,18 @@ class OptimalPowerFlow(QRunnable):
                 # DC optimal power flow
                 problem = DcOpf(self.grid, verbose=False,
                                 allow_load_shedding=self.options.load_shedding,
-                                allow_generation_shedding=self.options.generation_shedding)
+                                allow_generation_shedding=self.options.generation_shedding,
+                                generation_shedding_weight=self.options.generation_shedding_weight,
+                                load_shedding_weight=self.options.load_shedding_weight)
+
             elif self.options.solver == SolverType.AC_OPF:
                 # AC optimal power flow
                 problem = AcOpf(self.grid, verbose=False,
                                 allow_load_shedding=self.options.load_shedding,
-                                allow_generation_shedding=self.options.generation_shedding)
+                                allow_generation_shedding=self.options.generation_shedding,
+                                generation_shedding_weight=self.options.generation_shedding_weight,
+                                load_shedding_weight=self.options.load_shedding_weight)
+
             else:
                 raise Exception('Solver not recognized ' + str(self.options.solver))
 

@@ -599,7 +599,7 @@ class PowerFlowMP:
         :param max_tap: array of maximum tap positions
         :param tap_inc_reg_up: array of tap increment when regulating up
         :param tap_inc_reg_down: array of tap increment when regulating down
-        :param vset: array of set voltages
+        :param vset: array of set voltages to control
         :return: stable?, and the taps magnitude vector
         """
         stable = True
@@ -620,7 +620,6 @@ class PowerFlowMP:
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
-
                     if tap_position[i] == max_tap[i]:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
@@ -807,7 +806,7 @@ class PowerFlowMP:
                 # get the solver
                 solver = solvers[k]
 
-                print('Trying', solver)
+                # print('Trying', solver)
 
                 # set the initial voltage
                 V0 = Vbus.copy()

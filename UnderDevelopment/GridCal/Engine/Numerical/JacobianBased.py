@@ -300,7 +300,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     end = time.time()
     elapsed = end - start
 
-    print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
+    # print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
 
     return V, converged, normF, Scalc, iter_, elapsed
 
@@ -704,9 +704,9 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
     end = time.time()
     elapsed = end - start
 
-    print('iter_', iter_,
-          '  -  back_track_counter', back_track_counter,
-          '  -  back_track_iterations', back_track_iterations)
+    # print('iter_', iter_,
+    #       '  -  back_track_counter', back_track_counter,
+    #       '  -  back_track_iterations', back_track_iterations)
 
     Scalc = V * conj(Icalc)
 
