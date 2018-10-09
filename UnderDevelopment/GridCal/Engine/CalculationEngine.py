@@ -314,6 +314,14 @@ class NumericalCircuit:
         self.br_rates = np.zeros(n_br, dtype=float)
         self.branch_states = np.zeros(n_br, dtype=int)
 
+        self.is_bus_to_regulated = np.zeros(n_br, dtype=int)
+        self.tap_position = np.zeros(n_br, dtype=int)
+        self.min_tap = np.zeros(n_br, dtype=int)
+        self.max_tap = np.zeros(n_br, dtype=int)
+        self.tap_inc_reg_up = np.zeros(n_br, dtype=float)
+        self.tap_inc_reg_down = np.zeros(n_br, dtype=float)
+        self.vset = np.zeros(n_br, dtype=int)
+
         self.C_branch_bus_f = lil_matrix((n_br, n_bus), dtype=int)
         self.C_branch_bus_t = lil_matrix((n_br, n_bus), dtype=int)
 
@@ -404,6 +412,15 @@ class NumericalCircuit:
         circuit.C_sta_gen_bus = self.C_sta_gen_bus
         circuit.C_ctrl_gen_bus = self.C_ctrl_gen_bus
         circuit.C_shunt_bus = self.C_shunt_bus
+
+        # needed for the ta changer
+        circuit.is_bus_to_regulated = self.is_bus_to_regulated
+        circuit.tap_position = self.tap_position
+        circuit.min_tap = self.min_tap
+        circuit.max_tap = self.max_tap
+        circuit.tap_inc_reg_up = self.tap_inc_reg_up
+        circuit.tap_inc_reg_down = self.tap_inc_reg_down
+        circuit.vset = self.vset
 
         ################################################################################################################
         # loads, generators, batteries, etc...
@@ -582,7 +599,7 @@ class NumericalCircuit:
                 self.calculation_islands.append(circuit_island)
         else:
             # compile bus types
-            circuit.compile_types()
+            circuit.consolidate()
 
             # only one island, no need to split anything
             self.calculation_islands.append(circuit)
@@ -2175,16 +2192,20 @@ class MultiCircuit:
         for i, branch in enumerate(self.branches):
 
             self.branch_names[i] = branch.name
-
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
 
+            # connectivity
+            circuit.C_branch_bus_f[i, f] = 1
+            circuit.C_branch_bus_t[i, t] = 1
             circuit.F[i] = f
             circuit.T[i] = t
 
+            # name and state
             circuit.branch_names[i] = branch.name
             circuit.branch_states[i] = branch.active
 
+            # impedance and tap
             circuit.R[i] = branch.R
             circuit.X[i] = branch.X
             circuit.G[i] = branch.G
@@ -2193,12 +2214,20 @@ class MultiCircuit:
             circuit.tap_mod[i] = branch.tap_module
             circuit.tap_ang[i] = branch.angle
 
-            circuit.C_branch_bus_f[i, f] = 1
-            circuit.C_branch_bus_t[i, t] = 1
+            # tap changer
+            circuit.is_bus_to_regulated[i] = branch.bus_to_regulated
+            circuit.tap_position[i] = branch.tap_changer.tap
+            circuit.min_tap[i] = branch.tap_changer.min_tap
+            circuit.max_tap[i] = branch.tap_changer.max_tap
+            circuit.tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
+            circuit.tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
+            circuit.vset[i] = branch.vset
 
+            # switches
             if branch.branch_type == BranchType.Switch:
                 circuit.switch_indices.append(i)
 
+            # virtual taps for transformers where the connection voltage is off
             elif branch.branch_type == BranchType.Transformer:
                 circuit.tap_f[i], circuit.tap_t[i] = branch.get_virtual_taps()
 

@@ -456,6 +456,16 @@ class CalculationInputs:
         self.F = np.zeros(nbr, dtype=int)
         self.T = np.zeros(nbr, dtype=int)
 
+        # needed fot the tap changer
+        self.is_bus_to_regulated = np.zeros(nbr, dtype=int)
+        self.bus_to_regulated_idx = None
+        self.tap_position = np.zeros(nbr, dtype=int)
+        self.min_tap = np.zeros(nbr, dtype=int)
+        self.max_tap = np.zeros(nbr, dtype=int)
+        self.tap_inc_reg_up = np.zeros(nbr, dtype=float)
+        self.tap_inc_reg_down = np.zeros(nbr, dtype=float)
+        self.vset = np.zeros(nbr, dtype=int)
+
         self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
         self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
 
@@ -527,6 +537,14 @@ class CalculationInputs:
         self.pqpv.sort()
         pass
 
+    def consolidate(self):
+        """
+        Compute the magnitudes that cannot be computed vector-wise
+        """
+        self.bus_to_regulated_idx = np.where(self.is_bus_to_regulated > 0)[0]
+
+        self.compile_types()
+
     def get_island(self, bus_idx, branch_idx):
         """
         Get a sub-island
@@ -576,7 +594,15 @@ class CalculationInputs:
         obj.C_ctrl_gen_bus = self.C_ctrl_gen_bus[:, bus_idx]
         obj.C_shunt_bus = self.C_shunt_bus[:, bus_idx]
 
-        obj.compile_types()
+        obj.bus_to_regulated_idx = self.bus_to_regulated_idx[branch_idx]
+        obj.tap_position = self.tap_position[branch_idx]
+        obj.min_tap = self.min_tap[branch_idx]
+        obj.max_tap = self.max_tap[branch_idx]
+        obj.tap_inc_reg_up = self.tap_inc_reg_up[branch_idx]
+        obj.tap_inc_reg_down = self.tap_inc_reg_down[branch_idx]
+        obj.vset = self.vset[branch_idx]
+
+        obj.consolidate()
 
         return obj
 

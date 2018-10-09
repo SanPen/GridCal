@@ -1777,6 +1777,8 @@ class MainGUI(QMainWindow):
 
         mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
+        ctrl_taps = self.ui.control_transformer_taps_checkBox.isChecked()
+
         ops = PowerFlowOptions(solver_type=solver_type,
                                aux_solver_type=solver_to_retry_with,
                                verbose=False,
@@ -1786,7 +1788,8 @@ class MainGUI(QMainWindow):
                                max_iter=max_iter,
                                control_q=enforce_q_limits,
                                multi_core=mp,
-                               dispatch_storage=dispatch_storage)
+                               dispatch_storage=dispatch_storage,
+                               control_taps=ctrl_taps)
 
         return ops
 

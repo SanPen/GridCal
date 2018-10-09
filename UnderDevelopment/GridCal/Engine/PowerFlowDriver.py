@@ -60,7 +60,8 @@ class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True, dispatch_storage=False):
+                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True, dispatch_storage=False,
+                 control_taps=False):
         """
         Power flow execution options
         @param solver_type:
@@ -72,6 +73,7 @@ class PowerFlowOptions:
         @param tolerance:
         @param max_iter:
         @param control_q:
+        @param control_taps:
         """
         self.solver_type = solver_type
 
@@ -92,6 +94,8 @@ class PowerFlowOptions:
         self.multi_thread = multi_core
 
         self.dispatch_storage = dispatch_storage
+
+        self.control_taps = control_taps
 
 
 class PowerFlowMP:
@@ -174,10 +178,16 @@ class PowerFlowMP:
         @return:
         """
 
+        # get the original types and compile this class' own lists of node types for thread independence
         original_types = circuit.types.copy()
         ref, pq, pv, pqpv = self.compile_types(Sbus, original_types)
 
-        any_control_issue = True  # guilty assumption...
+        # copy the tap positions
+        tap_positions = circuit.tap_position.copy()
+
+        any_q_control_issue = True  # guilty assumption...
+
+        any_tap_control_issue = True
 
         control_max_iter = 10
 
@@ -190,13 +200,13 @@ class PowerFlowMP:
         it = list()
         el = list()
 
-        while any_control_issue and outer_it < control_max_iter:
+        while any_q_control_issue and any_tap_control_issue and outer_it < control_max_iter:
 
             if len(circuit.ref) == 0:
                 voltage_solution = zeros(len(Sbus), dtype=complex)
                 normF = 0
                 Scalc = Sbus.copy()
-                any_control_issue = False
+                any_q_control_issue = False
                 converged = True
                 warn('Not solving power flow because there is no slack bus')
                 self.logger.append('Not solving power flow because there is no slack bus')
@@ -325,7 +335,7 @@ class PowerFlowMP:
                         voltage_solution, \
                         Qnew, \
                         types_new, \
-                        any_control_issue = self.switch_logic(V=voltage_solution,
+                        any_q_control_issue = self.switch_logic(V=voltage_solution,
                                                               Vset=abs(voltage_solution),
                                                               Q=Scalc.imag,
                                                               Qmax=circuit.Qmax,
@@ -333,7 +343,7 @@ class PowerFlowMP:
                                                               types=circuit.types,
                                                               original_types=original_types,
                                                               verbose=self.options.verbose)
-                        if any_control_issue:
+                        if any_q_control_issue:
                             # voltage_solution = Vnew
                             Sbus = Sbus.real + 1j * Qnew
                             ref, pq, pv, pqpv = self.compile_types(Sbus, types_new)
@@ -343,9 +353,28 @@ class PowerFlowMP:
 
                     else:
                         # did not check Q limits
-                        any_control_issue = False
+                        any_q_control_issue = False
+
+                    # control the transformer taps
+                    if self.options.control_taps and any_tap_control_issue:
+
+                        stable, tap_positions = self.adjust_tap_changers(voltage=voltage_solution,
+                                                                         T=circuit.T,
+                                                                         bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                         tap_position=tap_positions,
+                                                                         min_tap=circuit.min_tap,
+                                                                         max_tap=circuit.max_tap,
+                                                                         tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                         tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                         vset=circuit.vset)
+
+                        any_tap_control_issue = not stable
+
+                    else:
+                        any_tap_control_issue = False
+
                 else:
-                    any_control_issue = False
+                    any_q_control_issue = False
 
             # increment the inner iterations counter
             inner_it.append(it)
