@@ -320,7 +320,7 @@ class NumericalCircuit:
         self.max_tap = np.zeros(n_br, dtype=int)
         self.tap_inc_reg_up = np.zeros(n_br, dtype=float)
         self.tap_inc_reg_down = np.zeros(n_br, dtype=float)
-        self.vset = np.zeros(n_br, dtype=int)
+        self.vset = np.zeros(n_br, dtype=float)
 
         self.C_branch_bus_f = lil_matrix((n_br, n_bus), dtype=int)
         self.C_branch_bus_t = lil_matrix((n_br, n_bus), dtype=int)
