@@ -98,7 +98,7 @@ class CalculationInputs:
         self.max_tap = np.zeros(nbr, dtype=int)
         self.tap_inc_reg_up = np.zeros(nbr, dtype=float)
         self.tap_inc_reg_down = np.zeros(nbr, dtype=float)
-        self.vset = np.zeros(nbr, dtype=int)
+        self.vset = np.zeros(nbr, dtype=float)
 
         self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
         self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
