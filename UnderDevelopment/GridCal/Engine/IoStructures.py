@@ -88,6 +88,7 @@ class CalculationInputs:
         self.GBc = np.zeros(nbr, dtype=complex)
         self.tap_f = np.zeros(nbr, dtype=float)
         self.tap_t = np.zeros(nbr, dtype=float)
+        self.tap_ang = np.zeros(nbr, dtype=float)
 
         # needed fot the tap changer
         self.is_bus_to_regulated = np.zeros(nbr, dtype=int)
@@ -234,6 +235,7 @@ class CalculationInputs:
         obj.tap_inc_reg_up = self.tap_inc_reg_up[branch_idx]
         obj.tap_inc_reg_down = self.tap_inc_reg_down[branch_idx]
         obj.vset = self.vset[branch_idx]
+        obj.tap_ang = self.tap_ang[branch_idx]
 
         obj.Ys = self.Ys
         obj.GBc = self.GBc
@@ -326,7 +328,7 @@ class CalculationInputs:
         B1t = diags(-b1) * Cf + diags(-b1) * Ct
         self.B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
 
-        b2 = b1 + self.Gbc.imag  # B == Gbc.imag
+        b2 = b1 + self.GBc.imag  # B == GBc.imag
         b2_ff = -(b2 / (tap * np.conj(tap))).real
         b2_ft = -(b1 / np.conj(tap)).real
         b2_tf = -(b1 / tap).real

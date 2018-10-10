@@ -421,6 +421,7 @@ class NumericalCircuit:
         circuit.tap_inc_reg_up = self.tap_inc_reg_up
         circuit.tap_inc_reg_down = self.tap_inc_reg_down
         circuit.vset = self.vset
+        circuit.tap_ang = self.tap_ang
 
         ################################################################################################################
         # loads, generators, batteries, etc...

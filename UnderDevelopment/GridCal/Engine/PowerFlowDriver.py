@@ -708,7 +708,7 @@ class PowerFlowMP:
 
         tap = np.zeros_like(vset)
         idx = np.where(tap_position == 0)[0]
-        tap[idx] = 0
+        tap[idx] = 1.0
 
         idx = np.where(tap_position > 0)[0]
         tap[idx] = 1.0 + tap_position[idx] * tap_inc_reg_up[idx]
