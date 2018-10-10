@@ -190,7 +190,9 @@ class PowerFlowMP:
 
         any_tap_control_issue = True
 
-        control_max_iter = 10
+        # should at least be as big as the total number of taps
+        # (should also be dynamic instead of fixed...)
+        control_max_iter = 33
 
         inner_it = list()
         outer_it = 0
@@ -201,7 +203,7 @@ class PowerFlowMP:
         it = list()
         el = list()
 
-        while any_q_control_issue and any_tap_control_issue and outer_it < control_max_iter:
+        while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
             if len(circuit.ref) == 0:
                 voltage_solution = zeros(len(Sbus), dtype=complex)
