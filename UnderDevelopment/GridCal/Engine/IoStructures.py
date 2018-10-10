@@ -19,7 +19,7 @@ from warnings import warn
 import pandas as pd
 from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
-from scipy.sparse import hstack as hstack_s, vstack as vstack_s
+from scipy.sparse import diags, hstack as hstack_s, vstack as vstack_s
 from scipy.sparse.linalg import factorized
 from pySOT import *
 from pyDOE import lhs
@@ -33,379 +33,6 @@ from GridCal.Engine.BasicStructures import CDF
 from GridCal.Engine.Numerical.JacobianBased import Jacobian
 from GridCal.Engine.BasicStructures import BusMode
 
-
-# class PowerFlowInput:
-#
-#     def __init__(self, n, m):
-#         """
-#         Power Flow study input values
-#         @param n: Number of buses
-#         @param m: Number of branches
-#         """
-#         self.n = n
-#
-#         self.m = m
-#
-#         # Array of integer values representing the buses types
-#         self.types = zeros(n, dtype=int)
-#
-#         self.ref = None
-#
-#         self.pv = None
-#
-#         self.pq = None
-#
-#         self.sto = None
-#
-#         self.pqpv = None
-#
-#         # Branch-Bus connectivity matrix
-#         self.C = lil_matrix((m, n), dtype=int)
-#
-#         # Branch admittance matrix with the from buses
-#         self.Yf = lil_matrix((m, n), dtype=complex)
-#
-#         # Branch admittance matrix with the to buses
-#         self.Yt = lil_matrix((m, n), dtype=complex)
-#
-#         # Array with the 'from' index of the from bus of each branch
-#         self.F = zeros(m, dtype=int)
-#
-#         # Array with the 'to' index of the from bus of each branch
-#         self.T = zeros(m, dtype=int)
-#
-#         # array to store a 1 for the active branches
-#         self.active_branches = zeros(m, dtype=int)
-#
-#         # Full admittance matrix (will be converted to sparse)
-#         self.Ybus = lil_matrix((n, n), dtype=complex)
-#
-#         # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
-#         self.Zbus = None
-#
-#         # Admittance matrix of the series elements (will be converted to sparse)
-#         self.Yseries = lil_matrix((n, n), dtype=complex)
-#
-#         # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
-#         self.Yshunt = zeros(n, dtype=complex)
-#
-#         # Jacobian matrix 1 for the fast-decoupled power flow
-#         self.B1 = lil_matrix((n, n), dtype=double)
-#
-#         # Jacobian matrix 2 for the fast-decoupled power flow
-#         self.B2 = lil_matrix((n, n), dtype=double)
-#
-#         # Array of line-line nominal voltages of the buses
-#         self.Vnom = zeros(n)
-#
-#         # Currents at the buses array
-#         self.Ibus = zeros(n, dtype=complex)
-#
-#         # Powers at the buses array
-#         self.Sbus = zeros(n, dtype=complex)
-#
-#         # Voltages at the buses array
-#         self.Vbus = zeros(n, dtype=complex)
-#
-#         self.Vmin = zeros(n, dtype=double)
-#
-#         self.Vmax = zeros(n, dtype=double)
-#
-#         self.Qmin = ones(n, dtype=double) * -9999
-#
-#         self.Qmax = ones(n, dtype=double) * 9999
-#
-#         self.branch_rates = zeros(m)
-#
-#         self.bus_names = zeros(n, dtype=object)
-#
-#         self.branch_names = zeros(m, dtype=object)
-#
-#         self.branches_to_remove_idx = list()
-#         self.branches_to_keep_idx = list()
-#
-#         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types', 'Jacobian']
-#
-#         self.logger = list()
-#
-#     def compile(self):
-#         """
-#         Make the matrices sparse
-#         Create the ref, pv and pq lists
-#         @return:
-#         """
-#         self.C = csc_matrix(self.C)
-#         self.Yf = csc_matrix(self.Yf)
-#         self.Yt = csc_matrix(self.Yt)
-#         self.Ybus = csc_matrix(self.Ybus)
-#         self.Yseries = csc_matrix(self.Yseries)
-#         self.B1 = csc_matrix(self.B1)
-#         self.B2 = csc_matrix(self.B2)
-#         # self.Yshunt = sparse(self.Yshunt)  No need to make it sparse, it is a vector already
-#         # compile the types lists from the types vector
-#         self.compile_types()
-#
-#     def mismatch(self, V, Sbus):
-#         """
-#         Compute the power flow mismatch
-#         @param V: Voltage array (calculated)
-#         @param Sbus: Power array (especified)
-#         @return: mismatch of the computed solution
-#         """
-#         Scalc = V * conj(self.Ybus * V)
-#         mis = Scalc - Sbus  # compute the mismatch
-#         F = r_[mis[self.pv].real,
-#                mis[self.pq].real,
-#                mis[self.pq].imag]
-#
-#         # check tolerance
-#         normF = linalg.norm(F, Inf)
-#
-#         return normF
-#
-#     def compile_types(self, types_new=None):
-#         """
-#         Compile the types
-#         @return:
-#         """
-#         if types_new is not None:
-#             self.types = types_new.copy()
-#         self.pq = where(self.types == BusMode.PQ.value[0])[0]
-#         self.pv = where(self.types == BusMode.PV.value[0])[0]
-#         self.ref = where(self.types == BusMode.REF.value[0])[0]
-#         self.sto = where(self.types == BusMode.STO_DISPATCH.value)[0]
-#
-#         if len(self.ref) == 0:  # there is no slack!
-#
-#             if len(self.pv) == 0:  # there are no pv neither -> blackout grid
-#
-#                 warn('There are no slack nodes selected')
-#                 self.logger.append('There are no slack nodes selected')
-#
-#             else:  # select the first PV generator as the slack
-#
-#                 mx = max(self.Sbus[self.pv])
-#                 if mx > 0:
-#                     # find the generator that is injecting the most
-#                     i = where(self.Sbus == mx)[0][0]
-#
-#                 else:
-#                     # all the generators are injecting zero, pick the first pv
-#                     i = self.pv[0]
-#
-#                 # delete the selected pv bus from the pv list and put it in the slack list
-#                 self.pv = delete(self.pv, where(self.pv == i)[0])
-#                 self.ref = [i]
-#                 # print('Setting bus', i, 'as slack')
-#
-#             self.ref = ndarray.flatten(array(self.ref))
-#             self.types[self.ref] = BusMode.REF.value[0]
-#         else:
-#             pass  # no problem :)
-#
-#         self.pqpv = r_[self.pq, self.pv]
-#         self.pqpv.sort()
-#         pass
-#
-#     def set_from(self, obj, bus_idx, br_idx):
-#         """
-#         Copy data from other PowerFlowInput object
-#         @param obj: PowerFlowInput instance
-#         @param bus_idx: original bus indices
-#         @param br_idx: original branch indices
-#         @return:
-#         """
-#         self.types[bus_idx] = obj.types
-#
-#         self.bus_names[bus_idx] = obj.bus_names
-#
-#         # self.ref = None
-#         #
-#         # self.pv = None
-#         #
-#         # self.pq = None
-#         #
-#         # self.sto = None
-#
-#         # Branch-Bus connectivity matrix
-#         self.C[br_idx, :][:, bus_idx] = obj.C.todense()
-#
-#         # Branch admittance matrix with the from buses
-#         self.Yf[br_idx, :][:, bus_idx] = obj.Yf.todense()
-#
-#         # Branch admittance matrix with the to buses
-#         self.Yt[br_idx, :][:, bus_idx] = obj.Yt.todense()
-#
-#         # Array with the 'from' index of the from bus of each branch
-#         self.F[br_idx] = obj.F
-#
-#         # Array with the 'to' index of the from bus of each branch
-#         self.T[br_idx] = obj.T
-#
-#         # array to store a 1 for the active branches
-#         self.active_branches[br_idx] = obj.active_branches
-#
-#         # Full admittance matrix (will be converted to sparse)
-#         self.Ybus[bus_idx, :][:, bus_idx] = obj.Ybus.todense()
-#
-#         # Admittance matrix of the series elements (will be converted to sparse)
-#         self.Yseries[bus_idx, :][:, bus_idx] = obj.Yseries.todense()
-#
-#         # Admittance matrix of the shunt elements (will be converted to sparse)
-#         self.Yshunt[bus_idx] = obj.Yshunt
-#
-#         # Currents at the buses array
-#         self.Ibus[bus_idx] = obj.Ibus
-#
-#         # Powers at the buses array
-#         self.Sbus[bus_idx] = obj.Sbus
-#
-#         # Voltages at the buses array
-#         self.Vbus[bus_idx] = obj.Vbus
-#
-#         self.Vmin[bus_idx] = obj.Vmin
-#
-#         self.Vmax[bus_idx] = obj.Vmax
-#
-#         # self.Qmin = ones(n, dtype=double) * -9999
-#         #
-#         # self.Qmax = ones(n, dtype=double) * 9999
-#
-#         self.branch_rates[br_idx] = obj.branch_rates
-#
-#         self.compile()
-#
-#     def get_structure(self, structure_type):
-#         """
-#         Get a DataFrame with the input
-#         Args:
-#             structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
-#
-#         Returns: Pandas DataFrame
-#         """
-#
-#         if structure_type == 'Vbus':
-#
-#             df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
-#
-#         elif structure_type == 'Sbus':
-#             df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
-#
-#         elif structure_type == 'Ibus':
-#             df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
-#
-#         elif structure_type == 'Ybus':
-#             df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
-#
-#         elif structure_type == 'Yshunt':
-#             df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
-#
-#         elif structure_type == 'Yseries':
-#             df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
-#
-#         elif structure_type == 'Types':
-#             df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
-#
-#         elif structure_type == 'Jacobian':
-#
-#             J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
-#
-#             """
-#             J11 = dS_dVa[array([pvpq]).T, pvpq].real
-#             J12 = dS_dVm[array([pvpq]).T, pq].real
-#             J21 = dS_dVa[array([pq]).T, pvpq].imag
-#             J22 = dS_dVm[array([pq]).T, pq].imag
-#             """
-#             npq = len(self.pq)
-#             npv = len(self.pv)
-#             npqpv = npq + npv
-#             cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
-#             rows = cols
-#             df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
-#
-#         else:
-#
-#             raise Exception('PF input: structure type not found')
-#
-#         return df
-#
-#     def copy(self):
-#
-#         cpy = PowerFlowInput(self.n, self.m)
-#
-#         cpy.types = self.types.copy()
-#
-#         cpy.ref = self.ref.copy()
-#
-#         cpy.pv = self.pv.copy()
-#
-#         cpy.pq = self.pq.copy()
-#
-#         cpy.sto = self.sto.copy()
-#
-#         cpy.pqpv = self.pqpv.copy()
-#
-#         # Branch admittance matrix with the from buses
-#         cpy.Yf = self.Yf.copy()
-#
-#         # Branch admittance matrix with the to buses
-#         cpy.Yt = self.Yt.copy()
-#
-#         # Array with the 'from' index of the from bus of each branch
-#         cpy.F = self.F.copy()
-#
-#         # Array with the 'to' index of the from bus of each branch
-#         cpy.T = self.T.copy()
-#
-#         # array to store a 1 for the active branches
-#         cpy.active_branches = self.active_branches.copy()
-#
-#         # Full admittance matrix (will be converted to sparse)
-#         cpy.Ybus = self.Ybus.copy()
-#
-#         # Full impedance matrix (will be computed upon requirement ad the inverse of Ybus)
-#         # self.Zbus = None
-#
-#         # Admittance matrix of the series elements (will be converted to sparse)
-#         cpy.Yseries = self.Yseries.copy()
-#
-#         # Admittance matrix of the shunt elements (actually it is only the diagonal, so let's make it a vector)
-#         cpy.Yshunt = self.Yshunt.copy()
-#
-#         # Jacobian matrix 1 for the fast-decoupled power flow
-#         cpy.B1 = self.B1.copy()
-#
-#         # Jacobian matrix 2 for the fast-decoupled power flow
-#         cpy.B2 = self.B2.copy()
-#
-#         # Array of line-line nominal voltages of the buses
-#         cpy.Vnom = self.Vnom.copy()
-#
-#         # Currents at the buses array
-#         cpy.Ibus = self.Ibus.copy()
-#
-#         # Powers at the buses array
-#         cpy.Sbus = self.Sbus.copy()
-#
-#         # Voltages at the buses array
-#         cpy.Vbus = self.Vbus.copy()
-#
-#         cpy.Vmin = self.Vmin.copy()
-#
-#         cpy.Vmax = self.Vmax.copy()
-#
-#         cpy.Qmin = self.Qmin.copy()
-#
-#         cpy.Qmax = self.Qmax.copy()
-#
-#         cpy.branch_rates = self.branch_rates.copy()
-#
-#         cpy.bus_names = self.bus_names.copy()
-#
-#         cpy.available_structures = self.available_structures.copy()
-#
-#         return cpy
-#
 
 class CalculationInputs:
 
@@ -455,6 +82,12 @@ class CalculationInputs:
 
         self.F = np.zeros(nbr, dtype=int)
         self.T = np.zeros(nbr, dtype=int)
+
+        # vectors to re-calculate the admittance matrices
+        self.Ys = np.zeros(nbr, dtype=complex)
+        self.GBc = np.zeros(nbr, dtype=complex)
+        self.tap_f = np.zeros(nbr, dtype=float)
+        self.tap_t = np.zeros(nbr, dtype=float)
 
         # needed fot the tap changer
         self.is_bus_to_regulated = np.zeros(nbr, dtype=int)
@@ -602,6 +235,11 @@ class CalculationInputs:
         obj.tap_inc_reg_down = self.tap_inc_reg_down[branch_idx]
         obj.vset = self.vset[branch_idx]
 
+        obj.Ys = self.Ys
+        obj.GBc = self.GBc
+        obj.tap_f = self.tap_f
+        obj.tap_t = self.tap_t
+
         obj.consolidate()
 
         return obj
@@ -647,6 +285,55 @@ class CalculationInputs:
         data.loading = data.Sbranch / (self.branch_rates + 1e-9)
 
         return data
+
+    def re_calc_admittance_matrices(self, tap_mod):
+        """
+        Recalculate the admittance matrices as the tap changes
+        :param tap_mod: tap modules per bus
+        :return: Nothing, the matrices are changed in-place
+        """
+        # here the branch_bus matrices do have the states embedded
+        Cf = self.C_branch_bus_f
+        Ct = self.C_branch_bus_t
+
+        tap = tap_mod * np.exp(1.0j * self.tap_ang)
+
+        # branch primitives in vector form
+        Ytt = (self.Ys + self.GBc / 2.0) / (self.tap_t * self.tap_t)
+        Yff = (self.Ys + self.GBc / 2.0) / (self.tap_f * self.tap_f * tap * np.conj(tap))
+        Yft = - self.Ys / (self.tap_f * self.tap_t * np.conj(tap))
+        Ytf = - self.Ys / (self.tap_t * self.tap_f * tap)
+
+        # form the admittance matrices
+        self.Yf = diags(Yff) * Cf + diags(Yft) * Ct
+        self.Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
+        self.Ybus = csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt + diags(self.Ysh))
+
+        # branch primitives in vector form
+        Ytts = self.Ys
+        Yffs = Ytts / (tap * np.conj(tap))
+        Yfts = - self.Ys / np.conj(tap)
+        Ytfs = - self.Ys / tap
+
+        # form the admittance matrices of the series elements
+        Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
+        Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
+        self.Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
+
+        X = (1 / self.Ys).imag
+        b1 = 1.0 / (X + 1e-20)
+        B1f = diags(-b1) * Cf + diags(-b1) * Ct
+        B1t = diags(-b1) * Cf + diags(-b1) * Ct
+        self.B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
+
+        b2 = b1 + self.Gbc.imag  # B == Gbc.imag
+        b2_ff = -(b2 / (tap * np.conj(tap))).real
+        b2_ft = -(b1 / np.conj(tap)).real
+        b2_tf = -(b1 / tap).real
+        b2_tt = - b2
+        B2f = diags(b2_ff) * Cf + diags(b2_ft) * Ct
+        B2t = diags(b2_tf) * Cf + diags(b2_tt) * Ct
+        self.B2 = csc_matrix(Cf.T * B2f + Ct.T * B2t)
 
     def build_linear_ac_sys_mat(self):
         """

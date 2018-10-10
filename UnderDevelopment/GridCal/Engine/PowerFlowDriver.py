@@ -336,13 +336,13 @@ class PowerFlowMP:
                         Qnew, \
                         types_new, \
                         any_q_control_issue = self.switch_logic(V=voltage_solution,
-                                                              Vset=abs(voltage_solution),
-                                                              Q=Scalc.imag,
-                                                              Qmax=circuit.Qmax,
-                                                              Qmin=circuit.Qmin,
-                                                              types=circuit.types,
-                                                              original_types=original_types,
-                                                              verbose=self.options.verbose)
+                                                                Vset=np.abs(voltage_solution),
+                                                                Q=Scalc.imag,
+                                                                Qmax=circuit.Qmax,
+                                                                Qmin=circuit.Qmin,
+                                                                types=circuit.types,
+                                                                original_types=original_types,
+                                                                verbose=self.options.verbose)
                         if any_q_control_issue:
                             # voltage_solution = Vnew
                             Sbus = Sbus.real + 1j * Qnew
@@ -358,15 +358,19 @@ class PowerFlowMP:
                     # control the transformer taps
                     if self.options.control_taps and any_tap_control_issue:
 
-                        stable, tap_positions = self.adjust_tap_changers(voltage=voltage_solution,
-                                                                         T=circuit.T,
-                                                                         bus_to_regulated_idx=circuit.bus_to_regulated_idx,
-                                                                         tap_position=tap_positions,
-                                                                         min_tap=circuit.min_tap,
-                                                                         max_tap=circuit.max_tap,
-                                                                         tap_inc_reg_up=circuit.tap_inc_reg_up,
-                                                                         tap_inc_reg_down=circuit.tap_inc_reg_down,
-                                                                         vset=circuit.vset)
+                        stable, tap_module, \
+                        tap_positions = self.adjust_tap_changers(voltage=voltage_solution,
+                                                                 T=circuit.T,
+                                                                 bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                 tap_position=tap_positions,
+                                                                 min_tap=circuit.min_tap,
+                                                                 max_tap=circuit.max_tap,
+                                                                 tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                 tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                 vset=circuit.vset)
+
+                        # recompute the admittance matrices based on the tap changes
+                        circuit.re_calc_admittance_matrices(tap_module)
 
                         any_tap_control_issue = not stable
 
@@ -644,7 +648,7 @@ class PowerFlowMP:
                     if tap_position[i] == min_tap[i]:
                         print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
-                    self.tap_down(tap_position[i], min_tap[i])
+                    tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
@@ -652,7 +656,7 @@ class PowerFlowMP:
                     if tap_position[i] == max_tap[i]:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
-                    self.tap_up(tap_position[i], max_tap[i])
+                    tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
@@ -661,7 +665,7 @@ class PowerFlowMP:
                     if tap_position[i] == min_tap[i]:
                         print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
-                    self.tap_down(tap_position[i], min_tap[i])
+                    tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
@@ -669,7 +673,7 @@ class PowerFlowMP:
                     if tap_position[i] == max_tap[i]:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
-                    self.tap_up(tap_position[i], max_tap[i])
+                    tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
@@ -678,7 +682,7 @@ class PowerFlowMP:
                     if tap_position[i] == min_tap[i]:
                         print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
-                    self.tap_down(tap_position[i], min_tap[i])
+                    tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
@@ -686,7 +690,7 @@ class PowerFlowMP:
                     if tap_position[i] == max_tap[i]:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
-                    self.tap_up(tap_position[i], max_tap[i])
+                    tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
             break
@@ -711,7 +715,7 @@ class PowerFlowMP:
         idx = np.where(tap_position < 0)[0]
         tap[idx] = 1.0 + tap_position[idx] * tap_inc_reg_down[idx]
 
-        return stable, tap
+        return stable, tap, tap_position
 
     def run(self, store_in_island=False):
         """

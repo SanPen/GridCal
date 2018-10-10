@@ -560,6 +560,11 @@ class NumericalCircuit:
         circuit.C_branch_bus_f = Cf
         circuit.C_branch_bus_t = Ct
 
+        circuit.Ys = Ys
+        circuit.GBc = GBc
+        circuit.tap_f = self.tap_f
+        circuit.tap_t = self.tap_t
+
         ################################################################################################################
         # Bus connectivity
         ################################################################################################################
