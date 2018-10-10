@@ -25,6 +25,7 @@ from GridCal.Engine.PowerFlowDriver import SolverType
 from GridCal.Engine.OpfDriver import OptimalPowerFlowResults, OptimalPowerFlowOptions, OptimalPowerFlow
 from GridCal.Engine.Numerical.AC_OPF import AcOpf
 from GridCal.Engine.Numerical.DC_OPF import DcOpf
+from GridCal.Engine.Numerical.BlackBoxOPF import AcOPFBlackBox
 
 
 class OptimalPowerFlowTimeSeriesResults:
@@ -272,6 +273,10 @@ class OptimalPowerFlowTimeSeries(QThread):
                 problem = DcOpf(self.grid, verbose=False,
                                 allow_load_shedding=self.options.load_shedding,
                                 allow_generation_shedding=self.options.generation_shedding)
+
+            elif self.options.solver == SolverType.DYCORS_OPF:
+
+                problem = AcOPFBlackBox(self.grid, verbose=False)
 
             elif self.options.solver == SolverType.AC_OPF:
                 # AC optimal power flow

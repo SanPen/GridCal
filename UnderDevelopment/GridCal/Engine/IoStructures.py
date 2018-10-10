@@ -450,20 +450,28 @@ class CalculationInputs:
 
 class PowerFlowResults:
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None,
+    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, tap_module=None,
                  flow_direction=None, error=None, converged=None, Qpv=None, inner_it=None, outer_it=None,
                  elapsed=None, methods=None):
         """
-
-        @param voltage: Voltages array (p.u.)
-        @param Sbranch: Branches power array (MVA)
-        @param Ibranch: Branches current array (p.u.)
-        @param loading: Branches loading array (p.u.)
-        @param losses: Branches losses array (MW)
-        @param error: power flow error value
-        @param converged: converged (True / False)
-        @param Qpv: Reactive power at the PV nodes array (p.u.)
+        Power flow results
+        :param Sbus: Bus power calculated
+        :param voltage:  Voltages array (p.u.)
+        :param Sbranch: Branches power array (MVA)
+        :param Ibranch: Branches current array (p.u.)
+        :param loading: Branches loading array (p.u.)
+        :param losses: Branches losses array (MW)
+        :param tap_module: tap module computed for all the branches
+        :param flow_direction: flow direction at each of the branches
+        :param error: power flow error value
+        :param converged: converged (True / False)
+        :param Qpv: Reactive power at the PV nodes array (p.u.)
+        :param inner_it: number of inner iterations
+        :param outer_it: number of outer iterations
+        :param elapsed: time elapsed in seconds
+        :param methods: methods used
         """
+
         self.Sbus = Sbus
 
         self.voltage = voltage
@@ -477,6 +485,8 @@ class PowerFlowResults:
         self.losses = losses
 
         self.flow_direction = flow_direction
+
+        self.tap_module = tap_module
 
         self.error = error
 

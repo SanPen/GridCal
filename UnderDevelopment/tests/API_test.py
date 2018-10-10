@@ -86,7 +86,7 @@ if __name__ == '__main__':
     ####################################################################################################################
     print('Running OPF...', '')
     opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=True, generation_shedding=True,
-                                          solver=SolverType.DC_OPF, realistic_results=False)
+                                          solver=SolverType.DYCORS_OPF, realistic_results=False)
     opf = OptimalPowerFlow(grid=main_circuit, options=opf_options)
     opf.run()
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     ####################################################################################################################
     print('Running OPF-TS...', '')
     opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
-                                          control_batteries=True, solver=SolverType.DC_OPF, realistic_results=False)
+                                          control_batteries=True, solver=SolverType.DYCORS_OPF, realistic_results=False)
     opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
     opf_ts.run()
 

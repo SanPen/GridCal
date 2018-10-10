@@ -901,10 +901,14 @@ class DcOpf:
                   Emin=None, Emax=None, E=None, dt=0,
                   force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
         """
-
+        Set the loading and batteries state
         :param load_power: vector of load power (same size as the number of loads)
         :param static_gen_power: vector of static generators load (same size as the static gen objects)
-        :param controlled_gen_power: vector of controlled generators power (same size as the ctrl. generatos)
+        :param controlled_gen_power: vector of controlled generators power (same size as the ctrl. generators)
+        :param Emin: Minimum energy per battery in MWh / Sbase -> 1/h
+        :param Emax: Maximum energy per battery in MWh / Sbase -> 1/h
+        :param E: Current energy charge in MWh / Sbase -> 1/h
+        :param dt: time step in hours
         :param force_batteries_to_charge: shall we force batteries to charge?
         :param bat_idx: battery indices that shall be forced to charge
         :param battery_loading_pu: amount of the nominal band to charge to use (0.1=10%)
@@ -919,7 +923,7 @@ class DcOpf:
         P += self.numerical_circuit.C_sta_gen_bus.T * (static_gen_power.real / Sbase *
                                                        self.numerical_circuit.static_gen_enabled)
 
-        # controlled generators for all the circuits (enabled and not dispatcheable)
+        # controlled generators for all the circuits (enabled and not dispatchable)
         P += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * \
              (controlled_gen_power[self.gen_s_idx] / Sbase)
 

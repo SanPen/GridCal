@@ -13,27 +13,6 @@ from GridCal.Engine.CalculationEngine import MultiCircuit
 
 
 class AcOPFBlackBox:
-    """
-    Linear power flow OPF
-    Global optimum: :math:`f(0,0,...,0)=0`
-
-    :param dim: Number of dimensions
-    :type dim: int
-    :ivar dim: Number of dimensions
-    :type dim: int
-    :ivar xlow: Lower bound constraints
-    :type xlow: numpy.array
-    :ivar xup: Upper bound constraints
-    :type xup: numpy.array
-    :ivar info: Problem information:
-    :type info: string
-    :ivar min: Global optimum
-    :type min: float
-    :ivar integer: Integer variables
-    :type integer: numpy.array
-    :ivar continuous: Continuous variables
-    :type continuous: numpy.array
-    """
 
     def __init__(self, multi_circuit: MultiCircuit, verbose=False):
 
@@ -109,27 +88,51 @@ class AcOPFBlackBox:
         check_opt_prob(self)
         ################################################################
 
-    def set_loads(self, t_idx):
-        """
-        Set the loading state from the profiles at the time index given
-        Args:
-            t_idx: profiles time index
-        """
+    def build_solvers(self):
+        # just present to be compatible
+        pass
+
+    def set_state(self, load_power, static_gen_power, controlled_gen_power,
+                  Emin=None, Emax=None, E=None, dt=0,
+                  force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
+
         # all the loads apply
         self.Sfix = self.numerical_circuit.C_load_bus.T * (
-                - self.numerical_circuit.load_power_profile[t_idx, :] / self.numerical_circuit.Sbase * self.numerical_circuit.load_enabled)
+                - load_power / self.numerical_circuit.Sbase * self.numerical_circuit.load_enabled)
 
         # static generators (all apply)
         self.Sfix += self.numerical_circuit.C_sta_gen_bus.T * (
-                self.numerical_circuit.static_gen_power_profile[t_idx, :] / self.numerical_circuit.Sbase * self.numerical_circuit.static_gen_enabled)
+                static_gen_power / self.numerical_circuit.Sbase * self.numerical_circuit.static_gen_enabled)
 
         # controlled generators
         self.Sfix += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * (
-                self.numerical_circuit.controlled_gen_power_profile[t_idx, self.gen_s_idx] / self.numerical_circuit.Sbase)
+                    controlled_gen_power / self.numerical_circuit.Sbase)
 
         # batteries
-        self.Sfix += (self.numerical_circuit.C_batt_bus[self.bat_s_idx, :]).T * (
-                self.numerical_circuit.battery_power_profile[t_idx, self.bat_s_idx] / self.numerical_circuit.Sbase)
+        # self.Sfix += (self.numerical_circuit.C_batt_bus[self.bat_s_idx, :]).T * (
+        #         self.numerical_circuit.battery_power_profile[t_idx, self.bat_s_idx] / self.numerical_circuit.Sbase)
+
+    def set_default_state(self):
+        """
+        Set the default loading state
+        """
+        self.set_state(load_power=self.numerical_circuit.load_power,
+                       static_gen_power=self.numerical_circuit.static_gen_power,
+                       controlled_gen_power=self.numerical_circuit.controlled_gen_power)
+
+    def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01,
+                     Emin=None, Emax=None, E=None, dt=0):
+        """
+        Set the problem state at at time index
+        :param t: time index
+        """
+        self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
+                       static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
+                       controlled_gen_power=self.numerical_circuit.controlled_gen_power_profile[t, self.gen_s_idx],
+                       Emin=Emin, Emax=Emax, E=E, dt=dt,
+                       force_batteries_to_charge=force_batteries_to_charge,
+                       bat_idx=bat_idx,
+                       battery_loading_pu=battery_loading_pu)
 
     def objfunction(self, x):
         """
@@ -202,7 +205,11 @@ class AcOPFBlackBox:
         return f
 
     def interpret_x(self, x):
+        """
 
+        :param x:
+        :return:
+        """
         results = OptimalPowerFlowResults()
         results.initialize(self.numerical_circuit.nbus, self.numerical_circuit.nbr)
 

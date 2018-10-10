@@ -184,6 +184,7 @@ class PowerFlowMP:
 
         # copy the tap positions
         tap_positions = circuit.tap_position.copy()
+        tap_module = np.ones(circuit.nbr)
 
         any_q_control_issue = True  # guilty assumption...
 
@@ -333,18 +334,17 @@ class PowerFlowMP:
                     # Check controls
                     if self.options.control_Q:
                         voltage_solution, \
-                        Qnew, \
-                        types_new, \
-                        any_q_control_issue = self.switch_logic(V=voltage_solution,
-                                                                Vset=np.abs(voltage_solution),
-                                                                Q=Scalc.imag,
-                                                                Qmax=circuit.Qmax,
-                                                                Qmin=circuit.Qmin,
-                                                                types=circuit.types,
-                                                                original_types=original_types,
-                                                                verbose=self.options.verbose)
+                            Qnew, \
+                            types_new, \
+                            any_q_control_issue = self.switch_logic(V=voltage_solution,
+                                                                    Vset=np.abs(voltage_solution),
+                                                                    Q=Scalc.imag,
+                                                                    Qmax=circuit.Qmax,
+                                                                    Qmin=circuit.Qmin,
+                                                                    types=circuit.types,
+                                                                    original_types=original_types,
+                                                                    verbose=self.options.verbose)
                         if any_q_control_issue:
-                            # voltage_solution = Vnew
                             Sbus = Sbus.real + 1j * Qnew
                             ref, pq, pv, pqpv = self.compile_types(Sbus, types_new)
                         else:
@@ -359,16 +359,16 @@ class PowerFlowMP:
                     if self.options.control_taps and any_tap_control_issue:
 
                         stable, tap_module, \
-                        tap_positions = self.adjust_tap_changers(voltage=voltage_solution,
-                                                                 T=circuit.T,
-                                                                 bus_to_regulated_idx=circuit.bus_to_regulated_idx,
-                                                                 tap_position=tap_positions,
-                                                                 min_tap=circuit.min_tap,
-                                                                 max_tap=circuit.max_tap,
-                                                                 tap_inc_reg_up=circuit.tap_inc_reg_up,
-                                                                 tap_inc_reg_down=circuit.tap_inc_reg_down,
-                                                                 vset=circuit.vset)
-
+                            tap_positions = self.adjust_tap_changers(voltage=voltage_solution,
+                                                                     T=circuit.T,
+                                                                     bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                     tap_position=tap_positions,
+                                                                     min_tap=circuit.min_tap,
+                                                                     max_tap=circuit.max_tap,
+                                                                     tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                     tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                     vset=circuit.vset)
+                        print('Recompiling Ybus due to tap changes')
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
 
@@ -410,6 +410,7 @@ class PowerFlowMP:
                                    loading=loading,
                                    losses=losses,
                                    flow_direction=flow_direction,
+                                   tap_module=tap_module,
                                    error=errors,
                                    converged=converged_lst,
                                    Qpv=None,
