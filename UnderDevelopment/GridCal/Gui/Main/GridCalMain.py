@@ -290,7 +290,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = CalculationInputs(1, 1, 1)
+        pfo = CalculationInputs(1, 1, 1, 1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets

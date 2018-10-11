@@ -36,7 +36,7 @@ from GridCal.Engine.BasicStructures import BusMode
 
 class CalculationInputs:
 
-    def __init__(self, nbus, nbr, ntime):
+    def __init__(self, nbus, nbr, ntime, nbat, nctrlgen):
         """
         Constructor
         :param nbus: number of buses
@@ -102,6 +102,23 @@ class CalculationInputs:
 
         self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
         self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
+
+        # Active power control
+        self.controlled_gen_pmin = np.zeros(nctrlgen, dtype=float)
+        self.controlled_gen_pmax = np.zeros(nctrlgen, dtype=float)
+        self.controlled_gen_enabled = np.zeros(nctrlgen, dtype=bool)
+        self.controlled_gen_dispatchable = np.zeros(nctrlgen, dtype=bool)
+
+        self.battery_pmin = np.zeros(nbat, dtype=float)
+        self.battery_pmax = np.zeros(nbat, dtype=float)
+        self.battery_Enom = np.zeros(nbat, dtype=float)
+        self.battery_soc_0 = np.zeros(nbat, dtype=float)
+        self.battery_discharge_efficiency = np.zeros(nbat, dtype=float)
+        self.battery_charge_efficiency = np.zeros(nbat, dtype=float)
+        self.battery_min_soc = np.zeros(nbat, dtype=float)
+        self.battery_max_soc = np.zeros(nbat, dtype=float)
+        self.battery_enabled = np.zeros(nbat, dtype=bool)
+        self.battery_dispatchable = np.zeros(nbat, dtype=bool)
 
         # connectivity matrices used to formulate OPF problems
         self.C_load_bus = None
@@ -179,14 +196,14 @@ class CalculationInputs:
 
         self.compile_types()
 
-    def get_island(self, bus_idx, branch_idx):
+    def get_island(self, bus_idx, branch_idx, gen_idx, bat_idx):
         """
         Get a sub-island
         :param bus_idx: bus indices of the island
         :param branch_idx: branch indices of the island
         :return: CalculationInputs instance
         """
-        obj = CalculationInputs(len(bus_idx), len(branch_idx), self.ntime)
+        obj = CalculationInputs(len(bus_idx), len(branch_idx), self.ntime, len(bat_idx), len(gen_idx))
 
         # remember the island original indices
         obj.original_bus_idx = bus_idx
@@ -241,6 +258,21 @@ class CalculationInputs:
         obj.GBc = self.GBc
         obj.tap_f = self.tap_f
         obj.tap_t = self.tap_t
+
+        self.controlled_gen_pmin = self.controlled_gen_pmin[gen_idx]
+        self.controlled_gen_pmax = self.controlled_gen_pmax[gen_idx]
+        self.controlled_gen_enabled = self.controlled_gen_enabled[gen_idx]
+        self.controlled_gen_dispatchable = self.controlled_gen_dispatchable[gen_idx]
+        self.battery_pmin = self.battery_pmin[bat_idx]
+        self.battery_pmax = self.battery_pmax[bat_idx]
+        self.battery_Enom = self.battery_Enom[bat_idx]
+        self.battery_soc_0 = self.battery_soc_0[bat_idx]
+        self.battery_discharge_efficiency = self.battery_discharge_efficiency[bat_idx]
+        self.battery_charge_efficiency = self.battery_charge_efficiency[bat_idx]
+        self.battery_min_soc = self.battery_min_soc[bat_idx]
+        self.battery_max_soc = self.battery_max_soc[bat_idx]
+        self.battery_enabled = self.battery_enabled[bat_idx]
+        self.battery_dispatchable = self.battery_dispatchable[bat_idx]
 
         obj.consolidate()
 
@@ -453,8 +485,8 @@ class CalculationInputs:
 class PowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, tap_module=None,
-                 flow_direction=None, error=None, converged=None, Qpv=None, inner_it=None, outer_it=None,
-                 elapsed=None, methods=None):
+                 flow_direction=None, error=None, converged=None, Qpv=None, battery_power_inc=None, inner_it=None,
+                 outer_it=None, elapsed=None, methods=None):
         """
         Power flow results
         :param Sbus: Bus power calculated
@@ -496,6 +528,8 @@ class PowerFlowResults:
 
         self.Qpv = Qpv
 
+        self.battery_power_inc = battery_power_inc
+
         self.overloads = None
 
         self.overvoltage = None
@@ -513,7 +547,7 @@ class PowerFlowResults:
         self.available_results = ['Bus voltage',
                                   # 'Bus voltage (polar)',
                                   'Branch power', 'Branch current',
-                                  'Branch_loading', 'Branch losses']
+                                  'Branch_loading', 'Branch losses', 'Battery power']
 
         self.plot_bars_limit = 100
 
@@ -750,6 +784,11 @@ class PowerFlowResults:
                 title = 'Branch losses '
                 polar = False
 
+            elif result_type == 'Battery power':
+                y = self.battery_power_inc[indices]
+                y_label = '(MVA)'
+                title = 'Battery power'
+                polar = False
             else:
                 n = len(labels)
                 y = np.zeros(n)

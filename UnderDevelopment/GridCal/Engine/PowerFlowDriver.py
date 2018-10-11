@@ -28,7 +28,7 @@ from GridCal.Engine.Numerical.LinearizedPF import dcpf, lacpf
 from GridCal.Engine.Numerical.HELM import helm
 from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, LevenbergMarquardtPF, NR_LS, NR_I_LS
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
-
+from GridCal.Engine.TopologyDriver import get_branches_of_bus
 
 class SolverType(Enum):
     NR = 1
@@ -61,7 +61,7 @@ class PowerFlowOptions:
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, control_q=True, multi_core=True, dispatch_storage=False,
-                 control_taps=False):
+                 control_taps=False, control_p=False):
         """
         Power flow execution options
         @param solver_type:
@@ -84,6 +84,8 @@ class PowerFlowOptions:
         self.max_iter = max_iter
 
         self.control_Q = control_q
+
+        self.control_P = control_p
 
         self.verbose = verbose
 
@@ -169,13 +171,152 @@ class PowerFlowMP:
 
         return ref, pq, pv, pqpv
 
-    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
+    @staticmethod
+    def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, pq, pv, ref, pqpv, tolerance, max_iter):
         """
-        Run a power flow simulation for a single circuit
-        @param circuit:
-        @param solver_type
-        @param voltage_solution
-        @return:
+        Run a power flow simulation using the selected method (no outer loop controls)
+        :param solver_type:
+        :param V0: Voltage solution vector
+        :param Sbus: Power injections vector
+        :param Ibus: Current injections vector
+        :param Ybus: Admittance matrix
+        :param Yseries: Series elements' Admittance matrix
+        :param B1: B' for the fast decoupled method
+        :param B2: B'' for the fast decoupled method
+        :param pq: list of pq nodes
+        :param pv: list of pv nodes
+        :param ref: list of slack nodes
+        :param pqpv: list of pq and pv nodes
+        :param tolerance: power error tolerance
+        :param max_iter: maximum iterations
+        :return: V0 (Voltage solution),
+                 converged (converged?),
+                 normF (error in power),
+                 Scalc (Computed bus power),
+                 iterations,
+                 elapsed
+        """
+        # type HELM
+        if solver_type == SolverType.HELM:
+            V0, converged, normF, Scalc, it, el = helm(Vbus=V0,
+                                                       Sbus=Sbus,
+                                                       Ybus=Ybus,
+                                                       pq=pq,
+                                                       pv=pv,
+                                                       ref=ref,
+                                                       pqpv=pqpv,
+                                                       tol=tolerance,
+                                                       max_coefficient_count=max_iter)
+
+        # type DC
+        elif solver_type == SolverType.DC:
+            V0, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
+                                                       Sbus=Sbus,
+                                                       Ibus=Ibus,
+                                                       V0=V0,
+                                                       ref=ref,
+                                                       pvpq=pqpv,
+                                                       pq=pq,
+                                                       pv=pv)
+
+        # LAC PF
+        elif solver_type == SolverType.LACPF:
+
+            V0, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
+                                                        Ys=Yseries,
+                                                        S=Sbus,
+                                                        I=Ibus,
+                                                        Vset=V0,
+                                                        pq=pq,
+                                                        pv=pv)
+
+        # Levenberg-Marquardt
+        elif solver_type == SolverType.LM:
+            V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
+                Ybus=Ybus,
+                Sbus=Sbus,
+                V0=V0,
+                Ibus=Ibus,
+                pv=pv,
+                pq=pq,
+                tol=tolerance,
+                max_it=max_iter)
+
+        # Fast decoupled
+        elif solver_type == SolverType.FASTDECOUPLED:
+            V0, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
+                                                       Sbus=Sbus,
+                                                       Ibus=Ibus,
+                                                       Ybus=Ybus,
+                                                       B1=B1,
+                                                       B2=B2,
+                                                       pq=pq,
+                                                       pv=pv,
+                                                       pqpv=pqpv,
+                                                       tol=tolerance,
+                                                       max_it=max_iter)
+
+        # Newton-Raphson
+        elif solver_type == SolverType.NR:
+            # Solve NR with the linear AC solution
+            V0, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
+                                                        Sbus=Sbus,
+                                                        V0=V0,
+                                                        Ibus=Ibus,
+                                                        pv=pv,
+                                                        pq=pq,
+                                                        tol=tolerance,
+                                                        max_it=max_iter)
+
+        # Newton-Raphson-Iwamoto
+        elif solver_type == SolverType.IWAMOTO:
+            V0, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
+                                                            Sbus=Sbus,
+                                                            V0=V0,
+                                                            Ibus=Ibus,
+                                                            pv=pv,
+                                                            pq=pq,
+                                                            tol=tolerance,
+                                                            max_it=max_iter,
+                                                            robust=True)
+
+        # Newton-Raphson in current equations
+        elif solver_type == SolverType.NRI:
+            # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
+            V0, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
+                                                          Sbus_sp=Sbus,
+                                                          V0=V0,
+                                                          Ibus_sp=Ibus,
+                                                          pv=pv,
+                                                          pq=pq,
+                                                          tol=tolerance,
+                                                          max_it=max_iter)
+
+        # for any other method, for now, do a LM
+        else:
+            V0, converged, \
+            normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=Ybus,
+                                                        Sbus=Sbus,
+                                                        V0=V0,
+                                                        Ibus=Ibus,
+                                                        pv=pv,
+                                                        pq=pq,
+                                                        tol=tolerance,
+                                                        max_it=max_iter)
+
+        return V0, converged, normF, Scalc, it, el
+
+    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus,
+                          battery_energy=None):
+        """
+        Run a power flow simulation for a single circuit using the selected outer loop controls
+        :param circuit: CalculationInputs instance
+        :param solver_type: type of power flow to use first
+        :param voltage_solution: vector of initial voltages
+        :param Sbus: vector of power injections
+        :param Ibus: vector of current injections
+        :param battery_energy: vector of storage devices current energy
+        :return: PowerFlowResults instance
         """
 
         # get the original types and compile this class' own lists of node types for thread independence
@@ -187,11 +328,38 @@ class PowerFlowMP:
         tap_module = np.ones(circuit.nbr)
 
         any_q_control_issue = True  # guilty assumption...
-
         any_tap_control_issue = True
+        any_p_control_issue = True
+
+        if self.options.control_P:
+            # get parameters for storage dispatch
+            dispatcheable_batteries_idx = np.where(circuit.battery_dispatchable == True)[0]
+            bat_bus_idx = np.where(np.array(circuit.C_batt_bus[dispatcheable_batteries_idx, :].sum(axis=0))[0] > 0)[0]
+            branches_of_bus = dict()
+            Emax = circuit.battery_Enom * circuit.battery_max_soc
+            Emin = circuit.battery_Enom * circuit.battery_min_soc
+            C = circuit.C_branch_bus_f - circuit.C_branch_bus_t
+            battery_power = np.zeros(len(Emax))
+            for b in bat_bus_idx:
+                branches_of_bus[b] = get_branches_of_bus(C, b)
+
+            if battery_energy is None:
+                battery_energy = circuit.battery_Enom * circuit.battery_soc_0
+        else:
+            # declare the storage dispatch parameters as empty elements
+            dispatcheable_batteries_idx = list()
+            bat_bus_idx = list()
+            branches_of_bus = dict()
+            Emax = np.zeros(0)
+            Emin = np.zeros(0)
+            battery_energy = np.zeros(0)
+            battery_power = np.zeros(0)
 
         # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
-        control_max_iter = max(len(circuit.bus_to_regulated_idx), 10)
+        control_max_iter = 10
+        for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
+            control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
+        # control_max_iter = max(len(circuit.bus_to_regulated_idx), 10)
 
         inner_it = list()
         outer_it = 0
@@ -202,7 +370,8 @@ class PowerFlowMP:
         it = list()
         el = list()
 
-        while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
+        # this the "outer-loop"
+        while (any_q_control_issue or any_tap_control_issue or any_p_control_issue) and outer_it < control_max_iter:
 
             if len(circuit.ref) == 0:
                 voltage_solution = zeros(len(Sbus), dtype=complex)
@@ -213,123 +382,24 @@ class PowerFlowMP:
                 warn('Not solving power flow because there is no slack bus')
                 self.logger.append('Not solving power flow because there is no slack bus')
             else:
-                # type HELM
-                if solver_type == SolverType.HELM:
-                    methods.append(SolverType.HELM)
-                    voltage_solution, converged, normF, Scalc, it, el = helm(Vbus=voltage_solution,
-                                                                             Sbus=Sbus,
-                                                                             Ybus=circuit.Ybus,
-                                                                             pq=pq,
-                                                                             pv=pv,
-                                                                             ref=ref,
-                                                                             pqpv=pqpv,
-                                                                             tol=self.options.tolerance,
-                                                                             max_coefficient_count=self.options.max_iter)
 
-                # type DC
-                elif solver_type == SolverType.DC:
-                    methods.append(SolverType.DC)
-                    voltage_solution, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.Ybus,
-                                                                             Sbus=Sbus,
-                                                                             Ibus=Ibus,
-                                                                             V0=voltage_solution,
-                                                                             ref=ref,
-                                                                             pvpq=pqpv,
-                                                                             pq=pq,
-                                                                             pv=pv)
-
-                # LAC PF
-                elif solver_type == SolverType.LACPF:
-                    methods.append(SolverType.LACPF)
-
-                    voltage_solution, converged, normF, Scalc, it, el = lacpf(Y=circuit.Ybus,
-                                                                              Ys=circuit.Yseries,
-                                                                              S=Sbus,
-                                                                              I=Ibus,
-                                                                              Vset=voltage_solution,
-                                                                              pq=pq,
-                                                                              pv=pv)
-
-                # Levenberg-Marquardt
-                elif solver_type == SolverType.LM:
-                    methods.append(SolverType.LM)
-                    voltage_solution, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
-                        Ybus=circuit.Ybus,
-                        Sbus=Sbus,
-                        V0=voltage_solution,
-                        Ibus=Ibus,
-                        pv=pv,
-                        pq=pq,
-                        tol=self.options.tolerance,
-                        max_it=self.options.max_iter)
-
-                # Fast decoupled
-                elif solver_type == SolverType.FASTDECOUPLED:
-                    methods.append(SolverType.FASTDECOUPLED)
-                    voltage_solution, converged, normF, Scalc, it, el = FDPF(Vbus=voltage_solution,
-                                                                             Sbus=Sbus,
-                                                                             Ibus=Ibus,
-                                                                             Ybus=circuit.Ybus,
-                                                                             B1=circuit.B1,
-                                                                             B2=circuit.B2,
-                                                                             pq=pq,
-                                                                             pv=pv,
-                                                                             pqpv=pqpv,
-                                                                             tol=self.options.tolerance,
-                                                                             max_it=self.options.max_iter)
-
-                # Newton-Raphson
-                elif solver_type == SolverType.NR:
-                    methods.append(SolverType.NR)
-
-                    # Solve NR with the linear AC solution
-                    voltage_solution, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.Ybus,
-                                                                              Sbus=Sbus,
-                                                                              V0=voltage_solution,
-                                                                              Ibus=Ibus,
-                                                                              pv=pv,
-                                                                              pq=pq,
-                                                                              tol=self.options.tolerance,
-                                                                              max_it=self.options.max_iter)
-
-                # Newton-Raphson-Iwamoto
-                elif solver_type == SolverType.IWAMOTO:
-                    methods.append(SolverType.IWAMOTO)
-                    voltage_solution, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.Ybus,
-                                                                                  Sbus=Sbus,
-                                                                                  V0=voltage_solution,
-                                                                                  Ibus=Ibus,
-                                                                                  pv=pv,
-                                                                                  pq=pq,
-                                                                                  tol=self.options.tolerance,
-                                                                                  max_it=self.options.max_iter,
-                                                                                  robust=True)
-
-                # Newton-Raphson in current equations
-                elif solver_type == SolverType.NRI:
-                    methods.append(SolverType.NRI)
-                    # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
-                    voltage_solution, converged, normF, Scalc, it, el = NR_I_LS(Ybus=circuit.Ybus,
-                                                                                Sbus_sp=Sbus,
-                                                                                V0=voltage_solution,
-                                                                                Ibus_sp=Ibus,
-                                                                                pv=pv,
-                                                                                pq=pq,
-                                                                                tol=self.options.tolerance,
-                                                                                max_it=self.options.max_iter)
-
-                # for any other method, for now, do a LM
-                else:
-                    methods.append(SolverType.LM)
-                    voltage_solution, converged, \
-                    normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=circuit.Ybus,
-                                                                Sbus=Sbus,
-                                                                V0=voltage_solution,
-                                                                Ibus=Ibus,
-                                                                pv=pv,
-                                                                pq=pq,
-                                                                tol=self.options.tolerance,
-                                                                max_it=self.options.max_iter)
+                # run the power flow method that shall be run
+                voltage_solution, converged, normF, Scalc, it, el = self.solve(solver_type=solver_type,
+                                                                               V0=voltage_solution,
+                                                                               Sbus=Sbus,
+                                                                               Ibus=Ibus,
+                                                                               Ybus=circuit.Ybus,
+                                                                               Yseries=circuit.Yseries,
+                                                                               B1=circuit.B1,
+                                                                               B2=circuit.B2,
+                                                                               pq=pq,
+                                                                               pv=pv,
+                                                                               ref=ref,
+                                                                               pqpv=pqpv,
+                                                                               tolerance=self.options.tolerance,
+                                                                               max_iter=self.options.max_iter)
+                # record the method used
+                methods.append(solver_type)
 
                 if converged:
                     # Check controls
@@ -368,7 +438,8 @@ class PowerFlowMP:
                                                                      max_tap=circuit.max_tap,
                                                                      tap_inc_reg_up=circuit.tap_inc_reg_up,
                                                                      tap_inc_reg_down=circuit.tap_inc_reg_down,
-                                                                     vset=circuit.vset)
+                                                                     vset=circuit.vset,
+                                                                     verbose=self.options.verbose)
                         print('Recompiling Ybus due to tap changes')
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
@@ -378,8 +449,41 @@ class PowerFlowMP:
                     else:
                         any_tap_control_issue = False
 
+                    # control active power dispatch to decrease loading
+                    if self.options.control_P and any_p_control_issue:
+
+                        # get the branches loading
+                        _, _, loading, _, flow_direction, _ = self.power_flow_post_process(calculation_inputs=circuit,
+                                                                                           V=voltage_solution)
+                        # run the battery controls
+                        incP, any_p_control_issue = self.adjust_active_power(dispatcheable_batteries_idx=dispatcheable_batteries_idx,
+                                                                             bat_bus_idx=bat_bus_idx,
+                                                                             branches_of_bus=branches_of_bus,
+                                                                             loading=loading,
+                                                                             flow_direction=flow_direction,
+                                                                             E=battery_energy,
+                                                                             Emax=Emax,
+                                                                             Emin=Emin,
+                                                                             Pmax=circuit.battery_pmax,
+                                                                             Pmin=circuit.battery_pmin)
+
+                        # apply the battery dispatched energy
+                        Sbus[bat_bus_idx] += incP
+
+                        # save the battery dispatched energy
+                        battery_power += incP
+
+                        br = []
+                        for b in bat_bus_idx:
+                            br += branches_of_bus[b]
+                        print('Controlled storage dispatch', np.abs(loading[br]))
+                    else:
+                        any_p_control_issue = False
+
                 else:
                     any_q_control_issue = False
+                    any_p_control_issue = False
+                    any_tap_control_issue = False
 
             # increment the inner iterations counter
             inner_it.append(it)
@@ -414,7 +518,8 @@ class PowerFlowMP:
                                    tap_module=tap_module,
                                    error=errors,
                                    converged=converged_lst,
-                                   Qpv=None,
+                                   Qpv=Sbus.imag[pv],
+                                   battery_power_inc=battery_power,
                                    inner_it=inner_it,
                                    outer_it=outer_it,
                                    elapsed=elapsed,
@@ -623,7 +728,7 @@ class PowerFlowMP:
             return tap
 
     def adjust_tap_changers(self, voltage, T, bus_to_regulated_idx, tap_position, min_tap, max_tap, tap_inc_reg_up,
-                            tap_inc_reg_down, vset):
+                            tap_inc_reg_down, vset, verbose=False):
         """
         Change the taps and compute the continuous tap magnitude
         :param voltage: array of bus voltages solution
@@ -642,33 +747,40 @@ class PowerFlowMP:
 
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
-            print(f"Bus {j}: U={v}pu, U_set={vset[i]}")
+            if verbose:
+                print(f"Bus {j}: U={v}pu, U_set={vset[i]}")
 
             if tap_position[i] > 0:
 
                 if vset[i] > v + tap_inc_reg_up[i] / 2:
                     if tap_position[i] == min_tap[i]:
-                        print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+                        if verbose:
+                            print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    print(f"Branch {i}: Lowering from tap {tap_position[i]}")
+                    if verbose:
+                        print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
                     if tap_position[i] == max_tap[i]:
-                        print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+                        if verbose:
+                            print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    print(f"Branch {i}: Raising from tap {tap_position[i]}")
+                    if verbose:
+                        print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             elif tap_position[i] < 0:
                 if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
-                        print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+                        if verbose:
+                            print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    print(f"Branch {i}: Lowering from tap {tap_position[i]}")
+                    if verbose:
+                        print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i]/2:
@@ -676,24 +788,29 @@ class PowerFlowMP:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    print(f"Branch {i}: Raising from tap {tap_position[i]}")
+                    if verbose:
+                        print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             else:
                 if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
-                        print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+                        if verbose:
+                            print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    print(f"Branch {i}: Lowering from tap {tap_position[i]}")
+                    if verbose:
+                        print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i] / 2:
                     if tap_position[i] == max_tap[i]:
-                        print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+                        if verbose:
+                            print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    print(f"Branch {i}: Raising from tap {tap_position[i]}")
+                    if verbose:
+                        print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
             break
 
@@ -719,7 +836,59 @@ class PowerFlowMP:
 
         return stable, tap, tap_position
 
-    def run(self, store_in_island=False):
+    @staticmethod
+    def adjust_active_power(dispatcheable_batteries_idx, bat_bus_idx, branches_of_bus, loading,
+                            flow_direction, E, Emax, Emin, Pmax, Pmin, steps=10):
+        """
+
+        :param dispatcheable_batteries_idx: indices of the dispatcheable batteries in the battery list
+        :param bat_bus_idx: indices of the buses that correspond to the dispatcheable batteries
+        :param branches_of_bus: dictionary of lists where the buses of the batteries contain a list of their branch indices
+        :param loading:
+        :param flow_direction:
+        :param E:
+        :param Emax:
+        :param Emin:
+        :param Pmax:
+        :param Pmin:
+        :return:
+        """
+        nb = len(dispatcheable_batteries_idx)
+        incP = np.zeros(nb)
+        dP_charge = Pmin / steps
+        dP_discharge = Pmax / steps
+
+        any_control_p_issues = False
+
+        for b in dispatcheable_batteries_idx:
+
+            bus_idx = bat_bus_idx[b]
+            br_idx = branches_of_bus[bus_idx]
+
+            l_idx = np.where(np.abs(loading[br_idx]) > 1)[0]
+
+            if Emin[b] < E[b] < Emax[b]:
+                # if the battery's energy is within boundaries...
+                if len(l_idx) > 0:
+                    # there are branches connected to the battery bus with overloads
+                    any_control_p_issues = True
+                    incP[b] += dP_charge[b]  # dP_charge is already negative
+                else:
+                    # the connected branches are ok
+                    pass
+            elif E[b] < Emin[b]:
+                # Charge
+                incP[b] += dP_charge[b]  # dP_charge is already negative
+
+            elif E[b] > Emax[b]:
+                # discharge
+                incP[b] += dP_discharge[b]
+
+            # br_idx = get_branches_of_bus(C_branch_bus, bus_idx)
+
+        return incP, any_control_p_issues
+
+    def run(self):
         """
         Pack run_pf for the QThread
         :return:
@@ -805,13 +974,6 @@ class PowerFlowMP:
         @return:
         """
 
-        # Run the power flow
-        # results = self.single_power_flow(circuit=circuit,
-        #                                  solver_type=self.options.solver_type,
-        #                                  voltage_solution=Vbus,
-        #                                  Sbus=Sbus,
-        #                                  Ibus=Ibus)
-
         # Retry with another solver
 
         if self.options.auxiliary_solver_type is not None:
@@ -826,16 +988,16 @@ class PowerFlowMP:
 
         # set worked to false to enter in the loop
         worked = False
+        k = 0
+        methods = list()
+        inner_it = list()
+        elapsed = list()
+        errors = list()
+        converged_lst = list()
+        outer_it = 0
 
         if not worked:
 
-            k = 0
-            methods = list()
-            inner_it = list()
-            elapsed = list()
-            errors = list()
-            converged_lst = list()
-            outer_it = 0
             while k < len(solvers) and not worked:
 
                 # get the solver
@@ -868,24 +1030,28 @@ class PowerFlowMP:
 
             if not worked:
                 print('Did not converge, even after retry!, Error:', results.error)
+                return None
+
+            else:
+                # set the total process variables:
+                results.methods = methods
+                results.inner_iterations = inner_it
+                results.outer_iterations = outer_it
+                results.elapsed = elapsed
+                results.error = errors
+                results.converged = converged_lst
+
+                # check the power flow limits
+                results.check_limits(F=calculation_inputs.F, T=calculation_inputs.T,
+                                     Vmax=calculation_inputs.Vmax, Vmin=calculation_inputs.Vmin,
+                                     wo=1, wv1=1, wv2=1)
+
+                return results
         else:
             # the original solver worked
             pass
 
-        # set the total process variables:
-        results.methods = methods
-        results.inner_iterations = inner_it
-        results.outer_iterations = outer_it
-        results.elapsed = elapsed
-        results.error = errors
-        results.converged = converged_lst
-
-        # check the power flow limits
-        results.check_limits(F=calculation_inputs.F, T=calculation_inputs.T,
-                             Vmax=calculation_inputs.Vmax, Vmin=calculation_inputs.Vmin,
-                             wo=1, wv1=1, wv2=1)
-
-        return results
+            return None
 
     def cancel(self):
         self.__cancel__ = True
@@ -959,7 +1125,7 @@ class PowerFlow(QRunnable):
         :return:
         """
 
-        results = self.pf.run(store_in_island=True)
+        results = self.pf.run()
         self.results = results
 
     def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):

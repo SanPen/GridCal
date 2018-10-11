@@ -284,6 +284,10 @@ class NumericalCircuit:
         # number of time steps
         self.ntime = n_time
 
+        self.n_batt = n_batt
+
+        self.n_ctrl_gen = n_ctrl_gen
+
         # base power
         self.Sbase = Sbase
 
@@ -346,6 +350,14 @@ class NumericalCircuit:
         self.battery_voltage = np.zeros(n_batt, dtype=float)
         self.battery_qmin = np.zeros(n_batt, dtype=float)
         self.battery_qmax = np.zeros(n_batt, dtype=float)
+        self.battery_pmin = np.zeros(n_batt, dtype=float)
+        self.battery_pmax = np.zeros(n_batt, dtype=float)
+        self.battery_Enom = np.zeros(n_batt, dtype=float)
+        self.battery_soc_0 = np.zeros(n_batt, dtype=float)
+        self.battery_discharge_efficiency = np.zeros(n_batt, dtype=float)
+        self.battery_charge_efficiency = np.zeros(n_batt, dtype=float)
+        self.battery_min_soc = np.zeros(n_batt, dtype=float)
+        self.battery_max_soc = np.zeros(n_batt, dtype=float)
         self.battery_enabled = np.zeros(n_batt, dtype=bool)
         self.battery_dispatchable = np.zeros(n_batt, dtype=bool)
 
@@ -370,6 +382,8 @@ class NumericalCircuit:
         self.controlled_gen_voltage = np.zeros(n_ctrl_gen, dtype=float)
         self.controlled_gen_qmin = np.zeros(n_ctrl_gen, dtype=float)
         self.controlled_gen_qmax = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_pmin = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_pmax = np.zeros(n_ctrl_gen, dtype=float)
         self.controlled_gen_enabled = np.zeros(n_ctrl_gen, dtype=bool)
         self.controlled_gen_dispatchable = np.zeros(n_ctrl_gen, dtype=bool)
 
@@ -399,7 +413,7 @@ class NumericalCircuit:
         towards the calculation. Additionally, compute the calculation matrices.
         """
         # Declare object to store the calculation inputs
-        circuit = CalculationInputs(self.nbus, self.nbr, self.ntime)
+        circuit = CalculationInputs(self.nbus, self.nbr, self.ntime, self.n_batt, self.n_ctrl_gen)
 
         circuit.branch_rates = self.br_rates
         circuit.F = self.F
@@ -413,7 +427,7 @@ class NumericalCircuit:
         circuit.C_ctrl_gen_bus = self.C_ctrl_gen_bus
         circuit.C_shunt_bus = self.C_shunt_bus
 
-        # needed for the ta changer
+        # needed for the tap changer
         circuit.is_bus_to_regulated = self.is_bus_to_regulated
         circuit.tap_position = self.tap_position
         circuit.min_tap = self.min_tap
@@ -422,6 +436,22 @@ class NumericalCircuit:
         circuit.tap_inc_reg_down = self.tap_inc_reg_down
         circuit.vset = self.vset
         circuit.tap_ang = self.tap_ang
+
+        # active power control
+        circuit.controlled_gen_pmin = self.controlled_gen_pmin
+        circuit.controlled_gen_pmax = self.controlled_gen_pmax
+        circuit.controlled_gen_enabled = self.controlled_gen_enabled
+        circuit.controlled_gen_dispatchable = self.controlled_gen_dispatchable
+        circuit.battery_pmin = self.battery_pmin
+        circuit.battery_pmax = self.battery_pmax
+        circuit.battery_Enom = self.battery_Enom
+        circuit.battery_soc_0 = self.battery_soc_0
+        circuit.battery_discharge_efficiency = self.battery_discharge_efficiency
+        circuit.battery_charge_efficiency = self.battery_charge_efficiency
+        circuit.battery_min_soc = self.battery_min_soc
+        circuit.battery_max_soc = self.battery_max_soc
+        circuit.battery_enabled = self.battery_enabled
+        circuit.battery_dispatchable = self.battery_dispatchable
 
         ################################################################################################################
         # loads, generators, batteries, etc...
@@ -597,9 +627,13 @@ class NumericalCircuit:
                 island_br_idx = np.sort(island_br_idx)  # sort
                 self.island_branches.append(island_br_idx)
 
+                # indices of batteries and controlled generators that belong to this island
+                gen_idx = np.where(self.C_ctrl_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+                bat_idx = np.where(self.C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+
                 # Get the island circuit (the bus types are computed automatically)
                 # The island original indices are generated within the get_island function
-                circuit_island = circuit.get_island(island_bus_idx, island_br_idx)
+                circuit_island = circuit.get_island(island_bus_idx, island_br_idx, gen_idx, bat_idx)
 
                 # store the island
                 self.calculation_islands.append(circuit_island)
@@ -2142,6 +2176,8 @@ class MultiCircuit:
                 circuit.controlled_gen_voltage[i_ctrl_gen] = elm.Vset
                 circuit.controlled_gen_qmin[i_ctrl_gen] = elm.Qmin
                 circuit.controlled_gen_qmax[i_ctrl_gen] = elm.Qmax
+                circuit.controlled_gen_pmin[i_ctrl_gen] = elm.Pmin
+                circuit.controlled_gen_pmax[i_ctrl_gen] = elm.Pmax
                 circuit.controlled_gen_enabled[i_ctrl_gen] = elm.active
                 circuit.controlled_gen_dispatchable[i_ctrl_gen] = elm.enabled_dispatch
 
@@ -2161,6 +2197,9 @@ class MultiCircuit:
                 i_ctrl_gen += 1
 
             for elm in bus.batteries:
+                # 'name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
+                # 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
+                # 'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency'
                 circuit.battery_names[i_batt] = elm.name
                 circuit.battery_power[i_batt] = elm.P
                 circuit.battery_voltage[i_batt] = elm.Vset
@@ -2168,6 +2207,15 @@ class MultiCircuit:
                 circuit.battery_qmax[i_batt] = elm.Qmax
                 circuit.battery_enabled[i_batt] = elm.active
                 circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
+
+                circuit.battery_pmin[i_batt] = elm.Pmin
+                circuit.battery_pmax[i_batt] = elm.Pmax
+                circuit.battery_Enom[i_batt] = elm.Enom
+                circuit.battery_soc_0[i_batt] = elm.soc_0
+                circuit.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
+                circuit.battery_charge_efficiency[i_batt] = elm.charge_efficiency
+                circuit.battery_min_soc[i_batt] = elm.min_soc
+                circuit.battery_max_soc[i_batt] = elm.max_soc
 
                 if n_time > 0:
                     # power profile
