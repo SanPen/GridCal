@@ -190,9 +190,8 @@ class PowerFlowMP:
 
         any_tap_control_issue = True
 
-        # should at least be as big as the total number of taps
-        # (should also be dynamic instead of fixed...)
-        control_max_iter = 33
+        # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
+        control_max_iter = max(len(circuit.bus_to_regulated_idx), 10)
 
         inner_it = list()
         outer_it = 0
