@@ -30,6 +30,7 @@ from GridCal.Engine.Numerical.JacobianBased import IwamotoNR, LevenbergMarquardt
 from GridCal.Engine.Numerical.FastDecoupled import FDPF
 from GridCal.Engine.TopologyDriver import get_branches_of_bus
 
+
 class SolverType(Enum):
     NR = 1
     NRFD_XB = 2
@@ -48,7 +49,8 @@ class SolverType(Enum):
     AC_OPF = 15,
     NRI = 16,
     DYCORS_OPF = 17,
-    GA_OPF = 18
+    GA_OPF = 18,
+    NELDER_MEAD_OPF = 19
 
 
 ########################################################################################################################
@@ -306,8 +308,7 @@ class PowerFlowMP:
 
         return V0, converged, normF, Scalc, it, el
 
-    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus,
-                          battery_energy=None):
+    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
         """
         Run a power flow simulation for a single circuit using the selected outer loop controls
         :param circuit: CalculationInputs instance
@@ -315,7 +316,6 @@ class PowerFlowMP:
         :param voltage_solution: vector of initial voltages
         :param Sbus: vector of power injections
         :param Ibus: vector of current injections
-        :param battery_energy: vector of storage devices current energy
         :return: PowerFlowResults instance
         """
 
@@ -329,31 +329,6 @@ class PowerFlowMP:
 
         any_q_control_issue = True  # guilty assumption...
         any_tap_control_issue = True
-        any_p_control_issue = True
-
-        if self.options.control_P:
-            # get parameters for storage dispatch
-            dispatcheable_batteries_idx = np.where(circuit.battery_dispatchable == True)[0]
-            bat_bus_idx = np.where(np.array(circuit.C_batt_bus[dispatcheable_batteries_idx, :].sum(axis=0))[0] > 0)[0]
-            branches_of_bus = dict()
-            Emax = circuit.battery_Enom * circuit.battery_max_soc
-            Emin = circuit.battery_Enom * circuit.battery_min_soc
-            C = circuit.C_branch_bus_f - circuit.C_branch_bus_t
-            battery_power = np.zeros(len(Emax))
-            for b in bat_bus_idx:
-                branches_of_bus[b] = get_branches_of_bus(C, b)
-
-            if battery_energy is None:
-                battery_energy = circuit.battery_Enom * circuit.battery_soc_0
-        else:
-            # declare the storage dispatch parameters as empty elements
-            dispatcheable_batteries_idx = list()
-            bat_bus_idx = list()
-            branches_of_bus = dict()
-            Emax = np.zeros(0)
-            Emin = np.zeros(0)
-            battery_energy = np.zeros(0)
-            battery_power = np.zeros(0)
 
         # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
         control_max_iter = 10
@@ -371,7 +346,7 @@ class PowerFlowMP:
         el = list()
 
         # this the "outer-loop"
-        while (any_q_control_issue or any_tap_control_issue or any_p_control_issue) and outer_it < control_max_iter:
+        while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
             if len(circuit.ref) == 0:
                 voltage_solution = zeros(len(Sbus), dtype=complex)
@@ -449,40 +424,8 @@ class PowerFlowMP:
                     else:
                         any_tap_control_issue = False
 
-                    # control active power dispatch to decrease loading
-                    if self.options.control_P and any_p_control_issue:
-
-                        # get the branches loading
-                        _, _, loading, _, flow_direction, _ = self.power_flow_post_process(calculation_inputs=circuit,
-                                                                                           V=voltage_solution)
-                        # run the battery controls
-                        incP, any_p_control_issue = self.adjust_active_power(dispatcheable_batteries_idx=dispatcheable_batteries_idx,
-                                                                             bat_bus_idx=bat_bus_idx,
-                                                                             branches_of_bus=branches_of_bus,
-                                                                             loading=loading,
-                                                                             flow_direction=flow_direction,
-                                                                             E=battery_energy,
-                                                                             Emax=Emax,
-                                                                             Emin=Emin,
-                                                                             Pmax=circuit.battery_pmax,
-                                                                             Pmin=circuit.battery_pmin)
-
-                        # apply the battery dispatched energy
-                        Sbus[bat_bus_idx] += incP
-
-                        # save the battery dispatched energy
-                        battery_power += incP
-
-                        br = []
-                        for b in bat_bus_idx:
-                            br += branches_of_bus[b]
-                        print('Controlled storage dispatch', np.abs(loading[br]))
-                    else:
-                        any_p_control_issue = False
-
                 else:
                     any_q_control_issue = False
-                    any_p_control_issue = False
                     any_tap_control_issue = False
 
             # increment the inner iterations counter
@@ -500,9 +443,6 @@ class PowerFlowMP:
             # append converged
             converged_lst.append(bool(converged))
 
-        # revert the types to the original
-        # ref, pq, pv, pqpv = self.compile_types(original_types)
-
         # Compute the branches power and the slack buses power
         Sbranch, Ibranch, loading, losses, \
         flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
@@ -519,7 +459,6 @@ class PowerFlowMP:
                                    error=errors,
                                    converged=converged_lst,
                                    Qpv=Sbus.imag[pv],
-                                   battery_power_inc=battery_power,
                                    inner_it=inner_it,
                                    outer_it=outer_it,
                                    elapsed=elapsed,
@@ -836,57 +775,144 @@ class PowerFlowMP:
 
         return stable, tap, tap_position
 
-    @staticmethod
-    def adjust_active_power(dispatcheable_batteries_idx, bat_bus_idx, branches_of_bus, loading,
-                            flow_direction, E, Emax, Emin, Pmax, Pmin, steps=10):
+    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
+        """
+        Run a power flow for a circuit
+        Args:
+            circuit:
+            Vbus:
+            Sbus:
+            Ibus:
+            battery_energy:
+
+        Returns:
+
         """
 
-        :param dispatcheable_batteries_idx: indices of the dispatcheable batteries in the battery list
-        :param bat_bus_idx: indices of the buses that correspond to the dispatcheable batteries
-        :param branches_of_bus: dictionary of lists where the buses of the batteries contain a list of their branch indices
-        :param loading:
-        :param flow_direction:
-        :param E:
-        :param Emax:
-        :param Emin:
-        :param Pmax:
-        :param Pmin:
-        :return:
+        # Retry with another solver
+
+        if self.options.auxiliary_solver_type is not None:
+            solvers = [self.options.solver_type,
+                       SolverType.IWAMOTO,
+                       SolverType.FASTDECOUPLED,
+                       SolverType.LM,
+                       SolverType.LACPF]
+        else:
+            # No retry selected
+            solvers = [self.options.solver_type]
+
+        # set worked to false to enter in the loop
+        worked = False
+        k = 0
+        methods = list()
+        inner_it = list()
+        elapsed = list()
+        errors = list()
+        converged_lst = list()
+        outer_it = 0
+
+        if not worked:
+
+            while k < len(solvers) and not worked:
+
+                # get the solver
+                solver = solvers[k]
+
+                # print('Trying', solver)
+
+                # set the initial voltage
+                V0 = Vbus.copy()
+
+                results = self.single_power_flow(circuit=circuit,
+                                                 solver_type=solver,
+                                                 voltage_solution=V0,
+                                                 Sbus=Sbus,
+                                                 Ibus=Ibus)
+
+                # did it worked?
+                worked = np.all(results.converged)
+
+                # record the solver steps
+                methods += results.methods
+                inner_it += results.inner_iterations
+                outer_it += results.outer_iterations
+                elapsed += results.elapsed
+                errors += results.error
+                converged_lst += results.converged
+
+                k += 1
+
+            if not worked:
+                print('Did not converge, even after retry!, Error:', results.error)
+                return None
+
+            else:
+                # set the total process variables:
+                results.methods = methods
+                results.inner_iterations = inner_it
+                results.outer_iterations = outer_it
+                results.elapsed = elapsed
+                results.error = errors
+                results.converged = converged_lst
+
+                # check the power flow limits
+                results.check_limits(F=circuit.F, T=circuit.T,
+                                     Vmax=circuit.Vmax, Vmin=circuit.Vmin,
+                                     wo=1, wv1=1, wv2=1)
+
+                return results
+        else:
+            # the original solver worked
+            pass
+
+            return None
+
+    def run_multi_island(self, numerical_circuit, calculation_inputs, Vbus, Sbus, Ibus):
         """
-        nb = len(dispatcheable_batteries_idx)
-        incP = np.zeros(nb)
-        dP_charge = Pmin / steps
-        dP_discharge = Pmax / steps
+        Power flow execution for optimization purposes
+        Args:
+            numerical_circuit:
+            calculation_inputs:
+            Vbus:
+            Sbus:
+            Ibus:
 
-        any_control_p_issues = False
+        Returns: PowerFlowResults instance
 
-        for b in dispatcheable_batteries_idx:
+        """
+        n = len(self.grid.buses)
+        m = len(self.grid.branches)
+        results = PowerFlowResults()
+        results.initialize(n, m)
 
-            bus_idx = bat_bus_idx[b]
-            br_idx = branches_of_bus[bus_idx]
+        if len(numerical_circuit.islands) > 1:
 
-            l_idx = np.where(np.abs(loading[br_idx]) > 1)[0]
+            # simulate each island and merge the results
+            for i, calculation_input in enumerate(calculation_inputs):
 
-            if Emin[b] < E[b] < Emax[b]:
-                # if the battery's energy is within boundaries...
-                if len(l_idx) > 0:
-                    # there are branches connected to the battery bus with overloads
-                    any_control_p_issues = True
-                    incP[b] += dP_charge[b]  # dP_charge is already negative
+                if len(calculation_input.ref) > 0:
+
+                    bus_original_idx = numerical_circuit.islands[i]
+                    branch_original_idx = numerical_circuit.island_branches[i]
+
+                    # run circuit power flow
+                    res = self.run_pf(calculation_input,
+                                      Vbus[bus_original_idx],
+                                      Sbus[bus_original_idx],
+                                      Ibus[bus_original_idx])
+
+                    # merge the results from this island
+                    results.apply_from_island(res, bus_original_idx, branch_original_idx)
+
                 else:
-                    # the connected branches are ok
-                    pass
-            elif E[b] < Emin[b]:
-                # Charge
-                incP[b] += dP_charge[b]  # dP_charge is already negative
+                    warn('There are no slack nodes in the island ' + str(i))
+                    self.logger.append('There are no slack nodes in the island ' + str(i))
+        else:
 
-            elif E[b] > Emax[b]:
-                # discharge
-                incP[b] += dP_discharge[b]
+            # run circuit power flow
+            results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
 
-            # br_idx = get_branches_of_bus(C_branch_bus, bus_idx)
-
-        return incP, any_control_p_issues
+        return results
 
     def run(self):
         """
@@ -967,91 +993,6 @@ class PowerFlowMP:
         self.results = results
 
         return self.results
-
-    def run_pf(self, calculation_inputs: CalculationInputs, Vbus, Sbus, Ibus):
-        """
-        Run a power flow for a circuit
-        @return:
-        """
-
-        # Retry with another solver
-
-        if self.options.auxiliary_solver_type is not None:
-            solvers = [self.options.solver_type,
-                       SolverType.IWAMOTO,
-                       SolverType.FASTDECOUPLED,
-                       SolverType.LM,
-                       SolverType.LACPF]
-        else:
-            # No retry selected
-            solvers = [self.options.solver_type]
-
-        # set worked to false to enter in the loop
-        worked = False
-        k = 0
-        methods = list()
-        inner_it = list()
-        elapsed = list()
-        errors = list()
-        converged_lst = list()
-        outer_it = 0
-
-        if not worked:
-
-            while k < len(solvers) and not worked:
-
-                # get the solver
-                solver = solvers[k]
-
-                # print('Trying', solver)
-
-                # set the initial voltage
-                V0 = Vbus.copy()
-
-                # run power flow
-                results = self.single_power_flow(circuit=calculation_inputs,
-                                                 solver_type=solver,
-                                                 voltage_solution=V0,
-                                                 Sbus=Sbus,
-                                                 Ibus=Ibus)
-
-                # did it worked?
-                worked = np.all(results.converged)
-
-                # record the solver steps
-                methods += results.methods
-                inner_it += results.inner_iterations
-                outer_it += results.outer_iterations
-                elapsed += results.elapsed
-                errors += results.error
-                converged_lst += results.converged
-
-                k += 1
-
-            if not worked:
-                print('Did not converge, even after retry!, Error:', results.error)
-                return None
-
-            else:
-                # set the total process variables:
-                results.methods = methods
-                results.inner_iterations = inner_it
-                results.outer_iterations = outer_it
-                results.elapsed = elapsed
-                results.error = errors
-                results.converged = converged_lst
-
-                # check the power flow limits
-                results.check_limits(F=calculation_inputs.F, T=calculation_inputs.T,
-                                     Vmax=calculation_inputs.Vmax, Vmin=calculation_inputs.Vmin,
-                                     wo=1, wv1=1, wv2=1)
-
-                return results
-        else:
-            # the original solver worked
-            pass
-
-            return None
 
     def cancel(self):
         self.__cancel__ = True

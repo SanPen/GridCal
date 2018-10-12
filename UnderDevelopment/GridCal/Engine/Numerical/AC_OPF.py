@@ -1271,6 +1271,13 @@ class AcOpf:
 
         return df
 
+    def get_loading(self):
+        Sbase = self.numerical_circuit.Sbase
+        data = self.get_branch_flows() * Sbase
+        loading = data / self.numerical_circuit.br_rates
+
+        return loading
+
 
 if __name__ == '__main__':
 

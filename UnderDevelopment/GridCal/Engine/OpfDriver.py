@@ -23,7 +23,7 @@ from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.Numerical.AC_OPF import AcOpf
 from GridCal.Engine.Numerical.DC_OPF import DcOpf
 from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
-from GridCal.Engine.Numerical.BlackBoxOPF import AcOPFBlackBox, solve_opf_dycors_serial
+from GridCal.Engine.Numerical.DYCORS_OPF import AcOPFBlackBox, solve_opf_dycors_serial
 
 ########################################################################################################################
 # Optimal Power flow classes

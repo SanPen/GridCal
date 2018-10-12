@@ -25,7 +25,9 @@ from GridCal.Engine.PowerFlowDriver import SolverType
 from GridCal.Engine.OpfDriver import OptimalPowerFlowResults, OptimalPowerFlowOptions, OptimalPowerFlow
 from GridCal.Engine.Numerical.AC_OPF import AcOpf
 from GridCal.Engine.Numerical.DC_OPF import DcOpf
-from GridCal.Engine.Numerical.BlackBoxOPF import AcOPFBlackBox
+from GridCal.Engine.Numerical.DYCORS_OPF import AcOpfDYCORS
+from GridCal.Engine.Numerical.NelderMead_OPF import AcOpfNelderMead
+from GridCal.Engine.PowerFlowDriver import PowerFlowOptions
 
 
 class OptimalPowerFlowTimeSeriesResults:
@@ -276,7 +278,15 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             elif self.options.solver == SolverType.DYCORS_OPF:
 
-                problem = AcOPFBlackBox(self.grid, verbose=False)
+                problem = AcOpfDYCORS(self.grid, verbose=False)
+
+            elif self.options.solver == SolverType.NELDER_MEAD_OPF:
+
+                options = PowerFlowOptions(SolverType.LACPF, verbose=False, robust=False,
+                                           initialize_with_existing_solution=False,
+                                           multi_core=False, dispatch_storage=True, control_q=False, control_taps=False)
+
+                problem = AcOpfNelderMead(self.grid, options, verbose=False)
 
             elif self.options.solver == SolverType.AC_OPF:
                 # AC optimal power flow
@@ -345,7 +355,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                     self.results.controlled_generator_power[t, :] = gn * self.grid.Sbase
                     self.results.Sbranch[t, :] = Sbr
                     self.results.overloads[t, :] = problem.get_overloads()
-                    self.results.loading[t, :] = Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0
+                    self.results.loading[t, :] = problem.get_loading()
                     self.results.converged[t] = bool(problem.converged)
 
                     # control batteries energy

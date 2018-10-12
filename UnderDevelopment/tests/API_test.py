@@ -28,8 +28,8 @@ if __name__ == '__main__':
     # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
@@ -46,16 +46,16 @@ if __name__ == '__main__':
     ####################################################################################################################
     # PowerFlow
     ####################################################################################################################
-    print('\n\n')
-    power_flow = PowerFlow(main_circuit, options)
-    power_flow.run()
-
-    print('\n\n', main_circuit.name)
-    print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
-    print('\t|loading|:', abs(power_flow.results.loading) * 100)
-    print('\tReport')
-    print(power_flow.results.get_report_dataframe())
+    # print('\n\n')
+    # power_flow = PowerFlow(main_circuit, options)
+    # power_flow.run()
+    #
+    # print('\n\n', main_circuit.name)
+    # print('\t|V|:', abs(power_flow.results.voltage))
+    # print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    # print('\t|loading|:', abs(power_flow.results.loading) * 100)
+    # print('\tReport')
+    # print(power_flow.results.get_report_dataframe())
 
     ####################################################################################################################
     # Short circuit
@@ -74,12 +74,12 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
-    print('Running TS...', '')
-    ts = TimeSeries(grid=main_circuit, options=options, start_=0, end_=96)
-    ts.run()
-
-    numeric_circuit = main_circuit.compile()
-    ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
+    # print('Running TS...', '')
+    # ts = TimeSeries(grid=main_circuit, options=options, start_=0, end_=96)
+    # ts.run()
+    #
+    # numeric_circuit = main_circuit.compile()
+    # ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
 
     ####################################################################################################################
     # OPF
@@ -93,11 +93,11 @@ if __name__ == '__main__':
     ####################################################################################################################
     # OPF Time Series
     ####################################################################################################################
-    # print('Running OPF-TS...', '')
-    # opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
-    #                                       control_batteries=True, solver=SolverType.DC_OPF, realistic_results=False)
-    # opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
-    # opf_ts.run()
+    print('Running OPF-TS...', '')
+    opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
+                                          control_batteries=True, solver=SolverType.NELDER_MEAD_OPF, realistic_results=False)
+    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
+    opf_ts.run()
 
     ####################################################################################################################
     # Voltage collapse

@@ -264,7 +264,8 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
         self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
-        # self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
+        self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
+        self.lp_solvers_dict['Nelder-Mead OPF'] = SolverType.NELDER_MEAD_OPF
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 

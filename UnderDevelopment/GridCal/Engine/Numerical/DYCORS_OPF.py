@@ -219,6 +219,16 @@ class AcOPFBlackBox:
         S += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]).T * x[0:ngen]  # controlled generators
         S += (self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]).T * x[ngen:]  # batteries
 
+        results.battery_power = np.zeros_like(self.numerical_circuit.battery_power)
+        results.battery_power[self.bat_x_idx] = x[ngen:]
+
+        results.controlled_generation_power = np.zeros_like(self.numerical_circuit.controlled_gen_power)
+        results.controlled_generation_power[self.gen_x_idx] = x[0:ngen]
+
+        results.generation_shedding = np.zeros_like(results.controlled_generation_power)
+
+        results.load_shedding = np.zeros_like(self.numerical_circuit.load_power)
+
         # evaluate
         f = 0
 
@@ -363,6 +373,73 @@ def solve_opf_dycors_parallel(problem: AcOPFBlackBox, maxeval=1000, nthreads = 4
 
     # the result is x
     return result.value, result.params[0]
+
+
+class AcOpfDYCORS:
+
+    def __init__(self, grid: MultiCircuit, verbose=False):
+
+        self.grid = grid
+
+        self.problem = AcOPFBlackBox(grid, verbose=verbose)
+
+        self.numerical_circuit = self.problem.numerical_circuit
+
+        self.converged = False
+
+        self.result = None
+
+        self.load_shedding = np.zeros(len(grid.get_load_names()))
+
+    def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01,
+                     Emin=None, Emax=None, E=None, dt=0):
+
+        self.problem.set_state_at(t, force_batteries_to_charge, bat_idx, battery_loading_pu, Emin, Emax, E, dt)
+
+    def build_solvers(self):
+        pass
+
+    def solve(self, verbose=False):
+
+        # solve
+        val_opt, x_res = solve_opf_dycors_serial(self.problem, verbose=verbose)
+
+        # solve
+        # val_opt, x_res = solve_opf_dycors_parallel(problem, verbose=True)
+
+        self.result = self.problem.interpret_x(x_res)
+
+        self.converged = True
+
+        return self.result
+
+    def get_branch_flows(self):
+
+        return self.result.Sbranch
+
+    def get_load_shedding(self):
+
+        return self.result.load_shedding
+
+    def get_batteries_power(self):
+
+        return self.result.battery_power
+
+    def get_controlled_generation(self):
+
+        return self.result.controlled_generation_power
+
+    def get_generation_shedding(self):
+
+        return self.result.generation_shedding
+
+    def get_voltage(self):
+
+        return self.result.voltage
+
+    def get_overloads(self):
+
+        return self.result.overloads
 
 
 if __name__ == '__main__':

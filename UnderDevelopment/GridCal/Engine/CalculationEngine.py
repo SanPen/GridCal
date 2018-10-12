@@ -407,7 +407,7 @@ class NumericalCircuit:
 
         self.calculation_islands = list()
 
-    def compute(self):
+    def compute(self, add_storage=True, add_generation=True):
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
         towards the calculation. Additionally, compute the calculation matrices.
@@ -465,14 +465,16 @@ class NumericalCircuit:
         I = self.C_load_bus.T * (- self.load_current / self.Sbase * self.load_enabled)
         Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase * self.load_enabled)
 
-        # static generators
-        S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase * self.static_gen_enabled)
+        if add_generation:
+            # static generators
+            S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase * self.static_gen_enabled)
 
-        # controlled generators
-        S += self.C_ctrl_gen_bus.T * (self.controlled_gen_power / self.Sbase * self.controlled_gen_enabled)
+            # controlled generators
+            S += self.C_ctrl_gen_bus.T * (self.controlled_gen_power / self.Sbase * self.controlled_gen_enabled)
 
         # batteries
-        S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_enabled)
+        if add_storage:
+            S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_enabled)
 
         # Qmax
         q_max = self.C_ctrl_gen_bus.T * (self.controlled_gen_qmax / self.Sbase)
@@ -502,14 +504,16 @@ class NumericalCircuit:
 
             Sbus_prof = self.C_load_bus.T * (- self.load_power_profile / self.Sbase * self.load_enabled).T
 
-            # static generators
-            Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile / self.Sbase * self.static_gen_enabled).T
+            if add_generation:
+                # static generators
+                Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile / self.Sbase * self.static_gen_enabled).T
 
-            # controlled generators
-            Sbus_prof += self.C_ctrl_gen_bus.T * (self.controlled_gen_power_profile / self.Sbase * self.controlled_gen_enabled).T
+                # controlled generators
+                Sbus_prof += self.C_ctrl_gen_bus.T * (self.controlled_gen_power_profile / self.Sbase * self.controlled_gen_enabled).T
 
             # batteries
-            Sbus_prof += self.C_batt_bus.T * (self.battery_power_profile / self.Sbase * self.battery_enabled).T
+            if add_storage:
+                Sbus_prof += self.C_batt_bus.T * (self.battery_power_profile / self.Sbase * self.battery_enabled).T
 
             circuit.Ysh_prof = Ysh_prof
             circuit.Sbus_prof = Sbus_prof
