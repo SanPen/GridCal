@@ -328,11 +328,20 @@ class AcOpfNelderMead:
 
         self.result = None
 
+        self.force_batteries_to_charge = False
+
         self.x = np.zeros(self.dim)
 
         self.fx = 0
 
         self.t = 0
+
+        self.Emin = None
+        self.Emax = None
+        self.E = None
+        self.bat_idx = None
+        self.battery_loading_pu = 0.01
+        self.dt = 0
 
     def set_state(self, load_power, static_gen_power, controlled_gen_power, storage_power,
                   Emin=None, Emax=None, E=None, dt=0,
@@ -354,6 +363,15 @@ class AcOpfNelderMead:
         self.Sfix += (self.numerical_circuit.C_batt_bus[self.bat_s_idx, :]).T * (
                        storage_power / self.numerical_circuit.Sbase)
 
+        # batteries variables to control the energy
+        self.force_batteries_to_charge = force_batteries_to_charge
+        self.Emin = Emin
+        self.Emax = Emax
+        self.E = E
+        self.dt = dt
+        self.bat_idx = bat_idx
+        self.battery_loading_pu = battery_loading_pu
+
     def set_default_state(self):
         """
         Set the default loading state
@@ -367,7 +385,18 @@ class AcOpfNelderMead:
                      Emin=None, Emax=None, E=None, dt=0):
         """
         Set the problem state at at time index
-        :param t: time index
+        Args:
+            t:
+            force_batteries_to_charge:
+            bat_idx:
+            battery_loading_pu:
+            Emin:
+            Emax:
+            E:
+            dt:
+
+        Returns:
+
         """
         self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
                        static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
@@ -385,20 +414,35 @@ class AcOpfNelderMead:
 
     def f_obj(self, x):
 
-        # normalize x
-        mx = np.max(x)
-        if mx == 0:
-            mx = 1
+        # if self.force_batteries_to_charge:
+        #     # assign a negative upper limit to force to charge
+        #     x_up = self.xup
+        #     x_up[self.ngen:] = self.xlow[self.ngen:] * self.battery_loading_pu
+        # else:
+        #     # use the normal limits
+        #     x_up = self.xup
 
-        xn = x / mx * self.range + self.xlow
+        # compute the penalty for x outside boundaries
+        penalty_x = 0.0
+        idx_up = np.where(x > self.xup)[0]
+        penalty_x += (x[idx_up] - self.xup[idx_up]).sum()
+        idx_low = np.where(x < self.xlow)[0]
+        penalty_x += (self.xlow[idx_low] - x[idx_low]).sum()
+        penalty_x *= 10  # add a lot of weight to the boundary penalty
 
         # modify the power injections (apply x)
         S = self.Sfix.copy()
-
-        controlled_gen_power = xn[0:self.ngen]
-        storage_power = xn[self.ngen:]
+        controlled_gen_power = x[0:self.ngen]
+        storage_power = x[self.ngen:]
         S += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]).T * controlled_gen_power
         S += (self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]).T * storage_power
+
+        # compute the penalty for trespassing the energy boundaries
+        E = self.E - storage_power * self.dt
+        idx = np.where(E > self.Emax)[0]
+        penalty_x += (E[idx] - self.Emax[idx]).sum()
+        idx = np.where(E < self.Emin)[0]
+        penalty_x += (self.Emin[idx] - E[idx]).sum()
 
         # run a power flow
         results = self.pf.run_multi_island(self.numerical_circuit, self.calculation_inputs, self.Vbus, S, self.Ibus)
@@ -412,9 +456,9 @@ class AcOpfNelderMead:
         if len(idx) > 0:
             f = (loading[idx] - 1).sum()
             # print('objective', f, 'x', x)
-            return f
+            return f + penalty_x
         else:
-            return 0
+            return penalty_x
 
     def solve(self, verbose=False):
 
@@ -423,7 +467,7 @@ class AcOpfNelderMead:
         else:
             callback = None
 
-        x0 =np.zeros_like(self.x)
+        x0 = np.zeros_like(self.x)
 
         # Run the optimization
         self.x, self.fx = nelder_mead(self.f_obj, x_start=x0, callback=callback,

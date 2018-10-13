@@ -264,8 +264,8 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
         self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
-        self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
-        self.lp_solvers_dict['Nelder-Mead OPF'] = SolverType.NELDER_MEAD_OPF
+        # self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
+        self.lp_solvers_dict['Nelder-Mead feasibility dispatch'] = SolverType.NELDER_MEAD_OPF
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
@@ -1768,7 +1768,8 @@ class MainGUI(QMainWindow):
 
         # set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
 
-        dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
+        # dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
+        dispatch_storage= False
 
         if self.ui.helm_retry_checkBox.isChecked():
             # solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]

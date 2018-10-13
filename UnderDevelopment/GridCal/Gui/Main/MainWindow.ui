@@ -1288,7 +1288,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="14" column="0">
+               <item row="13" column="0">
                 <spacer name="verticalSpacer_10">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -1311,16 +1311,6 @@
                  </property>
                  <property name="checked">
                   <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="0">
-                <widget class="QCheckBox" name="control_battery_dispatch_checkBox">
-                 <property name="statusTip">
-                  <string>Control the adjacent branch loading dispatching active  power</string>
-                 </property>
-                 <property name="text">
-                  <string>Control battery dispatch</string>
                  </property>
                 </widget>
                </item>
@@ -4197,7 +4187,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1212</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
