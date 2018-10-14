@@ -2371,13 +2371,15 @@ class MainGUI(QMainWindow):
             control_batteries = self.ui.control_batteries_checkBox.isChecked()
             load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
             gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
+            pf_options = self.get_selected_power_flow_options()
             options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                               generation_shedding=generation_shedding,
                                               solver=solver,
                                               realistic_results=realistic_results,
                                               control_batteries=control_batteries,
                                               load_shedding_weight=load_shedding_w,
-                                              generation_shedding_weight=gen_shedding_w)
+                                              generation_shedding_weight=gen_shedding_w,
+                                              power_flow_options=pf_options)
 
             self.ui.progress_label.setText('Running optimal power flow...')
             QtGui.QGuiApplication.processEvents()
@@ -2442,13 +2444,15 @@ class MainGUI(QMainWindow):
                 control_batteries = self.ui.control_batteries_checkBox.isChecked()
                 load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
                 gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
+                pf_options = self.get_selected_power_flow_options()
                 options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                                   generation_shedding=generation_shedding,
                                                   solver=solver,
                                                   realistic_results=realistic_results,
                                                   control_batteries=control_batteries,
                                                   load_shedding_weight=load_shedding_w,
-                                                  generation_shedding_weight=gen_shedding_w)
+                                                  generation_shedding_weight=gen_shedding_w,
+                                                  power_flow_options=pf_options)
 
                 start = self.ui.profile_start_slider.value()
                 end = self.ui.profile_end_slider.value() + 1

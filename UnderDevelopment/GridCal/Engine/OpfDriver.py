@@ -17,13 +17,14 @@ from warnings import warn
 from PyQt5.QtCore import QRunnable
 import numpy as np
 
-from GridCal.Engine.IoStructures import CalculationInputs, OptimalPowerFlowResults
+from GridCal.Engine.IoStructures import OptimalPowerFlowResults
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
 from GridCal.Engine.Numerical.AC_OPF import AcOpf
 from GridCal.Engine.Numerical.DC_OPF import DcOpf
-from GridCal.Engine.PowerFlowDriver import PowerFlowMP, SolverType
-from GridCal.Engine.Numerical.DYCORS_OPF import AcOPFBlackBox, solve_opf_dycors_serial
+from GridCal.Engine.PowerFlowDriver import SolverType
+from GridCal.Engine.Numerical.NelderMead_OPF import AcOpfNelderMead
+from GridCal.Engine.PowerFlowDriver import PowerFlowOptions
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -34,7 +35,8 @@ class OptimalPowerFlowOptions:
 
     def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
                  solver=SolverType.DC_OPF, realistic_results=False, control_batteries=True,
-                 faster_less_accurate=False, generation_shedding_weight=10000, load_shedding_weight=10000):
+                 faster_less_accurate=False, generation_shedding_weight=10000, load_shedding_weight=10000,
+                 power_flow_options=None):
         """
         OPF options constructor
         :param verbose:
@@ -61,6 +63,8 @@ class OptimalPowerFlowOptions:
         self.generation_shedding_weight = generation_shedding_weight
 
         self.load_shedding_weight = load_shedding_weight
+
+        self.power_flow_options = power_flow_options
 
 
 class OptimalPowerFlow(QRunnable):
@@ -99,70 +103,63 @@ class OptimalPowerFlow(QRunnable):
 
         # self.progress_signal.emit(0.0)
 
-        if self.options.solver == SolverType.DYCORS_OPF:
-            # the AcOPFBlackBox is formulated to take into account the islands already
-            problem = AcOPFBlackBox(self.grid, verbose=False)
+        if self.options.solver == SolverType.DC_OPF:
+            # DC optimal power flow
+            problem = DcOpf(self.grid, verbose=False,
+                            allow_load_shedding=self.options.load_shedding,
+                            allow_generation_shedding=self.options.generation_shedding,
+                            generation_shedding_weight=self.options.generation_shedding_weight,
+                            load_shedding_weight=self.options.load_shedding_weight)
 
-            # set the profile values if applicable
-            if t_idx is not None:
-                problem.set_loads(t_idx)
+        elif self.options.solver == SolverType.AC_OPF:
+            # AC optimal power flow
+            problem = AcOpf(self.grid, verbose=False,
+                            allow_load_shedding=self.options.load_shedding,
+                            allow_generation_shedding=self.options.generation_shedding,
+                            generation_shedding_weight=self.options.generation_shedding_weight,
+                            load_shedding_weight=self.options.load_shedding_weight)
 
-            # solve the problem
-            val_opt, x_opt = solve_opf_dycors_serial(problem,
-                                                     verbose=True,
-                                                     stop_at=self.options.faster_less_accurate,
-                                                     stop_value=0)
+        elif self.options.solver == SolverType.NELDER_MEAD_OPF:
 
-            # collect the OPF results
-            self.results = problem.interpret_x(x_opt)
+            if self.options.power_flow_options is None:
+                options = PowerFlowOptions(SolverType.LACPF, verbose=False, robust=False,
+                                           initialize_with_existing_solution=False,
+                                           multi_core=False, dispatch_storage=True, control_q=False, control_taps=False)
+            else:
+                options = self.options.power_flow_options
+
+            problem = AcOpfNelderMead(self.grid, options, verbose=False, break_at_value=False)
 
         else:
-            if self.options.solver == SolverType.DC_OPF:
-                # DC optimal power flow
-                problem = DcOpf(self.grid, verbose=False,
-                                allow_load_shedding=self.options.load_shedding,
-                                allow_generation_shedding=self.options.generation_shedding,
-                                generation_shedding_weight=self.options.generation_shedding_weight,
-                                load_shedding_weight=self.options.load_shedding_weight)
+            raise Exception('Solver not recognized ' + str(self.options.solver))
 
-            elif self.options.solver == SolverType.AC_OPF:
-                # AC optimal power flow
-                problem = AcOpf(self.grid, verbose=False,
-                                allow_load_shedding=self.options.load_shedding,
-                                allow_generation_shedding=self.options.generation_shedding,
-                                generation_shedding_weight=self.options.generation_shedding_weight,
-                                load_shedding_weight=self.options.load_shedding_weight)
+        # Solve
+        problem.build_solvers()
+        problem.set_default_state()
+        problem.solve(verbose=True)
 
-            else:
-                raise Exception('Solver not recognized ' + str(self.options.solver))
+        # get the branch flows (it is used more than one time)
+        Sbr = problem.get_branch_flows()
+        ld = problem.get_load_shedding()
+        ld[ld == None] = 0
+        bt = problem.get_batteries_power()
+        bt[bt == None] = 0
+        gn = problem.get_controlled_generation()
+        gn[gn == None] = 0
+        gs = problem.get_generation_shedding()
+        gs[gs == None] = 0
 
-            # Solve
-            problem.build_solvers()
-            problem.set_default_state()
-            problem.solve(verbose=True)
-
-            # get the branch flows (it is used more than one time)
-            Sbr = problem.get_branch_flows()
-            ld = problem.get_load_shedding()
-            ld[ld == None] = 0
-            bt = problem.get_batteries_power()
-            bt[bt == None] = 0
-            gn = problem.get_controlled_generation()
-            gn[gn == None] = 0
-            gs = problem.get_generation_shedding()
-            gs[gs == None] = 0
-
-            # pack the results
-            self.results = OptimalPowerFlowResults(Sbus=None,
-                                                   voltage=problem.get_voltage(),
-                                                   load_shedding=ld * self.grid.Sbase,
-                                                   generation_shedding=gs * self.grid.Sbase,
-                                                   battery_power=bt * self.grid.Sbase,
-                                                   controlled_generation_power=gn * self.grid.Sbase,
-                                                   Sbranch=Sbr * self.grid.Sbase,
-                                                   overloads=problem.get_overloads(),
-                                                   loading=Sbr / (problem.numerical_circuit.br_rates + 1e-20) * 100.0,
-                                                   converged=bool(problem.converged))
+        # pack the results
+        self.results = OptimalPowerFlowResults(Sbus=None,
+                                               voltage=problem.get_voltage(),
+                                               load_shedding=ld * self.grid.Sbase,
+                                               generation_shedding=gs * self.grid.Sbase,
+                                               battery_power=bt * self.grid.Sbase,
+                                               controlled_generation_power=gn * self.grid.Sbase,
+                                               Sbranch=Sbr * self.grid.Sbase,
+                                               overloads=problem.get_overloads(),
+                                               loading=problem.get_loading(),
+                                               converged=bool(problem.converged))
 
         return self.results
 

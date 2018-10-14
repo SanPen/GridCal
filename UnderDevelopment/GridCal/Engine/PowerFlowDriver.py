@@ -415,7 +415,7 @@ class PowerFlowMP:
                                                                      tap_inc_reg_down=circuit.tap_inc_reg_down,
                                                                      vset=circuit.vset,
                                                                      verbose=self.options.verbose)
-                        print('Recompiling Ybus due to tap changes')
+                        # print('Recompiling Ybus due to tap changes')
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
 

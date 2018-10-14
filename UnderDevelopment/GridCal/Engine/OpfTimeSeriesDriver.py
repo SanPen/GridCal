@@ -282,9 +282,12 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             elif self.options.solver == SolverType.NELDER_MEAD_OPF:
 
-                options = PowerFlowOptions(SolverType.LACPF, verbose=False, robust=False,
-                                           initialize_with_existing_solution=False,
-                                           multi_core=False, dispatch_storage=True, control_q=False, control_taps=False)
+                if self.options.power_flow_options is None:
+                    options = PowerFlowOptions(SolverType.LACPF, verbose=False, robust=False,
+                                               initialize_with_existing_solution=False,
+                                               multi_core=False, dispatch_storage=True, control_q=False, control_taps=False)
+                else:
+                    options = self.options.power_flow_options
 
                 problem = AcOpfNelderMead(self.grid, options, verbose=False)
 

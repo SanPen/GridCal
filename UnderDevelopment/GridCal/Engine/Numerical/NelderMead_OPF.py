@@ -269,7 +269,11 @@ def nelder_mead(objective_function, x_start,
 
 class AcOpfNelderMead:
 
-    def __init__(self, multi_circuit: MultiCircuit, options: PowerFlowOptions, verbose=False):
+    def __init__(self, multi_circuit: MultiCircuit, options: PowerFlowOptions, verbose=False, break_at_value=True,
+                 good_enough_value=0):
+
+        self.break_at_value = break_at_value
+        self.good_enough_value = good_enough_value
 
         self.multi_circuit = multi_circuit
 
@@ -379,7 +383,11 @@ class AcOpfNelderMead:
         self.set_state(load_power=self.numerical_circuit.load_power,
                        static_gen_power=self.numerical_circuit.static_gen_power,
                        controlled_gen_power=self.numerical_circuit.controlled_gen_power[self.gen_s_idx],
-                       storage_power=self.numerical_circuit.battery_power[self.bat_s_idx])
+                       storage_power=self.numerical_circuit.battery_power[self.bat_s_idx],
+                       Emin=self.numerical_circuit.battery_Enom * self.numerical_circuit.battery_min_soc,
+                       Emax=self.numerical_circuit.battery_Enom * self.numerical_circuit.battery_max_soc,
+                       E=self.numerical_circuit.battery_Enom * self.numerical_circuit.battery_soc_0,
+                       dt=1)
 
     def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01,
                      Emin=None, Emax=None, E=None, dt=0):
@@ -471,7 +479,8 @@ class AcOpfNelderMead:
 
         # Run the optimization
         self.x, self.fx = nelder_mead(self.f_obj, x_start=x0, callback=callback,
-                                      break_at_value=True, good_enough_value=0.0, step=0.01)
+                                      break_at_value=self.break_at_value,
+                                      good_enough_value=self.good_enough_value, step=0.01)
 
         print('objective', self.fx, 'x', self.x)
         # modify the power injections
