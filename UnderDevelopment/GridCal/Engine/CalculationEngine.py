@@ -2074,6 +2074,8 @@ class MultiCircuit:
         """
         self.graph = nx.DiGraph()
 
+        self.bus_dictionary = {bus: i for i, bus in enumerate(self.buses)}
+
         for i, branch in enumerate(self.branches):
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]

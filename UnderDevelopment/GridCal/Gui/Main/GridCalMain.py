@@ -862,7 +862,11 @@ class MainGUI(QMainWindow):
 
         if do_it:
             if self.circuit.graph is None:
-                self.circuit.build_graph()
+                try:
+                    self.circuit.build_graph()
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Automatic layout')
 
             alg = dict()
             alg['circular_layout'] = nx.circular_layout

@@ -251,7 +251,7 @@ class CalculationInputs:
         obj.C_ctrl_gen_bus = self.C_ctrl_gen_bus[:, bus_idx]
         obj.C_shunt_bus = self.C_shunt_bus[:, bus_idx]
 
-        obj.bus_to_regulated_idx = self.bus_to_regulated_idx[branch_idx]
+        obj.is_bus_to_regulated = self.is_bus_to_regulated[branch_idx]
         obj.tap_position = self.tap_position[branch_idx]
         obj.min_tap = self.min_tap[branch_idx]
         obj.max_tap = self.max_tap[branch_idx]

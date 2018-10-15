@@ -148,6 +148,8 @@ class ACLineSegment(GeneralContainer):
 
         self.base_voltage = list()
 
+        self.current_limit = list()
+
 
 class PowerTransformer(GeneralContainer):
 
@@ -205,18 +207,21 @@ class CIMCircuit:
                         "ConformLoadSchedule",
                         "ConnectivityNode",
                         "Control",
+                        "CurrentLimit",
                         "DayType",
                         "Disconnector",
                         "Discrete",
                         "EnergyConsumer",
                         "EquivalentInjection",
                         "EquivalentNetwork",
+                        "EquipmentContainer",
                         "GeneratingUnit",
                         "GeographicalRegion",
                         "IEC61970CIMVersion",
                         "Line",
                         "LoadBreakSwitch",
                         "LoadResponseCharacteristic",
+                        "Location",
                         "Model",
                         "OperationalLimitSet",
                         "PositionPoint",
@@ -346,9 +351,9 @@ class CIMCircuit:
                             recognised.add(prop)
                         recognised.add(element.tpe)
 
-                    # if element.tpe == 'ACLineSegment':
-                    #     if prop in ['BaseVoltage']:
-                    #         element.base_voltage.append(ref_obj)
+                    if element.tpe == 'ACLineSegment':
+                        if prop in ['CurrentLimit']:
+                            element.current_limit.append(ref_obj)
 
                 else:
                     pass
@@ -1178,7 +1183,11 @@ class CIMImport:
 
                 if Vnom <= 0:
                     self.logger.append(elm.id + ' has a zero base voltage. This causes a failure in the file loading')
-
+                    R = 1e-20
+                    X = 1e-20
+                    G = 1e-20
+                    B = 1e-20
+                    rate = 0
                 else:
                     Sbase = circuit.Sbase
 
@@ -1190,22 +1199,28 @@ class CIMImport:
                     G = g * l / Ybase
                     B = b * l / Ybase
 
-                    line = Branch(bus_from=B1,
-                                  bus_to=B2,
-                                  name=name,
-                                  r=R,
-                                  x=X,
-                                  g=G,
-                                  b=B,
-                                  rate=0,
-                                  tap=1,
-                                  shift_angle=0,
-                                  active=True,
-                                  mttf=0,
-                                  mttr=0,
-                                  branch_type=BranchType.Line)
+                    if len(elm.current_limit) > 0:
+                        rate = float(elm.current_limit[0].properties['value']) * Vnom * sqrt(3)
+                    else:
+                        rate = 0
 
-                    circuit.add_branch(line)
+                # create AcLineSegment (Line)
+                line = Branch(bus_from=B1,
+                              bus_to=B2,
+                              name=name,
+                              r=R,
+                              x=X,
+                              g=G,
+                              b=B,
+                              rate=rate,
+                              tap=1.0,
+                              shift_angle=0.0,
+                              active=True,
+                              mttf=0,
+                              mttr=0,
+                              branch_type=BranchType.Line)
+
+                circuit.add_branch(line)
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
