@@ -2739,29 +2739,38 @@ class MainGUI(QMainWindow):
         self.topology_reduction = None
 
         '''
-        if self.power_flow is not None:
-            self.power_flow.cancel()
 
-        if self.monte_carlo is not None:
-            self.monte_carlo.cancel()
+        reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to cancel the simulation?',
+                                     QMessageBox.Yes, QMessageBox.No)
 
-        if self.time_series is not None:
-            self.time_series.cancel()
+        if reply == QMessageBox.Yes:
+            # send the cancel state to whatever it is being executed
 
-        if self.voltage_stability is not None:
-            self.voltage_stability.cancel()
+            if self.power_flow is not None:
+                self.power_flow.cancel()
 
-        if self.monte_carlo is not None:
-            self.monte_carlo.cancel()
+            if self.monte_carlo is not None:
+                self.monte_carlo.cancel()
 
-        if self.latin_hypercube_sampling is not None:
-            self.latin_hypercube_sampling.cancel()
+            if self.time_series is not None:
+                self.time_series.cancel()
 
-        if self.optimal_power_flow_time_series is not None:
-            self.optimal_power_flow_time_series.cancel()
+            if self.voltage_stability is not None:
+                self.voltage_stability.cancel()
 
-        if self.cascade is not None:
-            self.cascade.cancel()
+            if self.monte_carlo is not None:
+                self.monte_carlo.cancel()
+
+            if self.latin_hypercube_sampling is not None:
+                self.latin_hypercube_sampling.cancel()
+
+            if self.optimal_power_flow_time_series is not None:
+                self.optimal_power_flow_time_series.cancel()
+
+            if self.cascade is not None:
+                self.cascade.cancel()
+        else:
+            pass
 
     def update_available_results(self):
         """
