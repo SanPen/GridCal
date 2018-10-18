@@ -76,6 +76,16 @@ class TimeGroups(Enum):
     ByHour = 2
 
 
+class DeviceType(Enum):
+    BusDevice = 1,
+    BranchDevice = 2,
+    ControlledGeneratorDevice = 3,
+    StaticGeneratorDevice = 4,
+    BatteryDevice = 5,
+    ShuntDevice = 6,
+    LoadDevice = 7
+
+
 ########################################################################################################################
 # Circuit classes
 ########################################################################################################################

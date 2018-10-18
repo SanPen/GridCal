@@ -499,7 +499,7 @@ class PowerFlowMP:
             # Branch losses in MVA
             losses = (Sf + St) * calculation_inputs.Sbase
 
-            flow_direction = Sf / np.abs(Sf + 1e-20)
+            flow_direction = Sf.real / np.abs(Sf + 1e-20)
 
             # Branch current in p.u.
             Ibranch = maximum(If, It)

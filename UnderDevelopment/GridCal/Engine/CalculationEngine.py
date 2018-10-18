@@ -318,6 +318,9 @@ class NumericalCircuit:
         self.br_rates = np.zeros(n_br, dtype=float)
         self.branch_states = np.zeros(n_br, dtype=int)
 
+        self.br_mttf = np.zeros(n_br, dtype=float)
+        self.br_mttr = np.zeros(n_br, dtype=float)
+
         self.is_bus_to_regulated = np.zeros(n_br, dtype=int)
         self.tap_position = np.zeros(n_br, dtype=int)
         self.min_tap = np.zeros(n_br, dtype=int)
@@ -337,6 +340,9 @@ class NumericalCircuit:
         self.load_current = np.zeros(n_ld, dtype=complex)
         self.load_admittance = np.zeros(n_ld, dtype=complex)
         self.load_enabled = np.zeros(n_ld, dtype=bool)
+
+        self.load_mttf = np.zeros(n_ld, dtype=float)
+        self.load_mttr = np.zeros(n_ld, dtype=float)
 
         self.load_power_profile = np.zeros((n_time, n_ld), dtype=complex)
         self.load_current_profile = np.zeros((n_time, n_ld), dtype=complex)
@@ -361,6 +367,9 @@ class NumericalCircuit:
         self.battery_enabled = np.zeros(n_batt, dtype=bool)
         self.battery_dispatchable = np.zeros(n_batt, dtype=bool)
 
+        self.battery_mttf = np.zeros(n_batt, dtype=float)
+        self.battery_mttr = np.zeros(n_batt, dtype=float)
+
         self.battery_power_profile = np.zeros((n_time, n_batt), dtype=float)
         self.battery_voltage_profile = np.zeros((n_time, n_batt), dtype=float)
 
@@ -371,6 +380,9 @@ class NumericalCircuit:
         self.static_gen_power = np.zeros(n_sta_gen, dtype=complex)
         self.static_gen_enabled = np.zeros(n_sta_gen, dtype=bool)
         self.static_gen_dispatchable = np.zeros(n_sta_gen, dtype=bool)
+
+        self.static_gen_mttf = np.zeros(n_sta_gen, dtype=float)
+        self.static_gen_mttr = np.zeros(n_sta_gen, dtype=float)
 
         self.static_gen_power_profile = np.zeros((n_time, n_sta_gen), dtype=complex)
 
@@ -387,6 +399,9 @@ class NumericalCircuit:
         self.controlled_gen_enabled = np.zeros(n_ctrl_gen, dtype=bool)
         self.controlled_gen_dispatchable = np.zeros(n_ctrl_gen, dtype=bool)
 
+        self.controlled_gen_mttf = np.zeros(n_ctrl_gen, dtype=float)
+        self.controlled_gen_mttr = np.zeros(n_ctrl_gen, dtype=float)
+
         self.controlled_gen_power_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
         self.controlled_gen_voltage_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
 
@@ -396,6 +411,9 @@ class NumericalCircuit:
         self.shunt_names = np.empty(n_sh, dtype=object)
         self.shunt_admittance = np.zeros(n_sh, dtype=complex)
         self.shunt_enabled = np.zeros(n_sh, dtype=bool)
+
+        self.shunt_mttf = np.zeros(n_sh, dtype=float)
+        self.shunt_mttr = np.zeros(n_sh, dtype=float)
 
         self.shunt_admittance_profile = np.zeros((n_time, n_sh), dtype=complex)
 
@@ -2151,6 +2169,8 @@ class MultiCircuit:
                 circuit.load_current[i_ld] = elm.I
                 circuit.load_admittance[i_ld] = elm.Y
                 circuit.load_enabled[i_ld] = elm.active
+                circuit.load_mttf[i_ld] = elm.mttf
+                circuit.load_mttr[i_ld] = elm.mttr
 
                 if n_time > 0:
                     circuit.load_power_profile[:, i_ld] = elm.Sprof.values[:, 0]
@@ -2168,6 +2188,8 @@ class MultiCircuit:
                 circuit.static_gen_names[i_sta_gen] = elm.name
                 circuit.static_gen_power[i_sta_gen] = elm.S
                 circuit.static_gen_enabled[i_sta_gen] = elm.active
+                circuit.static_gen_mttf[i_sta_gen] = elm.mttf
+                circuit.static_gen_mttr[i_sta_gen] = elm.mttr
                 # circuit.static_gen_dispatchable[i_sta_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
@@ -2186,6 +2208,8 @@ class MultiCircuit:
                 circuit.controlled_gen_pmax[i_ctrl_gen] = elm.Pmax
                 circuit.controlled_gen_enabled[i_ctrl_gen] = elm.active
                 circuit.controlled_gen_dispatchable[i_ctrl_gen] = elm.enabled_dispatch
+                circuit.controlled_gen_mttf[i_ctrl_gen] = elm.mttf
+                circuit.controlled_gen_mttr[i_ctrl_gen] = elm.mttr
 
                 if n_time > 0:
                     # power profile
@@ -2213,6 +2237,8 @@ class MultiCircuit:
                 circuit.battery_qmax[i_batt] = elm.Qmax
                 circuit.battery_enabled[i_batt] = elm.active
                 circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
+                circuit.battery_mttf[i_batt] = elm.mttf
+                circuit.battery_mttr[i_batt] = elm.mttr
 
                 circuit.battery_pmin[i_batt] = elm.Pmin
                 circuit.battery_pmax[i_batt] = elm.Pmax
@@ -2240,6 +2266,8 @@ class MultiCircuit:
             for elm in bus.shunts:
                 circuit.shunt_names[i_sh] = elm.name
                 circuit.shunt_admittance[i_sh] = elm.Y
+                circuit.shunt_mttf[i_sh] = elm.mttf
+                circuit.shunt_mttr[i_sh] = elm.mttr
 
                 if n_time > 0:
                     circuit.shunt_admittance_profile[:, i_sh] = elm.Yprof.values[:, 0]
@@ -2264,6 +2292,8 @@ class MultiCircuit:
             # name and state
             circuit.branch_names[i] = branch.name
             circuit.branch_states[i] = branch.active
+            circuit.br_mttf[i] = branch.mttf
+            circuit.br_mttr[i] = branch.mttr
 
             # impedance and tap
             circuit.R[i] = branch.R
