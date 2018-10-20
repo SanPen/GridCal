@@ -966,22 +966,27 @@ class PowerFlowMP:
                     warn('There are no slack nodes in the island ' + str(i))
                     self.logger.append('There are no slack nodes in the island ' + str(i))
         else:
-            # only one island
-            Vbus = calculation_inputs[0].Vbus
-            Sbus = calculation_inputs[0].Sbus
-            Ibus = calculation_inputs[0].Ibus
 
-            # run circuit power flow
-            results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
+            if len(calculation_inputs[0].ref) > 0:
+                # only one island
+                Vbus = calculation_inputs[0].Vbus
+                Sbus = calculation_inputs[0].Sbus
+                Ibus = calculation_inputs[0].Ibus
 
-            # build the report
-            data = np.c_[results.methods[0],
-                         results.converged[0],
-                         results.error[0],
-                         results.elapsed[0],
-                         results.inner_iterations[0]]
-            df = pd.DataFrame(data, columns=col)
-            self.convergence_reports.append(df)
+                # run circuit power flow
+                results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
+
+                # build the report
+                data = np.c_[results.methods[0],
+                             results.converged[0],
+                             results.error[0],
+                             results.elapsed[0],
+                             results.inner_iterations[0]]
+                df = pd.DataFrame(data, columns=col)
+                self.convergence_reports.append(df)
+            else:
+                warn('There are no slack nodes')
+                self.logger.append('There are no slack nodes')
 
         self.last_V = results.voltage  # done inside single_power_flow
 
