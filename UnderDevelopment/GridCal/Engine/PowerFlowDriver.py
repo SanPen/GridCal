@@ -687,7 +687,7 @@ class PowerFlowMP:
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
             if verbose:
-                print(f"Bus {j}: U={v}pu, U_set={vset[i]}")
+                print(f"Bus {j} regulated by branch {i}: U={v}pu, U_set={vset[i]}")
 
             if tap_position[i] > 0:
 
@@ -751,7 +751,6 @@ class PowerFlowMP:
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
-            break
 
         # compute the tap magnitude
         '''
