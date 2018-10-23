@@ -2,7 +2,7 @@
 
 # What is this?
 
-This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/7BbO7KKWwEY) and 
+This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/7BbO7KKWwEY) and
  [check out the manual](https://github.com/SanPen/GridCal/blob/master/Documentation/GridCal/Manual_of_GridCal.pdf)
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
@@ -121,11 +121,24 @@ for island in numerical_input_islands:
 The main logic is to store the grid elements information in objects, and then "compile the objects" to get efficient arrays that represent the grid for calculation.
 
 The compilation detects the islands formed in the grid and treats each island as a different power system. Then the results are merged back into single multi-island vectors of results.
- 
+
 All the engine objects and calculations can be accessed through the embedded python console in the GUI.
 
+## Testing with pytest
+
+Unit test (for pytest) are included in `UnderDevelopment\tests`. As defined in `pytest.ini`, all files matching `test_*.py` are executed by running:
+
+```
+pytest
+```
+
+Files matching `*_test.py` are not executed; they were not formatted specifically for `pytest` but were mostly done for manual testing and documentation purposes.
+
+Additional tests should be developped for each new and existing feature. `pytest` should be run before each commit to prevent easily detectable bugs.
+
 # Features overview
-It is pure Python, It works for Windows, Linux and OSX.
+
+It is pure Python, it works for Windows, Linux and OSX.
 
 Some of the features you'll find already are:
 
@@ -150,7 +163,7 @@ Some of the features you'll find already are:
   - Linear AC approximation.
 
 - DC Optimal power flow
- 
+
 - Time series with profiles in all the objects physical magnitudes.
 
 - Bifurcation point with predictor-corrector Newton-Raphson.
@@ -161,7 +174,7 @@ Some of the features you'll find already are:
 
 - Three-phase short circuit.
 
-- Includes the Z-I-P load model, this means that the power flows can handle both power and current.  
+- Includes the Z-I-P load model, this means that the power flows can handle both power and current.
 
 - The ability to handle island grids in all the simulation modes.
 
