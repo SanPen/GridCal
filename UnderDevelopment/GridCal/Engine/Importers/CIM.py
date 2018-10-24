@@ -1481,6 +1481,17 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
 
+        # Slacks (External networks)
+        cim_slack = ['EquivalentNetwork', 'EquivalentInjection']
+        if self.any_in_dict(cim.elements_by_type, cim_slack):
+            for elm in self.get_elements(cim.elements_by_type, cim_slack):
+                if len(elm.terminals) > 0:
+                    T1 = T_dict[elm.terminals[0].id]
+                    B1 = self.terminal_node[T1][0]
+                    B1.is_slack = True
+                else:
+                    self.logger.append(str(elm) + ' ' + ' has no terminals')
+
         # log the unused types
         for tpe in cim.elements_by_type.keys():
             if tpe not in recognised:
@@ -1508,7 +1519,7 @@ if __name__ == '__main__':
     # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Australia.xml'
     # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE 57.xml'
     # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xlsx'
-    fname = 'C:\\Users\\spenate\\Desktop\\pruebaExportMAPANGA.xml'
+    fname = 'C:\\Users\\spenate\\Desktop\\pruebaExportMAPANGA18Test.xml'
     print('Reading...')
     logger = grid.load_file(fname)
 
