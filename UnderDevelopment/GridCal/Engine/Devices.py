@@ -792,7 +792,7 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, branch_type: BranchType=BranchType.Line,
-                 length=1, vset=1.0, Tb=25, k=234.5, bus_to_regulated=False, template=BranchTemplate(), ):
+                 length=1, vset=1.0, Tb=20, k=234.5, bus_to_regulated=False, template=BranchTemplate(), ):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -846,8 +846,15 @@ class Branch(ReliabilityDevice):
         # Conductor base temperature
         self.Tb = Tb
 
-        # Conductor thermal constant
-        self.k = k  # Al: 234.5, Cu: 228.1
+        # Conductor thermal constant (Ohm/ºC)
+        # Copper = 0.004041
+        # Aluminum = 0.004308
+        # Iron = 0.005671
+        # Nickel = 0.005866
+        # Gold = 0.003715
+        # Tungsten = 0.004403
+        # Silver = 0.003819
+        self.k = k
 
         # tap changer object
         self.tap_changer = TapChanger()

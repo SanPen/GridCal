@@ -154,7 +154,7 @@ print('\n', br_df)
 
 # Finally the execution metrics
 print('\nError:', pf.results.error)
-print('Slapsed time (s):', pf.results.elapsed)
+print('Elapsed time (s):', pf.results.elapsed, '\n')
 
 
 from tabulate import tabulate
