@@ -28,8 +28,8 @@ if __name__ == '__main__':
     # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
-    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
+    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
@@ -74,12 +74,12 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Time Series
     ####################################################################################################################
-    # print('Running TS...', '')
-    # ts = TimeSeries(grid=main_circuit, options=options, start_=0, end_=96)
-    # ts.run()
-    #
-    # numeric_circuit = main_circuit.compile()
-    # ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
+    print('Running TS...', '')
+    ts = TimeSeries(grid=main_circuit, options=options, start_=0, end_=96)
+    ts.run()
+
+    numeric_circuit = main_circuit.compile()
+    ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
 
     ####################################################################################################################
     # OPF

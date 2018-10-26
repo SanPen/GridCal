@@ -62,8 +62,8 @@ class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, control_q=True, multi_core=True, dispatch_storage=False,
-                 control_taps=False, control_p=False):
+                 tolerance=1e-6, max_iter=25, control_q=False, multi_core=False, dispatch_storage=False,
+                 control_taps=False, control_p=False, apply_temperature_correction=False):
         """
         Power flow execution options
         @param solver_type:
@@ -76,6 +76,7 @@ class PowerFlowOptions:
         @param max_iter:
         @param control_q:
         @param control_taps:
+        @param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
         """
         self.solver_type = solver_type
 
@@ -100,6 +101,8 @@ class PowerFlowOptions:
         self.dispatch_storage = dispatch_storage
 
         self.control_taps = control_taps
+
+        self.apply_temperature_correction = apply_temperature_correction
 
 
 class PowerFlowMP:
@@ -932,7 +935,7 @@ class PowerFlowMP:
 
         print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
-        calculation_inputs = numerical_circuit.compute()
+        calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction)
 
         if len(numerical_circuit.islands) > 1:
 

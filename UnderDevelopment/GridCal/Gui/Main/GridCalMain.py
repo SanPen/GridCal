@@ -495,6 +495,7 @@ class MainGUI(QMainWindow):
         # doubleSpinBox
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
+        self.ui.temperature_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
 
@@ -1044,6 +1045,7 @@ class MainGUI(QMainWindow):
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
                 self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+                self.ui.temperature_doubleSpinBox.setValue(self.circuit.temperature)
 
                 # set circuit comments
                 try:
@@ -1785,6 +1787,8 @@ class MainGUI(QMainWindow):
 
         ctrl_taps = self.ui.control_transformer_taps_checkBox.isChecked()
 
+        temp_correction = self.ui.temperature_correction_checkBox.isChecked()
+
         ops = PowerFlowOptions(solver_type=solver_type,
                                aux_solver_type=solver_to_retry_with,
                                verbose=False,
@@ -1795,7 +1799,8 @@ class MainGUI(QMainWindow):
                                control_q=enforce_q_limits,
                                multi_core=mp,
                                dispatch_storage=dispatch_storage,
-                               control_taps=ctrl_taps)
+                               control_taps=ctrl_taps,
+                               apply_temperature_correction=temp_correction)
 
         return ops
 
@@ -2860,6 +2865,7 @@ class MainGUI(QMainWindow):
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+        self.ui.temperature_doubleSpinBox.setValue(self.circuit.temperature)
 
     def update_available_results_in_the_study(self):
         """
@@ -3085,6 +3091,7 @@ class MainGUI(QMainWindow):
         """
         self.circuit.Sbase = self.ui.sbase_doubleSpinBox.value()
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
+        self.circuit.temperature = self.ui.temperature_doubleSpinBox.value()
 
     def explosion_factor_change(self):
         """

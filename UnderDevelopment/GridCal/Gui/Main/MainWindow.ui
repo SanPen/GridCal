@@ -55,7 +55,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
@@ -1288,7 +1288,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0">
+               <item row="14" column="0">
                 <spacer name="verticalSpacer_10">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -1311,6 +1311,13 @@
                  </property>
                  <property name="checked">
                   <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QCheckBox" name="temperature_correction_checkBox">
+                 <property name="text">
+                  <string>Apply temperature correction</string>
                  </property>
                 </widget>
                </item>
@@ -3298,6 +3305,26 @@ points from time series</string>
                </widget>
               </item>
               <item>
+               <widget class="QLabel" name="label_40">
+                <property name="text">
+                 <string>Temperature (ºC)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="temperature_doubleSpinBox">
+                <property name="minimum">
+                 <double>-100.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>100.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>25.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="Line" name="line_19">
                 <property name="palette">
                  <palette>
@@ -4187,7 +4214,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1212</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
