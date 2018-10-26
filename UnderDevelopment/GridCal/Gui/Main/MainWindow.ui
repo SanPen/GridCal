@@ -3313,6 +3313,9 @@ points from time series</string>
               </item>
               <item>
                <widget class="QDoubleSpinBox" name="temperature_doubleSpinBox">
+                <property name="decimals">
+                 <number>1</number>
+                </property>
                 <property name="minimum">
                  <double>-100.000000000000000</double>
                 </property>

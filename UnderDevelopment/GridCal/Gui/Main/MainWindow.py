@@ -1287,6 +1287,7 @@ class Ui_mainWindow(object):
         self.label_40.setObjectName("label_40")
         self.verticalLayout_17.addWidget(self.label_40)
         self.temperature_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_25)
+        self.temperature_doubleSpinBox.setDecimals(1)
         self.temperature_doubleSpinBox.setMinimum(-100.0)
         self.temperature_doubleSpinBox.setMaximum(100.0)
         self.temperature_doubleSpinBox.setProperty("value", 25.0)
