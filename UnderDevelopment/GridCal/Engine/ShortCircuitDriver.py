@@ -336,7 +336,7 @@ class ShortCircuit(QRunnable):
         results.initialize(n, m)
         k = 0
 
-        print('Compiling...', end='')
+        # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
 

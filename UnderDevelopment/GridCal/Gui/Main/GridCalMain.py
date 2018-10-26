@@ -3410,7 +3410,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.circuit is not None:
-            print('Compiling...', end='')
+            # print('Compiling...', end='')
             numerical_circuit = self.circuit.compile()
             self.calculation_inputs_to_display = numerical_circuit.compute()
             return True

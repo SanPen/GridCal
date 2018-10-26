@@ -45,7 +45,7 @@ class DcOpf:
         :return:
         """
 
-        print('Compiling LP')
+        # print('Compiling LP')
         prob = LpProblem("DC optimal power flow", LpMinimize)
 
         ################################################################################################################

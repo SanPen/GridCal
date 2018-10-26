@@ -366,7 +366,7 @@ class TimeSeries(QThread):
         if self.end_ is None:
             self.end_ = nt
 
-        print('Compiling...', end='')
+        # print('Compiling...', end='')
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
         calculation_inputs = numerical_circuit.compute()
@@ -475,7 +475,7 @@ class TimeSeries(QThread):
 
         n_cores = multiprocessing.cpu_count()
 
-        print('Compiling...', end='')
+        # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
 

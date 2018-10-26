@@ -249,7 +249,7 @@ class Cascading(QThread):
         self.__cancel__ = False
 
         # compile
-        print('Compiling...', end='')
+        # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute()
 

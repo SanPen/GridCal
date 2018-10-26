@@ -411,7 +411,7 @@ class LatinHypercubeSampling(QThread):
         avg_res.initialize(n, m)
 
         # compile
-        print('Compiling...', end='')
+        # print('Compiling...', end='')
         numerical_circuit = self.circuit.compile()
         numerical_islands = numerical_circuit.compute()
 

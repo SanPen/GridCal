@@ -933,7 +933,7 @@ class PowerFlowMP:
         col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
         self.convergence_reports.clear()
 
-        print('Compiling...', end='')
+        # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction)
 
