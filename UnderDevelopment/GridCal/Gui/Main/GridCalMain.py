@@ -1040,7 +1040,7 @@ class MainGUI(QMainWindow):
                 self.create_schematic_from_api(explode_factor=1)
 
                 # set circuit name
-                self.grid_editor.name_label.setText(self.circuit.name)
+                self.grid_editor.name_label.setText(str(self.circuit.name))
 
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
@@ -1049,7 +1049,7 @@ class MainGUI(QMainWindow):
 
                 # set circuit comments
                 try:
-                    self.ui.comments_textEdit.setText(self.circuit.comments)
+                    self.ui.comments_textEdit.setText(str(self.circuit.comments))
                 except:
                     pass
 
