@@ -589,21 +589,33 @@ HV shunt reactance (p.u.): $xs_{hv} = x_{sc} \cdot GX_{hv1}$\newline
 
 LV shunt reactance (p.u.): $xs_{lv} = x_{sc} \cdot (1 - GX_{hv1})$\newline
 
-Shunt resistance (p.u.): $r_{fe} = \frac{Sn}{P_{fe} / 1000}$\newline
+If $P_{fe} > 0$ and $I0 > 0$, then:
 
+Shunt resistance (p.u.): $r_{fe} = \frac{Sn}{P_{fe} / 1000}$\newline
 
 Magnetization impedance (p.u.): $z_m = \frac{1}{I_0 / 100}$\newline
 
 Magnetization reactance (p.u.): $x_m = \frac{1}{\sqrt{\frac{1}{z_m^2} - \frac{1}{r_{fe}^2}}}$ \newline
 
-If the content of the square root is negative, set the magnetization impedance to zero.\\
+Magnetizing resistance (p.u.): $r_m = \sqrt{x_m^2 - z_m^2}$
+
+else:
+
+Magnetization reactance (p.u.): $x_m =0$ \newline
+
+Magnetizing resistance (p.u.): $r_m = 0$ \newline
 
 
-The final complex calculated parameters in per unit are:
+%rfe = Sn / (Pfe / 1000.0)
+%zm = 1.0 / (I0 / 100.0)
+%xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
+%rm = sqrt(xm * xm - zm * zm)
 
-Magnetizing impedance (or series impedance): $z_{series} = Z_m = r_{fe} +j \cdot x_m$
+The final complex calculated parameters in per unit are: \newline
 
-Leakage impedance (or shunt impedance): $Z_l = r_{sc} + j \cdot x_{sc}$
+Magnetizing impedance (or series impedance): $z_{series} = Z_m = r_{m} +j \cdot x_m$
+
+Leakage impedance (or shunt impedance): $Z_l = r_{sc} + j \cdot x_{sc}$ \newline
 
 Shunt admittance: $y_{shunt} = 1 / Z_l$
 
@@ -630,7 +642,7 @@ In GridCal I found the need to find the short circuit values ($P_{cu}$, $V_{sc}$
 %I0 = 0
 
 \begin{equation}
-z_{sc} = \sqrt{R^2 + 1 / X^2}
+z_{sc} = \sqrt{R^2 + X^2}
 \end{equation}
 
 
