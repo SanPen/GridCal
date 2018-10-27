@@ -52,7 +52,7 @@ name = "GridCal"
 version = str(__GridCal_VERSION__)
 description = "Research Oriented electrical simulation software."
 
-# Python 3.5 or later needed
+# Python 3.6 or later needed
 if sys.version_info < (3, 6, 0, 'final', 0):
     raise (SystemExit, 'Python 3.6º or later is required!')
 
