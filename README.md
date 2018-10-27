@@ -28,7 +28,7 @@ The recommended way to install GridCal if you have a python distribution already
 
 `pip3 install GridCal` (Linux / OSX)
 
-*You must have Python 3.5 or higher installed to work with the GUI
+*You must have Python 3.6 or higher installed to work with the GUI
 
 Check out the video on how to install [**Python and GridCal on Windows 10**.](https://youtu.be/yGxMq2JB1Zo)
 
@@ -65,7 +65,7 @@ run()
 
 Or directly from the shell:
 
-- (Windows, with python 3.5 or higher)
+- (Windows, with python 3.6 or higher)
 
     `python -c "from GridCal.ExecuteGridCal import run; run()"`
 
