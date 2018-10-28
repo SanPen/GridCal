@@ -4,7 +4,7 @@ from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
 from GridCal.Engine.DeviceTypes import *
 
-test_name = "test_gridcal_basic"
+test_name = "test_basic"
 Sbase = 100 # MVA
 
 def complexe(z, XR):
@@ -20,7 +20,7 @@ def complexe(z, XR):
         imag = 0.0
     return complex(real, imag)
 
-def test_gridcal_basic():
+def test_basic():
     """
     Basic GridCal test, also useful for a basic tutorial. In this case the
     magnetizing branch of the transformers is neglected by inputting 1e-20
