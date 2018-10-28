@@ -141,7 +141,7 @@ def test_basic_pi():
 
     print("Controlled generators:")
     for g in grid.get_controlled_generators():
-        print(f" - Generator {g}: q_min={g.Qmin}pu, q_max={g.Qmax}pu")
+        print(f" - Generator {g}: q_min={g.Qmin} MVAR, q_max={g.Qmax} MVAR")
     print()
 
     print("Branches:")
