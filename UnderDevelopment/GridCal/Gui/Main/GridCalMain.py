@@ -881,7 +881,10 @@ class MainGUI(QMainWindow):
             pos_alg = alg[sel]
 
             # get the positions of a spring layout of the graph
-            pos = pos_alg(self.circuit.graph, scale=10)
+            if sel == 'random_layout':
+                pos = pos_alg(self.circuit.graph)
+            else:
+                pos = pos_alg(self.circuit.graph, scale=10)
 
             # assign the positions to the graphical objects of the nodes
             for i, bus in enumerate(self.circuit.buses):
