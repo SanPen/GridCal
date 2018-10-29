@@ -4,9 +4,8 @@ from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
 from GridCal.Engine.DeviceTypes import *
 
-test_name = "test_gridcal_basic"
-Sbase = 100  # MVA
-
+test_name = "test_basic"
+Sbase = 100 # MVA
 
 def complexe(z, XR):
     """
@@ -21,13 +20,11 @@ def complexe(z, XR):
         imag = 0.0
     return complex(real, imag)
 
-
-def test_gridcal_basic():
+def test_basic():
     """
     Basic GridCal test, also useful for a basic tutorial. In this case the
     magnetizing branch of the transformers is neglected by inputting 1e-20
     excitation current and iron core losses.
-
     The results are identical to ETAP's, which always uses this assumption in
     balanced load flow calculations.
     """
@@ -38,20 +35,20 @@ def test_gridcal_basic():
 
     # Create buses
     POI = Bus(name="POI",
-              vnom=100,  # kV
+              vnom=100, #kV
               is_slack=True)
     grid.add_bus(POI)
 
     B_C3 = Bus(name="B_C3",
-               vnom=10)  # kV
+               vnom=10) #kV
     grid.add_bus(B_C3)
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10)  # kV
+                   vnom=10) #kV
     grid.add_bus(B_MV_M32)
 
     B_LV_M32 = Bus(name="B_LV_M32",
-                   vnom=0.6)  # kV
+                   vnom=0.6) #kV
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)
@@ -66,12 +63,12 @@ def test_gridcal_basic():
     grid.add_static_generator(B_LV_M32, M32)
 
     # Create transformer types
-    s = 5  # MVA
-    z = 8  # %
+    s = 5 # MVA
+    z = 8 # %
     xr = 40
     SS = TransformerType(name="SS",
-                         hv_nominal_voltage=100,  # kV
-                         lv_nominal_voltage=10,  # kV
+                         hv_nominal_voltage=100, # kV
+                         lv_nominal_voltage=10, # kV
                          nominal_power=s,
                          copper_losses=complexe(z, xr).real*s*1000/Sbase,
                          iron_losses=1e-20,
@@ -83,8 +80,8 @@ def test_gridcal_basic():
     z = 6 # %
     xr = 20
     PM = TransformerType(name="PM",
-                         hv_nominal_voltage=10,  # kV
-                         lv_nominal_voltage=0.6,  # kV
+                         hv_nominal_voltage=10, # kV
+                         lv_nominal_voltage=0.6, # kV
                          nominal_power=s,
                          copper_losses=complexe(z, xr).real*s*1000/Sbase,
                          iron_losses=1e-20,
@@ -136,7 +133,7 @@ def test_gridcal_basic():
     power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 99.6, 102.7, 102.9]  # Expected solution from GridCal and ETAP 16.1.0, for reference
+    solution = [100.0, 99.6, 102.7, 102.9] # Expected solution from GridCal and ETAP 16.1.0, for reference
 
     print()
     print(f"Test: {test_name}")
@@ -161,13 +158,12 @@ def test_gridcal_basic():
 
     print("Transformer types:")
     for t in grid.transformer_types:
-        print(f" - {t}: Copper losses={int(t.Copper_losses)}kW, "
-              f"Iron losses={int(t.Iron_losses)}kW, SC voltage={t.Short_circuit_voltage}%")
+        print(f" - {t}: Copper losses={int(t.Copper_losses)}kW, Iron losses={int(t.Iron_losses)}kW, SC voltage={t.Short_circuit_voltage}%")
     print()
 
     print("Losses:")
     for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
+        print(f" - {grid.branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True
