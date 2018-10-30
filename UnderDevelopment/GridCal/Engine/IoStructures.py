@@ -1434,12 +1434,10 @@ class MonteCarloResults:
                 title = ''
 
             if 'CDF' not in result_type:
-                df = pd.DataFrame(data=y, columns=labels)
-
-                if len(df.columns) > 10:
-                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
-                else:
-                    df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+                df = pd.DataFrame(data=np.abs(y), columns=labels)
+                lines = ax.plot(np.abs(y), linewidth=LINEWIDTH)
+                if len(df.columns) < 10:
+                    ax.legend(lines, labels, loc='best')
             else:
                 df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
 

@@ -2792,40 +2792,49 @@ class MainGUI(QMainWindow):
         self.ui.result_element_selection_listView.setModel(None)
 
         if self.power_flow is not None:
-            lst.append("Power Flow")
-            self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
+            if self.power_flow.results is not None:
+                lst.append("Power Flow")
+                self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
 
         if self.voltage_stability is not None:
-            lst.append("Voltage Stability")
-            self.available_results_dict["Voltage Stability"] = self.voltage_stability.results.available_results
+            if self.voltage_stability.results is not None:
+                lst.append("Voltage Stability")
+                self.available_results_dict["Voltage Stability"] = self.voltage_stability.results.available_results
 
         if self.time_series is not None:
-            lst.append("Time Series")
-            self.available_results_dict["Time Series"] = self.time_series.results.available_results
+            if self.time_series.results is not None:
+                lst.append("Time Series")
+                self.available_results_dict["Time Series"] = self.time_series.results.available_results
 
         if self.monte_carlo is not None:
-            lst.append("Monte Carlo")
-            self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
+            if self.monte_carlo.results is not None:
+                lst.append("Monte Carlo")
+                self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
 
         if self.latin_hypercube_sampling is not None:
-            lst.append("Latin Hypercube")
-            self.available_results_dict["Latin Hypercube"] = self.latin_hypercube_sampling.results.available_results
+            if self.latin_hypercube_sampling.results is not None:
+                lst.append("Latin Hypercube")
+                self.available_results_dict["Latin Hypercube"] = self.latin_hypercube_sampling.results.available_results
 
         if self.short_circuit is not None:
-            lst.append("Short Circuit")
-            self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
+            if self.short_circuit.results is not None:
+                lst.append("Short Circuit")
+                self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
 
         if self.optimal_power_flow is not None:
-            lst.append("Optimal power flow")
-            self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
+            if self.optimal_power_flow.results is not None:
+                lst.append("Optimal power flow")
+                self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
 
         if self.optimal_power_flow_time_series is not None:
-            lst.append("Optimal power flow time series")
-            self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
+            if self.optimal_power_flow_time_series.results is not None:
+                lst.append("Optimal power flow time series")
+                self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
 
         if self.transient_stability is not None:
-            lst.append("Transient stability")
-            self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
+            if self.transient_stability.results is not None:
+                lst.append("Transient stability")
+                self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
