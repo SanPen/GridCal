@@ -1128,8 +1128,8 @@ class MonteCarloResults:
         self.l_avg_conv = None
         self.loss_avg_conv = None
 
-        self.available_results = ['Bus voltage avg', 'Bus voltage std', 'Bus voltage CDF',
-                                  'Branch current avg', 'Branch current std',
+        self.available_results = ['Bus voltage avg', 'Bus voltage std', 'Bus voltage CDF', 'Bus power CDF',
+                                  'Branch current avg', 'Branch current std', 'Branch current CDF',
                                   'Branch loading avg', 'Branch loading std', 'Branch loading CDF',
                                   'Branch losses avg', 'Branch losses std', 'Branch losses CDF']
 
@@ -1408,11 +1408,25 @@ class MonteCarloResults:
                 title = 'Branch loading'
 
             elif result_type == 'Branch losses CDF':
-                cdf = CDF(np.abs(self.losses_points.real[:, indices]))
+                cdf = CDF(np.abs(self.losses_points[:, indices]))
                 cdf.plot(ax=ax)
                 y_label = '(MVA)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = 'Branch losses'
+
+            elif result_type == 'Branch current CDF':
+                cdf = CDF(np.abs(self.I_points[:, indices]))
+                cdf.plot(ax=ax)
+                y_label = '(kA)'
+                x_label = 'Probability $P(X \leq x)$'
+                title = 'Branch current'
+
+            elif result_type == 'Bus power CDF':
+                cdf = CDF(np.abs(self.S_points[:, indices]))
+                cdf.plot(ax=ax)
+                y_label = '(p.u.)'
+                x_label = 'Probability $P(X \leq x)$'
+                title = 'Branch current'
 
             else:
                 x_label = ''
