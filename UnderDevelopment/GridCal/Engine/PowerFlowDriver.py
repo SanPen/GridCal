@@ -867,7 +867,7 @@ class PowerFlowMP:
             # the original solver worked
             pass
 
-            return None
+            return PowerFlowResults()
 
     def run_multi_island(self, numerical_circuit, calculation_inputs, Vbus, Sbus, Ibus):
         """

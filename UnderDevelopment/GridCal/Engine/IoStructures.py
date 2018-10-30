@@ -1104,6 +1104,8 @@ class MonteCarloResults:
 
         self.loading_points = zeros((p, m), dtype=complex)
 
+        self.losses_points = zeros((p, m), dtype=complex)
+
         # self.Vstd = zeros(n, dtype=complex)
 
         self.error_series = list()
@@ -1118,16 +1120,18 @@ class MonteCarloResults:
         self.v_std_conv = None
         self.c_std_conv = None
         self.l_std_conv = None
+        self.loss_std_conv = None
 
         # magnitudes average convergence
         self.v_avg_conv = None
         self.c_avg_conv = None
         self.l_avg_conv = None
+        self.loss_avg_conv = None
 
-        self.available_results = ['Bus voltage avg', 'Bus voltage std',
+        self.available_results = ['Bus voltage avg', 'Bus voltage std', 'Bus voltage CDF',
                                   'Branch current avg', 'Branch current std',
-                                  'Branch loading avg', 'Branch loading std',
-                                  'Bus voltage CDF', 'Branch loading CDF']
+                                  'Branch loading avg', 'Branch loading std', 'Branch loading CDF',
+                                  'Branch losses avg', 'Branch losses std', 'Branch losses CDF']
 
     def append_batch(self, mcres):
         """
@@ -1139,6 +1143,7 @@ class MonteCarloResults:
         self.V_points = vstack((self.V_points, mcres.V_points))
         self.I_points = vstack((self.I_points, mcres.I_points))
         self.loading_points = vstack((self.loading_points, mcres.loading_points))
+        self.losses_points = vstack((self.losses_points, mcres.loading_points))
 
     def get_voltage_sum(self):
         """
@@ -1159,25 +1164,31 @@ class MonteCarloResults:
         self.v_std_conv = zeros((nn, n))
         self.c_std_conv = zeros((nn, m))
         self.l_std_conv = zeros((nn, m))
+        self.loss_std_conv = zeros((nn, m))
         self.v_avg_conv = zeros((nn, n))
         self.c_avg_conv = zeros((nn, m))
         self.l_avg_conv = zeros((nn, m))
+        self.loss_avg_conv = zeros((nn, m))
 
         v_mean = zeros(n)
         c_mean = zeros(m)
         l_mean = zeros(m)
+        loss_mean = zeros(m)
         v_std = zeros(n)
         c_std = zeros(m)
         l_std = zeros(m)
+        loss_std = zeros(m)
 
         for t in range(1, p, step):
             v_mean_prev = v_mean.copy()
             c_mean_prev = c_mean.copy()
             l_mean_prev = l_mean.copy()
+            loss_mean_prev = loss_mean.copy()
 
             v = abs(self.V_points[t, :])
             c = abs(self.I_points[t, :])
             l = abs(self.loading_points[t, :])
+            loss = abs(self.losses_points[t, :])
 
             v_mean += (v - v_mean) / t
             v_std += (v - v_mean) * (v - v_mean_prev)
@@ -1194,9 +1205,15 @@ class MonteCarloResults:
             self.l_std_conv[t] = l_std / t
             self.l_avg_conv[t] = l_mean
 
+            loss_mean += (loss - loss_mean) / t
+            loss_std += (loss - loss_mean) * (loss - loss_mean_prev)
+            self.loss_std_conv[t] = loss_std / t
+            self.loss_avg_conv[t] = loss_mean
+
         self.voltage = self.v_avg_conv[-2]
         self.current = self.c_avg_conv[-2]
         self.loading = self.l_avg_conv[-2]
+        self.losses = self.loss_avg_conv[-2]
 
     def save(self, fname):
         """
@@ -1346,6 +1363,12 @@ class MonteCarloResults:
                 x_label = 'Sampling points'
                 title = 'Branch loading \naverage convergence'
 
+            elif result_type == 'Branch losses avg':
+                y = self.loss_avg_conv[1:-1, indices]
+                y_label = '(MVA)'
+                x_label = 'Sampling points'
+                title = 'Branch losses \naverage convergence'
+
             elif result_type == 'Bus voltage std':
                 y = self.v_std_conv[1:-1, indices]
                 y_label = '(p.u.)'
@@ -1364,6 +1387,12 @@ class MonteCarloResults:
                 x_label = 'Sampling points'
                 title = 'Branch loading standard \ndeviation convergence'
 
+            elif result_type == 'Branch losses std':
+                y = self.loss_std_conv[1:-1, indices]
+                y_label = '(MVA)'
+                x_label = 'Sampling points'
+                title = 'Branch losses standard \ndeviation convergence'
+
             elif result_type == 'Bus voltage CDF':
                 cdf = CDF(np.abs(self.V_points[:, indices]))
                 cdf.plot(ax=ax)
@@ -1377,6 +1406,13 @@ class MonteCarloResults:
                 y_label = '(p.u.)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = 'Branch loading'
+
+            elif result_type == 'Branch losses CDF':
+                cdf = CDF(np.abs(self.losses_points.real[:, indices]))
+                cdf.plot(ax=ax)
+                y_label = '(MVA)'
+                x_label = 'Probability $P(X \leq x)$'
+                title = 'Branch losses'
 
             else:
                 x_label = ''

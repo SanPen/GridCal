@@ -176,6 +176,7 @@ class MonteCarlo(QThread):
                     mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
                     mc_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
                     mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+                    mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
                 # compile MC results
                 self.progress_text.emit('Compiling results...')
@@ -286,6 +287,7 @@ class MonteCarlo(QThread):
                     mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
                     mc_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
                     mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+                    mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
                 # short cut the indices
                 b_idx = numerical_island.original_bus_idx
@@ -326,7 +328,7 @@ class MonteCarlo(QThread):
 
         # compile results
         mc_results.sbranch = avg_res.Sbranch
-        mc_results.losses = avg_res.losses
+        # mc_results.losses = avg_res.losses
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
@@ -449,7 +451,8 @@ class LatinHypercubeSampling(QThread):
 
                     # run power flow at the circuit
                     p = multiprocessing.Process(target=power_flow_worker,
-                                                args=(t, self.options, numerical_island, Vbus, S/Sbase, I/Sbase, return_dict))
+                                                args=(t, self.options, numerical_island,
+                                                      Vbus, S/Sbase, I/Sbase, return_dict))
                     jobs.append(p)
                     p.start()
                     k += 1
@@ -472,6 +475,7 @@ class LatinHypercubeSampling(QThread):
                 lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
                 lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
                 lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+                lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
             # except Exception as ex:
             #     print(c.name, ex)
@@ -563,6 +567,7 @@ class LatinHypercubeSampling(QThread):
                 lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
                 lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
                 lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
+                lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
                 it += 1
                 self.progress_signal.emit(it / max_iter * 100)
@@ -587,7 +592,7 @@ class LatinHypercubeSampling(QThread):
         lhs_results.sbranch = avg_res.Sbranch
         # Ibranch = avg_res.Ibranch
         # loading = avg_res.loading
-        lhs_results.losses = avg_res.losses
+        # lhs_results.losses = avg_res.losses
         # flow_direction = avg_res.flow_direction
         # Sbus = avg_res.Sbus
 
