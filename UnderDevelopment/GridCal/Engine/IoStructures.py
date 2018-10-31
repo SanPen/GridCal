@@ -836,10 +836,13 @@ class PowerFlowResults:
         si = self.Sbranch.imag
         sm = np.abs(self.Sbranch)
         ld = np.abs(self.loading)
+        la = self.losses.real
+        lr = self.losses.imag
         ls = np.abs(self.losses)
+        tm = self.tap_module
 
-        branch_data = c_[sr, si, sm, ld, ls]
-        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)', 'Losses (MVA)']
+        branch_data = c_[sr, si, sm, ld, la, lr, ls, tm]
+        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)', 'Losses (MW)', 'Losses (MVAr)', 'Losses (MVA)', 'Tap module']
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
         return df_bus, df_branch
