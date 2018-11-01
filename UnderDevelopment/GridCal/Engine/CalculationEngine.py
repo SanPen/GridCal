@@ -261,7 +261,7 @@ class Graph:
 
 class NumericalCircuit:
 
-    def __init__(self, n_bus, n_br, n_ld, n_ctrl_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase, Tc=25):
+    def __init__(self, n_bus, n_br, n_ld, n_ctrl_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase):
         """
         Topology constructor
         :param n_bus: number of nodes
@@ -273,7 +273,6 @@ class NumericalCircuit:
         :param n_sh: number of shunts
         :param n_time: number of time_steps
         :param Sbase: circuit base power
-        :param Tc: temperature to use for the thermal correction in ºC
         """
 
         # number of buses
@@ -321,10 +320,6 @@ class NumericalCircuit:
 
         self.br_mttf = np.zeros(n_br, dtype=float)
         self.br_mttr = np.zeros(n_br, dtype=float)
-
-        self.Tb = np.zeros(n_br, dtype=float)
-        self.Tc = Tc
-        self.k = np.zeros(n_br, dtype=float)
 
         self.is_bus_to_regulated = np.zeros(n_br, dtype=int)
         self.tap_position = np.zeros(n_br, dtype=int)
@@ -430,7 +425,7 @@ class NumericalCircuit:
 
         self.calculation_islands = list()
 
-    def compute(self, add_storage=True, add_generation=True, apply_temperature=False):
+    def compute(self, add_storage=True, add_generation=True):
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
         towards the calculation. Additionally, compute the calculation matrices.
@@ -552,12 +547,7 @@ class NumericalCircuit:
         Cf = states_dia * self.C_branch_bus_f
         Ct = states_dia * self.C_branch_bus_t
 
-        R = self.R
-        if apply_temperature:
-            # apply the temperature correction to the resistance
-            R *= (self.k + self.Tc) / (self.k + self.Tb)
-
-        Ys = 1.0 / (R + 1.0j * self.X)
+        Ys = 1.0 / (self.R + 1.0j * self.X)
         GBc = self.G + 1.0j * self.B
         tap = self.tap_mod * np.exp(1.0j * self.tap_ang)
 
@@ -689,7 +679,7 @@ class NumericalCircuit:
         # return the list of islands
         return self.calculation_islands
 
-    def get_B(self, apply_temperature=False):
+    def get_B(self):
 
         # Shunts
         Ysh = self.C_shunt_bus.T * (self.shunt_admittance / self.Sbase)
@@ -702,12 +692,7 @@ class NumericalCircuit:
         Cf = states_dia * self.C_branch_bus_f
         Ct = states_dia * self.C_branch_bus_t
 
-        R = self.R
-        if apply_temperature:
-            # apply the temperature correction to the resistance
-            R *= (self.k + self.Tc) / (self.k + self.Tb)
-
-        Ys = 1.0 / (R + 1.0j * self.X)
+        Ys = 1.0 / (self.R + 1.0j * self.X)
         GBc = self.G + 1.0j * self.B
         tap = self.tap_mod * np.exp(1.0j * self.tap_ang)
 
@@ -906,9 +891,6 @@ class MultiCircuit:
 
         # Base frequency in Hz
         self.fBase = 50.0
-
-        # Temperature for the thermal correction in ºC
-        self.temperature = 25
 
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
@@ -1298,7 +1280,7 @@ class MultiCircuit:
     def get_json_dict(self, id):
         """
         Get json dictionary
-        :return: 
+        :return:
         """
         return {'id': id,
                 'type': 'circuit',
@@ -1750,7 +1732,7 @@ class MultiCircuit:
                 template_name = str(obj.template)
                 if template_name in branch_types.keys():
                     obj.template = branch_types[template_name]
-                    print(template_name, 'updtaed!')
+                    print(template_name, 'updated!')
 
                 # set the branch
                 self.add_branch(obj)
@@ -1764,8 +1746,8 @@ class MultiCircuit:
     def save_file(self, file_path):
         """
         Save File
-        :param file_path: 
-        :return: 
+        :param file_path:
+        :return:
         """
 
         if file_path.endswith('.xlsx'):
@@ -2054,9 +2036,9 @@ class MultiCircuit:
 
     def save_json(self, file_path):
         """
-        
-        :param file_path: 
-        :return: 
+
+        :param file_path:
+        :return:
         """
 
         from GridCal.Engine.Importers.JSON_parser import save_json_file
@@ -2155,7 +2137,7 @@ class MultiCircuit:
         # declare the numerical circuit
         circuit = NumericalCircuit(n_bus=n, n_br=m, n_ld=n_ld, n_ctrl_gen=n_ctrl_gen,
                                    n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
-                                   n_time=n_time, Sbase=self.Sbase, Tc=self.temperature)
+                                   n_time=n_time, Sbase=self.Sbase)
 
         # set hte time array profile
         if n_time > 0:
@@ -2321,10 +2303,6 @@ class MultiCircuit:
             circuit.br_rates[i] = branch.rate
             circuit.tap_mod[i] = branch.tap_module
             circuit.tap_ang[i] = branch.angle
-
-            # Thermal correction
-            circuit.Tb[i] = branch.Tb
-            circuit.k[i] = branch.k
 
             # tap changer
             circuit.is_bus_to_regulated[i] = branch.bus_to_regulated

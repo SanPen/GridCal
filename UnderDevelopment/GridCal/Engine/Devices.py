@@ -86,6 +86,15 @@ class DeviceType(Enum):
     LoadDevice = 7
 
 
+class ThermalConstant(Enum):
+    """
+    Material thermal constant in 1/°C @ 75°C
+    Source: NFPA 70-2005, National Electrical Code, Table 8, footnote #2
+    """
+    Copper = 0.00323
+    Aluminum = 0.00330
+
+
 ########################################################################################################################
 # Circuit classes
 ########################################################################################################################
@@ -792,7 +801,7 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, branch_type: BranchType=BranchType.Line,
-                 length=1, vset=1.0, Tb=20, k=234.5, bus_to_regulated=False, template=BranchTemplate(), ):
+                 length=1, vset=1.0, Tb=75, Tc=75, k=ThermalConstant.Aluminum, bus_to_regulated=False, template=BranchTemplate(), ):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -809,7 +818,8 @@ class Branch(ReliabilityDevice):
         @param length: eventual line length in km
         @param vset: Set voltage of the tap-controlled bus in p.u.
         @param Tb: Base temperature at which r is measured in ºC
-        @param k: Thermal constant of the material in ºC (Al: 234.5, Cu: 228.1)
+        @param Tc: Temperature at which r is simulated
+        @param k: Thermal constant of the material (ex.: ThermalConstant.Copper)
         @param template: Type object template (i.e. Tower, TransformerType, etc...)
         """
 
@@ -839,22 +849,18 @@ class Branch(ReliabilityDevice):
 
         # total impedance and admittance in p.u.
         self.R = r
+        self.Rref = r # Reference resistance (@ Tb °C)
         self.X = x
         self.G = g
         self.B = b
 
-        # Conductor base temperature
-        self.Tb = Tb
+        # Resistance temperature adjustement
+        self.Tb = Tb # Conductor base temperature (°C)
+        self.Tc = Tc # Conductor simulation temperature (°C)
+        self.k = k # Conductor thermal constant (Ohm/ºC)
 
-        # Conductor thermal constant (Ohm/ºC)
-        # Copper = 0.004041
-        # Aluminum = 0.004308
-        # Iron = 0.005671
-        # Nickel = 0.005866
-        # Gold = 0.003715
-        # Tungsten = 0.004403
-        # Silver = 0.003819
-        self.k = k
+        if self.Tc != self.Tb:
+            self.apply_temperature()
 
         # tap changer object
         self.tap_changer = TapChanger()
@@ -919,6 +925,13 @@ class Branch(ReliabilityDevice):
                            'k': float,
                            'branch_type': BranchType,
                            'template': BranchTemplate}
+
+    def apply_temperature(self):
+        """
+        Apply resistance temperature adjustement
+        Source: NFPA 70-2005, National Electrical Code, Table 8, footnote #2
+        """
+        self.R = self.Rref*(1 + self.k.value*(self.Tc - self.Tb))
 
     def branch_type_converter(self, val_string):
         """
