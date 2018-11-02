@@ -12,9 +12,9 @@ This software aims to be a complete platform for power systems research and simu
 
 You can install GridCal as a separated standalone program without having to bother about setting up python.
 
-[GridCal for windows x64](https://mega.nz/#!Dl5m0b7T!brD9O0ejs2Ih6rOLVaCjQm3-JZttH-ksrp5xXrrX3BU)
+[GridCal for windows x64](https://sanpv.files.wordpress.com/2018/11/gridcalsetup.zip)
 
-[GridCal for linux x64](https://mega.nz/#!m4YUhICZ!c5bLncNwqCQG3H6p0ST4qnSP1GTii-44_di06RGSV-o)
+[GridCal for linux x64](https://sanpv.files.wordpress.com/2018/11/gridcal-standalone-linux.zip)
 
 Remember to update the program to the latest version once installed. You'll find an update script in the installation folder.
 
