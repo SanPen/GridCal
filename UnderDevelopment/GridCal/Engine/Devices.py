@@ -783,9 +783,9 @@ class TapChanger:
         if tap_module == 1.0:
             self.tap = 0
         elif tap_module > 1:
-            self.tap = int(round(tap_module - 1.0) / self.inc_reg_up)
+            self.tap = int((tap_module - 1.0) / self.inc_reg_up)
         elif tap_module < 1:
-            self.tap = int(round(1.0 - tap_module) / self.inc_reg_down)
+            self.tap = -int((1.0 - tap_module) / self.inc_reg_down)
 
 
 class Branch(ReliabilityDevice):
