@@ -328,7 +328,7 @@ class PowerFlowMP:
 
         # copy the tap positions
         tap_positions = circuit.tap_position.copy()
-        tap_module = np.ones(circuit.nbr)
+        tap_module = circuit.tap_mod.copy()
 
         any_q_control_issue = True  # guilty assumption...
         any_tap_control_issue = True

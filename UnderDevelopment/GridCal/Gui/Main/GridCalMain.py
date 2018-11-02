@@ -612,7 +612,7 @@ class MainGUI(QMainWindow):
         msg += 'See the license file for more details. \n\n'
         msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
 
-        msg += 'Copyright (C) 2018 Santiago Peñate Vera.\n'
+        msg += 'Copyright (C) 2018\nSantiago Peñate Vera\nMichel Lavoie'
 
         QMessageBox.about(self, "About GridCal", msg)
 

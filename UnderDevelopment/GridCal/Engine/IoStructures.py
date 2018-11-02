@@ -89,6 +89,7 @@ class CalculationInputs:
         self.tap_f = np.zeros(nbr, dtype=float)
         self.tap_t = np.zeros(nbr, dtype=float)
         self.tap_ang = np.zeros(nbr, dtype=float)
+        self.tap_mod = np.zeros(nbr, dtype=float)
 
         # needed fot the tap changer
         self.is_bus_to_regulated = np.zeros(nbr, dtype=int)
@@ -259,6 +260,7 @@ class CalculationInputs:
         obj.tap_inc_reg_down = self.tap_inc_reg_down[branch_idx]
         obj.vset = self.vset[branch_idx]
         obj.tap_ang = self.tap_ang[branch_idx]
+        obj.tap_mod = self.tap_mod[branch_idx]
 
         obj.Ys = self.Ys
         obj.GBc = self.GBc
