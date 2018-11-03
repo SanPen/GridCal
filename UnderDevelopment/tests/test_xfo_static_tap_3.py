@@ -95,6 +95,8 @@ def test_xfo_static_tap_3():
                   branch_type=BranchType.Transformer,
                   template=SS,
                   tap=0.975)
+    # update to a more precise tap changer
+    X_C3.apply_tap_changer(TapChanger(taps_up=20, taps_down=20, max_reg=1.1, min_reg=0.9))
     grid.add_branch(X_C3)
 
     C_M32 = Branch(bus_from=B_C3,

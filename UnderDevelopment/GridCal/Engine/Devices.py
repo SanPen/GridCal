@@ -981,6 +981,19 @@ class Branch(ReliabilityDevice):
         self.tap_changer.tap_down()
         self.tap_module = self.tap_changer.get_tap()
 
+    def apply_tap_changer(self, tap_changer: TapChanger):
+        """
+        Apply a new tap changer
+        Args:
+            tap_changer: Tap Changer object
+        """
+        self.tap_changer = tap_changer
+
+        if self.tap_module != 0:
+            self.tap_changer.set_tap(self.tap_module)
+        else:
+            self.tap_module = self.tap_changer.get_tap()
+
     def get_virtual_taps(self):
         """
         Get the branch virtual taps
