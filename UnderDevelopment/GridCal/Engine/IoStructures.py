@@ -196,7 +196,7 @@ class CalculationInputs:
         """
         Compute the magnitudes that cannot be computed vector-wise
         """
-        self.bus_to_regulated_idx = np.where(self.is_bus_to_regulated > 0)[0]
+        self.bus_to_regulated_idx = np.where(self.is_bus_to_regulated == True)[0]
 
         dispatcheable_batteries_idx = np.where(self.battery_dispatchable == True)[0]
         self.dispatcheable_batteries_bus_idx = np.where(np.array(self.C_batt_bus[dispatcheable_batteries_idx, :].sum(axis=0))[0] > 0)[0]

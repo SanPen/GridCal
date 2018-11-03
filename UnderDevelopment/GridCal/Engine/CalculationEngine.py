@@ -326,7 +326,7 @@ class NumericalCircuit:
         self.Tc = Tc
         self.k = np.zeros(n_br, dtype=float)
 
-        self.is_bus_to_regulated = np.zeros(n_br, dtype=int)
+        self.is_bus_to_regulated = np.zeros(n_br, dtype=bool)
         self.tap_position = np.zeros(n_br, dtype=int)
         self.min_tap = np.zeros(n_br, dtype=int)
         self.max_tap = np.zeros(n_br, dtype=int)

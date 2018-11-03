@@ -777,15 +777,15 @@ class TapChanger:
 
     def set_tap(self, tap_module):
         """
-        Set the integer tap position corresponding to a tap vlaue
+        Set the integer tap position corresponding to a tap value
         @param tap_module: value like 1.05
         """
         if tap_module == 1.0:
             self.tap = 0
         elif tap_module > 1:
-            self.tap = int(round(tap_module - 1.0) / self.inc_reg_up)
+            self.tap = np.floor((tap_module - 1.0) / self.inc_reg_up)
         elif tap_module < 1:
-            self.tap = int(round(1.0 - tap_module) / self.inc_reg_down)
+            self.tap = -np.floor((1.0 - tap_module) / self.inc_reg_down)
 
 
 class Branch(ReliabilityDevice):
