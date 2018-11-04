@@ -412,13 +412,14 @@ class PowerFlowMP:
                                                                      T=circuit.T,
                                                                      bus_to_regulated_idx=circuit.bus_to_regulated_idx,
                                                                      tap_position=tap_positions,
+                                                                     tap_module=tap_module,
                                                                      min_tap=circuit.min_tap,
                                                                      max_tap=circuit.max_tap,
                                                                      tap_inc_reg_up=circuit.tap_inc_reg_up,
                                                                      tap_inc_reg_down=circuit.tap_inc_reg_down,
                                                                      vset=circuit.vset,
                                                                      verbose=self.options.verbose)
-                        # print('Recompiling Ybus due to tap changes')
+
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
 
@@ -669,14 +670,15 @@ class PowerFlowMP:
         else:
             return tap
 
-    def adjust_tap_changers(self, voltage, T, bus_to_regulated_idx, tap_position, min_tap, max_tap, tap_inc_reg_up,
-                            tap_inc_reg_down, vset, verbose=False):
+    def adjust_tap_changers(self, voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
+                            tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
         """
         Change the taps and compute the continuous tap magnitude
         :param voltage: array of bus voltages solution
         :param T: array of indices of the "to" buses of each branch
         :param bus_to_regulated_idx: array with the indices of the branches that regulate the bus "to"
         :param tap_position: array of branch tap positions
+        :param tap_module: array of branch tap modules
         :param min_tap: array of minimum tap positions
         :param max_tap: array of maximum tap positions
         :param tap_inc_reg_up: array of tap increment when regulating up
@@ -700,6 +702,7 @@ class PowerFlowMP:
                             print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
+                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
                     if verbose:
                         print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
@@ -710,37 +713,41 @@ class PowerFlowMP:
                             print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
+                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             elif tap_position[i] < 0:
-                if vset[i] > v + tap_inc_reg_down[i]/2:
+                if vset[i] > v + tap_inc_reg_down[i] / 2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
+                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
                     if verbose:
                         print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
-                elif vset[i] < v - tap_inc_reg_down[i]/2:
+                elif vset[i] < v - tap_inc_reg_down[i] / 2:
                     if tap_position[i] == max_tap[i]:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
+                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             else:
-                if vset[i] > v + tap_inc_reg_up[i]/2:
+                if vset[i] > v + tap_inc_reg_up[i] / 2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
+                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
                     if verbose:
                         print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
@@ -751,31 +758,12 @@ class PowerFlowMP:
                             print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
+                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
-        # compute the tap magnitude
-        '''
-        if self.tap == 0:
-            return 1.0
-        elif self.tap > 0:
-            return 1.0 + self.tap * self.inc_reg_up
-        elif self.tap < 0:
-            return 1.0 + self.tap * self.inc_reg_down
-        '''
-
-        tap = np.zeros_like(vset)
-        idx = np.where(tap_position == 0)[0]
-        tap[idx] = 1.0
-
-        idx = np.where(tap_position > 0)[0]
-        tap[idx] = 1.0 + tap_position[idx] * tap_inc_reg_up[idx]
-
-        idx = np.where(tap_position < 0)[0]
-        tap[idx] = 1.0 + tap_position[idx] * tap_inc_reg_down[idx]
-
-        return stable, tap, tap_position
+        return stable, tap_module, tap_position
 
     def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
         """
