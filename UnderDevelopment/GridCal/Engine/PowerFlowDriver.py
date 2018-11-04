@@ -328,7 +328,9 @@ class PowerFlowMP:
 
         # copy the tap positions
         tap_positions = circuit.tap_position.copy()
+        #print(f"Tap positions before adjustments: {tap_positions}")
         tap_module = circuit.tap_mod.copy()
+        #print(f"Tap modules before adjustments: {tap_module}")
 
         any_q_control_issue = True  # guilty assumption...
         any_tap_control_issue = True
@@ -419,7 +421,7 @@ class PowerFlowMP:
                                                                      tap_inc_reg_down=circuit.tap_inc_reg_down,
                                                                      vset=circuit.vset,
                                                                      verbose=self.options.verbose)
-
+                        # print('Recompiling Ybus due to tap changes')
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
 
@@ -468,6 +470,8 @@ class PowerFlowMP:
                                    elapsed=elapsed,
                                    methods=methods)
 
+        #print(f"Tap positions after adjustments: {tap_positions}")
+        #print(f"Tap modules after adjustments: {tap_module}")
         return results
 
     @staticmethod
@@ -702,7 +706,7 @@ class PowerFlowMP:
                             print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
+                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
                         print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
@@ -713,41 +717,41 @@ class PowerFlowMP:
                             print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
+                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             elif tap_position[i] < 0:
-                if vset[i] > v + tap_inc_reg_down[i] / 2:
+                if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
+                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
                         print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
 
-                elif vset[i] < v - tap_inc_reg_down[i] / 2:
+                elif vset[i] < v - tap_inc_reg_down[i]/2:
                     if tap_position[i] == max_tap[i]:
                         print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
+                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
 
             else:
-                if vset[i] > v + tap_inc_reg_up[i] / 2:
+                if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
+                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
                         print(f"Branch {i}: Lowering from tap {tap_position[i]}")
                     stable = False
@@ -758,7 +762,7 @@ class PowerFlowMP:
                             print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
+                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
                         print(f"Branch {i}: Raising from tap {tap_position[i]}")
                     stable = False
