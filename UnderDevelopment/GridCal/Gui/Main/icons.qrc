@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/multiply.svg</file>
+    <file>icons/divide.svg</file>
     <file>icons/storage_loc.svg</file>
     <file>icons/grid_reduction.svg</file>
     <file>icons/dyn.svg</file>

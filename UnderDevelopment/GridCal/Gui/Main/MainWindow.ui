@@ -1316,6 +1316,9 @@
                </item>
                <item row="13" column="0">
                 <widget class="QCheckBox" name="temperature_correction_checkBox">
+                 <property name="toolTip">
+                  <string>Correct the branches resistance using the temperature</string>
+                 </property>
                  <property name="text">
                   <string>Apply temperature correction</string>
                  </property>
@@ -3809,7 +3812,11 @@ points from time series</string>
                   <string>Multiply the profile by a value</string>
                  </property>
                  <property name="text">
-                  <string>x</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/multiply.svg</normaloff>:/Icons/icons/multiply.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -3819,7 +3826,11 @@ points from time series</string>
                   <string>Divide the profile by a value</string>
                  </property>
                  <property name="text">
-                  <string>/</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/divide.svg</normaloff>:/Icons/icons/divide.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -4217,7 +4228,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1212</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
