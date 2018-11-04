@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from GridCal.Engine.IoStructures import PowerFlowResults
+from GridCal.Engine.IoStructures import PowerFlowResults, ResultTypes
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.PlotConfig import LINEWIDTH
@@ -112,7 +112,7 @@ class VoltageCollapseResults:
 
         self.Sbus = np.zeros(nbus, dtype=complex)
 
-        self.available_results = ['Bus voltage']
+        self.available_results = [ResultTypes.BusVoltage]
 
     def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx, branch_original_idx, nbus_full):
         """
@@ -146,7 +146,7 @@ class VoltageCollapseResults:
             self.losses[branch_original_idx] = pf_res.losses
             self.Sbus[bus_original_idx] = pf_res.Sbus
 
-    def plot(self, result_type='Bus voltage', ax=None, indices=None, names=None):
+    def plot(self, result_type=ResultTypes.BusVoltage, ax=None, indices=None, names=None):
         """
         Plot the results
         :param result_type:
@@ -169,7 +169,7 @@ class VoltageCollapseResults:
         if len(indices) > 0:
             labels = names[indices]
             ylabel = ''
-            if result_type == 'Bus voltage':
+            if result_type == ResultTypes.BusVoltage:
                 y = abs(np.array(self.voltages)[:, indices])
                 x = self.lambdas
                 title = 'Bus voltage'

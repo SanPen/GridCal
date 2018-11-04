@@ -28,6 +28,7 @@ from GridCal.Engine.Numerical.DC_OPF import DcOpf
 from GridCal.Engine.Numerical.DYCORS_OPF import AcOpfDYCORS
 from GridCal.Engine.Numerical.NelderMead_OPF import AcOpfNelderMead
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions
+from GridCal.Engine.IoStructures import ResultTypes
 
 
 class OptimalPowerFlowTimeSeriesResults:
@@ -66,10 +67,16 @@ class OptimalPowerFlowTimeSeriesResults:
         #                           'Branch loading', 'Branch overloads', 'Load shedding',
         #                           'Controlled generators power', 'Batteries power']
 
-        self.available_results = ['Bus voltage module', 'Bus voltage angle', 'Branch power',
-                                  'Branch loading', 'Branch overloads', 'Load shedding',
-                                  'Controlled generator shedding',
-                                  'Controlled generator power', 'Battery power', 'Battery energy']
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusVoltageAngle,
+                                  ResultTypes.BranchPower,
+                                  ResultTypes.BranchLoading,
+                                  ResultTypes.BranchOverloads,
+                                  ResultTypes.LoadShedding,
+                                  ResultTypes.ControlledGeneratorShedding,
+                                  ResultTypes.ControlledGeneratorPower,
+                                  ResultTypes.BatteryPower,
+                                  ResultTypes.BatteryEnergy]
 
         # self.generators_power = zeros((ng, nt), dtype=complex)
 
@@ -134,62 +141,62 @@ class OptimalPowerFlowTimeSeriesResults:
             labels = names[indices]
             y_label = ''
             title = ''
-            if result_type == 'Bus voltage module':
+            if result_type == ResultTypes.BusVoltageModule:
                 y = np.abs(self.voltage[:, indices])
                 y_label = '(p.u.)'
                 title = 'Bus voltage module'
 
-            elif result_type == 'Bus voltage angle':
+            elif result_type == ResultTypes.BusVoltageAngle:
                 y = np.angle(self.voltage[:, indices])
                 y_label = '(Radians)'
                 title = 'Bus voltage angle'
 
-            elif result_type == 'Branch power':
+            elif result_type == ResultTypes.BranchPower:
                 y = self.Sbranch[:, indices].real
                 y_label = '(MW)'
                 title = 'Branch power '
 
-            elif result_type == 'Bus power':
+            elif result_type == ResultTypes.BusPower:
                 y = self.Sbus[:, indices].real
                 y_label = '(MW)'
                 title = 'Bus power '
 
-            elif result_type == 'Branch loading':
+            elif result_type == ResultTypes.BranchLoading:
                 y = np.abs(self.loading[:, indices] * 100.0)
                 y_label = '(%)'
                 title = 'Branch loading '
 
-            elif result_type == 'Branch overloads':
+            elif result_type == ResultTypes.BranchOverloads:
                 y = np.abs(self.overloads[:, indices])
                 y_label = '(MW)'
                 title = 'Branch overloads '
 
-            elif result_type == 'Branch losses':
+            elif result_type == ResultTypes.BranchLosses:
                 y = self.losses[:, indices].real
                 y_label = '(MW)'
                 title = 'Branch losses '
 
-            elif result_type == 'Load shedding':
+            elif result_type == ResultTypes.LoadShedding:
                 y = self.load_shedding[:, indices]
                 y_label = '(MW)'
                 title = 'Load shedding'
 
-            elif result_type == 'Controlled generator power':
+            elif result_type == ResultTypes.ControlledGeneratorPower:
                 y = self.controlled_generator_power[:, indices]
                 y_label = '(MW)'
                 title = 'Controlled generator power'
 
-            elif result_type == 'Controlled generator shedding':
+            elif result_type == ResultTypes.ControlledGeneratorShedding:
                 y = self.controlled_generator_shedding[:, indices]
                 y_label = '(MW)'
                 title = 'Controlled generator power'
 
-            elif result_type == 'Battery power':
+            elif result_type == ResultTypes.BatteryPower:
                 y = self.battery_power[:, indices]
                 y_label = '(MW)'
                 title = 'Battery power'
 
-            elif result_type == 'Battery energy':
+            elif result_type == ResultTypes.BatteryEnergy:
                 y = self.battery_energy[:, indices]
                 y_label = '(MWh)'
                 title = 'Battery energy'

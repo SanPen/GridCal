@@ -842,6 +842,23 @@ class ProfilesModel(QtCore.QAbstractTableModel):
     #     self.data[:, col] = self.data[row, col]
 
 
+class EnumModel(QtCore.QAbstractListModel):
+    def __init__(self, list_of_enums):
+        QtCore.QAbstractListModel.__init__(self)
+        self.items = list_of_enums
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self.items)
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid() is True:
+            if role == QtCore.Qt.DisplayRole:
+                return QtCore.QVariant(self.items[index.row()].value[0])
+            elif role == QtCore.Qt.ItemDataRole:
+                return QtCore.QVariant(self.items[index.row()].value[0])
+        return QtCore.QVariant()
+
+
 def get_list_model(lst, checks=False):
     """
     Pass a list to a list model

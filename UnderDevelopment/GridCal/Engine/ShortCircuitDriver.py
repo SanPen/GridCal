@@ -23,7 +23,7 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.CalculationEngine import LINEWIDTH, MultiCircuit
 from GridCal.Engine.PowerFlowDriver import PowerFlowResults
-from GridCal.Engine.IoStructures import CalculationInputs
+from GridCal.Engine.IoStructures import CalculationInputs, ResultTypes
 
 
 ########################################################################################################################
@@ -69,8 +69,12 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.short_circuit_power = SCpower
 
-        self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading', 'Branch losses',
-                                  'Bus short circuit power']
+        self.available_results = [ResultTypes.BusVoltage,
+                                  ResultTypes.BranchPower,
+                                  ResultTypes.BranchCurrent,
+                                  ResultTypes.BranchLoading,
+                                  ResultTypes.BranchLosses,
+                                  ResultTypes.BusShortCircuitPower]
 
     def copy(self):
         """
@@ -175,32 +179,32 @@ class ShortCircuitResults(PowerFlowResults):
             labels = names[indices]
             ylabel = ''
             title = ''
-            if result_type == 'Bus voltage':
+            if result_type == ResultTypes.BusVoltage:
                 y = self.voltage[indices]
                 ylabel = '(p.u.)'
                 title = 'Bus voltage '
 
-            elif result_type == 'Branch power':
+            elif result_type == ResultTypes.BranchPower:
                 y = self.Sbranch[indices]
                 ylabel = '(MVA)'
                 title = 'Branch power '
 
-            elif result_type == 'Branch current':
+            elif result_type == ResultTypes.BranchCurrent:
                 y = self.Ibranch[indices]
                 ylabel = '(p.u.)'
                 title = 'Branch current '
 
-            elif result_type == 'Branch_loading':
+            elif result_type == ResultTypes.BranchLoading:
                 y = self.loading[indices] * 100
                 ylabel = '(%)'
                 title = 'Branch loading '
 
-            elif result_type == 'Branch losses':
+            elif result_type == ResultTypes.BranchLosses:
                 y = self.losses[indices]
                 ylabel = '(MVA)'
                 title = 'Branch losses '
 
-            elif result_type == 'Bus short circuit power':
+            elif result_type == ResultTypes.BusShortCircuitPower:
                 y = self.short_circuit_power[indices]
                 ylabel = '(MVA)'
                 title = 'Bus short circuit power'

@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
-from GridCal.Engine.IoStructures import PowerFlowResults
+from GridCal.Engine.IoStructures import PowerFlowResults, ResultTypes
 from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import power_flow_worker, PowerFlowOptions, PowerFlowMP
 
@@ -116,8 +116,11 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.buses_useful_for_storage = None
 
-            self.available_results = ['Bus voltage', 'Branch power', 'Branch current', 'Branch_loading',
-                                      'Branch losses']
+            self.available_results = [ResultTypes.BusVoltage,
+                                      ResultTypes.BranchPower,
+                                      ResultTypes.BranchCurrent,
+                                      ResultTypes.BranchLoading,
+                                      ResultTypes.BranchLosses]
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -248,7 +251,7 @@ class TimeSeriesResults(PowerFlowResults):
 
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, buses_selected_for_storage_frequency
 
-    def plot(self, result_type, ax=None, indices=None, names=None):
+    def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
         """
         Plot the results
         :param result_type:
@@ -269,27 +272,27 @@ class TimeSeriesResults(PowerFlowResults):
             labels = names[indices]
             ylabel = ''
             title = ''
-            if result_type == 'Bus voltage':
+            if result_type == ResultTypes.BusVoltage:
                 data = self.voltage[:, indices]
                 ylabel = '(p.u.)'
                 title = 'Bus voltage '
 
-            elif result_type == 'Branch power':
+            elif result_type == ResultTypes.BranchPower:
                 data = self.Sbranch[:, indices]
                 ylabel = '(MVA)'
                 title = 'Branch power '
 
-            elif result_type == 'Branch current':
+            elif result_type == ResultTypes.BranchCurrent:
                 data = self.Ibranch[:, indices]
                 ylabel = '(kA)'
                 title = 'Branch current '
 
-            elif result_type == 'Branch_loading':
+            elif result_type == ResultTypes.BranchLoading:
                 data = self.loading[:, indices] * 100
                 ylabel = '(%)'
                 title = 'Branch loading '
 
-            elif result_type == 'Branch losses':
+            elif result_type == ResultTypes.BranchLosses:
                 data = self.losses[:, indices]
                 ylabel = '(MVA)'
                 title = 'Branch losses'
