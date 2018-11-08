@@ -1,5 +1,6 @@
 from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, ControlledGenerator, Branch, BranchType, Load, Shunt, StaticGenerator
-
+from GridCal.Engine.DeviceTypes import TransformerType, Tower, BranchTemplate, BranchType, \
+                                            UndergroundLineType, SequenceLineType, Wire
 from math import sqrt
 
 
@@ -224,6 +225,7 @@ class CIMCircuit:
                         "Location",
                         "Model",
                         "OperationalLimitSet",
+                        "PerLengthSequenceImpedance",
                         "PositionPoint",
                         "PowerTransformer",
                         "PowerTransformerEnd",
@@ -234,6 +236,7 @@ class CIMCircuit:
                         "SeriesCompensator",
                         "ShuntCompensator",
                         "Substation",
+                        "Switch",
                         "SynchronousMachine",
                         "Terminal",
                         "TopologicalNode",
@@ -1006,7 +1009,7 @@ class CIMImport:
         else:
             self.terminal_node[terminal] = [connectivity_node]
 
-    def try_properties(self, dictionary, properties):
+    def try_properties(self, dictionary, properties, defaults = None):
         """
 
         :param dictionary:
@@ -1028,8 +1031,10 @@ class CIMImport:
                     pass  # val is a string
             except:
                 # property not found
-                print(prop, 'not found')
-                val = ""
+                if defaults is None:
+                    print(prop, 'not found')
+                else:
+                    val = defaults[i]
 
             res[i] = val
 
@@ -1125,7 +1130,7 @@ class CIMImport:
                 if len(elm.base_voltage) > 0:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
                 else:
-                    self.logger.append(elm.tpe + ':' + name + ' has no nominal voltage associated.')
+                    #self.logger.append(elm.tpe + ':' + name + ' has no nominal voltage associated.')
                     Vnom = 0
 
                 CN = Bus(name=name, vnom=Vnom)
@@ -1166,20 +1171,55 @@ class CIMImport:
         else:
             self.logger.append("No BusbarSections: There is no chance to reduce the grid")
 
+        # PerLengthSequenceImpedance
+        PLSI_dict = dict()
+        if 'PerLengthSequenceImpedance' in cim.elements_by_type.keys():
+            prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
+            prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]             
+            for elm in cim.elements_by_type['PerLengthSequenceImpedance']:          
+                r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)              
+                obj = SequenceLineType(name=elm.id, R=r, X=x, G=g, B=b, R0=r0, X0=x0, G0=g0, B0=b0)
+                circuit.add_sequence_line(obj)
+                elm.template = obj
+                
+                PLSI_dict[elm.id] = elm
+
+                # add class to recognised objects
+                recognised.add(elm.tpe) 
+            sl = circuit.get_catalogue_dict_by_name('Sequence lines')
+
         # Lines
-        prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch', 'length']
+        prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
         if 'ACLineSegment' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ACLineSegment']:
-                T1 = T_dict[elm.terminals[0].id]
-                T2 = T_dict[elm.terminals[1].id]
-
-                B1 = self.terminal_node[T1][0]
-                B2 = self.terminal_node[T2][0]
-
+                if len(elm.terminals) == 2:
+                        T1 = T_dict[elm.terminals[0].id]
+                        T2 = T_dict[elm.terminals[1].id]
+                        B1 = self.terminal_node[T1][0]
+                        B2 = self.terminal_node[T2][0]
+                else:
+                    self.logger.append(elm.id + ' has missing terminals')
+                    continue
                 name = elm.properties['name']
-                r, x, r0, x0, g, b, g0, b0, l = self.try_properties(elm.properties, prop_lst)
-
-                Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                
+                prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                template=BranchTemplate()
+                if 'PerLengthImpedance' in elm.properties and 'length' in elm.properties:
+                    pli = elm.properties['PerLengthImpedance']
+                    l =  float(elm.properties['length'])
+                    if pli in PLSI_dict:
+                        r, x, r0, x0, g, b, g0, b0 = self.try_properties(PLSI_dict[pli].properties, prop_lst, prop_def)
+                        template = PLSI_dict[pli].template
+                    else:
+                        self.logger.append(elm.id + ' refers to missing PerLengthImpedance')
+                        continue
+                else:
+                    r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
+                    l =  float(elm.properties['length'])
+                try:
+                    Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                except:
+                    Vnom = 1.0
 
                 if Vnom <= 0:
                     self.logger.append(elm.id + ' has a zero base voltage. This causes a failure in the file loading')
@@ -1218,7 +1258,8 @@ class CIMImport:
                               active=True,
                               mttf=0,
                               mttr=0,
-                              branch_type=BranchType.Line)
+                              branch_type=BranchType.Line,
+                              template=template)
 
                 circuit.add_branch(line)
 
@@ -1241,7 +1282,8 @@ class CIMImport:
                         T1 = T_dict[elm.terminals[0].id]
                         T2 = T_dict[elm.terminals[1].id]
                     else:
-                        raise Exception('Check element' + elm.id)
+                        self.logger.append(elm.id + ' has missing terminals')
+                        continue
 
                     B1 = self.terminal_node[T1][0]
                     B2 = self.terminal_node[T2][0]
@@ -1259,9 +1301,14 @@ class CIMImport:
                     RATE = 0
                     # convert every winding to per unit and add it into a PI model
                     for i in range(2):
-                        r = float(elm.windings[i].properties['r'])
-                        x = float(elm.windings[i].properties['x'])
-
+                        try:
+                            r = float(elm.windings[i].properties['r'])
+                            x = float(elm.windings[i].properties['x'])
+                        except Exception as e:
+                            r = 0
+                            x = 0
+                            self.logger.append('No impedance components in ' + elm.windings[i].id)
+                            
                         try:
                             g = float(elm.windings[i].properties['g'])
                             b = float(elm.windings[i].properties['b'])
@@ -1282,7 +1329,12 @@ class CIMImport:
                             b0 = 0
                             self.logger.append('No zero sequence components in ' + elm.id)
 
-                        S = float(elm.windings[i].properties['ratedS'])
+                        try:
+                            S = float(elm.windings[i].properties['ratedS'])
+                        except Exception as e:
+                            self.logger.append('No ratedS ' + elm.windings[i].id)
+                            S = 1.0
+                            
                         RATE += S
 
                         try:
@@ -1292,7 +1344,8 @@ class CIMImport:
                             try:
                                 V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
                             except Exception as e2:
-                                self.logger.append('No voltage in ' + elm.windings[i].id + 'whatsoever, this causes an error')
+                                self.logger.append('No voltage in ' + elm.windings[i].id + ', this causes an error')
+                                V = 1.0
 
                         if len(elm.windings[i].tap_changers) > 0:
                             Vnom = float(elm.windings[i].tap_changers[0].properties['neutralU'])
@@ -1335,7 +1388,7 @@ class CIMImport:
 
                     circuit.add_branch(line)
                 else:
-                    self.logger.append(elm.tpe + ':' + name + ' has not 2 windings associated.')
+                    self.logger.append(elm.tpe + ':' + name + ' does not have 2 windings associated.')
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
@@ -1344,10 +1397,14 @@ class CIMImport:
         cim_switches = ['Switch', 'Disconnector', 'Breaker', 'LoadBreakSwitch']
         if self.any_in_dict(cim.elements_by_type, cim_switches):
             for elm in self.get_elements(cim.elements_by_type, cim_switches):
-                T1 = T_dict[elm.terminals[0].id]
-                T2 = T_dict[elm.terminals[1].id]
-                B1 = self.terminal_node[T1][0]
-                B2 = self.terminal_node[T2][0]
+                if len(elm.terminals) == 2:
+                        T1 = T_dict[elm.terminals[0].id]
+                        T2 = T_dict[elm.terminals[1].id]
+                        B1 = self.terminal_node[T1][0]
+                        B2 = self.terminal_node[T2][0]
+                else:
+                    self.logger.append(elm.id + ' has missing terminals')
+                    continue
 
                 if 'name' in elm.properties:
                     name = elm.properties['name']
@@ -1372,7 +1429,7 @@ class CIMImport:
                               active=state,
                               mttf=0,
                               mttr=0,
-                              branch_type=BranchType.Transformer)
+                              branch_type=BranchType.Switch)
 
                 circuit.add_branch(line)
 
@@ -1417,10 +1474,10 @@ class CIMImport:
                 T1 = T_dict[elm.terminals[0].id]
                 B1 = self.terminal_node[T1][0]
 
-                g = float(elm.properties['gPerSection'])
-                b = float(elm.properties['bPerSection'])
-                g0 = float(elm.properties['g0PerSection'])
-                b0 = float(elm.properties['b0PerSection'])
+                prop_lst = ['gPerSection', 'bPerSection', 'g0PerSection', 'b0PerSection']
+                prop_def = [0.0, 0.0, 0.0, 0.0]
+                g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
+                
                 name = elm.properties['name']
 
                 # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
@@ -1451,7 +1508,7 @@ class CIMImport:
                 if Vnom <= 0:
                     # p.u. set voltage for the model
                     vset = 1.0
-                    self.logger.append(elm.id + ': the nominal voltage is zero.')
+                    #self.logger.append(elm.id + ': the nominal voltage is zero.')
                 else:
                     # p.u. set voltage for the model
                     vset = Vset / Vnom

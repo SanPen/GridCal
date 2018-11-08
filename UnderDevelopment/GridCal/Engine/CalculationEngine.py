@@ -1406,6 +1406,13 @@ class MultiCircuit:
         self.name = circ.name
         self.Sbase = circ.Sbase
         self.fBase = circ.fBase
+        
+        self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
+        self.wire_types = list(set(self.wire_types + circ.wire_types))
+        self.overhead_line_types = list(set(self.overhead_line_types + circ.overhead_line_types))
+        self.underground_cable_types = list(set(self.underground_cable_types + circ.underground_cable_types))
+        self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
+        self.transformer_types = list(set(self.transformer_types + circ.transformer_types))
 
     def load_excel(self, data):
         """
