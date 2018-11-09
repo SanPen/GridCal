@@ -328,9 +328,8 @@ class PowerFlowMP:
 
         # copy the tap positions
         tap_positions = circuit.tap_position.copy()
-        #print(f"Tap positions before adjustments: {tap_positions}")
+
         tap_module = circuit.tap_mod.copy()
-        #print(f"Tap modules before adjustments: {tap_module}")
 
         any_q_control_issue = True  # guilty assumption...
         any_tap_control_issue = True
@@ -470,8 +469,6 @@ class PowerFlowMP:
                                    elapsed=elapsed,
                                    methods=methods)
 
-        #print(f"Tap positions after adjustments: {tap_positions}")
-        #print(f"Tap modules after adjustments: {tap_module}")
         return results
 
     @staticmethod
@@ -696,75 +693,75 @@ class PowerFlowMP:
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
             if verbose:
-                print(f"Bus {j} regulated by branch {i}: U={v}pu, U_set={vset[i]}")
+                print("Bus", j, "regulated by branch", i, ": U=", v, "pu, U_set=", vset[i])
 
             if tap_position[i] > 0:
 
                 if vset[i] > v + tap_inc_reg_up[i] / 2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+                            print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print(f"Branch {i}: Lowering from tap {tap_position[i]}")
+                        print("Branch ", i, ": Lowering from tap ", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
                     if tap_position[i] == max_tap[i]:
                         if verbose:
-                            print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+                            print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print(f"Branch {i}: Raising from tap {tap_position[i]}")
+                        print("Branch ", i, ": Raising from tap ", tap_position[i])
                     stable = False
 
             elif tap_position[i] < 0:
                 if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+                            print("Branch ", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print(f"Branch {i}: Lowering from tap {tap_position[i]}")
+                        print("Branch ", i, ": Lowering from tap", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i]/2:
                     if tap_position[i] == max_tap[i]:
-                        print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+                        print("Branch ", i, ": Already at highest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print(f"Branch {i}: Raising from tap {tap_position[i]}")
+                        print("Branch", i, ": Raising from tap", tap_position[i])
                     stable = False
 
             else:
                 if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print(f"Branch {i}: Already at lowest tap ({tap_position[i]}), skipping")
+                            print("Branch ", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print(f"Branch {i}: Lowering from tap {tap_position[i]}")
+                        print("Branch ", i, ": Lowering from tap ", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i] / 2:
                     if tap_position[i] == max_tap[i]:
                         if verbose:
-                            print(f"Branch {i}: Already at highest tap ({tap_position[i]}), skipping")
+                            print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print(f"Branch {i}: Raising from tap {tap_position[i]}")
+                        print("Branch ", i, ": Raising from tap ", tap_position[i])
                     stable = False
 
         return stable, tap_module, tap_position
@@ -948,14 +945,10 @@ class PowerFlowMP:
                     # merge the results from this island
                     results.apply_from_island(res, bus_original_idx, branch_original_idx)
 
-                    # build the report
-                    data = np.c_[results.methods[i],
-                                 results.converged[i],
-                                 results.error[i],
-                                 results.elapsed[i],
-                                 results.inner_iterations[i]]
-                    df = pd.DataFrame(data, columns=col)
-                    self.convergence_reports.append(df)
+                    res.get_report_dataframe()
+
+                    # # build the report
+                    self.convergence_reports.append(res.get_report_dataframe())
                 else:
                     warn('There are no slack nodes in the island ' + str(i))
                     self.logger.append('There are no slack nodes in the island ' + str(i))
@@ -971,13 +964,7 @@ class PowerFlowMP:
                 results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
 
                 # build the report
-                data = np.c_[results.methods[0],
-                             results.converged[0],
-                             results.error[0],
-                             results.elapsed[0],
-                             results.inner_iterations[0]]
-                df = pd.DataFrame(data, columns=col)
-                self.convergence_reports.append(df)
+                self.convergence_reports.append(results.get_report_dataframe())
             else:
                 warn('There are no slack nodes')
                 self.logger.append('There are no slack nodes')

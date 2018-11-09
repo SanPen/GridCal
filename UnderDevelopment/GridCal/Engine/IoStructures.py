@@ -764,12 +764,26 @@ class PowerFlowResults:
         return res
 
     def get_report_dataframe(self, island_idx=0):
+        """
+        Get a DataFrame containing the convergence report
+        :param island_idx: (optional) island index
+        :return: DataFrame
+        """
+        if type(self.methods[island_idx]) == list:
 
-        data = np.c_[self.methods[island_idx],
-                     self.converged[island_idx],
-                     self.error[island_idx],
-                     self.elapsed[island_idx],
-                     self.inner_iterations[island_idx]]
+            data = np.c_[self.methods[island_idx],
+                         self.converged[island_idx],
+                         self.error[island_idx],
+                         self.elapsed[island_idx],
+                         self.inner_iterations[island_idx]]
+        else:
+
+            data = np.c_[self.methods,
+                         self.converged,
+                         self.error,
+                         self.elapsed,
+                         self.inner_iterations]
+
         col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
         df = pd.DataFrame(data, columns=col)
 
