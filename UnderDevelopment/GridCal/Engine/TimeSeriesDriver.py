@@ -19,7 +19,7 @@ from numpy import complex, zeros, ones, array
 import multiprocessing
 from matplotlib import pyplot as plt
 
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.IoStructures import PowerFlowResults, ResultTypes
 from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH

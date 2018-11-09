@@ -18,7 +18,7 @@ import numpy as np
 from numpy import complex, zeros,  array
 import datetime
 from matplotlib import pyplot as plt
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import SolverType

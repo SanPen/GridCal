@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
 
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)

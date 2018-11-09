@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import *
+from PySide2.QtWidgets import *
 import matplotlib
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas

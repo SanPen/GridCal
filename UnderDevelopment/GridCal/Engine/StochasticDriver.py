@@ -22,7 +22,7 @@ from numpy import complex, zeros, exp, r_, array, angle, c_, power, vstack, floo
 
 from matplotlib import pyplot as plt
 import multiprocessing
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.IoStructures import MonteCarloResults, MonteCarloInput, CalculationInputs, PowerFlowResults
 from GridCal.Engine.CalculationEngine import CDF, MultiCircuit

@@ -2,11 +2,11 @@
 
 # Form implementation generated from reading ui file 'excel_sheet_selection.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PySide2 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_ExcelSelectionDialog(object):
     def setupUi(self, ExcelSelectionDialog):

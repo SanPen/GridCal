@@ -15,7 +15,7 @@
 
 from enum import Enum
 from datetime import datetime, timedelta
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 

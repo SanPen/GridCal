@@ -19,7 +19,7 @@ from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, arr
 import pandas as pd
 from pySOT import *
 # from timeit import default_timer as timer
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.IoStructures import PowerFlowResults, CalculationInputs
 from GridCal.Engine.CalculationEngine import MultiCircuit

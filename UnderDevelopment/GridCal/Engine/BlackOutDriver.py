@@ -17,7 +17,7 @@ from enum import Enum
 from warnings import warn
 import pandas as pd
 import numpy as np
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.CalculationEngine import NumericalCircuit, MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, PowerFlow, PowerFlowMP

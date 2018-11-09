@@ -18,7 +18,7 @@ from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, nda
     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse.linalg import inv
 from matplotlib import pyplot as plt
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.Numerical.SC import short_circuit_3p
 from GridCal.Engine.CalculationEngine import LINEWIDTH, MultiCircuit

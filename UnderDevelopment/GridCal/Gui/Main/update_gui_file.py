@@ -6,14 +6,17 @@ from subprocess import call
 # pyrcc5 icons.qrc -o icons_rc.py
 # pyuic5 -x MainWindow.ui -o MainWindow.py
 
+# export PATH="/home/santi/Descargas/Python-3.7.1/release/lib/python3.7/site-packages/PySide2:$PATH"
+# export PATH="/home/santi/Descargas/Python-3.7.1/release/bin:$PATH"
+
 filename = 'MainWindow.py'
 filename_ui = 'MainWindow.ui'
 
 # update icon/images resources
-call(['pyrcc5', 'icons.qrc', '-o', 'icons_rc.py'])
+call(['pyside2-rcc', 'icons.qrc', '-o', 'icons_rc.py'])
 
 # update ui handler file
-call(['pyuic5', '-x', filename_ui, '-o', filename])
+call(['pyside2-uic', '-x', filename_ui, '-o', filename])
 
 
 # replace annoying text import

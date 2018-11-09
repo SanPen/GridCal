@@ -15,9 +15,9 @@
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
-from PyQt5.QtGui import *
+from PySide2.QtWidgets import *
+from PySide2 import QtCore
+from PySide2.QtGui import *
 
 from GridCal.Engine.CalculationEngine import BranchTypeConverter, BranchType
 from GridCal.Engine.DeviceTypes import BranchTemplate
@@ -25,7 +25,7 @@ from GridCal.Engine.Devices import Bus
 
 
 class TreeDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = pyqtSignal(object)
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied

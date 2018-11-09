@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from warnings import warn
-from PyQt5.QtCore import QRunnable
+from PySide2.QtCore import QRunnable
 import numpy as np
 
 from GridCal.Engine.IoStructures import OptimalPowerFlowResults

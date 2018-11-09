@@ -15,7 +15,7 @@
 
 import numpy as np
 from enum import Enum
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 
 from GridCal.Engine.Numerical.SE import solve_se_lm

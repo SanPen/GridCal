@@ -80,7 +80,7 @@ install_requires = ["numpy>=1.14.0",
                     "pandas>=0.22",
                     "xlwt>=1.3.0",
                     "xlrd>=1.1.0",
-                    "PyQt5>=5.8",
+                    "PySide2>=5.8",
                     "matplotlib>=2.1.1",
                     "qtconsole>=4.3.1",
                     "pySOT>=0.1.36",
@@ -95,7 +95,7 @@ install_requires = ["numpy>=1.14.0",
 
 if platform.system() == 'Windows':
     # list the packages (On windows anaconda is assumed)
-    install_requires.pop(6)  # remove PyQt5 since it may conflict with anaconda's installation
+    install_requires.pop(6)  # remove PySide2 since it may conflict with anaconda's installation
 
 else:
     # make the desktop entry

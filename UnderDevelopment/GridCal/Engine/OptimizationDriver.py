@@ -22,7 +22,7 @@ from numpy import complex, zeros, exp, r_, array, angle, c_, power, vstack, ones
 from pyDOE import lhs
 from matplotlib import pyplot as plt
 import multiprocessing
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 from sklearn.ensemble import RandomForestRegressor
 from pySOT import *
 from poap.controller import SerialController

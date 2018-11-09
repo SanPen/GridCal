@@ -1,7 +1,7 @@
 import sys
 import xlrd
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from GridCal.Gui.ProfilesInput.excel_sheet_selection import *
 

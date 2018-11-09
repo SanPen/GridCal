@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.IoStructures import PowerFlowResults, ResultTypes
 from GridCal.Engine.Numerical.ContinuationPowerFlow import continuation_nr

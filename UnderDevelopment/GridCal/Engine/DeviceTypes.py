@@ -15,7 +15,7 @@
 import numpy as np
 from numpy import pi, cos, sin, log, arccos, sqrt, exp
 from matplotlib import pyplot as plt
-from PyQt5 import QtCore
+from PySide2 import QtCore
 from enum import Enum
 
 """
