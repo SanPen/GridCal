@@ -711,3 +711,178 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
     Scalc = V * conj(Icalc)
 
     return V, converged, normF, Scalc, iter_, elapsed
+
+
+def F(V, Ybus, S, I, pq, pv):
+    """
+
+    :param V:
+    :param Ybus:
+    :param S:
+    :param I:
+    :param pq:
+    :param pv:
+    :param pvpq:
+    :return:
+    """
+    # compute the mismatch function f(x_new)
+    dS = V * conj(Ybus * V - I) - S  # complex power mismatch
+    return r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+
+
+def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
+    """
+
+    :param x:
+    :param Ybus:
+    :param S:
+    :param I:
+    :param pq:
+    :param pv:
+    :param pvpq:
+    :return:
+    """
+    n = len(S)
+    npv = len(pv)
+    npq = len(pq)
+
+    # reassign the solution vector
+    if npv:
+        Va[pv] = x[j1:j2]
+    if npq:
+        Va[pq] = x[j3:j4]
+        Vm[pq] = x[j5:j6]
+
+    V = Vm * exp(1j * Va)  # voltage mismatch
+
+    # right hand side
+    g = F(V, Ybus, S, I, pq, pv)
+
+    # jacobian
+    gx = Jacobian(Ybus, V, I, pq, pvpq)
+
+    # return the increment of x
+    return spsolve(gx, g)
+
+
+def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+    """
+    Solves the power flow using a full Newton's method with the backtrack improvement algorithm
+    Args:
+        Ybus: Admittance matrix
+        Sbus: Array of nodal power injections
+        V0: Array of nodal voltages (initial solution)
+        Ibus: Array of nodal current injections
+        pv: Array with the indices of the PV buses
+        pq: Array with the indices of the PQ buses
+        tol: Tolerance
+        max_it: Maximum number of iterations
+        robust: Boolean variable for the use of the Iwamoto optimal step factor.
+    Returns:
+        Voltage solution, converged?, error, calculated power injections
+
+    @author: Ray Zimmerman (PSERC Cornell)
+    @Author: Santiago Penate Vera
+    """
+
+    start = time.time()
+
+    # initialize
+    converged = 0
+    iter_ = 0
+    V = V0.copy()
+
+    # set up indexing for updating V
+    pvpq = r_[pv, pq]
+    npv = len(pv)
+    npq = len(pq)
+
+    # j1:j2 - V angle of pv buses
+    j1 = 0
+    j2 = npv
+    # j3:j4 - V angle of pq buses
+    j3 = j2
+    j4 = j2 + npq
+    # j5:j6 - V mag of pq buses
+    j5 = j4
+    j6 = j4 + npq
+
+    # evaluate F(x0)
+    Scalc = V * conj(Ybus * V - Ibus)
+    mis = Scalc - Sbus  # compute the mismatch
+    F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]
+
+    # check tolerance
+    normF = linalg.norm(F, Inf)
+
+    if normF < tol:
+        converged = 1
+
+    dt = 1.0
+
+    # Compose x
+    x = np.zeros(2 * npq + npv)
+    Va = np.angle(V)
+    Vm = np.abs(V)
+    # if npv:
+    #     x[j1:j2] = Va[pv]
+    # if npq:
+    #     x[j3:j4] = Va[pq]
+    #     x[j5:j6] = Vm[pq]
+
+    # do Newton iterations
+    while not converged and iter_ < max_it:
+        # update iteration counter
+        iter_ += 1
+
+        if npv:
+            x[j1:j2] = Va[pv]
+        if npq:
+            x[j3:j4] = Va[pq]
+            x[j5:j6] = Vm[pq]
+
+        # Compute the Runge-Kutta steps
+        k1 = fx(x,
+                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+
+        k2 = fx(x + 0.5 * dt * k1,
+                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+
+        k3 = fx(x + 0.5 * dt * k2,
+                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+
+        k4 = fx(x + dt * k3,
+                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+
+        x -= dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
+
+        # reassign the solution vector
+        if npv:
+            Va[pv] = x[j1:j2]
+        if npq:
+            Va[pq] = x[j3:j4]
+            Vm[pq] = x[j5:j6]
+        V = Vm * exp(1j * Va)  # voltage mismatch
+
+        # evaluate F(x)
+        Scalc = V * conj(Ybus * V - Ibus)
+        mis = Scalc - Sbus  # complex power mismatch
+        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+
+        # check for convergence
+        normF = linalg.norm(F, Inf)
+
+        if normF > 0.01:
+            dt = max(dt * 0.985, 0.75)
+        else:
+            dt = min(dt * 1.015, 0.75)
+
+        print(dt)
+
+        if normF < tol:
+            converged = 1
+
+    end = time.time()
+    elapsed = end - start
+
+    return V, converged, normF, Scalc
