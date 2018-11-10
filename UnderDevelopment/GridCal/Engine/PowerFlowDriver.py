@@ -53,6 +53,12 @@ class SolverType(Enum):
     NELDER_MEAD_OPF = 19
 
 
+class IterationMethod(Enum):
+    SLOW =   {"increment": 0.00005, "precision": 4}
+    MEDIUM = {"increment": 0.00025, "precision": 4}
+    FAST =   {"increment": 0.0005, "precision": 3}
+
+
 ########################################################################################################################
 # Power flow classes
 ########################################################################################################################
@@ -63,7 +69,8 @@ class PowerFlowOptions:
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, control_q=False, multi_core=False, dispatch_storage=False,
-                 control_taps=False, control_p=False, apply_temperature_correction=False, iterative_pv_control=False):
+                 control_taps=False, control_p=False, apply_temperature_correction=False,
+                 iterative_pv_control=False, iterative_pv_method=IterationMethod.SLOW):
         """
         Power flow execution options
         @param solver_type:
@@ -77,6 +84,8 @@ class PowerFlowOptions:
         @param control_q:
         @param control_taps:
         @param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
+        @param iterative_pv_control: Control Q for PV buses (controlled generators) using the slower, iterative method
+        @param iterative_pv_method: Either IterationMethod.SLOW, MEDIUM or FAST (trades precision for speed)
         """
         self.solver_type = solver_type
 
@@ -105,6 +114,8 @@ class PowerFlowOptions:
         self.apply_temperature_correction = apply_temperature_correction
 
         self.iterative_pv_control = iterative_pv_control
+
+        self.iterative_pv_method = iterative_pv_method
 
 
 class PowerFlowMP:
@@ -414,7 +425,8 @@ class PowerFlowMP:
                                                                               Qmin=circuit.Qmin,
                                                                               types=circuit.types,
                                                                               original_types=original_types,
-                                                                              verbose=self.options.verbose)
+                                                                              verbose=self.options.verbose,
+                                                                              method=self.options.iterative_pv_method)
 
                         if any_q_control_issue:
                             circuit.types = types_new
@@ -499,7 +511,7 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def iterate_pv_control(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+    def iterate_pv_control(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, method):
         """
         Change the buses type in order to control the generators reactive power
         using iterative changes in Q to reach Vset.
@@ -511,6 +523,7 @@ class PowerFlowMP:
         @param types: Array of types (all buses)
         @param original_types: Types as originally intended (all buses)
         @param verbose: output messages via the console
+        @param method: Iterative control method
         @return:
             Vnew: New voltage values
             Qnew: New reactive power values
@@ -527,8 +540,8 @@ class PowerFlowMP:
         Vnew = V.copy()
         types_new = types.copy()
         any_control_issue = False
-        increment = 0.00005
-        precision = 4
+        increment = method.value["increment"]
+        precision = method.value["precision"]
 
 #        if verbose: 
 #            print(f"Q = {Q}")
