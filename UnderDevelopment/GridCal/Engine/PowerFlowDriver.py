@@ -70,7 +70,7 @@ class PowerFlowOptions:
                  verbose=False, robust=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, control_q=False, multi_core=False, dispatch_storage=False,
                  control_taps=False, control_p=False, apply_temperature_correction=False,
-                 iterative_pv_control=False, iterative_pv_method=IterationMethod.SLOW):
+                 iterative_pv_control=False, iterative_pv_method=IterationMethod.FAST):
         """
         Power flow execution options
         @param solver_type:
