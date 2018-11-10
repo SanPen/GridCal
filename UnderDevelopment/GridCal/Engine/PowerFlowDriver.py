@@ -63,7 +63,7 @@ class PowerFlowOptions:
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, control_q=False, multi_core=False, dispatch_storage=False,
-                 control_taps=False, control_p=False, apply_temperature_correction=False):
+                 control_taps=False, control_p=False, apply_temperature_correction=False, iterative_pv_control=False):
         """
         Power flow execution options
         @param solver_type:
@@ -103,6 +103,8 @@ class PowerFlowOptions:
         self.control_taps = control_taps
 
         self.apply_temperature_correction = apply_temperature_correction
+
+        self.iterative_pv_control = iterative_pv_control
 
 
 class PowerFlowMP:
@@ -335,7 +337,11 @@ class PowerFlowMP:
         any_tap_control_issue = True
 
         # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
-        control_max_iter = 10
+        if self.options.iterative_pv_control:
+            control_max_iter = 999
+        else:
+            control_max_iter = 10
+
         for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
             control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
         # control_max_iter = max(len(circuit.bus_to_regulated_idx), 10)
@@ -348,6 +354,9 @@ class PowerFlowMP:
         errors = list()
         it = list()
         el = list()
+
+        # For the iterate_pv_control logic:
+        Vset = voltage_solution.copy() # Origin voltage setpoints
 
         # this the "outer-loop"
         while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
@@ -383,23 +392,37 @@ class PowerFlowMP:
                 if converged:
                     # Check controls
                     if self.options.control_Q:
-                        voltage_solution, \
+                        if not self.options.iterative_pv_control:
+                            voltage_solution, \
+                                Qnew, \
+                                types_new, \
+                                any_q_control_issue = self.switch_logic(V=voltage_solution,
+                                                                        Vset=np.abs(voltage_solution),
+                                                                        Q=Scalc.imag,
+                                                                        Qmax=circuit.Qmax,
+                                                                        Qmin=circuit.Qmin,
+                                                                        types=circuit.types,
+                                                                        original_types=original_types,
+                                                                        verbose=self.options.verbose)
+                        else:
                             Qnew, \
-                            types_new, \
-                            any_q_control_issue = self.switch_logic(V=voltage_solution,
-                                                                    Vset=np.abs(voltage_solution),
-                                                                    Q=Scalc.imag,
-                                                                    Qmax=circuit.Qmax,
-                                                                    Qmin=circuit.Qmin,
-                                                                    types=circuit.types,
-                                                                    original_types=original_types,
-                                                                    verbose=self.options.verbose)
+                                types_new, \
+                                any_q_control_issue = self.iterate_pv_control(V=voltage_solution,
+                                                                              Vset=Vset,
+                                                                              Q=Scalc.imag,
+                                                                              Qmax=circuit.Qmax,
+                                                                              Qmin=circuit.Qmin,
+                                                                              types=circuit.types,
+                                                                              original_types=original_types,
+                                                                              verbose=self.options.verbose)
+
                         if any_q_control_issue:
+                            circuit.types = types_new
                             Sbus = Sbus.real + 1j * Qnew
                             ref, pq, pv, pqpv = self.compile_types(Sbus, types_new)
                         else:
                             if self.options.verbose:
-                                print('Controls Ok')
+                                print('Q controls Ok')
 
                     else:
                         # did not check Q limits
@@ -420,6 +443,7 @@ class PowerFlowMP:
                                                                      tap_inc_reg_down=circuit.tap_inc_reg_down,
                                                                      vset=circuit.vset,
                                                                      verbose=self.options.verbose)
+
                         # print('Recompiling Ybus due to tap changes')
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
@@ -448,6 +472,9 @@ class PowerFlowMP:
             # append converged
             converged_lst.append(bool(converged))
 
+        if self.options.verbose:
+            print("Stabilized in {} iteration(s) (outer control loop)".format(outer_it))
+
         # Compute the branches power and the slack buses power
         Sbranch, Ibranch, loading, losses, \
         flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
@@ -470,6 +497,89 @@ class PowerFlowMP:
                                    methods=methods)
 
         return results
+
+    @staticmethod
+    def iterate_pv_control(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+        """
+        Change the buses type in order to control the generators reactive power
+        using iterative changes in Q to reach Vset.
+        @param V: array of voltages (all buses)
+        @param Vset: Array of set points (all buses)
+        @param Q: Array of reactive power (all buses)
+        @param Qmin: Array of minimal reactive power (all buses)
+        @param Qmax: Array of maximal reactive power (all buses)
+        @param types: Array of types (all buses)
+        @param original_types: Types as originally intended (all buses)
+        @param verbose: output messages via the console
+        @return:
+            Vnew: New voltage values
+            Qnew: New reactive power values
+            types_new: Modified types array
+            any_control_issue: Was there any control issue?
+        """
+
+        if verbose:
+            print('Q control logic (iterative)')
+
+        n = len(V)
+        Vm = abs(V)
+        Qnew = Q.copy()
+        Vnew = V.copy()
+        types_new = types.copy()
+        any_control_issue = False
+        increment = 0.00005
+        precision = 4
+
+#        if verbose: 
+#            print(f"Q = {Q}")
+#            print(f"Types = {types}")
+#            print(f"Original types = {original_types}")
+
+        for i in range(n):
+
+            if types[i] == BusMode.REF.value[0]:
+                pass
+
+            elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
+
+                if round(Vm[i], precision) < round(abs(Vset[i]), precision):
+                    if Q[i] < (Qmax[i] - increment/2):
+                        # I can push more VAr, so let's do so
+                        Qnew[i] = Q[i] + increment
+                        if verbose:
+                            print("Bus {} raising its Q from {} to {} (V = {}, Vset = {})".format(i,
+                                                                                                  round(Q[i], precision),
+                                                                                                  round(Qnew[i], precision),
+                                                                                                  round(Vm[i], precision),
+                                                                                                  abs(Vset[i])))
+                        any_control_issue = True
+
+                elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
+                    if Q[i] > (Qmin[i] + increment/2):
+                        # I can pull more VAr, so let's do so
+                        Qnew[i] = Q[i] - increment
+                        if verbose:
+                            print("Bus {} lowering its Q from {} to {} (V = {}, Vset = {})".format(i,
+                                                                                                   round(Q[i], precision),
+                                                                                                   round(Qnew[i], precision),
+                                                                                                   round(Vm[i], precision),
+                                                                                                   abs(Vset[i])))
+                        any_control_issue = True
+
+            elif types[i] == BusMode.PV.value[0]:
+                # If it's still in PV mode (first run), change it to PQ mode
+                types_new[i] = BusMode.PQ.value[0]
+                Qnew[i] = 0
+                if verbose:
+                    print("Bus {} switching to PQ control, with a Q of 0".format(i))
+                any_control_issue = True
+
+#        if verbose:
+#            print(f"Qnew = {Qnew}")
+#            print(f"New types = {types_new}")
+#            print(f"Control issue? = {any_control_issue}")
+        return Qnew, types_new, any_control_issue
+
 
     @staticmethod
     def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False):
@@ -593,7 +703,7 @@ class PowerFlowMP:
             it is still a PV bus.
         '''
         if verbose:
-            print('Control logic')
+            print('Q control logic (fast)')
 
         n = len(V)
         Vm = abs(V)
