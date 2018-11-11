@@ -15,7 +15,7 @@
 
 from enum import Enum
 from warnings import warn
-from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array
+from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array, exp
 import pandas as pd
 from pySOT import *
 # from timeit import default_timer as timer
@@ -53,12 +53,6 @@ class SolverType(Enum):
     NELDER_MEAD_OPF = 19
 
 
-class IterationMethod(Enum):
-    SLOW =   {"increment": 0.00005, "precision": 4}
-    MEDIUM = {"increment": 0.00025, "precision": 4}
-    FAST =   {"increment": 0.0005, "precision": 3}
-
-
 class ReactivePowerControlMode(Enum):
     NoControl = "NoControl"
     Direct = "Direct"
@@ -76,8 +70,7 @@ class PowerFlowOptions:
                  verbose=False, robust=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, control_q=ReactivePowerControlMode.NoControl,
                  multi_core=False, dispatch_storage=False,
-                 control_taps=False, control_p=False, apply_temperature_correction=False,
-                 iterative_pv_method=IterationMethod.FAST):
+                 control_taps=False, control_p=False, apply_temperature_correction=False):
         """
         Power flow execution options
         @param solver_type:
@@ -91,7 +84,6 @@ class PowerFlowOptions:
         @param control_q:
         @param control_taps:
         @param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
-        @param iterative_pv_method: Either IterationMethod.SLOW, MEDIUM or FAST (trades precision for speed)
         """
         self.solver_type = solver_type
 
@@ -118,8 +110,6 @@ class PowerFlowOptions:
         self.control_taps = control_taps
 
         self.apply_temperature_correction = apply_temperature_correction
-
-        self.iterative_pv_method = iterative_pv_method
 
 
 class PowerFlowMP:
@@ -433,8 +423,7 @@ class PowerFlowMP:
                                                                           Qmin=circuit.Qmin,
                                                                           types=circuit.types,
                                                                           original_types=original_types,
-                                                                          verbose=self.options.verbose,
-                                                                          method=self.options.iterative_pv_method)
+                                                                          verbose=self.options.verbose)
 
                     else:
                         # did not check Q limits
@@ -522,7 +511,19 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def iterate_pv_control(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, method):
+    def get_q_increment(V1, V2):
+        """
+        Logistic function to get the Q increment gain using the difference
+        between the current voltage (V1) and the target voltage (V2).
+
+        The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
+
+        The steepness factor k was set through trial an error.
+        """
+        k = 100
+        return 2 * (1 / (1 + exp(-k * abs(V2 - V1))) - 0.5)
+
+    def iterate_pv_control(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
         """
         Change the buses type in order to control the generators reactive power
         using iterative changes in Q to reach Vset.
@@ -534,7 +535,6 @@ class PowerFlowMP:
         @param types: Array of types (all buses)
         @param original_types: Types as originally intended (all buses)
         @param verbose: output messages via the console
-        @param method: Iterative control method
         @return:
             Vnew: New voltage values
             Qnew: New reactive power values
@@ -551,10 +551,9 @@ class PowerFlowMP:
         Vnew = V.copy()
         types_new = types.copy()
         any_control_issue = False
-        increment = method.value["increment"]
-        precision = method.value["precision"]
+        precision = 4 # Could be tweaked
 
-#        if verbose: 
+#        if verbose:
 #            print(f"Q = {Q}")
 #            print(f"Types = {types}")
 #            print(f"Original types = {original_types}")
@@ -566,11 +565,23 @@ class PowerFlowMP:
 
             elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
 
+                gain = self.get_q_increment(Vm[i], abs(Vset[i]))
+
                 if round(Vm[i], precision) < round(abs(Vset[i]), precision):
-                    if Q[i] < (Qmax[i] - increment/2):
+                    increment = round(abs(Qmax[i] - Q[i])*gain, precision)
+
+                    if increment > 0 and Q[i] < (Qmax[i] - increment/2):
                         # I can push more VAr, so let's do so
                         Qnew[i] = Q[i] + increment
                         if verbose:
+                            print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
+                                                                                round(gain, precision),
+                                                                                round(Vm[i], precision),
+                                                                                abs(Vset[i])))
+                            print("Bus {} increment = {} (Q = {}, Qmax = {})".format(i,
+                                                                                     round(increment, precision),
+                                                                                     round(Q[i], precision),
+                                                                                     abs(Qmax[i])))
                             print("Bus {} raising its Q from {} to {} (V = {}, Vset = {})".format(i,
                                                                                                   round(Q[i], precision),
                                                                                                   round(Qnew[i], precision),
@@ -579,10 +590,20 @@ class PowerFlowMP:
                         any_control_issue = True
 
                 elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
-                    if Q[i] > (Qmin[i] + increment/2):
+                    increment = round(abs(Qmin[i] - Q[i])*gain, precision)
+
+                    if increment > 0 and Q[i] > (Qmin[i] + increment/2):
                         # I can pull more VAr, so let's do so
                         Qnew[i] = Q[i] - increment
                         if verbose:
+                            print("Bus {} increment = {} (Q = {}, Qmin = {})".format(i,
+                                                                                     round(increment, precision),
+                                                                                     round(Q[i], precision),
+                                                                                     abs(Qmin[i])))
+                            print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
+                                                                                round(gain, precision),
+                                                                                round(Vm[i], precision),
+                                                                                abs(Vset[i])))
                             print("Bus {} lowering its Q from {} to {} (V = {}, Vset = {})".format(i,
                                                                                                    round(Q[i], precision),
                                                                                                    round(Qnew[i], precision),
@@ -683,13 +704,13 @@ class PowerFlowMP:
            reactive power was fixed at its lower limit:
 
             If its voltage magnitude Vi ≥ Viset, then
-    
+
                 it is still a PQ bus at current iteration and set Qi = Qimin .
-    
+
                 If Vi < Viset , then
-    
+
                     compare Qi with the upper and lower limits.
-    
+
                     If Qi ≥ Qimax , then
                         it is still a PQ bus but set Qi = Qimax .
                     If Qi ≤ Qimin , then
@@ -699,14 +720,14 @@ class PowerFlowMP:
 
         2) Bus i is a PQ bus in the previous iteration and
            its reactive power was fixed at its upper limit:
-    
+
             If its voltage magnitude Vi ≤ Viset , then:
                 bus i still a PQ bus and set Q i = Q i max.
-    
+
                 If Vi > Viset , then
-    
+
                     Compare between Qi and its upper/lower limits
-    
+
                     If Qi ≥ Qimax , then
                         it is still a PQ bus and set Q i = Qimax .
                     If Qi ≤ Qimin , then
@@ -717,7 +738,7 @@ class PowerFlowMP:
         3) Bus i is a PV bus in the previous iteration.
 
             Compare Q i with its upper and lower limits.
-    
+
             If Qi ≥ Qimax , then
                 it is switched to PQ and set Qi = Qimax .
             If Qi ≤ Qimin , then
