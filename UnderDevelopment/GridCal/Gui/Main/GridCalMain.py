@@ -241,6 +241,15 @@ class MainGUI(QMainWindow):
         self.ui.profile_device_type_comboBox.setModel(mdl)
         self.profile_device_type_changed()
 
+        # reactive power controls
+        self.q_control_modes_dict = OrderedDict()
+        self.q_control_modes_dict['No control'] = ReactivePowerControlMode.NoControl
+        self.q_control_modes_dict['Direct'] = ReactivePowerControlMode.Direct
+        self.q_control_modes_dict['Iterative'] = ReactivePowerControlMode.Iterative
+        lst = list(self.q_control_modes_dict.keys())
+        mdl = get_list_model(lst)
+        self.ui.reactive_power_control_mode_comboBox.setModel(mdl)
+
         # Automatic layout modes
         mdl = get_list_model(['fruchterman_reingold_layout',
                               'spectral_layout',
@@ -1769,7 +1778,7 @@ class MainGUI(QMainWindow):
         """
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        enforce_q_limits = self.ui.control_Q_checkBox.isChecked()
+        reactve_power_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
 
         exponent = self.ui.tolerance_spinBox.value()
         tolerance = 1.0 / (10.0**exponent)
@@ -1779,7 +1788,7 @@ class MainGUI(QMainWindow):
         # set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
 
         # dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
-        dispatch_storage= False
+        dispatch_storage = False
 
         if self.ui.helm_retry_checkBox.isChecked():
             # solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
@@ -1800,7 +1809,7 @@ class MainGUI(QMainWindow):
                                initialize_with_existing_solution=True,
                                tolerance=tolerance,
                                max_iter=max_iter,
-                               control_q=enforce_q_limits,
+                               control_q=reactve_power_control_mode,
                                multi_core=mp,
                                dispatch_storage=dispatch_storage,
                                control_taps=ctrl_taps,

@@ -28,8 +28,8 @@ if __name__ == '__main__':
     # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
@@ -38,7 +38,9 @@ if __name__ == '__main__':
     main_circuit.load_file(fname)
     options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
                                initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True, control_q=False, control_p=True)
+                               multi_core=False, dispatch_storage=True,
+                               control_q=ReactivePowerControlMode.NoControl,
+                               control_p=True)
 
     # grid.export_profiles('ppppppprrrrroooofiles.xlsx')
     # exit()

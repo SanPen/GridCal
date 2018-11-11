@@ -59,6 +59,12 @@ class IterationMethod(Enum):
     FAST =   {"increment": 0.0005, "precision": 3}
 
 
+class ReactivePowerControlMode(Enum):
+    NoControl = "NoControl"
+    Direct = "Direct"
+    Iterative = "Iterative"
+
+
 ########################################################################################################################
 # Power flow classes
 ########################################################################################################################
@@ -68,9 +74,10 @@ class PowerFlowOptions:
 
     def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
                  verbose=False, robust=False, initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, control_q=False, multi_core=False, dispatch_storage=False,
+                 tolerance=1e-6, max_iter=25, control_q=ReactivePowerControlMode.NoControl,
+                 multi_core=False, dispatch_storage=False,
                  control_taps=False, control_p=False, apply_temperature_correction=False,
-                 iterative_pv_control=False, iterative_pv_method=IterationMethod.FAST):
+                 iterative_pv_method=IterationMethod.FAST):
         """
         Power flow execution options
         @param solver_type:
@@ -84,7 +91,6 @@ class PowerFlowOptions:
         @param control_q:
         @param control_taps:
         @param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
-        @param iterative_pv_control: Control Q for PV buses (controlled generators) using the slower, iterative method
         @param iterative_pv_method: Either IterationMethod.SLOW, MEDIUM or FAST (trades precision for speed)
         """
         self.solver_type = solver_type
@@ -112,8 +118,6 @@ class PowerFlowOptions:
         self.control_taps = control_taps
 
         self.apply_temperature_correction = apply_temperature_correction
-
-        self.iterative_pv_control = iterative_pv_control
 
         self.iterative_pv_method = iterative_pv_method
 
@@ -344,18 +348,19 @@ class PowerFlowMP:
 
         tap_module = circuit.tap_mod.copy()
 
-        any_q_control_issue = True  # guilty assumption...
+        # guilty assumption...
+        any_q_control_issue = True
         any_tap_control_issue = True
 
         # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
-        if self.options.iterative_pv_control:
-            control_max_iter = 999
+        if self.options.control_Q == ReactivePowerControlMode.Iterative:
+            control_max_iter = 999  # TODO review this: Should be an option
         else:
             control_max_iter = 10
 
+        # Alter the outer loop max iterations if the transformer tap control is active
         for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
             control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
-        # control_max_iter = max(len(circuit.bus_to_regulated_idx), 10)
 
         inner_it = list()
         outer_it = 0
@@ -367,7 +372,7 @@ class PowerFlowMP:
         el = list()
 
         # For the iterate_pv_control logic:
-        Vset = voltage_solution.copy() # Origin voltage setpoints
+        Vset = voltage_solution.copy()  # Origin voltage set-points
 
         # this the "outer-loop"
         while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
@@ -401,44 +406,50 @@ class PowerFlowMP:
                 methods.append(solver_type)
 
                 if converged:
-                    # Check controls
-                    if self.options.control_Q:
-                        if not self.options.iterative_pv_control:
-                            voltage_solution, \
-                                Qnew, \
-                                types_new, \
-                                any_q_control_issue = self.switch_logic(V=voltage_solution,
-                                                                        Vset=np.abs(voltage_solution),
-                                                                        Q=Scalc.imag,
-                                                                        Qmax=circuit.Qmax,
-                                                                        Qmin=circuit.Qmin,
-                                                                        types=circuit.types,
-                                                                        original_types=original_types,
-                                                                        verbose=self.options.verbose)
-                        else:
-                            Qnew, \
-                                types_new, \
-                                any_q_control_issue = self.iterate_pv_control(V=voltage_solution,
-                                                                              Vset=Vset,
-                                                                              Q=Scalc.imag,
-                                                                              Qmax=circuit.Qmax,
-                                                                              Qmin=circuit.Qmin,
-                                                                              types=circuit.types,
-                                                                              original_types=original_types,
-                                                                              verbose=self.options.verbose,
-                                                                              method=self.options.iterative_pv_method)
 
-                        if any_q_control_issue:
-                            circuit.types = types_new
-                            Sbus = Sbus.real + 1j * Qnew
-                            ref, pq, pv, pqpv = self.compile_types(Sbus, types_new)
-                        else:
-                            if self.options.verbose:
-                                print('Q controls Ok')
+                    # Check controls
+                    if self.options.control_Q == ReactivePowerControlMode.Direct:
+
+                        voltage_solution, \
+                        Qnew, \
+                        types_new, \
+                        any_q_control_issue = self.switch_logic(V=voltage_solution,
+                                                                Vset=np.abs(voltage_solution),
+                                                                Q=Scalc.imag,
+                                                                Qmax=circuit.Qmax,
+                                                                Qmin=circuit.Qmin,
+                                                                types=circuit.types,
+                                                                original_types=original_types,
+                                                                verbose=self.options.verbose)
+
+                    elif self.options.control_Q == ReactivePowerControlMode.Iterative:
+
+                            Qnew, \
+                            types_new, \
+                            any_q_control_issue = self.iterate_pv_control(V=voltage_solution,
+                                                                          Vset=Vset,
+                                                                          Q=Scalc.imag,
+                                                                          Qmax=circuit.Qmax,
+                                                                          Qmin=circuit.Qmin,
+                                                                          types=circuit.types,
+                                                                          original_types=original_types,
+                                                                          verbose=self.options.verbose,
+                                                                          method=self.options.iterative_pv_method)
 
                     else:
                         # did not check Q limits
                         any_q_control_issue = False
+                        types_new = circuit.types
+                        Qnew = Scalc.imag
+
+                    # Check the actions of the Q-control
+                    if any_q_control_issue:
+                        circuit.types = types_new
+                        Sbus = Sbus.real + 1j * Qnew
+                        ref, pq, pv, pqpv = self.compile_types(Sbus, types_new)
+                    else:
+                        if self.options.verbose:
+                            print('Q controls Ok')
 
                     # control the transformer taps
                     if self.options.control_taps and any_tap_control_issue:
@@ -489,7 +500,7 @@ class PowerFlowMP:
 
         # Compute the branches power and the slack buses power
         Sbranch, Ibranch, loading, losses, \
-        flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
+            flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
@@ -593,7 +604,6 @@ class PowerFlowMP:
 #            print(f"Control issue? = {any_control_issue}")
         return Qnew, types_new, any_control_issue
 
-
     @staticmethod
     def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False):
         """
@@ -670,50 +680,50 @@ class PowerFlowMP:
         Jinquan Zhao
 
         1) Bus i is a PQ bus in the previous iteration and its
-        reactive power was fixed at its lower limit:
+           reactive power was fixed at its lower limit:
 
-        If its voltage magnitude Vi ≥ Viset, then
-
-            it is still a PQ bus at current iteration and set Qi = Qimin .
-
-            If Vi < Viset , then
-
-                compare Qi with the upper and lower limits.
-
-                If Qi ≥ Qimax , then
-                    it is still a PQ bus but set Qi = Qimax .
-                If Qi ≤ Qimin , then
-                    it is still a PQ bus and set Qi = Qimin .
-                If Qimin < Qi < Qi max , then
-                    it is switched to PV bus, set Vinew = Viset.
+            If its voltage magnitude Vi ≥ Viset, then
+    
+                it is still a PQ bus at current iteration and set Qi = Qimin .
+    
+                If Vi < Viset , then
+    
+                    compare Qi with the upper and lower limits.
+    
+                    If Qi ≥ Qimax , then
+                        it is still a PQ bus but set Qi = Qimax .
+                    If Qi ≤ Qimin , then
+                        it is still a PQ bus and set Qi = Qimin .
+                    If Qimin < Qi < Qi max , then
+                        it is switched to PV bus, set Vinew = Viset.
 
         2) Bus i is a PQ bus in the previous iteration and
-        its reactive power was fixed at its upper limit:
-
-        If its voltage magnitude Vi ≤ Viset , then:
-            bus i still a PQ bus and set Q i = Q i max.
-
-            If Vi > Viset , then
-
-                Compare between Qi and its upper/lower limits
-
-                If Qi ≥ Qimax , then
-                    it is still a PQ bus and set Q i = Qimax .
-                If Qi ≤ Qimin , then
-                    it is still a PQ bus but let Qi = Qimin in current iteration.
-                If Qimin < Qi < Qimax , then
-                    it is switched to PV bus and set Vinew = Viset
+           its reactive power was fixed at its upper limit:
+    
+            If its voltage magnitude Vi ≤ Viset , then:
+                bus i still a PQ bus and set Q i = Q i max.
+    
+                If Vi > Viset , then
+    
+                    Compare between Qi and its upper/lower limits
+    
+                    If Qi ≥ Qimax , then
+                        it is still a PQ bus and set Q i = Qimax .
+                    If Qi ≤ Qimin , then
+                        it is still a PQ bus but let Qi = Qimin in current iteration.
+                    If Qimin < Qi < Qimax , then
+                        it is switched to PV bus and set Vinew = Viset
 
         3) Bus i is a PV bus in the previous iteration.
 
-        Compare Q i with its upper and lower limits.
-
-        If Qi ≥ Qimax , then
-            it is switched to PQ and set Qi = Qimax .
-        If Qi ≤ Qimin , then
-            it is switched to PQ and set Qi = Qimin .
-        If Qi min < Qi < Qimax , then
-            it is still a PV bus.
+            Compare Q i with its upper and lower limits.
+    
+            If Qi ≥ Qimax , then
+                it is switched to PQ and set Qi = Qimax .
+            If Qi ≤ Qimin , then
+                it is switched to PQ and set Qi = Qimin .
+            If Qi min < Qi < Qimax , then
+                it is still a PV bus.
         '''
         if verbose:
             print('Q control logic (fast)')
@@ -893,14 +903,11 @@ class PowerFlowMP:
         """
         Run a power flow for a circuit
         Args:
-            circuit:
-            Vbus:
-            Sbus:
-            Ibus:
-            battery_energy:
-
-        Returns:
-
+            circuit: CalculationInputs instance
+            Vbus: Initial Voltage
+            Sbus: Power injections
+            Ibus: Current injections
+        Returns: PowerFlowResults instance
         """
 
         # Retry with another solver

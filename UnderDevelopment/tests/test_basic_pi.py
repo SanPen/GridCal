@@ -1,4 +1,4 @@
-from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType
+from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType, ReactivePowerControlMode
 from GridCal.Engine.PowerFlowDriver import PowerFlow
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
@@ -122,7 +122,7 @@ def test_gridcal_basic_pi():
                                robust=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
-                               control_q=True,
+                               control_q=ReactivePowerControlMode.Direct,
                                tolerance=1e-6,
                                max_iter=99)
 

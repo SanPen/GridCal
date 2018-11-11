@@ -1,47 +1,46 @@
-from GridCal.Engine.CalculationEngine import *
 
+from GridCal.Engine.All import *
+from matplotlib import pyplot as plt
 
-grid = MultiCircuit()
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
-# fname = 'Pegasus 89 Bus.xlsx'
-# fname = 'Illinois200Bus.xlsx'
-fname = 'IEEE_30_new.xlsx'
-# fname = 'lynn5buspq.xlsx'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
-grid.load_file(fname)
-grid.compile()
+if __name__ == '__main__':
 
-options = PowerFlowOptions(SolverType.NR,
-                           verbose=False,
-                           robust=False,
-                           initialize_with_existing_solution=False,
-                           control_q=False)
+    main_circuit = MultiCircuit()
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
+    # fname = 'Pegasus 89 Bus.xlsx'
+    # fname = 'Illinois200Bus.xlsx'
+    # fname = 'IEEE_30_new.xlsx'
+    # fname = 'lynn5buspq.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Europe winter 2009 model.xlsx'
+    # fname = "C:\\Users\\spenate\\Documents\\PROYECTOS\\Sensible\\Evora reduced (no switchs, corrected, profiles 1W@15T).xlsx"
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
+    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 
-####################################################################################################################
-# PowerFlow
-####################################################################################################################
-print('\n\n')
-power_flow = PowerFlow(grid, options)
-power_flow.run()
+    print('Reading...')
+    main_circuit.load_file(fname)
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
+                               initialize_with_existing_solution=False,
+                               multi_core=False, dispatch_storage=True,
+                               control_q=ReactivePowerControlMode.NoControl,
+                               control_p=True)
 
-for c in grid.circuits:
-    print(c.name)
-    # print('\t|V|:', abs(c.power_flow_results.voltage))
-    # print('\t|Sbranch|:', abs(c.power_flow_results.Sbranch))
-    # print('\t|loading|:', abs(c.power_flow_results.loading) * 100)
-    # print('\terr:', c.power_flow_results.error)
-    # print('\tConv:', c.power_flow_results.converged)
+    # grid.export_profiles('ppppppprrrrroooofiles.xlsx')
+    # exit()
 
-    df = c.get_bus_pf_results_df()
-    print(df)
+    ####################################################################################################################
+    # PowerFlow
+    ####################################################################################################################
+    print('\n\n')
+    power_flow = PowerFlow(main_circuit, options)
+    power_flow.run()
 
-df = grid.get_bus_pf_results_df()
-print(df)
-
-# print('\n\n', grid.name)
-# print('\t|V|:', abs(grid.power_flow_results.voltage))
-# print('\t|Sbranch|:', abs(grid.power_flow_results.Sbranch))
-# print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
-# print('\terr:', grid.power_flow_results.error)
-# print('\tConv:', grid.power_flow_results.converged)
+    print('\n\n', main_circuit.name)
+    print('\t|V|:', abs(power_flow.results.voltage))
+    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    print('\t|loading|:', abs(power_flow.results.loading) * 100)
+    print('\tReport')
+    print(power_flow.results.get_report_dataframe())

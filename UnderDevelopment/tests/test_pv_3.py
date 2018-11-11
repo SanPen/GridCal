@@ -1,4 +1,4 @@
-from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType
+from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType, ReactivePowerControlMode
 from GridCal.Engine.PowerFlowDriver import PowerFlow, IterationMethod
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
@@ -125,9 +125,8 @@ def test_pv_3():
                                robust=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
-                               control_q=True,
+                               control_q=ReactivePowerControlMode.Iterative,
                                control_taps=True,
-                               iterative_pv_control=True,
                                iterative_pv_method=IterationMethod.FAST,
                                tolerance=1e-6,
                                max_iter=99)
