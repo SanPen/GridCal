@@ -66,40 +66,44 @@ class ReactivePowerControlMode(Enum):
 
 class PowerFlowOptions:
 
-    def __init__(self, solver_type: SolverType = SolverType.NR, aux_solver_type: SolverType = SolverType.HELM,
-                 verbose=False, robust=False, initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, control_q=ReactivePowerControlMode.NoControl,
+    def __init__(self, solver_type: SolverType = SolverType.NR, retry_with_other_methods=True,
+                 verbose=False, initialize_with_existing_solution=True,
+                 tolerance=1e-6, max_iter=25, max_outer_loop_iter=100,
+                 control_q=ReactivePowerControlMode.NoControl,
                  multi_core=False, dispatch_storage=False,
                  control_taps=False, control_p=False, apply_temperature_correction=False):
         """
-        Power flow execution options
-        @param solver_type:
-        @param aux_solver_type:
-        @param verbose:
-        @param robust:
-        @param initialize_with_existing_solution:
-        @param dispatch_storage:
-        @param tolerance:
-        @param max_iter:
-        @param control_q:
-        @param control_taps:
-        @param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
+
+        Args:
+            solver_type:
+            retry_with_other_methods: Use a battery of methods to tackle the problem if the main solver fails
+            verbose:
+            initialize_with_existing_solution:
+            tolerance: Solution tolerance for the power flow numerical methods
+            max_iter: maximum number of iterations for the power flow numerical method
+            max_outer_loop_iter: Maximum number of iterations for the controls outer loop
+            control_q: Control mode for the PV nodes reactive power limits
+            multi_core: Use multi-core processing? applicable for time series
+            dispatch_storage: Dispatch storage?
+            control_taps: Control the transformer taps? (as part of the outer loop)
+            control_p: Control active power (optimization dispatch)
+            apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
         """
         self.solver_type = solver_type
 
-        self.auxiliary_solver_type = aux_solver_type
+        self.retry_with_other_methods = retry_with_other_methods
 
         self.tolerance = tolerance
 
         self.max_iter = max_iter
+
+        self.max_outer_loop_iter = max_outer_loop_iter
 
         self.control_Q = control_q
 
         self.control_P = control_p
 
         self.verbose = verbose
-
-        self.robust = robust
 
         self.initialize_with_existing_solution = initialize_with_existing_solution
 
@@ -342,15 +346,18 @@ class PowerFlowMP:
         any_q_control_issue = True
         any_tap_control_issue = True
 
-        # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
-        if self.options.control_Q == ReactivePowerControlMode.Iterative:
-            control_max_iter = 999  # TODO review this: Should be an option
-        else:
-            control_max_iter = 10
+        # outer loop max iterations
+        control_max_iter = self.options.max_outer_loop_iter
 
-        # Alter the outer loop max iterations if the transformer tap control is active
-        for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
-            control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
+        # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
+        # if self.options.control_Q == ReactivePowerControlMode.Iterative:
+        #     control_max_iter = 999  # TODO: Discuss what to do with these options
+        # else:
+        #     control_max_iter = 10
+        #
+        # # Alter the outer loop max iterations if the transformer tap control is active
+        # for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
+        #     control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
 
         inner_it = list()
         outer_it = 0
@@ -933,7 +940,7 @@ class PowerFlowMP:
 
         # Retry with another solver
 
-        if self.options.auxiliary_solver_type is not None:
+        if self.options.retry_with_other_methods:
             solvers = [self.options.solver_type,
                        SolverType.IWAMOTO,
                        SolverType.FASTDECOUPLED,

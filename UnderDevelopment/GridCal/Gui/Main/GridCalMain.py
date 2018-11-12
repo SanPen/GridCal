@@ -1785,6 +1785,8 @@ class MainGUI(QMainWindow):
 
         max_iter = self.ui.max_iterations_spinBox.value()
 
+        max_outer_iter = self.ui.outer_loop_spinBox.value()
+
         # set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
 
         # dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
@@ -1792,9 +1794,9 @@ class MainGUI(QMainWindow):
 
         if self.ui.helm_retry_checkBox.isChecked():
             # solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
-            solver_to_retry_with = SolverType.LACPF  # to set a value
+            retry_with_other_methods = True  # to set a value
         else:
-            solver_to_retry_with = None
+            retry_with_other_methods = False
 
         mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
@@ -1803,12 +1805,12 @@ class MainGUI(QMainWindow):
         temp_correction = self.ui.temperature_correction_checkBox.isChecked()
 
         ops = PowerFlowOptions(solver_type=solver_type,
-                               aux_solver_type=solver_to_retry_with,
+                               retry_with_other_methods=retry_with_other_methods,
                                verbose=False,
-                               robust=False,
                                initialize_with_existing_solution=True,
                                tolerance=tolerance,
                                max_iter=max_iter,
+                               max_outer_loop_iter=max_outer_iter,
                                control_q=reactve_power_control_mode,
                                multi_core=mp,
                                dispatch_storage=dispatch_storage,

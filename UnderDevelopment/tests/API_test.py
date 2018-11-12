@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     print('Reading...')
     main_circuit.load_file(fname)
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
+    options = PowerFlowOptions(SolverType.NR, verbose=False,
                                initialize_with_existing_solution=False,
                                multi_core=False, dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
@@ -140,7 +140,6 @@ if __name__ == '__main__':
     print('Running LHC...')
     lhs_sim = LatinHypercubeSampling(main_circuit, options, sampling_points=100)
     lhs_sim.run()
-    lhs_sim.results.plot('Bus voltage avg')
 
     ####################################################################################################################
     # Cascading

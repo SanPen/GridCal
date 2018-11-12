@@ -120,7 +120,6 @@ def test_xfo_static_tap_1():
     grid.compile()
     options = PowerFlowOptions(SolverType.LM,
                                verbose=True,
-                               robust=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
                                control_q=ReactivePowerControlMode.Direct,
