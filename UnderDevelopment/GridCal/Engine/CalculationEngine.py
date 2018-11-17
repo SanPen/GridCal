@@ -499,7 +499,11 @@ class NumericalCircuit:
             # generators
             pf2 = np.power(self.generator_power_factor, 2.0)
             # compute the reactive power from the active power and the power factor
-            Q = self.generator_power * np.sqrt((1.0 - pf2) / pf2)
+            pf_sign = (self.generator_power_factor + 1e-20) / np.abs(self.generator_power_factor + 1e-20)
+            # pf_idx = np.where(self.generator_power_factor != 0.0)[0]
+            # Q = np.zeros(len(self.generator_power_factor))
+            # Q[pf_idx] = pf_sign[pf_idx] * self.generator_power[pf_idx] * np.sqrt((1.0 - pf2[pf_idx]) / (pf2[pf_idx]))
+            Q = pf_sign * self.generator_power * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
             gen_S = self.generator_power + 1j * Q
             S += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_enabled)
 
