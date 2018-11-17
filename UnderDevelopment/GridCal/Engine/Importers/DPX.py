@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import chardet
-from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, ControlledGenerator, Battery, BranchType, StaticGenerator
+from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, Generator, Battery, BranchType, StaticGenerator
 
 
 pd.set_option('display.max_rows', 500)
@@ -443,9 +443,9 @@ def load_dpx(file_name,contraction_factor=1000):
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
                     v = float(df['V'].values[i])   # p.u.
-                    gen = ControlledGenerator(name=name, active_power=p, voltage_module=v)
+                    gen = Generator(name=name, active_power=p, voltage_module=v)
 
-                    circuit.add_controlled_generator(bus, gen)
+                    circuit.add_generator(bus, gen)
                 else:
                     name = 'GENSTAT' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
                     p = float(df['P'].values[i]) * Sbase

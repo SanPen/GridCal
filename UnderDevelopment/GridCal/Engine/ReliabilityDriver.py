@@ -101,7 +101,7 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     # branches
     all_events += get_reliability_events(horizon, nc.br_mttf, nc.br_mttr, DeviceType.BranchDevice)
 
-    all_events += get_reliability_events(horizon, nc.controlled_gen_mttf, nc.controlled_gen_mttr, DeviceType.ControlledGeneratorDevice)
+    all_events += get_reliability_events(horizon, nc.generator_mttf, nc.generator_mttr, DeviceType.GeneratorDevice)
 
     all_events += get_reliability_events(horizon, nc.battery_mttf, nc.battery_mttr, DeviceType.BatteryDevice)
 
@@ -128,8 +128,8 @@ def run_events(nc: NumericalCircuit, events_list: list):
         elif tpe == DeviceType.BranchDevice:
             nc.branch_states[i] = state
 
-        elif tpe == DeviceType.ControlledGeneratorDevice:
-            nc.controlled_gen_enabled[i] = state
+        elif tpe == DeviceType.GeneratorDevice:
+            nc.generator_enabled[i] = state
 
         elif tpe == DeviceType.StaticGeneratorDevice:
             nc.static_gen_enabled[i] = state

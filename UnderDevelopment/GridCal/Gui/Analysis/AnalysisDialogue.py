@@ -194,7 +194,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             properties = ['Vset', 'P', 'Qmin', 'Qmax']
             log_scale = [False, False, False, False]
             types = [float, float, float, float]
-            objects = self.circuit.get_controlled_generators()
+            objects = self.circuit.get_generators()
 
         elif object_type == 'batteries':
             properties = ['Vset', 'P', 'Qmin', 'Qmax']
@@ -384,7 +384,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             properties = ['Vset', 'P', 'Qmin', 'Qmax']
             log_scale = [False, False, False, False]
             types = [float, float, float, float]
-            objects = self.circuit.get_controlled_generators()
+            objects = self.circuit.get_generators()
 
         elif object_type == 'batteries':
             properties = ['Vset', 'P', 'Qmin', 'Qmax']

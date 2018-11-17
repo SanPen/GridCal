@@ -304,7 +304,7 @@ class AcOpfNelderMead:
         self.dim = len(self.gen_x_idx) + len(self.bat_x_idx)
 
         # get the limits of the devices to control
-        gens = np.array(multi_circuit.get_controlled_generators())
+        gens = np.array(multi_circuit.get_generators())
         bats = np.array(multi_circuit.get_batteries())
         gen_x_up = np.array([elm.Pmax for elm in gens[self.gen_x_idx]])
         gen_x_low = np.array([elm.Pmin for elm in gens[self.gen_x_idx]])

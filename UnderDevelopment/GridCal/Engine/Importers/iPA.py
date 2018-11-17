@@ -1,6 +1,6 @@
 import json
 
-from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, ControlledGenerator, Battery, BranchType
+from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Branch, Load, Generator, Battery, BranchType
 
 
 def load_iPA(file_name):
@@ -79,8 +79,8 @@ def load_iPA(file_name):
                 bus = bus1
 
             bus.is_slack = True
-            elm = ControlledGenerator(name='Slack')
-            circuit.add_controlled_generator(bus, elm)
+            elm = Generator(name='Slack')
+            circuit.add_generator(bus, elm)
 
         elif tpe == 1:  # Elemento impedancia(lineas)
 

@@ -406,11 +406,11 @@ def interpret_data_v1(circuit, data):
         names = ['gen ' + str(i) for i in range(n)]
     for i in range(len(table)):
         bus_idx = bus_idx_dict[int(table[i, e.GEN_BUS])]
-        gen = ControlledGenerator(name=names[i],
-                                  active_power=table[i, e.PG],
-                                  voltage_module=table[i, e.VG],
-                                  Qmax=table[i, e.QMAX],
-                                  Qmin=table[i, e.QMIN])
+        gen = Generator(name=names[i],
+                        active_power=table[i, e.PG],
+                        voltage_module=table[i, e.VG],
+                        Qmax=table[i, e.QMAX],
+                        Qmin=table[i, e.QMIN])
         if are_gen_prfiles:
             gen.create_P_profile(index=master_time_array, arr=Gprof[:, i])
             # gen.Pprof = pd.DataFrame(data=Gprof[:, i],

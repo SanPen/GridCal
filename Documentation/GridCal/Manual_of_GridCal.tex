@@ -239,7 +239,7 @@ The Bus object is the container of all the possible devices that can be attached
 	\item $Vmin$: Minimum voltage of this bus (p.u.)
 	\item $Vnom$: Nominal voltage of the bus (kV)
 	\item $batteries$: List of Battery objects.
-	\item $controlled\_generators$: List of ControlledGenerator objects.
+	\item $controlled\_generators$: List of Generator objects.
 	\item $dispatch\_storage$: Shall this bus dispatch its storage devices?  (True / False)
 	\item $graphic\_object$: Qt graphic object associated to this bus.
 	\item $is\_enabled$: Is this bus enabled for calculation? (True / False)
@@ -297,7 +297,7 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 
 
 
-\subsection{ControlledGenerator object}
+\subsection{Generator object}
 
 \begin{itemize}
 	\item $P$: Active power being dispatched (MW)
@@ -307,7 +307,7 @@ The sign convention is: Positive to act as a load, negative to act as a generato
 	\item $Snom$: Nominal power (MVA)
 	\item $Vset$: Voltage set point (p.u.)
 	\item $Vset\_prof$ Pandas DataFrame with the voltage set point profile (p.u.)
-	\item $name$: Name of the ControlledGenerator.
+	\item $name$: Name of the Generator.
 \end{itemize}
 
 

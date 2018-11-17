@@ -85,7 +85,7 @@ class TransientStability(QThread):
 
         for calculation_input in calculation_inputs:
 
-            dynamic_devices = calculation_input.get_controlled_generators()
+            dynamic_devices = calculation_input.get_generators()
             bus_indices = [calculation_input.buses_dict[elm.bus] for elm in dynamic_devices]
 
             res = dynamic_simulation(n=len(calculation_input.buses),

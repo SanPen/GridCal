@@ -49,9 +49,9 @@ def test_gridcal_basic_pi():
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)
-    UT = ControlledGenerator(name="Utility")
+    UT = Generator(name="Utility")
     UT.bus = POI
-    grid.add_controlled_generator(POI, UT)
+    grid.add_generator(POI, UT)
 
     # Create static generators (with fixed power factor)
     M32 = StaticGenerator(name="M32",
@@ -139,8 +139,8 @@ def test_gridcal_basic_pi():
     print(f"Solution: {solution}")
     print()
 
-    print("Controlled generators:")
-    for g in grid.get_controlled_generators():
+    print("Generators:")
+    for g in grid.get_generators():
         print(f" - Generator {g}: q_min={g.Qmin}pu, q_max={g.Qmax}pu")
     print()
 

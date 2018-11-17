@@ -24,7 +24,7 @@ grid = MultiCircuit()
 # Add buses
 bus1 = Bus('Bus 1', vnom=20)
 # bus1.is_slack = True
-bus1.controlled_generators.append(ControlledGenerator('Slack Generator', voltage_module=1.0))
+bus1.controlled_generators.append(Generator('Slack Generator', voltage_module=1.0))
 grid.add_bus(bus1)
 
 bus2 = Bus('Bus 2', vnom=20)

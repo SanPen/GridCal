@@ -271,7 +271,7 @@ class OptimalPowerFlowTimeSeries(QThread):
             self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
                                                              m=len(self.grid.branches),
                                                              nt=len(self.grid.time_profile),
-                                                             ngen=len(self.grid.get_controlled_generators()),
+                                                             ngen=len(self.grid.get_generators()),
                                                              nbat=len(self.grid.get_batteries()),
                                                              nload=len(self.grid.get_loads()),
                                                              time=self.grid.time_profile)

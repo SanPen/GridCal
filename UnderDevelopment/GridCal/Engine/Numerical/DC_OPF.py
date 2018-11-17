@@ -733,7 +733,7 @@ class DcOpf:
                                    * self.numerical_circuit.battery_enabled) == True)[0]
 
         # get the devices
-        self.controlled_generators = self.multi_circuit.get_controlled_generators()
+        self.controlled_generators = self.multi_circuit.get_generators()
         self.batteries = self.multi_circuit.get_batteries()
         self.loads = self.multi_circuit.get_loads()
 

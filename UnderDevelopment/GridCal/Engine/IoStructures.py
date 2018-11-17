@@ -68,8 +68,8 @@ class ResultTypes(Enum):
     BusPower = 'Bus power', DeviceType.BusDevice
     BranchOverloads = 'Branch overloads', DeviceType.BranchDevice
     LoadShedding = 'Load shedding', DeviceType.LoadDevice
-    ControlledGeneratorShedding = 'Controlled generator shedding', DeviceType.ControlledGeneratorDevice
-    ControlledGeneratorPower = 'Controlled generator power', DeviceType.ControlledGeneratorDevice
+    ControlledGeneratorShedding = 'Controlled generator shedding', DeviceType.GeneratorDevice
+    ControlledGeneratorPower = 'Controlled generator power', DeviceType.GeneratorDevice
 
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice

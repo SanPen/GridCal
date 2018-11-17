@@ -89,18 +89,18 @@ def parse_json_data(data):
                 bus = bus_id[element["bus"]]
 
                 # create a load in the bus
-                elm = ControlledGenerator(name=element['name'],
-                                          active_power=element["P"],
-                                          voltage_module=element["vset"],
-                                          Qmin=element['qmin'],
-                                          Qmax=element['qmax'],
-                                          Snom=element['Snom'],
-                                          power_prof=None,
-                                          vset_prof=None,
-                                          active=element['active'],
-                                          p_min=0.0,
-                                          p_max=element['Snom'],
-                                          op_cost=1.0)
+                elm = Generator(name=element['name'],
+                                active_power=element["P"],
+                                voltage_module=element["vset"],
+                                Qmin=element['qmin'],
+                                Qmax=element['qmax'],
+                                Snom=element['Snom'],
+                                power_prof=None,
+                                vset_prof=None,
+                                active=element['active'],
+                                p_min=0.0,
+                                p_max=element['Snom'],
+                                op_cost=1.0)
                 bus.controlled_generators.append(elm)
 
             elif element["type"] == "static_gen":

@@ -50,17 +50,17 @@ def test_pv_2():
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)
-    UT = ControlledGenerator(name="Utility")
+    UT = Generator(name="Utility")
     UT.bus = POI
-    grid.add_controlled_generator(POI, UT)
+    grid.add_generator(POI, UT)
 
-    M32 = ControlledGenerator(name="M32",
-                              active_power=4.2,
-                              voltage_module=1.025,
-                              Qmin=-2.5,
-                              Qmax=2.5)
+    M32 = Generator(name="M32",
+                    active_power=4.2,
+                    voltage_module=1.025,
+                    Qmin=-2.5,
+                    Qmax=2.5)
     M32.bus = B_LV_M32
-    grid.add_controlled_generator(B_LV_M32, M32)
+    grid.add_generator(B_LV_M32, M32)
 
     # Create transformer types
     s = 100 # MVA
@@ -138,8 +138,8 @@ def test_pv_2():
     print(f"Solution: {solution}")
     print()
 
-    print("Controlled generators:")
-    for g in grid.get_controlled_generators():
+    print("Generators:")
+    for g in grid.get_generators():
         print(f" - Generator {g}: q_min={g.Qmin} MVAR, q_max={g.Qmax} MVAR")
     print()
 

@@ -74,17 +74,17 @@ grid.add_load(bus5, Load(power=complex(50, 20)))
 # Add the generators
 ########################################################################################################################
 
-g1 = ControlledGenerator(name='gen',
-                         active_power=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
-                         voltage_module=1.0,  # Voltage set point to control
-                         Qmin=-9999,  # minimum reactive power in MVAr
-                         Qmax=9999,  # Maximum reactive power in MVAr
-                         Snom=9999,  # Nominal power in MVA
-                         power_prof=None,  # power profile
-                         vset_prof=None,  # voltage set point profile
-                         active=True  # Is active?
-                         )
-grid.add_controlled_generator(bus1, g1)
+g1 = Generator(name='gen',
+               active_power=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
+               voltage_module=1.0,  # Voltage set point to control
+               Qmin=-9999,  # minimum reactive power in MVAr
+               Qmax=9999,  # Maximum reactive power in MVAr
+               Snom=9999,  # Nominal power in MVA
+               power_prof=None,  # power profile
+               vset_prof=None,  # voltage set point profile
+               active=True  # Is active?
+               )
+grid.add_generator(bus1, g1)
 
 ########################################################################################################################
 # Add the lines

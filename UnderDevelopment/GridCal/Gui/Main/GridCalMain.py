@@ -1448,9 +1448,9 @@ class MainGUI(QMainWindow):
             mdl = ObjectsModel(self.circuit.get_static_generators(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
-        elif elm_type == 'Controlled Generators':
-            elm = ControlledGenerator()
-            mdl = ObjectsModel(self.circuit.get_controlled_generators(), elm.edit_headers, elm.units, elm.edit_types,
+        elif elm_type == 'Generators':
+            elm = Generator()
+            mdl = ObjectsModel(self.circuit.get_generators(), elm.edit_headers, elm.units, elm.edit_types,
                                parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         elif elm_type == 'Batteries':
@@ -1584,7 +1584,7 @@ class MainGUI(QMainWindow):
         Profile importer
         """
 
-        # Load(), StaticGenerator(), ControlledGenerator(), Battery(), Shunt()
+        # Load(), StaticGenerator(), Generator(), Battery(), Shunt()
 
         dev_type = self.ui.profile_device_type_comboBox.currentText()
         magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
@@ -1599,8 +1599,8 @@ class MainGUI(QMainWindow):
             objects = self.circuit.get_static_generators()
             also_reactive_power = True
 
-        elif dev_type == 'ControlledGenerator':
-            objects = self.circuit.get_controlled_generators()
+        elif dev_type == 'Generator':
+            objects = self.circuit.get_generators()
             also_reactive_power = False
 
         elif dev_type == 'Battery':
@@ -1669,8 +1669,8 @@ class MainGUI(QMainWindow):
         elif dev_type == 'StaticGenerator':
             objects = self.circuit.get_static_generators()
 
-        elif dev_type == 'ControlledGenerator':
-            objects = self.circuit.get_controlled_generators()
+        elif dev_type == 'Generator':
+            objects = self.circuit.get_generators()
 
         elif dev_type == 'Battery':
             objects = self.circuit.get_batteries()
@@ -1717,8 +1717,8 @@ class MainGUI(QMainWindow):
         elif dev_type == 'StaticGenerator':
             objects = self.circuit.get_static_generators()
 
-        elif dev_type == 'ControlledGenerator':
-            objects = self.circuit.get_controlled_generators()
+        elif dev_type == 'Generator':
+            objects = self.circuit.get_generators()
 
         elif dev_type == 'Battery':
             objects = self.circuit.get_batteries()
@@ -1890,7 +1890,7 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue('Power flow', self.power_flow.pf.logger)
                 dlg.exec_()
 
-            self.msg('There are no power flow results.\nIs there any slack bus or controlled generator?', 'Power flow')
+            self.msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
         self.UNLOCK()
@@ -2921,7 +2921,7 @@ class MainGUI(QMainWindow):
                 names = self.circuit.branch_names
             elif study_type.value[1] == DeviceType.BusDevice.LoadDevice:
                 names = self.circuit.get_load_names()
-            elif study_type.value[1] == DeviceType.BusDevice.ControlledGeneratorDevice:
+            elif study_type.value[1] == DeviceType.BusDevice.GeneratorDevice:
                 names = self.circuit.get_controlled_generator_names()
             elif study_type.value[1] == DeviceType.BusDevice.BatteryDevice:
                 names = self.circuit.get_battery_names()

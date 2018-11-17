@@ -133,7 +133,7 @@ class PSSeGrid:
             bus = psse_bus_dict[psse_gen.I]
             api_obj = psse_gen.get_object(logger)
 
-            circuit.add_controlled_generator(bus, api_obj)
+            circuit.add_generator(bus, api_obj)
 
         # ---------------------------------------------------------------------
         # Branches
@@ -503,15 +503,15 @@ class PSSeGenerator:
             Gridcal Load object
         """
 
-        object = ControlledGenerator(name='Gen_' + str(self.ID),
-                                     active_power=self.PG,
-                                     voltage_module=self.VS,
-                                     Qmin=self.QB,
-                                     Qmax=self.QT,
-                                     Snom=self.MBASE,
-                                     power_prof=None,
-                                     vset_prof=None,
-                                     active=bool(self.STAT))
+        object = Generator(name='Gen_' + str(self.ID),
+                           active_power=self.PG,
+                           voltage_module=self.VS,
+                           Qmin=self.QB,
+                           Qmax=self.QT,
+                           Snom=self.MBASE,
+                           power_prof=None,
+                           vset_prof=None,
+                           active=bool(self.STAT))
 
         return object
 

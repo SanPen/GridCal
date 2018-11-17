@@ -261,13 +261,13 @@ class Graph:
 
 class NumericalCircuit:
 
-    def __init__(self, n_bus, n_br, n_ld, n_ctrl_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase, Tc=25):
+    def __init__(self, n_bus, n_br, n_ld, n_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase, Tc=25):
         """
         Topology constructor
         :param n_bus: number of nodes
         :param n_br: number of branches
         :param n_ld: number of loads
-        :param n_ctrl_gen: number of generators
+        :param n_gen: number of generators
         :param n_sta_gen: number of generators
         :param n_batt: number of generators
         :param n_sh: number of shunts
@@ -287,7 +287,7 @@ class NumericalCircuit:
 
         self.n_batt = n_batt
 
-        self.n_ctrl_gen = n_ctrl_gen
+        self.n_ctrl_gen = n_gen
 
         # base power
         self.Sbase = Sbase
@@ -394,23 +394,26 @@ class NumericalCircuit:
         self.C_sta_gen_bus = lil_matrix((n_sta_gen, n_bus), dtype=int)
 
         # controlled generator
-        self.controlled_gen_names = np.empty(n_ctrl_gen, dtype=object)
-        self.controlled_gen_power = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_voltage = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_qmin = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_qmax = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_pmin = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_pmax = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_enabled = np.zeros(n_ctrl_gen, dtype=bool)
-        self.controlled_gen_dispatchable = np.zeros(n_ctrl_gen, dtype=bool)
+        self.generator_names = np.empty(n_gen, dtype=object)
+        self.generator_power = np.zeros(n_gen, dtype=float)
+        self.generator_power_factor = np.zeros(n_gen, dtype=float)
+        self.generator_voltage = np.zeros(n_gen, dtype=float)
+        self.generator_qmin = np.zeros(n_gen, dtype=float)
+        self.generator_qmax = np.zeros(n_gen, dtype=float)
+        self.generator_pmin = np.zeros(n_gen, dtype=float)
+        self.generator_pmax = np.zeros(n_gen, dtype=float)
+        self.generator_enabled = np.zeros(n_gen, dtype=bool)
+        self.generator_dispatchable = np.zeros(n_gen, dtype=bool)
+        self.generator_controllable = np.zeros(n_gen, dtype=bool)
 
-        self.controlled_gen_mttf = np.zeros(n_ctrl_gen, dtype=float)
-        self.controlled_gen_mttr = np.zeros(n_ctrl_gen, dtype=float)
+        self.generator_mttf = np.zeros(n_gen, dtype=float)
+        self.generator_mttr = np.zeros(n_gen, dtype=float)
 
-        self.controlled_gen_power_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
-        self.controlled_gen_voltage_profile = np.zeros((n_time, n_ctrl_gen), dtype=float)
+        self.generator_power_profile = np.zeros((n_time, n_gen), dtype=float)
+        self.generator_power_factor_profile = np.zeros((n_time, n_gen), dtype=float)
+        self.generator_voltage_profile = np.zeros((n_time, n_gen), dtype=float)
 
-        self.C_ctrl_gen_bus = lil_matrix((n_ctrl_gen, n_bus), dtype=int)
+        self.C_gen_bus = lil_matrix((n_gen, n_bus), dtype=int)
 
         # shunt
         self.shunt_names = np.empty(n_sh, dtype=object)
@@ -447,7 +450,7 @@ class NumericalCircuit:
         circuit.C_load_bus = self.C_load_bus
         circuit.C_batt_bus = self.C_batt_bus
         circuit.C_sta_gen_bus = self.C_sta_gen_bus
-        circuit.C_ctrl_gen_bus = self.C_ctrl_gen_bus
+        circuit.C_ctrl_gen_bus = self.C_gen_bus
         circuit.C_shunt_bus = self.C_shunt_bus
 
         # needed for the tap changer
@@ -462,10 +465,10 @@ class NumericalCircuit:
         circuit.tap_mod = self.tap_mod
 
         # active power control
-        circuit.controlled_gen_pmin = self.controlled_gen_pmin
-        circuit.controlled_gen_pmax = self.controlled_gen_pmax
-        circuit.controlled_gen_enabled = self.controlled_gen_enabled
-        circuit.controlled_gen_dispatchable = self.controlled_gen_dispatchable
+        circuit.controlled_gen_pmin = self.generator_pmin
+        circuit.controlled_gen_pmax = self.generator_pmax
+        circuit.controlled_gen_enabled = self.generator_enabled
+        circuit.controlled_gen_dispatchable = self.generator_dispatchable
         circuit.battery_pmin = self.battery_pmin
         circuit.battery_pmax = self.battery_pmax
         circuit.battery_Enom = self.battery_Enom
@@ -493,19 +496,23 @@ class NumericalCircuit:
             # static generators
             S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase * self.static_gen_enabled)
 
-            # controlled generators
-            S += self.C_ctrl_gen_bus.T * (self.controlled_gen_power / self.Sbase * self.controlled_gen_enabled)
+            # generators
+            pf2 = np.power(self.generator_power_factor, 2.0)
+            # compute the reactive power from the active power and the power factor
+            Q = self.generator_power * np.sqrt((1.0 - pf2) / pf2)
+            gen_S = self.generator_power + 1j * Q
+            S += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_enabled)
 
         # batteries
         if add_storage:
             S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_enabled)
 
         # Qmax
-        q_max = self.C_ctrl_gen_bus.T * (self.controlled_gen_qmax / self.Sbase)
+        q_max = self.C_gen_bus.T * (self.generator_qmax / self.Sbase)
         q_max += self.C_batt_bus.T * (self.battery_qmax/ self.Sbase)
 
         # Qmin
-        q_min = self.C_ctrl_gen_bus.T * (self.controlled_gen_qmin / self.Sbase)
+        q_min = self.C_gen_bus.T * (self.generator_qmin / self.Sbase)
         q_min += self.C_batt_bus.T * (self.battery_qmin / self.Sbase)
 
         # assign the values
@@ -533,7 +540,7 @@ class NumericalCircuit:
                 Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile / self.Sbase * self.static_gen_enabled).T
 
                 # controlled generators
-                Sbus_prof += self.C_ctrl_gen_bus.T * (self.controlled_gen_power_profile / self.Sbase * self.controlled_gen_enabled).T
+                Sbus_prof += self.C_gen_bus.T * (self.generator_power_profile / self.Sbase * self.generator_enabled).T
 
             # batteries
             if add_storage:
@@ -661,7 +668,7 @@ class NumericalCircuit:
                 self.island_branches.append(island_br_idx)
 
                 # indices of batteries and controlled generators that belong to this island
-                gen_idx = np.where(self.C_ctrl_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+                gen_idx = np.where(self.C_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
                 bat_idx = np.where(self.C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
 
                 # Get the island circuit (the bus types are computed automatically)
@@ -979,7 +986,7 @@ class MultiCircuit:
 
         self.time_profile = None
 
-        self.objects_with_profiles = [Load(), StaticGenerator(), ControlledGenerator(), Battery(), Shunt()]
+        self.objects_with_profiles = [Load(), StaticGenerator(), Generator(), Battery(), Shunt()]
 
         self.profile_magnitudes = dict()
 
@@ -1109,7 +1116,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_controlled_generators(self):
+    def get_generators(self):
         lst = list()
         for bus in self.buses:
             for elm in bus.controlled_generators:
@@ -1536,7 +1543,7 @@ class MultiCircuit:
             hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
             vals = lst[hdr].values
             for i in range(len(lst)):
-                obj = ControlledGenerator()
+                obj = Generator()
                 set_object_attributes(obj, hdr, vals[i, :])
 
                 if 'CtrlGen_P_profiles' in data.keys():
@@ -1926,8 +1933,8 @@ class MultiCircuit:
             dfs['battery'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
         # controlled generator #########################################################################################
-        con_gen = self.get_controlled_generators()
-        headers = ControlledGenerator().edit_headers
+        con_gen = self.get_generators()
+        headers = Generator().edit_headers
 
         if len(con_gen) > 0:
             obj = list()
@@ -2161,7 +2168,7 @@ class MultiCircuit:
             n_sh += len(bus.shunts)
 
         # declare the numerical circuit
-        circuit = NumericalCircuit(n_bus=n, n_br=m, n_ld=n_ld, n_ctrl_gen=n_ctrl_gen,
+        circuit = NumericalCircuit(n_bus=n, n_br=m, n_ld=n_ld, n_gen=n_ctrl_gen,
                                    n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
                                    n_time=n_time, Sbase=self.Sbase, Tc=self.temperature)
 
@@ -2171,7 +2178,7 @@ class MultiCircuit:
 
         # compile the buses and the shunt devices
         i_ld = 0
-        i_ctrl_gen = 0
+        i_gen = 0
         i_sta_gen = 0
         i_batt = 0
         i_sh = 0
@@ -2205,7 +2212,7 @@ class MultiCircuit:
 
                     if use_opf_vals:
                         # subtract the load shedding from the generation
-                        circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_ctrl_gen]
+                        circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_gen]
 
                 circuit.C_load_bus[i_ld, i] = 1
                 i_ld += 1
@@ -2225,32 +2232,36 @@ class MultiCircuit:
                 i_sta_gen += 1
 
             for elm in bus.controlled_generators:
-                circuit.controlled_gen_names[i_ctrl_gen] = elm.name
-                circuit.controlled_gen_power[i_ctrl_gen] = elm.P
-                circuit.controlled_gen_voltage[i_ctrl_gen] = elm.Vset
-                circuit.controlled_gen_qmin[i_ctrl_gen] = elm.Qmin
-                circuit.controlled_gen_qmax[i_ctrl_gen] = elm.Qmax
-                circuit.controlled_gen_pmin[i_ctrl_gen] = elm.Pmin
-                circuit.controlled_gen_pmax[i_ctrl_gen] = elm.Pmax
-                circuit.controlled_gen_enabled[i_ctrl_gen] = elm.active
-                circuit.controlled_gen_dispatchable[i_ctrl_gen] = elm.enabled_dispatch
-                circuit.controlled_gen_mttf[i_ctrl_gen] = elm.mttf
-                circuit.controlled_gen_mttr[i_ctrl_gen] = elm.mttr
+                circuit.generator_names[i_gen] = elm.name
+                circuit.generator_power[i_gen] = elm.P
+                circuit.generator_power_factor[i_gen] = elm.Pf
+                circuit.generator_voltage[i_gen] = elm.Vset
+                circuit.generator_qmin[i_gen] = elm.Qmin
+                circuit.generator_qmax[i_gen] = elm.Qmax
+                circuit.generator_pmin[i_gen] = elm.Pmin
+                circuit.generator_pmax[i_gen] = elm.Pmax
+                circuit.generator_enabled[i_gen] = elm.active
+                circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
+                circuit.generator_mttf[i_gen] = elm.mttf
+                circuit.generator_mttr[i_gen] = elm.mttr
 
                 if n_time > 0:
                     # power profile
                     if use_opf_vals:
-                        circuit.controlled_gen_power_profile[:, i_ctrl_gen] = \
-                            opf_time_series_results.controlled_generator_power[:, i_ctrl_gen]
+                        circuit.generator_power_profile[:, i_gen] = \
+                            opf_time_series_results.controlled_generator_power[:, i_gen]
                     else:
-                        circuit.controlled_gen_power_profile[:, i_ctrl_gen] = elm.Pprof.values[:, 0]
+                        circuit.generator_power_profile[:, i_gen] = elm.Pprof.values[:, 0]
+
+                    # Power factor profile
+                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pfprof.values[:, 0]
 
                     # Voltage profile
-                    circuit.controlled_gen_voltage_profile[:, i_ctrl_gen] = elm.Vsetprof.values[:, 0]
+                    circuit.generator_voltage_profile[:, i_gen] = elm.Vsetprof.values[:, 0]
 
-                circuit.C_ctrl_gen_bus[i_ctrl_gen, i] = 1
+                circuit.C_gen_bus[i_gen, i] = 1
                 circuit.V0[i] *= elm.Vset
-                i_ctrl_gen += 1
+                i_gen += 1
 
             for elm in bus.batteries:
                 # 'name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
@@ -2406,7 +2417,7 @@ class MultiCircuit:
         """
         Get set of elements and their parent nodes
         Args:
-            element_type: String {'Load', 'StaticGenerator', 'ControlledGenerator', 'Battery', 'Shunt'}
+            element_type: String {'Load', 'StaticGenerator', 'Generator', 'Battery', 'Shunt'}
 
         Returns: List of elements, list of matching parent buses
         """
@@ -2425,7 +2436,7 @@ class MultiCircuit:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif element_type == 'ControlledGenerator':
+        elif element_type == 'Generator':
             for bus in self.buses:
                 for elm in bus.controlled_generators:
                     elements.append(elm)
@@ -2510,15 +2521,15 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_controlled_generator(self, bus: Bus, api_obj=None):
+    def add_generator(self, bus: Bus, api_obj=None):
         """
         Add controlled generator to a bus
         Args:
             bus: Bus object
-            api_obj: ControlledGenerator object
+            api_obj: Generator object
         """
         if api_obj is None:
-            api_obj = ControlledGenerator()
+            api_obj = Generator()
         api_obj.bus = bus
 
         if self.time_profile is not None:

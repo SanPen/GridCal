@@ -2300,7 +2300,7 @@ class BusGraphicItem(QGraphicsRectItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.diagramScene.circuit.add_controlled_generator(self.api_object)
+            api_obj = self.diagramScene.circuit.add_generator(self.api_object)
 
         _grph = ControlledGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -2691,7 +2691,7 @@ class GridEditor(QSplitter):
 
         # set the objects list
         self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
-                             'Controlled Generators', 'Batteries', 'Shunts']
+                             'Generators', 'Batteries', 'Shunts']
 
         self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
 

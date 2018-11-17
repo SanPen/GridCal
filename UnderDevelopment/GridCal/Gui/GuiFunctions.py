@@ -121,7 +121,7 @@ class ComboDelegate(QItemDelegate):
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
-        model.setData(index, self.object_names[editor.currentIndex()])
+        model.setData(index, self.objects[editor.currentIndex()])
 
 
 class TextDelegate(QItemDelegate):

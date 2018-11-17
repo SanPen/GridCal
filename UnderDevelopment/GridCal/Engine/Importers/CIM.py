@@ -1,4 +1,4 @@
-from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, ControlledGenerator, Branch, BranchType, Load, Shunt, StaticGenerator
+from GridCal.Engine.CalculationEngine import MultiCircuit, Bus, Generator, Branch, BranchType, Load, Shunt, StaticGenerator
 from GridCal.Engine.DeviceTypes import TransformerType, Tower, BranchTemplate, BranchType, \
                                             UndergroundLineType, SequenceLineType, Wire
 from math import sqrt
@@ -1530,10 +1530,10 @@ class CIMImport:
                 name = elm.properties['name']
                 # self.add_generator(Generator(name, T1, p, vset))
 
-                gen = ControlledGenerator(name=name,
-                                          active_power=p,
-                                          voltage_module=vset)
-                circuit.add_controlled_generator(B1, gen)
+                gen = Generator(name=name,
+                                active_power=p,
+                                voltage_module=vset)
+                circuit.add_generator(B1, gen)
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)

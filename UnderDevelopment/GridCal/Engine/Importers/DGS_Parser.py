@@ -710,11 +710,11 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                 p = 0
 
             # add a generator to the bus
-            gen = ControlledGenerator(name=external['loc_name'][i].decode(codification),
-                                      active_power=p,
-                                      voltage_module=vm, Qmin=-9999, Qmax=9999, Snom=9999,
-                                      power_prof=None, vset_prof=None)
-            circuit.add_controlled_generator(bus_obj, gen)
+            gen = Generator(name=external['loc_name'][i].decode(codification),
+                            active_power=p,
+                            voltage_module=vm, Qmin=-9999, Qmax=9999, Snom=9999,
+                            power_prof=None, vset_prof=None)
+            circuit.add_generator(bus_obj, gen)
 
             # # mark the bus as pv
             # BUSES[bus1, bd.BUS_TYPE] = 2
@@ -1123,15 +1123,15 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         snom = typ['sgn'].values[0]
         vnom = synchronous_machine['usetp'][i]
         name = synchronous_machine['loc_name'][i].decode(codification)
-        gen = ControlledGenerator(name=name,
-                                  active_power=synchronous_machine['pgini'][i] * num_machines,
-                                  voltage_module=vnom,
-                                  Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
-                                  Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
-                                  Snom=snom,
-                                  power_prof=None,
-                                  vset_prof=None)
-        circuit.add_controlled_generator(bus_obj, gen)
+        gen = Generator(name=name,
+                        active_power=synchronous_machine['pgini'][i] * num_machines,
+                        voltage_module=vnom,
+                        Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
+                        Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
+                        Snom=snom,
+                        power_prof=None,
+                        vset_prof=None)
+        circuit.add_generator(bus_obj, gen)
 
         if synchronous_machine['pgini'][i] != 0:
             gen = StaticGenerator(name=name, power=complex(0, synchronous_machine['pgini'][i]))

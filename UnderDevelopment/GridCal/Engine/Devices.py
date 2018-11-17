@@ -79,7 +79,7 @@ class TimeGroups(Enum):
 class DeviceType(Enum):
     BusDevice = 1,
     BranchDevice = 2,
-    ControlledGeneratorDevice = 3,
+    GeneratorDevice = 3,
     StaticGeneratorDevice = 4,
     BatteryDevice = 5,
     ShuntDevice = 6,
@@ -261,12 +261,12 @@ class Bus:
 
         gen_on = 0
         for elm in self.controlled_generators:
-            if elm.active:
+            if elm.active and elm.is_controlled:
                 gen_on += 1
 
         batt_on = 0
         for elm in self.batteries:
-            if elm.active:
+            if elm.active and elm.is_controlled:
                 batt_on += 1
 
         if gen_on > 0:
@@ -292,169 +292,6 @@ class Bus:
                 self.type = BusMode.PQ
 
         return self.type
-
-    def get_YISV(self, index=None, with_profiles=True, use_opf_vals=False, dispatch_storage=False):
-        """
-        Compose the
-            - Z: Impedance attached to the bus
-            - I: Current attached to the bus
-            - S: Power attached to the bus
-            - V: Voltage of the bus
-        All in complex values
-        :param index: index of the Pandas DataFrame
-        :param with_profiles: also fill the profiles
-        :return: Y, I, S, V, Yprof, Iprof, Sprof
-        """
-
-        Y = complex(0, 0)
-        I = complex(0, 0)  # Positive Generates, negative consumes
-        S = complex(0, 0)  # Positive Generates, negative consumes
-        V = complex(1, 0)
-
-        y_profile = None
-        i_profile = None  # Positive Generates, negative consumes
-        s_profile = None  # Positive Generates, negative consumes
-
-        y_cdf = None
-        i_cdf = None  # Positive Generates, negative consumes
-        s_cdf = None  # Positive Generates, negative consumes
-
-        eps = 1e-20
-
-        self.Qmin_sum = 0
-        self.Qmax_sum = 0
-
-        is_v_controlled = False
-
-        # Loads
-        for elm in self.loads:
-
-            if elm.active:
-
-                if elm.Z != complex(0.0, 0.0):
-                    Y += 1 / elm.Z  # Do not touch this one!!!!! it will break the Ybus matrix, when Z=0 -> Y=0 not inf.
-                I -= elm.I  # Reverse sign convention in the load
-                S -= elm.S  # Reverse sign convention in the load
-
-                # Add the profiles
-                if with_profiles:
-
-                    elm_s_prof, elm_i_prof, elm_z_prof = elm.get_profiles(index)
-
-                    if elm_z_prof is not None:
-                        if y_profile is None:
-                            y_profile = 1.0 / (elm_z_prof.values + eps)
-                        else:
-                            y_profile += 1.0 / (elm_z_prof.values + eps)
-
-                    if elm_i_prof is not None:
-                        if i_profile is None:
-                            i_profile = -elm_i_prof.values  # Reverse sign convention in the load
-                        else:
-                            i_profile -= elm_i_prof.values  # Reverse sign convention in the load
-
-                    if elm_s_prof is not None:
-                        if s_profile is None:
-                            s_profile = -elm_s_prof.values  # Reverse sign convention in the load
-                        else:
-                            s_profile -= elm_s_prof.values  # Reverse sign convention in the load
-
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # controlled gen and batteries
-        if dispatch_storage:
-            generators = self.controlled_generators  # do not include batteries
-        else:
-            generators = self.controlled_generators + self.batteries
-
-        for elm in generators:
-
-            if elm.active:
-                # Add the generator active power
-                S += complex(elm.P, 0)
-
-                self.Qmin_sum += elm.Qmin
-                self.Qmax_sum += elm.Qmax
-
-                # Voltage of the bus
-                if not is_v_controlled:
-                    V = complex(elm.Vset, 0)
-                    is_v_controlled = True
-                else:
-                    if elm.Vset != V.real:
-                        raise Exception("Different voltage controlled generators try to control " +
-                                        "the same bus with different voltage set points")
-                    else:
-                        pass
-
-                # add the power profile
-                if with_profiles:
-                    elm_p_prof, elm_vset_prof = elm.get_profiles(index, use_opf_vals=use_opf_vals)
-                    if elm_p_prof is not None:
-                        if s_profile is None:
-                            s_profile = elm_p_prof.values  # Reverse sign convention in the load
-                        else:
-                            s_profile += elm_p_prof.values
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # set maximum reactive power limits
-        if self.Qmin_sum == 0:
-            self.Qmin_sum = -999900
-        if self.Qmax_sum == 0:
-            self.Qmax_sum = 999900
-
-        # Shunts
-        for elm in self.shunts:
-            if elm.active:
-                Y += elm.Y
-
-                # add profiles
-                if with_profiles:
-                    if elm.Yprof is not None:
-                        if y_profile is None:
-                            y_profile = elm.Yprof.values  # Reverse sign convention in the load
-                        else:
-                            y_profile += elm.Yprof.values
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # Static generators
-        for elm in self.static_generators:
-
-            if elm.active:
-                S += elm.S
-
-                # add profiles
-                if with_profiles:
-                    if elm.Sprof is not None:
-                        if s_profile is None:
-                            s_profile = elm.Sprof.values  # Reverse sign convention in the load
-                        else:
-                            s_profile += elm.Sprof.values
-                else:
-                    pass
-            else:
-                warn(elm.name + ' is not active')
-
-        # Align profiles into a common column sum based on the time axis
-        if s_profile is not None:
-            s_cdf = CDF(s_profile[:, 0])
-
-        if i_profile is not None:
-            i_cdf = CDF(i_profile[:, 0])
-
-        if y_profile is not None:
-            y_cdf = CDF(y_profile[:, 0])
-
-        return Y, I, S, V, y_profile, i_profile, s_profile, y_cdf, i_cdf, s_cdf
 
     def initialize_lp_profiles(self):
         """
@@ -1540,23 +1377,22 @@ class StaticGenerator(ReliabilityDevice):
         return self.name
 
 
-class ControlledGenerator(ReliabilityDevice):
+class Generator(ReliabilityDevice):
 
-    def __init__(self, name='gen', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999, Snom=9999,
-                 power_prof=None, vset_prof=None, active=True, p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100,
-                 enabled_dispatch=True, mttf=0.0, mttr=0.0, Ra=0.0, Xa=0.0,
-                 Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
-                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2, speed_volt=True,
-                 machine_model=DynamicModels.SynchronousGeneratorOrder4):
+    def __init__(self, name='gen', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
+                 Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None, active=True,
+                 p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True, mttf=0.0, mttr=0.0):
         """
         Voltage controlled generator
         @param name: Name of the device
         @param active_power: Active power (MW)
+        @param power_factor: Power factor
         @param voltage_module: Voltage set point (p.u.)
         @param Qmin: minimum reactive power in MVAr
         @param Qmax: maximum reactive power in MVAr
         @param Snom: Nominal power in MVA
         @param power_prof: active power profile (Pandas DataFrame)
+        @param power_factor_prof: active power profile (Pandas DataFrame)
         @param vset_prof: voltage set point profile (Pandas DataFrame)
         @param active: Is the generator active?
         @param p_min: minimum dispatchable power in MW
@@ -1565,20 +1401,7 @@ class ControlledGenerator(ReliabilityDevice):
         @param enabled_dispatch is the generator enabled for OPF?
         @param mttf: Mean time to failure
         @param mttr: Mean time to repair
-        @param Ra: armature resistance (pu)
-        @param Xa: armature reactance (pu)
-        @param Xd: d-axis reactance (p.u.)
-        @param Xq: q-axis reactance (p.u.)
-        @param Xdp: d-axis transient reactance (p.u.)
-        @param Xqp: q-axis transient reactance (p.u.)
-        @param Xdpp: d-axis subtransient reactance (pu)
-        @param Xqpp: q-axis subtransient reactance (pu)
-        @param Td0p: d-axis transient open loop time constant (s)
-        @param Tq0p: q-axis transient open loop time constant (s)
-        @param Td0pp: d-axis subtransient open loop time constant (s)
-        @param Tq0pp: q-axis subtransient open loop time constant (s)
-        @param H: machine inertia constant (MWs/MVA)
-        @param machine_model: Type of machine represented
+
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1593,21 +1416,30 @@ class ControlledGenerator(ReliabilityDevice):
         self.enabled_dispatch = enabled_dispatch
 
         # type of device
-        self.type_name = 'ControlledGenerator'
+        self.type_name = 'Generator'
 
-        self.machine_model = machine_model
+        # self.machine_model = machine_model
 
         # graphical object associated to this object
         self.graphic_obj = None
 
         # properties that hold a profile
-        self.properties_with_profile = (['P', 'Vset'], [float, float])
+        self.properties_with_profile = (['P', 'Pf', 'Vset'], [float, float, float])
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
         # Power (MVA)
         self.P = active_power
+
+        # Power factor
+        self.Pf = power_factor
+
+        # voltage set profile for this load in p.u.
+        self.Pfprof = power_factor_prof
+
+        # If this generator is voltage controlled it produces a PV node, otherwise the node remains as PQ
+        self.is_controlled = is_controlled
 
         # Nominal power in MVA (also the machine base)
         self.Snom = Snom
@@ -1637,20 +1469,20 @@ class ControlledGenerator(ReliabilityDevice):
         self.Cost = op_cost
 
         # Dynamic vars
-        self.Ra = Ra
-        self.Xa = Xa
-        self.Xd = Xd
-        self.Xq = Xq
-        self.Xdp = Xdp
-        self.Xqp = Xqp
-        self.Xdpp = Xdpp
-        self.Xqpp = Xqpp
-        self.Td0p = Td0p
-        self.Tq0p = Tq0p
-        self.Td0pp = Td0pp
-        self.Tq0pp = Tq0pp
-        self.H = H
-        self.speed_volt = speed_volt
+        # self.Ra = Ra
+        # self.Xa = Xa
+        # self.Xd = Xd
+        # self.Xq = Xq
+        # self.Xdp = Xdp
+        # self.Xqp = Xqp
+        # self.Xdpp = Xdpp
+        # self.Xqpp = Xqpp
+        # self.Td0p = Td0p
+        # self.Tq0p = Tq0p
+        # self.Td0pp = Td0pp
+        # self.Tq0pp = Tq0pp
+        # self.H = H
+        # self.speed_volt = speed_volt
         # self.base_mva = base_mva  # machine base MVA
 
         # system base power MVA
@@ -1665,15 +1497,18 @@ class ControlledGenerator(ReliabilityDevice):
         # list of variables of active power dispatch in a series of linear programs
         self.LPVar_P_prof = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom',
+        self.edit_headers = ['name', 'bus', 'active', 'is_controlled', 'P', 'Pf', 'Vset', 'Snom',
                              'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
+        self.units = ['', '', '', '', 'MW', '', 'p.u.', 'MVA',
+                      'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
 
         self.edit_types = {'name': str,
                            'bus': None,
                            'active': bool,
+                           'is_controlled': bool,
                            'P': float,
+                           'Pf': float,
                            'Vset': float,
                            'Snom': float,
                            'Qmin': float,
@@ -1686,9 +1521,11 @@ class ControlledGenerator(ReliabilityDevice):
                            'mttr': float}
 
         self.profile_f = {'P': self.create_P_profile,
+                          'Pf': self.create_Pf_profile,
                           'Vset': self.create_Vset_profile}
 
         self.profile_attr = {'P': 'Pprof',
+                             'Pf': 'Pfprof',
                              'Vset': 'Vsetprof'}
 
     def copy(self):
@@ -1698,7 +1535,7 @@ class ControlledGenerator(ReliabilityDevice):
         """
 
         # make a new instance (separated object in memory)
-        gen = ControlledGenerator()
+        gen = Generator()
 
         gen.name = self.name
 
@@ -1741,7 +1578,7 @@ class ControlledGenerator(ReliabilityDevice):
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom,
+        return [self.name, self.bus.name, self.is_controlled, self.active, self.P, self.Pf, self.Vset, self.Snom,
                 self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
@@ -1757,7 +1594,9 @@ class ControlledGenerator(ReliabilityDevice):
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
+                'is_controlled': self.is_controlled,
                 'P': self.P,
+                'Pf': self.Pf,
                 'vset': self.Vset,
                 'Snom': self.Snom,
                 'qmin': self.Qmin,
@@ -1775,21 +1614,25 @@ class ControlledGenerator(ReliabilityDevice):
             mag: String with the magnitude to assign
         """
         if mag == 'P':
-            self.create_profiles(index, arr, None)
+            self.create_profiles(index, P=arr, V=None, Pf=None)
+        if mag == 'Pf':
+            self.create_profiles(index, P=None, V=None, Pf=arr)
         elif mag == 'V':
-            self.create_profiles(index, None, arr)
+            self.create_profiles(index, P=None, V=arr, Pf=None)
         else:
             raise Exception('Magnitude ' + mag + ' not supported')
 
-    def create_profiles(self, index, P=None, V=None):
+    def create_profiles(self, index, P=None, V=None, Pf=None):
         """
         Create the load object default profiles
         Args:
             index: time index associated
             P: Active power (MW)
+            Pf: Power factor
             V: voltage set points
         """
         self.create_P_profile(index, P)
+        self.create_Pf_profile(index, Pf)
         self.create_Vset_profile(index, V)
 
     def create_P_profile(self, index, arr=None, arr_in_pu=False):
@@ -1805,6 +1648,20 @@ class ControlledGenerator(ReliabilityDevice):
         else:
             dta = np.ones(len(index)) * self.P if arr is None else arr
         self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+
+    def create_Pf_profile(self, index, arr=None, arr_in_pu=False):
+        """
+        Create power profile based on index
+        Args:
+            index: time index associated
+            arr: array of values
+            arr_in_pu: is the array in per unit?
+        """
+        if arr_in_pu:
+            dta = arr * self.Pf
+        else:
+            dta = np.ones(len(index)) * self.Pf if arr is None else arr
+        self.Pfprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def initialize_lp_vars(self):
         """
@@ -1854,6 +1711,8 @@ class ControlledGenerator(ReliabilityDevice):
         if index is not None:
             if self.Pprof is None:
                 self.create_P_profile(index)
+            if self.Pfprof is None:
+                self.create_Pf_profile(index)
             if self.Vsetprof is None:
                 self.create_Vset_profile(index)
 
@@ -1906,25 +1765,26 @@ class ControlledGenerator(ReliabilityDevice):
         return self.name
 
 
-class Battery(ControlledGenerator):
+class Battery(Generator):
 
-    def __init__(self, name='batt', active_power=0.0, voltage_module=1.0, Qmin=-9999, Qmax=9999,
-                 Snom=9999, Enom=9999, p_min=-9999, p_max=9999, op_cost=1.0,
-                 power_prof=None, vset_prof=None, active=True, Sbase=100, enabled_dispatch=True,
-                 mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
-                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
-                 Ra=0.0, Xa=0.0, Xd=1.68, Xq=1.61, Xdp=0.32, Xqp=0.32, Xdpp=0.2, Xqpp=0.2,
-                 Td0p=5.5, Tq0p=4.60375, Td0pp=0.0575, Tq0pp=0.0575, H=2 ):
+    def __init__(self, name='batt', active_power=0.0, power_factor=0.8, voltage_module=1.0,
+                 is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999, p_min=-9999, p_max=9999,
+                 op_cost=1.0, power_prof=None, power_factor_prof=None, vset_prof=None, active=True, Sbase=100,
+                 enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
+                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
         """
         Battery (Voltage controlled and dispatchable)
         :param name: Name of the device
         :param active_power: Active power (MW)
+        :param power_factor: power factor
         :param voltage_module: Voltage set point (p.u.)
+        :param: is_voltage_controlled: Is the unit voltage controlled (if so, the connection bus becomes a PV bus)
         :param Qmin: minimum reactive power in MVAr
         :param Qmax: maximum reactive power in MVAr
         :param Snom: Nominal power in MVA
         :param Enom: Nominal energy in MWh
         :param power_prof: active power profile (Pandas DataFrame)
+        :param power_factor_prof: power factor profile
         :param vset_prof: voltage set point profile (Pandas DataFrame)
         :param active: Is the generator active?
         :param p_min: minimum dispatchable power in MW
@@ -1941,32 +1801,22 @@ class Battery(ControlledGenerator):
         :param charge_per_cycle: per unit of power to take per cycle when charging
         :param discharge_per_cycle: per unit of power to deliver per cycle when charging
         """
-        ControlledGenerator.__init__(self, name=name,
-                                     active_power=active_power,
-                                     voltage_module=voltage_module,
-                                     Qmin=Qmin, Qmax=Qmax, Snom=Snom,
-                                     power_prof=power_prof,
-                                     vset_prof=vset_prof,
-                                     active=active,
-                                     p_min=p_min, p_max=p_max,
-                                     op_cost=op_cost,
-                                     Sbase=Sbase,
-                                     enabled_dispatch=enabled_dispatch,
-                                     mttf=mttf,
-                                     mttr=mttr,
-                                     Ra=Ra,
-                                     Xa=Xa,
-                                     Xd=Xd,
-                                     Xq=Xq,
-                                     Xdp=Xdp,
-                                     Xqp=Xqp,
-                                     Xdpp=Xdpp,
-                                     Xqpp=Xqpp,
-                                     Td0p=Td0p,
-                                     Tq0p=Tq0p,
-                                     Td0pp=Td0pp,
-                                     Tq0pp=Tq0pp,
-                                     H=H)
+        Generator.__init__(self, name=name,
+                           active_power=active_power,
+                           power_factor=power_factor,
+                           voltage_module=voltage_module,
+                           is_controlled=is_controlled,
+                           Qmin=Qmin, Qmax=Qmax, Snom=Snom,
+                           power_prof=power_prof,
+                           power_factor_prof=power_factor_prof,
+                           vset_prof=vset_prof,
+                           active=active,
+                           p_min=p_min, p_max=p_max,
+                           op_cost=op_cost,
+                           Sbase=Sbase,
+                           enabled_dispatch=enabled_dispatch,
+                           mttf=mttf,
+                           mttr=mttr)
 
         # type of this device
         self.type_name = 'Battery'

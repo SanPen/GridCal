@@ -13,7 +13,7 @@ power_flow = PowerFlow(grid, options)
 power_flow.run()
 
 
-dynamic_devices = circuit.get_controlled_generators()
+dynamic_devices = circuit.get_generators()
 bus_indices = [circuit.buses_dict[elm.bus] for elm in dynamic_devices]
 
 res = dynamic_simulation(n=len(circuit.buses),
