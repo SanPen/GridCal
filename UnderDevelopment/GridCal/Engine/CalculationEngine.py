@@ -500,9 +500,6 @@ class NumericalCircuit:
             pf2 = np.power(self.generator_power_factor, 2.0)
             # compute the reactive power from the active power and the power factor
             pf_sign = (self.generator_power_factor + 1e-20) / np.abs(self.generator_power_factor + 1e-20)
-            # pf_idx = np.where(self.generator_power_factor != 0.0)[0]
-            # Q = np.zeros(len(self.generator_power_factor))
-            # Q[pf_idx] = pf_sign[pf_idx] * self.generator_power[pf_idx] * np.sqrt((1.0 - pf2[pf_idx]) / (pf2[pf_idx]))
             Q = pf_sign * self.generator_power * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
             gen_S = self.generator_power + 1j * Q
             S += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_enabled)
@@ -543,8 +540,13 @@ class NumericalCircuit:
                 # static generators
                 Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile / self.Sbase * self.static_gen_enabled).T
 
-                # controlled generators
-                Sbus_prof += self.C_gen_bus.T * (self.generator_power_profile / self.Sbase * self.generator_enabled).T
+                # generators
+                pf2 = np.power(self.generator_power_factor_profile, 2.0)
+                # compute the reactive power from the active power and the power factor
+                pf_sign = (self.generator_power_factor_profile + 1e-20) / np.abs(self.generator_power_factor_profile + 1e-20)
+                Q = pf_sign * self.generator_power_profile * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
+                gen_S = self.generator_power_profile + 1j * Q
+                Sbus_prof += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_enabled).T
 
             # batteries
             if add_storage:
@@ -1555,6 +1557,13 @@ class MultiCircuit:
                     idx = data['CtrlGen_P_profiles'].index
                     # obj.Pprof = pd.DataFrame(data=val, index=idx)
                     obj.create_P_profile(index=idx, arr=val)
+                    obj.create_Pf_profile(index=idx)  # also create the Pf array because there might not be value sin the file
+
+                if 'CtrlGen_Pf_profiles' in data.keys():
+                    val = data['CtrlGen_Pf_profiles'].values[:, i]
+                    idx = data['CtrlGen_Pf_profiles'].index
+                    # obj.Pprof = pd.DataFrame(data=val, index=idx)
+                    obj.create_Pf_profile(index=idx, arr=val)
 
                 if 'CtrlGen_Vset_profiles' in data.keys():
                     val = data['CtrlGen_Vset_profiles'].values[:, i]
