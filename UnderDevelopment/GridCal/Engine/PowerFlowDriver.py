@@ -558,7 +558,7 @@ class PowerFlowMP:
         Vnew = V.copy()
         types_new = types.copy()
         any_control_issue = False
-        precision = 5 # Could be tweaked
+        precision = 4
 
 #        if verbose:
 #            print(f"Q = {Q}")
