@@ -527,7 +527,7 @@ class PowerFlowMP:
 
         The steepness factor k was set through trial an error.
         """
-        k = 100
+        k = 10
         return 2 * (1 / (1 + exp(-k * abs(V2 - V1))) - 0.5)
 
     def iterate_pv_control(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
@@ -558,7 +558,7 @@ class PowerFlowMP:
         Vnew = V.copy()
         types_new = types.copy()
         any_control_issue = False
-        precision = 4 # Could be tweaked
+        precision = 5 # Could be tweaked
 
 #        if verbose:
 #            print(f"Q = {Q}")
