@@ -413,7 +413,7 @@ def load_dpx(file_name,contraction_factor=1000):
                 name = 'LD' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
                 q = float(df['Q'].values[i]) * Sbase
-                load = Load(name=name, power=complex(p, q))
+                load = Load(name=name, P=p, Q=q)
 
                 circuit.add_load(bus, load)
 
@@ -477,7 +477,7 @@ def load_dpx(file_name,contraction_factor=1000):
                 name = 'LD' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
                 q = float(df['Q'].values[i]) * Sbase
-                load = Load(name=name, power=complex(p, q))
+                load = Load(name=name, P=p, Q=q)
 
                 circuit.add_bus(bus)
                 circuit.add_load(bus, load)

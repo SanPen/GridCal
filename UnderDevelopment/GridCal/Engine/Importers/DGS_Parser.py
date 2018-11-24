@@ -734,10 +734,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         elif external['bustp'].values[i] == b'PQ':
             # Add a load to the bus
             load = Load(name=external['loc_name'][i].decode(codification),
-                        impedance=complex(0, 0),
-                        current=complex(0, 0),
-                        power=complex(external['pgini'].values[i], external['qgini'].values[i]),
-                        impedance_prof=None, current_prof=None, power_prof=None)
+                        P=external['pgini'].values[i],
+                        Q=external['qgini'].values[i])
             circuit.add_load(bus_obj, load)
 
             # BUSES[bus1, bd.BUS_TYPE] = 1
@@ -986,10 +984,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
             q = loads_Q[i] * scale[i]  # in MVA
 
             load = Load(name=loads['loc_name'][i].decode(codification),
-                        impedance=complex(0, 0),
-                        current=complex(0, 0),
-                        power=complex(p, q),
-                        impedance_prof=None, current_prof=None, power_prof=None)
+                        P=p,
+                        Q=q)
 
             circuit.add_load(bus_obj, load)
 

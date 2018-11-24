@@ -53,12 +53,18 @@ grid.add_bus(bus5)
 
 # we'll define the first load completely
 l2 = Load(name='Load',
-          impedance=complex(0, 0),  # Impedance of the ZIP model in MVA at the nominal voltage
-          current=complex(0, 0),  # Current of the ZIP model in MVA at the nominal voltage
-          power=complex(40, 20),  # Power of the ZIP model in MVA
-          impedance_prof=None,  # Impedance profile
-          current_prof=None,  # Current profile
-          power_prof=None,  # Power profile
+          G=0,  # Impedance of the ZIP model in MVA at the nominal voltage
+          B=0,
+          Ir=0,
+          Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
+          P=40,
+          Q=20,  # Power of the ZIP model in MVA
+          P_prof=None,  # Impedance profile
+          Q_prof=None,  # Current profile
+          Ir_prof=None,  # Power profile
+          Ii_prof=None,
+          G_prof=None,
+          B_prof=None,
           active=True,  # Is active?
           mttf=0.0,  # Mean time to failure
           mttr=0.0  # Mean time to recovery
@@ -66,9 +72,9 @@ l2 = Load(name='Load',
 grid.add_load(bus2, l2)
 
 # Define the others with the default parameters
-grid.add_load(bus3, Load(power=complex(25, 15)))
-grid.add_load(bus4, Load(power=complex(40, 20)))
-grid.add_load(bus5, Load(power=complex(50, 20)))
+grid.add_load(bus3, Load(P=25, Q=15))
+grid.add_load(bus4, Load(P=40, Q=20))
+grid.add_load(bus5, Load(P=50, Q=20))
 
 ########################################################################################################################
 # Add the generators

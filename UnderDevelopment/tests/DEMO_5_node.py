@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from GridCal.Engine.CalculationEngine import *
+from GridCal.Engine.All import *
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
@@ -28,19 +28,19 @@ bus1.controlled_generators.append(Generator('Slack Generator', voltage_module=1.
 grid.add_bus(bus1)
 
 bus2 = Bus('Bus 2', vnom=20)
-bus2.loads.append(Load('load 2', power=complex(40, 20)))
+bus2.loads.append(Load('load 2', P=40, Q=20))
 grid.add_bus(bus2)
 
 bus3 = Bus('Bus 3', vnom=20)
-bus3.loads.append(Load('load 3', power=complex(25, 15)))
+bus3.loads.append(Load('load 3', P=25, Q=15))
 grid.add_bus(bus3)
 
 bus4 = Bus('Bus 4', vnom=20)
-bus4.loads.append(Load('load 4', power=complex(40, 20)))
+bus4.loads.append(Load('load 4', P=40, Q=20))
 grid.add_bus(bus4)
 
 bus5 = Bus('Bus 5', vnom=20)
-bus5.loads.append(Load('load 5', power=complex(50, 20)))
+bus5.loads.append(Load('load 5', P=50, Q=20))
 grid.add_bus(bus5)
 
 
@@ -60,20 +60,16 @@ grid.add_branch(Branch(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
 grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
 
 
-grid.compile()
-
-print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())
-
-options = PowerFlowOptions(SolverType.HELM, verbose=False, robust=False)
+options = PowerFlowOptions(SolverType.NR, verbose=False)
 power_flow = PowerFlow(grid, options)
 power_flow.run()
 
 print('\n\n', grid.name)
-print('\t|V|:', abs(grid.power_flow_results.voltage))
-print('\t|Sbranch|:', abs(grid.power_flow_results.Sbranch))
-print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
-print('\terr:', grid.power_flow_results.error)
-print('\tConv:', grid.power_flow_results.converged)
+print('\t|V|:', abs(power_flow.results.voltage))
+print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+print('\t|loading|:', abs(power_flow.results.loading) * 100)
+print('\terr:', power_flow.results.error)
+print('\tConv:', power_flow.results.converged)
 
 grid.plot_graph()
 plt.show()

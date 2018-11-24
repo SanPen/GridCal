@@ -339,7 +339,8 @@ def interpret_data_v1(circuit, data):
 
     # load profiles
     if 'Lprof' in data.keys():
-        Sprof = data['Lprof'] + 1j * data['LprofQ']
+        Pprof = data['Lprof']
+        Qprof = data['LprofQ']
         are_load_prfiles = True
         print('There are load profiles')
     else:
@@ -371,12 +372,15 @@ def interpret_data_v1(circuit, data):
 
         # Add the load
         if table[i, e.PD] != 0 or table[i, e.QD] != 0:
-            load = Load(power=table[i, e.PD] + 1j * table[i, e.QD])
+            load = Load(P=table[i, e.PD], Q=table[i, e.QD])
             load.bus = bus
             if are_load_prfiles:  # set the profile
-                load.Sprof = pd.DataFrame(data=Sprof[:, i],
-                                          index=master_time_array,
-                                          columns=['Load@' + names[i]])
+                load.P_prof = pd.DataFrame(data=Pprof[:, i],
+                                           index=master_time_array,
+                                           columns=['Load@' + names[i]])
+                load.Q_prof = pd.DataFrame(data=Qprof[:, i],
+                                           index=master_time_array,
+                                           columns=['Load@' + names[i]])
             bus.loads.append(load)
 
         # Add the shunt

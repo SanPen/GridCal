@@ -74,12 +74,12 @@ def parse_json_data(data):
 
                 # create a load in the bus
                 elm = Load(name=element['name'],
-                           impedance=complex(element["Zr"], element["Zi"]),
-                           current=complex(element["Ir"], element["Ii"]),
-                           power=complex(element["P"], element["Q"]),
-                           impedance_prof=None,
-                           current_prof=None,
-                           power_prof=None,
+                           G=element["G"],
+                           B=element["B"],
+                           Ir=element["Ir"],
+                           Ii=element["Ii"],
+                           P=element["P"],
+                           Q=element["Q"],
                            active=element['active'])
                 bus.loads.append(elm)
 

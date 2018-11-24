@@ -1460,9 +1460,9 @@ class CIMImport:
                     name = 'Some load'
 
                 load = Load(name=name,
-                            impedance=complex(0, 0),
-                            current=complex(0, 0),
-                            power=complex(p, q))
+                            G=0, B=0,
+                            Ir=0, Ii=0,
+                            P=p, Q=q)
                 circuit.add_load(B1, load)
 
                 # add class to recognised objects

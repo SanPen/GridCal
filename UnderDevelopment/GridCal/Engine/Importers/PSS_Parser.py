@@ -318,12 +318,7 @@ class PSSeLoad:
         p, q = self.PL, self.QL
 
         object = Load(name='Load ' + self.ID,
-                      impedance=complex(g, b),
-                      current=complex(ir, ii),
-                      power=complex(p, q),
-                      impedance_prof=None,
-                      current_prof=None,
-                      power_prof=None)
+                      G=g, B=b, Ir=ir, Ii=ii, P=p, Q=q)
 
         return object
 

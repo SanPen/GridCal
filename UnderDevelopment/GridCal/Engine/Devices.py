@@ -1005,15 +1005,30 @@ class Branch(ReliabilityDevice):
 
 class Load(ReliabilityDevice):
 
-    def __init__(self, name='Load', impedance=complex(0, 0), current=complex(0, 0), power=complex(0, 0),
-                 impedance_prof=None, current_prof=None, power_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0,
+                 G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
+                 active=True, mttf=0.0, mttr=0.0):
         """
         Load model constructor
         This model implements the so-called ZIP model
         composed of an impedance value, a current value and a power value
-        @param impedance: Impedance complex (Ohm)
-        @param current: Current complex (kA)
-        @param power: Power complex (MVA)
+        Args:
+            name:
+            G: Conductance in equivalent MW
+            B: Susceptance in equivalent MVAr
+            Ir: Real current equivalent in MW
+            Ii: Imaginary current equivalent in MVAr
+            P: Power in MW
+            Q: Reactive power in MVAr
+            G_prof:
+            B_prof:
+            Ir_prof:
+            Ii_prof:
+            P_prof:
+            Q_prof:
+            active: is active?
+            mttf: Mean time to failure (h)
+            mttr: Meat time to recovery (h)
         """
 
         ReliabilityDevice.__init__(self, mttf, mttr)
@@ -1024,75 +1039,73 @@ class Load(ReliabilityDevice):
 
         self.type_name = 'Load'
 
-        self.properties_with_profile = (['S', 'I', 'Z'], [complex, complex, complex])
+        self.properties_with_profile = (['P', 'Q', 'Ir', 'Ii', 'G', 'B'],
+                                        [float, float, float, float, float, float])
 
         self.graphic_obj = None
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        self.Z = impedance
-
-        if impedance.real != 0 or impedance.imag != 0.0:
-            self.Y = 1 / impedance
-        else:
-            self.Y = complex(0, 0)
-
-        # Current (kA)
-        self.I = current
-
-        # Power (MVA)
-        # MVA = kV * kA
-        self.S = power
-
-        # impedances profile for this load
-        self.Zprof = impedance_prof
-
-        # Current profiles for this load
-        self.Iprof = current_prof
-
-        # power profile for this load
-        self.Sprof = power_prof
+        # Impedance in equivalent MVA
+        self.G = G
+        self.B = B
+        self.Ir = Ir
+        self.Ii = Ii
+        self.P = P
+        self.Q = Q
+        self.G_prof = G_prof
+        self.B_prof = B_prof
+        self.Ir_prof = Ir_prof
+        self.Ii_prof = Ii_prof
+        self.P_prof = P_prof
+        self.Q_prof = Q_prof
 
         self.graphic_obj = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'Z', 'I', 'S', 'mttf', 'mttr']
+        self.edit_headers = ['name', 'bus', 'active', 'P', 'Q', 'Ir', 'Ii', 'G', 'B', 'mttf', 'mttr']
 
-        self.units = ['', '', '', 'MVA', 'MVA', 'MVA', 'h', 'h']  # ['', '', 'Ohm', 'kA', 'MVA']
+        self.units = ['', '', '', 'MW', 'MVAr', 'MW', 'MVAr', 'MW', 'MVAr', 'h', 'h']
 
         self.edit_types = {'name': str,
                            'bus': None,
                            'active': bool,
-                           'Z': complex,
-                           'I': complex,
-                           'S': complex,
+                           'P': float,
+                           'Q': float,
+                           'Ir': float,
+                           'Ii': float,
+                           'G': float,
+                           'B': float,
                            'mttf': float,
                            'mttr': float}
 
-        self.profile_f = {'S': self.create_S_profile,
-                          'I': self.create_I_profile,
-                          'Z': self.create_Z_profile}
+        self.profile_f = {'P': self.create_S_profile,
+                          'Q': self.create_S_profile,
+                          'Ir': self.create_I_profile,
+                          'Ii': self.create_I_profile,
+                          'G': self.create_Y_profile,
+                          'B': self.create_Y_profile}
 
-        self.profile_attr = {'S': 'Sprof',
-                             'I': 'Iprof',
-                             'Z': 'Zprof'}
+        self.profile_attr = {'P': 'P_prof',
+                             'Q': 'Q_prof',
+                             'Ir': 'Ir_prof',
+                             'Ii': 'Ii_prof',
+                             'G': 'G_prof',
+                             'B': 'B_prof'}
 
-    def create_profiles(self, index, S=None, I=None, Z=None):
+    def create_profiles(self, index, S=None, I=None, Y=None):
         """
         Create the load object default profiles
         Args:
-            index:
-            steps:
-
-        Returns:
-
+            index: DataFrame time index
+            S: Array of complex power values
+            I: Array of complex current values
+            Y: Array of complex admittance values
         """
 
         self.create_S_profile(index, S)
         self.create_I_profile(index, I)
-        self.create_Z_profile(index, Z)
+        self.create_Y_profile(index, Y)
 
     def create_S_profile(self, index, arr=None, arr_in_pu=False):
         """
@@ -1103,11 +1116,15 @@ class Load(ReliabilityDevice):
             arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
         """
         if arr_in_pu:
-            dta = arr * self.S
+            P = arr * self.P
+            Q = arr * self.Q
         else:
             nt = len(index)
-            dta = np.ones(nt) * self.S if arr is None else arr
-        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+            P = np.ones(nt) * self.P if arr is None else arr
+            Q = np.ones(nt) * self.Q if arr is None else arr
+
+        self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
+        self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
 
     def create_I_profile(self, index, arr, arr_in_pu=False):
         """
@@ -1118,12 +1135,17 @@ class Load(ReliabilityDevice):
             arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
         """
         if arr_in_pu:
-            dta = arr * self.I
+            Ir = arr * self.Ir
+            Ii = arr * self.Ii
         else:
-            dta = np.ones(len(index)) * self.I if arr is None else arr
-        self.Iprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+            nt = len(index)
+            Ir = np.ones(nt) * self.Ir if arr is None else arr
+            Ii = np.ones(nt) * self.Ii if arr is None else arr
 
-    def create_Z_profile(self, index, arr, arr_in_pu=False):
+        self.Ir_prof = pd.DataFrame(data=Ir, index=index, columns=[self.name])
+        self.Ii_prof = pd.DataFrame(data=Ii, index=index, columns=[self.name])
+
+    def create_Y_profile(self, index, arr, arr_in_pu=False):
         """
         Create impedance profile based on index
         Args:
@@ -1134,46 +1156,39 @@ class Load(ReliabilityDevice):
 
         """
         if arr_in_pu:
-            dta = arr * self.Z
+            G = arr * self.G
+            B = arr * self.B
         else:
-            dta = np.ones(len(index)) * self.Z if arr is None else arr
-        self.Zprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+            nt = len(index)
+            G = np.ones(nt) * self.G if arr is None else arr
+            B = np.ones(nt) * self.B if arr is None else arr
 
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Sprof is None:
-                self.create_S_profile(index)
-            if self.Iprof is None:
-                self.create_I_profile(index)
-            if self.Zprof is None:
-                self.create_Z_profile(index)
-        return self.Sprof, self.Iprof, self.Zprof
+        self.G_prof = pd.DataFrame(data=G, index=index, columns=[self.name])
+        self.B_prof = pd.DataFrame(data=B, index=index, columns=[self.name])
 
     def delete_profiles(self):
         """
         Delete the object profiles
         :return:
         """
-        self.Sprof = None
-        self.Iprof = None
-        self.Zprof = None
+        self.P_prof = None
+        self.Q_prof = None
+        self.Ir_prof = None
+        self.Ii_prof = None
+        self.G_prof = None
+        self.B_prof = None
 
     def set_profile_values(self, t):
         """
         Set the profile values at t
         :param t: time index
         """
-        self.S = self.Sprof.values[t]
-        self.I = self.Iprof.values[t]
-        self.Z = self.Zprof.values[t]
+        self.P = self.P_prof.values[t]
+        self.Q = self.Q_prof.values[t]
+        self.Ir = self.Ir_prof.values[t]
+        self.Ii = self.Ii_prof.values[t]
+        self.G = self.G_prof.values[t]
+        self.B = self.B_prof.values[t]
 
     def copy(self):
 
@@ -1181,25 +1196,29 @@ class Load(ReliabilityDevice):
 
         load.name = self.name
 
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        load.Z = self.Z
+        # Impedance (MVA)
+        load.G = self.G
+        load.B = self.B
 
-        # Current (kA)
-        load.I = self.I
+        # Current (MVA)
+        load.Ir = self.Ir
+        load.Ii = self.Ii
 
         # Power (MVA)
-        # MVA = kV * kA
-        load.S = self.S
+        load.P = self.P
+        load.Q = self.Q
 
-        # impedances profile for this load
-        load.Zprof = self.Zprof
+        # Impedance (MVA)
+        load.G_prof = self.G_prof
+        load.B_prof = self.B_prof
 
-        # Current profiles for this load
-        load.Iprof = self.Iprof
+        # Current (MVA)
+        load.Ir_prof = self.Ir_prof
+        load.Ii_prof = self.Ii_prof
 
-        # power profile for this load
-        load.Sprof = self.Sprof
+        # Power (MVA)
+        load.P_prof = self.P_prof
+        load.Q_prof = self.Q_prof
 
         load.mttf = self.mttf
 
@@ -1212,7 +1231,9 @@ class Load(ReliabilityDevice):
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.Z), str(self.I), str(self.S), self.mttf, self.mttr]
+        return [self.name, self.bus.name, self.active,
+                self.P, self.Q, self.Ir, self.Ii, self.G, self.B,
+                self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1227,12 +1248,12 @@ class Load(ReliabilityDevice):
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
-                'Zr': self.Z.real,
-                'Zi': self.Z.imag,
-                'Ir': self.I.real,
-                'Ii': self.I.imag,
-                'P': self.S.real,
-                'Q': self.S.imag}
+                'G': self.G,
+                'B': self.B,
+                'Ir': self.Ir,
+                'Ii': self.Ii,
+                'P': self.P,
+                'Q': self.Q}
 
     def __str__(self):
         return self.name

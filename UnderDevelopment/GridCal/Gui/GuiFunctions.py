@@ -791,8 +791,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-
-                df = getattr(self.elements[index.column()], self.magnitude + 'prof')
+                profile_property = self.elements[index.column()].profile_attr[self.magnitude]
+                df = getattr(self.elements[index.column()], profile_property)
                 return str(df.values[index.row(), 0])
 
         return None
@@ -807,7 +807,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
 
         if index.column() not in self.non_editable_indices:
-            getattr(self.elements[index.column()], self.magnitude + 'prof').values[index.row(), 0] = value
+            profile_property = self.elements[index.column()].profile_attr[self.magnitude]
+            getattr(self.elements[index.column()], profile_property).values[index.row(), 0] = value
         else:
             pass  # the column cannot be edited
 

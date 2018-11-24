@@ -114,7 +114,7 @@ def load_iPA(file_name):
 
             p = entry['P']  # power in MW
             q = entry['Q']
-            elm = Load(name=str(identifier), power=complex(p, q) * 1e-3)
+            elm = Load(name=str(identifier), P=p*1e-3, Q=q * 1e-3)
             circuit.add_load(bus, elm)
 
         elif tpe == 3:  # Elemento  PV
