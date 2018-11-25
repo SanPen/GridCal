@@ -38,11 +38,11 @@ class BranchTypeConverter:
 
         self.tpe = tpe
 
-        self.options = ['branch',
-                        'line',
-                        'transformer',
-                        'switch',
-                        'reactance']
+        self.options = ['Branch',
+                        'Line',
+                        'Transformer',
+                        'Switch',
+                        'Reactance']
 
         self.values = [BranchType.Branch,
                        BranchType.Line,

@@ -502,9 +502,12 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         for elm in [self.symbol, self.c1, self.c2, self.c0]:
             if elm is not None:
-                self.diagramScene.removeItem(elm)
-                # sip.delete(elm)
-                elm = None
+                try:
+                    self.diagramScene.removeItem(elm)
+                    # sip.delete(elm)
+                    elm = None
+                except:
+                    pass
 
     def update_symbol(self):
         """
@@ -650,8 +653,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         #                    parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
         #                    non_editable_indices=[1, 2])
 
-        mdl = BranchObjectModel([self.api_object], self.api_object.edit_headers,
-                                self.api_object.units, self.api_object.edit_types,
+        mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
                                 parent=self.diagramScene.parent().object_editor_table,
                                 editable=True, transposed=True,
                                 non_editable_indices=self.api_object.non_editable_indices)
