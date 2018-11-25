@@ -19,7 +19,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt, Image
-import sip
 import numpy as np
 
 from GridCal.Engine.CalculationEngine import *
@@ -48,7 +47,7 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': QtCore.Qt.yellow}
-OTHER = ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
+OTHER = ACTIVE
 FONT_SCALE = 1.9
 
 
@@ -1383,7 +1382,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
 
-class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
+class GeneratorGraphicItem(QGraphicsItemGroup):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -1394,7 +1393,7 @@ class ControlledGeneratorGraphicItem(QGraphicsItemGroup):
         # QGraphicsPolygonItem.__init__(self, parent=parent)
         # QGraphicsItemGroup.__init__(self, parent=parent)
 
-        super(ControlledGeneratorGraphicItem, self).__init__(parent)
+        super(GeneratorGraphicItem, self).__init__(parent)
 
         # self.w = 60.0
         # self.h = 60.0
@@ -1864,8 +1863,8 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         ax1.set_title('Active power profile')
         ax2.set_title('Set voltage profile')
-        ax3.set_title('Controlled active power profile')
-        ax4.set_title('Controlled energy profile')
+        ax3.set_title('Active power profile')
+        ax4.set_title('Energy profile')
 
         ax1.set_ylabel('MW')
         ax2.set_ylabel('V (p.u.)')
@@ -2096,7 +2095,7 @@ class BusGraphicItem(QGraphicsRectItem):
             self.add_static_generator(elm)
 
         for elm in self.api_object.controlled_generators:
-            self.add_controlled_generator(elm)
+            self.add_generator(elm)
 
         for elm in self.api_object.shunts:
             self.add_shunt(elm)
@@ -2143,8 +2142,8 @@ class BusGraphicItem(QGraphicsRectItem):
         ash = menu.addAction('Add shunt')
         ash.triggered.connect(self.add_shunt)
 
-        acg = menu.addAction('Add controlled generator')
-        acg.triggered.connect(self.add_controlled_generator)
+        acg = menu.addAction('Add generator')
+        acg.triggered.connect(self.add_generator)
 
         asg = menu.addAction('Add static generator')
         asg.triggered.connect(self.add_static_generator)
@@ -2243,8 +2242,7 @@ class BusGraphicItem(QGraphicsRectItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-                           self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -2293,7 +2291,7 @@ class BusGraphicItem(QGraphicsRectItem):
         self.shunt_children.append(_grph)
         self.arrange_children()
 
-    def add_controlled_generator(self, api_obj=None):
+    def add_generator(self, api_obj=None):
         """
 
         Returns:
@@ -2302,7 +2300,7 @@ class BusGraphicItem(QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.diagramScene.circuit.add_generator(self.api_object)
 
-        _grph = ControlledGeneratorGraphicItem(self, api_obj, self.diagramScene)
+        _grph = GeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()

@@ -1513,7 +1513,7 @@ class MainGUI(QMainWindow):
 
         """
         dev_type = self.ui.profile_device_type_comboBox.currentText()
-        mdl = get_list_model(self.circuit.profile_magnitudes[dev_type][0])
+        mdl = get_list_model(self.circuit.profile_magnitudes[dev_type])
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
 
     def new_profiles_structure(self):

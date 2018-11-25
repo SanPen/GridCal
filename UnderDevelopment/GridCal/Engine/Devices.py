@@ -90,15 +90,53 @@ class DeviceType(Enum):
 # Circuit classes
 ########################################################################################################################
 
+class EditableDevice:
 
-class ReliabilityDevice:
+    def __init__(self, name, active, type_name, editable_headers):
+        """
+        Class to generalize any editable device
+        :param editable_headers: dictionary of header properties {'magnitude': (unit, type)}
+        """
 
-    def __init__(self, mttf, mttr):
+        self.name = name
+
+        self.active = active
+
+        self.type_name = type_name
+
+        # associated graphic object
+        self.graphic_obj = None
+
+        self.editable_headers = editable_headers
+
+    def get_save_data(self):
+        """
+        Return the data that matches the edit_headers
+        :return:
+        """
+        return [getattr(self, name) for name in self.editable_headers.keys()]
+
+    def get_headers(self):
+        """
+        Return a list of headers
+        """
+        return list(self.editable_headers.keys())
+
+    def __str__(self):
+        return self.name
+
+class ReliabilityDevice(EditableDevice):
+
+    def __init__(self, name, active, type_name, editable_headers, mttf, mttr):
         """
         Class to provide reliability derived functionality
+        :param editable_headers: dictionary of header properties {'magnitude': (unit, type)}
         :param mttf: Mean Time To Failure (h)
         :param mttr: Mean Time To Repair (h)
         """
+
+        EditableDevice.__init__(self, name=name, active=active, type_name=type_name, editable_headers=editable_headers)
+
         self.mttf = mttf
 
         self.mttr = mttr
@@ -144,7 +182,71 @@ class ReliabilityDevice:
         return events
 
 
-class Bus:
+class InjectionDevice(ReliabilityDevice):
+
+    def __init__(self, name, bus, active, type_name, editable_headers, mttf, mttr, properties_with_profile):
+        """
+        InjectionDevice constructor
+        :param editable_headers: dictionary of header properties {'magnitude': (unit, type)}
+        :param mttf: Mean Time To Failure (h)
+        :param mttr: Mean Time To Repair (h)
+        :param properties_with_profile: dictionary with the properties with profiles {'magnitude': ('profile magnitude')}
+        """
+        ReliabilityDevice.__init__(self, name, active=active, type_name=type_name,
+                                   editable_headers=editable_headers, mttf=mttf, mttr=mttr)
+        # connection bus
+        self.bus = bus
+
+        # dictionary relating the property with the associated profile property
+        self.properties_with_profile = properties_with_profile
+
+    def create_profiles(self, index):
+        """
+        Create the load object default profiles
+        Args:
+            index: dataFrame index
+        """
+        for magnitude in self.properties_with_profile.keys():
+            self.create_profile(magnitude=magnitude, index=index)
+
+    def create_profile(self, magnitude, index, arr=None, arr_in_pu=False):
+        """
+        Create power profile based on index
+        :param magnitude: name of the property
+        :param index: pandas index
+        :param arr: array of values to set
+        :param arr_in_pu: is the array in per-unit?
+        """
+        # get the value of the magnitude
+        x = getattr(self, magnitude)
+
+        if arr_in_pu:
+            val = arr * x
+        else:
+            val = np.ones(len(index)) * x if arr is None else arr
+
+        # set the profile variable associated with the magnitude
+        df = pd.DataFrame(data=val, index=index, columns=[self.name])
+        setattr(self, self.properties_with_profile[magnitude], df)
+
+    def delete_profiles(self):
+        """
+        Delete the object profiles (set all to None)
+        """
+        for magnitude in self.properties_with_profile.keys():
+            setattr(self, self.properties_with_profile[magnitude], None)
+
+    def set_profile_values(self, t):
+        """
+        Set the profile values at t
+        :param t: time index (integer)
+        """
+        for magnitude in self.properties_with_profile.keys():
+            df = getattr(self, self.properties_with_profile[magnitude])
+            setattr(self, magnitude, df.values[t])
+
+
+class Bus(EditableDevice):
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
                  active=True, is_slack=False, area='Defualt', zone='Default', substation='Default'):
@@ -162,11 +264,30 @@ class Bus:
         :param is_slack: is this bus a slack bus?
         """
 
-        self.name = name
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=active,
+                                type_name='Bus',
+                                editable_headers={'name': ('', str),
+                                                  'active': ('', bool),
+                                                  'is_slack': ('', bool),
+                                                  'Vnom': ('', float),
+                                                  'Vmin': ('', float),
+                                                  'Vmax': ('', float),
+                                                  'Zf': ('', complex),
+                                                  'x': ('', float),
+                                                  'y': ('', float),
+                                                  'h': ('', float),
+                                                  'w': ('', float),
+                                                  'area': ('', str),
+                                                  'zone': ('', str),
+                                                  'substation': ('', str)})
 
-        self.type_name = 'Bus'
+        # self.name = name
+        #
+        # self.type_name = 'Bus'
 
-        self.properties_with_profile = None
+        # self.properties_with_profile = None
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -230,28 +351,28 @@ class Bus:
         self.w = width
 
         # associated graphic object
-        self.graphic_obj = None
-
-        self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w',
-                             'area', 'zone', 'substation']
-
-        self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px',
-                      '', '', '']
-
-        self.edit_types = {'name': str,
-                           'active': bool,
-                           'is_slack': bool,
-                           'Vnom': float,
-                           'Vmin': float,
-                           'Vmax': float,
-                           'Zf': complex,
-                           'x': float,
-                           'y': float,
-                           'h': float,
-                           'w': float,
-                           'area': str,
-                           'zone': str,
-                           'substation': str}
+        # self.graphic_obj = None
+        #
+        # self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w',
+        #                      'area', 'zone', 'substation']
+        #
+        # self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px',
+        #               '', '', '']
+        #
+        # self.edit_types = {'name': str,
+        #                    'active': bool,
+        #                    'is_slack': bool,
+        #                    'Vnom': float,
+        #                    'Vmin': float,
+        #                    'Vmax': float,
+        #                    'Zf': complex,
+        #                    'x': float,
+        #                    'y': float,
+        #                    'h': float,
+        #                    'w': float,
+        #                    'area': str,
+        #                    'zone': str,
+        #                    'substation': str}
 
     def determine_bus_type(self):
         """
@@ -650,13 +771,37 @@ class Branch(ReliabilityDevice):
         @param template: Type object template (i.e. Tower, TransformerType, etc...)
         """
 
-        super().__init__(mttf, mttr)
+        ReliabilityDevice.__init__(self, name,
+                                   active=active,
+                                   type_name='Branch',
+                                   editable_headers={'name': ('', str),
+                                                     'bus_from': ('', Bus),
+                                                     'bus_to': ('', Bus),
+                                                     'active': ('', bool),
+                                                     'rate': ('', float),
+                                                     'mttf': ('', float),
+                                                     'mttr': ('', float),
+                                                     'R': ('', float),
+                                                     'X': ('', float),
+                                                     'G': ('', float),
+                                                     'B': ('', float),
+                                                     'length': ('', float),
+                                                     'tap_module': ('', float),
+                                                     'angle': ('', float),
+                                                     'bus_to_regulated': ('', bool),
+                                                     'vset': ('', float),
+                                                     'Tb': ('', float),
+                                                     'k': ('', float),
+                                                     'branch_type': ('', BranchType),
+                                                     'template': ('', BranchTemplate)},
+                                   mttf=mttf,
+                                   mttr=mttr)
 
         # element name
-        self.name = name
+        # self.name = name
 
         # Identifier of this element type
-        self.type_name = 'Branch'
+        # self.type_name = 'Branch'
 
         # list of properties that hold a profile
         self.properties_with_profile = None
@@ -717,13 +862,13 @@ class Branch(ReliabilityDevice):
         self.bus_to_regulated = bus_to_regulated
         self.vset = vset
 
-        self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-                             'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'Tb', 'k',
-                             'branch_type', 'template']
-
-        self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-                      'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC',
-                      '', '']
+        # self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
+        #                      'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'Tb', 'k',
+        #                      'branch_type', 'template']
+        #
+        # self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
+        #               'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC',
+        #               '', '']
 
         self.non_editable_indices = [1, 2, 19]
 
@@ -736,26 +881,26 @@ class Branch(ReliabilityDevice):
 
         self.inv_conv = {val: key for key, val in self.conv.items()}
 
-        self.edit_types = {'name': str,
-                           'bus_from': Bus,
-                           'bus_to': Bus,
-                           'active': bool,
-                           'rate': float,
-                           'mttf': float,
-                           'mttr': float,
-                           'R': float,
-                           'X': float,
-                           'G': float,
-                           'B': float,
-                           'length': float,
-                           'tap_module': float,
-                           'angle': float,
-                           'bus_to_regulated': bool,
-                           'vset': float,
-                           'Tb': float,
-                           'k': float,
-                           'branch_type': BranchType,
-                           'template': BranchTemplate}
+        # self.edit_types = {'name': str,
+        #                    'bus_from': Bus,
+        #                    'bus_to': Bus,
+        #                    'active': bool,
+        #                    'rate': float,
+        #                    'mttf': float,
+        #                    'mttr': float,
+        #                    'R': float,
+        #                    'X': float,
+        #                    'G': float,
+        #                    'B': float,
+        #                    'length': float,
+        #                    'tap_module': float,
+        #                    'angle': float,
+        #                    'bus_to_regulated': bool,
+        #                    'vset': float,
+        #                    'Tb': float,
+        #                    'k': float,
+        #                    'branch_type': BranchType,
+        #                    'template': BranchTemplate}
 
     def branch_type_converter(self, val_string):
         """
@@ -1003,7 +1148,7 @@ class Branch(ReliabilityDevice):
         return self.name
 
 
-class Load(ReliabilityDevice):
+class Load(InjectionDevice):
 
     def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
@@ -1031,21 +1176,35 @@ class Load(ReliabilityDevice):
             mttr: Meat time to recovery (h)
         """
 
-        ReliabilityDevice.__init__(self, mttf, mttr)
+        InjectionDevice.__init__(self,
+                                 name=name,
+                                 bus=None,
+                                 active=active,
+                                 type_name='Load',
+                                 editable_headers={'name': ('', str),
+                                                   'bus': ('', None),
+                                                   'active': ('', bool),
+                                                   'P': ('MW', float),
+                                                   'Q': ('MVAr', float),
+                                                   'Ir': ('MW', float),
+                                                   'Ii': ('MVAr', float),
+                                                   'G': ('MW', float),
+                                                   'B': ('MVAr', float),
+                                                   'mttf': ('h', float),
+                                                   'mttr': ('h', float)},
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 properties_with_profile={'P': 'P_prof',
+                                                          'Q': 'Q_prof',
+                                                          'Ir': 'Ir_prof',
+                                                          'Ii': 'Ii_prof',
+                                                          'G': 'G_prof',
+                                                          'B': 'B_prof'})
 
-        self.name = name
+        # self.properties_with_profile = (['P', 'Q', 'Ir', 'Ii', 'G', 'B'],
+        #                                 [float, float, float, float, float, float])
 
-        self.active = active
-
-        self.type_name = 'Load'
-
-        self.properties_with_profile = (['P', 'Q', 'Ir', 'Ii', 'G', 'B'],
-                                        [float, float, float, float, float, float])
-
-        self.graphic_obj = None
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
+        # self.graphic_obj = None
 
         # Impedance in equivalent MVA
         self.G = G
@@ -1061,37 +1220,37 @@ class Load(ReliabilityDevice):
         self.P_prof = P_prof
         self.Q_prof = Q_prof
 
-        self.graphic_obj = None
+        # self.graphic_obj = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Q', 'Ir', 'Ii', 'G', 'B', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MW', 'MVAr', 'MW', 'MVAr', 'MW', 'MVAr', 'h', 'h']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'P': float,
-                           'Q': float,
-                           'Ir': float,
-                           'Ii': float,
-                           'G': float,
-                           'B': float,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'P': self.create_S_profile,
-                          'Q': self.create_S_profile,
-                          'Ir': self.create_I_profile,
-                          'Ii': self.create_I_profile,
-                          'G': self.create_Y_profile,
-                          'B': self.create_Y_profile}
-
-        self.profile_attr = {'P': 'P_prof',
-                             'Q': 'Q_prof',
-                             'Ir': 'Ir_prof',
-                             'Ii': 'Ii_prof',
-                             'G': 'G_prof',
-                             'B': 'B_prof'}
+        # self.edit_headers = ['name', 'bus', 'active', 'P', 'Q', 'Ir', 'Ii', 'G', 'B', 'mttf', 'mttr']
+        #
+        # self.units = ['', '', '', 'MW', 'MVAr', 'MW', 'MVAr', 'MW', 'MVAr', 'h', 'h']
+        #
+        # self.edit_types = {'name': str,
+        #                    'bus': None,
+        #                    'active': bool,
+        #                    'P': float,
+        #                    'Q': float,
+        #                    'Ir': float,
+        #                    'Ii': float,
+        #                    'G': float,
+        #                    'B': float,
+        #                    'mttf': float,
+        #                    'mttr': float}
+        #
+        # self.profile_f = {'P': self.create_S_profile,
+        #                   'Q': self.create_S_profile,
+        #                   'Ir': self.create_I_profile,
+        #                   'Ii': self.create_I_profile,
+        #                   'G': self.create_Y_profile,
+        #                   'B': self.create_Y_profile}
+        #
+        # self.profile_attr = {'P': 'P_prof',
+        #                      'Q': 'Q_prof',
+        #                      'Ir': 'Ir_prof',
+        #                      'Ii': 'Ii_prof',
+        #                      'G': 'G_prof',
+        #                      'B': 'B_prof'}
 
     def create_profiles(self, index, S=None, I=None, Y=None):
         """
@@ -1259,69 +1418,94 @@ class Load(ReliabilityDevice):
         return self.name
 
 
-class StaticGenerator(ReliabilityDevice):
+class StaticGenerator(InjectionDevice):
 
-    def __init__(self, name='StaticGen', power=complex(0, 0), power_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='StaticGen', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True, mttf=0.0, mttr=0.0):
+        """
+        Static generator constructor
+        :param name: Name
+        :param P: Active power in MW
+        :param Q: Reactive power in MVAr
+        :param P_prof: Profile of active power values
+        :param Q_prof: Profile of reactive power values
+        :param active: Active?
+        :param mttf: Mean time to failure (h)
+        :param mttr: MEan time to repair (h)
         """
 
-        :param name:
-        :param power:
-        :param power_prof:
-        :param active:
-        :param mttf:
-        :param mttr:
-        """
+        InjectionDevice.__init__(self,
+                                 name=name,
+                                 bus=None,
+                                 active=active,
+                                 type_name='StaticGenerator',
+                                 editable_headers={'name': ('', str),
+                                                   'bus': ('', None),
+                                                   'active': ('', bool),
+                                                   'mttf': ('', float),
+                                                   'mttr': ('', float)},
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 properties_with_profile={'P': 'P_prof',
+                                                          'Q': 'Q_prof'})
 
-        ReliabilityDevice.__init__(self, mttf, mttr)
-
-        self.name = name
-
-        self.active = active
-
-        self.type_name = 'StaticGenerator'
-
-        self.properties_with_profile = (['S'], [complex])
-
-        self.graphic_obj = None
+        # self.name = name
+        #
+        # self.active = active
+        #
+        # self.type_name = 'StaticGenerator'
+        #
+        # self.graphic_obj = None
 
         # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
+        # self.bus = None
 
-        # Power (MVA)
-        # MVA = kV * kA
-        self.S = power
+        # Power (MW + jMVAr)
+        self.P = P
+        self.Q = Q
 
         # power profile for this load
-        self.Sprof = power_prof
+        self.P_prof = P_prof
+        self.Q_prof = Q_prof
 
-        self.edit_headers = ['name', 'bus', 'active', 'S', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MVA', 'h', 'h']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'S': complex,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'S': self.create_S_profile}
-
-        self.profile_attr = {'S': 'Sprof'}
+        # self.properties_with_profile = (['P', 'Q'], [float, float])
+        #
+        # self.edit_headers = ['name', 'bus', 'active', 'P', 'Q', 'mttf', 'mttr']
+        #
+        # self.units = ['', '', '', 'MW', 'MVAr', 'h', 'h']
+        #
+        # self.edit_types = {'name': str,
+        #                    'bus': None,
+        #                    'active': bool,
+        #                    'P': float,
+        #                    'Q': float,
+        #                    'mttf': float,
+        #                    'mttr': float}
+        #
+        # self.profile_f = {'P': self.create_S_profile,
+        #                   'Q': self.create_S_profile}
+        #
+        # self.profile_attr = {'P': 'P_prof',
+        #                      'Q': 'Q_prof'}
 
     def copy(self):
         """
-
+        Deep copy of this object
         :return:
         """
-        return StaticGenerator(name=self.name, power=self.S, power_prof=self.Sprof)
+        return StaticGenerator(name=self.name,
+                               P=self.P,
+                               Q=self.Q,
+                               P_prof=self.P_prof,
+                               Q_prof=self.Q_prof,
+                               mttf=self.mttf,
+                               mttr=self.mttr)
 
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
         :return:
         """
-        return [self.name, self.bus.name, self.active, str(self.S), self.mttf, self.mttr]
+        return [self.name, self.bus.name, self.active, self.P, self.Q, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1336,8 +1520,8 @@ class StaticGenerator(ReliabilityDevice):
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
-                'P': self.S.real,
-                'Q': self.S.imag}
+                'P': self.P,
+                'Q': self.Q}
 
     def create_profiles(self, index, S=None):
         """
@@ -1354,51 +1538,60 @@ class StaticGenerator(ReliabilityDevice):
     def create_S_profile(self, index, arr, arr_in_pu=False):
         """
         Create power profile based on index
-        Args:
-            index:
-
-        Returns:
-
+        :param index: pandas index
+        :param arr: array of values to set
+        :param arr_in_pu:
+        :return:
         """
         if arr_in_pu:
-            dta = arr * self.S
+            P = arr * self.P
+            Q = arr * self.Q
         else:
-            dta = np.ones(len(index)) * self.S if arr is None else arr
-        self.Sprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+            P = np.ones(len(index)) * self.P if arr is None else arr
+            Q = np.ones(len(index)) * self.Q if arr is None else arr
 
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
+        self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
+        self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
 
-        Returns:
-            Power, Current and Impedance profiles
+    def create_profile(self, magnitude, index, arr, arr_in_pu=False):
         """
-        if index is not None:
-            if self.Sprof is None:
-                self.create_S_profile(index)
-        return self.Sprof
+        Create power profile based on index
+        :param magnitude: name of the property
+        :param index: pandas index
+        :param arr: array of values to set
+        :param arr_in_pu: is the array in per-unit?
+        """
+        x = getattr(self, magnitude)
+        x_prof = getattr(self, self.profile_attr[magnitude])
+
+        if arr_in_pu:
+            val = arr * x
+        else:
+            val = np.ones(len(index)) * x if arr is None else arr
+
+        x_prof = pd.DataFrame(data=val, index=index, columns=[self.name])
 
     def delete_profiles(self):
         """
         Delete the object profiles
         :return:
         """
-        self.Sprof = None
+        self.P_prof = None
+        self.Q_prof = None
 
     def set_profile_values(self, t):
         """
         Set the profile values at t
         :param t: time index
         """
-        self.S = self.Sprof.values[t]
+        self.P = self.P_prof.values[t]
+        self.Q = self.Q_prof.values[t]
 
     def __str__(self):
         return self.name
 
 
-class Generator(ReliabilityDevice):
+class Generator(InjectionDevice):
 
     def __init__(self, name='gen', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None, active=True,
@@ -1425,30 +1618,55 @@ class Generator(ReliabilityDevice):
 
         """
 
-        ReliabilityDevice.__init__(self, mttf, mttr)
+        InjectionDevice.__init__(self,
+                                 name=name,
+                                 bus=None,
+                                 active=active,
+                                 type_name='Generator',
+                                 editable_headers={'name': ('', str),
+                                                   'bus': ('', None),
+                                                   'active': ('', bool),
+                                                   'is_controlled': ('', bool),
+                                                   'P': ('MW', float),
+                                                   'Pf': ('', float),
+                                                   'Vset': ('p.u.', float),
+                                                   'Snom': ('MVA', float),
+                                                   'Qmin': ('MVAr', float),
+                                                   'Qmax': ('MVAr', float),
+                                                   'Pmin': ('MW', float),
+                                                   'Pmax': ('MW', float),
+                                                   'Cost': ('e/MWh', float),
+                                                   'enabled_dispatch': ('', bool),
+                                                   'mttf': ('h', float),
+                                                   'mttr': ('h', float)},
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 properties_with_profile={'P': 'Pprof',
+                                                          'Pf': 'Pfprof',
+                                                          'Vset': 'Vsetprof'})
 
         # name of the device
-        self.name = name
-
-        # is the device active for simulation?
-        self.active = active
+        # self.name = name
+        #
+        # # is the device active for simulation?
+        # self.active = active
 
         # is the device active active power dispatch?
         self.enabled_dispatch = enabled_dispatch
 
         # type of device
-        self.type_name = 'Generator'
+        # self.type_name = 'Generator'
 
         # self.machine_model = machine_model
 
         # graphical object associated to this object
-        self.graphic_obj = None
+        # self.graphic_obj = None
 
         # properties that hold a profile
-        self.properties_with_profile = (['P', 'Pf', 'Vset'], [float, float, float])
+        # self.properties_with_profile = (['P', 'Pf', 'Vset'], [float, float, float])
 
         # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
+        # self.bus = None
 
         # Power (MVA)
         self.P = active_power
@@ -1518,36 +1736,36 @@ class Generator(ReliabilityDevice):
         # list of variables of active power dispatch in a series of linear programs
         self.LPVar_P_prof = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'is_controlled', 'P', 'Pf', 'Vset', 'Snom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
-
-        self.units = ['', '', '', '', 'MW', '', 'p.u.', 'MVA',
-                      'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'is_controlled': bool,
-                           'P': float,
-                           'Pf': float,
-                           'Vset': float,
-                           'Snom': float,
-                           'Qmin': float,
-                           'Qmax': float,
-                           'Pmin': float,
-                           'Pmax': float,
-                           'Cost': float,
-                           'enabled_dispatch': bool,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'P': self.create_P_profile,
-                          'Pf': self.create_Pf_profile,
-                          'Vset': self.create_Vset_profile}
-
-        self.profile_attr = {'P': 'Pprof',
-                             'Pf': 'Pfprof',
-                             'Vset': 'Vsetprof'}
+        # self.edit_headers = ['name', 'bus', 'active', 'is_controlled', 'P', 'Pf', 'Vset', 'Snom',
+        #                      'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
+        #
+        # self.units = ['', '', '', '', 'MW', '', 'p.u.', 'MVA',
+        #               'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
+        #
+        # self.edit_types = {'name': str,
+        #                    'bus': None,
+        #                    'active': bool,
+        #                    'is_controlled': bool,
+        #                    'P': float,
+        #                    'Pf': float,
+        #                    'Vset': float,
+        #                    'Snom': float,
+        #                    'Qmin': float,
+        #                    'Qmax': float,
+        #                    'Pmin': float,
+        #                    'Pmax': float,
+        #                    'Cost': float,
+        #                    'enabled_dispatch': bool,
+        #                    'mttf': float,
+        #                    'mttr': float}
+        #
+        # self.profile_f = {'P': self.create_P_profile,
+        #                   'Pf': self.create_Pf_profile,
+        #                   'Vset': self.create_Vset_profile}
+        #
+        # self.profile_attr = {'P': 'Pprof',
+        #                      'Pf': 'Pfprof',
+        #                      'Vset': 'Vsetprof'}
 
     def copy(self):
         """
@@ -1842,6 +2060,25 @@ class Battery(Generator):
         # type of this device
         self.type_name = 'Battery'
 
+        # manually modify the editable headers
+        self.editable_headers = {'name': ('', str),
+                                 'bus': ('', None),
+                                 'active': ('', bool),
+                                 'is_controlled': ('', bool),
+                                 'P': ('MW', float),
+                                 'Pf': ('', float),
+                                 'Vset': ('p.u.', float),
+                                 'Snom': ('MVA', float),
+                                 'Enom': ('MWh', float),
+                                 'Qmin': ('MVAr', float),
+                                 'Qmax': ('MVAr', float),
+                                 'Pmin': ('MW', float),
+                                 'Pmax': ('MW', float),
+                                 'Cost': ('e/MWh', float),
+                                 'enabled_dispatch': ('', bool),
+                                 'mttf': ('h', float),
+                                 'mttr': ('h', float)}
+
         self.charge_efficiency = charge_efficiency
 
         self.discharge_efficiency = discharge_efficiency
@@ -1870,34 +2107,34 @@ class Battery(Generator):
 
         self.power_array = None
 
-        self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-                             'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
-                             'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency']
-
-        self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh',
-                      'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h',
-                      '', '', '', '', '']
-
-        self.edit_types = {'name': str,
-                           'bus': None,
-                           'active': bool,
-                           'P': float,
-                           'Vset': float,
-                           'Snom': float,
-                           'Enom': float,
-                           'Qmin': float,
-                           'Qmax': float,
-                           'Pmin': float,
-                           'Pmax': float,
-                           'Cost': float,
-                           'enabled_dispatch': bool,
-                           'mttf': float,
-                           'mttr': float,
-                           'soc_0': float,
-                           'max_soc': float,
-                           'min_soc': float,
-                           'charge_efficiency': float,
-                           'discharge_efficiency': float}
+        # self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
+        #                      'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
+        #                      'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency']
+        #
+        # self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh',
+        #               'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h',
+        #               '', '', '', '', '']
+        #
+        # self.edit_types = {'name': str,
+        #                    'bus': None,
+        #                    'active': bool,
+        #                    'P': float,
+        #                    'Vset': float,
+        #                    'Snom': float,
+        #                    'Enom': float,
+        #                    'Qmin': float,
+        #                    'Qmax': float,
+        #                    'Pmin': float,
+        #                    'Pmax': float,
+        #                    'Cost': float,
+        #                    'enabled_dispatch': bool,
+        #                    'mttf': float,
+        #                    'mttr': float,
+        #                    'soc_0': float,
+        #                    'max_soc': float,
+        #                    'min_soc': float,
+        #                    'charge_efficiency': float,
+        #                    'discharge_efficiency': float}
 
     def copy(self):
         """
@@ -2108,83 +2345,89 @@ class Battery(Generator):
         return processed_power
 
 
-class Shunt(ReliabilityDevice):
+class Shunt(InjectionDevice):
 
-    def __init__(self, name='shunt', admittance=complex(0, 0), admittance_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='shunt', G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, mttf=0.0, mttr=0.0):
         """
         Shunt object
-        Args:
-            name:
-            admittance: Admittance in MVA at 1 p.u. voltage
-            admittance_prof: Admittance profile in MVA at 1 p.u. voltage
-            active: Is active True or False
+        :param name:
+        :param G: Conductance in MW at 1 p.u. voltage
+        :param B: Susceptance in MW at 1 p.u. voltage
+        :param G_prof:
+        :param B_prof:
+        :param active: Is active True or False
+        :param mttf:
+        :param mttr:
         """
 
-        ReliabilityDevice.__init__(self, mttf, mttr)
+        InjectionDevice.__init__(self,
+                                 name=name,
+                                 bus=None,
+                                 active=active,
+                                 type_name='Shunt',
+                                 editable_headers={'name': ('', str),
+                                                   'bus': ('', None),
+                                                   'active': ('', bool),
+                                                   'G': ('MW', float),
+                                                   'B': ('MVAr', float),
+                                                   'mttf': ('h', float),
+                                                   'mttr': ('h', float)},
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 properties_with_profile={'G': 'G_prof',
+                                                          'B': 'B_prof'})
 
-        self.name = name
-
-        self.active = active
-
-        self.type_name = 'Shunt'
-
-        self.properties_with_profile = (['Y'], [complex])
-
-        self.graphic_obj = None
+        # self.name = name
+        #
+        # self.active = active
+        #
+        # self.type_name = 'Shunt'
+        #
+        # self.properties_with_profile = (['Y'], [complex])
+        #
+        # self.graphic_obj = None
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
         # Impedance (Ohm)
         # Z * I = V -> Ohm * kA = kV
-        self.Y = admittance
+        self.G = G
+        self.B = B
 
         # admittance profile
-        self.Yprof = admittance_prof
+        self.G_prof = G_prof
+        self.B_prof = B_prof
 
-        self.edit_headers = ['name', 'bus', 'active', 'Y', 'mttf', 'mttr']
-
-        self.units = ['', '', '', 'MVA', 'h', 'h']  # MVA at 1 p.u.
-
-        self.edit_types = {'name': str,
-                           'active': bool,
-                           'bus': None,
-                           'Y': complex,
-                           'mttf': float,
-                           'mttr': float}
-
-        self.profile_f = {'Y': self.create_Y_profile}
-
-        self.profile_attr = {'Y': 'Yprof'}
+        # self.edit_headers = ['name', 'bus', 'active', 'Y', 'mttf', 'mttr']
+        #
+        # self.units = ['', '', '', 'MVA', 'h', 'h']  # MVA at 1 p.u.
+        #
+        # self.edit_types = {'name': str,
+        #                    'active': bool,
+        #                    'bus': None,
+        #                    'Y': complex,
+        #                    'mttf': float,
+        #                    'mttr': float}
+        #
+        # self.profile_f = {'Y': self.create_Y_profile}
+        #
+        # self.profile_attr = {'Y': 'Yprof'}
 
     def copy(self):
         """
         Copy of this object
         :return: a copy of this object
         """
-        shu = Shunt()
-
-        shu.name = self.name
-
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
-        shu.Y = self.Y
-
-        # admittance profile
-        shu.Yprof = self.Yprof
-
-        shu.mttf = self.mttf
-
-        shu.mttr = self.mttr
-
+        shu = Shunt(name=self.name,
+                    G=self.G,
+                    B=self.B,
+                    G_prof=self.G_prof,
+                    B_prof=self.B_prof,
+                    active=self.active,
+                    mttf=self.mttf,
+                    mttr=self.mttr)
         return shu
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, str(self.Y), self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -2199,73 +2442,6 @@ class Shunt(ReliabilityDevice):
                 'name': self.name,
                 'bus': bus_dict[self.bus],
                 'active': self.active,
-                'g': self.Y.real,
-                'b': self.Y.imag}
-
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag == 'Y':
-            self.create_profiles(index, arr)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
-    def create_profiles(self, index, Y=None):
-        """
-        Create the load object default profiles
-        Args:
-            index: time index to use
-            Y: admittance values
-        Returns: Nothing
-        """
-        self.create_Y_profile(index, Y)
-
-    def create_Y_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index to use
-        Returns: Nothing
-        """
-        if arr_in_pu:
-            dta = arr * self.Y
-        else:
-            dta = np.ones(len(index)) * self.Y if arr is None else arr
-        self.Yprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.Yprof is None:
-                self.create_Y_profile(index)
-        return self.Yprof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return:
-        """
-        self.Yprof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.Y = self.Yprof.values[t]
-
-    def __str__(self):
-        return self.name
+                'g': self.G,
+                'b': self.B}
 

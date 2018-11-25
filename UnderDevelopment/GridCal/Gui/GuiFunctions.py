@@ -355,13 +355,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with the properties of objects
     """
-    def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False,
+    def __init__(self, objects, editable_headers, parent=None, editable=False,
                  non_editable_indices=list(),  transposed=False, check_unique=list()):
         """
 
         :param objects: list of objects associated to the editor
-        :param attributes: Attribute list of the object
-        :param attr_types: Types of the attributes. This is used to assign the appropriate editor (float, str, complex, bool)
+        :param editable_headers: Dictionary with the properties and theit units and type {attribute: ('unit', type)}
         :param parent: Parent object: the QTableView object
         :param editable: Is the table editable?
         :param non_editable_indices: List of attributes that are not enabled for editing
@@ -371,11 +370,11 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.parent = parent
 
-        self.attributes = attributes
+        self.attributes = list(editable_headers.keys())
 
-        self.attribute_types = attr_types
+        self.attribute_types = [editable_headers[attr][1] for attr in self.attributes]
 
-        self.units = attr_units
+        self.units = [editable_headers[attr][0] for attr in self.attributes]
 
         self.objects = objects
 
@@ -407,7 +406,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             F = self.parent.setItemDelegateForColumn
 
         for i in range(self.c):
-            tpe = self.attribute_types[self.attributes[i]]
+            tpe = self.attribute_types[i]
 
             if tpe is bool:
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
@@ -506,7 +505,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         attr = self.attributes[attr_idx]
-        tpe = self.attribute_types[self.attributes[attr_idx]]
+        tpe = self.attribute_types[attr_idx]
 
         if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
@@ -544,7 +543,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             obj_idx = index.row()
             attr_idx = index.column()
 
-        tpe = self.attribute_types[self.attributes[attr_idx]]
+        tpe = self.attribute_types[attr_idx]
 
         # check taken values
         if self.attributes[attr_idx] in self.check_unique:
@@ -631,7 +630,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
 class BranchObjectModel(ObjectsModel):
 
-    def __init__(self, objects, attributes, attr_units, attr_types, parent=None, editable=False,
+    def __init__(self, objects, editable_headers, parent=None, editable=False,
                  non_editable_indices=list(),  transposed=False, check_unique=list(), catalogue_dict=dict()):
 
         # type templates catalogue
@@ -641,7 +640,7 @@ class BranchObjectModel(ObjectsModel):
         #                       editable=editable, non_editable_indices=non_editable_indices,
         #                       transposed=transposed, check_unique=check_unique)
 
-        super(BranchObjectModel, self).__init__(objects, attributes, attr_units, attr_types, parent=parent,
+        super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
                                                 editable=editable, non_editable_indices=non_editable_indices,
                                                 transposed=transposed, check_unique=check_unique)
 
@@ -657,7 +656,7 @@ class BranchObjectModel(ObjectsModel):
             F = self.parent.setItemDelegateForColumn
 
         for i in range(self.c):
-            tpe = self.attribute_types[self.attributes[i]]
+            tpe = self.attribute_types[i]
 
             if tpe is bool:
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])

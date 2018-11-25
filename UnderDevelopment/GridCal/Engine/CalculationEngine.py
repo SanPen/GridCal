@@ -1012,7 +1012,7 @@ class MultiCircuit:
         '''
         for dev in self.objects_with_profiles:
             if dev.properties_with_profile is not None:
-                self.profile_magnitudes[dev.type_name] = dev.properties_with_profile
+                self.profile_magnitudes[dev.type_name] = list(dev.properties_with_profile.keys())
 
     def clear(self):
 
