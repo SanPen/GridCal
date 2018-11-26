@@ -18,6 +18,8 @@ from matplotlib import pyplot as plt
 from PyQt5 import QtCore
 from enum import Enum
 
+from GridCal.Engine.MetaDevices import EditableDevice, ReliabilityDevice, InjectionDevice
+
 """
 Equations source:
 a) ATP-EMTP theory book
@@ -37,7 +39,7 @@ class BranchType(Enum):
     Switch = 'switch'
 
 
-class Wire:
+class Wire(EditableDevice):
 
     def __init__(self, name='', xpos=0, ypos=0, gmr=0.01, r=0.01, x=0.0, phase=0):
         """
@@ -50,6 +52,19 @@ class Wire:
         :param r: Reactance per unit length (Ohm / km)
         :param phase: 0->Neutral, 1->A, 2->B, 3->C
         """
+
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=True,
+                                type_name='Wire',
+                                editable_headers={'wire_name': ('', str),
+                                                  'r': ('Ohm/km', float),
+                                                  'x': ('Ohm/km', float),
+                                                  'gmr': ('m', float),
+                                                  'xpos': ('', float),
+                                                  'ypos': ('', float),
+                                                  'phase': ('', int)})
+
         self.wire_name = name
         self.xpos = xpos
         self.ypos = ypos
@@ -58,16 +73,16 @@ class Wire:
         self.gmr = gmr
         self.phase = phase
 
-        self.edit_headers = ['wire_name', 'r', 'x', 'gmr']
-        self.units = ['', 'Ohm/km', 'Ohm/km', 'm']
-        self.non_editable_indices = list()
-        self.edit_types = {'wire_name': str,
-                           'r': float,
-                           'x': float,
-                           'gmr': float,
-                           'xpos': float,
-                           'ypos': float,
-                           'phase': int}
+        # self.edit_headers = ['wire_name', 'r', 'x', 'gmr']
+        # self.units = ['', 'Ohm/km', 'Ohm/km', 'm']
+        # self.non_editable_indices = list()
+        # self.edit_types = {'wire_name': str,
+        #                    'r': float,
+        #                    'x': float,
+        #                    'gmr': float,
+        #                    'xpos': float,
+        #                    'ypos': float,
+        #                    'phase': int}
 
     def copy(self):
         """
@@ -75,15 +90,6 @@ class Wire:
         :return:
         """
         return Wire(self.wire_name, self.xpos, self.ypos, self.gmr, self.r, self.x, self.phase)
-
-    def get_save_data(self):
-        dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
-        return dta
-
-    def __str__(self):
-        return self.wire_name
 
 
 class WiresCollection(QtCore.QAbstractTableModel):
@@ -206,7 +212,7 @@ class BranchTemplate:
         return dta
 
 
-class SequenceLineType(QtCore.QAbstractTableModel):
+class SequenceLineType(QtCore.QAbstractTableModel, EditableDevice):
 
     def __init__(self, parent=None, edit_callback=None, name='SequenceLine',
                  R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
@@ -224,10 +230,19 @@ class SequenceLineType(QtCore.QAbstractTableModel):
         :param G0: Conductance of zero sequence in Ohm/km
         :param B0: Susceptance of zero sequence in Ohm/km
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
-        # BranchTemplate.__init__(self, name=name, tpe=BranchType.Line)
-
-        self.name = name
+        QtCore.QAbstractTableModel.__init__(self, parent,
+                                            name=name,
+                                            active=True,
+                                            type_name='Wire',
+                                            editable_headers={'name': ('', str),
+                                                              'R': ('Ohm/km', float),
+                                                              'X': ('Ohm/km', float),
+                                                              'G': ('S/km', float),
+                                                              'B': ('S/km', float),
+                                                              'R0': ('Ohm/km', float),
+                                                              'X0': ('Ohm/km', float),
+                                                              'G0': ('S/km', float),
+                                                              'B0': ('S/km', float)})
 
         self.tpe = tpe
 
@@ -242,64 +257,72 @@ class SequenceLineType(QtCore.QAbstractTableModel):
         self.G0 = G0
         self.B0 = B0
 
-        self.edit_headers = ['name', 'R', 'X', 'G', 'B', 'R0', 'X0', 'G0', 'B0']
-        self.units = ['', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km']
-        self.non_editable_indices = []
-        self.edit_types = {'name': str,
-                           'R': float,
-                           'X': float,
-                           'G': float,
-                           'B': float,
-                           'R0': float,
-                           'X0': float,
-                           'G0': float,
-                           'B0': float}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-
-        dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
-        return dta
+        # self.edit_headers = ['name', 'R', 'X', 'G', 'B', 'R0', 'X0', 'G0', 'B0']
+        # self.units = ['', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km']
+        # self.non_editable_indices = []
+        # self.edit_types = {'name': str,
+        #                    'R': float,
+        #                    'X': float,
+        #                    'G': float,
+        #                    'B': float,
+        #                    'R0': float,
+        #                    'X0': float,
+        #                    'G0': float,
+        #                    'B0': float}
 
 
-class UndergroundLineType(QtCore.QAbstractTableModel):
+class UndergroundLineType(QtCore.QAbstractTableModel, EditableDevice):
 
-    def __init__(self, parent=None, edit_callback=None, name='UndergroundLine', tpe=BranchType.Line):
-        QtCore.QAbstractTableModel.__init__(self, parent)
-        # BranchTemplate.__init__(self, name=name, tpe=BranchType.Line)
-
-        self.name = name
+    def __init__(self, parent=None, edit_callback=None, name='UndergroundLine',
+                       R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
+        QtCore.QAbstractTableModel.__init__(self, parent,
+                                            name=name,
+                                            active=True,
+                                            type_name='UndergroundLineType',
+                                            editable_headers={'name': ('', str),
+                                                              'R': ('Ohm/km', float),
+                                                              'X': ('Ohm/km', float),
+                                                              'G': ('S/km', float),
+                                                              'B': ('S/km', float),
+                                                              'R0': ('Ohm/km', float),
+                                                              'X0': ('Ohm/km', float),
+                                                              'G0': ('S/km', float),
+                                                              'B0': ('S/km', float)})
 
         self.tpe = tpe
 
-        self.seq_resistance = complex(0, 0)
-        self.seq_admittance = complex(0, 0)
+        # impedances and admittances per unit of length
+        self.R = R
+        self.X = X
+        self.G = G
+        self.B = B
 
-        self.edit_headers = ['name', ]
-        self.units = ['', ]
-        self.non_editable_indices = []
-        self.edit_types = {'name': str}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-
-        dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
-        return dta
+        self.R0 = R0
+        self.X0 = X0
+        self.G0 = G0
+        self.B0 = B0
 
 
 class Tower(QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None, edit_callback=None, name='Tower', tpe=BranchType.Branch):
         QtCore.QAbstractTableModel.__init__(self, parent)
-        # BranchTemplate.__init__(self, name=name, tpe=BranchType.Line)
+
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=True,
+                                type_name='Tower',
+                                editable_headers={'tower_name': ('', str),
+                                                  'earth_resistivity': ('Ohm/m3', float),
+                                                  'frequency': ('Hz', float),
+                                                  'R1': ('Ohm/km', float),
+                                                  'X1': ('Ohm/km', float),
+                                                  'Gsh1': ('S/km', float),
+                                                  'Bsh1': ('S/km', float),
+                                                  'R0': ('Ohm/km', float),
+                                                  'X0': ('Ohm/km', float),
+                                                  'Gsh0': ('S/km', float),
+                                                  'Bsh0': ('S/km', float)})
 
         self.tpe = tpe
 
@@ -307,8 +330,22 @@ class Tower(QtCore.QAbstractTableModel):
         self.tower_name = name
         self.earth_resistivity = 100
         self.frequency = 50
-        self.seq_resistance = complex(0, 0)
-        self.seq_admittance = complex(0, 0)
+
+        # total series impedance (positive sequence)
+        self.R1 = 0.0
+        self.X1 = 0.0
+
+        # total shunt admittance (positive sequence)
+        self.Gsh1 = 0.0
+        self.Bsh1 = 0.0
+
+        # total series impedance (positive sequence)
+        self.R0 = 0.0
+        self.X0 = 0.0
+
+        # total shunt admittance (positive sequence)
+        self.Gsh0 = 0.0
+        self.Bsh0 = 0.0
 
         # impedances
         self.z_abcn = None
@@ -329,22 +366,21 @@ class Tower(QtCore.QAbstractTableModel):
 
         # wire properties for edition
         self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', 'Ri (Ohm/km)', 'Xi (Ohm/km)', 'GMR (m)']
-
         self.index_prop = {0: 'wire_name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'r', 5: 'x', 6: 'gmr'}
-
         self.converter = {0: str, 1: float, 2: float, 3: int, 4: float, 5: float, 6: float}
-
         self.editable_wire = [False, True, True, True, True, True, True]
 
         # properties for the object model
-        self.edit_headers = ['tower_name', 'earth_resistivity', 'frequency', 'seq_resistance', 'seq_admittance']
-        self.units = ['', 'Ohm/m3', 'Hz', 'Ohm/km', 'S/km']
-        self.non_editable_indices = [3, 4]
-        self.edit_types = {'tower_name': str,
-                           'earth_resistivity': float,
-                           'frequency': float,
-                           'seq_resistance': complex,
-                           'seq_admittance': complex}
+        # self.edit_headers = ['tower_name', 'earth_resistivity', 'frequency', 'R1', 'X1', 'Gsh1', 'Bsh1']
+        # self.units = ['', 'Ohm/m3', 'Hz', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km']
+        # self.non_editable_indices = [3, 4]
+        # self.edit_types = {'tower_name': str,
+        #                    'earth_resistivity': float,
+        #                    'frequency': float,
+        #                    'R1': float,
+        #                    'X1': float,
+        #                    'Gsh1': float,
+        #                    'Bsh1': float}
 
     def __str__(self):
         return self.tower_name
@@ -469,8 +505,15 @@ class Tower(QtCore.QAbstractTableModel):
             self.y_abcn, self.y_phases_abcn, self.y_abc, \
             self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
 
-            self.seq_resistance = self.z_seq[1, 1]
-            self.seq_admittance = self.y_seq[1, 1]
+            self.R0 = self.z_seq[0, 0].real
+            self.X0 = self.z_seq[0, 0].imag
+            self.Gsh0 = self.y_seq[0, 0].real
+            self.Bsh0 = self.y_seq[0, 0].imag
+
+            self.R1 = self.z_seq[1, 1].real
+            self.X1 = self.z_seq[1, 1].imag
+            self.Gsh1 = self.y_seq[1, 1].real
+            self.Bsh1 = self.y_seq[1, 1].imag
         else:
             pass
 
@@ -539,7 +582,7 @@ class Tower(QtCore.QAbstractTableModel):
         return True
 
 
-class TransformerType:
+class TransformerType(EditableDevice):
 
     def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0, copper_losses=0, iron_losses=0,
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
@@ -557,11 +600,20 @@ class TransformerType:
         @param gx_hv1: Reactive contribution to the HV side (default is 50%)
         """
 
-        self.name = name
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=True,
+                                type_name='TransformerType',
+                                editable_headers={'name': ('', str),
+                                                  'HV_nominal_voltage': ('kV', float),
+                                                  'LV_nominal_voltage': ('kV', float),
+                                                  'Nominal_power': ('MVA', float),
+                                                  'Copper_losses': ('kW', float),
+                                                  'Iron_losses': ('kW', float),
+                                                  'No_load_current': ('%', float),
+                                                  'Short_circuit_voltage': ('%', float)})
 
         self.tpe = tpe
-
-        self.type_name = 'TransformerType'
 
         self.properties_with_profile = None
 
@@ -583,34 +635,34 @@ class TransformerType:
 
         self.GX_hv1 = gx_hv1
 
-        self.edit_headers = ['name',
-                             'HV_nominal_voltage',
-                             'LV_nominal_voltage',
-                             'Nominal_power',
-                             'Copper_losses',
-                             'Iron_losses',
-                             'No_load_current',
-                             'Short_circuit_voltage']
-
-        self.units = ['',
-                      'kV',
-                      'kV',
-                      'MVA',
-                      'kW',
-                      'kW',
-                      '%',
-                      '%']
-
-        self.non_editable_indices = list()
-
-        self.edit_types = {'name': str,
-                           'HV_nominal_voltage': float,
-                           'LV_nominal_voltage': float,
-                           'Nominal_power': float,
-                           'Copper_losses': float,
-                           'Iron_losses': float,
-                           'No_load_current': float,
-                           'Short_circuit_voltage': float}
+        # self.edit_headers = ['name',
+        #                      'HV_nominal_voltage',
+        #                      'LV_nominal_voltage',
+        #                      'Nominal_power',
+        #                      'Copper_losses',
+        #                      'Iron_losses',
+        #                      'No_load_current',
+        #                      'Short_circuit_voltage']
+        #
+        # self.units = ['',
+        #               'kV',
+        #               'kV',
+        #               'MVA',
+        #               'kW',
+        #               'kW',
+        #               '%',
+        #               '%']
+        #
+        # self.non_editable_indices = list()
+        #
+        # self.edit_types = {'name': str,
+        #                    'HV_nominal_voltage': float,
+        #                    'LV_nominal_voltage': float,
+        #                    'Nominal_power': float,
+        #                    'Copper_losses': float,
+        #                    'Iron_losses': float,
+        #                    'No_load_current': float,
+        #                    'Short_circuit_voltage': float}
 
     def __str__(self):
         return self.name

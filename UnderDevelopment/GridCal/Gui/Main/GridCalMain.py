@@ -3311,7 +3311,7 @@ class MainGUI(QMainWindow):
             if tpe == 'Overhead lines':
                 elm = Tower()
                 mdl = ObjectsModel(self.circuit.overhead_line_types,
-                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
                                    check_unique=['tower_name'])
@@ -3319,7 +3319,7 @@ class MainGUI(QMainWindow):
             elif tpe == 'Underground lines':
                 elm = UndergroundLineType()
                 mdl = ObjectsModel(self.circuit.underground_cable_types,
-                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
                                    check_unique=['name'])
@@ -3327,14 +3327,14 @@ class MainGUI(QMainWindow):
             elif tpe == 'Sequence lines':
                 elm = SequenceLineType()
                 mdl = ObjectsModel(self.circuit.sequence_line_types,
-                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
                                    check_unique=['name'])
             elif tpe == 'Wires':
                 elm = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0)
                 mdl = ObjectsModel(self.circuit.wire_types,
-                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
                                    check_unique=['wire_name'])
@@ -3344,7 +3344,7 @@ class MainGUI(QMainWindow):
                                       copper_losses=0, iron_losses=0, no_load_current=0.1, short_circuit_voltage=0.1,
                                       gr_hv1=0.5, gx_hv1=0.5)
                 mdl = ObjectsModel(self.circuit.transformer_types,
-                                   elm.edit_headers, elm.units, elm.edit_types,
+                                   elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_indices=elm.non_editable_indices,
                                    check_unique=['name'])

@@ -1490,7 +1490,7 @@ class MultiCircuit:
                         setattr(obj_, attr, conv(values[a]))
                 else:
 
-                    if attr in ['Z', 'I', 'S']:
+                    if attr in ['Z', 'I', 'S', 'seq_resistance', 'seq_admittance']:
 
                         if attr == 'Z':
                             val = complex(values[a])
@@ -1508,6 +1508,16 @@ class MultiCircuit:
                             val = complex(values[a])
                             setattr(obj_, 'P', val.real)
                             setattr(obj_, 'Q', val.imag)
+
+                        elif attr == 'seq_resistance':
+                            val = complex(values[a])
+                            setattr(obj_, 'R1', val.real)
+                            setattr(obj_, 'X1', val.imag)
+
+                        elif attr == 'seq_admittance':
+                            val = complex(values[a])
+                            setattr(obj_, 'Gsh1', val.real)
+                            setattr(obj_, 'Bsh1', val.imag)
 
                     else:
                         warn(str(obj_) + ' has no ' + attr + ' property.')
@@ -1738,12 +1748,12 @@ class MultiCircuit:
                     vals = lst[lst['tower_name'] == tower_name].values
 
                     # set the tower values
-                    set_object_attributes(obj, obj.edit_headers, vals[0, :])
+                    set_object_attributes(obj, obj.editable_headers.keys(), vals[0, :])
 
                     # add the wires
                     for i in range(vals.shape[0]):
                         wire = Wire()
-                        set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.edit_headers):])
+                        set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.editable_headers):])
                         obj.wires.append(wire)
 
                     self.add_overhead_line(obj)
@@ -2095,12 +2105,12 @@ class MultiCircuit:
                     vals = lst[lst['tower_name'] == tower_name].values
 
                     # set the tower values
-                    set_object_attributes(obj, obj.edit_headers, vals[0, :])
+                    set_object_attributes(obj, obj.editable_headers.keys(), vals[0, :])
 
                     # add the wires
                     for i in range(vals.shape[0]):
                         wire = Wire()
-                        set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.edit_headers):])
+                        set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.editable_headers):])
                         obj.wires.append(wire)
 
                     self.add_overhead_line(obj)
@@ -2187,7 +2197,6 @@ class MultiCircuit:
         # Other actions ################################################################################################
         self.logger += self.apply_all_branch_types()
 
-
     def save_file(self, file_path):
         """
         Save File
@@ -2231,7 +2240,7 @@ class MultiCircuit:
         # buses ########################################################################################################
         obj = list()
         names_count = dict()
-        headers = Bus().edit_headers
+        headers = Bus().editable_headers.keys()
         if len(self.buses) > 0:
             for elm in self.buses:
 
@@ -2251,7 +2260,7 @@ class MultiCircuit:
         dfs['bus'] = pd.DataFrame(data=dta, columns=headers)
 
         # branches #####################################################################################################
-        headers = Branch(None, None).edit_headers
+        headers = Branch(None, None).editable_headers.keys()
         if len(self.branches) > 0:
             obj = list()
             for elm in self.branches:
@@ -2264,7 +2273,7 @@ class MultiCircuit:
         dfs['branch'] = pd.DataFrame(data=dta, columns=headers)
 
         # loads ########################################################################################################
-        headers = Load().edit_headers
+        headers = Load().editable_headers.keys()
         loads = self.get_loads()
         if len(loads) > 0:
             obj = list()
@@ -2307,7 +2316,7 @@ class MultiCircuit:
             dfs['load'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
         # static generators ############################################################################################
-        headers = StaticGenerator().edit_headers
+        headers = StaticGenerator().editable_headers.keys()
         st_gen = self.get_static_generators()
         if len(st_gen) > 0:
             obj = list()
@@ -2331,7 +2340,7 @@ class MultiCircuit:
 
         # battery ######################################################################################################
         batteries = self.get_batteries()
-        headers = Battery().edit_headers
+        headers = Battery().editable_headers.keys()
 
         if len(batteries) > 0:
             obj = list()
@@ -2358,7 +2367,7 @@ class MultiCircuit:
 
         # controlled generator #########################################################################################
         con_gen = self.get_generators()
-        headers = Generator().edit_headers
+        headers = Generator().editable_headers.keys()
 
         if len(con_gen) > 0:
             obj = list()
@@ -2387,7 +2396,7 @@ class MultiCircuit:
         # shunt ########################################################################################################
 
         shunts = self.get_shunts()
-        headers = Shunt().edit_headers
+        headers = Shunt().editable_headers.keys()
 
         if len(shunts) > 0:
             obj = list()
@@ -2643,7 +2652,7 @@ class MultiCircuit:
 
             for elm in bus.static_generators:
                 circuit.static_gen_names[i_sta_gen] = elm.name
-                circuit.static_gen_power[i_sta_gen] = elm.P + 1j * elm.Q
+                circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
                 circuit.static_gen_enabled[i_sta_gen] = elm.active
                 circuit.static_gen_mttf[i_sta_gen] = elm.mttf
                 circuit.static_gen_mttr[i_sta_gen] = elm.mttr
@@ -2726,7 +2735,7 @@ class MultiCircuit:
 
             for elm in bus.shunts:
                 circuit.shunt_names[i_sh] = elm.name
-                circuit.shunt_admittance[i_sh] = elm.G + 1j * elm.B
+                circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
                 circuit.shunt_mttf[i_sh] = elm.mttf
                 circuit.shunt_mttr[i_sh] = elm.mttr
 
