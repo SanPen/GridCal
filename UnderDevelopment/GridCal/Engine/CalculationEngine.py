@@ -1479,9 +1479,8 @@ class MultiCircuit:
                 if attr == 'type_obj':
                     attr = 'template'
 
-
                 if hasattr(obj_, attr):
-                    conv = obj_.edit_types[attr]  # get the type converter
+                    conv = obj_.editable_headers[attr][1]  # get the type converter
                     if conv is None:
                         setattr(obj_, attr, values[a])
                     elif conv is BranchType:
@@ -2644,14 +2643,14 @@ class MultiCircuit:
 
             for elm in bus.static_generators:
                 circuit.static_gen_names[i_sta_gen] = elm.name
-                circuit.static_gen_power[i_sta_gen] = elm.S
+                circuit.static_gen_power[i_sta_gen] = elm.P + 1j * elm.Q
                 circuit.static_gen_enabled[i_sta_gen] = elm.active
                 circuit.static_gen_mttf[i_sta_gen] = elm.mttf
                 circuit.static_gen_mttr[i_sta_gen] = elm.mttr
                 # circuit.static_gen_dispatchable[i_sta_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
-                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.Sprof.values[:, 0]
+                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof.values[:, 0] + 1j * elm.Q_prof.values[:, 0]
 
                 circuit.C_sta_gen_bus[i_sta_gen, i] = 1
                 i_sta_gen += 1
@@ -2727,12 +2726,12 @@ class MultiCircuit:
 
             for elm in bus.shunts:
                 circuit.shunt_names[i_sh] = elm.name
-                circuit.shunt_admittance[i_sh] = elm.Y
+                circuit.shunt_admittance[i_sh] = elm.G + 1j * elm.B
                 circuit.shunt_mttf[i_sh] = elm.mttf
                 circuit.shunt_mttr[i_sh] = elm.mttr
 
                 if n_time > 0:
-                    circuit.shunt_admittance_profile[:, i_sh] = elm.Yprof.values[:, 0]
+                    circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof.values[:, 0] + 1j * elm.B_prof.values[:, 0]
 
                 circuit.C_shunt_bus[i_sh, i] = 1
                 i_sh += 1

@@ -38,11 +38,11 @@ class BranchTypeConverter:
 
         self.tpe = tpe
 
-        self.options = ['Branch',
-                        'Line',
-                        'Transformer',
-                        'Switch',
-                        'Reactance']
+        self.options = ['branch',
+                        'line',
+                        'transformer',
+                        'switch',
+                        'reactance']
 
         self.values = [BranchType.Branch,
                        BranchType.Line,
@@ -54,8 +54,8 @@ class BranchTypeConverter:
         self.inv_conv = dict()
 
         for o, v in zip(self.options, self.values):
-            self.conv[o] = v
-            self.inv_conv[v] = o
+            self.conv[o.lower()] = v
+            self.inv_conv[v] = o.lower()
 
     def __str__(self):
         """
@@ -67,7 +67,7 @@ class BranchTypeConverter:
         """
         Convert from string
         """
-        return self.conv[str_value]
+        return self.conv[str_value.lower()]
 
 
 class TimeGroups(Enum):

@@ -556,7 +556,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 if tpe is BranchType:
                     conv = BranchTypeConverter(None)
 
-                    setattr(self.objects[obj_idx], self.attributes[attr_idx], conv.conv[value.name])
+                    setattr(self.objects[obj_idx], self.attributes[attr_idx], conv.conv[value.name.lower()])
                 else:
 
                     setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
