@@ -1012,7 +1012,9 @@ class MultiCircuit:
         '''
         for dev in self.objects_with_profiles:
             if dev.properties_with_profile is not None:
-                self.profile_magnitudes[dev.type_name] = list(dev.properties_with_profile.keys())
+                profile_attr = list(dev.properties_with_profile.keys())
+                profile_types = [dev.properties_with_profile[attr][1] for attr in profile_attr]
+                self.profile_magnitudes[dev.type_name] = (profile_attr, profile_types)
 
     def clear(self):
 
@@ -1882,7 +1884,7 @@ class MultiCircuit:
                     attr = 'template'
 
                 if hasattr(obj_, attr):
-                    conv = obj_.edit_types[attr]  # get the type converter
+                    conv = obj_.editable_headers[attr][1]  # get the type converter
                     if conv is None:
                         setattr(obj_, attr, values[a])
                     elif conv is BranchType:

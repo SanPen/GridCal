@@ -303,11 +303,10 @@ class UndergroundLineType(QtCore.QAbstractTableModel, EditableDevice):
         self.B0 = B0
 
 
-class Tower(QtCore.QAbstractTableModel):
+class Tower(QtCore.QAbstractTableModel, EditableDevice):
 
     def __init__(self, parent=None, edit_callback=None, name='Tower', tpe=BranchType.Branch):
         QtCore.QAbstractTableModel.__init__(self, parent)
-
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,

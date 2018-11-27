@@ -790,7 +790,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                profile_property = self.elements[index.column()].profile_attr[self.magnitude]
+                profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
                 df = getattr(self.elements[index.column()], profile_property)
                 return str(df.values[index.row(), 0])
 
@@ -806,10 +806,12 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
 
         if index.column() not in self.non_editable_indices:
-            profile_property = self.elements[index.column()].profile_attr[self.magnitude]
+            profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
             getattr(self.elements[index.column()], profile_property).values[index.row(), 0] = value
         else:
             pass  # the column cannot be edited
+
+        return True
 
     def headerData(self, p_int, orientation, role):
         """
