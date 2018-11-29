@@ -174,8 +174,3 @@ def test_xfo_static_tap_3():
         grid.save_excel(f"{test_name}_grid.xlsx")
 
     assert equal
-
-
-if __name__ == '__main__':
-
-    test_xfo_static_tap_3()
