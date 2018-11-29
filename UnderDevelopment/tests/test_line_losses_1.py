@@ -2,10 +2,10 @@ from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, PowerFlow
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
 
-test_name = "test_line_losses"
+test_name = "test_line_losses_1"
 Sbase = 100 # MVA
 
-def test_line_losses():
+def test_line_losses_1():
     """
     Basic line losses test.
     """
