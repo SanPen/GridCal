@@ -134,7 +134,7 @@ grid.add_branch(Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate
 grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
 ########################################################################################################################
-# Ovewrite the default profiles with the custom ones
+# Overwrite the default profiles with the custom ones
 ########################################################################################################################
 
 for load in grid.get_loads():
