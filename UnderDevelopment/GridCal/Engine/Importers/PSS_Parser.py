@@ -1056,6 +1056,16 @@ class PSSeTransformer:
 
             # Line 1: for both types
 
+            if len(data[0]) == 21:
+
+                n = len(data[0])
+                dta = np.zeros(21, dtype=object)
+                dta[0:n] = data[0]
+
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
+                 self.VECGRP = dta
+
             if len(data[0]) == 20:
 
                 n = len(data[0])
@@ -1520,9 +1530,11 @@ class PSSeParser:
 
 if __name__ == '__main__':
     # file
-    fname = 'IEEE57.RAW'
+    # fname = 'IEEE57.RAW'
+    fname = 'nordpool.raw'
 
     parser = PSSeParser(fname)
+
 
     print('Logs')
     for l in parser.logger:
