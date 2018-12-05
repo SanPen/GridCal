@@ -250,6 +250,15 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(lst)
         self.ui.reactive_power_control_mode_comboBox.setModel(mdl)
 
+        # taps controls (transformer voltage regulator)
+        self.taps_control_modes_dict = OrderedDict()
+        self.taps_control_modes_dict['No control'] = TapsControlMode.NoControl
+        self.taps_control_modes_dict['Direct'] = TapsControlMode.Direct
+        self.taps_control_modes_dict['Iterative'] = TapsControlMode.Iterative
+        lst = list(self.taps_control_modes_dict.keys())
+        mdl = get_list_model(lst)
+        self.ui.taps_control_mode_comboBox.setModel(mdl)
+
         # Automatic layout modes
         mdl = get_list_model(['fruchterman_reingold_layout',
                               'spectral_layout',
@@ -1779,6 +1788,7 @@ class MainGUI(QMainWindow):
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
         reactve_power_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
+        taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
         exponent = self.ui.tolerance_spinBox.value()
         tolerance = 1.0 / (10.0**exponent)
@@ -1800,8 +1810,6 @@ class MainGUI(QMainWindow):
 
         mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
-        ctrl_taps = self.ui.control_transformer_taps_checkBox.isChecked()
-
         temp_correction = self.ui.temperature_correction_checkBox.isChecked()
 
         ops = PowerFlowOptions(solver_type=solver_type,
@@ -1814,7 +1822,7 @@ class MainGUI(QMainWindow):
                                control_q=reactve_power_control_mode,
                                multi_core=mp,
                                dispatch_storage=dispatch_storage,
-                               control_taps=ctrl_taps,
+                               control_taps=taps_control_mode,
                                apply_temperature_correction=temp_correction)
 
         return ops

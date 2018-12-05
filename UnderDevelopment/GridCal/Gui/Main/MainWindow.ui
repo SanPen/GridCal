@@ -1276,19 +1276,16 @@
                 </spacer>
                </item>
                <item row="16" column="0">
-                <widget class="QCheckBox" name="control_transformer_taps_checkBox">
-                 <property name="toolTip">
-                  <string>Control the local bus voltage via tap shifting</string>
-                 </property>
+                <widget class="QLabel" name="label_50">
                  <property name="text">
-                  <string>Control transformer taps</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
+                  <string>XFO taps control mode</string>
                  </property>
                 </widget>
                </item>
-               <item row="17" column="0">
+               <item row="17" column="0" colspan="2">
+                <widget class="QComboBox" name="taps_control_mode_comboBox"/>
+               </item>
+               <item row="18" column="0">
                 <widget class="QCheckBox" name="temperature_correction_checkBox">
                  <property name="toolTip">
                   <string>Correct the branches resistance using the temperature</string>
@@ -2074,7 +2071,7 @@
                <item>
                 <widget class="QRadioButton" name="start_vs_from_selected_radioButton">
                  <property name="text">
-                  <string>Use departure and target 
+                  <string>Use departure and target
 points from time series</string>
                  </property>
                 </widget>
