@@ -830,7 +830,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                     if self.circuit.time_profile is None:
                         return str(p_int)
                     else:
-                        return str(self.circuit.time_profile[p_int])
+                        # return pd.to_datetime(self.time_array[p_int]).strftime('%d/%m/%Y %H:%M')
+                        return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d/%m/%Y %H:%M')
 
         return None
 

@@ -1618,8 +1618,7 @@ class MainGUI(QMainWindow):
         if len(objects) > 0:
             dialogue = ProfileInputGUI(parent=self,
                                        list_of_objects=objects,
-                                       magnitude=magnitude,
-                                       AlsoReactivePower=also_reactive_power)
+                                       magnitudes=[magnitude])
             dialogue.resize(int(1.61 * 600.0), 600)  # golden ratio
             dialogue.exec()  # exec leaves the parent on hold
 
@@ -1638,7 +1637,15 @@ class MainGUI(QMainWindow):
                 # Assign profiles
                 for i, elm in enumerate(objects):
                     if not dialogue.zeroed[i]:
-                        elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+
+                        if dialogue.normalized:
+                            data = dialogue.data[:, i]
+                        else:
+                            data = dialogue.data[:, i]
+                        df = pd.DataFrame(data=data, index=dialogue.time)
+                        prof_attr = elm.properties_with_profile[magnitude]
+                        setattr(elm, prof_attr, df)
+                        # elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
 
                 # set up sliders
                 self.set_up_profile_sliders()
@@ -1683,7 +1690,7 @@ class MainGUI(QMainWindow):
 
         # Assign profiles
         if len(objects) > 0:
-            attr = objects[0].profile_attr[magnitude]
+            attr = objects[0].properties_with_profile[magnitude]
             if operation == '+':
                 for i, elm in enumerate(objects):
                     setattr(elm, attr, getattr(elm, attr) + value)
@@ -1748,7 +1755,7 @@ class MainGUI(QMainWindow):
 
             # plot every column
             for k in cols:
-                attr = objects[k].profile_attr[magnitude]
+                attr = objects[k].properties_with_profile[magnitude]
                 df = getattr(objects[k], attr)
                 df.columns = [objects[k].name]
                 df.plot(ax=ax)
@@ -3144,7 +3151,9 @@ class MainGUI(QMainWindow):
         if self.circuit.time_profile is not None:
             t1 = self.circuit.time_profile[start]
             t2 = self.circuit.time_profile[end]
-            self.ui.profile_label.setText(str(t1) + '->' + str(t2))
+            t1 = pd.to_datetime(t1).strftime('%d/%m/%Y %H:%M')
+            t2 = pd.to_datetime(t2).strftime('%d/%m/%Y %H:%M')
+            self.ui.profile_label.setText(str(t1) + ' -> ' + str(t2))
 
     def add_to_catalogue(self):
         """

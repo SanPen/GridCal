@@ -84,13 +84,13 @@ class MultiplierType(Enum):
 
 class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=list(), magnitude=None, AlsoReactivePower=False):
+    def __init__(self, parent=None, list_of_objects=list(), magnitudes=None):
         """
 
         Args:
             parent:
             list_of_objects: List of objects to which set a profile to
-            magnitude: Property of the objects to which set the pandas DataFrame
+            magnitudes: Property of the objects to which set the pandas DataFrame
             AlsoReactivePower: Link also the reactive power?
         """
         QtWidgets.QDialog.__init__(self, parent)
@@ -100,7 +100,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         self.project_directory = None
 
-        self.magnitude = magnitude
+        self.magnitudes = magnitudes
 
         # results
         self.data = None
@@ -140,13 +140,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.objects = list_of_objects
 
         # initialize associations
-        self.magnitudes = ['P']
-        self.also_reactive_power = AlsoReactivePower
-        if AlsoReactivePower:
-            self.magnitudes.append('Q')
-        else:
-            self.ui.setQ_on_cosfi_checkbox.setVisible(False)
-            self.ui.set_cosfi_button.setVisible(False)
+        # self.magnitudes = ['P']
+        self.also_reactive_power = False
+        # if AlsoReactivePower:
+        #     self.magnitudes.append('Q')
+        # else:
+        self.ui.setQ_on_cosfi_checkbox.setVisible(False)
+        self.ui.set_cosfi_button.setVisible(False)
 
         self.associations = list()
         mag = [''] * len(self.magnitudes)

@@ -1395,7 +1395,7 @@ class StaticGenerator(InjectionDevice):
         :param arr_in_pu: is the array in per-unit?
         """
         x = getattr(self, magnitude)
-        x_prof = getattr(self, self.profile_attr[magnitude])
+        x_prof = getattr(self, self.properties_with_profile[magnitude])
 
         if arr_in_pu:
             val = arr * x
