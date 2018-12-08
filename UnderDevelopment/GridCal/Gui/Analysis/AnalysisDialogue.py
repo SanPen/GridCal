@@ -190,7 +190,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             log_scale = [False]
             objects = self.circuit.buses
 
-        elif object_type == 'controlled generators':
+        elif object_type == 'generators':
             properties = ['Vset', 'P', 'Qmin', 'Qmax']
             log_scale = [False, False, False, False]
             types = [float, float, float, float]
@@ -203,21 +203,21 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             objects = self.circuit.get_batteries()
 
         elif object_type == 'static generators':
-            properties = ['S']
-            log_scale = [False]
-            types = [complex]
+            properties = ['P', 'Q']
+            log_scale = [False, False]
+            types = [float, float]
             objects = self.circuit.get_static_generators()
 
         elif object_type == 'shunts':
-            properties = ['Y']
-            log_scale = [False]
-            types = [complex]
+            properties = ['G', 'B']
+            log_scale = [False, False]
+            types = [float, float]
             objects = self.circuit.get_shunts()
 
         elif object_type == 'loads':
-            properties = ['S', 'I', 'Z']
-            log_scale = [False, False, False]
-            types = [complex, complex, complex]
+            properties = ['P', 'Q', 'Ir', 'Ii', 'G', 'B']
+            log_scale = [False, False, False, False, False, False]
+            types = [float, float, float, float, float, float]
             objects = self.circuit.get_loads()
 
         else:
