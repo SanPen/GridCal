@@ -457,6 +457,8 @@ class MainGUI(QMainWindow):
 
         self.ui.profile_divide_pushButton.clicked.connect(lambda: self.modify_profiles('/'))
 
+        self.ui.set_linear_combination_profile_pushButton.clicked.connect(self.set_profile_as_linear_combination)
+
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
 
         self.ui.analyze_objects_pushButton.clicked.connect(self.display_grid_analysis)
@@ -1516,6 +1518,7 @@ class MainGUI(QMainWindow):
         dev_type = self.ui.profile_device_type_comboBox.currentText()
         mdl = get_list_model(self.circuit.profile_magnitudes[dev_type][0])
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
+        self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
 
     def new_profiles_structure(self):
         """
@@ -1705,6 +1708,51 @@ class MainGUI(QMainWindow):
                     setattr(elm, attr, getattr(elm, attr) / value)
             else:
                 raise Exception('Operation not supported: ' + str(operation))
+
+            self.display_profiles()
+
+    def set_profile_as_linear_combination(self):
+        """
+        Edit profiles with a linear combination
+        Args:
+            operation: '+', '-', '*', '/'
+
+        Returns: Nothing
+        """
+        value = self.ui.profile_factor_doubleSpinBox.value()
+
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude_from = magnitudes[idx_from]
+
+        idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
+        magnitude_to = magnitudes[idx_to]
+
+        if dev_type == 'Load':
+            objects = self.circuit.get_loads()
+
+        elif dev_type == 'StaticGenerator':
+            objects = self.circuit.get_static_generators()
+
+        elif dev_type == 'Generator':
+            objects = self.circuit.get_generators()
+
+        elif dev_type == 'Battery':
+            objects = self.circuit.get_batteries()
+
+        elif dev_type == 'Shunt':
+            objects = self.circuit.get_shunts()
+        else:
+            objects = list()
+
+        # Assign profiles
+        if len(objects) > 0:
+            attr_from = objects[0].properties_with_profile[magnitude_from]
+            attr_to = objects[0].properties_with_profile[magnitude_to]
+
+            for i, elm in enumerate(objects):
+                setattr(elm, attr_to, getattr(elm, attr_from) * 1.0)
 
             self.display_profiles()
 

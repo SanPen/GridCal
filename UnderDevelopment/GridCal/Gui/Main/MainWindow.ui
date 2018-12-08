@@ -63,7 +63,7 @@
          <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
        </attribute>
        <attribute name="title">
-        <string>Grid data</string>
+        <string>Model</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <property name="spacing">
@@ -104,7 +104,7 @@
              <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Grid</string>
+            <string>Schematic</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <property name="leftMargin">
@@ -3849,6 +3849,16 @@ points from time series</string>
                 <number>0</number>
                </property>
                <item>
+                <widget class="QDoubleSpinBox" name="profile_factor_doubleSpinBox">
+                 <property name="maximum">
+                  <double>9999999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QPushButton" name="profile_add_pushButton">
                  <property name="toolTip">
                   <string>Add value to the profile</string>
@@ -3905,14 +3915,34 @@ points from time series</string>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="profile_factor_doubleSpinBox">
-                 <property name="maximum">
-                  <double>9999999.000000000000000</double>
+                <spacer name="horizontalSpacer_13">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
-                 <property name="value">
-                  <double>1.000000000000000</double>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="set_linear_combination_profile_pushButton">
+                 <property name="toolTip">
+                  <string>Set the selected magnitude (left) as a linear combination of the selected magnitude at the top (the visualized one)</string>
+                 </property>
+                 <property name="text">
+                  <string>Copy profiles into</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="device_type_magnitude_comboBox_2"/>
                </item>
                <item>
                 <spacer name="horizontalSpacer_7">
