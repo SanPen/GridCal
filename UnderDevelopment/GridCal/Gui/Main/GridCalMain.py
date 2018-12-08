@@ -464,7 +464,9 @@ class MainGUI(QMainWindow):
         self.ui.analyze_objects_pushButton.clicked.connect(self.display_grid_analysis)
 
         self.ui.catalogue_add_pushButton.clicked.connect(self.add_to_catalogue)
+
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
+
         self.ui.catalogue_delete_pushButton.clicked.connect(self.delete_from_catalogue)
 
         self.ui.viewTemplatesButton.clicked.connect(self.view_template_toggle)
@@ -474,6 +476,10 @@ class MainGUI(QMainWindow):
         self.ui.processTemplatesPushButton.clicked.connect(self.process_templates)
 
         self.ui.compute_simulation_data_pushButton.clicked.connect(self.update_islands_to_display)
+
+        self.ui.copy_profile_pushButton.clicked.connect(self.copy_profiles)
+
+        self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1553,7 +1559,7 @@ class MainGUI(QMainWindow):
                     bus.delete_profiles()
                 self.circuit.time_profile = None
                 self.circuit.has_time_series = False
-                self.ui.tableView.setModel(None)
+                self.ui.profiles_tableView.setModel(None)
                 self.set_up_profile_sliders()
             else:
                 pass
@@ -1714,47 +1720,56 @@ class MainGUI(QMainWindow):
     def set_profile_as_linear_combination(self):
         """
         Edit profiles with a linear combination
-        Args:
-            operation: '+', '-', '*', '/'
-
         Returns: Nothing
         """
-        value = self.ui.profile_factor_doubleSpinBox.value()
 
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
-        idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
-        magnitude_from = magnitudes[idx_from]
+        msg = "Are you sure that you want overwrite the profile?"
+        reply = QMessageBox.question(self, 'Message', msg, QMessageBox.Yes, QMessageBox.No)
 
-        idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
-        magnitude_to = magnitudes[idx_to]
+        if reply == QMessageBox.Yes:
 
-        if dev_type == 'Load':
-            objects = self.circuit.get_loads()
+            value = self.ui.profile_factor_doubleSpinBox.value()
 
-        elif dev_type == 'StaticGenerator':
-            objects = self.circuit.get_static_generators()
+            dev_type = self.ui.profile_device_type_comboBox.currentText()
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+            idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
+            magnitude_from = magnitudes[idx_from]
 
-        elif dev_type == 'Generator':
-            objects = self.circuit.get_generators()
+            idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
+            magnitude_to = magnitudes[idx_to]
 
-        elif dev_type == 'Battery':
-            objects = self.circuit.get_batteries()
+            if dev_type == 'Load':
+                objects = self.circuit.get_loads()
 
-        elif dev_type == 'Shunt':
-            objects = self.circuit.get_shunts()
+            elif dev_type == 'StaticGenerator':
+                objects = self.circuit.get_static_generators()
+
+            elif dev_type == 'Generator':
+                objects = self.circuit.get_generators()
+
+            elif dev_type == 'Battery':
+                objects = self.circuit.get_batteries()
+
+            elif dev_type == 'Shunt':
+                objects = self.circuit.get_shunts()
+            else:
+                objects = list()
+
+            # Assign profiles
+            if len(objects) > 0:
+                attr_from = objects[0].properties_with_profile[magnitude_from]
+                attr_to = objects[0].properties_with_profile[magnitude_to]
+
+                for i, elm in enumerate(objects):
+                    setattr(elm, attr_to, getattr(elm, attr_from) * 1.0)
+
+                self.display_profiles()
+
         else:
-            objects = list()
+            pass
 
-        # Assign profiles
-        if len(objects) > 0:
-            attr_from = objects[0].properties_with_profile[magnitude_from]
-            attr_to = objects[0].properties_with_profile[magnitude_to]
 
-            for i, elm in enumerate(objects):
-                setattr(elm, attr_to, getattr(elm, attr_from) * 1.0)
 
-            self.display_profiles()
 
     def plot_profiles(self):
         """
@@ -1783,7 +1798,7 @@ class MainGUI(QMainWindow):
             objects = self.circuit.get_shunts()
 
         # get the selected element
-        obj_idx = self.ui.tableView.selectedIndexes()
+        obj_idx = self.ui.profiles_tableView.selectedIndexes()
 
         # Assign profiles
         if len(obj_idx):
@@ -1824,8 +1839,8 @@ class MainGUI(QMainWindow):
             magnitude = magnitudes[idx]
             mtype = mag_types[idx]
 
-            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype, parent=self.ui.tableView)
-            self.ui.tableView.setModel(mdl)
+            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype, parent=self.ui.profiles_tableView)
+            self.ui.profiles_tableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
         """
@@ -2631,7 +2646,7 @@ class MainGUI(QMainWindow):
 
                 if self.optimal_power_flow_time_series is not None:
 
-                    quit_msg = "Are you sure you want overwrite the time events " \
+                    quit_msg = "Are you sure that you want overwrite the time events " \
                                "with the simulated by the OPF time series?"
                     reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
@@ -2934,7 +2949,7 @@ class MainGUI(QMainWindow):
         self.ui.catalogueTableView.setModel(None)
 
         self.ui.simulationDataStructureTableView.setModel(None)
-        self.ui.tableView.setModel(None)
+        self.ui.profiles_tableView.setModel(None)
 
         self.ui.dataStructureTableView.setModel(None)
         self.ui.catalogueTreeView.setModel(None)
@@ -3520,6 +3535,12 @@ class MainGUI(QMainWindow):
         style = self.ui.plt_style_comboBox.currentText()
         plt.style.use(style)
         print('Style changed to', style)
+
+    def copy_profiles(self):
+        print('Copy')
+
+    def paste_profiles(self):
+        print('Paste')
 
 
 def run():
