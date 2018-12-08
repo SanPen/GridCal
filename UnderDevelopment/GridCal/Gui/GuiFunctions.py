@@ -586,6 +586,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
 
             if self.transposed:
+                # for the properties in the schematic view
                 if orientation == QtCore.Qt.Horizontal:
                     return 'Value'
                 elif orientation == QtCore.Qt.Vertical:
@@ -594,13 +595,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                     else:
                         return self.attributes[p_int]
             else:
+                # Normal
                 if orientation == QtCore.Qt.Horizontal:
                     if self.units[p_int] != '':
                         return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
                     else:
                         return self.attributes[p_int]
                 elif orientation == QtCore.Qt.Vertical:
-                    return str(p_int)
+                    return str(p_int) + ':' + str(self.objects[p_int])
 
         return None
 
