@@ -2820,6 +2820,8 @@ class MultiCircuit:
             elif step_unit == 's':
                 index[i] = time_base + timedelta(seconds=i * step_length)
 
+        index = pd.DatetimeIndex(index)
+
         self.format_profiles(index)
 
     def format_profiles(self, index):
