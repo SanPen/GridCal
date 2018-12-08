@@ -274,7 +274,7 @@ from GridCal.Engine.CalculationEngine import MultiCircuit
 #                             node_power_injection += gen.LPVar_P_prof[t_idx]
 #                         else:
 #                             # set the default profile value
-#                             node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
+#                             node_power_injection += gen.P_prof.values[t_idx] / self.Sbase
 #                     else:
 #                         pass
 #
@@ -441,12 +441,12 @@ from GridCal.Engine.CalculationEngine import MultiCircuit
 #                 generators = self.buses[i].controlled_generators + self.buses[i].batteries
 #                 for gen in generators:
 #                     if gen.active and not gen.enabled_dispatch:
-#                         self.node_total_load[i] -= gen.Pprof.values[t_idx] / self.Sbase
+#                         self.node_total_load[i] -= gen.P_prof.values[t_idx] / self.Sbase
 #
 #                 # Add the static generators
 #                 for gen in self.buses[i].static_generators:
 #                     if gen.active:
-#                         self.node_total_load[i] -= gen.Sprof.values[t_idx].real / self.Sbase
+#                         self.node_total_load[i] -= gen.P_prof.values[t_idx] / self.Sbase
 #
 #                 # add the restriction
 #                 if self.load_shedding:

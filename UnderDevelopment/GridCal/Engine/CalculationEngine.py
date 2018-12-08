@@ -63,6 +63,8 @@ def load_from_xls(filename):
                            'load_B_prof': float,
                            'static_generator': None,
                            'static_generator_Sprof': complex,
+                           'static_generator_P_prof': complex,
+                           'static_generator_Q_prof': complex,
                            'battery': None,
                            'battery_Vset_profiles': float,
                            'battery_P_profiles': float,
@@ -71,6 +73,8 @@ def load_from_xls(filename):
                            'CtrlGen_P_profiles': float,
                            'shunt': None,
                            'shunt_Y_profiles': complex,
+                           'shunt_G_prof': float,
+                           'shunt_B_prof': float,
                            'wires': None,
                            'overhead_line_types': None,
                            'underground_cable_types': None,
@@ -1492,12 +1496,26 @@ class MultiCircuit:
                         setattr(obj_, attr, conv(values[a]))
                 else:
 
-                    if attr in ['Z', 'I', 'S', 'seq_resistance', 'seq_admittance']:
+                    if attr in ['Y', 'Z', 'I', 'S', 'seq_resistance', 'seq_admittance', 'Zf']:
 
                         if attr == 'Z':
                             val = complex(values[a])
                             re = 1 / val.real if val.real != 0.0 else 0
                             im = 1 / val.imag if val.imag != 0.0 else 0
+                            setattr(obj_, 'G', re)
+                            setattr(obj_, 'B', im)
+
+                        if attr == 'Zf':
+                            val = complex(values[a])
+                            re = 1 / val.real if val.real != 0.0 else 0
+                            im = 1 / val.imag if val.imag != 0.0 else 0
+                            setattr(obj_, 'r_fault', re)
+                            setattr(obj_, 'x_fault', im)
+
+                        if attr == 'Y':
+                            val = complex(values[a])
+                            re = val.real
+                            im = val.imag
                             setattr(obj_, 'G', re)
                             setattr(obj_, 'B', im)
 
@@ -1621,7 +1639,7 @@ class MultiCircuit:
                 if 'CtrlGen_Vset_profiles' in data.keys():
                     val = data['CtrlGen_Vset_profiles'].values[:, i]
                     idx = data['CtrlGen_Vset_profiles'].index
-                    obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+                    obj.Vset_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -1656,7 +1674,7 @@ class MultiCircuit:
                 if 'battery_Vset_profiles' in data.keys():
                     val = data['battery_Vset_profiles'].values[:, i]
                     idx = data['battery_Vset_profiles'].index
-                    obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+                    obj.Vset_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -1685,7 +1703,19 @@ class MultiCircuit:
                 if 'static_generator_Sprof' in data.keys():
                     val = data['static_generator_Sprof'].values[:, i]
                     idx = data['static_generator_Sprof'].index
-                    obj.Sprof = pd.DataFrame(data=val, index=idx)
+                    # obj.Sprof = pd.DataFrame(data=val, index=idx)
+                    obj.P_prof = pd.DataFrame(data=val.real, index=idx)
+                    obj.Q_prof = pd.DataFrame(data=val.imag, index=idx)
+
+                if 'static_generator_P_prof' in data.keys():
+                    val = data['static_generator_P_prof'].values[:, i]
+                    idx = data['static_generator_P_prof'].index
+                    obj.P_prof = pd.DataFrame(data=val, index=idx)
+
+                if 'static_generator_Q_prof' in data.keys():
+                    val = data['static_generator_Q_prof'].values[:, i]
+                    idx = data['static_generator_Q_prof'].index
+                    obj.Q_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -1714,8 +1744,9 @@ class MultiCircuit:
                 if 'shunt_Y_profiles' in data.keys():
                     val = data['shunt_Y_profiles'].values[:, i]
                     idx = data['shunt_Y_profiles'].index
-                    obj.Yprof = pd.DataFrame(data=val, index=idx)
-
+                    # obj.Yprof = pd.DataFrame(data=val, index=idx)
+                    obj.G_prof = pd.DataFrame(data=val.real, index=idx)
+                    obj.B_prof = pd.DataFrame(data=val.imag, index=idx)
                 try:
                     bus = bus_dict[str(bus_from[i])]
                 except KeyError as ex:
@@ -1978,7 +2009,7 @@ class MultiCircuit:
                 if 'CtrlGen_Vset_profiles' in data.keys():
                     val = data['CtrlGen_Vset_profiles'].values[:, i]
                     idx = data['CtrlGen_Vset_profiles'].index
-                    obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+                    obj.Vset_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -2013,7 +2044,7 @@ class MultiCircuit:
                 if 'battery_Vset_profiles' in data.keys():
                     val = data['battery_Vset_profiles'].values[:, i]
                     idx = data['battery_Vset_profiles'].index
-                    obj.Vsetprof = pd.DataFrame(data=val, index=idx)
+                    obj.Vset_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -2042,7 +2073,18 @@ class MultiCircuit:
                 if 'static_generator_Sprof' in data.keys():
                     val = data['static_generator_Sprof'].values[:, i]
                     idx = data['static_generator_Sprof'].index
-                    obj.Sprof = pd.DataFrame(data=val, index=idx)
+                    obj.P_prof = pd.DataFrame(data=val.real, index=idx)
+                    obj.Q_prof = pd.DataFrame(data=val.imag, index=idx)
+
+                if 'static_generator_P_prof' in data.keys():
+                    val = data['static_generator_P_prof'].values[:, i]
+                    idx = data['static_generator_P_prof'].index
+                    obj.P_prof = pd.DataFrame(data=val, index=idx)
+
+                if 'static_generator_Q_prof' in data.keys():
+                    val = data['static_generator_Q_prof'].values[:, i]
+                    idx = data['static_generator_Q_prof'].index
+                    obj.P_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -2071,7 +2113,18 @@ class MultiCircuit:
                 if 'shunt_Y_profiles' in data.keys():
                     val = data['shunt_Y_profiles'].values[:, i]
                     idx = data['shunt_Y_profiles'].index
-                    obj.Yprof = pd.DataFrame(data=val, index=idx)
+                    obj.G_prof = pd.DataFrame(data=val.real, index=idx)
+                    obj.B_prof = pd.DataFrame(data=val.imag, index=idx)
+
+                if 'shunt_G_prof' in data.keys():
+                    val = data['shunt_G_prof'].values[:, i]
+                    idx = data['shunt_G_prof'].index
+                    obj.G_prof = pd.DataFrame(data=val, index=idx)
+
+                if 'shunt_B_prof' in data.keys():
+                    val = data['shunt_B_prof'].values[:, i]
+                    idx = data['shunt_B_prof'].index
+                    obj.B_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
                     bus = bus_dict[str(bus_from[i])]
@@ -2353,12 +2406,12 @@ class MultiCircuit:
                 obj.append(elm.get_save_data())
                 hdr.append(elm.name)
                 if T is not None:
-                    if p_profiles is None and elm.Pprof is not None:
-                        p_profiles = elm.Pprof.values
-                        v_set_profiles = elm.Vsetprof.values
+                    if p_profiles is None and elm.P_prof is not None:
+                        p_profiles = elm.P_prof.values
+                        v_set_profiles = elm.Vset_prof.values
                     else:
-                        p_profiles = np.c_[p_profiles, elm.Pprof.values]
-                        v_set_profiles = np.c_[v_set_profiles, elm.Vsetprof.values]
+                        p_profiles = np.c_[p_profiles, elm.P_prof.values]
+                        v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof.values]
             dfs['battery'] = pd.DataFrame(data=obj, columns=headers)
 
             if p_profiles is not None:
@@ -2379,13 +2432,13 @@ class MultiCircuit:
             for elm in con_gen:
                 obj.append(elm.get_save_data())
                 hdr.append(elm.name)
-                if T is not None and elm.Pprof is not None:
+                if T is not None and elm.P_prof is not None:
                     if p_profiles is None:
-                        p_profiles = elm.Pprof.values
-                        v_set_profiles = elm.Vsetprof.values
+                        p_profiles = elm.P_prof.values
+                        v_set_profiles = elm.Vset_prof.values
                     else:
-                        p_profiles = np.c_[p_profiles, elm.Pprof.values]
-                        v_set_profiles = np.c_[v_set_profiles, elm.Vsetprof.values]
+                        p_profiles = np.c_[p_profiles, elm.P_prof.values]
+                        v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof.values]
 
             dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -2403,20 +2456,24 @@ class MultiCircuit:
         if len(shunts) > 0:
             obj = list()
             hdr = list()
-            y_profiles = None
+            g_profiles = None
+            b_profiles = None
             for elm in shunts:
                 obj.append(elm.get_save_data())
                 hdr.append(elm.name)
                 if T is not None:
-                    if y_profiles is None and elm.Yprof.values is not None:
-                        y_profiles = elm.Yprof.values
+                    if g_profiles is None and elm.G_prof.values is not None:
+                        g_profiles = elm.G_prof.values
+                        b_profiles = elm.B_prof.values
                     else:
-                        y_profiles = np.c_[y_profiles, elm.Yprof.values]
+                        g_profiles = np.c_[g_profiles, elm.G_prof.values]
+                        b_profiles = np.c_[b_profiles, elm.B_prof.values]
 
             dfs['shunt'] = pd.DataFrame(data=obj, columns=headers)
 
-            if y_profiles is not None:
-                dfs['shunt_Y_profiles'] = pd.DataFrame(data=y_profiles.astype(str), columns=hdr, index=T)
+            if g_profiles is not None:
+                dfs['shunt_G_prof'] = pd.DataFrame(data=g_profiles, columns=hdr, index=T)
+                dfs['shunt_B_prof'] = pd.DataFrame(data=b_profiles, columns=hdr, index=T)
         else:
 
             dfs['shunt'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
@@ -2424,7 +2481,7 @@ class MultiCircuit:
         # wires ########################################################################################################
 
         elements = self.wire_types
-        headers = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0, phase=0).edit_headers
+        headers = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0, phase=0).editable_headers.keys()
 
         if len(elements) > 0:
             obj = list()
@@ -2452,7 +2509,7 @@ class MultiCircuit:
         # underground cable types ######################################################################################
 
         elements = self.underground_cable_types
-        headers = UndergroundLineType().edit_headers
+        headers = UndergroundLineType().editable_headers.keys()
 
         if len(elements) > 0:
             obj = list()
@@ -2466,7 +2523,7 @@ class MultiCircuit:
         # sequence line types ##########################################################################################
 
         elements = self.sequence_line_types
-        headers = SequenceLineType().edit_headers
+        headers = SequenceLineType().editable_headers.keys()
 
         if len(elements) > 0:
             obj = list()
@@ -2481,7 +2538,7 @@ class MultiCircuit:
         # transformer types ############################################################################################
 
         elements = self.transformer_types
-        headers = TransformerType().edit_headers
+        headers = TransformerType().editable_headers.keys()
 
         if len(elements) > 0:
             obj = list()
@@ -2686,13 +2743,13 @@ class MultiCircuit:
                         circuit.generator_power_profile[:, i_gen] = \
                             opf_time_series_results.controlled_generator_power[:, i_gen]
                     else:
-                        circuit.generator_power_profile[:, i_gen] = elm.Pprof.values[:, 0]
+                        circuit.generator_power_profile[:, i_gen] = elm.P_prof.values[:, 0]
 
                     # Power factor profile
-                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pfprof.values[:, 0]
+                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof.values[:, 0]
 
                     # Voltage profile
-                    circuit.generator_voltage_profile[:, i_gen] = elm.Vsetprof.values[:, 0]
+                    circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof.values[:, 0]
 
                 circuit.C_gen_bus[i_gen, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -2727,9 +2784,9 @@ class MultiCircuit:
                         circuit.battery_power_profile[:, i_batt] = \
                             opf_time_series_results.battery_power[:, i_batt]
                     else:
-                        circuit.battery_power_profile[:, i_batt] = elm.Pprof.values[:, 0]
+                        circuit.battery_power_profile[:, i_batt] = elm.P_prof.values[:, 0]
                     # Voltage profile
-                    circuit.battery_voltage_profile[:, i_batt] = elm.Vsetprof.values[:, 0]
+                    circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof.values[:, 0]
 
                 circuit.C_batt_bus[i_batt, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -3162,13 +3219,13 @@ class MultiCircuit:
                 for elm in bus.controlled_generators:
                     gen_names.append(elm.name)
 
-                    P_gen.append(elm.Pprof.values[:, 0])
-                    V_gen.append(elm.Vsetprof.values[:, 0])
+                    P_gen.append(elm.P_prof.values[:, 0])
+                    V_gen.append(elm.Vset_prof.values[:, 0])
 
                 for elm in bus.batteries:
                     bat_names.append(elm.name)
                     gen_names.append(elm.name)
-                    P_gen.append(elm.Pprof.values[:, 0])
+                    P_gen.append(elm.P_prof.values[:, 0])
                     V_gen.append(elm.Vsetprof.values[:, 0])
                     E_batt.append(elm.energy_array.values[:, 0])
 

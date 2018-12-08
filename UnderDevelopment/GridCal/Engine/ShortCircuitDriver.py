@@ -293,9 +293,9 @@ class ShortCircuit(QRunnable):
         # deactivate the current branch
         branch.active = False
 
-        # each of the branches will have the proportional impedances
+        # each of the branches will have the proportional impedance
         # Bus_from------------Middle_bus------------Bus_To
-        #       |------x--------|   (x: distance measured in per unit (0~1)
+        #    |---------x---------|   (x: distance measured in per unit (0~1)
 
         middle_bus = Bus()
 

@@ -94,8 +94,9 @@ class DeviceType(Enum):
 
 class Bus(EditableDevice):
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, xpos=0, ypos=0, height=0, width=0,
-                 active=True, is_slack=False, area='Defualt', zone='Default', substation='Default'):
+    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
+                 xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False,
+                 area='Defualt', zone='Default', substation='Default'):
         """
         Bus  constructor
         :param name: name of the bus
@@ -120,7 +121,8 @@ class Bus(EditableDevice):
                                                   'Vnom': ('', float),
                                                   'Vmin': ('', float),
                                                   'Vmax': ('', float),
-                                                  'Zf': ('', complex),
+                                                  'r_fault': ('', float),
+                                                  'x_fault': ('', float),
                                                   'x': ('', float),
                                                   'y': ('', float),
                                                   'h': ('', float),
@@ -151,7 +153,8 @@ class Bus(EditableDevice):
         self.Qmax_sum = 0
 
         # short circuit impedance
-        self.Zf = 0
+        self.r_fault = r_fault
+        self.x_fault = x_fault
 
         # is the bus active?
         self.active = active
@@ -195,30 +198,6 @@ class Bus(EditableDevice):
         self.y = ypos
         self.h = height
         self.w = width
-
-        # associated graphic object
-        # self.graphic_obj = None
-        #
-        # self.edit_headers = ['name', 'active', 'is_slack', 'Vnom', 'Vmin', 'Vmax', 'Zf', 'x', 'y', 'h', 'w',
-        #                      'area', 'zone', 'substation']
-        #
-        # self.units = ['', '', '', 'kV', 'p.u.', 'p.u.', 'p.u.', 'px', 'px', 'px', 'px',
-        #               '', '', '']
-        #
-        # self.edit_types = {'name': str,
-        #                    'active': bool,
-        #                    'is_slack': bool,
-        #                    'Vnom': float,
-        #                    'Vmin': float,
-        #                    'Vmax': float,
-        #                    'Zf': complex,
-        #                    'x': float,
-        #                    'y': float,
-        #                    'h': float,
-        #                    'w': float,
-        #                    'area': str,
-        #                    'zone': str,
-        #                    'substation': str}
 
     def determine_bus_type(self):
         """
@@ -291,19 +270,16 @@ class Bus(EditableDevice):
             show_fig = False
 
         for elm in self.loads:
-            # ax_load.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
-            elm.Sprof.columns = [elm.name]
-            elm.Sprof.plot(ax=ax_load)
+            elm.P_prof.columns = [elm.name]
+            elm.P_prof.plot(ax=ax_load)
 
         for elm in self.controlled_generators + self.batteries:
-            # ax_load.plot(elm.Pprof.index, elm.Pprof.values, label=elm.name)
-            elm.Pprof.columns = [elm.name]
-            elm.Pprof.plot(ax=ax_load)
+            elm.P_prof.columns = [elm.name]
+            elm.P_prof.plot(ax=ax_load)
 
         for elm in self.static_generators:
-            # ax_load.plot(elm.Sprof.index, elm.Sprof.values.real, label=elm.name)
-            elm.Sprof.columns = [elm.name]
-            elm.Sprof.plot(ax=ax_load)
+            elm.P_prof.columns = [elm.name]
+            elm.P_prof.plot(ax=ax_load)
 
         if time_series is not None:
             y = time_series.results.voltage
@@ -334,7 +310,9 @@ class Bus(EditableDevice):
 
         bus.Vmax = self.Vmax
 
-        bus.Zf = self.Zf
+        bus.r_fault = self.r_fault
+
+        bus.x_fault = self.x_fault
 
         bus.Qmin_sum = self.Qmin_sum
 
@@ -392,14 +370,14 @@ class Bus(EditableDevice):
 
         return bus
 
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        self.retrieve_graphic_position()
-        return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
-                self.x, self.y, self.h, self.w, self.area, self.zone, self.substation]
+    # def get_save_data(self):
+    #     """
+    #     Return the data that matches the edit_headers
+    #     :return:
+    #     """
+    #     self.retrieve_graphic_position()
+    #     return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
+    #             self.x, self.y, self.h, self.w, self.area, self.zone, self.substation]
 
     def get_json_dict(self, id):
         """
@@ -415,8 +393,8 @@ class Bus(EditableDevice):
                 'Vnom': self.Vnom,
                 'vmin': self.Vmin,
                 'vmax': self.Vmax,
-                'rf': self.Zf.real,
-                'xf': self.Zf.imag,
+                'rf': self.r_fault,
+                'xf': self.x_fault,
                 'x': self.x,
                 'y': self.y,
                 'h': self.h,
@@ -432,23 +410,28 @@ class Bus(EditableDevice):
         :return:
         """
         for elm in self.loads:
-            elm.S = elm.Sprof.values[t, 0]
-            elm.I = elm.Iprof.values[t, 0]
-            elm.Z = elm.Zprof.values[t, 0]
+            elm.P = elm.P_prof.values[t, 0]
+            elm.Q = elm.Q_prof.values[t, 0]
+            elm.Ir = elm.Ir_prof.values[t, 0]
+            elm.Ii = elm.Ii_prof.values[t, 0]
+            elm.G = elm.G_prof.values[t, 0]
+            elm.B = elm.B_prof.values[t, 0]
 
         for elm in self.static_generators:
-            elm.S = elm.Sprof.values[t, 0]
+            elm.P = elm.P_prof.values[t, 0]
+            elm.Q = elm.Q_prof.values[t, 0]
 
         for elm in self.batteries:
-            elm.P = elm.Pprof.values[t, 0]
-            elm.Vset = elm.Vsetprof.values[t, 0]
+            elm.P = elm.P_prof.values[t, 0]
+            elm.Vset = elm.Vset_prof.values[t, 0]
 
         for elm in self.controlled_generators:
-            elm.P = elm.Pprof.values[t, 0]
-            elm.Vset = elm.Vsetprof.values[t, 0]
+            elm.P = elm.P_prof.values[t, 0]
+            elm.Vset = elm.Vset_prof.values[t, 0]
 
         for elm in self.shunts:
-            elm.Y = elm.Yprof.values[t, 0]
+            elm.G = elm.G_prof.values[t, 0]
+            elm.B = elm.B_prof.values[t, 0]
 
     def retrieve_graphic_position(self):
         """
@@ -529,6 +512,9 @@ class Bus(EditableDevice):
         # List of measurements
         self.measurements += other_bus.measurements
 
+    def get_fault_impedance(self):
+        return complex(self.r_fault, self.x_fault)
+
     def __str__(self):
         return self.name
 
@@ -595,8 +581,9 @@ class TapChanger:
 class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, branch_type: BranchType=BranchType.Line,
-                 length=1, vset=1.0, Tb=20, k=234.5, bus_to_regulated=False, template=BranchTemplate(), ):
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
+                 branch_type: BranchType=BranchType.Line,  length=1, vset=1.0, Tb=20, k=234.5,
+                 bus_to_regulated=False, template=BranchTemplate(), ):
         """
         Branch model constructor
         @param bus_from: Bus Object
@@ -638,6 +625,9 @@ class Branch(ReliabilityDevice):
                                                      'vset': ('', float),
                                                      'Tb': ('', float),
                                                      'k': ('', float),
+                                                     'r_fault': ('p.u.', float),
+                                                     'x_fault': ('p.u.', float),
+                                                     'fault_pos': ('p.u.', float),
                                                      'branch_type': ('', BranchType),
                                                      'template': ('', BranchTemplate)},
                                    mttf=mttf,
@@ -664,6 +654,11 @@ class Branch(ReliabilityDevice):
 
         # line length in km
         self.length = length
+
+        # short circuit impedance
+        self.r_fault = r_fault
+        self.x_fault = x_fault
+        self.fault_pos = fault_pos
 
         # total impedance and admittance in p.u.
         self.R = r
@@ -960,7 +955,8 @@ class Branch(ReliabilityDevice):
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle, self.bus_to_regulated,
-                self.vset, self.Tb, self.k, conv.inv_conv[self.branch_type], template]
+                self.vset, self.Tb, self.k, self.r_fault, self.x_fault, self.fault_pos,
+                conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1231,15 +1227,6 @@ class Load(InjectionDevice):
 
         return load
 
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active,
-                self.P, self.Q, self.Ir, self.Ii, self.G, self.B,
-                self.mttf, self.mttr]
-
     def get_json_dict(self, id, bus_dict):
         """
         Get json dictionary
@@ -1346,12 +1333,12 @@ class StaticGenerator(InjectionDevice):
                                mttf=self.mttf,
                                mttr=self.mttr)
 
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, self.P, self.Q, self.mttf, self.mttr]
+    # def get_save_data(self):
+    #     """
+    #     Return the data that matches the edit_headers
+    #     :return:
+    #     """
+    #     return [self.name, self.bus.name, self.active, self.P, self.Q, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1487,9 +1474,9 @@ class Generator(InjectionDevice):
                                                    'mttr': ('h', float)},
                                  mttf=mttf,
                                  mttr=mttr,
-                                 properties_with_profile={'P': 'Pprof',
-                                                          'Pf': 'Pfprof',
-                                                          'Vset': 'Vsetprof'})
+                                 properties_with_profile={'P': 'P_prof',
+                                                          'Pf': 'Pf_prof',
+                                                          'Vset': 'Vset_prof'})
 
         # name of the device
         # self.name = name
@@ -1521,7 +1508,7 @@ class Generator(InjectionDevice):
         self.Pf = power_factor
 
         # voltage set profile for this load in p.u.
-        self.Pfprof = power_factor_prof
+        self.Pf_prof = power_factor_prof
 
         # If this generator is voltage controlled it produces a PV node, otherwise the node remains as PQ
         self.is_controlled = is_controlled
@@ -1536,13 +1523,13 @@ class Generator(InjectionDevice):
         self.Pmax = p_max
 
         # power profile for this load in MW
-        self.Pprof = power_prof
+        self.P_prof = power_prof
 
         # Voltage module set point (p.u.)
         self.Vset = voltage_module
 
         # voltage set profile for this load in p.u.
-        self.Vsetprof = vset_prof
+        self.Vset_prof = vset_prof
 
         # minimum reactive power in MVAr
         self.Qmin = Qmin
@@ -1632,13 +1619,13 @@ class Generator(InjectionDevice):
         gen.active = self.active
 
         # power profile for this load
-        gen.Pprof = self.Pprof
+        gen.P_prof = self.P_prof
 
         # Voltage module set point (p.u.)
         gen.Vset = self.Vset
 
         # voltage set profile for this load
-        gen.Vsetprof = self.Vsetprof
+        gen.Vset_prof = self.Vset_prof
 
         # minimum reactive power in per unit
         gen.Qmin = self.Qmin
@@ -1658,13 +1645,13 @@ class Generator(InjectionDevice):
 
         return gen
 
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.is_controlled, self.active, self.P, self.Pf, self.Vset, self.Snom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
+    # def get_save_data(self):
+    #     """
+    #     Return the data that matches the edit_headers
+    #     :return:
+    #     """
+    #     return [self.name, self.bus.name, self.is_controlled, self.active, self.P, self.Pf, self.Vset, self.Snom,
+    #             self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1732,7 +1719,7 @@ class Generator(InjectionDevice):
             dta = arr * self.P
         else:
             dta = np.ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+        self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def create_Pf_profile(self, index, arr=None, arr_in_pu=False):
         """
@@ -1746,7 +1733,7 @@ class Generator(InjectionDevice):
             dta = arr * self.Pf
         else:
             dta = np.ones(len(index)) * self.Pf if arr is None else arr
-        self.Pfprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+        self.Pf_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def initialize_lp_vars(self):
         """
@@ -1782,7 +1769,7 @@ class Generator(InjectionDevice):
         else:
             dta = np.ones(len(index)) * self.Vset if arr is None else arr
 
-        self.Vsetprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+        self.Vset_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def get_profiles(self, index=None, use_opf_vals=False):
         """
@@ -1794,33 +1781,33 @@ class Generator(InjectionDevice):
             Power, Current and Impedance profiles
         """
         if index is not None:
-            if self.Pprof is None:
+            if self.P_prof is None:
                 self.create_P_profile(index)
-            if self.Pfprof is None:
+            if self.Pf_prof is None:
                 self.create_Pf_profile(index)
-            if self.Vsetprof is None:
+            if self.Vset_prof is None:
                 self.create_Vset_profile(index)
 
         if use_opf_vals:
-            return self.get_lp_var_profile(index), self.Vsetprof
+            return self.get_lp_var_profile(index), self.Vset_prof
         else:
-            return self.Pprof, self.Vsetprof
+            return self.P_prof, self.Vset_prof
 
     def delete_profiles(self):
         """
         Delete the object profiles
         :return:
         """
-        self.Pprof = None
-        self.Vsetprof = None
+        self.P_prof = None
+        self.Vset_prof = None
 
     def set_profile_values(self, t):
         """
         Set the profile values at t
         :param t: time index
         """
-        self.P = self.Pprof.values[t]
-        self.Vset = self.Vsetprof.values[t]
+        self.P = self.P_prof.values[t]
+        self.Vset = self.Vset_prof.values[t]
 
     def apply_lp_vars(self, at=None):
         """
@@ -1830,21 +1817,21 @@ class Generator(InjectionDevice):
             if at is None:
                 self.P = self.LPVar_P.value()
             else:
-                self.Pprof.values[at] = self.LPVar_P.value()
+                self.P_prof.values[at] = self.LPVar_P.value()
 
     def apply_lp_profile(self, Sbase):
         """
         Set LP profile to the regular profile
         :return:
         """
-        n = self.Pprof.shape[0]
+        n = self.P_prof.shape[0]
         if self.active and self.enabled_dispatch:
             for i in range(n):
-                self.Pprof.values[i] = self.LPVar_P_prof[i].value() * Sbase
+                self.P_prof.values[i] = self.LPVar_P_prof[i].value() * Sbase
         else:
             # there are no values in the LP vars because this generator is deactivated,
             # therefore fill the profiles with zeros when asked to copy the lp vars to the power profiles
-            self.Pprof.values = np.zeros(self.Pprof.shape[0])
+            self.P_prof.values = np.zeros(self.P_prof.shape[0])
 
     def __str__(self):
         return self.name
@@ -2002,13 +1989,13 @@ class Battery(Generator):
         batt.Pmin = self.Pmin
 
         # power profile for this load
-        batt.Pprof = self.Pprof
+        batt.P_prof = self.P_prof
 
         # Voltage module set point (p.u.)
         batt.Vset = self.Vset
 
         # voltage set profile for this load
-        batt.Vsetprof = self.Vsetprof
+        batt.Vset_prof = self.Vset_prof
 
         # minimum reactive power in per unit
         batt.Qmin = self.Qmin
@@ -2057,14 +2044,14 @@ class Battery(Generator):
 
         return batt
 
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
-                self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr,
-                self.soc_0, self.max_soc, self.min_soc, self.charge_efficiency, self.discharge_efficiency]
+    # def get_save_data(self):
+    #     """
+    #     Return the data that matches the edit_headers
+    #     :return:
+    #     """
+    #     return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
+    #             self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr,
+    #             self.soc_0, self.max_soc, self.min_soc, self.charge_efficiency, self.discharge_efficiency]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -2101,7 +2088,7 @@ class Battery(Generator):
             dta = arr * self.P
         else:
             dta = np.ones(len(index)) * self.P if arr is None else arr
-        self.Pprof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+        self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
         self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
         self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
@@ -2112,8 +2099,8 @@ class Battery(Generator):
         """
         self.soc = self.soc_0
         self.energy = self.Enom * self.soc
-        dta = self.Pprof.values.copy()
-        index = self.Pprof.index
+        dta = self.P_prof.values.copy()
+        index = self.P_prof.index
         self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
         self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
 
@@ -2180,7 +2167,7 @@ class Battery(Generator):
         :param store_values: store the values?
         :return: active power processed by the battery control in MW
         """
-        power_value = self.Pprof.values[t]
+        power_value = self.P_prof.values[t]
 
         processed_power, processed_energy = self.process(power_value, dt)
 
@@ -2223,42 +2210,16 @@ class Shunt(InjectionDevice):
                                  properties_with_profile={'G': 'G_prof',
                                                           'B': 'B_prof'})
 
-        # self.name = name
-        #
-        # self.active = active
-        #
-        # self.type_name = 'Shunt'
-        #
-        # self.properties_with_profile = (['Y'], [complex])
-        #
-        # self.graphic_obj = None
-
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
-        # Impedance (Ohm)
-        # Z * I = V -> Ohm * kA = kV
+        # Impedance (MVA)
         self.G = G
         self.B = B
 
         # admittance profile
         self.G_prof = G_prof
         self.B_prof = B_prof
-
-        # self.edit_headers = ['name', 'bus', 'active', 'Y', 'mttf', 'mttr']
-        #
-        # self.units = ['', '', '', 'MVA', 'h', 'h']  # MVA at 1 p.u.
-        #
-        # self.edit_types = {'name': str,
-        #                    'active': bool,
-        #                    'bus': None,
-        #                    'Y': complex,
-        #                    'mttf': float,
-        #                    'mttr': float}
-        #
-        # self.profile_f = {'Y': self.create_Y_profile}
-        #
-        # self.profile_attr = {'Y': 'Yprof'}
 
     def copy(self):
         """

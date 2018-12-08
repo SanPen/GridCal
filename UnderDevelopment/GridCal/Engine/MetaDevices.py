@@ -42,7 +42,14 @@ class EditableDevice:
         Return the data that matches the edit_headers
         :return:
         """
-        return [getattr(self, name) for name in self.editable_headers.keys()]
+
+        data = list()
+        for name, pair in self.editable_headers.items():
+            obj = getattr(self, name)
+            if pair[0] not in [str, float, int, bool]:
+                obj = str(obj)
+            data.append(obj)
+        return data
 
     def get_headers(self):
         """
@@ -50,8 +57,8 @@ class EditableDevice:
         """
         return list(self.editable_headers.keys())
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
 
 class ReliabilityDevice(EditableDevice):

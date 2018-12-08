@@ -306,22 +306,22 @@ class UndergroundLineType(QtCore.QAbstractTableModel, EditableDevice):
 class Tower(QtCore.QAbstractTableModel, EditableDevice):
 
     def __init__(self, parent=None, edit_callback=None, name='Tower', tpe=BranchType.Branch):
-        QtCore.QAbstractTableModel.__init__(self, parent)
-        EditableDevice.__init__(self,
-                                name=name,
-                                active=True,
-                                type_name='Tower',
-                                editable_headers={'tower_name': ('', str),
-                                                  'earth_resistivity': ('Ohm/m3', float),
-                                                  'frequency': ('Hz', float),
-                                                  'R1': ('Ohm/km', float),
-                                                  'X1': ('Ohm/km', float),
-                                                  'Gsh1': ('S/km', float),
-                                                  'Bsh1': ('S/km', float),
-                                                  'R0': ('Ohm/km', float),
-                                                  'X0': ('Ohm/km', float),
-                                                  'Gsh0': ('S/km', float),
-                                                  'Bsh0': ('S/km', float)})
+        QtCore.QAbstractTableModel.__init__(self,
+                                            parent,
+                                            name=name,
+                                            active=True,
+                                            type_name='Tower',
+                                            editable_headers={'tower_name': ('', str),
+                                                              'earth_resistivity': ('Ohm/m3', float),
+                                                              'frequency': ('Hz', float),
+                                                              'R1': ('Ohm/km', float),
+                                                              'X1': ('Ohm/km', float),
+                                                              'Gsh1': ('S/km', float),
+                                                              'Bsh1': ('S/km', float),
+                                                              'R0': ('Ohm/km', float),
+                                                              'X0': ('Ohm/km', float),
+                                                              'Gsh0': ('S/km', float),
+                                                              'Bsh0': ('S/km', float)})
 
         self.tpe = tpe
 
@@ -392,7 +392,7 @@ class Tower(QtCore.QAbstractTableModel, EditableDevice):
         """
         # generate the tower data
         tower_dta = list()
-        for property in self.edit_headers:
+        for property in self.editable_headers:
             tower_dta.append(getattr(self, property))
 
         # add the wire data
@@ -412,7 +412,7 @@ class Tower(QtCore.QAbstractTableModel, EditableDevice):
         :return:
         """
         wire_hdr = self.get_wire_properties()
-        hdr = self.edit_headers + wire_hdr
+        hdr = list(self.editable_headers.keys()) + wire_hdr
         return hdr
 
     def add(self, wire: Wire):
@@ -669,7 +669,7 @@ class TransformerType(EditableDevice):
     def get_save_data(self):
 
         dta = list()
-        for property in self.edit_headers:
+        for property in self.editable_headers:
             dta.append(getattr(self, property))
         return dta
 

@@ -458,17 +458,20 @@ def interpret_data_v1(circuit, data):
         table = data['bus']
         for i in range(len(table)):
             if are_load_prfiles and len(circuit.buses[i].loads) > 0:  # set the profile
-                circuit.buses[i].loads[0].Sprof = pd.DataFrame(data=Sprof[:, i],
-                                                               index=master_time_array,
-                                                               columns=['Load@' + names[i]])
+                circuit.buses[i].loads[0].P_prof = pd.DataFrame(data=Pprof[:, i],
+                                                                index=master_time_array,
+                                                                columns=['Load@' + names[i]])
+                circuit.buses[i].loads[0].Q_prof = pd.DataFrame(data=Qprof[:, i],
+                                                                index=master_time_array,
+                                                                columns=['Load@' + names[i]])
         import GridCal.Engine.Importers.GenDefinitions as e
         table = data['gen']
         for i in range(len(table)):
             bus_idx = int(table[i, e.GEN_BUS]) - 1
             if are_gen_prfiles:
-                circuit.buses[bus_idx].controlled_generators[0].Pprof = pd.DataFrame(data=Gprof[:, i],
-                                                                                     index=master_time_array,
-                                                                                     columns=['Gen@' + names[i]])
+                circuit.buses[bus_idx].generators[0].P_prof = pd.DataFrame(data=Gprof[:, i],
+                                                                           index=master_time_array,
+                                                                           columns=['Gen@' + names[i]])
     print('Interpreted.')
     return circuit
 

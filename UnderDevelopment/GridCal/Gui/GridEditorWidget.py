@@ -615,32 +615,35 @@ class BranchGraphicItem(QGraphicsLineItem):
         @param event:
         @return:
         """
-        menu = QMenu()
+        if self.api_object is not None:
+            menu = QMenu()
 
-        pe = menu.addAction('Enable/Disable')
-        pe.triggered.connect(self.enable_disable_toggle)
+            pe = menu.addAction('Enable/Disable')
+            pe.triggered.connect(self.enable_disable_toggle)
 
-        menu.addSeparator()
+            menu.addSeparator()
 
-        ra2 = menu.addAction('Delete')
-        ra2.triggered.connect(self.remove)
+            ra2 = menu.addAction('Delete')
+            ra2.triggered.connect(self.remove)
 
-        ra3 = menu.addAction('Edit')
-        ra3.triggered.connect(self.edit)
+            ra3 = menu.addAction('Edit')
+            ra3.triggered.connect(self.edit)
 
-        if self.api_object.branch_type == BranchType.Transformer:
-            ra4 = menu.addAction('Tap up')
-            ra4.triggered.connect(self.tap_up)
+            if self.api_object.branch_type == BranchType.Transformer:
+                ra4 = menu.addAction('Tap up')
+                ra4.triggered.connect(self.tap_up)
 
-            ra5 = menu.addAction('Tap down')
-            ra5.triggered.connect(self.tap_down)
+                ra5 = menu.addAction('Tap down')
+                ra5.triggered.connect(self.tap_down)
 
-        menu.addSeparator()
+            menu.addSeparator()
 
-        re = menu.addAction('Reduce')
-        re.triggered.connect(self.reduce)
+            re = menu.addAction('Reduce')
+            re.triggered.connect(self.reduce)
 
-        menu.exec_(event.screenPos())
+            menu.exec_(event.screenPos())
+        else:
+            pass
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -648,10 +651,6 @@ class BranchGraphicItem(QGraphicsLineItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        # mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-        #                    self.api_object.edit_types,
-        #                    parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
-        #                    non_editable_indices=[1, 2])
 
         mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
                                 parent=self.diagramScene.parent().object_editor_table,
@@ -1181,21 +1180,34 @@ class LoadGraphicItem(QGraphicsItemGroup):
     def plot(self):
 
         fig = plt.figure(figsize=(10, 8))
-        ax1 = fig.add_subplot(311)
-        ax2 = fig.add_subplot(312)
-        ax3 = fig.add_subplot(313)
+        ax1 = fig.add_subplot(321)
+        ax2 = fig.add_subplot(322)
+        ax3 = fig.add_subplot(323)
+        ax4 = fig.add_subplot(324)
+        ax5 = fig.add_subplot(325)
+        ax6 = fig.add_subplot(326)
 
-        self.api_object.Sprof.plot(ax=ax1, linewidth=1)
-        self.api_object.Iprof.plot(ax=ax2, linewidth=1)
-        self.api_object.Zprof.plot(ax=ax3, linewidth=1)
+        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
+        self.api_object.Ir_prof.plot(ax=ax2, linewidth=1)
+        self.api_object.G_prof.plot(ax=ax3, linewidth=1)
 
-        ax1.set_title('Power profile')
-        ax2.set_title('Current profile')
-        ax3.set_title('Impedance profile')
+        self.api_object.Q_prof.plot(ax=ax4, linewidth=1)
+        self.api_object.Ii_prof.plot(ax=ax5, linewidth=1)
+        self.api_object.B_prof.plot(ax=ax6, linewidth=1)
 
-        ax1.set_ylabel('MVA')
-        ax2.set_ylabel('kA')
-        ax3.set_ylabel('Ohm (p.u.)')
+        ax1.set_title('Active power profile')
+        ax2.set_title('Active current profile')
+        ax3.set_title('Active impedance profile')
+        ax4.set_title('Reactive power profile')
+        ax5.set_title('Reactive current profile')
+        ax6.set_title('Reactive impedance profile')
+
+        ax1.set_ylabel('MW')
+        ax2.set_ylabel('MW at V=1 p.u.')
+        ax3.set_ylabel('MW at V=1 p.u.')
+        ax4.set_ylabel('MVAr')
+        ax5.set_ylabel('MW at V=1 p.u.')
+        ax6.set_ylabel('MW at V=1 p.u.')
 
         plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
 
@@ -1207,8 +1219,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-                           self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1378,8 +1389,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-                           self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1528,8 +1538,8 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         ax1 = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
 
-        self.api_object.Pprof.plot(ax=ax1, linewidth=1)
-        self.api_object.Vsetprof.plot(ax=ax2, linewidth=1)
+        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
+        self.api_object.Vset_prof.plot(ax=ax2, linewidth=1)
 
         ax1.set_title('Active power profile')
         ax2.set_title('Set voltage profile')
@@ -1547,8 +1557,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-                           self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1693,13 +1702,17 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         Plot API objects profiles
         """
         fig = plt.figure(figsize=(10, 6))
-        ax1 = fig.add_subplot(111)
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
 
-        self.api_object.Sprof.plot(ax=ax1, linewidth=1)
+        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
+        self.api_object.Q_prof.plot(ax=ax2, linewidth=1)
 
         ax1.set_title('Active power profile')
-
         ax1.set_ylabel('MW')
+
+        ax1.set_title('Reactive power profile')
+        ax1.set_ylabel('MVAr')
 
         plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
 
@@ -1711,8 +1724,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers, self.api_object.units,
-                           self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -1858,8 +1870,8 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         ax3 = fig.add_subplot(413)
         ax4 = fig.add_subplot(414)
 
-        self.api_object.Pprof.plot(ax=ax1, linewidth=1)
-        self.api_object.Vsetprof.plot(ax=ax2, linewidth=1)
+        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
+        self.api_object.Vset_prof.plot(ax=ax2, linewidth=1)
         self.api_object.power_array.plot(ax=ax3, linewidth=1)
         self.api_object.energy_array.plot(ax=ax4, linewidth=1)
 
@@ -1883,9 +1895,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.edit_headers,
-                           self.api_object.units,
-                           self.api_object.edit_types,
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 

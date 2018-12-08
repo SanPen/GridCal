@@ -98,7 +98,7 @@ class ElementsDialogue(QtWidgets.QDialog):
         self.objects_table = QtWidgets.QTableView()
 
         if len(elements) > 0:
-            model = ObjectsModel(elements, elements[0].edit_headers, elements[0].units, elements[0].edit_types,
+            model = ObjectsModel(elements, elements[0].editable_headers,
                                  parent=self.objects_table, editable=False, non_editable_indices=[1, 2, 14])
 
             self.objects_table.setModel(model)
@@ -172,15 +172,18 @@ class FileOpenThread(QThread):
 
         self.logger = list()
 
-        try:
-            self.logger += self.circuit.load_file(filename=filename)
+        self.logger += self.circuit.load_file(filename=filename)
+        self.valid = True
 
-            self.valid = True
-
-        except Exception as ex:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
-            self.valid = False
+        # try:
+        #     self.logger += self.circuit.load_file(filename=filename)
+        #
+        #     self.valid = True
+        #
+        # except Exception as ex:
+        #     exc_type, exc_value, exc_traceback = sys.exc_info()
+        #     self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
+        #     self.valid = False
 
         # post events
         self.progress_text.emit('Creating schematic...')
@@ -1120,25 +1123,25 @@ class MainGUI(QMainWindow):
 
             # call to save the file in the circuit
 
-            # logger = self.circuit.save_file(filename)
+            logger = self.circuit.save_file(filename)
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Save file logger', logger)
+                dlg.exec_()
+
+            # try:
+            #     logger = self.circuit.save_file(filename)
             #
-            # if len(logger) > 0:
-            #     dlg = LogsDialogue('Save file logger', logger)
-            #     dlg.exec_()
-
-            try:
-                logger = self.circuit.save_file(filename)
-
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Save file logger', logger)
-                    dlg.exec_()
-
-                # call the garbage collector to free memory
-                gc.collect()
-
-            except:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+            #     if len(logger) > 0:
+            #         dlg = LogsDialogue('Save file logger', logger)
+            #         dlg.exec_()
+            #
+            #     # call the garbage collector to free memory
+            #     gc.collect()
+            #
+            # except:
+            #     exc_type, exc_value, exc_traceback = sys.exc_info()
+            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
     def closeEvent(self, event):
         """
@@ -1424,44 +1427,42 @@ class MainGUI(QMainWindow):
 
         if elm_type == 'Buses':
             elm = Bus()
-            mdl = ObjectsModel(self.circuit.buses, elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True)
+            elements = self.circuit.buses
 
         elif elm_type == 'Branches':
 
             self.fill_catalogue_tree_view()
 
             elm = Branch(None, None)
-            mdl = BranchObjectModel(self.circuit.branches, elm.edit_headers, elm.units, elm.edit_types,
-                                    parent=self.ui.dataStructureTableView, editable=True,
-                                    non_editable_indices=elm.non_editable_indices)
+            elements = self.circuit.branches
 
             self.view_template_controls(True)
 
         elif elm_type == 'Loads':
             elm = Load()
-            mdl = ObjectsModel(self.circuit.get_loads(), elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elements = self.circuit.get_loads()
 
         elif elm_type == 'Static Generators':
             elm = StaticGenerator()
-            mdl = ObjectsModel(self.circuit.get_static_generators(), elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elements = self.circuit.get_static_generators()
 
         elif elm_type == 'Generators':
             elm = Generator()
-            mdl = ObjectsModel(self.circuit.get_generators(), elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elements = self.circuit.get_generators()
 
         elif elm_type == 'Batteries':
             elm = Battery()
-            mdl = ObjectsModel(self.circuit.get_batteries(), elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elements = self.circuit.get_batteries()
 
         elif elm_type == 'Shunts':
             elm = Shunt()
-            mdl = ObjectsModel(self.circuit.get_shunts(), elm.edit_headers, elm.units, elm.edit_types,
-                               parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+            elements = self.circuit.get_shunts()
+
+        else:
+            raise Exception('elm_type not understood: ' + elm_type)
+
+        mdl = ObjectsModel(elements, elm.editable_headers,
+                           parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
         self.view_templates(False)
@@ -1735,7 +1736,7 @@ class MainGUI(QMainWindow):
             ax = fig.add_subplot(111)
 
             k = obj_idx[0].column()
-            units_dict = {objects[k].edit_headers[i]: objects[k].units[i] for i in range(len(objects[k].units))}
+            units_dict = {attr: pair[0] for attr, pair in objects[k].editable_headers.items()}
 
             unit = units_dict[magnitude]
             ax.set_ylabel(unit)

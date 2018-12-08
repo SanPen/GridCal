@@ -216,7 +216,7 @@ class AcOPf:
                                 node_power_injection += gen.LPVar_P_prof[t_idx]
                             else:
                                 # set the default profile value
-                                node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
+                                node_power_injection += gen.P_prof.values[t_idx] / self.Sbase
                         else:
                             pass
             else:
@@ -376,9 +376,9 @@ class AcOPf:
                 for load in self.circuit.buses[i].loads:
                     if load.active:
                         if k < (npq + npv):
-                            self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
+                            self.loads[i] += load.P_prof.values[t_idx] / self.Sbase
                         else:
-                            self.loads[i] += load.Sprof.values[t_idx].imag / self.Sbase
+                            self.loads[i] += load.Q_prof.values[t_idx] / self.Sbase
                     else:
                         pass
 

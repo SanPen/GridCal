@@ -270,7 +270,7 @@ class AcOpf_old:
                                 node_power_injection += gen.LPVar_P_prof[t_idx]
                             else:
                                 # set the default profile value
-                                node_power_injection += gen.Pprof.values[t_idx] / self.Sbase
+                                node_power_injection += gen.P_prof.values[t_idx] / self.Sbase
                         else:
                             pass
             else:
@@ -523,9 +523,9 @@ class AcOpf_old:
                 for load in self.buses[i].loads:
                     if load.active:
                         if k < (npq + npv):
-                            self.loads[i] += load.Sprof.values[t_idx].real / self.Sbase
+                            self.loads[i] += load.P_prof.values[t_idx] / self.Sbase
                         else:
-                            self.loads[i] += load.Sprof.values[t_idx].imag / self.Sbase
+                            self.loads[i] += load.Q_prof.values[t_idx] / self.Sbase
                     else:
                         pass
 
@@ -533,12 +533,12 @@ class AcOpf_old:
                 generators = self.buses[i].controlled_generators + self.buses[i].batteries
                 for gen in generators:
                     if gen.active and not gen.enabled_dispatch:
-                        self.loads[i] -= gen.Pprof.values[t_idx] / self.Sbase
+                        self.loads[i] -= gen.P_prof.values[t_idx] / self.Sbase
 
                 # Add the static generators
                 for gen in self.buses[i].static_generators:
                     if gen.active:
-                        self.loads[i] -= gen.Sprof.values[t_idx].real / self.Sbase
+                        self.loads[i] -= (gen.P_prof.values[t_idx] + 1j * gen.Q_prof.values[t_idx]) / self.Sbase
 
                 # add the restriction
                 if self.load_shedding:

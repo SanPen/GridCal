@@ -138,13 +138,15 @@ grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate
 ########################################################################################################################
 
 for load in grid.get_loads():
-    load.Sprof = load.S * df_0
+    load.P_prof = load.P * df_0
+    load.Q_prof = load.Q * df_0
 
 for gen in grid.get_static_generators():
-    gen.Sprof = gen.S * df_0
+    gen.P_prof = gen.Q * df_0
+    gen.Q_prof = gen.Q * df_0
 
-for gen in grid.get_controlled_generators():
-    gen.Pprof = gen.P * df_0
+for gen in grid.get_generators():
+    gen.P_prof = gen.P * df_0
 
 ########################################################################################################################
 # Run a power flow simulation
