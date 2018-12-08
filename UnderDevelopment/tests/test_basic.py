@@ -122,7 +122,6 @@ def test_basic():
     grid.compile()
     options = PowerFlowOptions(SolverType.LM,
                                verbose=True,
-                               robust=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
                                control_q=ReactivePowerControlMode.Direct,
