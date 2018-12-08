@@ -719,15 +719,15 @@ class DcOpf:
 
         # compile the indices
         # indices of generators that contribute to the static power vector 'S'
-        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.controlled_gen_dispatchable)
-                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.generator_dispatchable)
+                                   * self.numerical_circuit.generator_enabled) == True)[0]
 
         self.bat_s_idx = np.where((np.logical_not(self.numerical_circuit.battery_dispatchable)
                                    * self.numerical_circuit.battery_enabled) == True)[0]
 
         # indices of generators that are to be optimized via the solution vector 'x'
-        self.gen_x_idx = np.where((self.numerical_circuit.controlled_gen_dispatchable
-                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+        self.gen_x_idx = np.where((self.numerical_circuit.generator_dispatchable
+                                   * self.numerical_circuit.generator_enabled) == True)[0]
 
         self.bat_x_idx = np.where((self.numerical_circuit.battery_dispatchable
                                    * self.numerical_circuit.battery_enabled) == True)[0]
@@ -803,7 +803,7 @@ class DcOpf:
         Sbase = self.numerical_circuit.Sbase
 
         # objective contributions of generators
-        fobj_gen = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus),
+        fobj_gen = Cproduct(csc_matrix(self.numerical_circuit.C_gen_bus),
                             self.controlled_generators_P * self.controlled_generators_cost)
 
         # objective contribution of the batteries
@@ -811,7 +811,7 @@ class DcOpf:
                             self.battery_P * self.battery_cost)
 
         # LP variables for the controlled generators
-        P = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]),
+        P = Cproduct(csc_matrix(self.numerical_circuit.C_gen_bus[self.gen_x_idx, :]),
                      self.controlled_generators_P[self.gen_x_idx])
 
         # LP variables for the batteries
@@ -825,7 +825,7 @@ class DcOpf:
             load_shedding_per_bus = np.zeros(self.numerical_circuit.nbus)
 
         if self.allow_generation_shedding:
-            generation_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus),
+            generation_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_gen_bus),
                                                    self.generation_shedding)
             P -= generation_shedding_per_bus
         else:
@@ -897,14 +897,14 @@ class DcOpf:
             # store the problem to extend it later
             self.opf_islands.append(island_problem)
 
-    def set_state(self, load_power, static_gen_power, controlled_gen_power,
+    def set_state(self, load_power, static_gen_power, generator_power,
                   Emin=None, Emax=None, E=None, dt=0,
                   force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
         """
         Set the loading and batteries state
         :param load_power: vector of load power (same size as the number of loads)
         :param static_gen_power: vector of static generators load (same size as the static gen objects)
-        :param controlled_gen_power: vector of controlled generators power (same size as the ctrl. generators)
+        :param generator_power: vector of controlled generators power (same size as the ctrl. generators)
         :param Emin: Minimum energy per battery in MWh / Sbase -> 1/h
         :param Emax: Maximum energy per battery in MWh / Sbase -> 1/h
         :param E: Current energy charge in MWh / Sbase -> 1/h
@@ -924,8 +924,8 @@ class DcOpf:
                                                        self.numerical_circuit.static_gen_enabled)
 
         # controlled generators for all the circuits (enabled and not dispatchable)
-        P += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * \
-             (controlled_gen_power[self.gen_s_idx] / Sbase)
+        P += (self.numerical_circuit.C_gen_bus[self.gen_s_idx, :]).T * \
+             (generator_power[self.gen_s_idx] / Sbase)
 
         # storage params per bus
         if E is not None:
@@ -989,7 +989,7 @@ class DcOpf:
         """
         self.set_state(load_power=self.numerical_circuit.load_power,
                        static_gen_power=self.numerical_circuit.static_gen_power,
-                       controlled_gen_power=self.numerical_circuit.controlled_gen_power)
+                       generator_power=self.numerical_circuit.generator_power)
 
     def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01,
                      Emin=None, Emax=None, E=None, dt=0):
@@ -999,7 +999,7 @@ class DcOpf:
         """
         self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
                        static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
-                       controlled_gen_power=self.numerical_circuit.controlled_gen_power_profile[t, :],
+                       generator_power=self.numerical_circuit.generator_power_profile[t, :],
                        Emin=Emin, Emax=Emax, E=E, dt=dt,
                        force_batteries_to_charge=force_batteries_to_charge,
                        bat_idx=bat_idx,

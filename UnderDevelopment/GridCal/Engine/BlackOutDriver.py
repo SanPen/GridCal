@@ -129,27 +129,28 @@ class Cascading(QThread):
         self.results = CascadingResults(self.cascade_type)
 
     @staticmethod
-    def remove_elements(circuit: NumericalCircuit, loading_vector, idx=None):
+    def remove_elements(circuit: MultiCircuit, loading_vector, idx=None):
         """
         Remove branches based on loading
         Returns:
             Nothing
         """
-
+        criteria = 'None'
         if idx is None:
             load = abs(loading_vector)
             idx = np.where(load > 1.0)[0]
 
             if len(idx) == 0:
+                criteria = 'Loading'
                 idx = np.where(load >= load.max())[0]
 
         # disable the selected branches
         # print('Removing:', idx, load[idx])
 
         for i in idx:
-            circuit.branch_states[i] = False
+            circuit.branches[i].active = False
 
-        return idx
+        return idx, criteria
 
     @staticmethod
     def remove_probability_based(numerical_circuit: NumericalCircuit, results: MonteCarloResults, max_val, min_prob):
@@ -221,13 +222,14 @@ class Cascading(QThread):
 
         if self.current_step == 0:
             # the first iteration try to trigger the selected indices, if any
-            idx = self.remove_elements(self.grid, idx=self.triggering_idx)
+            idx, criteria = self.remove_elements(self.grid, idx=self.triggering_idx,
+                                                 loading_vector=model_simulator.results.loading)
         else:
             # cascade normally
-            idx = self.remove_elements(self.grid)
+            idx, criteria = self.remove_elements(self.grid, loading_vector=model_simulator.results.loading)
 
         # store the removed indices and the results
-        entry = CascadingReportElement(idx, model_simulator.results)
+        entry = CascadingReportElement(idx, model_simulator.results, criteria)
         self.results.events.append(entry)
 
         # increase the step number

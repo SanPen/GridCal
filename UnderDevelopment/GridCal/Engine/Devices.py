@@ -1621,6 +1621,9 @@ class Generator(InjectionDevice):
         # power profile for this load
         gen.P_prof = self.P_prof
 
+        # Power factor profile
+        gen.Pf_prof = self.Pf_prof
+
         # Voltage module set point (p.u.)
         gen.Vset = self.Vset
 
@@ -1903,6 +1906,12 @@ class Battery(Generator):
                                  'Vset': ('p.u.', float),
                                  'Snom': ('MVA', float),
                                  'Enom': ('MWh', float),
+                                 'max_soc': ('p.u.', float),
+                                 'min_soc': ('p.u.', float),
+                                 'soc_0': ('p.u.', float),
+                                 'charge_efficiency': ('p.u.', float),
+                                 'discharge_efficiency': ('p.u.', float),
+                                 'discharge_per_cycle': ('p.u.', float),
                                  'Qmin': ('MVAr', float),
                                  'Qmax': ('MVAr', float),
                                  'Pmin': ('MW', float),

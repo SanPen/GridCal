@@ -1360,7 +1360,7 @@ class MultiCircuit:
                     self.interprete_excel_v2(data_dictionary)
                     return logger
                 elif data_dictionary['version'] == 3.0:
-                    self.interprete_excel_v3(data_dictionary)
+                    self.interpret_excel_v3(data_dictionary)
                     return logger
                 else:
                     warn('The file could not be processed')
@@ -1609,6 +1609,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.loads.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No loads in the file!')
 
@@ -1651,6 +1652,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.controlled_generators.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No controlled generator in the file!')
 
@@ -1686,6 +1688,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.batteries.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No battery in the file!')
 
@@ -1727,6 +1730,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.static_generators.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No static generator in the file!')
 
@@ -1757,6 +1761,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.shunts.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No shunt in the file!')
 
@@ -1873,7 +1878,7 @@ class MultiCircuit:
         # Other actions ################################################################################################
         self.logger += self.apply_all_branch_types()
 
-    def interprete_excel_v3(self, data):
+    def interpret_excel_v3(self, data):
         """
         Interpret the file version 3
         In this file version there are no complex numbers saved
@@ -1979,6 +1984,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.loads.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No loads in the file!')
 
@@ -2021,6 +2027,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.controlled_generators.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No controlled generator in the file!')
 
@@ -2056,6 +2063,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.batteries.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No battery in the file!')
 
@@ -2096,6 +2104,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.static_generators.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No static generator in the file!')
 
@@ -2136,6 +2145,7 @@ class MultiCircuit:
 
                 obj.bus = bus
                 bus.shunts.append(obj)
+                obj.ensure_profiles_exist(self.time_profile)
         else:
             self.logger.append('No shunt in the file!')
 

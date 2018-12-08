@@ -114,7 +114,7 @@ class Optimize(QThread):
 
         self.it += 1
         prog = self.it / self.max_eval * 100
-        # self.progress_signal.emit(prog)
+        self.progress_signal.emit(prog)
 
         f = abs(self.results.V_points[self.it - 1, :].sum()) / self.dim
         # print(prog, ' % \t', f)

@@ -180,3 +180,21 @@ class InjectionDevice(ReliabilityDevice):
         for magnitude in self.properties_with_profile.keys():
             df = getattr(self, self.properties_with_profile[magnitude])
             setattr(self, magnitude, df.values[t])
+
+    def ensure_profiles_exist(self, index):
+        """
+        It might be that when loading the Ordena Model has properties that the file has not.
+        Those properties must be initialized as well
+        :param index: dataFrame index
+        """
+        for magnitude in self.properties_with_profile.keys():
+            prof_attr = self.properties_with_profile[magnitude]
+            df = getattr(self, prof_attr)
+            if df is None:
+                print(self.name, ': created profile for ' + prof_attr)
+                self.create_profile(magnitude=magnitude, index=index)
+            elif df.shape[0] != len(index):
+                print(self.name, ': created profile for ' + prof_attr)
+                self.create_profile(magnitude=magnitude, index=index)
+            else:
+                pass

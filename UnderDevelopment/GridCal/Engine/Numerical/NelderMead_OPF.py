@@ -284,21 +284,21 @@ class AcOpfNelderMead:
         self.pf = PowerFlowMP(self.multi_circuit, options)
 
         # indices of generators that contribute to the static power vector 'S'
-        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.controlled_gen_dispatchable)
-                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.generator_dispatchable)
+                                   * self.numerical_circuit.generator_enabled) == True)[0]
 
         self.bat_s_idx = np.where((np.logical_not(self.numerical_circuit.battery_dispatchable)
                                    * self.numerical_circuit.battery_enabled) == True)[0]
 
         # indices of generators that are to be optimized via the solution vector 'x'
-        self.gen_x_idx = np.where((self.numerical_circuit.controlled_gen_dispatchable
-                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+        self.gen_x_idx = np.where((self.numerical_circuit.generator_dispatchable
+                                   * self.numerical_circuit.generator_enabled) == True)[0]
 
         self.bat_x_idx = np.where((self.numerical_circuit.battery_dispatchable
                                    * self.numerical_circuit.battery_enabled) == True)[0]
 
         self.n_batteries = len(self.numerical_circuit.battery_power)
-        self.n_controlled_gen = len(self.numerical_circuit.controlled_gen_power)
+        self.n_controlled_gen = len(self.numerical_circuit.generator_power)
 
         # compute the problem dimension
         self.dim = len(self.gen_x_idx) + len(self.bat_x_idx)
@@ -360,7 +360,7 @@ class AcOpfNelderMead:
                 static_gen_power / self.numerical_circuit.Sbase * self.numerical_circuit.static_gen_enabled)
 
         # controlled generators
-        self.Sfix += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * (
+        self.Sfix += (self.numerical_circuit.C_gen_bus[self.gen_s_idx, :]).T * (
                     controlled_gen_power / self.numerical_circuit.Sbase)
 
         # batteries
@@ -382,7 +382,7 @@ class AcOpfNelderMead:
         """
         self.set_state(load_power=self.numerical_circuit.load_power,
                        static_gen_power=self.numerical_circuit.static_gen_power,
-                       controlled_gen_power=self.numerical_circuit.controlled_gen_power[self.gen_s_idx],
+                       controlled_gen_power=self.numerical_circuit.generator_power[self.gen_s_idx],
                        storage_power=self.numerical_circuit.battery_power[self.bat_s_idx],
                        Emin=self.numerical_circuit.battery_Enom * self.numerical_circuit.battery_min_soc,
                        Emax=self.numerical_circuit.battery_Enom * self.numerical_circuit.battery_max_soc,
@@ -408,7 +408,7 @@ class AcOpfNelderMead:
         """
         self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
                        static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
-                       controlled_gen_power=self.numerical_circuit.controlled_gen_power_profile[t, self.gen_s_idx],
+                       controlled_gen_power=self.numerical_circuit.generator_power_profile[t, self.gen_s_idx],
                        storage_power=self.numerical_circuit.battery_power_profile[t, self.bat_s_idx],
                        Emin=Emin, Emax=Emax, E=E, dt=dt,
                        force_batteries_to_charge=force_batteries_to_charge,
@@ -442,7 +442,7 @@ class AcOpfNelderMead:
         S = self.Sfix.copy()
         controlled_gen_power = x[0:self.ngen]
         storage_power = x[self.ngen:]
-        S += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]).T * controlled_gen_power
+        S += (self.numerical_circuit.C_gen_bus[self.gen_x_idx, :]).T * controlled_gen_power
         S += (self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]).T * storage_power
 
         # compute the penalty for trespassing the energy boundaries
@@ -487,7 +487,7 @@ class AcOpfNelderMead:
         S = self.Sfix.copy()
         controlled_gen_power = self.x[0:self.ngen]
         storage_power = self.x[self.ngen:]
-        S += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]).T * controlled_gen_power
+        S += (self.numerical_circuit.C_gen_bus[self.gen_x_idx, :]).T * controlled_gen_power
         S += (self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]).T * storage_power
 
         # run a power flow
@@ -511,7 +511,7 @@ class AcOpfNelderMead:
         self.result.controlled_generation_power = np.zeros(self.n_controlled_gen)
         self.result.controlled_generation_power[self.gen_x_idx] = self.x[0:self.ngen]
         self.result.load_shedding = np.zeros_like(self.numerical_circuit.load_power)
-        self.result.generation_shedding = np.zeros_like(self.numerical_circuit.controlled_gen_power)
+        self.result.generation_shedding = np.zeros_like(self.numerical_circuit.generator_power)
 
         # overloads
         self.result.overloads = np.zeros_like(self.result.loading)

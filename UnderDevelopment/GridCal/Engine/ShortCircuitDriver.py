@@ -268,7 +268,7 @@ class ShortCircuit(QRunnable):
         n = len(grid.buses)
         Zf = zeros(n, dtype=complex)
         for i in range(n):
-            Zf[i] = grid.buses[i].Zf
+            Zf[i] = grid.buses[i].get_fault_impedance()
 
         return Zf
 

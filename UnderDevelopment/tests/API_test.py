@@ -86,53 +86,53 @@ if __name__ == '__main__':
     ####################################################################################################################
     # OPF
     ####################################################################################################################
-    # print('Running OPF...', '')
-    # opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=True, generation_shedding=True,
-    #                                       solver=SolverType.DC_OPF, realistic_results=False)
-    # opf = OptimalPowerFlow(grid=main_circuit, options=opf_options)
-    # opf.run()
+    print('Running OPF...', '')
+    opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=True, generation_shedding=True,
+                                          solver=SolverType.DC_OPF, realistic_results=False)
+    opf = OptimalPowerFlow(grid=main_circuit, options=opf_options)
+    opf.run()
 
     ####################################################################################################################
     # OPF Time Series
     ####################################################################################################################
-    # print('Running OPF-TS...', '')
-    # opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
-    #                                       control_batteries=True, solver=SolverType.NELDER_MEAD_OPF, realistic_results=False)
-    # opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
-    # opf_ts.run()
+    print('Running OPF-TS...', '')
+    opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
+                                          control_batteries=True, solver=SolverType.NELDER_MEAD_OPF, realistic_results=False)
+    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
+    opf_ts.run()
 
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
-    # vc_options = VoltageCollapseOptions()
-    #
-    # # just for this test
-    # numeric_circuit = main_circuit.compile()
-    # numeric_inputs = numeric_circuit.compute()
-    # Sbase = zeros(len(main_circuit.buses), dtype=complex)
-    # Vbase = zeros(len(main_circuit.buses), dtype=complex)
-    # for c in numeric_inputs:
-    #     Sbase[c.original_bus_idx] = c.Sbus
-    #     Vbase[c.original_bus_idx] = c.Vbus
-    #
-    # unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-    #
-    # # unitary_vector = random.random(len(grid.buses))
-    # vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-    #                                  Vbase=Vbase,
-    #                                  Starget=Sbase * (1+unitary_vector))
-    # vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
-    # vc.run()
-    # vc.results.plot()
+    vc_options = VoltageCollapseOptions()
+
+    # just for this test
+    numeric_circuit = main_circuit.compile()
+    numeric_inputs = numeric_circuit.compute()
+    Sbase = zeros(len(main_circuit.buses), dtype=complex)
+    Vbase = zeros(len(main_circuit.buses), dtype=complex)
+    for c in numeric_inputs:
+        Sbase[c.original_bus_idx] = c.Sbus
+        Vbase[c.original_bus_idx] = c.Vbus
+
+    unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
+
+    # unitary_vector = random.random(len(grid.buses))
+    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                     Vbase=Vbase,
+                                     Starget=Sbase * (1+unitary_vector))
+    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
+    vc.run()
+    vc.results.plot()
 
     ####################################################################################################################
     # Monte Carlo
     ####################################################################################################################
-    # print('Running MC...')
-    # mc_sim = MonteCarlo(main_circuit, options, mc_tol=1e-5, max_mc_iter=1000000)
-    # mc_sim.run()
-    # lst = np.array(list(range(mc_sim.results.n)), dtype=int)
-    # mc_sim.results.plot('Bus voltage avg', indices=lst, names=lst)
+    print('Running MC...')
+    mc_sim = MonteCarlo(main_circuit, options, mc_tol=1e-5, max_mc_iter=1000000)
+    mc_sim.run()
+    lst = np.array(list(range(mc_sim.results.n)), dtype=int)
+    mc_sim.results.plot(ResultTypes.BusVoltageAverage, indices=lst, names=lst)
 
     ####################################################################################################################
     # Latin Hypercube
@@ -145,25 +145,25 @@ if __name__ == '__main__':
     # Cascading
     ####################################################################################################################
 
-    # cascade = Cascading(grid.copy(), options,
-    #                     max_additional_islands=5,
-    #                     cascade_type_=CascadeType.LatinHypercube,
-    #                     n_lhs_samples_=10)
-    # cascade.run()
-    #
-    # cascade.perform_step_run()
-    # cascade.perform_step_run()
-    # cascade.perform_step_run()
-    # cascade.perform_step_run()
+    cascade = Cascading(main_circuit.copy(), options,
+                        max_additional_islands=5,
+                        cascade_type_=CascadeType.LatinHypercube,
+                        n_lhs_samples_=10)
+    cascade.run()
+
+    cascade.perform_step_run()
+    cascade.perform_step_run()
+    cascade.perform_step_run()
+    cascade.perform_step_run()
 
     ####################################################################################################################
     # Fuck up the voltage
     ####################################################################################################################
-    # print('Run optimization to f**k up the voltage')
-    # options = PowerFlowOptions(SolverType.LM, verbose=False, robust=False, initialize_with_existing_solution=False)
-    # opt = Optimize(main_circuit, options, max_iter=100)
-    # opt.run()
-    # opt.plot()
+    print('Run optimization to f**k up the voltage')
+    options = PowerFlowOptions(SolverType.LM, verbose=False, initialize_with_existing_solution=False)
+    opt = Optimize(main_circuit, options, max_iter=100)
+    opt.run()
+    opt.plot()
 
     # plt.show()
     print('\nDone!')
