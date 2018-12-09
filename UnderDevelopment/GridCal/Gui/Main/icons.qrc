@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/data.svg</file>
+    <file>icons/import.svg</file>
+    <file>icons/piece.svg</file>
+    <file>icons/schematic.svg</file>
+    <file>icons/Catalogue.svg</file>
+    <file>icons/plot.svg</file>
     <file>icons/import_profiles.svg</file>
     <file>icons/copy2left.svg</file>
     <file>icons/copy2right.svg</file>
