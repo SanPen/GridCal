@@ -3677,12 +3677,15 @@ points from time series</string>
                </item>
                <item row="1" column="3">
                 <widget class="QPushButton" name="edit_profiles_pushButton">
+                 <property name="toolTip">
+                  <string>Import profiles</string>
+                 </property>
                  <property name="text">
-                  <string>Edit</string>
+                  <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
+                   <normaloff>:/Icons/icons/import_profiles.svg</normaloff>:/Icons/icons/import_profiles.svg</iconset>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -3727,8 +3730,11 @@ points from time series</string>
                </item>
                <item row="1" column="2">
                 <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                 <property name="toolTip">
+                  <string>Delete profiles</string>
+                 </property>
                  <property name="text">
-                  <string>Delete</string>
+                  <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
@@ -3752,8 +3758,11 @@ points from time series</string>
                </item>
                <item row="1" column="1">
                 <widget class="QPushButton" name="new_profiles_structure_pushButton">
+                 <property name="toolTip">
+                  <string>Create profiles</string>
+                 </property>
                  <property name="text">
-                  <string>New</string>
+                  <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">

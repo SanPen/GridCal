@@ -18,6 +18,7 @@ import pandas as pd
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5.QtGui import *
+from warnings import warn
 
 from GridCal.Engine.CalculationEngine import BranchTypeConverter, BranchType
 from GridCal.Engine.DeviceTypes import BranchTemplate
@@ -833,18 +834,81 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                         return str(p_int)
                     else:
                         # return pd.to_datetime(self.time_array[p_int]).strftime('%d/%m/%Y %H:%M')
-                        return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d/%m/%Y %H:%M')
+                        return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d-%m-%Y %H:%M')
 
         return None
 
-    # def copy_to_column(self, row, col):
-    #     """
-    #     Copies one value to all the column
-    #     @param row: Row of the value
-    #     @param col: Column of the value
-    #     @return: Nothing
-    #     """
-    #     self.data[:, col] = self.data[row, col]
+    def paste_from_clipboard(self, row_idx=0, col_idx=0):
+        """
+
+        Args:
+            row_idx:
+            col_idx:
+        """
+        n = len(self.elements)
+        nt = len(self.circuit.time_profile)
+
+        if n > 0:
+            profile_property = self.elements[0].properties_with_profile[self.magnitude]
+            formatter = self.elements[0].editable_headers[self.magnitude][1]
+
+            # copy to clipboard
+            cb = QApplication.clipboard()
+            text = cb.text(mode=cb.Clipboard)
+
+            rows = text.split('\n')
+
+            # gather values
+            for r, row in enumerate(rows):
+
+                values = row.split('\t')
+                r2 = r + row_idx
+                for c, val in enumerate(values):
+                    c2 = c + col_idx
+                    try:
+                        val2 = formatter(val)
+                        if c2 < n and r2 < nt:
+                            getattr(self.elements[c2], profile_property).values[r2, 0] = val2
+                        else:
+                            print('Out of profile bounds')
+                    except:
+                        warn("could not parse '" + str(val) + "'")
+        else:
+            # there are no elements
+            pass
+
+    def copy_to_clipboard(self):
+        """
+        Copy profiles to clipboard
+        """
+        n = len(self.elements)
+
+        if n > 0:
+            profile_property = self.elements[0].properties_with_profile[self.magnitude]
+
+            # gather values
+            names = [None] * n
+            values = [None] * n
+            for c in range(n):
+                names[c] = self.elements[c].name
+                values[c] = getattr(self.elements[c], profile_property).values[:, 0]
+            values = np.array(values).transpose().astype(str)
+
+            # header first
+            data = '\t' + '\t'.join(names) + '\n'
+
+            # data
+            for t, date in enumerate(self.circuit.time_profile):
+                data += str(date) + '\t' + '\t'.join(values[t, :]) + '\n'
+
+            # copy to clipboard
+            cb = QApplication.clipboard()
+            cb.clear(mode=cb.Clipboard)
+            cb.setText(data, mode=cb.Clipboard)
+
+        else:
+            # there are no elements
+            pass
 
 
 class EnumModel(QtCore.QAbstractListModel):

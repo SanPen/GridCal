@@ -1723,49 +1723,58 @@ class MainGUI(QMainWindow):
         Returns: Nothing
         """
 
-        msg = "Are you sure that you want overwrite the profile?"
-        reply = QMessageBox.question(self, 'Message', msg, QMessageBox.Yes, QMessageBox.No)
+        # value = self.ui.profile_factor_doubleSpinBox.value()
 
-        if reply == QMessageBox.Yes:
+        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
+        magnitude_from = magnitudes[idx_from]
 
-            value = self.ui.profile_factor_doubleSpinBox.value()
+        idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
+        magnitude_to = magnitudes[idx_to]
 
-            dev_type = self.ui.profile_device_type_comboBox.currentText()
-            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
-            idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
-            magnitude_from = magnitudes[idx_from]
+        if len(self.circuit.buses) > 0 and magnitude_from != magnitude_to:
 
-            idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
-            magnitude_to = magnitudes[idx_to]
+            msg = "Are you sure that you want to overwrite the values " + magnitude_to +\
+                  " with the values of " + magnitude_from + "?"
 
-            if dev_type == 'Load':
-                objects = self.circuit.get_loads()
+            reply = QMessageBox.question(self, 'Message', msg, QMessageBox.Yes, QMessageBox.No)
 
-            elif dev_type == 'StaticGenerator':
-                objects = self.circuit.get_static_generators()
+            if reply == QMessageBox.Yes:
 
-            elif dev_type == 'Generator':
-                objects = self.circuit.get_generators()
+                if dev_type == 'Load':
+                    objects = self.circuit.get_loads()
 
-            elif dev_type == 'Battery':
-                objects = self.circuit.get_batteries()
+                elif dev_type == 'StaticGenerator':
+                    objects = self.circuit.get_static_generators()
 
-            elif dev_type == 'Shunt':
-                objects = self.circuit.get_shunts()
+                elif dev_type == 'Generator':
+                    objects = self.circuit.get_generators()
+
+                elif dev_type == 'Battery':
+                    objects = self.circuit.get_batteries()
+
+                elif dev_type == 'Shunt':
+                    objects = self.circuit.get_shunts()
+                else:
+                    objects = list()
+
+                # Assign profiles
+                if len(objects) > 0:
+                    attr_from = objects[0].properties_with_profile[magnitude_from]
+                    attr_to = objects[0].properties_with_profile[magnitude_to]
+
+                    for i, elm in enumerate(objects):
+                        setattr(elm, attr_to, getattr(elm, attr_from) * 1.0)
+
+                    self.display_profiles()
+
             else:
-                objects = list()
-
-            # Assign profiles
-            if len(objects) > 0:
-                attr_from = objects[0].properties_with_profile[magnitude_from]
-                attr_to = objects[0].properties_with_profile[magnitude_to]
-
-                for i, elm in enumerate(objects):
-                    setattr(elm, attr_to, getattr(elm, attr_from) * 1.0)
-
-                self.display_profiles()
+                # rejected the operation
+                pass
 
         else:
+            # no buses or no actual change
             pass
 
 
@@ -1839,7 +1848,8 @@ class MainGUI(QMainWindow):
             magnitude = magnitudes[idx]
             mtype = mag_types[idx]
 
-            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype, parent=self.ui.profiles_tableView)
+            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype,
+                                parent=self.ui.profiles_tableView)
             self.ui.profiles_tableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
@@ -3537,10 +3547,38 @@ class MainGUI(QMainWindow):
         print('Style changed to', style)
 
     def copy_profiles(self):
-        print('Copy')
+        """
+        Copy the current displayed profiles to the clipboard
+        """
+
+        mdl = self.ui.profiles_tableView.model()
+        if mdl is not None:
+            mdl.copy_to_clipboard()
+            print('Copied!')
+        else:
+            self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
     def paste_profiles(self):
+        """
+        Paste clipboard data into the profile
+        """
         print('Paste')
+
+        mdl = self.ui.profiles_tableView.model()
+        if mdl is not None:
+
+            if len(self.ui.profiles_tableView.selectedIndexes()) > 0:
+                index = self.ui.profiles_tableView.selectedIndexes()[0]
+                row_idx = index.row()
+                col_idx = index.column()
+            else:
+                row_idx = 0
+                col_idx = 0
+
+            mdl.paste_from_clipboard(row_idx=row_idx, col_idx=col_idx)
+            print('Pasted!')
+        else:
+            self.msg('There is no profile displayed, please display one', 'Paste profile to clipboard')
 
 
 def run():
