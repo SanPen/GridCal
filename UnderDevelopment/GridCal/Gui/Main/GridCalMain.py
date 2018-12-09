@@ -949,7 +949,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            quit_msg = "Are you sure you want to quit the current grid and create a new one?"
+            quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
@@ -999,7 +999,7 @@ class MainGUI(QMainWindow):
         """
 
         if len(self.circuit.buses) > 0:
-            quit_msg = "Are you sure you want to quit the current grid and open a new one?" \
+            quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                        "\n If the process is cancelled the grid will remain."
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
@@ -1158,7 +1158,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            quit_msg = "Are you sure you want to exit GridCal?"
+            quit_msg = "Are you sure that you want to exit GridCal?"
             reply = QMessageBox.question(self, 'Close', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
@@ -1551,7 +1551,7 @@ class MainGUI(QMainWindow):
         """
 
         if self.circuit.time_profile is not None:
-            quit_msg = "Are you sure you want to remove the profiles?"
+            quit_msg = "Are you sure that you want to remove the profiles?"
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:

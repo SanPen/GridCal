@@ -3668,6 +3668,13 @@ points from time series</string>
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_5">
+               <item row="0" column="1" colspan="2">
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string>Profiles structure</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="3">
                 <widget class="QPushButton" name="edit_profiles_pushButton">
                  <property name="text">
@@ -3682,14 +3689,14 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="11">
+               <item row="1" column="12">
                 <widget class="Line" name="line_7">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="8" colspan="2">
+               <item row="1" column="9" colspan="2">
                 <widget class="QComboBox" name="profile_time_selection_comboBox">
                  <property name="minimumSize">
                   <size>
@@ -3699,18 +3706,11 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="13">
+               <item row="1" column="14">
                 <widget class="QComboBox" name="profile_device_type_comboBox"/>
                </item>
-               <item row="1" column="15">
+               <item row="1" column="16">
                 <widget class="QComboBox" name="device_type_magnitude_comboBox"/>
-               </item>
-               <item row="0" column="1" colspan="2">
-                <widget class="QLabel" name="label_8">
-                 <property name="text">
-                  <string>Profiles structure</string>
-                 </property>
-                </widget>
                </item>
                <item row="1" column="5">
                 <spacer name="horizontalSpacer">
@@ -3736,17 +3736,17 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="10">
-                <widget class="QPushButton" name="set_profile_state_button">
-                 <property name="text">
-                  <string>set state</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="13">
+               <item row="0" column="14">
                 <widget class="QLabel" name="label_9">
                  <property name="text">
                   <string>Device type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="16">
+                <widget class="QLabel" name="label_21">
+                 <property name="text">
+                  <string>Magnitude</string>
                  </property>
                 </widget>
                </item>
@@ -3761,14 +3761,7 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="15">
-                <widget class="QLabel" name="label_21">
-                 <property name="text">
-                  <string>Magnitude</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="16">
+               <item row="1" column="17">
                 <widget class="QPushButton" name="profile_display_pushButton">
                  <property name="text">
                   <string>Display</string>
@@ -3779,7 +3772,7 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="8" colspan="3">
+               <item row="0" column="9" colspan="3">
                 <widget class="QLabel" name="label_10">
                  <property name="text">
                   <string>Time step</string>
@@ -3806,7 +3799,7 @@ points from time series</string>
                  </property>
                 </spacer>
                </item>
-               <item row="1" column="17">
+               <item row="1" column="18">
                 <widget class="QPushButton" name="plot_time_series_pushButton">
                  <property name="text">
                   <string>Plot</string>
@@ -3814,6 +3807,20 @@ points from time series</string>
                  <property name="icon">
                   <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/bars.svg</normaloff>:/Icons/icons/bars.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="8">
+                <widget class="QPushButton" name="set_profile_state_button">
+                 <property name="toolTip">
+                  <string>Assign the values of the selected time step into the grid</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -3961,11 +3968,11 @@ points from time series</string>
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy the selected profile into the profiles selected next to this button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
-                  <string>Copy profiles into</string>
+                  <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                   <normaloff>:/Icons/icons/copy2right.svg</normaloff>:/Icons/icons/copy2right.svg</iconset>
                  </property>
                 </widget>
                </item>

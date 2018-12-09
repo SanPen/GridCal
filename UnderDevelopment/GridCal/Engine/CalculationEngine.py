@@ -68,9 +68,15 @@ def load_from_xls(filename):
                            'battery': None,
                            'battery_Vset_profiles': float,
                            'battery_P_profiles': float,
+                           'battery_Vset_prof': float,
+                           'battery_P_prof': float,
                            'controlled_generator': None,
                            'CtrlGen_Vset_profiles': float,
                            'CtrlGen_P_profiles': float,
+                           'generator': None,
+                           'generator_Vset_prof': float,
+                           'generator_P_prof': float,
+                           'generator_Pf_prof': float,
                            'shunt': None,
                            'shunt_Y_profiles': complex,
                            'shunt_G_prof': float,
@@ -1989,8 +1995,8 @@ class MultiCircuit:
             self.logger.append('No loads in the file!')
 
         # add the controlled generators ################################################################################
-        if 'controlled_generator' in data.keys():
-            lst = data['controlled_generator']
+        if 'generator' in data.keys():
+            lst = data['generator']
             bus_from = lst['bus'].values
             hdr = lst.columns.values
             hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
@@ -1999,22 +2005,22 @@ class MultiCircuit:
                 obj = Generator()
                 set_object_attributes(obj, hdr, vals[i, :])
 
-                if 'CtrlGen_P_profiles' in data.keys():
-                    val = data['CtrlGen_P_profiles'].values[:, i]
-                    idx = data['CtrlGen_P_profiles'].index
+                if 'generator_P_prof' in data.keys():
+                    val = data['generator_P_prof'].values[:, i]
+                    idx = data['generator_P_prof'].index
                     obj.create_P_profile(index=idx, arr=val)
                     # also create the Pf array because there might not be values in the file
                     obj.create_Pf_profile(index=idx)
 
-                if 'CtrlGen_Pf_profiles' in data.keys():
-                    val = data['CtrlGen_Pf_profiles'].values[:, i]
-                    idx = data['CtrlGen_Pf_profiles'].index
+                if 'generator_Pf_prof' in data.keys():
+                    val = data['generator_Pf_prof'].values[:, i]
+                    idx = data['generator_Pf_prof'].index
                     # obj.Pprof = pd.DataFrame(data=val, index=idx)
                     obj.create_Pf_profile(index=idx, arr=val)
 
-                if 'CtrlGen_Vset_profiles' in data.keys():
-                    val = data['CtrlGen_Vset_profiles'].values[:, i]
-                    idx = data['CtrlGen_Vset_profiles'].index
+                if 'generator_Vset_prof' in data.keys():
+                    val = data['generator_Vset_prof'].values[:, i]
+                    idx = data['generator_Vset_prof'].index
                     obj.Vset_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
@@ -2042,15 +2048,15 @@ class MultiCircuit:
                 obj = Battery()
                 set_object_attributes(obj, hdr, vals[i, :])
 
-                if 'battery_P_profiles' in data.keys():
-                    val = data['battery_P_profiles'].values[:, i]
-                    idx = data['battery_P_profiles'].index
+                if 'battery_P_prof' in data.keys():
+                    val = data['battery_P_prof'].values[:, i]
+                    idx = data['battery_P_prof'].index
                     # obj.Pprof = pd.DataFrame(data=val, index=idx)
                     obj.create_P_profile(index=idx, arr=val)
 
-                if 'battery_Vset_profiles' in data.keys():
-                    val = data['battery_Vset_profiles'].values[:, i]
-                    idx = data['battery_Vset_profiles'].index
+                if 'battery_Vset_prof' in data.keys():
+                    val = data['battery_Vset_prof'].values[:, i]
+                    idx = data['battery_Vset_prof'].index
                     obj.Vset_prof = pd.DataFrame(data=val, index=idx)
 
                 try:
@@ -2318,7 +2324,7 @@ class MultiCircuit:
 
                 obj.append(elm.get_save_data())
 
-            dta = np.array(obj).astype('str')
+            dta = np.array(obj)
         else:
             dta = np.zeros((0, len(headers)))
 
@@ -2331,7 +2337,7 @@ class MultiCircuit:
             for elm in self.branches:
                 obj.append(elm.get_save_data())
 
-            dta = np.array(obj).astype('str')
+            dta = np.array(obj)
         else:
             dta = np.zeros((0, len(headers)))
 
@@ -2386,20 +2392,24 @@ class MultiCircuit:
         if len(st_gen) > 0:
             obj = list()
             hdr = list()
-            s_profiles = None
+            p_profiles = None
+            q_profiles = None
             for elm in st_gen:
                 obj.append(elm.get_save_data())
                 hdr.append(elm.name)
                 if T is not None:
-                    if s_profiles is None and elm.Sprof is not None:
-                        s_profiles = elm.Sprof.values
+                    if p_profiles is None and elm.Sprof is not None:
+                        p_profiles = elm.P_prof.values
+                        q_profiles = elm.Q_prof.values
                     else:
-                        s_profiles = np.c_[s_profiles, elm.Sprof.values]
+                        p_profiles = np.c_[p_profiles, elm.P_prof.values]
+                        q_profiles = np.c_[q_profiles, elm.Q_prof.values]
 
             dfs['static_generator'] = pd.DataFrame(data=obj, columns=headers)
 
-            if s_profiles is not None:
-                dfs['static_generator_Sprof'] = pd.DataFrame(data=s_profiles.astype('str'), columns=hdr, index=T)
+            if p_profiles is not None:
+                dfs['static_generator_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+                dfs['static_generator_Q_prof'] = pd.DataFrame(data=q_profiles, columns=hdr, index=T)
         else:
             dfs['static_generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
@@ -2425,8 +2435,8 @@ class MultiCircuit:
             dfs['battery'] = pd.DataFrame(data=obj, columns=headers)
 
             if p_profiles is not None:
-                dfs['battery_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
-                dfs['battery_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+                dfs['battery_Vset_prof'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
+                dfs['battery_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
         else:
             dfs['battery'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
@@ -2450,13 +2460,13 @@ class MultiCircuit:
                         p_profiles = np.c_[p_profiles, elm.P_prof.values]
                         v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof.values]
 
-            dfs['controlled_generator'] = pd.DataFrame(data=obj, columns=headers)
+            dfs['generator'] = pd.DataFrame(data=obj, columns=headers)
 
             if p_profiles is not None:
-                dfs['CtrlGen_Vset_profiles'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
-                dfs['CtrlGen_P_profiles'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
+                dfs['generator_Vset_prof'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
+                dfs['generator_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
         else:
-            dfs['controlled_generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+            dfs['generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
         # shunt ########################################################################################################
 

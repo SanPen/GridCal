@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/copy2left.svg</file>
+    <file>icons/copy2right.svg</file>
     <file>icons/multiply.svg</file>
     <file>icons/divide.svg</file>
     <file>icons/paste.svg</file>

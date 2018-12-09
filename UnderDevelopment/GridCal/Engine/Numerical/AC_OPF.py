@@ -822,28 +822,28 @@ class AcOpf:
 
         # compile the indices
         # indices of generators that contribute to the static power vector 'S'
-        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.controlled_gen_dispatchable)
-                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+        self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.generator_dispatchable)
+                                   * self.numerical_circuit.generator_enabled) == True)[0]
 
         self.bat_s_idx = np.where((np.logical_not(self.numerical_circuit.battery_dispatchable)
                                    * self.numerical_circuit.battery_enabled) == True)[0]
 
         # indices of generators that are to be optimized via the solution vector 'x'
-        self.gen_x_idx = np.where((self.numerical_circuit.controlled_gen_dispatchable
-                                   * self.numerical_circuit.controlled_gen_enabled) == True)[0]
+        self.gen_x_idx = np.where((self.numerical_circuit.generator_dispatchable
+                                   * self.numerical_circuit.generator_enabled) == True)[0]
 
         self.bat_x_idx = np.where((self.numerical_circuit.battery_dispatchable
                                    * self.numerical_circuit.battery_enabled) == True)[0]
 
         # get the devices
-        self.controlled_generators = self.multi_circuit.get_generators()
+        self.generators = self.multi_circuit.get_generators()
         self.batteries = self.multi_circuit.get_batteries()
         self.loads = self.multi_circuit.get_loads()
 
         # shortcuts...
         nbus = self.numerical_circuit.nbus
         nbr = self.numerical_circuit.nbr
-        ngen = len(self.controlled_generators)
+        ngen = len(self.generators)
         nbat = len(self.batteries)
         Sbase = self.multi_circuit.Sbase
 
@@ -857,16 +857,16 @@ class AcOpf:
                                             self.numerical_circuit.Vmax[i]) for i in range(nbus)])
 
         # Generator variables (P and P shedding)
-        self.controlled_generators_P = np.empty(ngen, dtype=object)
-        self.controlled_generators_cost = np.zeros(ngen)
+        self.generators_P = np.empty(ngen, dtype=object)
+        self.generators_cost = np.zeros(ngen)
         self.generation_shedding = np.empty(ngen, dtype=object)
-        for i, gen in enumerate(self.controlled_generators):
+        for i, gen in enumerate(self.generators):
             name = 'GEN_' + gen.name + '_' + str(i)
             pmin = gen.Pmin / Sbase
             pmax = gen.Pmax / Sbase
-            self.controlled_generators_P[i] = pulp.LpVariable(name + '_P',  pmin, pmax)
+            self.generators_P[i] = pulp.LpVariable(name + '_P', pmin, pmax)
             self.generation_shedding[i] = pulp.LpVariable(name + '_SHEDDING', 0.0, 1e20)
-            self.controlled_generators_cost[i] = gen.Cost
+            self.generators_cost[i] = gen.Cost
 
         # Batteries
         self.battery_P = np.empty(nbat, dtype=object)
@@ -910,18 +910,16 @@ class AcOpf:
         Sbase = self.numerical_circuit.Sbase
 
         # objective contributions of generators
-        fobj_gen = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus), self.controlled_generators_P * self.controlled_generators_cost)
+        fobj_gen = Cproduct(csc_matrix(self.numerical_circuit.C_gen_bus), self.generators_P * self.generators_cost)
 
         # objective contribution of the batteries
         fobj_bat = Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus), self.battery_P * self.battery_cost)
 
         # LP variables for the controlled generators
-        P = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus[self.gen_x_idx, :]),
-                     self.controlled_generators_P[self.gen_x_idx])
+        P = Cproduct(csc_matrix(self.numerical_circuit.C_gen_bus[self.gen_x_idx, :]), self.generators_P[self.gen_x_idx])
 
         # LP variables for the batteries
-        P += Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]),
-                      self.battery_P[self.bat_x_idx])
+        P += Cproduct(csc_matrix(self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]), self.battery_P[self.bat_x_idx])
 
         if self.allow_load_shedding:
             load_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_load_bus), self.load_shedding)
@@ -931,7 +929,7 @@ class AcOpf:
 
         if self.allow_generation_shedding:
             # the shedding variables go in opposite sense
-            generation_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_ctrl_gen_bus),
+            generation_shedding_per_bus = Cproduct(csc_matrix(self.numerical_circuit.C_gen_bus),
                                                    self.generation_shedding)
             P -= generation_shedding_per_bus
         else:
@@ -1021,14 +1019,14 @@ class AcOpf:
             # store the problem to extend it later
             self.opf_islands.append(island_problem)
 
-    def set_state(self, load_power, static_gen_power, controlled_gen_power,
+    def set_state(self, load_power, static_gen_power, gen_power,
                   Emin=None, Emax=None, E=None, dt=0,
                   force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01):
         """
         Set the current state
         :param load_power: vector of load power (same size as the number of loads)
         :param static_gen_power: vector of static generators load (same size as the static gen objects)
-        :param controlled_gen_power: vector of controlled generators power (same size as the ctrl. generatos)
+        :param gen_power: vector of controlled generators power (same size as the ctrl. generatos)
         :param force_batteries_to_charge: shall we force batteries to charge?
         :param bat_idx: battery indices that shall be forced to charge
         :param battery_loading_pu: amount of the changing band to force to charge
@@ -1048,8 +1046,8 @@ class AcOpf:
         Q = S.imag
 
         # controlled generators for all the circuits (enabled and not dispatcheable)
-        P += (self.numerical_circuit.C_ctrl_gen_bus[self.gen_s_idx, :]).T * \
-             (controlled_gen_power[self.gen_s_idx] / Sbase)
+        P += (self.numerical_circuit.C_gen_bus[self.gen_s_idx, :]).T * \
+             (gen_power[self.gen_s_idx] / Sbase)
 
         # storage params per bus
         if E is not None:
@@ -1126,7 +1124,7 @@ class AcOpf:
         """
         self.set_state(load_power=self.numerical_circuit.load_power,
                        static_gen_power=self.numerical_circuit.static_gen_power,
-                       controlled_gen_power=self.numerical_circuit.controlled_gen_power)
+                       gen_power=self.numerical_circuit.generator_power)
 
     def set_state_at(self, t, force_batteries_to_charge=False, bat_idx=None, battery_loading_pu=0.01,
                      Emin=None, Emax=None, E=None, dt=0):
@@ -1136,7 +1134,7 @@ class AcOpf:
         """
         self.set_state(load_power=self.numerical_circuit.load_power_profile[t, :],
                        static_gen_power=self.numerical_circuit.static_gen_power_profile[t, :],
-                       controlled_gen_power=self.numerical_circuit.controlled_gen_power_profile[t, :],
+                       gen_power=self.numerical_circuit.generator_power_profile[t, :],
                        Emin=Emin, Emax=Emax, E=E, dt=dt,
                        force_batteries_to_charge=force_batteries_to_charge,
                        bat_idx=bat_idx,
@@ -1218,7 +1216,7 @@ class AcOpf:
         """
         Get array of controlled generators power
         """
-        return np.array([elm.value() for elm in self.controlled_generators_P])
+        return np.array([elm.value() for elm in self.generators_P])
 
     def get_load_shedding(self):
         """
@@ -1239,8 +1237,8 @@ class AcOpf:
         # Sbase shortcut
         Sbase = self.numerical_circuit.Sbase
 
-        data = [elm.value() * Sbase for elm in np.r_[self.controlled_generators_P, self.battery_P]]
-        index = [elm.name for elm in (self.controlled_generators + self.batteries)]
+        data = [elm.value() * Sbase for elm in np.r_[self.generators_P, self.battery_P]]
+        index = [elm.name for elm in (self.generators + self.batteries)]
 
         df = pd.DataFrame(data=data, index=index, columns=['Power (MW)'])
 
