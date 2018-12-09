@@ -1287,7 +1287,7 @@
                <item row="16" column="0">
                 <widget class="QLabel" name="label_50">
                  <property name="text">
-                  <string>XFO taps control mode</string>
+                  <string>Transformer taps control mode</string>
                  </property>
                 </widget>
                </item>
