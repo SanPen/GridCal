@@ -59,6 +59,12 @@ class ReactivePowerControlMode(Enum):
     Iterative = "Iterative"
 
 
+class TapsControlMode(Enum):
+    NoControl = "NoControl"
+    Direct = "Direct"
+    Iterative = "Iterative"
+
+
 ########################################################################################################################
 # Power flow classes
 ########################################################################################################################
@@ -70,8 +76,9 @@ class PowerFlowOptions:
                  verbose=False, initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, max_outer_loop_iter=100,
                  control_q=ReactivePowerControlMode.NoControl,
+                 control_taps=TapsControlMode.NoControl,
                  multi_core=False, dispatch_storage=False,
-                 control_taps=False, control_p=False, apply_temperature_correction=False):
+                 control_p=False, apply_temperature_correction=False):
         """
 
         Args:
@@ -83,9 +90,9 @@ class PowerFlowOptions:
             max_iter: maximum number of iterations for the power flow numerical method
             max_outer_loop_iter: Maximum number of iterations for the controls outer loop
             control_q: Control mode for the PV nodes reactive power limits
+            control_taps: Control mode for the transformer taps equipped with a voltage regulator (as part of the outer loop)
             multi_core: Use multi-core processing? applicable for time series
             dispatch_storage: Dispatch storage?
-            control_taps: Control the transformer taps? (as part of the outer loop)
             control_p: Control active power (optimization dispatch)
             apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
         """
@@ -410,27 +417,27 @@ class PowerFlowMP:
                         voltage_solution, \
                         Qnew, \
                         types_new, \
-                        any_q_control_issue = self.switch_logic(V=voltage_solution,
-                                                                Vset=np.abs(voltage_solution),
-                                                                Q=Scalc.imag,
-                                                                Qmax=circuit.Qmax,
-                                                                Qmin=circuit.Qmin,
-                                                                types=circuit.types,
-                                                                original_types=original_types,
-                                                                verbose=self.options.verbose)
+                        any_q_control_issue = self.control_q_direct(V=voltage_solution,
+                                                                    Vset=np.abs(voltage_solution),
+                                                                    Q=Scalc.imag,
+                                                                    Qmax=circuit.Qmax,
+                                                                    Qmin=circuit.Qmin,
+                                                                    types=circuit.types,
+                                                                    original_types=original_types,
+                                                                    verbose=self.options.verbose)
 
                     elif self.options.control_Q == ReactivePowerControlMode.Iterative:
 
-                            Qnew, \
-                            types_new, \
-                            any_q_control_issue = self.iterate_pv_control(V=voltage_solution,
-                                                                          Vset=Vset,
-                                                                          Q=Scalc.imag,
-                                                                          Qmax=circuit.Qmax,
-                                                                          Qmin=circuit.Qmin,
-                                                                          types=circuit.types,
-                                                                          original_types=original_types,
-                                                                          verbose=self.options.verbose)
+                        Qnew, \
+                        types_new, \
+                        any_q_control_issue = self.control_q_iterative(V=voltage_solution,
+                                                                       Vset=Vset,
+                                                                       Q=Scalc.imag,
+                                                                       Qmax=circuit.Qmax,
+                                                                       Qmin=circuit.Qmin,
+                                                                       types=circuit.types,
+                                                                       original_types=original_types,
+                                                                       verbose=self.options.verbose)
 
                     else:
                         # did not check Q limits
@@ -448,29 +455,41 @@ class PowerFlowMP:
                             print('Q controls Ok')
 
                     # control the transformer taps
-                    if self.options.control_taps and any_tap_control_issue:
+                    stable = True
+                    if self.options.control_taps == TapsControlMode.Direct:
 
                         stable, tap_module, \
-                            tap_positions = self.adjust_tap_changers(voltage=voltage_solution,
-                                                                     T=circuit.T,
-                                                                     bus_to_regulated_idx=circuit.bus_to_regulated_idx,
-                                                                     tap_position=tap_positions,
-                                                                     tap_module=tap_module,
-                                                                     min_tap=circuit.min_tap,
-                                                                     max_tap=circuit.max_tap,
-                                                                     tap_inc_reg_up=circuit.tap_inc_reg_up,
-                                                                     tap_inc_reg_down=circuit.tap_inc_reg_down,
-                                                                     vset=circuit.vset,
-                                                                     verbose=self.options.verbose)
+                        tap_positions = self.control_taps_direct(voltage=voltage_solution,
+                                                                 T=circuit.T,
+                                                                 bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                 tap_position=tap_positions,
+                                                                 tap_module=tap_module,
+                                                                 min_tap=circuit.min_tap,
+                                                                 max_tap=circuit.max_tap,
+                                                                 tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                 tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                 vset=circuit.vset,
+                                                                 verbose=self.options.verbose)
 
-                        # print('Recompiling Ybus due to tap changes')
+                    elif self.options.control_taps == TapsControlMode.Iterative:
+
+                        stable, tap_module, \
+                        tap_positions = self.control_taps_iterative(voltage=voltage_solution,
+                                                                    T=circuit.T,
+                                                                    bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                    tap_position=tap_positions,
+                                                                    tap_module=tap_module,
+                                                                    min_tap=circuit.min_tap,
+                                                                    max_tap=circuit.max_tap,
+                                                                    tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                    tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                    vset=circuit.vset,
+                                                                    verbose=self.options.verbose)
+
+                    if not stable:
                         # recompute the admittance matrices based on the tap changes
                         circuit.re_calc_admittance_matrices(tap_module)
-
-                        any_tap_control_issue = not stable
-
-                    else:
-                        any_tap_control_issue = False
+                    any_tap_control_issue = not stable
 
                 else:
                     any_q_control_issue = False
@@ -530,7 +549,7 @@ class PowerFlowMP:
         k = 30
         return 2 * (1 / (1 + exp(-k * abs(V2 - V1))) - 0.5)
 
-    def iterate_pv_control(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+    def control_q_iterative(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
         """
         Change the buses type in order to control the generators reactive power
         using iterative changes in Q to reach Vset.
@@ -684,7 +703,7 @@ class PowerFlowMP:
             return no_val, no_val, no_val, no_val, flow_direction, Sbus
 
     @staticmethod
-    def switch_logic(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+    def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
         """
         Change the buses type in order to control the generators reactive power
         @param pq: array of pq indices
@@ -832,8 +851,8 @@ class PowerFlowMP:
         else:
             return tap
 
-    def adjust_tap_changers(self, voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
-                            tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
+    def control_taps_iterative(self, voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
+                              tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
         """
         Change the taps and compute the continuous tap magnitude
         :param voltage: array of bus voltages solution
@@ -924,6 +943,73 @@ class PowerFlowMP:
                     if verbose:
                         print("Branch ", i, ": Raising from tap ", tap_position[i])
                     stable = False
+
+        return stable, tap_module, tap_position
+
+    @staticmethod
+    def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
+                           tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
+        """
+        Change the taps and compute the continuous tap magnitude
+        :param voltage: array of bus voltages solution
+        :param T: array of indices of the "to" buses of each branch
+        :param bus_to_regulated_idx: array with the indices of the branches that regulate the bus "to"
+        :param tap_position: array of branch tap positions
+        :param tap_module: array of branch tap modules
+        :param min_tap: array of minimum tap positions
+        :param max_tap: array of maximum tap positions
+        :param tap_inc_reg_up: array of tap increment when regulating up
+        :param tap_inc_reg_down: array of tap increment when regulating down
+        :param vset: array of set voltages to control
+        :return: stable?, and the taps magnitude vector
+        """
+        stable = True
+        for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
+
+            j = T[i]  # get the index of the "to" bus of the branch "i"
+            v = abs(voltage[j])
+            if verbose:
+                print("Bus", j, "regulated by branch", i, ": U=", v, "pu, U_set=", vset[i])
+
+            tap_inc = tap_inc_reg_up
+            if tap_inc_reg_up.all() != tap_inc_reg_down.all():
+                print("Error: tap_inc_reg_up and down are not equal for branch {}".format(i))
+
+            desired_module = v / vset[i] * tap_module[i]
+            desired_pos = round((desired_module - 1) / tap_inc[i])
+
+            if desired_pos == tap_position[i]:
+                continue
+
+            elif desired_pos > 0 and desired_pos > max_tap[i]:
+                if verbose:
+                    print("Branch {}: Changing from tap {} to {} (module {} to {})".format(i,
+                                                                                           tap_position[i],
+                                                                                           max_tap[i],
+                                                                                           tap_module[i],
+                                                                                           1 + max_tap[i] * tap_inc[i]))
+                tap_position[i] = max_tap[i]
+
+            elif desired_pos < 0 and desired_pos < min_tap[i]:
+                if verbose:
+                    print("Branch {}: Changing from tap {} to {} (module {} to {})".format(i,
+                                                                                           tap_position[i],
+                                                                                           min_tap[i],
+                                                                                           tap_module[i],
+                                                                                           1 + min_tap[i] * tap_inc[i]))
+                tap_position[i] = min_tap[i]
+
+            else:
+                if verbose:
+                    print("Branch {}: Changing from tap {} to {} (module {} to {})".format(i,
+                                                                                           tap_position[i],
+                                                                                           desired_pos,
+                                                                                           tap_module[i],
+                                                                                           1 + desired_pos * tap_inc[i]))
+                tap_position[i] = desired_pos
+
+            tap_module[i] = 1 + tap_position[i] * tap_inc[i]
+            stable = False
 
         return stable, tap_module, tap_position
 

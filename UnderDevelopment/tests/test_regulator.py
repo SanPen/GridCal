@@ -1,5 +1,5 @@
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions, SolverType, ReactivePowerControlMode
-from GridCal.Engine.PowerFlowDriver import PowerFlowMP
+from GridCal.Engine.PowerFlowDriver import PowerFlowMP, TapsControlMode
 from GridCal.Engine.CalculationEngine import MultiCircuit
 from GridCal.Engine.Devices import *
 from GridCal.Engine.DeviceTypes import *
@@ -125,7 +125,7 @@ def test_gridcal_regulator():
                                initialize_with_existing_solution=True,
                                multi_core=True,
                                control_q=ReactivePowerControlMode.Direct,
-                               control_taps=True,
+                               control_taps=TapsControlMode.Direct,
                                tolerance=1e-6,
                                max_iter=99)
 
