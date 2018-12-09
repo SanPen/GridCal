@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     print('Reading...')
     main_circuit.load_file(fname)
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
+    options = PowerFlowOptions(SolverType.NR, verbose=False,
                                initialize_with_existing_solution=False,
                                multi_core=False, dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,

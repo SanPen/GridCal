@@ -54,7 +54,7 @@ def test_gridcal_regulator():
 
     # Create static generators (with fixed power factor)
     M32 = StaticGenerator(name="M32",
-                          power=4.2+0.0j) # MVA (complex)
+                          P=4.2, Q=0.0)  # MVA (complex)
     M32.bus = B_LV_M32
     grid.add_static_generator(B_LV_M32, M32)
 

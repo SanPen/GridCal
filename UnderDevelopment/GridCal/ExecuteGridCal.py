@@ -26,7 +26,9 @@ from GridCal.Gui.Main.GridCalMain import run
 
 
 if __name__ == "__main__":
-    print("GridCal  \nCopyright (C) 2018 Santiago Peñate Vera\n" +
+    print("GridCal\n" +
+          "Copyright (C) 2018\n"
+          "Santiago Peñate Vera and Michel Lavoie\n" +
           "This program comes with ABSOLUTELY NO WARRANTY.\n" +
           "This is free software, and you are welcome to \n" +
           "redistribute it under certain conditions;\n" +
