@@ -2,9 +2,9 @@
 
 import numpy as np
 # Import the necessary modules
+# Import the necessary modules
 from pySOT import SymmetricLatinHypercube, RBFInterpolant, check_opt_prob, CubicKernel, LinearTail, \
     CandidateDYCORS, SyncStrategyNoConstraints
-
 
 # import GridCal modules
 from GridCal.Engine.Replacements.poap_controller import SerialController, ThreadController, BasicWorkerThread
