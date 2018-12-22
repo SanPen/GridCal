@@ -15,7 +15,8 @@
 
 from enum import Enum
 from warnings import warn
-from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array, exp
+# from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array, exp
+import numpy as np
 import pandas as pd
 from pySOT import *
 # from timeit import default_timer as timer
@@ -156,10 +157,10 @@ class PowerFlowMP:
         @return:
         """
 
-        pq = where(types == BusMode.PQ.value[0])[0]
-        pv = where(types == BusMode.PV.value[0])[0]
-        ref = where(types == BusMode.REF.value[0])[0]
-        sto = where(types == BusMode.STO_DISPATCH.value)[0]
+        pq = np.where(types == BusMode.PQ.value[0])[0]
+        pv = np.where(types == BusMode.PV.value[0])[0]
+        ref = np.where(types == BusMode.REF.value[0])[0]
+        sto = np.where(types == BusMode.STO_DISPATCH.value)[0]
 
         if len(ref) == 0:  # there is no slack!
 
@@ -173,23 +174,23 @@ class PowerFlowMP:
                 mx = max(Sbus[pv])
                 if mx > 0:
                     # find the generator that is injecting the most
-                    i = where(Sbus == mx)[0][0]
+                    i = np.where(Sbus == mx)[0][0]
 
                 else:
                     # all the generators are injecting zero, pick the first pv
                     i = pv[0]
 
                 # delete the selected pv bus from the pv list and put it in the slack list
-                pv = delete(pv, where(pv == i)[0])
+                pv = np.delete(pv, np.where(pv == i)[0])
                 ref = [i]
                 # print('Setting bus', i, 'as slack')
 
-            ref = ndarray.flatten(array(ref))
+            ref = np.ndarray.flatten(np.array(ref))
             types[ref] = BusMode.REF.value[0]
         else:
             pass  # no problem :)
 
-        pqpv = r_[pq, pv]
+        pqpv = np.r_[pq, pv]
         pqpv.sort()
 
         return ref, pq, pv, pqpv
@@ -382,7 +383,7 @@ class PowerFlowMP:
         while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
             if len(circuit.ref) == 0:
-                voltage_solution = zeros(len(Sbus), dtype=complex)
+                voltage_solution = np.zeros(len(Sbus), dtype=complex)
                 normF = 0
                 Scalc = Sbus.copy()
                 any_q_control_issue = False
@@ -547,7 +548,7 @@ class PowerFlowMP:
         The steepness factor k was set through trial an error.
         """
         k = 30
-        return 2 * (1 / (1 + exp(-k * abs(V2 - V1))) - 0.5)
+        return 2 * (1 / (1 + np.exp(-k * abs(V2 - V1))) - 0.5)
 
     def control_q_iterative(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
         """
@@ -667,19 +668,19 @@ class PowerFlowMP:
         pv = calculation_inputs.pv
 
         # power at the slack nodes
-        Sbus[vd] = V[vd] * conj(calculation_inputs.Ybus[vd, :][:, :].dot(V))
+        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :][:, :].dot(V))
 
         # Reactive power at the pv nodes
         P = Sbus[pv].real
-        Q = (V[pv] * conj(calculation_inputs.Ybus[pv, :][:, :].dot(V))).imag
+        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :][:, :].dot(V))).imag
         Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
         if not only_power:
             # Branches current, loading, etc
             If = calculation_inputs.Yf * V
             It = calculation_inputs.Yt * V
-            Sf = (calculation_inputs.C_branch_bus_f * V) * conj(If)
-            St = (calculation_inputs.C_branch_bus_t * V) * conj(It)
+            Sf = (calculation_inputs.C_branch_bus_f * V) * np.conj(If)
+            St = (calculation_inputs.C_branch_bus_t * V) * np.conj(It)
 
             # Branch losses in MVA
             losses = (Sf + St) * calculation_inputs.Sbase
@@ -687,10 +688,10 @@ class PowerFlowMP:
             flow_direction = Sf.real / np.abs(Sf + 1e-20)
 
             # Branch current in p.u.
-            Ibranch = maximum(If, It)
+            Ibranch = np.maximum(If, It)
 
             # Branch power in MVA
-            Sbranch = maximum(Sf, St) * calculation_inputs.Sbase
+            Sbranch = np.maximum(Sf, St) * calculation_inputs.Sbase
 
             # Branch loading in p.u.
             loading = Sbranch / (calculation_inputs.branch_rates + 1e-9)

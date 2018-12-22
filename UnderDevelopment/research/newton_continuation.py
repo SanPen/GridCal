@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     # check the HELM solution: v against the NR power flow
     print('\nNR standard')
-    options = PowerFlowOptions(SolverType.IWAMOTO, verbose=False, robust=False, tolerance=1e-9, control_q=False)
+    options = PowerFlowOptions(SolverType.IWAMOTO, verbose=False, tolerance=1e-9, control_q=False)
     power_flow = PowerFlow(grid, options)
 
     start_time = time.time()

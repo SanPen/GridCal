@@ -17,9 +17,10 @@ import os
 from enum import Enum
 import pickle as pkl
 from warnings import warn
+import numpy as np
 import pandas as pd
-from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
-    r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
+# from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
+#     r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
 from scipy.sparse import diags, hstack as hstack_s, vstack as vstack_s
 from scipy.sparse.linalg import factorized
 from pySOT import *
@@ -629,25 +630,25 @@ class PowerFlowResults:
         @param m: number of branches
         @return:
         """
-        self.Sbus = zeros(n, dtype=complex)
+        self.Sbus = np.zeros(n, dtype=complex)
 
-        self.voltage = zeros(n, dtype=complex)
+        self.voltage = np.zeros(n, dtype=complex)
 
-        self.overvoltage = zeros(n, dtype=complex)
+        self.overvoltage = np.zeros(n, dtype=complex)
 
-        self.undervoltage = zeros(n, dtype=complex)
+        self.undervoltage = np.zeros(n, dtype=complex)
 
-        self.Sbranch = zeros(m, dtype=complex)
+        self.Sbranch = np.zeros(m, dtype=complex)
 
-        self.Ibranch = zeros(m, dtype=complex)
+        self.Ibranch = np.zeros(m, dtype=complex)
 
-        self.loading = zeros(m, dtype=complex)
+        self.loading = np.zeros(m, dtype=complex)
 
-        self.flow_direction = zeros(m, dtype=float)
+        self.flow_direction = np.zeros(m, dtype=float)
 
-        self.losses = zeros(m, dtype=complex)
+        self.losses = np.zeros(m, dtype=complex)
 
-        self.overloads = zeros(m, dtype=complex)
+        self.overloads = np.zeros(m, dtype=complex)
 
         self.error = list()
 
@@ -725,16 +726,16 @@ class PowerFlowResults:
         Returns:summation of the deviations
         """
         # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
-        br_idx = where(self.loading > 1)[0]
+        br_idx = np.where(self.loading > 1)[0]
         bb_f = F[br_idx]
         bb_t = T[br_idx]
         self.overloads = self.loading[br_idx]
 
         # Over and under voltage values in the indices where it occurs
         Vabs = np.abs(self.voltage)
-        vo_idx = where(Vabs > Vmax)[0]
+        vo_idx = np.where(Vabs > Vmax)[0]
         self.overvoltage = (Vabs - Vmax)[vo_idx]
-        vu_idx = where(Vabs < Vmin)[0]
+        vu_idx = np.where(Vabs < Vmin)[0]
         self.undervoltage = (Vmin - Vabs)[vu_idx]
 
         self.overloads_idx = br_idx
@@ -743,7 +744,7 @@ class PowerFlowResults:
 
         self.undervoltage_idx = vu_idx
 
-        self.buses_useful_for_storage = list(set(r_[vo_idx, vu_idx, bb_f, bb_t]))
+        self.buses_useful_for_storage = list(set(np.r_[vo_idx, vu_idx, bb_f, bb_t]))
 
         return np.abs(wo * np.sum(self.overloads) + wv1 * np.sum(self.overvoltage) + wv2 * np.sum(self.undervoltage))
 
@@ -805,7 +806,7 @@ class PowerFlowResults:
             ax = fig.add_subplot(111)
 
         if indices is None and names is not None:
-            indices = array(range(len(names)))
+            indices = np.array(range(len(names)))
 
         if len(indices) > 0:
             labels = names[indices]
@@ -885,7 +886,7 @@ class PowerFlowResults:
         va = np.angle(self.voltage)
         vr = self.voltage.real
         vi = self.voltage.imag
-        bus_data = c_[vr, vi, vm, va]
+        bus_data = np.c_[vr, vi, vm, va]
         bus_cols = ['Real voltage (p.u.)', 'Imag Voltage (p.u.)', 'Voltage module (p.u.)', 'Voltage angle (rad)']
         df_bus = pd.DataFrame(data=bus_data, columns=bus_cols)
 
@@ -899,7 +900,7 @@ class PowerFlowResults:
         ls = np.abs(self.losses)
         tm = self.tap_module
 
-        branch_data = c_[sr, si, sm, ld, la, lr, ls, tm]
+        branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
         branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)', 'Losses (MW)', 'Losses (MVAr)', 'Losses (MVA)', 'Tap module']
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
@@ -968,19 +969,19 @@ class TimeSeriesInput:
             if cols[0] is not None:
                 self.S = merged[cols[0]].values
             else:
-                self.S = zeros((t, n), dtype=complex)
+                self.S = np.zeros((t, n), dtype=complex)
 
             # Array of load currents
             if cols[1] is not None:
                 self.I = merged[cols[1]].values
             else:
-                self.I = zeros((t, n), dtype=complex)
+                self.I = np.zeros((t, n), dtype=complex)
 
             # Array of load admittances (shunt)
             if cols[2] is not None:
                 self.Y = merged[cols[2]].values
             else:
-                self.Y = zeros((t, n), dtype=complex)
+                self.Y = np.zeros((t, n), dtype=complex)
 
     def get_at(self, t):
         """
@@ -1084,9 +1085,9 @@ class MonteCarloInput:
             lhs_points = lhs(self.n, samples=samples, criterion='center')
 
             if samples > 0:
-                S = zeros((samples, self.n), dtype=complex)
-                I = zeros((samples, self.n), dtype=complex)
-                Y = zeros((samples, self.n), dtype=complex)
+                S = np.zeros((samples, self.n), dtype=complex)
+                I = np.zeros((samples, self.n), dtype=complex)
+                Y = np.zeros((samples, self.n), dtype=complex)
 
                 for i in range(self.n):
                     if self.Scdf[i] is not None:
@@ -1094,17 +1095,17 @@ class MonteCarloInput:
 
         else:
             if samples > 0:
-                S = zeros((samples, self.n), dtype=complex)
-                I = zeros((samples, self.n), dtype=complex)
-                Y = zeros((samples, self.n), dtype=complex)
+                S = np.zeros((samples, self.n), dtype=complex)
+                I = np.zeros((samples, self.n), dtype=complex)
+                Y = np.zeros((samples, self.n), dtype=complex)
 
                 for i in range(self.n):
                     if self.Scdf[i] is not None:
                         S[:, i] = self.Scdf[i].get_sample(samples)
             else:
-                S = zeros(self.n, dtype=complex)
-                I = zeros(self.n, dtype=complex)
-                Y = zeros(self.n, dtype=complex)
+                S = np.zeros(self.n, dtype=complex)
+                I = np.zeros(self.n, dtype=complex)
+                Y = np.zeros(self.n, dtype=complex)
 
                 for i in range(self.n):
                     if self.Scdf[i] is not None:
@@ -1126,9 +1127,9 @@ class MonteCarloInput:
 
         Returns: Time series object
         """
-        S = zeros((1, self.n), dtype=complex)
-        I = zeros((1, self.n), dtype=complex)
-        Y = zeros((1, self.n), dtype=complex)
+        S = np.zeros((1, self.n), dtype=complex)
+        I = np.zeros((1, self.n), dtype=complex)
+        Y = np.zeros((1, self.n), dtype=complex)
 
         for i in range(self.n):
             if self.Scdf[i] is not None:
@@ -1157,25 +1158,25 @@ class MonteCarloResults:
 
         self.m = m
 
-        self.S_points = zeros((p, n), dtype=complex)
+        self.S_points = np.zeros((p, n), dtype=complex)
 
-        self.V_points = zeros((p, n), dtype=complex)
+        self.V_points = np.zeros((p, n), dtype=complex)
 
-        self.I_points = zeros((p, m), dtype=complex)
+        self.I_points = np.zeros((p, m), dtype=complex)
 
-        self.loading_points = zeros((p, m), dtype=complex)
+        self.loading_points = np.zeros((p, m), dtype=complex)
 
-        self.losses_points = zeros((p, m), dtype=complex)
+        self.losses_points = np.zeros((p, m), dtype=complex)
 
         # self.Vstd = zeros(n, dtype=complex)
 
         self.error_series = list()
 
-        self.voltage = zeros(n)
-        self.current = zeros(m)
-        self.loading = zeros(m)
-        self.sbranch = zeros(m)
-        self.losses = zeros(m)
+        self.voltage = np.zeros(n)
+        self.current = np.zeros(m)
+        self.loading = np.zeros(m)
+        self.sbranch = np.zeros(m)
+        self.losses = np.zeros(m)
 
         # magnitudes standard deviation convergence
         self.v_std_conv = None
@@ -1209,11 +1210,11 @@ class MonteCarloResults:
         @param mcres: MonteCarloResults object
         @return:
         """
-        self.S_points = vstack((self.S_points, mcres.S_points))
-        self.V_points = vstack((self.V_points, mcres.V_points))
-        self.I_points = vstack((self.I_points, mcres.I_points))
-        self.loading_points = vstack((self.loading_points, mcres.loading_points))
-        self.losses_points = vstack((self.losses_points, mcres.loading_points))
+        self.S_points = np.vstack((self.S_points, mcres.S_points))
+        self.V_points = np.vstack((self.V_points, mcres.V_points))
+        self.I_points = np.vstack((self.I_points, mcres.I_points))
+        self.loading_points = np.vstack((self.loading_points, mcres.loading_points))
+        self.losses_points = np.vstack((self.losses_points, mcres.loading_points))
 
     def get_voltage_sum(self):
         """
@@ -1230,24 +1231,24 @@ class MonteCarloResults:
         p, n = self.V_points.shape
         ni, m = self.I_points.shape
         step = 1
-        nn = int(floor(p / step) + 1)
-        self.v_std_conv = zeros((nn, n))
-        self.c_std_conv = zeros((nn, m))
-        self.l_std_conv = zeros((nn, m))
-        self.loss_std_conv = zeros((nn, m))
-        self.v_avg_conv = zeros((nn, n))
-        self.c_avg_conv = zeros((nn, m))
-        self.l_avg_conv = zeros((nn, m))
-        self.loss_avg_conv = zeros((nn, m))
+        nn = int(np.floor(p / step) + 1)
+        self.v_std_conv = np.zeros((nn, n))
+        self.c_std_conv = np.zeros((nn, m))
+        self.l_std_conv = np.zeros((nn, m))
+        self.loss_std_conv = np.zeros((nn, m))
+        self.v_avg_conv = np.zeros((nn, n))
+        self.c_avg_conv = np.zeros((nn, m))
+        self.l_avg_conv = np.zeros((nn, m))
+        self.loss_avg_conv = np.zeros((nn, m))
 
-        v_mean = zeros(n)
-        c_mean = zeros(m)
-        l_mean = zeros(m)
-        loss_mean = zeros(m)
-        v_std = zeros(n)
-        c_std = zeros(m)
-        l_std = zeros(m)
-        loss_std = zeros(m)
+        v_mean = np.zeros(n)
+        c_mean = np.zeros(m)
+        l_mean = np.zeros(m)
+        loss_mean = np.zeros(m)
+        v_std = np.zeros(n)
+        c_std = np.zeros(m)
+        l_std = np.zeros(m)
+        loss_std = np.zeros(m)
 
         for t in range(1, p, step):
             v_mean_prev = v_mean.copy()
@@ -1409,10 +1410,10 @@ class MonteCarloResults:
 
         if indices is None:
             if names is None:
-                indices = arange(0, n, 1)
+                indices = np.arange(0, n, 1)
                 labels = None
             else:
-                indices = array(range(len(names)))
+                indices = np.array(range(len(names)))
                 labels = names[indices]
         else:
             labels = names[indices]
@@ -1602,19 +1603,19 @@ class OptimalPowerFlowResults:
         @param m: number of branches
         @return:
         """
-        self.Sbus = zeros(n, dtype=complex)
+        self.Sbus = np.zeros(n, dtype=complex)
 
-        self.voltage = zeros(n, dtype=complex)
+        self.voltage = np.zeros(n, dtype=complex)
 
-        self.load_shedding = zeros(n, dtype=float)
+        self.load_shedding = np.zeros(n, dtype=float)
 
-        self.Sbranch = zeros(m, dtype=complex)
+        self.Sbranch = np.zeros(m, dtype=complex)
 
-        self.loading = zeros(m, dtype=complex)
+        self.loading = np.zeros(m, dtype=complex)
 
-        self.overloads = zeros(m, dtype=complex)
+        self.overloads = np.zeros(m, dtype=complex)
 
-        self.losses = zeros(m, dtype=complex)
+        self.losses = np.zeros(m, dtype=complex)
 
         self.converged = list()
 
@@ -1635,7 +1636,7 @@ class OptimalPowerFlowResults:
             ax = fig.add_subplot(111)
 
         if indices is None:
-            indices = array(range(len(names)))
+            indices = np.array(range(len(names)))
 
         if len(indices) > 0:
             labels = names[indices]

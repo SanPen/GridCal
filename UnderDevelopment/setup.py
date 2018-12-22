@@ -95,8 +95,8 @@ install_requires = ["numpy>=1.14.0",
 
 if platform.system() == 'Windows':
     # list the packages (On windows anaconda is assumed)
-    install_requires.pop(6)  # remove PyQt5 since it may conflict with anaconda's installation
-
+    # install_requires.pop(6)  # remove PyQt5 since it may conflict with anaconda's installation
+    pass
 else:
     # make the desktop entry
     make_linux_desktop_file(version_=version, comment=description)
