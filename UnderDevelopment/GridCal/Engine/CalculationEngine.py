@@ -724,8 +724,8 @@ class NumericalCircuit:
     @property
     def R_corrected(self):
         """
-        Returns a temperature corrected resistance based on a formula provided by:
-        NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
+        Returns temperature corrected resistances (numpy array) based on a formula
+        provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
         https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
         (version of 2019-01-03 at 15:20 EST).
         """
