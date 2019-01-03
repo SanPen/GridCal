@@ -585,8 +585,7 @@ class NumericalCircuit:
         Ct = states_dia * self.C_branch_bus_t
 
         if apply_temperature:
-            # apply the temperature correction to the resistance
-            R = self.get_corrected_resistances()
+            R = self.R_corrected
         else:
             R = self.R
 
@@ -722,7 +721,8 @@ class NumericalCircuit:
         # return the list of islands
         return self.calculation_islands
 
-    def get_corrected_resistances(self):
+    @property
+    def R_corrected(self):
         """
         Returns a temperature corrected resistance based on a formula provided by:
         NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
@@ -745,7 +745,6 @@ class NumericalCircuit:
         Ct = states_dia * self.C_branch_bus_t
 
         if apply_temperature:
-            # apply the temperature correction to the resistance
             R = self.R_corrected
         else:
             R = self.R
