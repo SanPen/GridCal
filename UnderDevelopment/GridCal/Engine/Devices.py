@@ -626,7 +626,7 @@ class Branch(ReliabilityDevice):
                                                      'vset': ('', float),
                                                      'temp_base': ('', float),
                                                      'temp_oper': ('', float),
-                                                     'k': ('', float),
+                                                     'alpha': ('', float),
                                                      'r_fault': ('p.u.', float),
                                                      'x_fault': ('p.u.', float),
                                                      'fault_pos': ('p.u.', float),
@@ -700,11 +700,11 @@ class Branch(ReliabilityDevice):
         self.vset = vset
 
         # self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-        #                      'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'Tb', 'k',
+        #                      'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'temp_base', 'temp_oper', 'alpha',
         #                      'branch_type', 'template']
         #
         # self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-        #               'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC',
+        #               'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC', '1/ºC',
         #               '', '']
 
         self.non_editable_indices = [1, 2, 19]
@@ -734,8 +734,9 @@ class Branch(ReliabilityDevice):
         #                    'angle': float,
         #                    'bus_to_regulated': bool,
         #                    'vset': float,
-        #                    'Tb': float,
-        #                    'k': float,
+        #                    'temp_base': float,
+        #                    'temp_oper': float,
+        #                    'alpha': float,
         #                    'branch_type': BranchType,
         #                    'template': BranchTemplate}
 
@@ -787,8 +788,9 @@ class Branch(ReliabilityDevice):
                    mttr=self.mttr,
                    bus_to_regulated=self.bus_to_regulated,
                    vset=self.vset,
-                   Tb=self.Tb,
-                   k=self.k,
+                   temp_base=self.temp_base,
+                   temp_oper=self.temp_oper,
+                   alpha=self.alpha,
                    branch_type=self.branch_type,
                    template=self.template)
 
@@ -961,7 +963,7 @@ class Branch(ReliabilityDevice):
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle, self.bus_to_regulated,
-                self.vset, self.Tb, self.k, self.r_fault, self.x_fault, self.fault_pos,
+                self.vset, self.temp_base, self.temp_base, self.alpha, self.r_fault, self.x_fault, self.fault_pos,
                 conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
@@ -987,8 +989,9 @@ class Branch(ReliabilityDevice):
                 'tap_module': self.tap_module,
                 'bus_to_regulated': self.bus_to_regulated,
                 'vset': self.vset,
-                'Tb': self.Tb,
-                'k': self.k,
+                'temp_base': self.temp_base,
+                'temp_oper': self.temp_oper,
+                'alpha': self.alpha,
                 'tap_angle': self.angle,
                 'branch_type': self.branch_type}
 
