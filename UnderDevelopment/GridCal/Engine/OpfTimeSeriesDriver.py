@@ -22,10 +22,10 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.CalculationEngine import MultiCircuit, LINEWIDTH
 from GridCal.Engine.PowerFlowDriver import SolverType
-from GridCal.Engine.OpfDriver import OptimalPowerFlowResults, OptimalPowerFlowOptions, OptimalPowerFlow
+from GridCal.Engine.OpfDriver import OptimalPowerFlowResults, OptimalPowerFlowOptions
 from GridCal.Engine.Numerical.AC_OPF import AcOpf
 from GridCal.Engine.Numerical.DC_OPF import DcOpf
-from GridCal.Engine.Numerical.DYCORS_OPF import AcOpfDYCORS
+# from research.DYCORS_OPF import AcOpfDYCORS
 from GridCal.Engine.Numerical.NelderMead_OPF import AcOpfNelderMead
 from GridCal.Engine.PowerFlowDriver import PowerFlowOptions
 from GridCal.Engine.IoStructures import ResultTypes
@@ -283,9 +283,9 @@ class OptimalPowerFlowTimeSeries(QThread):
                                 allow_load_shedding=self.options.load_shedding,
                                 allow_generation_shedding=self.options.generation_shedding)
 
-            elif self.options.solver == SolverType.DYCORS_OPF:
-
-                problem = AcOpfDYCORS(self.grid, verbose=False)
+            # elif self.options.solver == SolverType.DYCORS_OPF:
+            #
+            #     problem = AcOpfDYCORS(self.grid, verbose=False)
 
             elif self.options.solver == SolverType.NELDER_MEAD_OPF:
 
