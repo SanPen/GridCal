@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -1720,7 +1720,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1212, 26))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1212, 22))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -1976,7 +1976,7 @@ class Ui_mainWindow(object):
 
         self.retranslateUi(mainWindow)
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_3.setCurrentIndex(1)
+        self.tabWidget_3.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)

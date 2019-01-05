@@ -377,6 +377,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.units = [editable_headers[attr][0] for attr in self.attributes]
 
+        self.tips = [editable_headers[attr][2] for attr in self.attributes]
+
         self.objects = objects
 
         self.editable = editable
@@ -494,7 +496,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         """
         Get the data to display
         :param index:
-        :param role:
         :return:
         """
 
@@ -526,6 +527,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 return str(self.data_with_type(index))
+
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
@@ -604,6 +606,20 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                         return self.attributes[p_int]
                 elif orientation == QtCore.Qt.Vertical:
                     return str(p_int) + ':' + str(self.objects[p_int])
+
+        # add a tooltip
+        if role == QtCore.Qt.ToolTipRole:
+            if self.units[p_int] != "":
+                unit = '\nUnits: ' + self.units[p_int]
+            else:
+                unit = ''
+            return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
+
+        # if role == QtCore.Qt.DecorationRole:
+        #     pixmap = QPixmap(26, 26)
+        #     # pixmap.fill(value)
+        #     icon = QIcon(pixmap)
+        #     return icon
 
         return None
 

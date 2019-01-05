@@ -45,9 +45,9 @@ class EditableDevice:
         """
 
         data = list()
-        for name, pair in self.editable_headers.items():
+        for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
-            if pair[0] not in [str, float, int, bool]:
+            if properties[1] not in [str, float, int, bool]:
                 obj = str(obj)
             data.append(obj)
         return data

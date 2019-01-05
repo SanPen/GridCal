@@ -115,21 +115,23 @@ class Bus(EditableDevice):
                                 name=name,
                                 active=active,
                                 type_name='Bus',
-                                editable_headers={'name': ('', str),
-                                                  'active': ('', bool),
-                                                  'is_slack': ('', bool),
-                                                  'Vnom': ('kV', float),
-                                                  'Vmin': ('p.u.', float),
-                                                  'Vmax': ('p.u.', float),
-                                                  'r_fault': ('p.u.', float),
-                                                  'x_fault': ('p.u.', float),
-                                                  'x': ('px', float),
-                                                  'y': ('px', float),
-                                                  'h': ('px', float),
-                                                  'w': ('px', float),
-                                                  'area': ('', str),
-                                                  'zone': ('', str),
-                                                  'substation': ('', str)})
+                                editable_headers={'name': ('', str, 'Name of the bus'),
+                                                  'active': ('', bool, 'Is the bus active? used to disable the bus.'),
+                                                  'is_slack': ('', bool, 'Force the bus to be of slack type.'),
+                                                  'Vnom': ('kV', float, 'Nominal line voltage of the bus.'),
+                                                  'Vmin': ('p.u.', float, 'Lower range of allowed voltage.'),
+                                                  'Vmax': ('p.u.', float, 'Higher range of allowed range.'),
+                                                  'r_fault': ('p.u.', float, 'Resistance of the fault.\n'
+                                                                             'This is used for short circuit studies.'),
+                                                  'x_fault': ('p.u.', float, 'Reactance of the fault.\n'
+                                                                             'This is used for short circuit studies.'),
+                                                  'x': ('px', float, 'x position in pixels.'),
+                                                  'y': ('px', float, 'y position in pixels.'),
+                                                  'h': ('px', float, 'height of the bus in pixels.'),
+                                                  'w': ('px', float, 'Width of the bus in pixels.'),
+                                                  'area': ('', str, 'Area of the bus'),
+                                                  'zone': ('', str, 'Zone of the bus'),
+                                                  'substation': ('', str, 'Substation of the bus.')})
 
         # self.name = name
         #
@@ -586,60 +588,81 @@ class Branch(ReliabilityDevice):
                  bus_to_regulated=False, template=BranchTemplate(), ):
         """
         Branch model constructor
-        @param bus_from: Bus Object
-        @param bus_to: Bus Object
-        @param name: name of the branch
-        @param zserie: total branch series impedance in per unit (complex)
-        @param yshunt: total branch shunt admittance in per unit (complex)
-        @param rate: branch rate in MVA
-        @param tap: tap module
-        @param shift_angle: tap shift angle in radians
-        @param mttf: Mean time to failure
-        @param mttr: Mean time to repair
-        @param branch_type: Is the branch a transformer?
-        @param length: eventual line length in km
-        @param vset: Set voltage of the tap-controlled bus in p.u.
-        @param temp_base: Base temperature at which r is measured in ºC
-        @param temp_oper: Operating temperature in ºC
-        @param alpha: Thermal constant of the material in 1/ºC at temp_base (Cu = 0.00323, Al = 0.00330 @ 75ºC)
-        @param template: Type object template (i.e. Tower, TransformerType, etc...)
+        Args:
+            bus_from:Bus Object
+            bus_to: Bus Object
+            name: name of the branch
+            r:
+            x:
+            g:
+            b:
+            rate: branch rate in MVA
+            tap: tap module
+            shift_angle: tap shift angle in radians
+            active:
+            mttf: Mean time to failure
+            mttr: Mean time to repair
+            r_fault:
+            x_fault:
+            fault_pos:
+            branch_type: Is the branch a transformer?
+            length: eventual line length in km
+            vset: Set voltage of the tap-controlled bus in p.u.
+            temp_base: Base temperature at which r is measured in ºC
+            temp_oper: Operating temperature in ºC
+            alpha: Thermal constant of the material in 1/ºC at temp_base (Cu = 0.00323, Al = 0.00330 @ 75ºC)
+            bus_to_regulated:
+            template: Type object template (i.e. Tower, TransformerType, etc...)
         """
 
         ReliabilityDevice.__init__(self, name,
                                    active=active,
                                    type_name='Branch',
-                                   editable_headers={'name': ('', str),
-                                                     'bus_from': ('', Bus),
-                                                     'bus_to': ('', Bus),
-                                                     'active': ('', bool),
-                                                     'rate': ('', float),
-                                                     'mttf': ('', float),
-                                                     'mttr': ('', float),
-                                                     'R': ('', float),
-                                                     'X': ('', float),
-                                                     'G': ('', float),
-                                                     'B': ('', float),
-                                                     'length': ('', float),
-                                                     'tap_module': ('', float),
-                                                     'angle': ('', float),
-                                                     'bus_to_regulated': ('', bool),
-                                                     'vset': ('', float),
-                                                     'temp_base': ('', float),
-                                                     'temp_oper': ('', float),
-                                                     'alpha': ('', float),
-                                                     'r_fault': ('p.u.', float),
-                                                     'x_fault': ('p.u.', float),
-                                                     'fault_pos': ('p.u.', float),
-                                                     'branch_type': ('', BranchType),
-                                                     'template': ('', BranchTemplate)},
+                                   editable_headers={'name': ('', str, 'Name of the branch.'),
+                                                     'bus_from': ('', Bus, 'Name of the bus at the "from" '
+                                                                           'side of the branch.'),
+                                                     'bus_to': ('', Bus, 'Name of the bus at the "to" '
+                                                                         'side of the branch.'),
+                                                     'active': ('', bool, 'Is the branch active?'),
+                                                     'rate': ('MVA', float, 'Thermal rating power of the branch.'),
+                                                     'mttf': ('h', float, 'Mean time to failure, '
+                                                                          'used in reliability studies.'),
+                                                     'mttr': ('h', float, 'Mean time to recovery, '
+                                                                          'used in reliability studies.'),
+                                                     'R': ('p.u.', float, 'Total resistance.'),
+                                                     'X': ('p.u.', float, 'Total reactance.'),
+                                                     'G': ('p.u.', float, 'Total shunt conductance.'),
+                                                     'B': ('p.u.', float, 'Total shunt susceptance.'),
+                                                     'length': ('km', float, 'Length of the branch '
+                                                                             '(not used for calculation)'),
+                                                     'tap_module': ('', float, 'Tap changer module, '
+                                                                               'it a value close to 1.0'),
+                                                     'angle': ('rad', float, 'Angle shift of the tap changer.'),
+                                                     'bus_to_regulated': ('', bool, 'Is the bus tap regulated?'),
+                                                     'vset': ('p.u.', float, 'Objective voltage at the "to" side of '
+                                                                             'the bus when regulating the tap.'),
+                                                     'temp_base': ('ºc', float, 'Base temperature at which R was '
+                                                                                'measured.'),
+                                                     'temp_oper': ('ºc', float, 'Operation temperature to modify R.'),
+                                                     'alpha': ('1/K', float, 'Thermal coefficient to modify R.\n'
+                                                                             'Silver: 0.0038, \n'
+                                                                             'Copper: 0.00404,\n'
+                                                                             'Annealed copper: 0.00393, \n'
+                                                                             'Gold: 0.0034, \n'
+                                                                             'Aluminium: 0.0039, \n'
+                                                                             'Tungsten: 0.0045'),
+                                                     'r_fault': ('p.u.', float, 'Resistance of the mid-line fault.\n'
+                                                                                'Used in short circuit studies.'),
+                                                     'x_fault': ('p.u.', float, 'Reactance of the mid-line fault.\n'
+                                                                                'Used in short circuit studies.'),
+                                                     'fault_pos': ('p.u.', float, 'Per-unit positioning of the fault:\n'
+                                                                                  '0 would be at the "from" side,\n'
+                                                                                  '1 would be at the "to" side,\n'
+                                                                                  'therefore 0.5 is at the middle.'),
+                                                     'branch_type': ('', BranchType, ''),
+                                                     'template': ('', BranchTemplate, '')},
                                    mttf=mttf,
                                    mttr=mttr)
-
-        # element name
-        # self.name = name
-
-        # Identifier of this element type
-        # self.type_name = 'Branch'
 
         # list of properties that hold a profile
         self.properties_with_profile = None
@@ -699,14 +722,6 @@ class Branch(ReliabilityDevice):
         self.bus_to_regulated = bus_to_regulated
         self.vset = vset
 
-        # self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-        #                      'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'temp_base', 'temp_oper', 'alpha',
-        #                      'branch_type', 'template']
-        #
-        # self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-        #               'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC', '1/ºC',
-        #               '', '']
-
         self.non_editable_indices = [1, 2, 19]
 
         # converter for enumerations
@@ -717,28 +732,6 @@ class Branch(ReliabilityDevice):
                      'reactance': BranchType.Reactance}
 
         self.inv_conv = {val: key for key, val in self.conv.items()}
-
-        # self.edit_types = {'name': str,
-        #                    'bus_from': Bus,
-        #                    'bus_to': Bus,
-        #                    'active': bool,
-        #                    'rate': float,
-        #                    'mttf': float,
-        #                    'mttr': float,
-        #                    'R': float,
-        #                    'X': float,
-        #                    'G': float,
-        #                    'B': float,
-        #                    'length': float,
-        #                    'tap_module': float,
-        #                    'angle': float,
-        #                    'bus_to_regulated': bool,
-        #                    'vset': float,
-        #                    'temp_base': float,
-        #                    'temp_oper': float,
-        #                    'alpha': float,
-        #                    'branch_type': BranchType,
-        #                    'template': BranchTemplate}
 
     @property
     def R_corrected(self):
@@ -1032,17 +1025,17 @@ class Load(InjectionDevice):
                                  bus=None,
                                  active=active,
                                  type_name='Load',
-                                 editable_headers={'name': ('', str),
-                                                   'bus': ('', None),
-                                                   'active': ('', bool),
-                                                   'P': ('MW', float),
-                                                   'Q': ('MVAr', float),
-                                                   'Ir': ('MW', float),
-                                                   'Ii': ('MVAr', float),
-                                                   'G': ('MW', float),
-                                                   'B': ('MVAr', float),
-                                                   'mttf': ('h', float),
-                                                   'mttr': ('h', float)},
+                                 editable_headers={'name': ('', str, 'Load name'),
+                                                   'bus': ('', None, 'Connection bus name'),
+                                                   'active': ('', bool, 'Is the load active?'),
+                                                   'P': ('MW', float, 'Active power'),
+                                                   'Q': ('MVAr', float, 'Reactive power'),
+                                                   'Ir': ('MW', float, 'Active power of the current component at V=1.0 p.u.'),
+                                                   'Ii': ('MVAr', float, 'Reactive power of the current component at V=1.0 p.u.'),
+                                                   'G': ('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
+                                                   'B': ('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                   'mttf': ('h', float, 'Mean time to failure'),
+                                                   'mttr': ('h', float, 'Mean time to recovery')},
                                  mttf=mttf,
                                  mttr=mttr,
                                  properties_with_profile={'P': 'P_prof',
@@ -1051,11 +1044,6 @@ class Load(InjectionDevice):
                                                           'Ii': 'Ii_prof',
                                                           'G': 'G_prof',
                                                           'B': 'B_prof'})
-
-        # self.properties_with_profile = (['P', 'Q', 'Ir', 'Ii', 'G', 'B'],
-        #                                 [float, float, float, float, float, float])
-
-        # self.graphic_obj = None
 
         # Impedance in equivalent MVA
         self.G = G
@@ -1070,38 +1058,6 @@ class Load(InjectionDevice):
         self.Ii_prof = Ii_prof
         self.P_prof = P_prof
         self.Q_prof = Q_prof
-
-        # self.graphic_obj = None
-
-        # self.edit_headers = ['name', 'bus', 'active', 'P', 'Q', 'Ir', 'Ii', 'G', 'B', 'mttf', 'mttr']
-        #
-        # self.units = ['', '', '', 'MW', 'MVAr', 'MW', 'MVAr', 'MW', 'MVAr', 'h', 'h']
-        #
-        # self.edit_types = {'name': str,
-        #                    'bus': None,
-        #                    'active': bool,
-        #                    'P': float,
-        #                    'Q': float,
-        #                    'Ir': float,
-        #                    'Ii': float,
-        #                    'G': float,
-        #                    'B': float,
-        #                    'mttf': float,
-        #                    'mttr': float}
-        #
-        # self.profile_f = {'P': self.create_S_profile,
-        #                   'Q': self.create_S_profile,
-        #                   'Ir': self.create_I_profile,
-        #                   'Ii': self.create_I_profile,
-        #                   'G': self.create_Y_profile,
-        #                   'B': self.create_Y_profile}
-        #
-        # self.profile_attr = {'P': 'P_prof',
-        #                      'Q': 'Q_prof',
-        #                      'Ir': 'Ir_prof',
-        #                      'Ii': 'Ii_prof',
-        #                      'G': 'G_prof',
-        #                      'B': 'B_prof'}
 
     def create_profiles(self, index, S=None, I=None, Y=None):
         """
@@ -1280,26 +1236,17 @@ class StaticGenerator(InjectionDevice):
                                  bus=None,
                                  active=active,
                                  type_name='StaticGenerator',
-                                 editable_headers={'name': ('', str),
-                                                   'bus': ('', None),
-                                                   'active': ('', bool),
-                                                   'mttf': ('', float),
-                                                   'mttr': ('', float)},
+                                 editable_headers={'name': ('', str, ''),
+                                                   'bus': ('', None, ''),
+                                                   'active': ('', bool, ''),
+                                                   'P': ('MW', float, 'Active power'),
+                                                   'Q': ('MVAr', float, 'Reactive power'),
+                                                   'mttf': ('h', float, 'Mean time to failure'),
+                                                   'mttr': ('h', float, 'Mean time to recovery')},
                                  mttf=mttf,
                                  mttr=mttr,
                                  properties_with_profile={'P': 'P_prof',
                                                           'Q': 'Q_prof'})
-
-        # self.name = name
-        #
-        # self.active = active
-        #
-        # self.type_name = 'StaticGenerator'
-        #
-        # self.graphic_obj = None
-
-        # The bus this element is attached to: Not necessary for calculations
-        # self.bus = None
 
         # Power (MW + jMVAr)
         self.P = P
@@ -1308,26 +1255,6 @@ class StaticGenerator(InjectionDevice):
         # power profile for this load
         self.P_prof = P_prof
         self.Q_prof = Q_prof
-
-        # self.properties_with_profile = (['P', 'Q'], [float, float])
-        #
-        # self.edit_headers = ['name', 'bus', 'active', 'P', 'Q', 'mttf', 'mttr']
-        #
-        # self.units = ['', '', '', 'MW', 'MVAr', 'h', 'h']
-        #
-        # self.edit_types = {'name': str,
-        #                    'bus': None,
-        #                    'active': bool,
-        #                    'P': float,
-        #                    'Q': float,
-        #                    'mttf': float,
-        #                    'mttr': float}
-        #
-        # self.profile_f = {'P': self.create_S_profile,
-        #                   'Q': self.create_S_profile}
-        #
-        # self.profile_attr = {'P': 'P_prof',
-        #                      'Q': 'Q_prof'}
 
     def copy(self):
         """
@@ -1341,13 +1268,6 @@ class StaticGenerator(InjectionDevice):
                                Q_prof=self.Q_prof,
                                mttf=self.mttf,
                                mttr=self.mttr)
-
-    # def get_save_data(self):
-    #     """
-    #     Return the data that matches the edit_headers
-    #     :return:
-    #     """
-    #     return [self.name, self.bus.name, self.active, self.P, self.Q, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1465,50 +1385,30 @@ class Generator(InjectionDevice):
                                  bus=None,
                                  active=active,
                                  type_name='Generator',
-                                 editable_headers={'name': ('', str),
-                                                   'bus': ('', None),
-                                                   'active': ('', bool),
-                                                   'is_controlled': ('', bool),
-                                                   'P': ('MW', float),
-                                                   'Pf': ('', float),
-                                                   'Vset': ('p.u.', float),
-                                                   'Snom': ('MVA', float),
-                                                   'Qmin': ('MVAr', float),
-                                                   'Qmax': ('MVAr', float),
-                                                   'Pmin': ('MW', float),
-                                                   'Pmax': ('MW', float),
-                                                   'Cost': ('e/MWh', float),
-                                                   'enabled_dispatch': ('', bool),
-                                                   'mttf': ('h', float),
-                                                   'mttr': ('h', float)},
+                                 editable_headers={'name': ('', str, 'Name of the generator'),
+                                                   'bus': ('', None, 'Connection bus name'),
+                                                   'active': ('', bool, 'Is the generator active?'),
+                                                   'is_controlled': ('', bool, 'Is this generator voltage-controlled?'),
+                                                   'P': ('MW', float, 'Active power'),
+                                                   'Pf': ('', float, 'Power factor (cos(fi)). This is used for non-controlled generators.'),
+                                                   'Vset': ('p.u.', float, 'Set voltage. This is used for controlled generators.'),
+                                                   'Snom': ('MVA', float, 'Nomnial power.'),
+                                                   'Qmin': ('MVAr', float, 'Minimum reactive power.'),
+                                                   'Qmax': ('MVAr', float, 'Maximum reactive power.'),
+                                                   'Pmin': ('MW', float, 'Minimum active power. Used in OPF.'),
+                                                   'Pmax': ('MW', float, 'Maximum active power. Used in OPF.'),
+                                                   'Cost': ('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                                   'enabled_dispatch': ('', bool, 'Enabled for dispatch? Used in OPF.'),
+                                                   'mttf': ('h', float, 'Mean time to failure'),
+                                                   'mttr': ('h', float, 'Mean time to recovery')},
                                  mttf=mttf,
                                  mttr=mttr,
                                  properties_with_profile={'P': 'P_prof',
                                                           'Pf': 'Pf_prof',
                                                           'Vset': 'Vset_prof'})
 
-        # name of the device
-        # self.name = name
-        #
-        # # is the device active for simulation?
-        # self.active = active
-
         # is the device active active power dispatch?
         self.enabled_dispatch = enabled_dispatch
-
-        # type of device
-        # self.type_name = 'Generator'
-
-        # self.machine_model = machine_model
-
-        # graphical object associated to this object
-        # self.graphic_obj = None
-
-        # properties that hold a profile
-        # self.properties_with_profile = (['P', 'Pf', 'Vset'], [float, float, float])
-
-        # The bus this element is attached to: Not necessary for calculations
-        # self.bus = None
 
         # Power (MVA)
         self.P = active_power
@@ -1578,37 +1478,6 @@ class Generator(InjectionDevice):
         # list of variables of active power dispatch in a series of linear programs
         self.LPVar_P_prof = None
 
-        # self.edit_headers = ['name', 'bus', 'active', 'is_controlled', 'P', 'Pf', 'Vset', 'Snom',
-        #                      'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr']
-        #
-        # self.units = ['', '', '', '', 'MW', '', 'p.u.', 'MVA',
-        #               'MVAr', 'MVAr', 'MW', 'MW', 'e/MW', '', 'h', 'h']
-        #
-        # self.edit_types = {'name': str,
-        #                    'bus': None,
-        #                    'active': bool,
-        #                    'is_controlled': bool,
-        #                    'P': float,
-        #                    'Pf': float,
-        #                    'Vset': float,
-        #                    'Snom': float,
-        #                    'Qmin': float,
-        #                    'Qmax': float,
-        #                    'Pmin': float,
-        #                    'Pmax': float,
-        #                    'Cost': float,
-        #                    'enabled_dispatch': bool,
-        #                    'mttf': float,
-        #                    'mttr': float}
-        #
-        # self.profile_f = {'P': self.create_P_profile,
-        #                   'Pf': self.create_Pf_profile,
-        #                   'Vset': self.create_Vset_profile}
-        #
-        # self.profile_attr = {'P': 'Pprof',
-        #                      'Pf': 'Pfprof',
-        #                      'Vset': 'Vsetprof'}
-
     def copy(self):
         """
         Make a deep copy of this object
@@ -1656,14 +1525,6 @@ class Generator(InjectionDevice):
         gen.mttr = self.mttr
 
         return gen
-
-    # def get_save_data(self):
-    #     """
-    #     Return the data that matches the edit_headers
-    #     :return:
-    #     """
-    #     return [self.name, self.bus.name, self.is_controlled, self.active, self.P, self.Pf, self.Vset, self.Snom,
-    #             self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -1906,29 +1767,29 @@ class Battery(Generator):
         self.type_name = 'Battery'
 
         # manually modify the editable headers
-        self.editable_headers = {'name': ('', str),
-                                 'bus': ('', None),
-                                 'active': ('', bool),
-                                 'is_controlled': ('', bool),
-                                 'P': ('MW', float),
-                                 'Pf': ('', float),
-                                 'Vset': ('p.u.', float),
-                                 'Snom': ('MVA', float),
-                                 'Enom': ('MWh', float),
-                                 'max_soc': ('p.u.', float),
-                                 'min_soc': ('p.u.', float),
-                                 'soc_0': ('p.u.', float),
-                                 'charge_efficiency': ('p.u.', float),
-                                 'discharge_efficiency': ('p.u.', float),
-                                 'discharge_per_cycle': ('p.u.', float),
-                                 'Qmin': ('MVAr', float),
-                                 'Qmax': ('MVAr', float),
-                                 'Pmin': ('MW', float),
-                                 'Pmax': ('MW', float),
-                                 'Cost': ('e/MWh', float),
-                                 'enabled_dispatch': ('', bool),
-                                 'mttf': ('h', float),
-                                 'mttr': ('h', float)}
+        self.editable_headers = {'name': ('', str, 'Name of the battery'),
+                                 'bus': ('', None, 'Connection bus name'),
+                                 'active': ('', bool, 'Is the battery active?'),
+                                 'is_controlled': ('', bool, 'Is this battery voltage-controlled?'),
+                                 'P': ('MW', float, 'Active power'),
+                                 'Pf': ('', float, 'Power factor (cos(fi)). This is used for non-controlled batteries.'),
+                                 'Vset': ('p.u.', float, 'Set voltage. This is used for controlled batteries.'),
+                                 'Snom': ('MVA', float, 'Nomnial power.'),
+                                 'Enom': ('MWh', float, 'Nominal energy capacity.'),
+                                 'max_soc': ('p.u.', float, 'Minimum state of charge.'),
+                                 'min_soc': ('p.u.', float, 'Maximum state of charge.'),
+                                 'soc_0': ('p.u.', float, 'Initial state of charge.'),
+                                 'charge_efficiency': ('p.u.', float, 'Charging efficiency.'),
+                                 'discharge_efficiency': ('p.u.', float, 'Discharge efficiency.'),
+                                 'discharge_per_cycle': ('p.u.', float, ''),
+                                 'Qmin': ('MVAr', float, 'Minimum reactive power.'),
+                                 'Qmax': ('MVAr', float, 'Maximum reactive power.'),
+                                 'Pmin': ('MW', float, 'Minimum active power. Used in OPF.'),
+                                 'Pmax': ('MW', float, 'Maximum active power. Used in OPF.'),
+                                 'Cost': ('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                 'enabled_dispatch': ('', bool, 'Enabled for dispatch? Used in OPF.'),
+                                 'mttf': ('h', float, 'Mean time to failure'),
+                                 'mttr': ('h', float, 'Mean time to recovery')}
 
         self.charge_efficiency = charge_efficiency
 
@@ -1957,35 +1818,6 @@ class Battery(Generator):
         self.energy_array = None
 
         self.power_array = None
-
-        # self.edit_headers = ['name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-        #                      'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
-        #                      'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency']
-        #
-        # self.units = ['', '', '', 'MW', 'p.u.', 'MVA', 'MWh',
-        #               'p.u.', 'p.u.', 'MW', 'MW', '€/MWh', '', 'h', 'h',
-        #               '', '', '', '', '']
-        #
-        # self.edit_types = {'name': str,
-        #                    'bus': None,
-        #                    'active': bool,
-        #                    'P': float,
-        #                    'Vset': float,
-        #                    'Snom': float,
-        #                    'Enom': float,
-        #                    'Qmin': float,
-        #                    'Qmax': float,
-        #                    'Pmin': float,
-        #                    'Pmax': float,
-        #                    'Cost': float,
-        #                    'enabled_dispatch': bool,
-        #                    'mttf': float,
-        #                    'mttr': float,
-        #                    'soc_0': float,
-        #                    'max_soc': float,
-        #                    'min_soc': float,
-        #                    'charge_efficiency': float,
-        #                    'discharge_efficiency': float}
 
     def copy(self):
         """
@@ -2061,15 +1893,6 @@ class Battery(Generator):
         batt.power_array = self.power_array
 
         return batt
-
-    # def get_save_data(self):
-    #     """
-    #     Return the data that matches the edit_headers
-    #     :return:
-    #     """
-    #     return [self.name, self.bus.name, self.active, self.P, self.Vset, self.Snom, self.Enom,
-    #             self.Qmin, self.Qmax, self.Pmin, self.Pmax, self.Cost, self.enabled_dispatch, self.mttf, self.mttr,
-    #             self.soc_0, self.max_soc, self.min_soc, self.charge_efficiency, self.discharge_efficiency]
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -2216,13 +2039,13 @@ class Shunt(InjectionDevice):
                                  bus=None,
                                  active=active,
                                  type_name='Shunt',
-                                 editable_headers={'name': ('', str),
-                                                   'bus': ('', None),
-                                                   'active': ('', bool),
-                                                   'G': ('MW', float),
-                                                   'B': ('MVAr', float),
-                                                   'mttf': ('h', float),
-                                                   'mttr': ('h', float)},
+                                 editable_headers={'name': ('', str, 'Shunt name'),
+                                                   'bus': ('', None, 'Connection bus name'),
+                                                   'active': ('', bool, 'Is the shunt active?'),
+                                                   'G': ('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
+                                                   'B': ('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                   'mttf': ('h', float, 'Mean time to failure'),
+                                                   'mttr': ('h', float, 'Mean time to recovery')},
                                  mttf=mttf,
                                  mttr=mttr,
                                  properties_with_profile={'G': 'G_prof',
