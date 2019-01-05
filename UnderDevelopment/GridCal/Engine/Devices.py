@@ -576,13 +576,13 @@ class TapChanger:
             self.tap = int((tap_module - 1.0) / self.inc_reg_up)
         elif tap_module < 1:
             self.tap = -int((1.0 - tap_module) / self.inc_reg_down)
-            
+
 
 class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType=BranchType.Line,  length=1, vset=1.0, Tb=20, k=234.5,
+                 branch_type: BranchType=BranchType.Line,  length=1, vset=1.0, temp_base=75, temp_oper=75, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
         """
         Branch model constructor
@@ -599,8 +599,9 @@ class Branch(ReliabilityDevice):
         @param branch_type: Is the branch a transformer?
         @param length: eventual line length in km
         @param vset: Set voltage of the tap-controlled bus in p.u.
-        @param Tb: Base temperature at which r is measured in ºC
-        @param k: Thermal constant of the material in ºC (Al: 234.5, Cu: 228.1)
+        @param temp_base: Base temperature at which r is measured in ºC
+        @param temp_oper: Operating temperature in ºC
+        @param alpha: Thermal constant of the material in 1/ºC at temp_base (Cu = 0.00323, Al = 0.00330 @ 75ºC)
         @param template: Type object template (i.e. Tower, TransformerType, etc...)
         """
 
@@ -623,8 +624,9 @@ class Branch(ReliabilityDevice):
                                                      'angle': ('', float),
                                                      'bus_to_regulated': ('', bool),
                                                      'vset': ('', float),
-                                                     'Tb': ('', float),
-                                                     'k': ('', float),
+                                                     'temp_base': ('', float),
+                                                     'temp_oper': ('', float),
+                                                     'alpha': ('', float),
                                                      'r_fault': ('p.u.', float),
                                                      'x_fault': ('p.u.', float),
                                                      'fault_pos': ('p.u.', float),
@@ -666,18 +668,12 @@ class Branch(ReliabilityDevice):
         self.G = g
         self.B = b
 
-        # Conductor base temperature
-        self.Tb = Tb
+        # Conductor base and operating temperatures in ºC
+        self.temp_base = temp_base
+        self.temp_oper = temp_oper
 
-        # Conductor thermal constant (Ohm/ºC)
-        # Copper = 0.004041
-        # Aluminum = 0.004308
-        # Iron = 0.005671
-        # Nickel = 0.005866
-        # Gold = 0.003715
-        # Tungsten = 0.004403
-        # Silver = 0.003819
-        self.k = k
+        # Conductor thermal constant (1/ºC)
+        self.alpha = alpha
 
         # tap changer object
         self.tap_changer = TapChanger()
@@ -704,11 +700,11 @@ class Branch(ReliabilityDevice):
         self.vset = vset
 
         # self.edit_headers = ['name', 'bus_from', 'bus_to', 'active', 'rate', 'mttf', 'mttr', 'R', 'X', 'G', 'B',
-        #                      'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'Tb', 'k',
+        #                      'length', 'tap_module', 'angle', 'bus_to_regulated', 'vset', 'temp_base', 'temp_oper', 'alpha',
         #                      'branch_type', 'template']
         #
         # self.units = ['', '', '', '', 'MVA', 'h', 'h', 'p.u.', 'p.u.', 'p.u.', 'p.u.',
-        #               'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC',
+        #               'km', 'p.u.', 'rad', '', 'p.u.', 'ºC', 'ºC', '1/ºC',
         #               '', '']
 
         self.non_editable_indices = [1, 2, 19]
@@ -738,10 +734,21 @@ class Branch(ReliabilityDevice):
         #                    'angle': float,
         #                    'bus_to_regulated': bool,
         #                    'vset': float,
-        #                    'Tb': float,
-        #                    'k': float,
+        #                    'temp_base': float,
+        #                    'temp_oper': float,
+        #                    'alpha': float,
         #                    'branch_type': BranchType,
         #                    'template': BranchTemplate}
+
+    @property
+    def R_corrected(self):
+        """
+        Returns a temperature corrected resistance based on a formula provided by:
+        NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
+        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
+        (version of 2019-01-03 at 15:20 EST).
+        """
+        return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
     def branch_type_converter(self, val_string):
         """
@@ -781,8 +788,9 @@ class Branch(ReliabilityDevice):
                    mttr=self.mttr,
                    bus_to_regulated=self.bus_to_regulated,
                    vset=self.vset,
-                   Tb=self.Tb,
-                   k=self.k,
+                   temp_base=self.temp_base,
+                   temp_oper=self.temp_oper,
+                   alpha=self.alpha,
                    branch_type=self.branch_type,
                    template=self.template)
 
@@ -955,7 +963,7 @@ class Branch(ReliabilityDevice):
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle, self.bus_to_regulated,
-                self.vset, self.Tb, self.k, self.r_fault, self.x_fault, self.fault_pos,
+                self.vset, self.temp_base, self.temp_base, self.alpha, self.r_fault, self.x_fault, self.fault_pos,
                 conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
@@ -981,8 +989,9 @@ class Branch(ReliabilityDevice):
                 'tap_module': self.tap_module,
                 'bus_to_regulated': self.bus_to_regulated,
                 'vset': self.vset,
-                'Tb': self.Tb,
-                'k': self.k,
+                'temp_base': self.temp_base,
+                'temp_oper': self.temp_oper,
+                'alpha': self.alpha,
                 'tap_angle': self.angle,
                 'branch_type': self.branch_type}
 

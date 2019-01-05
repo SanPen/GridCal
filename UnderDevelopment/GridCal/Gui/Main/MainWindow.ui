@@ -90,7 +90,7 @@
            <enum>QTabWidget::Rounded</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideNone</enum>
@@ -3384,29 +3384,6 @@ points from time series</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_40">
-                <property name="text">
-                 <string>Temperature (ºC)</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QDoubleSpinBox" name="temperature_doubleSpinBox">
-                <property name="decimals">
-                 <number>1</number>
-                </property>
-                <property name="minimum">
-                 <double>-100.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>100.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>25.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="Line" name="line_19">
                 <property name="palette">
                  <palette>
@@ -4377,7 +4354,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1212</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -1322,16 +1322,6 @@ class Ui_mainWindow(object):
         self.fbase_doubleSpinBox.setSingleStep(10.0)
         self.fbase_doubleSpinBox.setObjectName("fbase_doubleSpinBox")
         self.verticalLayout_17.addWidget(self.fbase_doubleSpinBox)
-        self.label_40 = QtWidgets.QLabel(self.frame_25)
-        self.label_40.setObjectName("label_40")
-        self.verticalLayout_17.addWidget(self.label_40)
-        self.temperature_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_25)
-        self.temperature_doubleSpinBox.setDecimals(1)
-        self.temperature_doubleSpinBox.setMinimum(-100.0)
-        self.temperature_doubleSpinBox.setMaximum(100.0)
-        self.temperature_doubleSpinBox.setProperty("value", 25.0)
-        self.temperature_doubleSpinBox.setObjectName("temperature_doubleSpinBox")
-        self.verticalLayout_17.addWidget(self.temperature_doubleSpinBox)
         self.line_19 = QtWidgets.QFrame(self.frame_25)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(186, 189, 182))
@@ -1730,7 +1720,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1212, 22))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1212, 26))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -1986,7 +1976,7 @@ class Ui_mainWindow(object):
 
         self.retranslateUi(mainWindow)
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_3.setCurrentIndex(0)
+        self.tabWidget_3.setCurrentIndex(1)
         self.settings_tabWidget.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)
@@ -2105,7 +2095,6 @@ class Ui_mainWindow(object):
         self.label_11.setText(_translate("mainWindow", "General settings"))
         self.label_57.setText(_translate("mainWindow", "Base power (MVA)"))
         self.label_58.setText(_translate("mainWindow", "Frequency (Hz)"))
-        self.label_40.setText(_translate("mainWindow", "Temperature (ºC)"))
         self.use_multiprocessing_checkBox.setText(_translate("mainWindow", "use multiprocessing"))
         self.label_33.setText(_translate("mainWindow", "Visualization"))
         self.label_32.setText(_translate("mainWindow", "Export resolution (K)"))
