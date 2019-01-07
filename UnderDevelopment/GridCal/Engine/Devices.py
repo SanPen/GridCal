@@ -584,7 +584,7 @@ class Branch(ReliabilityDevice):
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType=BranchType.Line,  length=1, vset=1.0, temp_base=75, temp_oper=75, alpha=0.00330,
+                 branch_type: BranchType=BranchType.Line, length=1, vset=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
         """
         Branch model constructor
