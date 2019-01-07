@@ -28,7 +28,7 @@ from GridCal.Gui.GuiFunctions import *
 # Engine imports
 from GridCal.Engine.BlackOutDriver import *
 from GridCal.Engine.IoStructures import *
-# from GridCal.Engine.OpfDriver import *
+from GridCal.Engine.OpfDriver import *
 from GridCal.Engine.OpfTimeSeriesDriver import *
 # from GridCal.Engine.OptimizationDriver import *
 from GridCal.Engine.PowerFlowDriver import *
