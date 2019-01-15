@@ -19,9 +19,9 @@ import pulp
 import numpy as np
 from scipy.sparse import csc_matrix, hstack as hstack_s, vstack as vstack_s
 
-from GridCal.Engine.calculation_engine import MultiCircuit
+# from GridCal.Engine.calculation_engine import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP
+from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP, MultiCircuit
 from GridCal.Engine.io_structures import CalculationInputs, OptimalPowerFlowResults
 from GridCal.Engine.Numerical.dc_opf import Cproduct
 

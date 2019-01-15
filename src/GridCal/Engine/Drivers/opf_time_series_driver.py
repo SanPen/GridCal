@@ -20,7 +20,8 @@ import datetime
 from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from GridCal.Engine.calculation_engine import MultiCircuit, LINEWIDTH
+from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Drivers.power_flow_driver import SolverType
 from GridCal.Engine.Drivers.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
 from GridCal.Engine.Numerical.ac_opf import AcOpf

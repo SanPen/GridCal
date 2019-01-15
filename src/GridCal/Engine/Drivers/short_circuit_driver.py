@@ -20,7 +20,8 @@ from matplotlib import pyplot as plt
 from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.Numerical.short_circuit import short_circuit_3p
-from GridCal.Engine.calculation_engine import LINEWIDTH, MultiCircuit
+from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults
 from GridCal.Engine.io_structures import CalculationInputs, ResultTypes
 from GridCal.Engine.devices import Branch, Bus

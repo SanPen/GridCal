@@ -22,7 +22,8 @@ from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.io_structures import PowerFlowResults, ResultTypes
-from GridCal.Engine.calculation_engine import MultiCircuit, LINEWIDTH
+from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Drivers.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
 
 
