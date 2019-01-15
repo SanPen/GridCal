@@ -17,6 +17,12 @@ from numpy import zeros, array, ones, arange
 from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, pyqtSignal
 from poap.controller import SerialController
+from pySOT.experimental_design import SymmetricLatinHypercube
+from pySOT.strategy import SRBFStrategy
+from pySOT.surrogate import GPRegressor
+from pySOT.optimization_problems import OptimizationProblem
+from poap.controller import ThreadController, BasicWorkerThread
+
 from GridCal.Engine.calculation_engine import MultiCircuit
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlow, PowerFlowOptions
 from GridCal.Engine.io_structures import MonteCarloResults
@@ -25,6 +31,94 @@ from GridCal.Engine.Drivers.stochastic_driver import make_monte_carlo_input
 ########################################################################################################################
 # Optimization classes
 ########################################################################################################################
+
+
+class VoltageOptimizationProblem(OptimizationProblem):
+    """
+
+    :ivar dim: Number of dimensions
+    :ivar lb: Lower variable bounds
+    :ivar ub: Upper variable bounds
+    :ivar int_var: Integer variables
+    :ivar cont_var: Continuous variables
+    :ivar min: Global minimum value
+    :ivar minimum: Global minimizer
+    :ivar info: String with problem info
+    """
+    def __init__(self, circuit: MultiCircuit, options: PowerFlowOptions, max_iter=1000, callback=None):
+        self.circuit = circuit
+
+        self.options = options
+
+        self.callback = callback
+
+        # initialize the power flow
+        self.power_flow = PowerFlow(self.circuit, self.options)
+
+        n = len(self.circuit.buses)
+        m = len(self.circuit.branches)
+
+        self.max_eval = max_iter
+
+        # the dimension is the number of nodes
+        self.dim = n
+        self.min = 0
+        self.minimum = np.zeros(self.dim)
+        self.lb = -15 * np.ones(self.dim)
+        self.ub = 20 * np.ones(self.dim)
+        self.int_var = np.array([])
+        self.cont_var = np.arange(0, self.dim)
+        self.info = str(self.dim) + "Voltage collapse optimization"
+
+        # results
+        self.results = MonteCarloResults(n, m, self.max_eval)
+
+        # compile circuits
+        self.numerical_circuit = self.circuit.compile()
+        self.numerical_input_islands = self.numerical_circuit.compute()
+
+        self.it = 0
+
+    def eval(self, x):
+        """
+        Evaluate the Ackley function  at x
+
+        :param x: Data point
+        :type x: numpy.array
+        :return: Value at x
+        :rtype: float
+        """
+        # For every circuit, run the time series
+        for numerical_island in self.numerical_input_islands:
+            # sample from the CDF give the vector x of values in [0, 1]
+            # c.sample_at(x)
+            monte_carlo_input = make_monte_carlo_input(numerical_island)
+            mc_time_series = monte_carlo_input.get_at(x)
+
+            Y, I, S = mc_time_series.get_at(t=0)
+
+            #  run the sampled values
+            # res = self.power_flow.run_at(0, mc=True)
+            res = self.power_flow.run_pf(circuit=numerical_island, Vbus=numerical_island.Vbus, Sbus=S, Ibus=I)
+
+            # Y, I, S = circuit.mc_time_series.get_at(0)
+            self.results.S_points[self.it, numerical_island.original_bus_idx] = S
+            self.results.V_points[self.it, numerical_island.original_bus_idx] = res.voltage[
+                numerical_island.original_bus_idx]
+            self.results.I_points[self.it, numerical_island.original_branch_idx] = res.Ibranch[
+                numerical_island.original_branch_idx]
+            self.results.loading_points[self.it, numerical_island.original_branch_idx] = res.loading[
+                numerical_island.original_branch_idx]
+
+        self.it += 1
+        if self.callback is not None:
+            prog = self.it / self.max_eval * 100
+            self.callback(prog)
+
+        f = abs(self.results.V_points[self.it - 1, :].sum()) / self.dim
+        # print(prog, ' % \t', f)
+
+        return f
 
 
 class Optimize(QThread):
@@ -47,120 +141,105 @@ class Optimize(QThread):
 
         self.options = options
 
+        self.max_iter = max_iter
+
         self.__cancel__ = False
 
-        # initialize the power flow
-        self.power_flow = PowerFlow(self.circuit, self.options)
+        self.problem = None
 
-        self.max_eval = max_iter
-        n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
-
-        # the dimension is the number of nodes
-        self.dim = n
-
-        # results
-        self.results = MonteCarloResults(n, m, self.max_eval)
-
-        # variables for the optimization
-        self.xlow = zeros(n)  # lower bounds
-        self.xup = ones(n)
-        self.info = ""  # info
-        self.integer = array([])  # integer variables
-        self.continuous = arange(0, n, 1)  # continuous variables
         self.solution = None
+
         self.optimization_values = None
-        self.it = 0
-
-        # compile
-        # compile circuits
-        self.numerical_circuit = self.circuit.compile()
-        self.numerical_input_islands = self.numerical_circuit.compute()
-
-    def objfunction(self, x):
-        """
-        Objective function to run
-        :param x: combinations of values between 0~1
-        :return: objective function value, the average voltage in this case
-        """
-
-        # For every circuit, run the time series
-        for numerical_island in self.numerical_input_islands:
-            # sample from the CDF give the vector x of values in [0, 1]
-            # c.sample_at(x)
-            monte_carlo_input = make_monte_carlo_input(numerical_island)
-            mc_time_series = monte_carlo_input.get_at(x)
-
-            Y, I, S = mc_time_series.get_at(t=0)
-
-            #  run the sampled values
-            # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=numerical_island, Vbus=numerical_island.Vbus, Sbus=S, Ibus=I)
-
-            # Y, I, S = circuit.mc_time_series.get_at(0)
-            self.results.S_points[self.it, numerical_island.original_bus_idx] = S
-            self.results.V_points[self.it, numerical_island.original_bus_idx] = res.voltage[numerical_island.original_bus_idx]
-            self.results.I_points[self.it, numerical_island.original_branch_idx] = res.Ibranch[numerical_island.original_branch_idx]
-            self.results.loading_points[self.it, numerical_island.original_branch_idx] = res.loading[numerical_island.original_branch_idx]
-
-        self.it += 1
-        prog = self.it / self.max_eval * 100
-        self.progress_signal.emit(prog)
-
-        f = abs(self.results.V_points[self.it - 1, :].sum()) / self.dim
-        # print(prog, ' % \t', f)
-
-        return f
 
     def run(self):
         """
         Run the optimization
         @return: Nothing
         """
-        self.it = 0
-        n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
-        self.xlow = zeros(n)  # lower bounds
-        self.xup = ones(n)  # upper bounds
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Running stochastic voltage collapse...')
-        self.results = MonteCarloResults(n, m, self.max_eval)
+        # self.it = 0
+        # n = len(self.circuit.buses)
+        # m = len(self.circuit.branches)
+        # self.xlow = zeros(n)  # lower bounds
+        # self.xup = ones(n)  # upper bounds
+        # self.progress_signal.emit(0.0)
+        # self.progress_text.emit('Running stochastic voltage collapse...')
+        # self.results = MonteCarloResults(n, m, self.max_eval)
 
-        # (1) Optimization problem
-        # print(data.info)
+        self.problem = VoltageOptimizationProblem(self.circuit,
+                                                  self.options,
+                                                  self.max_iter,
+                                                  callback=self.progress_signal.emit)
 
-        # (2) Experimental design
-        # Use a symmetric Latin hypercube with 2d + 1 samples
-        exp_des = SymmetricLatinHypercube(dim=self.dim, npts=2 * self.dim + 1)
+        # # (1) Optimization problem
+        # # print(data.info)
+        #
+        # # (2) Experimental design
+        # # Use a symmetric Latin hypercube with 2d + 1 samples
+        # exp_des = SymmetricLatinHypercube(dim=self.problem.dim, npts=2 * self.problem.dim + 1)
+        #
+        # # (3) Surrogate model
+        # # Use a cubic RBF interpolant with a linear tail
+        # surrogate = RBFInterpolant(kernel=CubicKernel, tail=LinearTail, maxp=self.max_eval)
+        #
+        # # (4) Adaptive sampling
+        # # Use DYCORS with 100d candidate points
+        # adapt_samp = CandidateDYCORS(data=self, numcand=100 * self.dim)
+        #
+        # # Use the serial controller (uses only one thread)
+        # controller = SerialController(self.objfunction)
+        #
+        # # (5) Use the sychronous strategy without non-bound constraints
+        # strategy = SyncStrategyNoConstraints(worker_id=0,
+        #                                      data=self,
+        #                                      maxeval=self.max_eval,
+        #                                      nsamples=1,
+        #                                      exp_design=exp_des,
+        #                                      response_surface=surrogate,
+        #                                      sampling_method=adapt_samp)
+        #
+        # controller.strategy = strategy
+        #
+        # # Run the optimization strategy
+        # result = controller.run()
+        #
+        # # Print the final result
+        # print('Best value found: {0}'.format(result.value))
+        # print('Best solution found: {0}'.format(np.array_str(result.params[0], max_line_width=np.inf, precision=5,
+        #                                                      suppress_small=True)))
 
-        # (3) Surrogate model
-        # Use a cubic RBF interpolant with a linear tail
-        surrogate = RBFInterpolant(kernel=CubicKernel, tail=LinearTail, maxp=self.max_eval)
+        num_threads = 4
 
-        # (4) Adaptive sampling
-        # Use DYCORS with 100d candidate points
-        adapt_samp = CandidateDYCORS(data=self, numcand=100 * self.dim)
+        surrogate_model = GPRegressor(dim=self.problem.dim)
+        sampler = SymmetricLatinHypercube(dim=self.problem.dim, num_pts=2 * (self.problem.dim + 1))
 
-        # Use the serial controller (uses only one thread)
-        controller = SerialController(self.objfunction)
+        # Create a strategy and a controller
+        controller = ThreadController()
+        controller.strategy = SRBFStrategy(max_evals=self.max_iter,
+                                           opt_prob=self.problem,
+                                           exp_design=sampler,
+                                           surrogate=surrogate_model,
+                                           asynchronous=True,
+                                           batch_size=num_threads)
 
-        # (5) Use the sychronous strategy without non-bound constraints
-        strategy = SyncStrategyNoConstraints(worker_id=0,
-                                             data=self,
-                                             maxeval=self.max_eval,
-                                             nsamples=1,
-                                             exp_design=exp_des,
-                                             response_surface=surrogate,
-                                             sampling_method=adapt_samp)
-        controller.strategy = strategy
+        print("Number of threads: {}".format(num_threads))
+        print("Maximum number of evaluations: {}".format(self.max_iter))
+        print("Strategy: {}".format(controller.strategy.__class__.__name__))
+        print("Experimental design: {}".format(sampler.__class__.__name__))
+        print("Surrogate: {}".format(surrogate_model.__class__.__name__))
+
+        # Launch the threads and give them access to the objective function
+        for _ in range(num_threads):
+            worker = BasicWorkerThread(controller, self.problem.eval)
+            controller.launch_worker(worker)
 
         # Run the optimization strategy
         result = controller.run()
 
-        # Print the final result
         print('Best value found: {0}'.format(result.value))
-        print('Best solution found: {0}'.format(np.array_str(result.params[0], max_line_width=np.inf, precision=5,
-                                                             suppress_small=True)))
+        print('Best solution found: {0}\n'.format(np.array_str(result.params[0],
+                                                               max_line_width=np.inf,
+                                                               precision=4, suppress_small=True)))
+
         self.solution = result.params[0]
 
         # Extract function values from the controller
