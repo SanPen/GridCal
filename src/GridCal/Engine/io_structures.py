@@ -309,20 +309,20 @@ class CalculationInputs:
         obj.tap_f = self.tap_f
         obj.tap_t = self.tap_t
 
-        self.controlled_gen_pmin = self.controlled_gen_pmin[gen_idx]
-        self.controlled_gen_pmax = self.controlled_gen_pmax[gen_idx]
-        self.controlled_gen_enabled = self.controlled_gen_enabled[gen_idx]
-        self.controlled_gen_dispatchable = self.controlled_gen_dispatchable[gen_idx]
-        self.battery_pmin = self.battery_pmin[bat_idx]
-        self.battery_pmax = self.battery_pmax[bat_idx]
-        self.battery_Enom = self.battery_Enom[bat_idx]
-        self.battery_soc_0 = self.battery_soc_0[bat_idx]
-        self.battery_discharge_efficiency = self.battery_discharge_efficiency[bat_idx]
-        self.battery_charge_efficiency = self.battery_charge_efficiency[bat_idx]
-        self.battery_min_soc = self.battery_min_soc[bat_idx]
-        self.battery_max_soc = self.battery_max_soc[bat_idx]
-        self.battery_enabled = self.battery_enabled[bat_idx]
-        self.battery_dispatchable = self.battery_dispatchable[bat_idx]
+        obj.controlled_gen_pmin = self.controlled_gen_pmin[gen_idx]
+        obj.controlled_gen_pmax = self.controlled_gen_pmax[gen_idx]
+        obj.controlled_gen_enabled = self.controlled_gen_enabled[gen_idx]
+        obj.controlled_gen_dispatchable = self.controlled_gen_dispatchable[gen_idx]
+        obj.battery_pmin = self.battery_pmin[bat_idx]
+        obj.battery_pmax = self.battery_pmax[bat_idx]
+        obj.battery_Enom = self.battery_Enom[bat_idx]
+        obj.battery_soc_0 = self.battery_soc_0[bat_idx]
+        obj.battery_discharge_efficiency = self.battery_discharge_efficiency[bat_idx]
+        obj.battery_charge_efficiency = self.battery_charge_efficiency[bat_idx]
+        obj.battery_min_soc = self.battery_min_soc[bat_idx]
+        obj.battery_max_soc = self.battery_max_soc[bat_idx]
+        obj.battery_enabled = self.battery_enabled[bat_idx]
+        obj.battery_dispatchable = self.battery_dispatchable[bat_idx]
 
         obj.consolidate()
 

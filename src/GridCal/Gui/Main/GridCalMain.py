@@ -42,6 +42,8 @@ from GridCal.Engine.Drivers.topology_driver import TopologyReduction, TopologyRe
 from GridCal.Engine.Drivers.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 
+import GridCal.Engine.plot_config as plot_config
+
 import os.path
 import platform
 import sys
@@ -2437,7 +2439,7 @@ class MainGUI(QMainWindow):
             # Accumulate all the failed branches
             br_idx = zeros(0, dtype=int)
             for i in range(idx):
-                br_idx = r_[br_idx, self.cascade.results.events[i].removed_idx]
+                br_idx = np.r_[br_idx, self.cascade.results.events[i].removed_idx]
 
             # pick the results at the designated cascade step
             results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
@@ -3067,10 +3069,11 @@ class MainGUI(QMainWindow):
                 self.ui.resultsTableView.setModel(res_mdl)
 
             # refresh the plot display (LEFT, RIGHT, TOP, BOTTOM are defined in CalculationEngine.py)
-            self.ui.resultsPlot.get_figure().subplots_adjust(left=LEFT,
-                                                             right=RIGHT,
-                                                             top=TOP,
-                                                             bottom=BOTTOM)
+
+            self.ui.resultsPlot.get_figure().subplots_adjust(left=plot_config.LEFT,
+                                                             right=plot_config.RIGHT,
+                                                             top=plot_config.TOP,
+                                                             bottom=plot_config.BOTTOM)
             self.ui.resultsPlot.redraw()
 
         else:
