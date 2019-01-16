@@ -19,7 +19,7 @@ def split_branch(branch: Branch, fault_position, r_fault, x_fault):
     # deactivate the current branch
     branch.active = False
 
-    # each of the branches will have half of the impedances and half of the shunts
+    # each of the branches will have "half" of the impedances and "half" of the shunts
     # Bus_from------------Middle_bus------------Bus_To
     #       |------x--------|   (x: distance measured in per unit (0~1)
 
