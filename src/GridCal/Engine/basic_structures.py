@@ -55,9 +55,9 @@ class CDF(object):
         # calculate the proportional values of samples
         n = len(data)
         if n > 1:
-            self.prob = 1. * arange(n) / (n - 1)
+            self.prob = arange(n, dtype=float) / (n - 1)
         else:
-            self.prob = 1. * arange(n)
+            self.prob = arange(n, dtype=float)
 
         # iterator index
         self.idx = 0
