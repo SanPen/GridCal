@@ -1,0 +1,806 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Devices &mdash; GridCal 3.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Device Types" href="device_types.html" />
+    <link rel="prev" title="Circuit and MultiCircuit" href="multicircuit.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GridCal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About GridCal</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="multicircuit.html">Circuit and MultiCircuit</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#battery">Battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#branch">Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bus">Bus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generator">Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load">Load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shunt">Shunt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-generator">Static Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transformer-tap-changer">Transformer Tap Changer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="device_types.html">Device Types</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GridCal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">GridCal’s API reference</a> &raquo;</li>
+        
+      <li>Devices</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/devices.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-GridCal.Engine.devices">
+<span id="devices"></span><h1>Devices<a class="headerlink" href="#module-GridCal.Engine.devices" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="battery">
+<h2>Battery<a class="headerlink" href="#battery" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.Battery">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">Battery</code><span class="sig-paren">(</span><em>name='batt'</em>, <em>active_power=0.0</em>, <em>power_factor=0.8</em>, <em>voltage_module=1.0</em>, <em>is_controlled=True</em>, <em>Qmin=-9999</em>, <em>Qmax=9999</em>, <em>Snom=9999</em>, <em>Enom=9999</em>, <em>p_min=-9999</em>, <em>p_max=9999</em>, <em>op_cost=1.0</em>, <em>power_prof=None</em>, <em>power_factor_prof=None</em>, <em>vset_prof=None</em>, <em>active=True</em>, <em>Sbase=100</em>, <em>enabled_dispatch=True</em>, <em>mttf=0.0</em>, <em>mttr=0.0</em>, <em>charge_efficiency=0.9</em>, <em>discharge_efficiency=0.9</em>, <em>max_soc=0.99</em>, <em>min_soc=0.3</em>, <em>soc=0.8</em>, <em>charge_per_cycle=0.1</em>, <em>discharge_per_cycle=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.Battery.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a copy of this object
+Returns: Battery instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Battery.create_P_profile">
+<code class="descname">create_P_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr=None</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery.create_P_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index associated
+arr: array of values
+arr_in_pu: is the array in per unit?</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Battery.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em>, <em>bus_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:param id: ID: Id for this object
+:param bus_dict: Dictionary of buses [object] -&gt; ID
+:return: json-compatible dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Battery.get_processed_at">
+<code class="descname">get_processed_at</code><span class="sig-paren">(</span><em>t</em>, <em>dt</em>, <em>store_values=True</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery.get_processed_at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the processed power at the time index t
+:param t: time index
+:param dt: time step in hours
+:param store_values: store the values?
+:return: active power processed by the battery control in MW</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Battery.process">
+<code class="descname">process</code><span class="sig-paren">(</span><em>P</em>, <em>dt</em>, <em>charge_if_needed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>process a cycle in the battery
+:param P: proposed power in MW
+:param dt: time increment in hours
+:param charge_if_needed: True / False
+:param store_values: Store the values into the internal arrays?
+:return: Amount of power actually processed in MW</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Battery.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Battery.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set he battery to its initial state</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="branch">
+<h2>Branch<a class="headerlink" href="#branch" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.Branch">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">Branch</code><span class="sig-paren">(</span><em>bus_from: GridCal.Engine.devices.Bus</em>, <em>bus_to: GridCal.Engine.devices.Bus</em>, <em>name='Branch'</em>, <em>r=1e-20</em>, <em>x=1e-20</em>, <em>g=1e-20</em>, <em>b=1e-20</em>, <em>rate=1.0</em>, <em>tap=1.0</em>, <em>shift_angle=0</em>, <em>active=True</em>, <em>mttf=0</em>, <em>mttr=0</em>, <em>r_fault=0.0</em>, <em>x_fault=0.0</em>, <em>fault_pos=0.5</em>, <em>branch_type: GridCal.Engine.device_types.BranchType = &lt;BranchType.Line: ('line'</em>, <em>)&gt;</em>, <em>length=1</em>, <em>vset=1.0</em>, <em>temp_base=20</em>, <em>temp_oper=20</em>, <em>alpha=0.0033</em>, <em>bus_to_regulated=False</em>, <em>template=&lt;GridCal.Engine.device_types.BranchTemplate object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="GridCal.Engine.devices.Branch.R_corrected">
+<code class="descname">R_corrected</code><a class="headerlink" href="#GridCal.Engine.devices.Branch.R_corrected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a temperature corrected resistance based on a formula provided by:
+NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
+<a class="reference external" href="https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation">https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation</a>
+(version of 2019-01-03 at 15:20 EST).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.apply_tap_changer">
+<code class="descname">apply_tap_changer</code><span class="sig-paren">(</span><em>tap_changer: GridCal.Engine.devices.TapChanger</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.apply_tap_changer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a new tap changer
+Args:</p>
+<blockquote>
+<div>tap_changer: Tap Changer object</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.apply_template">
+<code class="descname">apply_template</code><span class="sig-paren">(</span><em>obj</em>, <em>Sbase</em>, <em>logger=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.apply_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a branch template to this object
+Args:</p>
+<blockquote>
+<div>obj: TransformerType or Tower object</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.branch_type_converter">
+<code class="descname">branch_type_converter</code><span class="sig-paren">(</span><em>val_string</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.branch_type_converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to convert the branch type string into the BranchType
+:param val_string:
+:return: branch type conversion</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><em>bus_dict=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the branch
+&#64;return: A new  with the same content as this</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em>, <em>bus_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:param id: ID: Id for this object
+:param bus_dict: Dictionary of buses [object] -&gt; ID
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.get_save_data">
+<code class="descname">get_save_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.get_save_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the data that matches the edit_headers
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.get_virtual_taps">
+<code class="descname">get_virtual_taps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.get_virtual_taps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the branch virtual taps</p>
+<p>The virtual taps generate when a transformer nominal winding voltage differs from the bus nominal voltage
+Returns:</p>
+<blockquote>
+<div>virtual taps at the from and to sides</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.tap_down">
+<code class="descname">tap_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.tap_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the tap changer one position up</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Branch.tap_up">
+<code class="descname">tap_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Branch.tap_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the tap changer one position up</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bus">
+<h2>Bus<a class="headerlink" href="#bus" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.Bus">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">Bus</code><span class="sig-paren">(</span><em>name='Bus'</em>, <em>vnom=10</em>, <em>vmin=0.9</em>, <em>vmax=1.1</em>, <em>r_fault=0.0</em>, <em>x_fault=0.0</em>, <em>xpos=0</em>, <em>ypos=0</em>, <em>height=0</em>, <em>width=0</em>, <em>active=True</em>, <em>is_slack=False</em>, <em>area='Defualt'</em>, <em>zone='Default'</em>, <em>substation='Default'</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.Bus.apply_lp_profiles">
+<code class="descname">apply_lp_profiles</code><span class="sig-paren">(</span><em>Sbase</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.apply_lp_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the lp solution to the regular generators profile
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.copy" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.delete_profiles">
+<code class="descname">delete_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.delete_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all profiles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.determine_bus_type">
+<code class="descname">determine_bus_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.determine_bus_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer the bus type from the devices attached to it
+&#64;return: Nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Json-like dictionary
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.initialize_lp_profiles">
+<code class="descname">initialize_lp_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.initialize_lp_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dimention the LP var profiles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.plot_profiles">
+<code class="descname">plot_profiles</code><span class="sig-paren">(</span><em>ax_load=None</em>, <em>ax_voltage=None</em>, <em>time_series=None</em>, <em>my_index=0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.plot_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;param time_idx: Master time profile: usually stored in the circuit
+&#64;param ax_load: Figure axis, if not provided one will be created
+&#64;return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.retrieve_graphic_position">
+<code class="descname">retrieve_graphic_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.retrieve_graphic_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position set by the graphic object
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.set_profile_values">
+<code class="descname">set_profile_values</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.set_profile_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the default values from the profiles at time index t
+:param t: profile time index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Bus.set_state">
+<code class="descname">set_state</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Bus.set_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the profiles state of the objects in this bus to the value given in the profiles at the index t
+:param t: index of the profile
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="generator">
+<h2>Generator<a class="headerlink" href="#generator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.Generator">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">Generator</code><span class="sig-paren">(</span><em>name='gen'</em>, <em>active_power=0.0</em>, <em>power_factor=0.8</em>, <em>voltage_module=1.0</em>, <em>is_controlled=True</em>, <em>Qmin=-9999</em>, <em>Qmax=9999</em>, <em>Snom=9999</em>, <em>power_prof=None</em>, <em>power_factor_prof=None</em>, <em>vset_prof=None</em>, <em>active=True</em>, <em>p_min=0.0</em>, <em>p_max=9999.0</em>, <em>op_cost=1.0</em>, <em>Sbase=100</em>, <em>enabled_dispatch=True</em>, <em>mttf=0.0</em>, <em>mttr=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.Generator.apply_lp_profile">
+<code class="descname">apply_lp_profile</code><span class="sig-paren">(</span><em>Sbase</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.apply_lp_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set LP profile to the regular profile
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.apply_lp_vars">
+<code class="descname">apply_lp_vars</code><span class="sig-paren">(</span><em>at=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.apply_lp_vars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the LP vars to the main value or the profile</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a deep copy of this object
+:return: Copy of this object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.create_P_profile">
+<code class="descname">create_P_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr=None</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.create_P_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index associated
+arr: array of values
+arr_in_pu: is the array in per unit?</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.create_Pf_profile">
+<code class="descname">create_Pf_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr=None</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.create_Pf_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index associated
+arr: array of values
+arr_in_pu: is the array in per unit?</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.create_Vset_profile">
+<code class="descname">create_Vset_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr=None</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.create_Vset_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index associated
+arr: array of values
+arr_in_pu: is the array in per unit?</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.create_profiles">
+<code class="descname">create_profiles</code><span class="sig-paren">(</span><em>index</em>, <em>P=None</em>, <em>V=None</em>, <em>Pf=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.create_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the load object default profiles
+Args:</p>
+<blockquote>
+<div>index: time index associated
+P: Active power (MW)
+Pf: Power factor
+V: voltage set points</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.create_profiles_maginitude">
+<code class="descname">create_profiles_maginitude</code><span class="sig-paren">(</span><em>index</em>, <em>arr</em>, <em>mag</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.create_profiles_maginitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create profiles from magnitude
+Args:</p>
+<blockquote>
+<div>index: Time index
+arr: values array
+mag: String with the magnitude to assign</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.delete_profiles">
+<code class="descname">delete_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.delete_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the object profiles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em>, <em>bus_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:param id: ID: Id for this object
+:param bus_dict: Dictionary of buses [object] -&gt; ID
+:return: json-compatible dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.get_lp_var_profile">
+<code class="descname">get_lp_var_profile</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.get_lp_var_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the profile of the LP solved values into a Pandas DataFrame
+:param index: time index
+:return: DataFrame with the LP values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.get_profiles">
+<code class="descname">get_profiles</code><span class="sig-paren">(</span><em>index=None</em>, <em>use_opf_vals=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.get_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get profiles and if the index is passed, create the profiles if needed
+Args:</p>
+<blockquote>
+<div>index: index of the Pandas DataFrame</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Power, Current and Impedance profiles</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.initialize_lp_vars">
+<code class="descname">initialize_lp_vars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.initialize_lp_vars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the LP variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Generator.set_profile_values">
+<code class="descname">set_profile_values</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Generator.set_profile_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the profile values at t
+:param t: time index</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="load">
+<h2>Load<a class="headerlink" href="#load" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.Load">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">Load</code><span class="sig-paren">(</span><em>name='Load'</em>, <em>G=0.0</em>, <em>B=0.0</em>, <em>Ir=0.0</em>, <em>Ii=0.0</em>, <em>P=0.0</em>, <em>Q=0.0</em>, <em>G_prof=None</em>, <em>B_prof=None</em>, <em>Ir_prof=None</em>, <em>Ii_prof=None</em>, <em>P_prof=None</em>, <em>Q_prof=None</em>, <em>active=True</em>, <em>mttf=0.0</em>, <em>mttr=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.Load.create_I_profile">
+<code class="descname">create_I_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.create_I_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create current profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index
+arr: array
+arr_in_pu: is the array in per unit? if true, it is applied as a mask profile</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Load.create_S_profile">
+<code class="descname">create_S_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr=None</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.create_S_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index
+arr: array
+arr_in_pu: is the array in per unit? if true, it is applied as a mask profile</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Load.create_Y_profile">
+<code class="descname">create_Y_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.create_Y_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create impedance profile based on index
+Args:</p>
+<blockquote>
+<div>index: time index
+arr: array
+arr_in_pu: is the array in per unit? if true, it is applied as a mask profile</div></blockquote>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Load.create_profiles">
+<code class="descname">create_profiles</code><span class="sig-paren">(</span><em>index</em>, <em>S=None</em>, <em>I=None</em>, <em>Y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.create_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the load object default profiles
+Args:</p>
+<blockquote>
+<div>index: DataFrame time index
+S: Array of complex power values
+I: Array of complex current values
+Y: Array of complex admittance values</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Load.delete_profiles">
+<code class="descname">delete_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.delete_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the object profiles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Load.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em>, <em>bus_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:param id: ID: Id for this object
+:param bus_dict: Dictionary of buses [object] -&gt; ID
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Load.set_profile_values">
+<code class="descname">set_profile_values</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Load.set_profile_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the profile values at t
+:param t: time index</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="shunt">
+<h2>Shunt<a class="headerlink" href="#shunt" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.Shunt">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">Shunt</code><span class="sig-paren">(</span><em>name='shunt'</em>, <em>G=0.0</em>, <em>B=0.0</em>, <em>G_prof=None</em>, <em>B_prof=None</em>, <em>active=True</em>, <em>mttf=0.0</em>, <em>mttr=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Shunt" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.Shunt.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Shunt.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy of this object
+:return: a copy of this object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.Shunt.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em>, <em>bus_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.Shunt.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:param id: ID: Id for this object
+:param bus_dict: Dictionary of buses [object] -&gt; ID
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="static-generator">
+<h2>Static Generator<a class="headerlink" href="#static-generator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.StaticGenerator">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">StaticGenerator</code><span class="sig-paren">(</span><em>name='StaticGen'</em>, <em>P=0.0</em>, <em>Q=0.0</em>, <em>P_prof=None</em>, <em>Q_prof=None</em>, <em>active=True</em>, <em>mttf=0.0</em>, <em>mttr=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deep copy of this object
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.create_S_profile">
+<code class="descname">create_S_profile</code><span class="sig-paren">(</span><em>index</em>, <em>arr</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.create_S_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+:param index: pandas index
+:param arr: array of values to set
+:param arr_in_pu:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.create_profile">
+<code class="descname">create_profile</code><span class="sig-paren">(</span><em>magnitude</em>, <em>index</em>, <em>arr</em>, <em>arr_in_pu=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.create_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create power profile based on index
+:param magnitude: name of the property
+:param index: pandas index
+:param arr: array of values to set
+:param arr_in_pu: is the array in per-unit?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.create_profiles">
+<code class="descname">create_profiles</code><span class="sig-paren">(</span><em>index</em>, <em>S=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.create_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the load object default profiles
+Args:</p>
+<blockquote>
+<div>index:
+steps:</div></blockquote>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.delete_profiles">
+<code class="descname">delete_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.delete_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the object profiles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em>, <em>bus_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:param id: ID: Id for this object
+:param bus_dict: Dictionary of buses [object] -&gt; ID
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.StaticGenerator.set_profile_values">
+<code class="descname">set_profile_values</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.StaticGenerator.set_profile_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the profile values at t
+:param t: time index</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="transformer-tap-changer">
+<h2>Transformer Tap Changer<a class="headerlink" href="#transformer-tap-changer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.TapChanger">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">TapChanger</code><span class="sig-paren">(</span><em>taps_up=5</em>, <em>taps_down=5</em>, <em>max_reg=1.1</em>, <em>min_reg=0.9</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.TapChanger" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.devices.TapChanger.get_tap">
+<code class="descname">get_tap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.TapChanger.get_tap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the tap voltage regulation module</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.TapChanger.set_tap">
+<code class="descname">set_tap</code><span class="sig-paren">(</span><em>tap_module</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.TapChanger.set_tap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the integer tap position corresponding to a tap value
+&#64;param tap_module: value like 1.05</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.TapChanger.tap_down">
+<code class="descname">tap_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.TapChanger.tap_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Go to the next upper tap position</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.devices.TapChanger.tap_up">
+<code class="descname">tap_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.devices.TapChanger.tap_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Go to the next upper tap position</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="device_types.html" class="btn btn-neutral float-right" title="Device Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="multicircuit.html" class="btn btn-neutral" title="Circuit and MultiCircuit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Santiago Peñate Vera
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

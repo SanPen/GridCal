@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Device Types &mdash; GridCal 3.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Devices" href="devices.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GridCal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About GridCal</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">GridCal’s API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="multicircuit.html">Circuit and MultiCircuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Device Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tower-type">Tower Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transformer-type">Transformer Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GridCal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">GridCal’s API reference</a> &raquo;</li>
+        
+      <li>Device Types</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/device_types.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-GridCal.Engine.device_types">
+<span id="device-types"></span><h1>Device Types<a class="headerlink" href="#module-GridCal.Engine.device_types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="tower-type">
+<h2>Tower Type<a class="headerlink" href="#tower-type" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.device_types.Tower">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">Tower</code><span class="sig-paren">(</span><em>parent=None</em>, <em>edit_callback=None</em>, <em>name='Tower'</em>, <em>tpe=&lt;BranchType.Branch: ('branch'</em>, <em>)&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>wire: GridCal.Engine.device_types.Wire</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add wire
+:param wire:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.check">
+<code class="descname">check</code><span class="sig-paren">(</span><em>logger=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the wires configuration make sense
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.columnCount">
+<code class="descname">columnCount</code><span class="sig-paren">(</span><em>self</em>, <em>parent: QModelIndex = QModelIndex()</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#GridCal.Engine.device_types.Tower.columnCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.compute">
+<code class="descname">compute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the tower matrices
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.data">
+<code class="descname">data</code><span class="sig-paren">(</span><em>self</em>, <em>QModelIndex</em>, <em>role: int = Qt.DisplayRole</em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#GridCal.Engine.device_types.Tower.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete wire
+:param index:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.flags">
+<code class="descname">flags</code><span class="sig-paren">(</span><em>self</em>, <em>QModelIndex</em><span class="sig-paren">)</span> &#x2192; Qt.ItemFlags<a class="headerlink" href="#GridCal.Engine.device_types.Tower.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.get_save_data">
+<code class="descname">get_save_data</code><span class="sig-paren">(</span><em>dta_list=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.get_save_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>store the tower data into dta_list in a SQL-like fashion to avoid 3D like structures
+:param dta_list: list to append the data to
+:return: nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.get_save_headers">
+<code class="descname">get_save_headers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.get_save_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the tower header + wire header
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.headerData">
+<code class="descname">headerData</code><span class="sig-paren">(</span><em>self</em>, <em>int</em>, <em>Qt.Orientation</em>, <em>role: int = Qt.DisplayRole</em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#GridCal.Engine.device_types.Tower.headerData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>ax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot wires position
+:param ax: Axis object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.rowCount">
+<code class="descname">rowCount</code><span class="sig-paren">(</span><em>self</em>, <em>parent: QModelIndex = QModelIndex()</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#GridCal.Engine.device_types.Tower.rowCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.setData">
+<code class="descname">setData</code><span class="sig-paren">(</span><em>index</em>, <em>value</em>, <em>role=0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.setData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data by simple editor (whatever text)
+:param index:
+:param value:
+:param role:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="transformer-type">
+<h2>Transformer Type<a class="headerlink" href="#transformer-type" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.device_types.TransformerType">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">TransformerType</code><span class="sig-paren">(</span><em>hv_nominal_voltage=0</em>, <em>lv_nominal_voltage=0</em>, <em>nominal_power=0</em>, <em>copper_losses=0</em>, <em>iron_losses=0</em>, <em>no_load_current=0</em>, <em>short_circuit_voltage=0</em>, <em>gr_hv1=0.5</em>, <em>gx_hv1=0.5</em>, <em>name='TransformerType'</em>, <em>tpe=&lt;BranchType.Transformer: ('transformer'</em>, <em>)&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.TransformerType" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.device_types.TransformerType.get_impedances">
+<code class="descname">get_impedances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.TransformerType.get_impedances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the branch parameters of a transformer from the short circuit
+test values
+&#64;return:</p>
+<blockquote>
+<div>leakage_impedance: Series impedance
+magnetizing_impedance: Shunt impedance</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.TransformerType.get_save_data">
+<code class="descname">get_save_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.TransformerType.get_save_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the data that matches the edit_headers
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="devices.html" class="btn btn-neutral" title="Devices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Santiago Peñate Vera
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
