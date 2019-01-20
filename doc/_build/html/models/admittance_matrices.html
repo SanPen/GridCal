@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Building the admittance matrices &mdash; GridCal 3.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Models" href="../models.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GridCal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About GridCal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">GridCal’s API reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../models.html">Models</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Building the admittance matrices</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GridCal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../models.html">Models</a> &raquo;</li>
+        
+      <li>Building the admittance matrices</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/models/admittance_matrices.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="building-the-admittance-matrices">
+<h1>Building the admittance matrices<a class="headerlink" href="#building-the-admittance-matrices" title="Permalink to this headline">¶</a></h1>
+<p>This operation occurs in the Compile() function of the Circuit object. This function compiles many other magnitudes and among them, the following matrices:</p>
+<ul class="simple">
+<li>Ybus: Complete admittance matrix. It is a sparse matrix of size n×n</li>
+<li>Yseries: Admittance matrix of the series elements. It contains no value comming from shunt elements or the shunt parts of the branch model. It is a sparse matrix of size n×n</li>
+<li>Yshunt: Admittance vector of the shunt elements and the shunt parts of the branch model. It is a vector of size n</li>
+<li>Yf: Admittance matrix of the banches with their from bus. It is a sparse matrix of size m×n</li>
+<li>Yt: Admittance matrix of the banches with their to bus. It is a sparse matrix of size m×n</li>
+</ul>
+<p>Where n is the number of buses and m is the number of branches.</p>
+<p>The relation between the admittance matrix and the series and shunt admittance matrices is the following:</p>
+<div class="math notranslate nohighlight">
+\[Y_{bus} = Y_{series} + Y_{shunt}\]</div>
+<p>The algorithmic logic to build the matrices in pseudo code is the following:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">number</span> <span class="n">of</span> <span class="n">buses</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">circuit</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">number</span> <span class="n">of</span> <span class="n">branches</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">circuit</span>
+<span class="k">for</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span> <span class="n">to</span> <span class="n">n</span><span class="p">:</span>
+    <span class="n">bus_shunt_admittance</span><span class="p">,</span> <span class="n">bus_current</span><span class="p">,</span> <span class="n">bus_power</span><span class="p">,</span> <span class="n">bus_voltage</span> <span class="o">=</span> <span class="n">buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_YISV</span><span class="p">()</span>
+    <span class="n">Yshunt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_shunt_admittance</span>
+<span class="n">end</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span> <span class="n">to</span> <span class="n">m</span><span class="p">:</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">get_bus_inde</span><span class="p">(</span><span class="n">branches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">bus_from</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">get_bus_inde</span><span class="p">(</span><span class="n">branches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">bus_to</span><span class="p">)</span>
+    <span class="o">//</span> <span class="n">the</span> <span class="n">matrices</span> <span class="n">are</span> <span class="n">modified</span> <span class="n">by</span> <span class="n">the</span> <span class="n">branch</span> <span class="nb">object</span> <span class="n">itself</span>
+    <span class="n">branches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">Ybus</span><span class="p">,</span><span class="n">Yseries</span><span class="p">,</span><span class="n">Yshunt</span><span class="p">,</span><span class="n">Yf</span><span class="p">,</span><span class="n">Yt</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">t</span><span class="p">)</span>
+<span class="n">end</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../models.html" class="btn btn-neutral" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Santiago Peñate Vera
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

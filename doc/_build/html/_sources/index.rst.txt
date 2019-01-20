@@ -19,3 +19,4 @@ guide <https://github.com/SanPen/PracticalGridModeling/raw/master/practical_grid
     About GridCal <about>
     getting_started
     api
+    models
