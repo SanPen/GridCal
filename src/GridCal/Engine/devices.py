@@ -92,23 +92,66 @@ class DeviceType(Enum):
 
 
 class Bus(EditableDevice):
+    """
+    The Bus object is the container of all the possible devices that can be attached to
+    a bus bar or substation. Such objects can be loads, voltage controlled generators,
+    static generators, batteries, shunt elements, etc.
+
+    Arguments:
+
+        **name** (str, "Bus"): Name of the bus
+
+        **vnom** (float, 10.0): Nominal voltage in kV
+
+        **vmin** (float, 0.9): Minimum per unit voltage
+
+        **vmax** (float, 1.1): Maximum per unit voltage
+
+        **r_fault** (float, 0.0): Resistance of the fault in per unit (SC only)
+
+        **x_fault** (float, 0.0): Reactance of the fault in per unit (SC only)
+
+        **xpos** (int, 0): X position in pixels (GUI only)
+
+        **ypos** (int, 0): Y position in pixels (GUI only)
+
+        **height** (int, 0): Height of the graphic object (GUI only)
+
+        **width** (int, 0): Width of the graphic object (GUI only)
+
+        **active** (bool, True): Is the bus active?
+
+        **is_slack** (bool, False): Is this bus a slack bus?
+
+        **area** (str, "Default"): Name of the area
+
+        **zone** (str, "Default"): Name of the zone
+
+        **substation** (str, "Default"): Name of the substation
+
+    Additional Properties:
+
+        **Qmin_sum** (float, 0): Minimum reactive power of this bus (inferred from the devices)
+
+        **Qmax_sum** (float, 0): Maximum reactive power of this bus (inferred from the devices)
+
+        **loads** (list, list()): List of loads attached to this bus
+
+        **controlled_generators** (list, list()): List of controlled generators attached to this bus
+
+        **shunts** (list, list()): List of shunts attached to this bus
+
+        **batteries** (list, list()): List of batteries attached to this bus
+
+        **static_generators** (list, list()): List of static generators attached to this bus
+
+        **measurements** (list, list()): List of measurements
+
+    """
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False,
-                 area='Defualt', zone='Default', substation='Default'):
-        """
-        Bus  constructor
-        :param name: name of the bus
-        :param vnom: nominal voltage in kV
-        :param vmin: minimum per unit voltage (i.e. 0.9)
-        :param vmax: maximum per unit voltage (i.e. 1.1)
-        :param xpos: x position in pixels
-        :param ypos: y position in pixels
-        :param height: height of the graphic object
-        :param width: width of the graphic object
-        :param active: is the bus active?
-        :param is_slack: is this bus a slack bus?
-        """
+                 area='Default', zone='Default', substation='Default'):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -580,6 +623,18 @@ class TapChanger:
 
 
 class Branch(ReliabilityDevice):
+    """
+    Arguments:
+
+        **bus_from** (Bus): "From" bus object
+
+        **bus_to** (Bus): "To" bus object
+
+        **name**: (str, "Branch"): Name of the branch
+
+        ...to be completed...
+
+    """
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
@@ -992,32 +1047,51 @@ class Branch(ReliabilityDevice):
 
 
 class Load(InjectionDevice):
+    """
+    The load object implements the so-called ZIP model, in which the load can be
+    represented by a combination of power (P), current(I), and impedance (Z).
+
+    The sign convention is: Positive to act as a load, negative to act as a generator.
+
+    Arguments:
+
+        **name** (str, "Load"): Name of the load
+
+        **G** (float, 0.0): Conductance in equivalent MW
+
+        **B** (float, 0.0): Susceptance in equivalent MVAr
+
+        **Ir** (float, 0.0): Real current in equivalent MW
+
+        **Ii** (float, 0.0): Imaginary current in equivalent MVAr
+
+        **P** (float, 0.0): Active power in MW
+
+        **Q** (float, 0.0): Reactive power in MVAr
+
+        **G_prof** (DataFrame, None): Pandas DataFrame with the conductance profile in equivalent MW
+
+        **B_prof** (DataFrame, None): Pandas DataFrame with the susceptance profile in equivalent MVAr
+
+        **Ir_prof** (DataFrame, None): Pandas DataFrame with the real current profile in equivalent MW
+
+        **Ii_prof** (DataFrame, None): Pandas DataFrame with the imaginary current profile in equivalent MVAr
+
+        **P_prof** (DataFrame, None): Pandas DataFrame with the active power profile in equivalent MW
+
+        **Q_prof** (DataFrame, None): Pandas DataFrame with the reactive power profile in equivalent MVAr
+
+        **active** (bool, True): Is the load active?
+
+        **mttf** (float, 0.0): Mean time to failure in hours
+
+        **mttr** (float, 0.0): Mean time to recovery in hours
+
+    """
 
     def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
                  active=True, mttf=0.0, mttr=0.0):
-        """
-        Load model constructor
-        This model implements the so-called ZIP model
-        composed of an impedance value, a current value and a power value
-        Args:
-            name:
-            G: Conductance in equivalent MW
-            B: Susceptance in equivalent MVAr
-            Ir: Real current equivalent in MW
-            Ii: Imaginary current equivalent in MVAr
-            P: Power in MW
-            Q: Reactive power in MVAr
-            G_prof:
-            B_prof:
-            Ir_prof:
-            Ii_prof:
-            P_prof:
-            Q_prof:
-            active: is active?
-            mttf: Mean time to failure (h)
-            mttr: Meat time to recovery (h)
-        """
 
         InjectionDevice.__init__(self,
                                  name=name,
@@ -1216,19 +1290,28 @@ class Load(InjectionDevice):
 
 
 class StaticGenerator(InjectionDevice):
+    """
+    Arguments:
+
+        **name** (str, "StaticGen"): Name of the static generator
+
+        **P** (float, 0.0): Active power in MW
+
+        **Q** (float, 0.0): Reactive power in MVAr
+
+        **P_prof** (DataFrame, None): Pandas DataFrame with the active power profile in MW
+
+        **Q_prof** (DataFrame, None): Pandas DataFrame with the reactive power profile in MVAr
+
+        **active** (bool, True): Is the static generator active?
+
+        **mttf** (float, 0.0): Mean time to failure in hours
+
+        **mttr** (float, 0.0): Mean time to recovery in hours
+
+    """
 
     def __init__(self, name='StaticGen', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True, mttf=0.0, mttr=0.0):
-        """
-        Static generator constructor
-        :param name: Name
-        :param P: Active power in MW
-        :param Q: Reactive power in MVAr
-        :param P_prof: Profile of active power values
-        :param Q_prof: Profile of reactive power values
-        :param active: Active?
-        :param mttf: Mean time to failure (h)
-        :param mttr: MEan time to repair (h)
-        """
 
         InjectionDevice.__init__(self,
                                  name=name,
@@ -1353,31 +1436,54 @@ class StaticGenerator(InjectionDevice):
 
 
 class Generator(InjectionDevice):
+    """
+    Voltage controlled generator.
+
+    Arguments:
+
+        **name** (str, "gen"): Name of the generator
+
+        **active_power** (float, 0.0): Active power in MW
+
+        **power_factor** (float, 0.8): Power factor
+
+        **voltage_module** (float, 1.0): Voltage setpoint in per unit
+
+        **is_controlled** (bool, True): Is the generator voltage controlled?
+
+        **Qmin** (float, -9999): Minimum reactive power in MVAr
+
+        **Qmax** (float, 9999): Maximum reactive power in MVAr
+
+        **Snom** (float, 9999): Nominal apparent power in MVA
+
+        **power_prof** (DataFrame, None): Pandas DataFrame with the active power profile in MW
+
+        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile
+
+        **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint profile in per unit
+
+        **active** (bool, True): Is the generator active?
+
+        **p_min** (float, 0.0): Minimum dispatchable power in MW
+
+        **p_max** (float, 9999): Maximum dispatchable power in MW
+
+        **op_cost** (float, 1.0): Operational cost in Eur (or other currency) per MW
+
+        **Sbase** (float, 100): Nominal apparent power in MVA
+
+        **enabled_dispatch** (bool, True): Is the generator enabled for OPF?
+
+        **mttf** (float, 0.0): Mean time to failure in hours
+
+        **mttr** (float, 0.0): Mean time to recovery in hours
+
+    """
 
     def __init__(self, name='gen', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None, active=True,
                  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True, mttf=0.0, mttr=0.0):
-        """
-        Voltage controlled generator
-        @param name: Name of the device
-        @param active_power: Active power (MW)
-        @param power_factor: Power factor
-        @param voltage_module: Voltage set point (p.u.)
-        @param Qmin: minimum reactive power in MVAr
-        @param Qmax: maximum reactive power in MVAr
-        @param Snom: Nominal power in MVA
-        @param power_prof: active power profile (Pandas DataFrame)
-        @param power_factor_prof: active power profile (Pandas DataFrame)
-        @param vset_prof: voltage set point profile (Pandas DataFrame)
-        @param active: Is the generator active?
-        @param p_min: minimum dispatchable power in MW
-        @param p_max maximum dispatchable power in MW
-        @param op_cost operational cost in Eur (or other currency) per MW
-        @param enabled_dispatch is the generator enabled for OPF?
-        @param mttf: Mean time to failure
-        @param mttr: Mean time to repair
-
-        """
 
         InjectionDevice.__init__(self,
                                  name=name,
@@ -1710,41 +1816,73 @@ class Generator(InjectionDevice):
 
 
 class Battery(Generator):
+    """
+    Battery (voltage controlled and dispatchable).
+
+    Arguments:
+
+        **name** (str, "batt"): Name of the battery
+
+        **active_power** (float, 0.0): Active power in MW
+        
+        **power_factor** (float, 0.8): Power factor
+
+        **voltage_module** (float, 1.0): Voltage setpoint in per unit
+
+        **is_controlled** (bool, True): Is the unit voltage controlled (if so, the connection bus becomes a PV bus)
+
+        **Qmin** (float, -9999): Minimum reactive power in MVAr
+
+        **Qmax** (float, 9999): Maximum reactive power in MVAr
+
+        **Snom** (float, 9999): Nominal apparent power in MVA
+
+        **Enom** (float, 9999): Nominal energy capacity in MWh
+
+        **p_min** (float, -9999): Minimum dispatchable power in MW
+
+        **p_max** (float, 9999): Maximum dispatchable power in MW
+
+        **op_cost** (float, 1.0): Operational cost in Eur (or other currency) per MW
+
+        **power_prof** (DataFrame, None): Pandas DataFrame with the active power profile in MW
+
+        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile
+
+        **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint profile in per unit
+
+        **active** (bool, True): Is the battery active?
+
+        **Sbase** (float, 100): Base apparent power in MVA
+
+        **enabled_dispatch** (bool, True): Is the battery enabled for OPF?
+
+        **mttf** (float, 0.0): Mean time to failure in hours
+
+        **mttr** (float, 0.0): Mean time to recovery in hours
+
+        **charge_efficiency** (float, 0.9): Efficiency when charging
+
+        **discharge_efficiency** (float, 0.9): Efficiency when discharging
+
+        **max_soc** (float, 0.99): Maximum state of charge
+
+        **min_soc** (float, 0.3): Minimum state of charge
+
+        **soc** (float, 0.8): Current state of charge
+
+        **charge_per_cycle** (float, 0.1): Per unit of power to take per cycle when charging
+
+        **discharge_per_cycle** (float, 0.1): Per unit of power to deliver per cycle when discharging
+
+    """
 
     def __init__(self, name='batt', active_power=0.0, power_factor=0.8, voltage_module=1.0,
                  is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999, p_min=-9999, p_max=9999,
                  op_cost=1.0, power_prof=None, power_factor_prof=None, vset_prof=None, active=True, Sbase=100,
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
-        """
-        Battery (Voltage controlled and dispatchable)
-        :param name: Name of the device
-        :param active_power: Active power (MW)
-        :param power_factor: power factor
-        :param voltage_module: Voltage set point (p.u.)
-        :param: is_voltage_controlled: Is the unit voltage controlled (if so, the connection bus becomes a PV bus)
-        :param Qmin: minimum reactive power in MVAr
-        :param Qmax: maximum reactive power in MVAr
-        :param Snom: Nominal power in MVA
-        :param Enom: Nominal energy in MWh
-        :param power_prof: active power profile (Pandas DataFrame)
-        :param power_factor_prof: power factor profile
-        :param vset_prof: voltage set point profile (Pandas DataFrame)
-        :param active: Is the generator active?
-        :param p_min: minimum dispatchable power in MW
-        :param p_max maximum dispatchable power in MW
-        :param op_cost operational cost in Eur (or other currency) per MW
-        :param enabled_dispatch is the generator enabled for OPF?
-        :param mttf: Mean time to failure
-        :param mttr: Mean time to repair
-        :param charge_efficiency: efficiency when charging
-        :param discharge_efficiency: efficiency when discharging
-        :param max_soc: maximum state of charge
-        :param min_soc: minimum state of charge
-        :param soc: current state of charge
-        :param charge_per_cycle: per unit of power to take per cycle when charging
-        :param discharge_per_cycle: per unit of power to deliver per cycle when charging
-        """
+
         Generator.__init__(self, name=name,
                            active_power=active_power,
                            power_factor=power_factor,
@@ -2019,19 +2157,28 @@ class Battery(Generator):
 
 
 class Shunt(InjectionDevice):
+    """
+    Arguments:
+
+        **name** (str, "shunt"): Name of the shunt
+
+        **G** (float, 0.0): Conductance in MW at 1 p.u. voltage
+
+        **B** (float, 0.0): Susceptance in MW at 1 p.u. voltage
+
+        **G_prof** (DataFrame, None): Pandas DataFrame with the conductance profile in MW at 1 p.u. voltage
+
+        **B_prof** (DataFrame, None): Pandas DataFrame with the susceptance profile in MW at 1 p.u. voltage
+
+        **active** (bool, True): Is the shunt active?
+
+        **mttf** (float, 0.0): Mean time to failure in hours
+
+        **mttr** (float, 0.0): Mean time to recovery in hours
+
+    """
 
     def __init__(self, name='shunt', G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, mttf=0.0, mttr=0.0):
-        """
-        Shunt object
-        :param name:
-        :param G: Conductance in MW at 1 p.u. voltage
-        :param B: Susceptance in MW at 1 p.u. voltage
-        :param G_prof:
-        :param B_prof:
-        :param active: Is active True or False
-        :param mttf:
-        :param mttr:
-        """
 
         InjectionDevice.__init__(self,
                                  name=name,
