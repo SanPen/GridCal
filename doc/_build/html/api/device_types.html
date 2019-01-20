@@ -262,7 +262,21 @@
 <dl class="class">
 <dt id="GridCal.Engine.device_types.TransformerType">
 <em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">TransformerType</code><span class="sig-paren">(</span><em>hv_nominal_voltage=0</em>, <em>lv_nominal_voltage=0</em>, <em>nominal_power=0</em>, <em>copper_losses=0</em>, <em>iron_losses=0</em>, <em>no_load_current=0</em>, <em>short_circuit_voltage=0</em>, <em>gr_hv1=0.5</em>, <em>gx_hv1=0.5</em>, <em>name='TransformerType'</em>, <em>tpe=&lt;BranchType.Transformer: ('transformer'</em>, <em>)&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.TransformerType" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Arguments:</p>
+<blockquote>
+<div><p><strong>hv_nominal_voltage</strong> (float, 0.0): Primary side nominal voltage in kV (tied to the Branch’s <cite>bus_from</cite>)</p>
+<p><strong>lv_nominal_voltage</strong> (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch’s <cite>bus_to</cite>)</p>
+<p><strong>nominal_power</strong> (float, 0.0): Transformer nominal apparent power in MVA</p>
+<p><strong>copper_losses</strong> (float, 0.0): Copper losses in kW (also known as short circuit power)</p>
+<p><strong>iron_losses</strong> (float, 0.0): Iron losses in kW (also known as no-load power)</p>
+<p><strong>no_load_current</strong> (float, 0.0): No load current in %</p>
+<p><strong>short_circuit_voltage</strong> (float, 0.0): Short circuit voltage in %</p>
+<p><strong>gr_hv1</strong> (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch’s <cite>bus_from</cite>)</p>
+<p><strong>gx_hv1</strong> (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch’s <cite>bus_from</cite>)</p>
+<p><strong>name</strong> (str, “TransformerType”): Name of the type</p>
+<p><strong>tpe</strong> (BranchType, BranchType.Transformer): Device type enumeration</p>
+</div></blockquote>
+<dl class="method">
 <dt id="GridCal.Engine.device_types.TransformerType.get_impedances">
 <code class="descname">get_impedances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.TransformerType.get_impedances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the branch parameters of a transformer from the short circuit

@@ -632,7 +632,47 @@ class Branch(ReliabilityDevice):
 
         **name**: (str, "Branch"): Name of the branch
 
-        ...to be completed...
+        **r**: (float, 1e-20): Branch resistance in per unit
+
+        **x**: (float, 1e-20): Branch reactance in per unit
+
+        **g**: (float, 1e-20): Branch shunt conductance in per unit
+
+        **b**: (float, 1e-20): Branch shunt susceptance in per unit
+
+        **rate**: (float, 1.0): Branch rate in MVA
+
+        **tap**: (float, 1.0): Branch tap module
+
+        **shift_angle** (float, 0): Tap shift angle in radians
+
+        **active** (bool, True): Is the branch active?
+
+        **mttf** (float, 0): Mean time to failure in hours
+
+        **mttr** (float, 0): Mean time to recovery in hours
+
+        **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
+
+        **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
+
+        **fault_pos** (float, 0.5): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
+
+        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: BranchType.Transformer)
+
+        **length** (float, 1.0): Length of the branch in km
+
+        **vset** (float, 1.0): Voltage setpoint of the voltage controlled bus in per unit
+
+        **temp_base** (float, 20): Base temperature at which `r` is measured in °C
+
+        **temp_oper** (float, 20): Operating temperature in °C
+
+        **alpha** (float, 0.00330): Thermal constant of the material in °C
+
+        **bus_to_regulated** (bool, False): Is the `bus_to` voltage controlled?
+
+        **template** (BranchTemplate, BranchTemplate()): Type object template (ex.: TransformerType, etc.)
 
     """
 
@@ -640,34 +680,6 @@ class Branch(ReliabilityDevice):
                  rate=1.0, tap=1.0, shift_angle=0, active=True, mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType=BranchType.Line, length=1, vset=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
-        """
-        Branch model constructor
-        Args:
-            bus_from:Bus Object
-            bus_to: Bus Object
-            name: name of the branch
-            r:
-            x:
-            g:
-            b:
-            rate: branch rate in MVA
-            tap: tap module
-            shift_angle: tap shift angle in radians
-            active:
-            mttf: Mean time to failure
-            mttr: Mean time to repair
-            r_fault:
-            x_fault:
-            fault_pos:
-            branch_type: Is the branch a transformer?
-            length: eventual line length in km
-            vset: Set voltage of the tap-controlled bus in p.u.
-            temp_base: Base temperature at which r is measured in ºC
-            temp_oper: Operating temperature in ºC
-            alpha: Thermal constant of the material in 1/ºC at temp_base (Cu = 0.00323, Al = 0.00330 @ 75ºC)
-            bus_to_regulated:
-            template: Type object template (i.e. Tower, TransformerType, etc...)
-        """
 
         ReliabilityDevice.__init__(self, name,
                                    active=active,

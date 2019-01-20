@@ -273,7 +273,27 @@ arr_in_pu: is the array in per unit?</div></blockquote>
 <div><p><strong>bus_from</strong> (Bus): “From” bus object</p>
 <p><strong>bus_to</strong> (Bus): “To” bus object</p>
 <p><strong>name</strong>: (str, “Branch”): Name of the branch</p>
-<p>…to be completed…</p>
+<p><strong>r</strong>: (float, 1e-20): Branch resistance in per unit</p>
+<p><strong>x</strong>: (float, 1e-20): Branch reactance in per unit</p>
+<p><strong>g</strong>: (float, 1e-20): Branch shunt conductance in per unit</p>
+<p><strong>b</strong>: (float, 1e-20): Branch shunt susceptance in per unit</p>
+<p><strong>rate</strong>: (float, 1.0): Branch rate in MVA</p>
+<p><strong>tap</strong>: (float, 1.0): Branch tap module</p>
+<p><strong>shift_angle</strong> (float, 0): Tap shift angle in radians</p>
+<p><strong>active</strong> (bool, True): Is the branch active?</p>
+<p><strong>mttf</strong> (float, 0): Mean time to failure in hours</p>
+<p><strong>mttr</strong> (float, 0): Mean time to recovery in hours</p>
+<p><strong>r_fault</strong> (float, 0.0): Mid-line fault resistance in per unit (SC only)</p>
+<p><strong>x_fault</strong> (float, 0.0): Mid-line fault reactance in per unit (SC only)</p>
+<p><strong>fault_pos</strong> (float, 0.5): Mid-line fault position in per unit (0.0 = <cite>bus_from</cite>, 0.5 = middle, 1.0 = <cite>bus_to</cite>)</p>
+<p><strong>branch_type</strong> (BranchType, BranchType.Line): Device type enumeration (ex.: BranchType.Transformer)</p>
+<p><strong>length</strong> (float, 1.0): Length of the branch in km</p>
+<p><strong>vset</strong> (float, 1.0): Voltage setpoint of the voltage controlled bus in per unit</p>
+<p><strong>temp_base</strong> (float, 20): Base temperature at which <cite>r</cite> is measured in °C</p>
+<p><strong>temp_oper</strong> (float, 20): Operating temperature in °C</p>
+<p><strong>alpha</strong> (float, 0.00330): Thermal constant of the material in °C</p>
+<p><strong>bus_to_regulated</strong> (bool, False): Is the <cite>bus_to</cite> voltage controlled?</p>
+<p><strong>template</strong> (BranchTemplate, BranchTemplate()): Type object template (ex.: TransformerType, etc.)</p>
 </div></blockquote>
 <dl class="attribute">
 <dt id="GridCal.Engine.devices.Branch.R_corrected">
