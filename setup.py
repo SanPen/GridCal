@@ -106,8 +106,8 @@ else:
     pass
 
 # Read the license
-data_files.append('LICENSE.txt')
-with open('LICENSE.txt', 'r') as f:
+data_files.append('src/LICENSE.txt')
+with open('src/LICENSE.txt', 'r') as f:
     license_text = f.read()
 
 setup(
