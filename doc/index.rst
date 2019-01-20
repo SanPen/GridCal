@@ -14,9 +14,15 @@ and find simulation examples and interesting information in the author's `simula
 guide <https://github.com/SanPen/PracticalGridModeling/raw/master/practical_grid_modeling.pdf>`_.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     About GridCal <about>
-    getting_started
-    api
-    models
+
+    Getting Started <getting_started>
+
+    GridCal's API reference <api>
+
+    Models <models>
+
+    Power Flow <power_flow>
+

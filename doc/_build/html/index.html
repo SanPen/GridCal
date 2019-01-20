@@ -85,8 +85,9 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About GridCal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">GridCal’s API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">GridCal's API reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">Power Flow</a></li>
 </ul>
 
             
@@ -162,21 +163,60 @@ guide</a>.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About GridCal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getting_started/install.html">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getting_started/run_with_interface.html">Running GridCal with a GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/install.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/install.html#windows">Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/install.html#linux-osx">Linux / OSX</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/run_with_interface.html">Running GridCal with a GUI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/run_with_interface.html#windows">Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/run_with_interface.html#linux-osx">Linux / OSX</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/run_as_library.html">Using GridCal as a library</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">GridCal’s API reference</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">GridCal's API reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/multicircuit.html">Circuit and MultiCircuit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/devices.html">Devices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/device_types.html">Device Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/devices.html">Devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#battery">Battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#branch">Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#bus">Bus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#generator">Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#load">Load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#shunt">Shunt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#static-generator">Static Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/devices.html#transformer-tap-changer">Transformer Tap Changer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/device_types.html">Device Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/device_types.html#tower-type">Tower Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/device_types.html#transformer-type">Transformer Type</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models/admittance_matrices.html">Building the admittance matrices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models/branch_model.html">Universal Branch Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models/xfo_sc.html">Transformer definition from SC test values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/branch_model.html">Universal Branch Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="models/branch_model.html#ybranch">Ybranch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models/branch_model.html#ybus">Ybus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models/branch_model.html#yshunt">Yshunt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models/branch_model.html#yseries">Yseries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models/branch_model.html#yf-and-yt">Yf and Yt</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models/xfo_sc.html">Transformer definition from SC test values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="models/xfo_sc.html#inverse-definition-of-sc-values-from-model">Inverse definition of SC values from π model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">Power Flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="power_flow/newton_raphson.html">Newton-Raphson-Iwamoto</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="power_flow/newton_raphson.html#jacobian">Jacobian</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
