@@ -1,0 +1,16 @@
+numpy
+scipy
+networkx
+pandas
+xlwt
+xlrd
+pySOT
+openpyxl
+pulp
+smopy
+sphinx
+sphinx_rtd_theme
+chardet
+scikit-learn
+geopy
+pytest
