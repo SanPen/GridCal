@@ -5,3 +5,5 @@ Models
     :maxdepth: 1
 
     models/admittance_matrices
+    models/branch_model
+    models/xfo_sc
