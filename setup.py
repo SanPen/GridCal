@@ -2,8 +2,9 @@ from distutils.core import setup
 import sys
 import os
 import platform
-from GridCal.__version__ import __GridCal_VERSION__
 
+sys.path.insert(0, os.path.abspath('src'))
+from GridCal.__version__ import __GridCal_VERSION__
 
 def make_linux_desktop_file(version_, comment):
     """
