@@ -1,3 +1,5 @@
+.. _run_as_library:
+
 Using GridCal as a library
 ==========================
 

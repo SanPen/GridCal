@@ -1,3 +1,5 @@
+.. _api:
+
 GridCal's API reference
 =======================
 

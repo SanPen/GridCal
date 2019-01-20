@@ -1,3 +1,5 @@
+.. _xfo_sc:
+
 Transformer definition from SC test values
 ==========================================
 

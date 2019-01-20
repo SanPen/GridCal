@@ -1,3 +1,5 @@
+.. _device_types:
+
 Device Types
 ============
 

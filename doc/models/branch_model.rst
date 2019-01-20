@@ -1,3 +1,5 @@
+.. _branch_model:
+
 Universal Branch Model
 ======================
 

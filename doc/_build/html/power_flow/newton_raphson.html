@@ -28,7 +28,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Power Flow" href="../power_flow.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -81,11 +82,18 @@
               
             
             
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../about.html">About GridCal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">GridCal’s API reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Models</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../power_flow.html">Power Flow</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Newton-Raphson-Iwamoto</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#jacobian">Jacobian</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             
@@ -131,6 +139,8 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
+          <li><a href="../power_flow.html">Power Flow</a> &raquo;</li>
+        
       <li>Newton-Raphson-Iwamoto</li>
     
     
@@ -151,7 +161,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="newton-raphson-iwamoto">
-<h1>Newton-Raphson-Iwamoto<a class="headerlink" href="#newton-raphson-iwamoto" title="Permalink to this headline">¶</a></h1>
+<span id="newton-raphson"></span><h1>Newton-Raphson-Iwamoto<a class="headerlink" href="#newton-raphson-iwamoto" title="Permalink to this headline">¶</a></h1>
 <p>The Newton-Raphson method is the standard power flow method tough at schools. GridCal implements a slight but important modification of this method that turns it into a more robust, industry-standard algorithm. The Newton Raphson method is the first order Taylor approximation of the power flow equation. The method implemented in GridCal is the second order approximation, let’s see how.</p>
 <p>The expression to update the voltage solution in the Newton-Raphson algorithm is the following:</p>
 <div class="math notranslate nohighlight">
@@ -238,6 +248,13 @@ The polynomial can be solved numerically using <em>1</em> as the seed.</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../power_flow.html" class="btn btn-neutral" title="Power Flow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

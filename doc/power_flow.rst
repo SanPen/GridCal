@@ -1,3 +1,5 @@
+.. _power_flow:
+
 Power Flow
 ==========
 

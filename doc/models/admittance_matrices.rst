@@ -1,3 +1,5 @@
+.. _admittance_matrices:
+
 Building the admittance matrices
 ================================
 

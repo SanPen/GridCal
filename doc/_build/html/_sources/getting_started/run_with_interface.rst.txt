@@ -1,3 +1,5 @@
+.. _run_with_interface:
+
 Running GridCal with a GUI
 ==========================
 

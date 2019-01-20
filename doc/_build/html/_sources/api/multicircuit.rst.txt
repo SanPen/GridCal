@@ -1,3 +1,5 @@
+.. _multicircuit:
+
 Circuit and MultiCircuit
 ========================
 

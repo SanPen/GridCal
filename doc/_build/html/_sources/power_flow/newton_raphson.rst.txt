@@ -1,3 +1,5 @@
+.. _newton_raphson:
+
 Newton-Raphson-Iwamoto
 ======================
 

@@ -92,6 +92,8 @@
 <li class="toctree-l2"><a class="reference internal" href="api/device_types.html">Device Types</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">Power Flow</a></li>
 </ul>
 
             
@@ -157,7 +159,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="gridcal-s-api-reference">
-<h1>GridCal’s API reference<a class="headerlink" href="#gridcal-s-api-reference" title="Permalink to this headline">¶</a></h1>
+<span id="api"></span><h1>GridCal’s API reference<a class="headerlink" href="#gridcal-s-api-reference" title="Permalink to this headline">¶</a></h1>
 <p>GridCal uses an object oriented approach for all the data and simulation management. However the object orientation is very inefficient when used in numerical computation, that is why there are compile() functions that extract the information out of the objects and turn this information into vectors, matrices and DataFrames in order to have efficient numerical computations. After having been involved in quite some number-crunching software developments, I have found this approach to be the best compromise between efficiency and code escalability and maintainability.</p>
 <p>The whole idea can be summarized as:</p>
 <p><cite>Object oriented structures -&gt; intermediate objects holding arrays -&gt; Numerical modules</cite></p>
@@ -216,6 +218,7 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
