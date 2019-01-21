@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>GridCal’s API reference &mdash; GridCal 3.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GridCal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">GridCal’s API reference</a><ul>
+<li><a class="reference internal" href="#module-GridCal.Engine.calculation_engine">The “calculation_engine” module</a></li>
+<li><a class="reference internal" href="#module-GridCal.Engine.devices">The “devices” module</a></li>
+<li><a class="reference internal" href="#module-GridCal.Engine.device_types">The “device_types” module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GridCal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>GridCal’s API reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-GridCal.Engine">
+<span id="gridcal-s-api-reference"></span><h1>GridCal’s API reference<a class="headerlink" href="#module-GridCal.Engine" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-GridCal.Engine.calculation_engine">
+<span id="the-calculation-engine-module"></span><h2>The “calculation_engine” module<a class="headerlink" href="#module-GridCal.Engine.calculation_engine" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="GridCal.Engine.calculation_engine.load_from_xls">
+<code class="descclassname">GridCal.Engine.calculation_engine.</code><code class="descname">load_from_xls</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.load_from_xls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the excel file content to a dictionary for parsing the data</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-GridCal.Engine.devices">
+<span id="the-devices-module"></span><h2>The “devices” module<a class="headerlink" href="#module-GridCal.Engine.devices" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.devices.DeviceType">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">DeviceType</code><a class="headerlink" href="#GridCal.Engine.devices.DeviceType" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="GridCal.Engine.devices.TimeGroups">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.devices.</code><code class="descname">TimeGroups</code><a class="headerlink" href="#GridCal.Engine.devices.TimeGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-GridCal.Engine.device_types">
+<span id="the-device-types-module"></span><h2>The “device_types” module<a class="headerlink" href="#module-GridCal.Engine.device_types" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="GridCal.Engine.device_types.BranchType">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">BranchType</code><a class="headerlink" href="#GridCal.Engine.device_types.BranchType" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="GridCal.Engine.device_types.SequenceLineType">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">SequenceLineType</code><span class="sig-paren">(</span><em>parent=None</em>, <em>edit_callback=None</em>, <em>name='SequenceLine'</em>, <em>R=0</em>, <em>X=0</em>, <em>G=0</em>, <em>B=0</em>, <em>R0=0</em>, <em>X0=0</em>, <em>G0=0</em>, <em>B0=0</em>, <em>tpe=&lt;BranchType.Line: ('line'</em>, <em>)&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.SequenceLineType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="GridCal.Engine.device_types.Tower">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">Tower</code><span class="sig-paren">(</span><em>parent=None</em>, <em>edit_callback=None</em>, <em>name='Tower'</em>, <em>tpe=&lt;BranchType.Branch: ('branch'</em>, <em>)&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>wire: GridCal.Engine.device_types.Wire</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add wire
+:param wire:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.check">
+<code class="descname">check</code><span class="sig-paren">(</span><em>logger=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the wires configuration make sense
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.columnCount">
+<code class="descname">columnCount</code><span class="sig-paren">(</span><em>self</em>, <em>parent: QModelIndex = QModelIndex()</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#GridCal.Engine.device_types.Tower.columnCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.compute">
+<code class="descname">compute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the tower matrices
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.data">
+<code class="descname">data</code><span class="sig-paren">(</span><em>self</em>, <em>QModelIndex</em>, <em>role: int = Qt.DisplayRole</em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#GridCal.Engine.device_types.Tower.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete wire
+:param index:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.flags">
+<code class="descname">flags</code><span class="sig-paren">(</span><em>self</em>, <em>QModelIndex</em><span class="sig-paren">)</span> &#x2192; Qt.ItemFlags<a class="headerlink" href="#GridCal.Engine.device_types.Tower.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.get_save_data">
+<code class="descname">get_save_data</code><span class="sig-paren">(</span><em>dta_list=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.get_save_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>store the tower data into dta_list in a SQL-like fashion to avoid 3D like structures
+:param dta_list: list to append the data to
+:return: nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.get_save_headers">
+<code class="descname">get_save_headers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.get_save_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the tower header + wire header
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.headerData">
+<code class="descname">headerData</code><span class="sig-paren">(</span><em>self</em>, <em>int</em>, <em>Qt.Orientation</em>, <em>role: int = Qt.DisplayRole</em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#GridCal.Engine.device_types.Tower.headerData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>ax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot wires position
+:param ax: Axis object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.rowCount">
+<code class="descname">rowCount</code><span class="sig-paren">(</span><em>self</em>, <em>parent: QModelIndex = QModelIndex()</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#GridCal.Engine.device_types.Tower.rowCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.Tower.setData">
+<code class="descname">setData</code><span class="sig-paren">(</span><em>index</em>, <em>value</em>, <em>role=0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.Tower.setData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data by simple editor (whatever text)
+:param index:
+:param value:
+:param role:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="GridCal.Engine.device_types.UndergroundLineType">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">UndergroundLineType</code><span class="sig-paren">(</span><em>parent=None</em>, <em>edit_callback=None</em>, <em>name='UndergroundLine'</em>, <em>R=0</em>, <em>X=0</em>, <em>G=0</em>, <em>B=0</em>, <em>R0=0</em>, <em>X0=0</em>, <em>G0=0</em>, <em>B0=0</em>, <em>tpe=&lt;BranchType.Line: ('line'</em>, <em>)&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.UndergroundLineType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="GridCal.Engine.device_types.WiresCollection">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">WiresCollection</code><span class="sig-paren">(</span><em>parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>wire: GridCal.Engine.device_types.Wire</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add wire
+:param wire:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.columnCount">
+<code class="descname">columnCount</code><span class="sig-paren">(</span><em>self</em>, <em>parent: QModelIndex = QModelIndex()</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.columnCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.data">
+<code class="descname">data</code><span class="sig-paren">(</span><em>self</em>, <em>QModelIndex</em>, <em>role: int = Qt.DisplayRole</em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete wire
+:param index:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.flags">
+<code class="descname">flags</code><span class="sig-paren">(</span><em>self</em>, <em>QModelIndex</em><span class="sig-paren">)</span> &#x2192; Qt.ItemFlags<a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.headerData">
+<code class="descname">headerData</code><span class="sig-paren">(</span><em>self</em>, <em>int</em>, <em>Qt.Orientation</em>, <em>role: int = Qt.DisplayRole</em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.headerData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.is_used">
+<code class="descname">is_used</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.is_used" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks if the name is used</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.parent">
+<code class="descname">parent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; QObject<a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.rowCount">
+<code class="descname">rowCount</code><span class="sig-paren">(</span><em>self</em>, <em>parent: QModelIndex = QModelIndex()</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.rowCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.device_types.WiresCollection.setData">
+<code class="descname">setData</code><span class="sig-paren">(</span><em>index</em>, <em>value</em>, <em>role=0</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.WiresCollection.setData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set data by simple editor (whatever text)
+:param index:
+:param value:
+:param role:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.abc_2_seq">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">abc_2_seq</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.abc_2_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to sequence components
+Args:</p>
+<blockquote>
+<div>mat:</div></blockquote>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.calc_y_matrix">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">calc_y_matrix</code><span class="sig-paren">(</span><em>wires: list</em>, <em>f=50</em>, <em>rho=100</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.calc_y_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Impedance matrix
+:param wires: list of wire objects
+:param f: system frequency (Hz)
+:param rho: earth resistivity
+:return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.calc_z_matrix">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">calc_z_matrix</code><span class="sig-paren">(</span><em>wires: list</em>, <em>f=50</em>, <em>rho=100</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.calc_z_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Impedance matrix
+:param wires: list of wire objects
+:param f: system frequency (Hz)
+:param rho: earth resistivity
+:return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.get_D_ij">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">get_D_ij</code><span class="sig-paren">(</span><em>xi</em>, <em>yi</em>, <em>xj</em>, <em>yj</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.get_D_ij" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance module between the wire i and the image of the wire j
+:param xi: x position of the wire i
+:param yi: y position of the wire i
+:param xj: x position of the wire j
+:param yj: y position of the wire j
+:return: Distance module between the wire i and the image of the wire j</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.get_d_ij">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">get_d_ij</code><span class="sig-paren">(</span><em>xi</em>, <em>yi</em>, <em>xj</em>, <em>yj</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.get_d_ij" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance module between wires
+:param xi: x position of the wire i
+:param yi: y position of the wire i
+:param xj: x position of the wire j
+:param yj: y position of the wire j
+:return: distance module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.kron_reduction">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">kron_reduction</code><span class="sig-paren">(</span><em>mat</em>, <em>keep</em>, <em>embed</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.kron_reduction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the Kron reduction
+:param mat: primitive matrix
+:param keep: indices to keep
+:param embed: indices to remove / embed
+:return:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.wire_bundling">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">wire_bundling</code><span class="sig-paren">(</span><em>phases_set</em>, <em>primitive</em>, <em>phases_vector</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.wire_bundling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Algorithm to bundle wires per phase
+:param phases_set: set of phases (list with unique occurrences of each phase values, i.e. [0, 1, 2, 3])
+:param primitive: Primitive matrix to reduce by bundling wires
+:param phases_vector: Vector that contains the phase of each wire
+:return: reduced primitive matrix, corresponding phases</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.z_ii">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">z_ii</code><span class="sig-paren">(</span><em>r_i</em>, <em>x_i</em>, <em>h_i</em>, <em>gmr_i</em>, <em>f</em>, <em>rho</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.z_ii" title="Permalink to this definition">¶</a></dt>
+<dd><p>Self impedance
+Formula 4.3 from ATP-EMTP theory book
+:param r_i: wire resistance
+:param x_i: wire reactance
+:param h_i: wire vertical position (m)
+:param gmr_i: wire geometric mean radius (m)
+:param f: system frequency (Hz)
+:param rho: earth resistivity (Ohm / m^3)
+:return: self impedance in Ohm / m</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GridCal.Engine.device_types.z_ij">
+<code class="descclassname">GridCal.Engine.device_types.</code><code class="descname">z_ij</code><span class="sig-paren">(</span><em>x_i</em>, <em>x_j</em>, <em>h_i</em>, <em>h_j</em>, <em>d_ij</em>, <em>f</em>, <em>rho</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.device_types.z_ij" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mutual impedance
+Formula 4.4 from ATP-EMTP theory book
+:param x_i: wire i horizontal position (m)
+:param x_j: wire j horizontal position (m)
+:param h_i: wire i vertical position (m)
+:param h_j: wire j vertical position (m)
+:param d_ij: Distance module between the wires i and j
+:param f: system frequency (Hz)
+:param rho: earth resistivity (Ohm / m^3)
+:return: mutual impedance in Ohm / m</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Santiago Peñate Vera
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
