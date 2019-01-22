@@ -1288,6 +1288,9 @@ class PowerFlow(QRunnable):
 
         self.__cancel__ = False
 
+    def get_steps(self):
+        return list()
+
     def run(self):
         """
         Pack run_pf for the QThread

@@ -261,6 +261,12 @@ class ShortCircuit(QRunnable):
 
         self.__cancel__ = False
 
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        return list()
+
     @staticmethod
     def compile_zf(grid):
 

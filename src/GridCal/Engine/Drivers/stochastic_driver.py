@@ -78,6 +78,13 @@ class MonteCarlo(QThread):
 
         self.__cancel__ = False
 
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        p = self.results.points_number
+        return ['point:' + str(l) for l in range(p)]
+
     def run_multi_thread(self):
         """
         Run the monte carlo simulation
@@ -383,6 +390,13 @@ class LatinHypercubeSampling(QThread):
         self.results = None
 
         self.__cancel__ = False
+
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        p = self.results.points_number
+        return ['point:' + str(l) for l in range(p)]
 
     def run_multi_thread(self):
         """

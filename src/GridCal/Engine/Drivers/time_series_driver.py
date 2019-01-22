@@ -353,6 +353,12 @@ class TimeSeries(QThread):
 
         self.__cancel__ = False
 
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
+
     def run_single_thread(self):
         """
         Run single thread time series

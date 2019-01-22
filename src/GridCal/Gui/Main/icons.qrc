@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/copy2down.svg</file>
+    <file>icons/next.svg</file>
+    <file>icons/prev.svg</file>
+    <file>icons/color_grid.svg</file>
     <file>icons/data.svg</file>
     <file>icons/import.svg</file>
     <file>icons/piece.svg</file>

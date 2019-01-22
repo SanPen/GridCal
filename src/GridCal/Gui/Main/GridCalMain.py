@@ -347,6 +347,8 @@ class MainGUI(QMainWindow):
         self.buses_for_storage = None
 
         self.available_results_dict = None
+        self.available_results_steps_dict = None
+
         self.threadpool = QThreadPool()
         self.threadpool.setMaxThreadCount(cpu_count())
 
@@ -421,6 +423,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
 
+        self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -491,6 +495,14 @@ class MainGUI(QMainWindow):
 
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
+        self.ui.colour_results_pushButton.clicked.connect(self.colour_now)
+
+        self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
+
+        self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
+
+        self.ui.close_colour_toolbox_pushButton.clicked.connect(self.hide_color_tool_box)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -518,6 +530,8 @@ class MainGUI(QMainWindow):
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
 
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
+
+        self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
 
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
@@ -550,6 +564,8 @@ class MainGUI(QMainWindow):
         # Other actions
         ################################################################################################################
         self.ui.actionShow_map.setVisible(False)
+
+        self.ui.grid_colouring_frame.setVisible(False)
 
         # template
         self.view_templates(False)
@@ -642,7 +658,7 @@ class MainGUI(QMainWindow):
         msg += 'See the license file for more details. \n\n'
         msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
 
-        msg += 'Copyright (C) 2018\nSantiago Peñate Vera\nMichel Lavoie'
+        msg += 'Copyright (C) 2019\nSantiago Peñate Vera\nMichel Lavoie'
 
         QMessageBox.about(self, "About GridCal", msg)
 
@@ -2886,6 +2902,7 @@ class MainGUI(QMainWindow):
         """
         lst = list()
         self.available_results_dict = dict()
+        self.available_results_steps_dict = dict()
 
         # clear results lists
         self.ui.result_type_listView.setModel(None)
@@ -2895,49 +2912,65 @@ class MainGUI(QMainWindow):
             if self.power_flow.results is not None:
                 lst.append("Power Flow")
                 self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
+                self.available_results_steps_dict["Power Flow"] = self.power_flow.get_steps()
 
         if self.voltage_stability is not None:
             if self.voltage_stability.results is not None:
                 lst.append("Voltage Stability")
                 self.available_results_dict["Voltage Stability"] = self.voltage_stability.results.available_results
+                self.available_results_steps_dict["Voltage Stability"] = self.voltage_stability.get_steps()
 
         if self.time_series is not None:
             if self.time_series.results is not None:
                 lst.append("Time Series")
                 self.available_results_dict["Time Series"] = self.time_series.results.available_results
+                self.available_results_steps_dict["Time Series"] = self.time_series.get_steps()
 
         if self.monte_carlo is not None:
             if self.monte_carlo.results is not None:
                 lst.append("Monte Carlo")
                 self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
+                self.available_results_steps_dict["Monte Carlo"] = self.monte_carlo.get_steps()
 
         if self.latin_hypercube_sampling is not None:
             if self.latin_hypercube_sampling.results is not None:
                 lst.append("Latin Hypercube")
                 self.available_results_dict["Latin Hypercube"] = self.latin_hypercube_sampling.results.available_results
+                self.available_results_steps_dict["Latin Hypercube"] = self.latin_hypercube_sampling.get_steps()
 
         if self.short_circuit is not None:
             if self.short_circuit.results is not None:
                 lst.append("Short Circuit")
                 self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
+                self.available_results_steps_dict["Short Circuit"] = self.short_circuit.get_steps()
 
         if self.optimal_power_flow is not None:
             if self.optimal_power_flow.results is not None:
                 lst.append("Optimal power flow")
                 self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
+                self.available_results_steps_dict["Optimal power flow"] = self.optimal_power_flow.get_steps()
 
         if self.optimal_power_flow_time_series is not None:
             if self.optimal_power_flow_time_series.results is not None:
                 lst.append("Optimal power flow time series")
                 self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
+                self.available_results_steps_dict[
+                    "Optimal power flow time series"] = self.optimal_power_flow_time_series.get_steps()
 
         if self.transient_stability is not None:
             if self.transient_stability.results is not None:
                 lst.append("Transient stability")
                 self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
+                self.available_results_steps_dict["Transient stability"] = self.transient_stability.get_steps()
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
+        self.ui.available_results_to_color_comboBox.setModel(mdl)
+
+        if len(lst) > 1:
+            self.ui.grid_colouring_frame.setVisible(True)
+        else:
+            self.ui.grid_colouring_frame.setVisible(False)
 
     def clear_results(self):
         """
@@ -2961,6 +2994,7 @@ class MainGUI(QMainWindow):
         self.ui.result_listView.setModel(None)
         self.ui.resultsTableView.setModel(None)
         self.ui.result_type_listView.setModel(None)
+        self.ui.available_results_to_color_comboBox.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
@@ -2977,6 +3011,143 @@ class MainGUI(QMainWindow):
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+
+    def hide_color_tool_box(self):
+        """
+        Hide the colour tool box
+        """
+        self.ui.grid_colouring_frame.setVisible(False)
+
+    def colour_now(self):
+        """
+        Color the grid now
+        """
+        if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
+
+            current_study = self.ui.available_results_to_color_comboBox.currentText()
+            current_step = self.ui.simulation_results_step_comboBox.currentIndex()
+
+            if current_study == 'Power Flow':
+
+                self.color_based_of_pf(s_bus=self.power_flow.results.Sbus,
+                                       s_branch=self.power_flow.results.Sbranch,
+                                       voltages=self.power_flow.results.voltage,
+                                       loadings=self.power_flow.results.loading,
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       losses=self.power_flow.results.losses)
+
+            elif current_study == 'Time Series':
+
+                voltage = self.time_series.results.voltage[current_step, :]
+                loading = self.time_series.results.loading[current_step, :]
+                Sbranch = self.time_series.results.Sbranch[current_step, :]
+
+                self.color_based_of_pf(s_bus=None,
+                                       s_branch=Sbranch,
+                                       voltages=voltage,
+                                       loadings=loading,
+                                       types=self.circuit.numerical_circuit.bus_types)
+
+            elif current_study == 'Voltage Stability':
+
+                self.color_based_of_pf(s_bus=self.voltage_stability.results.Sbus,
+                                       s_branch=self.voltage_stability.results.Sbranch,
+                                       voltages=self.voltage_stability.results.voltages[current_step, :],
+                                       loadings=self.voltage_stability.results.loading,
+                                       types=self.circuit.numerical_circuit.bus_types)
+
+            elif current_study == 'Monte Carlo':
+
+                self.color_based_of_pf(voltages=self.monte_carlo.results.V_points[current_step, :],
+                                       loadings=self.monte_carlo.results.loading_points[current_step, :],
+                                       s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       s_bus=self.monte_carlo.results.S_points[current_step, :])
+
+            elif current_study == 'Latin Hypercube':
+
+                self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
+                                       loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
+                                       s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :])
+
+            elif current_study == 'Short Circuit':
+                self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
+                                       s_branch=self.short_circuit.results.Sbranch,
+                                       voltages=self.short_circuit.results.voltage,
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       loadings=self.short_circuit.results.loading)
+
+            elif current_study == 'Optimal power flow':
+                self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
+                                       loadings=self.optimal_power_flow.results.loading,
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       s_branch=self.optimal_power_flow.results.Sbranch,
+                                       s_bus=self.optimal_power_flow.results.Sbus)
+
+            elif current_study == 'Optimal power flow time series':
+
+                voltage = self.optimal_power_flow_time_series.results.voltage[current_step, :]
+                loading = self.optimal_power_flow_time_series.results.loading[current_step, :]
+                Sbranch = self.optimal_power_flow_time_series.results.Sbranch[current_step, :]
+
+                self.color_based_of_pf(s_bus=None,
+                                       s_branch=Sbranch,
+                                       voltages=voltage,
+                                       loadings=loading,
+                                       types=self.circuit.numerical_circuit.bus_types)
+
+            elif current_study == 'Transient stability':
+                pass
+
+    def colour_next_simulation_step(self):
+        """
+        Next colour step
+        """
+        current_step = self.ui.simulation_results_step_comboBox.currentIndex()
+        count = self.ui.simulation_results_step_comboBox.count()
+
+        if count > 0:
+            nxt = current_step + 1
+
+            if nxt >= count:
+                nxt = count - 1
+
+            self.ui.simulation_results_step_comboBox.setCurrentIndex(nxt)
+
+            self.colour_now()
+
+    def colour_previous_simulation_step(self):
+        """
+        Prev colour step
+        """
+        current_step = self.ui.simulation_results_step_comboBox.currentIndex()
+        count = self.ui.simulation_results_step_comboBox.count()
+
+        if count > 0:
+            prv = current_step - 1
+
+            if prv < 0:
+                prv = 0
+
+            self.ui.simulation_results_step_comboBox.setCurrentIndex(prv)
+
+            self.colour_now()
+
+    def update_available_steps_to_color(self):
+        """
+        Update the available simulation steps in the combo box
+        """
+        if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
+
+            current_study = self.ui.available_results_to_color_comboBox.currentText()
+
+            lst = self.available_results_steps_dict[current_study]
+
+            mdl = get_list_model(lst)
+
+            self.ui.simulation_results_step_comboBox.setModel(mdl)
 
     def update_available_results_in_the_study(self):
         """
@@ -3168,7 +3339,7 @@ class MainGUI(QMainWindow):
         """
 
         dialogue = GridAnalysisGUI(parent=self, object_types=self.grid_editor.object_types, circuit=self.circuit)
-        dialogue.resize(1.61 * 700.0, 700.0)
+        dialogue.resize(1.61 * 600.0, 600.0)
         dialogue.setModal(False)
         dialogue.show()
         dialogue.exec_()

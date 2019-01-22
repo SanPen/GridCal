@@ -57,13 +57,13 @@ class Wire(EditableDevice):
                                 name=name,
                                 active=True,
                                 type_name='Wire',
-                                editable_headers={'wire_name': ('', str),
-                                                  'r': ('Ohm/km', float),
-                                                  'x': ('Ohm/km', float),
-                                                  'gmr': ('m', float),
-                                                  'xpos': ('', float),
-                                                  'ypos': ('', float),
-                                                  'phase': ('', int)})
+                                editable_headers={'wire_name': ('', str, "Name of the conductor"),
+                                                  'r': ('Ohm/km', float, "resistance of the conductor"),
+                                                  'x': ('Ohm/km', float, "reactance of the conductor"),
+                                                  'gmr': ('m', float, "Geometric Mean Radius of the conductor"),
+                                                  'xpos': ('m', float, "Conductor x position within the tower"),
+                                                  'ypos': ('m', float, "Conductor y position within the tower"),
+                                                  'phase': ('', int, "Phase of the conductor (0, 1, 2)")})
 
         self.wire_name = name
         self.xpos = xpos
@@ -234,15 +234,23 @@ class SequenceLineType(QtCore.QAbstractTableModel, EditableDevice):
                                             name=name,
                                             active=True,
                                             type_name='Wire',
-                                            editable_headers={'name': ('', str),
-                                                              'R': ('Ohm/km', float),
-                                                              'X': ('Ohm/km', float),
-                                                              'G': ('S/km', float),
-                                                              'B': ('S/km', float),
-                                                              'R0': ('Ohm/km', float),
-                                                              'X0': ('Ohm/km', float),
-                                                              'G0': ('S/km', float),
-                                                              'B0': ('S/km', float)})
+                                            editable_headers={'name': ('', str, "Name of the line template"),
+                                                              'R': ('Ohm/km', float, "Positive-sequence "
+                                                                                     "resistance per km"),
+                                                              'X': ('Ohm/km', float, "Positive-sequence "
+                                                                                     "reactance per km"),
+                                                              'G': ('S/km', float, "Positive-sequence "
+                                                                                   "shunt conductance per km"),
+                                                              'B': ('S/km', float, "Positive-sequence "
+                                                                                   "shunt susceptance per km"),
+                                                              'R0': ('Ohm/km', float, "Zero-sequence "
+                                                                                      "resistance per km"),
+                                                              'X0': ('Ohm/km', float, "Zero-sequence "
+                                                                                      "reactance per km"),
+                                                              'G0': ('S/km', float, "Zero-sequence "
+                                                                                    "shunt conductance per km"),
+                                                              'B0': ('S/km', float, "Zero-sequence "
+                                                                                    "shunt susceptance per km")})
 
         self.tpe = tpe
 
@@ -279,15 +287,23 @@ class UndergroundLineType(QtCore.QAbstractTableModel, EditableDevice):
                                             name=name,
                                             active=True,
                                             type_name='UndergroundLineType',
-                                            editable_headers={'name': ('', str),
-                                                              'R': ('Ohm/km', float),
-                                                              'X': ('Ohm/km', float),
-                                                              'G': ('S/km', float),
-                                                              'B': ('S/km', float),
-                                                              'R0': ('Ohm/km', float),
-                                                              'X0': ('Ohm/km', float),
-                                                              'G0': ('S/km', float),
-                                                              'B0': ('S/km', float)})
+                                            editable_headers={'name': ('', str, "Name of the line template"),
+                                                              'R': ('Ohm/km', float, "Positive-sequence "
+                                                                                     "resistance per km"),
+                                                              'X': ('Ohm/km', float, "Positive-sequence "
+                                                                                     "reactance per km"),
+                                                              'G': ('S/km', float, "Positive-sequence "
+                                                                                   "shunt conductance per km"),
+                                                              'B': ('S/km', float, "Positive-sequence "
+                                                                                   "shunt susceptance per km"),
+                                                              'R0': ('Ohm/km', float, "Zero-sequence "
+                                                                                      "resistance per km"),
+                                                              'X0': ('Ohm/km', float, "Zero-sequence "
+                                                                                      "reactance per km"),
+                                                              'G0': ('S/km', float, "Zero-sequence "
+                                                                                    "shunt conductance per km"),
+                                                              'B0': ('S/km', float, "Zero-sequence "
+                                                                                    "shunt susceptance per km")})
 
         self.tpe = tpe
 
@@ -311,17 +327,17 @@ class Tower(QtCore.QAbstractTableModel, EditableDevice):
                                             name=name,
                                             active=True,
                                             type_name='Tower',
-                                            editable_headers={'tower_name': ('', str),
-                                                              'earth_resistivity': ('Ohm/m3', float),
-                                                              'frequency': ('Hz', float),
-                                                              'R1': ('Ohm/km', float),
-                                                              'X1': ('Ohm/km', float),
-                                                              'Gsh1': ('S/km', float),
-                                                              'Bsh1': ('S/km', float),
-                                                              'R0': ('Ohm/km', float),
-                                                              'X0': ('Ohm/km', float),
-                                                              'Gsh0': ('S/km', float),
-                                                              'Bsh0': ('S/km', float)})
+                                            editable_headers={'tower_name': ('', str, "Tower name"),
+                                                              'earth_resistivity': ('Ohm/m3', float, "Earth resistivity"),
+                                                              'frequency': ('Hz', float, "Frequency"),
+                                                              'R1': ('Ohm/km', float, "Positive sequence resistance"),
+                                                              'X1': ('Ohm/km', float, "Positive sequence reactance"),
+                                                              'Gsh1': ('S/km', float, "Positive sequence shunt conductance"),
+                                                              'Bsh1': ('S/km', float, "Positive sequence shunt susceptance"),
+                                                              'R0': ('Ohm/km', float, "Zero-sequence resistance"),
+                                                              'X0': ('Ohm/km', float, "Zero sequence reactance"),
+                                                              'Gsh0': ('S/km', float, "Zero sequence shunt conductance"),
+                                                              'Bsh0': ('S/km', float, "Zero sequence shunt susceptance")})
 
         self.tpe = tpe
 
@@ -603,14 +619,16 @@ class TransformerType(EditableDevice):
                                 name=name,
                                 active=True,
                                 type_name='TransformerType',
-                                editable_headers={'name': ('', str),
-                                                  'HV_nominal_voltage': ('kV', float),
-                                                  'LV_nominal_voltage': ('kV', float),
-                                                  'Nominal_power': ('MVA', float),
-                                                  'Copper_losses': ('kW', float),
-                                                  'Iron_losses': ('kW', float),
-                                                  'No_load_current': ('%', float),
-                                                  'Short_circuit_voltage': ('%', float)})
+                                editable_headers={'name': ('', str, "Name of the transformer type"),
+                                                  'HV_nominal_voltage': ('kV', float, "Nominal voltage al the "
+                                                                                      "high voltage side"),
+                                                  'LV_nominal_voltage': ('kV', float, "Nominal voltage al the "
+                                                                                      "low voltage side"),
+                                                  'Nominal_power': ('MVA', float, "Nominal power"),
+                                                  'Copper_losses': ('kW', float, "Copper losses"),
+                                                  'Iron_losses': ('kW', float, "Iron losses"),
+                                                  'No_load_current': ('%', float, "No-load current"),
+                                                  'Short_circuit_voltage': ('%', float, "Short-circuit voltage")})
 
         self.tpe = tpe
 
