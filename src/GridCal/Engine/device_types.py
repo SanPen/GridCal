@@ -598,22 +598,36 @@ class Tower(QtCore.QAbstractTableModel, EditableDevice):
 
 
 class TransformerType(EditableDevice):
+    """
+    Arguments:
+
+        **hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`)
+
+        **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`)
+
+        **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA
+
+        **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power)
+
+        **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power)
+
+        **no_load_current** (float, 0.0): No load current in %
+
+        **short_circuit_voltage** (float, 0.0): Short circuit voltage in %
+
+        **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`)
+
+        **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`)
+
+        **name** (str, "TransformerType"): Name of the type
+
+        **tpe** (BranchType, BranchType.Transformer): Device type enumeration
+
+    """
 
     def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0, copper_losses=0, iron_losses=0,
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
                  name='TransformerType', tpe=BranchType.Transformer):
-        """
-        Constructor
-        @param hv_nominal_voltage: High voltage side nominal voltage (kV)
-        @param lv_nominal_voltage: Low voltage side nominal voltage (kV)
-        @param nominal_power: Transformer nominal power (MVA)
-        @param copper_losses: Copper losses (kW)  [also known as short circuit power]
-        @param iron_losses: Iron Losses (kW) [also known as no load power]
-        @param no_load_current: No load current (%)
-        @param short_circuit_voltage: Short circuit voltage (%)
-        @param gr_hv1: Resistive contribution to the HV side (default is 50%)
-        @param gx_hv1: Reactive contribution to the HV side (default is 50%)
-        """
 
         EditableDevice.__init__(self,
                                 name=name,

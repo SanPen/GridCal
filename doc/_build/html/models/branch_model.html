@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Universal Branch Model &mdash; GridCal 3.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Transformer definition from SC test values" href="xfo_sc.html" />
+    <link rel="prev" title="Building the admittance matrices" href="admittance_matrices.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GridCal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About GridCal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">GridCal’s API reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../models.html">Models</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="admittance_matrices.html">Building the admittance matrices</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Universal Branch Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ybranch">Ybranch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ybus">Ybus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yshunt">Yshunt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yseries">Yseries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yf-and-yt">Yf and Yt</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xfo_sc.html">Transformer definition from SC test values</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../power_flow.html">Power Flow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GridCal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../models.html">Models</a> &raquo;</li>
+        
+      <li>Universal Branch Model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/models/branch_model.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="universal-branch-model">
+<span id="branch-model"></span><h1>Universal Branch Model<a class="headerlink" href="#universal-branch-model" title="Permalink to this headline">¶</a></h1>
+<p>The following describes the model that is applied to each type of admittance matrix in the <cite>apply_to()</cite> function inside the <cite>Branch</cite> object seen before. The model implemented to describe the behavior of the transformers and lines is the π model.</p>
+<div class="figure" id="id1">
+<img alt="π model of a branch" src="models/../Documentation/GridCal/Pictures/pi-trafo.dia" />
+<p class="caption"><span class="caption-text">π model of a branch</span></p>
+</div>
+<p>To define the π branch model we need to specify the following magnitudes:</p>
+<ul class="simple">
+<li><span class="math notranslate nohighlight">\(z_{series}\)</span>: Magnetizing impedance or simply series impedance in per unit.</li>
+<li><span class="math notranslate nohighlight">\(y_{shunt}\)</span>: Leakage impedance or simply shunt impedance in per unit.</li>
+<li>tap_module: Module of the tap changer, magnitude around 1.</li>
+<li>tap_angle: Angle of the tap changer in radians.</li>
+</ul>
+<p>In order to apply the effect of a branch to the admittance matrices, first we compute the complex tap value.</p>
+<div class="math notranslate nohighlight">
+\[tap = tap\_module \cdot e^{−j \cdot tap\_angle}\]</div>
+<p>Then we compose the equivalent series and shunt admittance values of the branch. Both values are complex.</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}Y_s = \frac{1}{z_{series}}\\Y_{sh} = \frac{y_{shunt}}{2}\end{aligned}\end{align} \]</div>
+<ul class="simple">
+<li><span class="math notranslate nohighlight">\(z_{series}\)</span>: Complex series impedance of the branch composed by the line resistance and its inductance.</li>
+<li><span class="math notranslate nohighlight">\(y_{shunt}\)</span>: Complex shunt admittance of the line composed by the conductance and the susceptance.</li>
+</ul>
+<div class="section" id="ybranch">
+<h2>Ybranch<a class="headerlink" href="#ybranch" title="Permalink to this headline">¶</a></h2>
+<p>The general branch model is represented by a 2×2 matrix.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}Y_{branch}=\left( \begin{array}{ccc}
+Y_{ff} &amp; Y_{ft} \\
+Y_{tf} &amp; Y_{tt} \end{array} \right)\end{split}\]</div>
+<p>In this matrix, the elements are the following:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}Y_{ff} = \frac{Y_s + Y_{sh}}{tap \cdot conj(tap)}\\Y_{ft} = - Y_s / conj(tap)\\Y_{tf} = - Y_s / tap\\Y_{tt} = Y_s + Y_{sh}\end{aligned}\end{align} \]</div>
+</div>
+<div class="section" id="ybus">
+<h2>Ybus<a class="headerlink" href="#ybus" title="Permalink to this headline">¶</a></h2>
+<p>The branch admittance values are applied to the complete admittance matrix as follows:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}{Y_{bus}}_{f, f} = {Y_{bus}}_{f, f} + Y_{ff}\\{Y_{bus}}_{f, t} = {Y_{bus}}_{f, t} + Y_{ft}\\{Y_{bus}}_{t, f} = {Y_{bus}}_{t, f} + Y_{tf}\\{Y_{bus}}_{t, t} = {Y_{bus}}_{t, t} + Y_{tt}\end{aligned}\end{align} \]</div>
+<p>These formulas assume that there might be something already in <span class="math notranslate nohighlight">\(Y_{bus}\)</span>, therefore the right way to modify these values is to add the own branch values.</p>
+</div>
+<div class="section" id="yshunt">
+<h2>Yshunt<a class="headerlink" href="#yshunt" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}{Y_{shunt}}_f = {Y_{shunt}}_f + Y_{sh}\\{Y_{shunt}}_t = {Y_{shunt}}_t + \frac{Y_{sh}}{tap \cdot conj(tap)}\end{aligned}\end{align} \]</div>
+</div>
+<div class="section" id="yseries">
+<h2>Yseries<a class="headerlink" href="#yseries" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}{Y_{series}}_{f, f} = {Y_{series}}_{f, f} + \frac{Y_{s}}{tap \cdot conj(tap)}\\{Y_{series}}_{f, t} = {Y_{series}}_{f, t} + Y_{ft}\\{Y_{series}}_{t, f} = {Y_{series}}_{t, f} + Y_{tf}\\{Y_{series}}_{t, t} = {Y_{series}}_{t, t} + Y_{s}\end{aligned}\end{align} \]</div>
+</div>
+<div class="section" id="yf-and-yt">
+<h2>Yf and Yt<a class="headerlink" href="#yf-and-yt" title="Permalink to this headline">¶</a></h2>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}{Y_f}_{i, f} = {Y_f}_{i, f} + Y_{ff}\\{Y_f}_{i, t} = {Y_f}_{i, t} + Y_{ft}\\{Y_t}_{i, f} = {Y_t}_{i, f} + Y_{tf}\\{Y_t}_{i, t} = {Y_t}_{i, t} + Y_{tt}\end{aligned}\end{align} \]</div>
+<p>Here <em>i</em> is the index of the branch in the circuit and <em>f</em>, <em>t</em> are the corresponding bus indices.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="xfo_sc.html" class="btn btn-neutral float-right" title="Transformer definition from SC test values" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="admittance_matrices.html" class="btn btn-neutral" title="Building the admittance matrices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Santiago Peñate Vera
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
