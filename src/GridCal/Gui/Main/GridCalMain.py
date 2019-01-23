@@ -44,6 +44,7 @@ from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 
 import GridCal.Engine.plot_config as plot_config
 
+import gc
 import os.path
 import platform
 import sys
@@ -292,6 +293,11 @@ class MainGUI(QMainWindow):
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
+        # export modes
+        mdl = get_list_model(['real', 'imag', 'abs'])
+        self.ui.export_mode_comboBox.setModel(mdl)
+        self.ui.export_mode_comboBox.setCurrentIndex(0)
+
         # do not allow MP under windows because it crashes
         if platform.system() == 'Windows':
             self.ui.use_multiprocessing_checkBox.setEnabled(False)
@@ -502,6 +508,8 @@ class MainGUI(QMainWindow):
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
 
         self.ui.close_colour_toolbox_pushButton.clicked.connect(self.hide_color_tool_box)
+
+        self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -866,29 +874,6 @@ class MainGUI(QMainWindow):
         dte = datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)
 
-    # def compile(self, use_opf_vals=False, dispatch_storage=False):
-    #     """
-    #     This function compiles the circuit and updates the UI accordingly
-    #     """
-    #
-    #     try:
-    #         logger = list()
-    #         numerical_circuit = self.circuit.compile(use_opf_vals, dispatch_storage=dispatch_storage, logger=logger)
-    #
-    #         if len(logger) > 0:
-    #             dlg = LogsDialogue('Open file logger', logger)
-    #             dlg.exec_()
-    #
-    #     except Exception as ex:
-    #         exc_type, exc_value, exc_traceback = sys.exc_info()
-    #         self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Circuit compilation')
-    #
-    #     if self.circuit.time_profile is not None:
-    #         mdl = get_list_model(self.circuit.time_profile)
-    #         self.ui.vs_departure_comboBox.setModel(mdl)
-    #         self.ui.vs_target_comboBox.setModel(mdl)
-    #         self.ui.profile_time_selection_comboBox.setModel(mdl)
-
     def auto_layout(self):
         """
         Automatic layout of the nodes
@@ -1155,25 +1140,25 @@ class MainGUI(QMainWindow):
 
             # call to save the file in the circuit
 
-            logger = self.circuit.save_file(filename)
+            # logger = self.circuit.save_file(filename)
+            #
+            # if len(logger) > 0:
+            #     dlg = LogsDialogue('Save file logger', logger)
+            #     dlg.exec_()
 
-            if len(logger) > 0:
-                dlg = LogsDialogue('Save file logger', logger)
-                dlg.exec_()
+            try:
+                logger = self.circuit.save_file(filename)
 
-            # try:
-            #     logger = self.circuit.save_file(filename)
-            #
-            #     if len(logger) > 0:
-            #         dlg = LogsDialogue('Save file logger', logger)
-            #         dlg.exec_()
-            #
-            #     # call the garbage collector to free memory
-            #     gc.collect()
-            #
-            # except:
-            #     exc_type, exc_value, exc_traceback = sys.exc_info()
-            #     self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Save file logger', logger)
+                    dlg.exec_()
+
+                # call the garbage collector to free memory
+                gc.collect()
+
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
 
     def closeEvent(self, event):
         """
@@ -3255,8 +3240,9 @@ class MainGUI(QMainWindow):
         Save the data displayed at the results as excel
         :return:
         """
-        if self.results_df is not None:
-
+        mdl = self.ui.resultsTableView.model()
+        mode = self.ui.export_mode_comboBox.currentText()
+        if mdl is not None:
             file = QFileDialog.getSaveFileName(self, "Save to Excel", '', filter="Excel files (*.xlsx)")
 
             if file[0] != '':
@@ -3266,11 +3252,22 @@ class MainGUI(QMainWindow):
                 else:
                     f = file[0]
 
-                # Saving file
-                self.results_df.astype(str).to_excel(f)
+            mdl.save_to_excel(f, mode=mode)
+            print('Copied!')
+        else:
+            self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
-            else:
-                print('Not saving file...')
+    def copy_results_data(self):
+        """
+        Copy the current displayed profiles to the clipboard
+        """
+        mdl = self.ui.resultsTableView.model()
+        mode = self.ui.export_mode_comboBox.currentText()
+        if mdl is not None:
+            mdl.copy_to_clipboard(mode=mode)
+            print('Copied!')
+        else:
+            self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
     def item_results_plot(self):
         """

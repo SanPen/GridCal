@@ -218,7 +218,13 @@ class VoltageCollapse(QThread):
         self.__cancel__ = False
 
     def get_steps(self):
-        return ['Lambda:' + str(l) for l in self.results.lambdas]
+        """
+        List of steps
+        """
+        if self.results.lambdas is not None:
+            return ['Lambda:' + str(l) for l in self.results.lambdas]
+        else:
+            return list()
 
     def progress_callback(self, l):
         """

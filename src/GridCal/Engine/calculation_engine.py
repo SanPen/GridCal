@@ -2348,6 +2348,8 @@ class MultiCircuit:
                 else:
                     names_count[elm.name] = 1
 
+                elm.retrieve_graphic_position()
+
                 obj.append(elm.get_save_data())
 
             dta = np.array(obj)

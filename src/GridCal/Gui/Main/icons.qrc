@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/check_all.svg</file>
+    <file>icons/uncheck_all.svg</file>
     <file>icons/copy2down.svg</file>
     <file>icons/next.svg</file>
     <file>icons/prev.svg</file>

@@ -416,21 +416,7 @@
                    <property name="bottomMargin">
                     <number>1</number>
                    </property>
-                   <item row="1" column="7">
-                    <widget class="QPushButton" name="view_next_simulation_step_pushButton">
-                     <property name="toolTip">
-                      <string>Next</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="6">
+                   <item row="1" column="5">
                     <widget class="QComboBox" name="simulation_results_step_comboBox">
                      <property name="minimumSize">
                       <size>
@@ -443,17 +429,17 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="5">
-                    <widget class="QPushButton" name="view_previous_simulation_step_pushButton">
+                   <item row="1" column="6">
+                    <widget class="QPushButton" name="view_next_simulation_step_pushButton">
                      <property name="toolTip">
-                      <string>Previous</string>
+                      <string>Next</string>
                      </property>
                      <property name="text">
                       <string/>
                      </property>
                      <property name="icon">
                       <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
+                       <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
                      </property>
                     </widget>
                    </item>
@@ -470,17 +456,17 @@
                      </property>
                     </spacer>
                    </item>
-                   <item row="1" column="3">
-                    <widget class="QPushButton" name="colour_results_pushButton">
+                   <item row="1" column="4">
+                    <widget class="QPushButton" name="view_previous_simulation_step_pushButton">
                      <property name="toolTip">
-                      <string>Color the grid with the selected study</string>
+                      <string>Previous</string>
                      </property>
                      <property name="text">
                       <string/>
                      </property>
                      <property name="icon">
                       <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
+                       <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
                      </property>
                     </widget>
                    </item>
@@ -494,6 +480,20 @@
                      </property>
                      <property name="toolTip">
                       <string>Available results</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="QPushButton" name="colour_results_pushButton">
+                     <property name="toolTip">
+                      <string>Color the grid with the selected study</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
                      </property>
                     </widget>
                    </item>
@@ -3649,300 +3649,366 @@ points from time series</string>
            <attribute name="title">
             <string>Time series</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_21">
-            <property name="leftMargin">
-             <number>9</number>
-            </property>
-            <property name="topMargin">
-             <number>9</number>
-            </property>
-            <property name="rightMargin">
-             <number>9</number>
-            </property>
-            <property name="bottomMargin">
-             <number>9</number>
-            </property>
-            <item row="2" column="12">
-             <widget class="QSlider" name="profile_start_slider">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
+            <item>
+             <widget class="QFrame" name="frame">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
               </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <property name="leftMargin">
+                <number>1</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <property name="bottomMargin">
+                <number>2</number>
+               </property>
+               <item>
+                <widget class="QPushButton" name="new_profiles_structure_pushButton">
+                 <property name="toolTip">
+                  <string>Create profiles</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/new.svg</normaloff>:/Icons/icons/new.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                 <property name="toolTip">
+                  <string>Delete profiles</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="edit_profiles_pushButton">
+                 <property name="toolTip">
+                  <string>Import profiles</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/import_profiles.svg</normaloff>:/Icons/icons/import_profiles.svg</iconset>
+                 </property>
+                 <property name="flat">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>183</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="copy_profile_pushButton">
+                 <property name="toolTip">
+                  <string>Copy displayed profile</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="paste_profiles_pushButton">
+                 <property name="toolTip">
+                  <string>Paste clipboard into the displayed profile</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/paste.svg</normaloff>:/Icons/icons/paste.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="set_linear_combination_profile_pushButton">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy the selected profile into the profiles selected next to this button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy2right.svg</normaloff>:/Icons/icons/copy2right.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="device_type_magnitude_comboBox_2">
+                 <property name="toolTip">
+                  <string>Profile where to copy the current profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_7">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>183</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="set_profile_state_button">
+                 <property name="toolTip">
+                  <string>Assign the values of the selected time step into the grid</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="profile_time_selection_comboBox">
+                 <property name="minimumSize">
+                  <size>
+                   <width>200</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Time step selector</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="profile_device_type_comboBox">
+                 <property name="toolTip">
+                  <string>Device type</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="device_type_magnitude_comboBox">
+                 <property name="toolTip">
+                  <string>Magnitude with profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="profile_display_pushButton">
+                 <property name="toolTip">
+                  <string>Display the profile</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="plot_time_series_pushButton">
+                 <property name="toolTip">
+                  <string>PLot the selected object's profile</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/plot.svg</normaloff>:/Icons/icons/plot.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
-            <item row="2" column="6">
-             <spacer name="horizontalSpacer_13">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="2" column="11">
-             <widget class="QLabel" name="label_36">
-              <property name="text">
-               <string>Start</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="16">
-             <widget class="QPushButton" name="profile_display_pushButton">
-              <property name="toolTip">
-               <string>Display the profile</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="9">
-             <widget class="QPushButton" name="set_linear_combination_profile_pushButton">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy the selected profile into the profiles selected next to this button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/copy2right.svg</normaloff>:/Icons/icons/copy2right.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="10">
-             <widget class="QComboBox" name="device_type_magnitude_comboBox_2"/>
-            </item>
-            <item row="1" column="0" colspan="18">
+            <item>
              <widget class="QTableView" name="profiles_tableView">
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
              </widget>
             </item>
-            <item row="0" column="17">
-             <widget class="QPushButton" name="plot_time_series_pushButton">
-              <property name="toolTip">
-               <string>PLot the selected object's profile</string>
+            <item>
+             <widget class="QFrame" name="frame_12">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
               </property>
-              <property name="text">
-               <string/>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
               </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/plot.svg</normaloff>:/Icons/icons/plot.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="12">
-             <widget class="QComboBox" name="profile_time_selection_comboBox">
-              <property name="minimumSize">
-               <size>
-                <width>200</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Time step selector</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="8">
-             <widget class="QPushButton" name="paste_profiles_pushButton">
-              <property name="toolTip">
-               <string>Paste clipboard into the displayed profile</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/paste.svg</normaloff>:/Icons/icons/paste.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="7">
-             <widget class="QPushButton" name="copy_profile_pushButton">
-              <property name="toolTip">
-               <string>Copy displayed profile</string>
-              </property>
-              <property name="statusTip">
-               <string/>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="15">
-             <widget class="QComboBox" name="device_type_magnitude_comboBox">
-              <property name="toolTip">
-               <string>Magnitude with profile</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="5">
-             <widget class="QDoubleSpinBox" name="profile_factor_doubleSpinBox">
-              <property name="maximum">
-               <double>9999999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="11">
-             <widget class="QPushButton" name="set_profile_state_button">
-              <property name="toolTip">
-               <string>Assign the values of the selected time step into the grid</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="13">
-             <widget class="QLabel" name="label_35">
-              <property name="text">
-               <string>End</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="14" colspan="4">
-             <widget class="QSlider" name="profile_end_slider">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="13" colspan="2">
-             <widget class="QComboBox" name="profile_device_type_comboBox">
-              <property name="toolTip">
-               <string>Device type</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QPushButton" name="profile_add_pushButton">
-              <property name="toolTip">
-               <string>Add value to the profile</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QPushButton" name="profile_subtract_pushButton">
-              <property name="toolTip">
-               <string>Subtract value from the profile</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QPushButton" name="new_profiles_structure_pushButton">
-              <property name="toolTip">
-               <string>Create profiles</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/new.svg</normaloff>:/Icons/icons/new.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QPushButton" name="delete_profiles_structure_pushButton">
-              <property name="toolTip">
-               <string>Delete profiles</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QPushButton" name="edit_profiles_pushButton">
-              <property name="toolTip">
-               <string>Import profiles</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/import_profiles.svg</normaloff>:/Icons/icons/import_profiles.svg</iconset>
-              </property>
-              <property name="flat">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QPushButton" name="profile_multiply_pushButton">
-              <property name="toolTip">
-               <string>Multiply the profile by a value</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/multiply.svg</normaloff>:/Icons/icons/multiply.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3">
-             <widget class="QPushButton" name="profile_divide_pushButton">
-              <property name="toolTip">
-               <string>Divide the profile by a value</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/Icons/icons/divide.svg</normaloff>:/Icons/icons/divide.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4" colspan="7">
-             <widget class="QLabel" name="profile_label">
-              <property name="text">
-               <string>...</string>
-              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <property name="leftMargin">
+                <number>1</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <property name="bottomMargin">
+                <number>2</number>
+               </property>
+               <item>
+                <widget class="QPushButton" name="profile_add_pushButton">
+                 <property name="toolTip">
+                  <string>Add value to the profile</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="profile_subtract_pushButton">
+                 <property name="toolTip">
+                  <string>Subtract value from the profile</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="profile_multiply_pushButton">
+                 <property name="toolTip">
+                  <string>Multiply the profile by a value</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/multiply.svg</normaloff>:/Icons/icons/multiply.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="profile_divide_pushButton">
+                 <property name="toolTip">
+                  <string>Divide the profile by a value</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/divide.svg</normaloff>:/Icons/icons/divide.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="profile_factor_doubleSpinBox">
+                 <property name="maximum">
+                  <double>9999999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_13">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>267</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="profile_label">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string>Start</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="profile_start_slider">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_35">
+                 <property name="text">
+                  <string>End</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="profile_end_slider">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -3959,271 +4025,250 @@ points from time series</string>
        <attribute name="title">
         <string>Results</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <widget class="QSplitter" name="splitter_2">
+       <layout class="QVBoxLayout" name="verticalLayout_27">
+        <item>
+         <widget class="QSplitter" name="splitter">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <property name="childrenCollapsible">
-           <bool>false</bool>
-          </property>
-          <widget class="QFrame" name="frame_4">
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QSplitter" name="splitter_3">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <widget class="QFrame" name="frame_8">
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_37">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QSplitter" name="splitter_4">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <widget class="QFrame" name="frame_16">
-                   <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Raised</enum>
-                   </property>
-                   <layout class="QVBoxLayout" name="verticalLayout_6">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>0</number>
-                    </property>
-                    <item>
-                     <widget class="QLabel" name="label_16">
-                      <property name="text">
-                       <string>Studies with results</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QListView" name="result_listView"/>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QFrame" name="frame_17">
-                   <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Raised</enum>
-                   </property>
-                   <layout class="QVBoxLayout" name="verticalLayout_13">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>0</number>
-                    </property>
-                    <item>
-                     <widget class="QLabel" name="label_7">
-                      <property name="text">
-                       <string>Types of results available</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QListView" name="result_type_listView"/>
-                    </item>
-                   </layout>
-                  </widget>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-              <widget class="QFrame" name="frame_9">
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QGridLayout" name="gridLayout">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item row="2" column="0">
-                 <widget class="QPushButton" name="select_none_pushButton">
-                  <property name="text">
-                   <string>None</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QPushButton" name="select_all_pushButton">
-                  <property name="text">
-                   <string>All</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_15">
-                  <property name="text">
-                   <string>Devices</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0" colspan="2">
-                 <widget class="QPushButton" name="plot_pushButton">
-                  <property name="text">
-                   <string>Plot</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="icons.qrc">
-                    <normaloff>:/Icons/icons/pic.svg</normaloff>:/Icons/icons/pic.svg</iconset>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0" colspan="2">
-                 <widget class="QListView" name="result_element_selection_listView"/>
-                </item>
-               </layout>
-              </widget>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QSplitter" name="splitter">
+          <widget class="QSplitter" name="splitter_3">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
-           <widget class="QFrame" name="frame_5">
+           <widget class="QFrame" name="frame_16">
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
-            <layout class="QGridLayout" name="gridLayout_2">
+            <layout class="QVBoxLayout" name="verticalLayout_6">
              <property name="leftMargin">
-              <number>1</number>
+              <number>6</number>
              </property>
              <property name="topMargin">
-              <number>1</number>
+              <number>14</number>
              </property>
              <property name="rightMargin">
-              <number>1</number>
+              <number>6</number>
              </property>
              <property name="bottomMargin">
-              <number>1</number>
+              <number>6</number>
              </property>
-             <item row="0" column="0" colspan="2">
-              <widget class="QTabWidget" name="tabWidget_5">
-               <property name="currentIndex">
-                <number>0</number>
+             <item>
+              <widget class="QLabel" name="label_16">
+               <property name="text">
+                <string>Studies with results</string>
                </property>
-               <widget class="QWidget" name="tab_8">
-                <attribute name="title">
-                 <string>Plot</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="verticalLayout_29">
-                 <item>
-                  <widget class="MatplotlibWidget" name="resultsPlot" native="true"/>
-                 </item>
-                </layout>
-               </widget>
-               <widget class="QWidget" name="tab_9">
-                <attribute name="title">
-                 <string>Data</string>
-                </attribute>
-                <layout class="QGridLayout" name="gridLayout_14">
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QTableView" name="resultsTableView"/>
-                 </item>
-                 <item row="1" column="0">
-                  <spacer name="horizontalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QPushButton" name="saveResultsButton">
-                   <property name="text">
-                    <string>Export</string>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
               </widget>
+             </item>
+             <item>
+              <widget class="QListView" name="result_listView"/>
              </item>
             </layout>
            </widget>
+           <widget class="QSplitter" name="splitter_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <widget class="QFrame" name="frame_17">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_13">
+              <property name="leftMargin">
+               <number>6</number>
+              </property>
+              <property name="topMargin">
+               <number>6</number>
+              </property>
+              <property name="rightMargin">
+               <number>6</number>
+              </property>
+              <property name="bottomMargin">
+               <number>6</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Types of results available</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QListView" name="result_type_listView"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QFrame" name="frame_9">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout">
+              <property name="leftMargin">
+               <number>6</number>
+              </property>
+              <property name="topMargin">
+               <number>6</number>
+              </property>
+              <property name="rightMargin">
+               <number>6</number>
+              </property>
+              <property name="bottomMargin">
+               <number>12</number>
+              </property>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="select_none_pushButton">
+                <property name="toolTip">
+                 <string>Select none</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/uncheck_all.svg</normaloff>:/Icons/icons/uncheck_all.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="select_all_pushButton">
+                <property name="toolTip">
+                 <string>Select all</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/check_all.svg</normaloff>:/Icons/icons/check_all.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QPushButton" name="plot_pushButton">
+                <property name="toolTip">
+                 <string>Plot selection</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/pic.svg</normaloff>:/Icons/icons/pic.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <spacer name="horizontalSpacer_9">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="0" colspan="4">
+               <widget class="QListView" name="result_element_selection_listView"/>
+              </item>
+              <item row="0" column="0" colspan="3">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>Devices</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </widget>
+          <widget class="QFrame" name="frame_5">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_24">
+            <item>
+             <widget class="QTabWidget" name="tabWidget_5">
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <widget class="QWidget" name="tab_8">
+               <attribute name="title">
+                <string>Plot</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_29">
+                <item>
+                 <widget class="MatplotlibWidget" name="resultsPlot" native="true"/>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tab_9">
+               <attribute name="title">
+                <string>Data</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="1" column="3">
+                 <widget class="QPushButton" name="saveResultsButton">
+                  <property name="toolTip">
+                   <string>Export data</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QPushButton" name="copy_results_pushButton">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" colspan="4">
+                 <widget class="QTableView" name="resultsTableView"/>
+                </item>
+                <item row="1" column="0">
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QComboBox" name="export_mode_comboBox"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>
