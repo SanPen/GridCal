@@ -681,6 +681,7 @@ class Branch(ReliabilityDevice):
                  branch_type: BranchType=BranchType.Line, length=1, vset=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
 
+
         ReliabilityDevice.__init__(self, name,
                                    active=active,
                                    type_name='Branch',
@@ -707,16 +708,18 @@ class Branch(ReliabilityDevice):
                                                      'bus_to_regulated': ('', bool, 'Is the bus tap regulated?'),
                                                      'vset': ('p.u.', float, 'Objective voltage at the "to" side of '
                                                                              'the bus when regulating the tap.'),
-                                                     'temp_base': ('ºc', float, 'Base temperature at which R was '
+                                                     'temp_base': ('ºC', float, 'Base temperature at which R was '
                                                                                 'measured.'),
-                                                     'temp_oper': ('ºc', float, 'Operation temperature to modify R.'),
-                                                     'alpha': ('1/K', float, 'Thermal coefficient to modify R.\n'
-                                                                             'Silver: 0.0038, \n'
-                                                                             'Copper: 0.00404,\n'
-                                                                             'Annealed copper: 0.00393, \n'
-                                                                             'Gold: 0.0034, \n'
-                                                                             'Aluminium: 0.0039, \n'
-                                                                             'Tungsten: 0.0045'),
+                                                     'temp_oper': ('ºC', float, 'Operation temperature to modify R.'),
+                                                     'alpha': ('1/ºC', float, 'Thermal coefficient to modify R,\n'
+                                                                              'around a reference temperature\n'
+                                                                              'using a linear approximation.\n'
+                                                                              'For example:\n'
+                                                                              'Copper @ 20ºC: 0.004041,\n'
+                                                                              'Copper @ 75ºC: 0.00323,\n'
+                                                                              'Annealed copper @ 20ºC: 0.00393,\n'
+                                                                              'Aluminum @ 20ºC: 0.004308,\n'
+                                                                              'Aluminum @ 75ºC: 0.00330'),
                                                      'r_fault': ('p.u.', float, 'Resistance of the mid-line fault.\n'
                                                                                 'Used in short circuit studies.'),
                                                      'x_fault': ('p.u.', float, 'Reactance of the mid-line fault.\n'
@@ -1022,7 +1025,7 @@ class Branch(ReliabilityDevice):
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
                 self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle, self.bus_to_regulated,
-                self.vset, self.temp_base, self.temp_base, self.alpha, self.r_fault, self.x_fault, self.fault_pos,
+                self.vset, self.temp_base, self.temp_oper, self.alpha, self.r_fault, self.x_fault, self.fault_pos,
                 conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
