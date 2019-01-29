@@ -63,6 +63,12 @@ class TransientStability(QThread):
 
         self.results = None
 
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        return list()
+
     def status(self, txt, progress):
         """
         Emit status

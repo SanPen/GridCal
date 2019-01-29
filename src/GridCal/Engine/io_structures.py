@@ -1158,11 +1158,15 @@ class MonteCarloResults:
 
         self.m = m
 
+        self.points_number = p
+
         self.S_points = np.zeros((p, n), dtype=complex)
 
         self.V_points = np.zeros((p, n), dtype=complex)
 
         self.I_points = np.zeros((p, m), dtype=complex)
+
+        self.Sbr_points = np.zeros((p, m), dtype=complex)
 
         self.loading_points = np.zeros((p, m), dtype=complex)
 

@@ -1,0 +1,606 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Circuit and MultiCircuit &mdash; GridCal 3.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Devices" href="devices.html" />
+    <link rel="prev" title="GridCal’s API reference" href="../api.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GridCal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About GridCal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">GridCal’s API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Circuit and MultiCircuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="device_types.html">Device Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../power_flow.html">Power Flow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GridCal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">GridCal’s API reference</a> &raquo;</li>
+        
+      <li>Circuit and MultiCircuit</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/multicircuit.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-GridCal.Engine.calculation_engine">
+<span id="circuit-and-multicircuit"></span><span id="multicircuit"></span><h1>Circuit and MultiCircuit<a class="headerlink" href="#module-GridCal.Engine.calculation_engine" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit">
+<em class="property">class </em><code class="descclassname">GridCal.Engine.calculation_engine.</code><code class="descname">MultiCircuit</code><span class="sig-paren">(</span><em>name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The concept of circuit should be easy enough to understand. It represents a set of
+nodes (buses) and branches (lines, transformers or other impedances).</p>
+<p>The <cite>MultiCircuit</cite> class is the main object in GridCal. It represents a circuit that
+may contain islands. It is important to understand that a circuit split in two or
+more islands cannot be simulated as is, because the admittance matrix would be
+singular. The solution to this is to split the circuit in island-circuits. Therefore
+<cite>MultiCircuit</cite> identifies the islands and creates individual <cite>Circuit</cite> objects for
+each of them.</p>
+<p>GridCal uses an object oriented approach for the data management. This allows to
+group the data in a smart way. In GridCal there are only two types of object
+directly declared in a <cite>Circuit</cite> or <cite>MultiCircuit</cite> object. These are the <cite>Bus</cite> and
+the <cite>Branch</cite>. The branches connect the buses and the buses contain all the other
+possible devices like loads, generators, batteries, etc. This simplifies enormously
+the management of element when adding, associating and deleting.</p>
+<div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">GridCal.Engine.calculation_engine</span> <span class="k">import</span> <span class="n">MultiCircuit</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">MultiCircuit</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;My grid&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_battery">
+<code class="descname">add_battery</code><span class="sig-paren">(</span><em>bus: GridCal.Engine.devices.Bus</em>, <em>api_obj=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_battery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add battery object to a bus.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first"><strong>bus</strong> (Bus): Bus object to add it to</p>
+<p class="last"><strong>api_obj</strong> (Battery, None): Battery object to add it to</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_branch">
+<code class="descname">add_branch</code><span class="sig-paren">(</span><em>obj: GridCal.Engine.devices.Branch</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_branch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a branch object to the circuit
+&#64;param obj: Branch object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_bus">
+<code class="descname">add_bus</code><span class="sig-paren">(</span><em>obj: GridCal.Engine.devices.Bus</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_bus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add bus keeping track of it as object
+&#64;param obj:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_generator">
+<code class="descname">add_generator</code><span class="sig-paren">(</span><em>bus: GridCal.Engine.devices.Bus</em>, <em>api_obj=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add controlled generator to a bus
+Args:</p>
+<blockquote>
+<div>bus: Bus object
+api_obj: Generator object</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_load">
+<code class="descname">add_load</code><span class="sig-paren">(</span><em>bus: GridCal.Engine.devices.Bus</em>, <em>api_obj=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add load object to a bus
+Args:</p>
+<blockquote>
+<div>bus: Bus object
+api_obj: Load object</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_overhead_line">
+<code class="descname">add_overhead_line</code><span class="sig-paren">(</span><em>obj: GridCal.Engine.device_types.Tower</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_overhead_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add overhead line
+:param obj: Tower object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_shunt">
+<code class="descname">add_shunt</code><span class="sig-paren">(</span><em>bus: GridCal.Engine.devices.Bus</em>, <em>api_obj=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_shunt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add shunt object to a bus
+Args:</p>
+<blockquote>
+<div>bus: Bus object to add it to
+api_obj: Shunt object</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_static_generator">
+<code class="descname">add_static_generator</code><span class="sig-paren">(</span><em>bus: GridCal.Engine.devices.Bus</em>, <em>api_obj=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_static_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a static generator object to a bus
+Args:</p>
+<blockquote>
+<div>bus: Bus object to add it to
+api_obj: StaticGenerator object</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.add_wire">
+<code class="descname">add_wire</code><span class="sig-paren">(</span><em>obj: GridCal.Engine.device_types.Wire</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.add_wire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add wire object
+:param obj: Wire object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.apply_all_branch_types">
+<code class="descname">apply_all_branch_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.apply_all_branch_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply all the branch types</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.apply_lp_profiles">
+<code class="descname">apply_lp_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.apply_lp_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the LP results as device profiles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.assign_circuit">
+<code class="descname">assign_circuit</code><span class="sig-paren">(</span><em>circ</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.assign_circuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign a circuit object to this object
+:param circ: instance of MultiCircuit or Circuit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.build_graph">
+<code class="descname">build_graph</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.build_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build graph
+:return: self.graph</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.compile">
+<code class="descname">compile</code><span class="sig-paren">(</span><em>use_opf_vals=False</em>, <em>opf_time_series_results=None</em>, <em>logger=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the circuit assets into an equivalent circuit that only contains matrices and vectors for calculation
+:param use_opf_vals:
+:param opf_time_series_results:
+:param logger:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a deep (true) copy of this circuit
+&#64;return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.create_profiles">
+<code class="descname">create_profiles</code><span class="sig-paren">(</span><em>steps</em>, <em>step_length</em>, <em>step_unit</em>, <em>time_base: datetime.datetime = datetime.datetime(2019</em>, <em>1</em>, <em>20</em>, <em>15</em>, <em>4</em>, <em>9</em>, <em>79483)</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.create_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the default profiles in all the objects enabled to have profiles
+Args:</p>
+<blockquote>
+<div>steps: Number of time steps
+step_length: time length (1, 2, 15, …)
+step_unit: unit of the time step
+time_base: Date to start from</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.delete_branch">
+<code class="descname">delete_branch</code><span class="sig-paren">(</span><em>obj: GridCal.Engine.devices.Branch</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.delete_branch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a branch object from the circuit
+&#64;param obj:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.delete_bus">
+<code class="descname">delete_bus</code><span class="sig-paren">(</span><em>obj: GridCal.Engine.devices.Bus</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.delete_bus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove bus
+&#64;param obj: Bus object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.delete_wire">
+<code class="descname">delete_wire</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.delete_wire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove wire
+:param i: index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.dispatch">
+<code class="descname">dispatch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatch either load or generation using a simple equalised share rule of the shedding to be done
+&#64;return: Nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.export_pf">
+<code class="descname">export_pf</code><span class="sig-paren">(</span><em>file_name</em>, <em>power_flow_results</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.export_pf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export power flow results to file
+:param file_name: Excel file name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.export_profiles">
+<code class="descname">export_profiles</code><span class="sig-paren">(</span><em>file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.export_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export object profiles to file
+:param file_name: Excel file name
+:return: Nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.format_profiles">
+<code class="descname">format_profiles</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.format_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format the pandas profiles in place using a time index
+Args:</p>
+<blockquote>
+<div>index: Time profile</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.get_Jacobian">
+<code class="descname">get_Jacobian</code><span class="sig-paren">(</span><em>sparse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.get_Jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Grid Jacobian matrix
+Returns:</p>
+<blockquote>
+<div>Grid Jacobian Matrix in CSR sparse format or as full matrix</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.get_bus_pf_results_df">
+<code class="descname">get_bus_pf_results_df</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.get_bus_pf_results_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Pandas DataFrame with the bus results
+:return: DataFrame</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.get_catalogue_dict">
+<code class="descname">get_catalogue_dict</code><span class="sig-paren">(</span><em>branches_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.get_catalogue_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary with the catalogue types and the associated list of objects
+:param branches_only: only branch types
+:return: dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.get_json_dict">
+<code class="descname">get_json_dict</code><span class="sig-paren">(</span><em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.get_json_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get json dictionary
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.get_loads">
+<code class="descname">get_loads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.get_loads" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.get_node_elements_by_type">
+<code class="descname">get_node_elements_by_type</code><span class="sig-paren">(</span><em>element_type</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.get_node_elements_by_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get set of elements and their parent nodes
+Args:</p>
+<blockquote>
+<div>element_type: String {‘Load’, ‘StaticGenerator’, ‘Generator’, ‘Battery’, ‘Shunt’}</div></blockquote>
+<p>Returns: List of elements, list of matching parent buses</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.interpret_excel_v3">
+<code class="descname">interpret_excel_v3</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.interpret_excel_v3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpret the file version 3
+In this file version there are no complex numbers saved
+Args:</p>
+<blockquote>
+<div>data: Dictionary with the excel file sheet labels and the corresponding DataFrame</div></blockquote>
+<p>Returns: Nothing, just applies the loaded data to this MultiCircuit instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.interprete_excel_v2">
+<code class="descname">interprete_excel_v2</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.interprete_excel_v2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpret the new file version
+Args:</p>
+<blockquote>
+<div>data: Dictionary with the excel file sheet labels and the corresponding DataFrame</div></blockquote>
+<p>Returns: Nothing, just applies the loaded data to this MultiCircuit instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.load_file">
+<code class="descname">load_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.load_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load GridCal compatible file
+&#64;param filename:
+&#64;return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.plot_graph">
+<code class="descname">plot_graph</code><span class="sig-paren">(</span><em>ax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.plot_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the grid
+&#64;param ax: Matplotlib axis object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.profile_magnitudes">
+<code class="descname">profile_magnitudes</code><em class="property"> = None</em><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.profile_magnitudes" title="Permalink to this definition">¶</a></dt>
+<dd><p>self.type_name = ‘Shunt’</p>
+<p>self.properties_with_profile = [‘Y’]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.save_calculation_objects">
+<code class="descname">save_calculation_objects</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.save_calculation_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save all the calculation objects of all the grids
+Args:</p>
+<blockquote>
+<div>file_path: path to file</div></blockquote>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.save_cim">
+<code class="descname">save_cim</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.save_cim" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.save_excel">
+<code class="descname">save_excel</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.save_excel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the circuit information
+:param file_path: file path to save
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.save_file">
+<code class="descname">save_file</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.save_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save File
+:param file_path:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.save_json">
+<code class="descname">save_json</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.save_json" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.set_power">
+<code class="descname">set_power</code><span class="sig-paren">(</span><em>S</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.set_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the power array in the circuits
+&#64;param S: Array of power values in MVA for all the nodes in all the islands</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GridCal.Engine.calculation_engine.MultiCircuit.set_state">
+<code class="descname">set_state</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#GridCal.Engine.calculation_engine.MultiCircuit.set_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the profiles state at the index t as the default values
+:param t:
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="devices.html" class="btn btn-neutral float-right" title="Devices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../api.html" class="btn btn-neutral" title="GridCal’s API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Santiago Peñate Vera
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

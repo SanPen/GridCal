@@ -91,6 +91,12 @@ class OptimalPowerFlow(QRunnable):
 
         self.all_solved = True
 
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        return list()
+
     def opf(self, t_idx=None, collect=True):
         """
         Run a power flow for every circuit

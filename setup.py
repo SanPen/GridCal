@@ -2,8 +2,9 @@ from distutils.core import setup
 import sys
 import os
 import platform
-from GridCal.__version__ import __GridCal_VERSION__
 
+sys.path.insert(0, os.path.abspath('src'))
+from GridCal.__version__ import __GridCal_VERSION__
 
 def make_linux_desktop_file(version_, comment):
     """
@@ -83,6 +84,7 @@ install_requires = ["numpy>=1.14.0",
                     "PyQt5>=5.8",
                     "matplotlib>=2.1.1",
                     "qtconsole>=4.3.1",
+                    "pyDOE>=0.3.8",
                     "pySOT>=0.1.36",
                     "openpyxl>=2.4.9",
                     "pulp>=1.6.8",
@@ -90,7 +92,8 @@ install_requires = ["numpy>=1.14.0",
                     "chardet>=3.0.4",
                     "scikit-learn>=0.18",
                     "geopy>=1.16",
-                    "pytest>=3.8"
+                    "pytest>=3.8",
+                    "mpi4py>=3.0.0",
                     ]
 
 if platform.system() == 'Windows':
@@ -105,8 +108,8 @@ else:
     pass
 
 # Read the license
-data_files.append('LICENSE.txt')
-with open('LICENSE.txt', 'r') as f:
+data_files.append('src/LICENSE.txt')
+with open('src/LICENSE.txt', 'r') as f:
     license_text = f.read()
 
 setup(

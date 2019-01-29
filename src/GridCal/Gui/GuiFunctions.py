@@ -351,6 +351,85 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         self.data[:, col] = self.data[row, col]
 
+    def get_data(self, mode=None):
+        """
+
+        Args:
+            mode: 'real', 'imag', 'abs'
+
+        Returns: index, columns, data
+
+        """
+        n = len(self._cols)
+
+        if n > 0:
+            # gather values
+            names = [val.name for val in self._cols.values]
+
+            if self.data.dtype == complex:
+
+                if mode == 'real':
+                    values = self.data.real
+                elif mode == 'imag':
+                    values = self.data.imag
+                elif mode == 'abs':
+                    values = np.abs(self.data)
+                else:
+                    values = np.abs(self.data)
+
+            else:
+                values = self.data
+
+            return self.index, names, values
+        else:
+            # there are no elements
+            return list(), list(), list()
+
+    def save_to_excel(self, file_name, mode):
+        """
+
+        Args:
+            file_name:
+            mode: 'real', 'imag', 'abs'
+
+        Returns:
+
+        """
+        index, columns, data = self.get_data(mode=mode)
+
+        df = pd.DataFrame(data=data, index=index, columns=columns)
+        df.to_excel(file_name)
+
+    def copy_to_clipboard(self, mode=None):
+        """
+        Copy profiles to clipboard
+        Args:
+            mode: 'real', 'imag', 'abs'
+        """
+        n = len(self._cols)
+
+        if n > 0:
+
+            index, columns, data = self.get_data(mode=mode)
+
+            data = data.astype(str)
+
+            # header first
+            txt = '\t' + '\t'.join(columns) + '\n'
+
+            # data
+            for t, index_value in enumerate(index):
+                txt += index_value + '\t' + '\t'.join(data[t, :]) + '\n'
+
+            # copy to clipboard
+            cb = QApplication.clipboard()
+            cb.clear(mode=cb.Clipboard)
+            cb.setText(txt, mode=cb.Clipboard)
+
+        else:
+            # there are no elements
+            pass
+
 
 class ObjectsModel(QtCore.QAbstractTableModel):
     """

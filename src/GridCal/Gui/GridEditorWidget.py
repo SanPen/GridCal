@@ -1996,6 +1996,16 @@ class BusGraphicItem(QGraphicsRectItem):
         # Update size:
         self.change_size(self.w, self.h)
 
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent'):
+        """
+        On mouse move of this object...
+        Args:
+            event: QGraphicsSceneMouseEvent inherited
+        """
+        super().mouseMoveEvent(event)
+
+        self.api_object.retrieve_graphic_position()
+
     def add_big_marker(self, color=Qt.red):
         """
         Add a big marker to the bus
