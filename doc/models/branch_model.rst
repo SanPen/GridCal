@@ -5,7 +5,7 @@ Universal Branch Model
 
 The following describes the model that is applied to each type of admittance matrix in the `apply_to()` function inside the `Branch` object seen before. The model implemented to describe the behavior of the transformers and lines is the π model.
 
-.. figure:: ../Documentation/GridCal/Pictures/pi-trafo.dia
+.. figure:: ../figures/pi-trafo.png
     :alt: π model of a branch
 
     π model of a branch
