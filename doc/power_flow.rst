@@ -7,3 +7,4 @@ Power Flow
     :maxdepth: 1
 
     power_flow/newton_raphson
+    power_flow/levenberg_marquardt
