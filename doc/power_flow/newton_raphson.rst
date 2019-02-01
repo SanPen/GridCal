@@ -56,12 +56,18 @@ To compute the parameter *µ* we must do the following:
     \textbf{b} = \textbf{J} \times \textbf{dx}
     \textbf{c} = \frac{1}{2} \textbf{dx} \cdot (\textbf{J'} \times \textbf{dx})
 
+.. math::
+
     g_0 = -\textbf{a} \cdot \textbf{b}
     g_1 = \textbf{b} \cdot \textbf{b} + 2  \textbf{a} \cdot \textbf{c}
     g_2 = -3  \textbf{b} \cdot \textbf{c}
     g_3 = 2  \textbf{c} \cdot \textbf{c}
 
+.. math::
+
     G(x) = g_0 + g_1x + g_2x^2 + g_3x^3
+
+.. math::
 
     µ = solve(G(x), x_0=1)
 
