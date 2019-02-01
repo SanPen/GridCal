@@ -17,3 +17,5 @@ and find simulation examples and interesting information in the author's
     api
     models
     power_flow
+    short_circuit
+    gui
