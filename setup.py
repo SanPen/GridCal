@@ -75,8 +75,7 @@ for dir_name, dir_names, file_names in os.walk('doc'):
         data_files.append(('share/' + name + '/' + dir_name, files_list))
 
 
-install_requires = ["pip>=19.0.1",
-                    "numpy>=1.14.0",
+install_requires = ["numpy>=1.14.0",
                     "scipy>=1.0.0",
                     "networkx>=2.1",
                     "pandas>=0.22",
