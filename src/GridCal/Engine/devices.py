@@ -622,61 +622,9 @@ class TapChanger:
 
 
 class Branch(ReliabilityDevice):
-    # """
-    # Arguments:
-    #
-    #     **bus_from** (Bus): "From" bus object
-    #
-    #     **bus_to** (Bus): "To" bus object
-    #
-    #     **name**: (str, "Branch"): Name of the branch
-    #
-    #     **r**: (float, 1e-20): Branch resistance in per unit
-    #
-    #     **x**: (float, 1e-20): Branch reactance in per unit
-    #
-    #     **g**: (float, 1e-20): Branch shunt conductance in per unit
-    #
-    #     **b**: (float, 1e-20): Branch shunt susceptance in per unit
-    #
-    #     **rate**: (float, 1.0): Branch rate in MVA
-    #
-    #     **tap**: (float, 1.0): Branch tap module
-    #
-    #     **shift_angle** (float, 0): Tap shift angle in radians
-    #
-    #     **active** (bool, True): Is the branch active?
-    #
-    #     **mttf** (float, 0): Mean time to failure in hours
-    #
-    #     **mttr** (float, 0): Mean time to recovery in hours
-    #
-    #     **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
-    #
-    #     **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
-    #
-    #     **fault_pos** (float, 0.5): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-    #
-    #     **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: BranchType.Transformer)
-    #
-    #     **length** (float, 1.0): Length of the branch in km
-    #
-    #     **vset** (float, 1.0): Voltage setpoint of the voltage controlled bus in per unit
-    #
-    #     **temp_base** (float, 20): Base temperature at which `r` is measured in °C
-    #
-    #     **temp_oper** (float, 20): Operating temperature in °C
-    #
-    #     **alpha** (float, 0.00330): Thermal constant of the material in °C
-    #
-    #     **bus_to_regulated** (bool, False): Is the `bus_to` voltage controlled?
-    #
-    #     **template** (BranchTemplate, BranchTemplate()): Type object template (ex.: TransformerType, etc.)
-    #
-    # """
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, impedance_tolerance=0,
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType=BranchType.Line, length=1, vset=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
@@ -693,7 +641,7 @@ class Branch(ReliabilityDevice):
         :param tap: Branch tap module
         :param shift_angle: Tap shift angle in radians
         :param active: Is the branch active?
-        :param impedance_tolerance: tolerance specified for the branch impedance
+        :param tolerance: tolerance specified for the branch impedance
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
         :param r_fault: Mid-line fault resistance in per unit (SC only)
@@ -727,9 +675,9 @@ class Branch(ReliabilityDevice):
                                                      'X': ('p.u.', float, 'Total reactance.'),
                                                      'G': ('p.u.', float, 'Total shunt conductance.'),
                                                      'B': ('p.u.', float, 'Total shunt susceptance.'),
-                                                     'impedance_tolerance': ('%', float, 'Tolerance expected for the impedance values\n'
-                                                                                         '7% is expected for transformers\n'
-                                                                                         '0% for lines.'),
+                                                     'tolerance': ('%', float, 'Tolerance expected for the impedance values\n'
+                                                                               '7% is expected for transformers\n'
+                                                                               '0% for lines.'),
                                                      'length': ('km', float, 'Length of the branch '
                                                                              '(not used for calculation)'),
                                                      'tap_module': ('', float, 'Tap changer module, '
@@ -780,7 +728,7 @@ class Branch(ReliabilityDevice):
         self.length = length
 
         # branch impedance tolerance
-        self.impedance_tolerance = impedance_tolerance
+        self.tolerance = tolerance
 
         # short circuit impedance
         self.r_fault = r_fault

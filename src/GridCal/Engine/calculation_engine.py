@@ -2900,7 +2900,7 @@ class MultiCircuit:
             circuit.X[i] = branch.X
             circuit.G[i] = branch.G
             circuit.B[i] = branch.B
-            circuit.impedance_tolerance[i] = branch.impedance_tolerance
+            circuit.impedance_tolerance[i] = branch.tolerance
             circuit.br_rates[i] = branch.rate
             circuit.tap_mod[i] = branch.tap_module
             circuit.tap_ang[i] = branch.angle
