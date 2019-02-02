@@ -11,7 +11,7 @@ This software aims to be a complete platform for power systems research and simu
 # Installation
 
 Follow the
-[installation instructions](https://gridcal-wip.readthedocs.io/en/doc/getting_started/install.html)
+[installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
 from the project's documentation.
 
 # Execution
@@ -23,7 +23,7 @@ GridCal can be used in 2 ways:
 
 Executing `python3 -c "from GridCal.ExecuteGridCal import run; run()"` in a console
 should bring up the GUI under most platforms. For detailed instructions, follow the
-[instructions](https://gridcal-wip.readthedocs.io/en/doc/getting_started.html)
+[instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
 from the project's documentation.
 
 # Examples
@@ -86,7 +86,7 @@ Some of the features you'll find already are:
 - Export the schematic in SVG and PNG formats.
 
 Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) and the
-[check out the documentation](https://gridcal-wip.readthedocs.io) to learn more and to
+[check out the documentation](https://gridcal.readthedocs.io) to learn more and to
 get started.
 
 Send feedback and requests to santiago.penate.vera@gmail.com.
