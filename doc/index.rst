@@ -19,3 +19,5 @@ and find simulation examples and interesting information in the author's
     power_flow
     short_circuit
     gui
+    development
+    examples

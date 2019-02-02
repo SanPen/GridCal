@@ -538,12 +538,12 @@ The error is computed by comparing the calculated power :math:`\textbf{S}` (eq
 
     error = |mismatch|_\infty = max(abs(mismatch))
 
-.. [1] A. Trias, The Holomorphic Embedding Load Flow Method, IEEE Power and Energy Society General Meeting 2011, 22–26 July 2012
+.. [1] Trias, Antonio. "The holomorphic embedding load flow method." Power and Energy Society General Meeting, 2012 IEEE. IEEE, 2012.
 
-.. [2] Muthu Kumar Subramian, Application of holomorphic embedding to the power-flow problem, Arizona State University, Master thesis in electrical engineering, 2014
+.. [2] Subramanian, Muthu Kumar. Application of holomorphic embedding to the power-flow problem. Diss. Arizona State University, 2014.
 
-.. [3] Liu, Chengxi, et al. "A multi-dimensional holomorphic embedding method to solve AC power flows." IEEE Access 5 (2017): 25270-25285
+.. [3] Liu, Chengxi, et al. "A multi-dimensional holomorphic embedding method to solve AC power flows." IEEE Access 5 (2017): 25270-25285.
 
-.. [4] Wynn's 1969 paper about Padè approximation (citation needed)
+.. [4] Wynn, P. "The epsilon algorithm and operational formulas of numerical analysis." Mathematics of Computation 15.74 (1961): 151-158.
 
-.. [5] Weniger's 1989 thesis (citation needed)
+.. [5] Weniger, Ernst Joachim. "Nonlinear sequence transformations for the acceleration of convergence and the summation of divergent series." Computer Physics Reports 10.5-6 (1989): 189-371.

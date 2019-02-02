@@ -11,11 +11,15 @@ Battery
 .. autoclass:: Battery
     :members:
 
+.. _branch:
+
 Branch
 ------
 
 .. autoclass:: Branch
     :members:
+
+.. _bus:
 
 Bus
 ---
