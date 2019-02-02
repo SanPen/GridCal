@@ -162,7 +162,7 @@ def read_DGS(filename):
             chnks = line.split(";")
             current_type = chnks[0]
             data[current_type] = list()
-            print(current_type)
+            # print(current_type)
 
             # analyze types
             data_types = list()
@@ -190,7 +190,7 @@ def read_DGS(filename):
 
     # format keys
     for key in data.keys():
-        print("Converting " + str(key))
+        # print("Converting " + str(key))
         table = array([tuple(x) for x in data[key]],dtype=types_dict2[key])
         table = array([list(x) for x in table],dtype=np.object)
         header = Headers[key]
@@ -569,9 +569,6 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     classes = [lines, transformers, loads, external, static_generators, shunts,
                synchronous_machine, asynchronous_machine]
 
-
-
-
     # construct the terminals dictionary
     '''
     $$StaCubic;ID(a:40);loc_name(a:40);fold_id(p);chr_name(a:20);obj_bus(i);obj_id(p)
@@ -629,7 +626,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     *  outserv: Out of Service
     ********************************************************************************
     '''
-    print('Parsing terminals')
+    # print('Parsing terminals')
     buses_dict = dict()
     for i in range(len(buses)):
         ID = buses['ID'][i]
@@ -747,7 +744,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     ####################################################################################################################
     # Lines (branches)
     ####################################################################################################################
-    print('Parsing lines')
+    # print('Parsing lines')
 
     if lines_types.__len__() > 0:
         lines_ID = lines['ID'].values
@@ -793,7 +790,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
             ybase = 1.0 / zbase  # S
             r = R / zbase  # pu
             l = L / zbase  # pu
-            c = C / ybase  # pu
+            b = C / ybase  # pu
 
             # rated power
             Irated = np.double(lines_rate[type_idx])  # kA
@@ -804,7 +801,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                           r=r,
                           x=l,
                           g=1e-20,
-                          b=c,
+                          b=b,
                           rate=Smax,
                           tap=1,
                           shift_angle=0,
@@ -833,7 +830,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     ####################################################################################################################
     # Transformers (Branches)
     ####################################################################################################################
-    print('Parsing transformers')
+    # print('Parsing transformers')
 
     '''
     ********************************************************************************
@@ -944,7 +941,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                                active=status,
                                mttf=0,
                                mttr=0,
-                               branch_type=True)
+                               branch_type=BranchType.Transformer)
 
                 circuit.add_branch(trafo)
 
@@ -970,7 +967,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     *  scale0: Operating Point: Scaling Factor
     ********************************************************************************
     '''
-    print('Parsing Loads')
+    # print('Parsing Loads')
     if len(loads) > 0:
         loads_ID = loads['ID']
         loads_P = loads['plini']
@@ -1021,13 +1018,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         name = shunts['loc_name'][i].decode(codification)
 
         if 'qcapn' in shunts.columns.values:
-            c = shunts['ushnm'][i] / shunts['qcapn'][i]
+            b = shunts['ushnm'][i] / shunts['qcapn'][i]
         elif 'qtotn' in shunts.columns.values:
-            c = shunts['ushnm'][i] / shunts['qtotn'][i]
+            b = shunts['ushnm'][i] / shunts['qtotn'][i]
         else:
-            c = 1e-20
+            b = 1e-20
 
-        shunt = Shunt(name=name, admittance=complex(0, c))
+        shunt = Shunt(name=name, B=b)
         circuit.add_shunt(bus_obj, shunt)
 
     ####################################################################################################################
@@ -1060,9 +1057,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
         num_machines = static_generators['ngnum'][i]
 
         gen = StaticGenerator(name=static_generators['loc_name'][i].decode(codification),
-                              power=complex(static_generators['pgini'][i] * num_machines,
-                                            static_generators['qgini'][i] * num_machines),
-                              power_prof=None)
+                              P=static_generators['pgini'][i] * num_machines,
+                              Q=static_generators['qgini'][i] * num_machines)
         circuit.add_static_generator(bus_obj, gen)
 
     ####################################################################################################################
@@ -1129,9 +1125,10 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
                         vset_prof=None)
         circuit.add_generator(bus_obj, gen)
 
-        if synchronous_machine['pgini'][i] != 0:
-            gen = StaticGenerator(name=name, power=complex(0, synchronous_machine['pgini'][i]))
-            circuit.add_static_generator(bus_obj, gen)
+        # if synchronous_machine['pgini'][i] != 0:
+        #     # gen = StaticGenerator(name=name, power=complex(0, synchronous_machine['pgini'][i]))
+        #     gen = Generator(name=name, active_power=synchronous_machine['pgini'][i])
+        #     circuit.add_static_generator(bus_obj, gen)
 
     return circuit
 
@@ -1145,7 +1142,8 @@ def dgs_to_circuit(filename):
 
 if __name__ == "__main__":
 
-    fname = 'Example1.dgs'
+    # fname = 'Example1.dgs'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.dgs'
     # fname = 'PLATOS grid 3.dgs'
     # fname = 'Example4.dgs'
     circuit = dgs_to_circuit(fname)
@@ -1163,11 +1161,11 @@ if __name__ == "__main__":
     #
     # print(graph)
     # print('Plotting grid...')
-    nx.draw(circuit.graph)
+    # nx.draw(circuit.graph)
 
-    from matplotlib import pyplot as plt
-    plt.show()
+    # from matplotlib import pyplot as plt
+    # plt.show()
 
-    print('done')
+    # print('done')
 
 

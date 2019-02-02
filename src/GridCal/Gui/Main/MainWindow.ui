@@ -1129,14 +1129,14 @@
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_4">
-               <item row="8" column="0">
+               <item row="9" column="0">
                 <widget class="QLabel" name="label_5">
                  <property name="text">
                   <string>Precision</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="9" column="1">
                 <widget class="QSpinBox" name="tolerance_spinBox">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1152,14 +1152,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="10" column="0">
                 <widget class="QLabel" name="label_6">
                  <property name="text">
                   <string>Numerical method max. iterations</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="1">
+               <item row="10" column="1">
                 <widget class="QSpinBox" name="max_iterations_spinBox">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1291,7 +1291,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="18" column="0">
+               <item row="19" column="0">
                 <spacer name="verticalSpacer_10">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -1304,27 +1304,27 @@
                  </property>
                 </spacer>
                </item>
-               <item row="16" column="0">
+               <item row="17" column="0">
                 <widget class="QLabel" name="label_50">
                  <property name="text">
                   <string>Transformer taps control mode</string>
                  </property>
                 </widget>
                </item>
-               <item row="17" column="0" colspan="2">
+               <item row="18" column="0" colspan="2">
                 <widget class="QComboBox" name="taps_control_mode_comboBox"/>
                </item>
-               <item row="14" column="0">
+               <item row="15" column="0">
                 <widget class="QLabel" name="label_48">
                  <property name="text">
                   <string>Reactive power control mode</string>
                  </property>
                 </widget>
                </item>
-               <item row="15" column="0" colspan="2">
+               <item row="16" column="0" colspan="2">
                 <widget class="QComboBox" name="reactive_power_control_mode_comboBox"/>
                </item>
-               <item row="11" column="0" colspan="2">
+               <item row="12" column="0" colspan="2">
                 <widget class="Line" name="line_18">
                  <property name="palette">
                   <palette>
@@ -1387,7 +1387,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="10" column="1">
+               <item row="11" column="1">
                 <widget class="QSpinBox" name="outer_loop_spinBox">
                  <property name="toolTip">
                   <string>Maximum iterations for the outer loop that controls reactive power and transformer taps.</string>
@@ -1403,20 +1403,27 @@
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="11" column="0">
                 <widget class="QLabel" name="label_49">
                  <property name="text">
                   <string>Outer loop max. iterations</string>
                  </property>
                 </widget>
                </item>
-               <item row="19" column="0">
+               <item row="20" column="0">
                 <widget class="QCheckBox" name="temperature_correction_checkBox">
                  <property name="toolTip">
                   <string>Correct the branches resistance using the temperature</string>
                  </property>
                  <property name="text">
                   <string>Apply temperature correction</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="21" column="0">
+                <widget class="QCheckBox" name="apply_impedance_tolerances_checkBox">
+                 <property name="text">
+                  <string>Apply impedance tolerances</string>
                  </property>
                 </widget>
                </item>

@@ -1424,18 +1424,24 @@ class MultiCircuit:
                 # the json file can be the GridCAl one or the iPA one...
                 data = json.load(open(filename))
 
-                if 'Red' in data.keys():
-                    from GridCal.Engine.Importers.ipa_parser import load_iPA
-                    circ = load_iPA(filename)
-                    self.buses = circ.buses
-                    self.branches = circ.branches
-                    self.assign_circuit(circ)
-                else:
+                if type(data) == dict():
+                    if 'Red' in data.keys():
+                        from GridCal.Engine.Importers.ipa_parser import load_iPA
+                        circ = load_iPA(filename)
+                        self.buses = circ.buses
+                        self.branches = circ.branches
+                        self.assign_circuit(circ)
+                    else:
+                        logger.append('Unknown json format')
+
+                elif type(data) == list():
                     from GridCal.Engine.Importers.json_parser import parse_json
                     circ = parse_json(filename)
                     self.buses = circ.buses
                     self.branches = circ.branches
                     self.assign_circuit(circ)
+                else:
+                    logger.append('Unknown json format')
 
             elif file_extension.lower() == '.raw':
                 from GridCal.Engine.Importers.psse_parser import PSSeParser

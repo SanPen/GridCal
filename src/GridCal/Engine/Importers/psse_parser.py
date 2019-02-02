@@ -227,14 +227,16 @@ class PSSeBus:
 
             if self.GL > 0 or self.BL > 0:
                 sh = Shunt(name='Shunt_' + self.ID,
-                           admittance=complex(self.GL, self.BL),
-                           admittance_prof=None,
+                           G=self.GL, B=self.BL,
                            active=True)
 
                 self.bus.shunts.append(sh)
 
         # set type
-        self.bus.type = bustype[self.IDE]
+        if self.IDE in bustype.keys():
+            self.bus.type = bustype[self.IDE]
+        else:
+            self.bus.type = BusMode.PQ
 
         if self.bus.type == BusMode.REF:
             self.bus.is_slack = True
@@ -242,6 +244,7 @@ class PSSeBus:
         # Ensures unique name
         self.bus.name = str(self.I) + '_' + self.bus.name.replace("'", "").strip()
         # self.bus.name = self.bus.name.replace("'", "").strip()
+
 
 class PSSeLoad:
 
@@ -373,8 +376,7 @@ class PSSeShunt:
         b = self.BL
 
         object = Shunt(name='Shunt' + self.ID,
-                       admittance=complex(g, b),
-                       admittance_prof=None,
+                       G=g, B=b,
                        active=bool(self.STATUS))
 
         return object
@@ -1430,7 +1432,7 @@ class PSSeParser:
         Returns:
 
         """
-        print('Parsing ', file_name)
+        # print('Parsing ', file_name)
 
         logger = list()
 

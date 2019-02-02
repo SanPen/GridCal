@@ -1482,7 +1482,7 @@ class CIMImport:
 
                 # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
 
-                sh = Shunt(name=name, admittance=complex(g, b))
+                sh = Shunt(name=name, G=g, B=b)
                 circuit.add_shunt(B1, sh)
 
                 # add class to recognised objects
