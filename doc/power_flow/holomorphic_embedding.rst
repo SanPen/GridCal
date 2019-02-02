@@ -54,6 +54,8 @@ concept. In practice the continuation power flow does the same as the HELM algor
 it takes a known solution and changes the loading factors until a solution for another
 state is reached.
 
+.. _fundamentals:
+
 Fundamentals
 ------------
 
@@ -158,18 +160,18 @@ express it as its inverse so it multiplies instead of divide.
     \longrightarrow \sum_{n=0}^{\infty}{\textbf{W}_n \alpha^n}
     \sum_{n=0}^{\infty}{\textbf{V}_n \alpha^n} = 1
 
-Expanding the series and identifying terms of $\alpha$ we obtain the expression to
-compute the inverse voltage series coefficients:
+Expanding the series and identifying terms of :math:`\alpha` we obtain the expression
+to compute the inverse voltage series coefficients:
 
 .. math::
 
     \textbf{W}_n =
     \left\{
-    \begin{array}{ll}
-    \mathlarger{\frac{1}{\textbf{V}_0}}, \quad n=0\\
-    \mathlarger{-\frac{\mathlarger{\sum_{k=0}^{n}\textbf{W}_k \textbf{V}_{n-k}}}{\textbf{V}_0}}, \quad n>0
-    \end{array}
-    \right
+        \begin{array}{ll}
+            \frac{1}{\textbf{V}_0}, \quad n=0 \\
+            -\frac{{\sum_{k=0}^{n}\textbf{W}_k \textbf{V}_{n-k}}}{\textbf{V}_0}, \quad n>0
+        \end{array}
+    \right.
 
 Now, :ref:`this equation<base_eq_embedded2>` becomes:
 
@@ -197,8 +199,8 @@ for the voltage coefficients:
     \textbf{V}_n =
     \left\{
         \begin{array}{ll}
-            \mathlarger{0}, \quad n=0\\
-            \mathlarger{\textbf{S}^* \textbf{W}^*_{n-1} - Y_{shunt} \textbf{V}_{n-1} }, \quad n>0
+            {0}, \quad n=0\\
+            {\textbf{S}^* \textbf{W}^*_{n-1} - Y_{shunt} \textbf{V}_{n-1} }, \quad n>0
         \end{array}
     \right.
 
@@ -209,7 +211,8 @@ need to use the Padè approximation to get voltage values out of the series.
 In the previous formulas, the number of the bus has not been explicitly detailed. All
 the :math:`\textbf{V}` and the :math:`\textbf{W}` are matrices of dimension
 :math:`n \times nbus` (number of coefficients by number of buses in the grid) This
-structures are depicted in the figure :ref:`Coefficients Structure<Coefficients Structure>`. For instance
+structures are depicted in the figure
+:ref:`Coefficients Structure<coefficients_structure>`. For instance
 :math:`\textbf{V}_n` is the :math:`n^{th}` row of the coefficients structure
 :math:`\textbf{V}`.
 
@@ -349,7 +352,6 @@ For Slack nodes:
 
 .. math::
 
-    \begin{equation}
     V(\alpha) = V^{SP} \quad \forall \alpha=0
 
 For PQ nodes:
@@ -359,7 +361,7 @@ For PQ nodes:
     \left\{
     \begin{array}{ll}
     \textbf{Y} \times \textbf{V}(\alpha) = 0 \quad \quad \quad \quad \forall \alpha=0\\
-    \mathlarger{\textbf{Y} \times \textbf{V}(\alpha) = \frac{\alpha \textbf{S}}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha>0
+    {\textbf{Y} \times \textbf{V}(\alpha) = \frac{\alpha \textbf{S}}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha>0
     \end{array}
     \right.
 
@@ -369,8 +371,8 @@ For PV nodes:
 
     \left\{
     \begin{array}{ll}
-    \mathlarger{\textbf{Y} \times \textbf{V}(\alpha) = \frac{ \textbf{S}}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha=0\\
-    \mathlarger{\textbf{Y} \times \textbf{V}(\alpha) = \frac{ \textbf{S} - j \textbf{Q}(\alpha)}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha>0
+    {\textbf{Y} \times \textbf{V}(\alpha) = \frac{ \textbf{S}}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha=0\\
+    {\textbf{Y} \times \textbf{V}(\alpha) = \frac{ \textbf{S} - j \textbf{Q}(\alpha)}{\textbf{V}^*(\alpha^*)}} \quad \forall \alpha>0
     \end{array}
     \right.
 
@@ -453,6 +455,8 @@ but adding a column and a row for each PV node to account for the reactive power
 coefficients. In our 3-bus example, there is only one PV node, so we add only one
 column and one row.
 
+.. _lin_sys_2:
+
 .. math::
 
     \begin{bmatrix}
@@ -485,7 +489,6 @@ column and one row.
     \epsilon[n]\\
     \end{bmatrix}
     \quad \forall n > 0
-    \label{lin_sys_2}
 
 Where:
 
@@ -539,10 +542,8 @@ The error is computed by comparing the calculated power :math:`\textbf{S}` (eq
 
 .. [2] Muthu Kumar Subramian, Application of holomorphic embedding to the power-flow problem, Arizona State University, Master thesis in electrical engineering, 2014
 
-.. [3] Liu2017online (to be corrected)
+.. [3] Liu, Chengxi, et al. "A multi-dimensional holomorphic embedding method to solve AC power flows." IEEE Access 5 (2017): 25270-25285
 
-.. [4] Wynn Padè's 1969 paper (to be corrected)
+.. [4] Wynn's 1969 paper about Padè approximation (citation needed)
 
-.. [5] Weniger in 1989 publishes his thesis (to be corrected)
-
-thesis
+.. [5] Weniger's 1989 thesis (citation needed)
