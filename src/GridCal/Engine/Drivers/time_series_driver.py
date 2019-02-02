@@ -379,7 +379,7 @@ class TimeSeries(QThread):
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
-        calculation_inputs = numerical_circuit.compute()
+        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         # For every circuit, run the time series
         for nc, calculation_input in enumerate(calculation_inputs):
@@ -486,8 +486,13 @@ class TimeSeries(QThread):
         n_cores = multiprocessing.cpu_count()
 
         # print('Compiling...', end='')
-        numerical_circuit = self.grid.compile()
-        calculation_inputs = numerical_circuit.compute()
+        # numerical_circuit = self.grid.compile()
+        # calculation_inputs = numerical_circuit.compute()
+
+        numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
+                                              opf_time_series_results=self.opf_time_series_results)
+        calculation_inputs = numerical_circuit.compute(
+            branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         # For every circuit, run the time series
         for nc, calculation_input in enumerate(calculation_inputs):

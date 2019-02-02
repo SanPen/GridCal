@@ -113,7 +113,7 @@ class MonteCarlo(QThread):
 
         # compile circuits
         numerical_circuit = self.circuit.compile()
-        numerical_input_islands = numerical_circuit.compute()
+        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         v_sum = zeros(n, dtype=complex)
 
@@ -251,7 +251,7 @@ class MonteCarlo(QThread):
 
         # compile circuits
         numerical_circuit = self.circuit.compile()
-        numerical_input_islands = numerical_circuit.compute()
+        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         mc_results = MonteCarloResults(n, m)
         avg_res = PowerFlowResults()
@@ -422,7 +422,7 @@ class LatinHypercubeSampling(QThread):
         # compile
         # print('Compiling...', end='')
         numerical_circuit = self.circuit.compile()
-        numerical_islands = numerical_circuit.compute()
+        numerical_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         max_iter = batch_size * len(numerical_islands)
         Sbase = self.circuit.Sbase
@@ -540,7 +540,7 @@ class LatinHypercubeSampling(QThread):
 
         # compile the numerical circuit
         numerical_circuit = self.circuit.compile()
-        numerical_input_islands = numerical_circuit.compute()
+        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         max_iter = batch_size * len(numerical_input_islands)
         Sbase = numerical_circuit.Sbase

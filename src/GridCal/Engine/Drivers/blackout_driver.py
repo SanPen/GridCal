@@ -252,7 +252,7 @@ class Cascading(QThread):
         # compile
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
-        calculation_inputs = numerical_circuit.compute()
+        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         self.results = CascadingResults(self.cascade_type)
 
