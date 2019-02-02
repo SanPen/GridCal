@@ -213,6 +213,8 @@ structures are depicted in the figure :ref:`Coefficients Structure<Coefficients 
 :math:`\textbf{V}_n` is the :math:`n^{th}` row of the coefficients structure
 :math:`\textbf{V}`.
 
+.. _coefficients_structure:
+
 .. figure:: ../figures/coefficients_structure.png
     :alt: Coefficients Structure
 
@@ -221,16 +223,16 @@ structures are depicted in the figure :ref:`Coefficients Structure<Coefficients 
 Padè approximation
 ------------------
 
-The equation :ref:`McLaurinV<McLaurinV>` provides us with an expression to obtain the voltage from
+The :ref:`McLaurinV equation<McLaurinV>` provides us with an expression to obtain the voltage from
 the coefficients, knowing that for :math:`\alpha=1` we get the final voltage results.
 So, why do we need any further operation?, and what is this Padè thing?
 
-Well, it is true that the equation :ref:`McLaurinV<McLaurinV>` provides an approximation of the
+Well, it is true that the :ref:`McLaurinV equation<McLaurinV>` provides an approximation of the
 voltage by means of a series (this is similar to a Taylor approximation), but in
 practice, the approximation might provide a wrong value for a given number of
 coefficients. The Padè approximation accelerates the convergence of any given series,
 so that you get a more accurate result with less coefficients. This means that for the
-same series of voltage coefficients, using the equation :ref:`McLaurinV<McLaurinV>` could give a
+same series of voltage coefficients, using the :ref:`McLaurinV equation<McLaurinV>` could give a
 completely wrong result, whereas by applying Padè to those coefficients one could
 obtain a fairly accurate result.
 
@@ -300,19 +302,20 @@ on :math:`q_i`.
 
 Once the coefficients are there, you would have defined completely the polynomials
 :math:`P_N(\alpha)` and :math:`Q_M(\alpha)`, and it is only a matter of evaluating the
-equation :ref:`pade_apprx<pade_apprx>` for :math:`\alpha=1`.
+:ref:`Padè approximation equation<pade_apprx>` for :math:`\alpha=1`.
 
 This process is done for every column of coefficients
 :math:`\textbf{V}=\{V_0, V_1,V_2,V_3, ...,V_n\}` of the structure depicted in the
-figure :ref:`Coefficients Structure<Coefficients Structure>`. This means that we have to perform a Padè
-approximation for every node, using the one columns of the voltage coefficients per
-Padé approximation.
+:ref:`coefficients structure figure<coefficients_structure>`. This means that we have
+to perform a Padè approximation for every node, using the one columns of the voltage
+coefficients per Padé approximation.
 
 **Wynn's Padè approximation algorithm**
 
-Wynn published a paper in 1969 where he proposed a simple calculation method to obtain
-the Padè approximation. This method is based on a table. Weniger in 1989 publishes his
-thesis where a faster version of Wynn's algorithm is provided in Fortran code. 
+Wynn published a paper in 1969 [4]_ where he proposed a simple calculation method to
+obtain the Padè approximation. This method is based on a table. Weniger in 1989
+publishes his thesis [5]_ where a faster version of Wynn's algorithm is provided in
+Fortran code. 
 
 That very Fortran piece of code has been translated into Python and included in GridCal.
 
@@ -514,7 +517,7 @@ the inverse voltage coefficients of order :math:`n` for all the buses:
 
 .. math::
 
-    W_i[n] = \frac{- \mathlarger{\sum_{m=0}^{n}W_i[m] \cdot V_i[n-m]} }{V_i[0]} \quad  \forall i \in N, n>0
+    W_i[n] = \frac{- {\sum_{m=0}^{n}W_i[m] \cdot V_i[n-m]} }{V_i[0]} \quad  \forall i \in N, n>0
 
 **Step 3**
 
@@ -538,3 +541,8 @@ The error is computed by comparing the calculated power :math:`\textbf{S}` (eq
 
 .. [3] Liu2017online (to be corrected)
 
+.. [4] Wynn Padè's 1969 paper (to be corrected)
+
+.. [5] Weniger in 1989 publishes his thesis (to be corrected)
+
+thesis
