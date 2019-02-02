@@ -1889,6 +1889,11 @@ class MainGUI(QMainWindow):
         else:
             retry_with_other_methods = False
 
+        if self.ui.apply_impedance_tolerances_checkBox.isChecked():
+            branch_impedance_tolerance_mode = BranchImpedanceMode.Upper
+        else:
+            branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
+
         mp = self.ui.use_multiprocessing_checkBox.isChecked()
 
         temp_correction = self.ui.temperature_correction_checkBox.isChecked()
@@ -1904,7 +1909,8 @@ class MainGUI(QMainWindow):
                                multi_core=mp,
                                dispatch_storage=dispatch_storage,
                                control_taps=taps_control_mode,
-                               apply_temperature_correction=temp_correction)
+                               apply_temperature_correction=temp_correction,
+                               branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
 
         return ops
 
@@ -2009,8 +2015,15 @@ class MainGUI(QMainWindow):
                              + '\nEnable them by right click, and selecting on the context menu.')
                 else:
                     self.LOCK()
+
+                    if self.ui.apply_impedance_tolerances_checkBox.isChecked():
+                        branch_impedance_tolerance_mode = BranchImpedanceMode.Lower
+                    else:
+                        branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
+
                     # get the power flow options from the GUI
-                    sc_options = ShortCircuitOptions(bus_index=sel_buses)
+                    sc_options = ShortCircuitOptions(bus_index=sel_buses,
+                                                     branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
                     self.short_circuit = ShortCircuit(self.circuit, sc_options, self.power_flow.results)
 
                     # self.threadpool.start(self.short_circuit)

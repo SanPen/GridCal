@@ -31,6 +31,12 @@ class BusMode(Enum):
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
 
 
+class BranchImpedanceMode(Enum):
+    Specified = 0
+    Upper = 1
+    Lower = 2
+
+
 class CDF(object):
     """
     Inverse Cumulative density function of a given array of data

@@ -21,7 +21,7 @@ import numpy as np
 from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.calculation_engine import MultiCircuit
-from GridCal.Engine.basic_structures import BusMode
+from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
 from GridCal.Engine.Numerical.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Numerical.helm_power_flow import helm
 from GridCal.Engine.Numerical.jacobian_based_power_flow import IwamotoNR, LevenbergMarquardtPF, NR_LS, NR_I_LS
@@ -76,24 +76,26 @@ class PowerFlowOptions:
                  control_q=ReactivePowerControlMode.NoControl,
                  control_taps=TapsControlMode.NoControl,
                  multi_core=False, dispatch_storage=False,
-                 control_p=False, apply_temperature_correction=False):
+                 control_p=False, apply_temperature_correction=False,
+                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified):
+        """
+        Power flow options class
+        :param solver_type:
+        :param retry_with_other_methods:  Use a battery of methods to tackle the problem if the main solver fails
+        :param verbose:
+        :param initialize_with_existing_solution:
+        :param tolerance: Solution tolerance for the power flow numerical methods
+        :param max_iter: maximum number of iterations for the power flow numerical method
+        :param max_outer_loop_iter: Maximum number of iterations for the controls outer loop
+        :param control_q: Control mode for the PV nodes reactive power limits
+        :param control_taps: Control mode for the transformer taps equipped with a voltage regulator (as part of the outer loop)
+        :param multi_core: Use multi-core processing? applicable for time series
+        :param dispatch_storage: Dispatch storage?
+        :param control_p: Control active power (optimization dispatch)
+        :param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
+        :param branch_impedance_tolerance_mode: Type of modification of the branches impledance
         """
 
-        Args:
-            solver_type:
-            retry_with_other_methods: Use a battery of methods to tackle the problem if the main solver fails
-            verbose:
-            initialize_with_existing_solution:
-            tolerance: Solution tolerance for the power flow numerical methods
-            max_iter: maximum number of iterations for the power flow numerical method
-            max_outer_loop_iter: Maximum number of iterations for the controls outer loop
-            control_q: Control mode for the PV nodes reactive power limits
-            control_taps: Control mode for the transformer taps equipped with a voltage regulator (as part of the outer loop)
-            multi_core: Use multi-core processing? applicable for time series
-            dispatch_storage: Dispatch storage?
-            control_p: Control active power (optimization dispatch)
-            apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
-        """
         self.solver_type = solver_type
 
         self.retry_with_other_methods = retry_with_other_methods
@@ -119,6 +121,8 @@ class PowerFlowOptions:
         self.control_taps = control_taps
 
         self.apply_temperature_correction = apply_temperature_correction
+
+        self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
 
 
 class PowerFlowMP:
@@ -1166,7 +1170,8 @@ class PowerFlowMP:
 
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
-        calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction)
+        calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction,
+                                                       branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         if len(numerical_circuit.islands) > 1:
 

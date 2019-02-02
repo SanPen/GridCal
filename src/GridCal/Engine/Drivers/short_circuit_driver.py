@@ -21,6 +21,7 @@ from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.Numerical.short_circuit import short_circuit_3p
 from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults
 from GridCal.Engine.io_structures import CalculationInputs, ResultTypes
@@ -34,6 +35,7 @@ from GridCal.Engine.devices import Branch, Bus
 class ShortCircuitOptions:
 
     def __init__(self, bus_index=[], branch_index=[], branch_fault_locations=[], branch_fault_impedance=[],
+                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  verbose=False):
         """
 
@@ -55,6 +57,8 @@ class ShortCircuitOptions:
         self.branch_fault_locations = branch_fault_locations
 
         self.branch_fault_impedance = branch_fault_impedance
+
+        self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
 
         self.verbose = verbose
 
@@ -437,7 +441,7 @@ class ShortCircuit(QRunnable):
 
         # Compile the grid
         numerical_circuit = self.grid.compile()
-        calculation_inputs = numerical_circuit.compute()
+        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         Zf = self.compile_zf(grid)
 
