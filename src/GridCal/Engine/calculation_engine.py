@@ -149,7 +149,7 @@ def load_from_xls(filename):
         for name in names:
 
             if name.lower() == "config":
-                df = xl.parse('config')
+                df = xl.parse('config', index_col=0)
                 idx = df['Property'][df['Property'] == 'BaseMVA'].index
                 if len(idx) > 0:
                     data["baseMVA"] = np.double(df.values[idx, 1])
