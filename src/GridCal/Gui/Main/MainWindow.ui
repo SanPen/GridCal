@@ -1981,6 +1981,16 @@
                 </widget>
                </item>
                <item>
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string>Stop at</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="vc_stop_at_comboBox"/>
+               </item>
+               <item>
                 <widget class="Line" name="line_12">
                  <property name="palette">
                   <palette>
@@ -2033,7 +2043,7 @@
                <item>
                 <widget class="QRadioButton" name="start_vs_from_default_radioButton">
                  <property name="text">
-                  <string>Use alpha targetfrom current situation</string>
+                  <string>Use alpha target from current situation</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>

@@ -217,6 +217,10 @@ class MainGUI(QMainWindow):
 
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
+        # voltage collapse mode (full, nose)
+        self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
+        self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
+
         # export modes
         mdl = get_list_model(['real', 'imag', 'abs'])
         self.ui.export_mode_comboBox.setModel(mdl)
@@ -2034,8 +2038,13 @@ class MainGUI(QMainWindow):
             # get the selected UI options
             use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
 
+            mode = self.ui.vc_stop_at_comboBox.currentText()
+
+            vc_stop_at_dict = {VCStopAt.Nose.value: VCStopAt.Nose,
+                               VCStopAt.Full.value: VCStopAt.Full}
+
             # declare voltage collapse options
-            vc_options = VoltageCollapseOptions()
+            vc_options = VoltageCollapseOptions(stop_at=vc_stop_at_dict[mode])
 
             if use_alpha:
                 '''

@@ -4,15 +4,21 @@
 from numpy import angle, conj, exp, r_, linalg, Inf, dot, zeros
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import splu
+from enum import Enum
 
 from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
 
 
-def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
+class VCStopAt(Enum):
+    Nose = 'Nose'
+    Full = 'Full curve'
+
+
+def cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     """
-    Computes the value of the CPF parameterization function.
+    Computes the value of the CPF  function.
     Args:
-        parameterization: Value of parameterization option
+        parametrization: Value of  option (1: Natural, 2:Arc-length, 3: pseudo arc-length)
         step: continuation step size
         z: normalized tangent prediction vector from previous step
         V: complex bus voltage vector at current solution
@@ -24,18 +30,18 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
         pvpq: vector of indices of PQ and PV buses
 
     Returns:
-        value of the parameterization function at the current point
+        value of the parametrization function at the current point
     """
     """
-    #CPF_P Computes the value of the CPF parameterization function.
+    #CPF_P Computes the value of the CPF parametrization function.
     #
-    #   P = CPF_P(PARAMETERIZATION, STEP, Z, V, LAM, VPRV, LAMPRV, PV, PQ)
+    #   P = CPF_P(parametrization, STEP, Z, V, LAM, VPRV, LAMPRV, PV, PQ)
     #
-    #   Computes the value of the parameterization function at the current
+    #   Computes the value of the parametrization function at the current
     #   solution point.
     #
     #   Inputs:
-    #       PARAMETERIZATION : Value of cpf.parameterization option
+    #       parametrization : Value of cpf.parametrization option
     #       STEP : continuation step size
     #       Z : normalized tangent prediction vector from previous step
     #       V : complex bus voltage vector at current solution
@@ -46,7 +52,7 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     #       PQ : vector of indices of PQ buses
     #
     #   Outputs:
-    #       P : value of the parameterization function at the current point
+    #       P : value of the parametrization function at the current point
     #
     #   See also CPF_PREDICTOR, CPF_CORRECTOR.
 
@@ -63,13 +69,13 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
 
     ## evaluate P(x0, lambda0)
     """
-    if parameterization == 1:        # natural
+    if parametrization == 1:        # natural
         if lam >= lamprv:
             P = lam - lamprv - step
         else:
             P = lamprv - lam - step
 
-    elif parameterization == 2:    # arc length
+    elif parametrization == 2:    # arc length
         Va = angle(V)
         Vm = abs(V)
         Vaprv = angle(Vprv)
@@ -78,7 +84,7 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
         b = r_[Vaprv[pvpq], Vmprv[pq], lamprv]
         P = sum((a - b)**2) - step**2
 
-    elif parameterization == 3:    # pseudo arc length
+    elif parametrization == 3:    # pseudo arc length
         nb = len(V)
         Va = angle(V)
         Vm = abs(V)
@@ -92,11 +98,11 @@ def cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     return P
 
 
-def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
+def cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     """
-    Computes partial derivatives of CPF parameterization function.
+    Computes partial derivatives of CPF parametrization function.
     Args:
-        parameterization:
+        parametrization:
         z: normalized tangent prediction vector from previous step
         V: complex bus voltage vector at current solution
         lam: scalar lambda value at current solution
@@ -107,21 +113,21 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
         pvpq: vector of indices of PQ and PV buses
 
     Returns:
-        DP_DV : partial of parameterization function w.r.t. voltages
-        DP_DLAM : partial of parameterization function w.r.t. lambda
+        DP_DV : partial of parametrization function w.r.t. voltages
+        DP_DLAM : partial of parametrization function w.r.t. lambda
     """
     """
-    #CPF_P_JAC Computes partial derivatives of CPF parameterization function.
+    #CPF_P_JAC Computes partial derivatives of CPF parametrization function.
     #
-    #   [DP_DV, DP_DLAM ] = CPF_P_JAC(PARAMETERIZATION, Z, V, LAM, ...
+    #   [DP_DV, DP_DLAM ] = CPF_P_JAC(parametrization, Z, V, LAM, ...
     #                                                   VPRV, LAMPRV, PV, PQ)
     #
     #   Computes the partial derivatives of the continuation power flow
-    #   parameterization function w.r.t. bus voltages and the continuation
+    #   parametrization function w.r.t. bus voltages and the continuation
     #   parameter lambda.
     #
     #   Inputs:
-    #       PARAMETERIZATION : Value of cpf.parameterization option.
+    #       parametrization : Value of cpf.parametrization option.
     #       Z : normalized tangent prediction vector from previous step
     #       V : complex bus voltage vector at current solution
     #       LAM : scalar lambda value at current solution
@@ -131,8 +137,8 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     #       PQ : vector of indices of PQ buses
     #
     #   Outputs:
-    #       DP_DV : partial of parameterization function w.r.t. voltages
-    #       DP_DLAM : partial of parameterization function w.r.t. lambda
+    #       DP_DV : partial of parametrization function w.r.t. voltages
+    #       DP_DLAM : partial of parametrization function w.r.t. lambda
     #
     #   See also CPF_PREDICTOR, CPF_CORRECTOR.
 
@@ -147,7 +153,7 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     #   Covered by the 3-clause BSD License (see LICENSE file for details).
     #   See http://www.pserc.cornell.edu/matpower/ for more info.
     """
-    if parameterization == 1:   # natural
+    if parametrization == 1:   # natural
         npv = len(pv)
         npq = len(pq)
         dP_dV = zeros(npv + 2 * npq)
@@ -156,7 +162,7 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
         else:
             dP_dlam = -1.0
 
-    elif parameterization == 2:  # arc length
+    elif parametrization == 2:  # arc length
         Va = angle(V)
         Vm = abs(V)
         Vaprv = angle(Vprv)
@@ -167,7 +173,7 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
         else:
             dP_dlam = 2 * (lam - lamprv)
 
-    elif parameterization == 3:  # pseudo arc length
+    elif parametrization == 3:  # pseudo arc length
         nb = len(V)
         dP_dV = z[r_[pv, pq, nb + pq]]
         dP_dlam = z[2 * nb + 1][0]
@@ -175,10 +181,10 @@ def cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     return dP_dV, dP_dlam
 
 
-def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose):
+def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it, verbose):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
-    with selected parameterization scheme.
+    with selected parametrization scheme.
 
     solves for bus voltages and lambda given the full system admittance
     matrix (for all buses), the complex bus power injection vector (for
@@ -213,7 +219,7 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
         lamprv:
         z:
         step:
-        parameterization:
+        parametrization:
         tol:
         max_it:
         verbose:
@@ -223,9 +229,9 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
     """
     """
     # CPF_CORRECTOR  Solves the corrector step of a continuation power flow using a
-    #   full Newton method with selected parameterization scheme.
+    #   full Newton method with selected parametrization scheme.
     #   [V, CONVERGED, I, LAM] = CPF_CORRECTOR(YBUS, SBUS, V0, REF, PV, PQ, ...
-    #                 LAM0, SXFR, VPRV, LPRV, Z, STEP, PARAMETERIZATION, MPOPT)
+    #                 LAM0, SXFR, VPRV, LPRV, Z, STEP, parametrization, MPOPT)
     #   solves for bus voltages and lambda given the full system admittance
     #   matrix (for all buses), the complex bus power injection vector (for
     #   all buses), the initial vector of complex bus voltages, and column
@@ -313,7 +319,7 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
            mis[pq].imag]
     
     # evaluate P(x0, lambda0)
-    P = cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+    P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
     # augment F(x,lambda) with P(x,lambda)
     F = r_[F, P]
@@ -339,7 +345,7 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
         J = Jacobian(Ybus, V, Ibus, pq, pvpq)
     
         dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
-        dP_dV, dP_dlam = cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+        dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
         # augment J with real/imag -Sxfr and z^T
         '''
@@ -376,8 +382,8 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
                mis[pq].imag]
     
         # evaluate P(x, lambda)
-        # parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq
-        P = cpf_p(parameterization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+        # , step, z, V, lam, Vprv, lamprv, pv, pq, pvpq
+        P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
         # augment F(x,lambda) with P(x,lambda)
         F = r_[F, P]
@@ -400,7 +406,7 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
     return V, converged, i, lam, normF
 
 
-def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parameterization):
+def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parametrization):
     """
     %CPF_PREDICTOR  Performs the predictor step for the continuation power flow
     %   [V0, LAM0, Z] = CPF_PREDICTOR(VPRV, LAMPRV, YBUS, SXFR, PV, PQ, STEP, Z)
@@ -420,7 +426,7 @@ def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, param
     %       Z : normalized tangent prediction vector from previous step
     %       VPRV : complex bus voltage vector at previous solution
     %       LAMPRV : scalar lambda value at previous solution
-    %       PARAMETERIZATION : Value of cpf.parameterization option.
+    %       parametrization : Value of cpf.parametrization option.
     %
     %   Outputs:
     %       V0 : predicted complex bus voltage vector
@@ -448,7 +454,7 @@ def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, param
     J = Jacobian(Ybus, V, Ibus, pq, pvpq)
     
     dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
-    dP_dV, dP_dlam = cpf_p_jac(parameterization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+    dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
     # linear operator for computing the tangent predictor
     '''
@@ -483,36 +489,35 @@ def cpf_predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, param
 
 
 def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv, pq, step, approximation_order,
-                    adapt_step, step_min, step_max,
-                    error_tol=1e-3, tol=1e-6, max_it=20, stop_at='NOSE', verbose=False, call_back_fx=None):
+                    adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
+                    stop_at=VCStopAt.Nose, verbose=False, call_back_fx=None):
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
+    :param Ybus: Admittance matrix
+    :param Ibus_base:
+    :param Ibus_target:
+    :param Sbus_base: Power array of the base solvable case
+    :param Sbus_target: Power array of the case to be solved
+    :param V: Voltage array of the base solved case
+    :param pv: Array of pv indices
+    :param pq: Array of pq indices
+    :param step: Adaptation step
+    :param approximation_order: order of the approximation {1, 2, 3}
+    :param adapt_step: use adaptive step size?
+    :param step_min: minimum step size
+    :param step_max: maximum step size
+    :param error_tol: Error tolerance
+    :param tol: Solutions tolerance
+    :param max_it: Maximum iterations
+    :param stop_at:  Value of Lambda to stop at. It can be a number or {'NOSE', 'FULL'}
+    :param verbose: Display additional intermediate information?
+    :param call_back_fx: Function to call on every iteration passing the lambda parameter
+    :return: Voltage_series: List of all the voltage solutions from the base to the target
+             Lambda_series: Lambda values used in the continuation
 
-    Args:
-        Ybus: Admittance matrix
-        Sbus_base: Power array of the base solvable case
-        Sbus_target: Power array of the case to be solved
-        V: Voltage array of the base solved case
-        pv: Array of pv indices
-        pq: Array of pq indices
-        step: Adaptation step
-        approximation_order: order of the approximation {1, 2, 3}
-        adapt_step: use adaptive step size?
-        step_min: minimum step size
-        step_max: maximum step size
-        error_tol: Error tolerance
-        tol: Solutions tolerance
-        max_it: Maximum iterations
-        stop_at: Value of Lambda to stop at. It can be a number or {'NOSE', 'FULL'}
-        verbose: Display additional intermediate information?
-        call_back_fx: Function to call on every iteration passing the lambda parameter
 
-    Returns:
-        Voltage_series: List of all the voltage solutions from the base to the target
-        Lambda_series: Lambda values used in the continuation
-
-    MATPOWER
+    Ported from MATPOWER
         Copyright (c) 1996-2015 by Power System Engineering Research Center (PSERC)
         by Ray Zimmerman, PSERC Cornell,
         Shrirang Abhyankar, Argonne National Laboratory,
@@ -558,7 +563,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         lam_prev = lam
 
         # correction
-        # Ybus, Sbus, V0, ref, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parameterization, tol, max_it, verbose
+        # Ybus, Sbus, V0, ref, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it, verbose
         V, success, i, lam, normF = cpf_corrector(Ybus, Ibus_base,  Sbus_base, V0, pv, pq, lam0, Sxfr, V_prev,
                                                   lam_prev, z, step, approximation_order, tol, max_it, verbose)
         if not success:
@@ -577,41 +582,24 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         elif verbose > 1:
             print('step ', cont_steps, ': lambda = ', lam, ', ', i, ' corrector Newton steps\n')
 
-        if type(stop_at) is str:
-            if stop_at.upper() == 'FULL':
-                if abs(lam) < 1e-8:  # traced the full continuation curve
-                    if verbose:
-                        print('\nTraced full continuation curve in ', cont_steps, ' continuation steps\n')
-                    continuation = 0
+        if stop_at == VCStopAt.Full:
+            if abs(lam) < 1e-8:  # traced the full continuation curve
+                if verbose:
+                    print('\nTraced full continuation curve in ', cont_steps, ' continuation steps\n')
+                continuation = 0
 
-                elif (lam < lam_prev) and (lam - step < 0):   # next step will overshoot
-                    step = lam             # modify step-size
-                    approximation_order = 1   # change to natural parameterization
-                    adapt_step = 0         # disable step-adaptivity
+            elif (lam < lam_prev) and (lam - step < 0):   # next step will overshoot
+                step = lam             # modify step-size
+                approximation_order = 1   # change to natural parametrization
+                adapt_step = 0         # disable step-adaptivity
 
-            elif stop_at.upper() == 'NOSE':
-                if lam < lam_prev:                        # reached the nose point
-                    if verbose:
-                        print('\nReached steady state loading limit in ', cont_steps, ' continuation steps\n')
-                    continuation = 0
-            else:
-                raise Exception('Stop point ' + stop_at + ' not recognised.')
-
-        else:  # if it is not a string
-            if lam < lam_prev:                             # reached the nose point
+        elif stop_at == VCStopAt.Nose:
+            if lam < lam_prev:                        # reached the nose point
                 if verbose:
                     print('\nReached steady state loading limit in ', cont_steps, ' continuation steps\n')
                 continuation = 0
-
-            elif abs(stop_at - lam) < 1e-8:  # reached desired lambda
-                if verbose:
-                    print('\nReached desired lambda ', stop_at, ' in ', cont_steps, ' continuation steps\n')
-                continuation = 0
-
-            elif (lam + step) > stop_at:    # will reach desired lambda in next step
-                step = stop_at - lam         # modify step-size
-                approximation_order = 1           # change to natural parameterization
-                adapt_step = 0                 # disable step-adaptivity
+        else:
+            raise Exception('Stop point ' + stop_at + ' not recognised.')
 
         if adapt_step and continuation:
             # Adapt step size
