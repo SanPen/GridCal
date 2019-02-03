@@ -4,7 +4,7 @@
 
 This software aims to be a complete platform for power systems research and simulation.
 [Watch the video](https://youtu.be/7BbO7KKWwEY) and
-[check out the documentation](https://gridcal-wip.readthedocs.io)
+[check out the documentation](https://gridcal.readthedocs.io)
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
