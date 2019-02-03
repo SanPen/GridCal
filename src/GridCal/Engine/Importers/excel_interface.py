@@ -1,3 +1,17 @@
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 import numpy as np
 
@@ -5,6 +19,53 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.devices import *
 from GridCal.Engine.device_types import *
 
+# this dictionary sets the allowed excel sheets and the possible specific converter
+allowed_data_sheets = {'Conf': None,
+                       'config': None,
+                       'bus': None,
+                       'branch': None,
+                       'load': None,
+                       'load_Sprof': complex,
+                       'load_Iprof': complex,
+                       'load_Zprof': complex,
+                       'load_P_prof': float,
+                       'load_Q_prof': float,
+                       'load_Ir_prof': float,
+                       'load_Ii_prof': float,
+                       'load_G_prof': float,
+                       'load_B_prof': float,
+                       'static_generator': None,
+                       'static_generator_Sprof': complex,
+                       'static_generator_P_prof': complex,
+                       'static_generator_Q_prof': complex,
+                       'battery': None,
+                       'battery_Vset_profiles': float,
+                       'battery_P_profiles': float,
+                       'battery_Vset_prof': float,
+                       'battery_P_prof': float,
+                       'controlled_generator': None,
+                       'CtrlGen_Vset_profiles': float,
+                       'CtrlGen_P_profiles': float,
+                       'generator': None,
+                       'generator_Vset_prof': float,
+                       'generator_P_prof': float,
+                       'generator_Pf_prof': float,
+                       'shunt': None,
+                       'shunt_Y_profiles': complex,
+                       'shunt_G_prof': float,
+                       'shunt_B_prof': float,
+                       'wires': None,
+                       'overhead_line_types': None,
+                       'underground_cable_types': None,
+                       'sequence_line_types': None,
+                       'transformer_types': None}
+
+
+def check_names(names):
+    for name in names:
+        if name not in allowed_data_sheets.keys():
+            raise Exception('The file sheet ' + name + ' is not allowed.\n'
+                            'Did you create this file manually? Use GridCal instead.')
 
 def load_from_xls(filename):
     """
@@ -14,52 +75,8 @@ def load_from_xls(filename):
     xl = pd.ExcelFile(filename)
     names = xl.sheet_names
 
-    # this dictionary sets the allowed excel sheets and the possible specific converter
-    allowed_data_sheets = {'Conf': None,
-                           'config': None,
-                           'bus': None,
-                           'branch': None,
-                           'load': None,
-                           'load_Sprof': complex,
-                           'load_Iprof': complex,
-                           'load_Zprof': complex,
-                           'load_P_prof': float,
-                           'load_Q_prof': float,
-                           'load_Ir_prof': float,
-                           'load_Ii_prof': float,
-                           'load_G_prof': float,
-                           'load_B_prof': float,
-                           'static_generator': None,
-                           'static_generator_Sprof': complex,
-                           'static_generator_P_prof': complex,
-                           'static_generator_Q_prof': complex,
-                           'battery': None,
-                           'battery_Vset_profiles': float,
-                           'battery_P_profiles': float,
-                           'battery_Vset_prof': float,
-                           'battery_P_prof': float,
-                           'controlled_generator': None,
-                           'CtrlGen_Vset_profiles': float,
-                           'CtrlGen_P_profiles': float,
-                           'generator': None,
-                           'generator_Vset_prof': float,
-                           'generator_P_prof': float,
-                           'generator_Pf_prof': float,
-                           'shunt': None,
-                           'shunt_Y_profiles': complex,
-                           'shunt_G_prof': float,
-                           'shunt_B_prof': float,
-                           'wires': None,
-                           'overhead_line_types': None,
-                           'underground_cable_types': None,
-                           'sequence_line_types': None,
-                           'transformer_types': None}
-
     # check the validity of this excel file
-    for name in names:
-        if name not in allowed_data_sheets.keys():
-            raise Exception('The file sheet ' + name + ' is not allowed.\n'
-                            'Did you create this file manually? Use GridCal instead.')
+    check_names(names=names)
 
     # parse the file
     if 'Conf' in names:  # version 1
@@ -595,7 +612,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
     circuit.logger += circuit.apply_all_branch_types()
 
 
-def interpret_excel_v3(circuit:MultiCircuit, data):
+def interpret_excel_v3(circuit: MultiCircuit, data):
     """
     Interpret the file version 3
     In this file version there are no complex numbers saved
@@ -980,15 +997,12 @@ def interpret_excel_v3(circuit:MultiCircuit, data):
     circuit.logger += circuit.apply_all_branch_types()
 
 
-def save_excel(circuit: MultiCircuit, file_path):
+def create_data_frames(circuit: MultiCircuit):
     """
-    Save the circuit information in excel format
+    Pack the circuit information into tables (DataFrames)
     :param circuit: MultiCircuit instance
-    :param file_path: path to the excel file
-    :return: logger with information
+    :return: dictionary of DataFrames
     """
-    logger = list()
-
     dfs = dict()
 
     # configuration ################################################################################################
@@ -997,6 +1011,8 @@ def save_excel(circuit: MultiCircuit, file_path):
     obj.append(['Version', 3])
     obj.append(['Name', circuit.name])
     obj.append(['Comments', circuit.comments])
+    obj.append(['program', 'GridCal'])
+
     dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
 
     # get the master time profile
@@ -1265,6 +1281,20 @@ def save_excel(circuit: MultiCircuit, file_path):
         dfs['transformer_types'] = pd.DataFrame(data=obj, columns=headers)
     else:
         dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    return dfs
+
+
+def save_excel(circuit: MultiCircuit, file_path):
+    """
+    Save the circuit information in excel format
+    :param circuit: MultiCircuit instance
+    :param file_path: path to the excel file
+    :return: logger with information
+    """
+    logger = list()
+
+    dfs = create_data_frames(circuit=circuit)
 
     # flush-save ###################################################################################################
     writer = pd.ExcelWriter(file_path)

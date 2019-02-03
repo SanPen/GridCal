@@ -5,7 +5,7 @@ Linear AC Power Flow
 
 Following the formulation presented in *Linearized AC Load Flow Applied to Analysis*
 *in Electric Power Systems* [1]_, we obtain a way to solve circuits in one shot
-(without iterations) and quite positive results for a linear approximation.
+(without iterations) and with quite positive results for a linear approximation.
 
 .. math::
 

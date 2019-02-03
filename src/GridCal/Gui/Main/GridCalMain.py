@@ -355,6 +355,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
 
+        self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -593,6 +595,13 @@ class MainGUI(QMainWindow):
         msg += 'Copyright (C) 2019\nSantiago Peñate Vera\nMichel Lavoie'
 
         QMessageBox.about(self, "About GridCal", msg)
+
+    def show_online_docs(self):
+        """
+        OPen the online documentation in a web browser
+        """
+        import webbrowser
+        webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
 
     @staticmethod
     def print_console_help():

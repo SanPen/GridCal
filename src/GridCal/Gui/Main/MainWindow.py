@@ -1917,10 +1917,13 @@ class Ui_mainWindow(object):
         self.actionLaunch_data_analysis_tool = QtWidgets.QAction(mainWindow)
         self.actionLaunch_data_analysis_tool.setIcon(icon10)
         self.actionLaunch_data_analysis_tool.setObjectName("actionLaunch_data_analysis_tool")
+        self.actionOnline_documentation = QtWidgets.QAction(mainWindow)
+        self.actionOnline_documentation.setObjectName("actionOnline_documentation")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
         self.menuProject.addSeparator()
+        self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionAbout)
         self.menuActions.addAction(self.actionPower_flow)
         self.menuActions.addAction(self.actionPower_Flow_Time_series)
@@ -2246,6 +2249,7 @@ class Ui_mainWindow(object):
         self.actionStorage_location_suggestion.setToolTip(_translate("mainWindow", "Suggest places where storage devices are useful"))
         self.actionLaunch_data_analysis_tool.setText(_translate("mainWindow", "Launch data analysis tool"))
         self.actionLaunch_data_analysis_tool.setShortcut(_translate("mainWindow", "F8"))
+        self.actionOnline_documentation.setText(_translate("mainWindow", "Online documentation"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *

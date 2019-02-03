@@ -4360,6 +4360,7 @@ points from time series</string>
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionOnline_documentation"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuActions">
@@ -4971,6 +4972,11 @@ points from time series</string>
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+  </action>
+  <action name="actionOnline_documentation">
+   <property name="text">
+    <string>Online documentation</string>
    </property>
   </action>
  </widget>
