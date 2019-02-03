@@ -1,4 +1,6 @@
-from GridCal.Engine.calculation_engine import MultiCircuit, BranchType
+
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.device_types import BranchType
 
 from networkx import DiGraph, all_simple_paths
 import numpy as np

@@ -18,7 +18,9 @@ import multiprocessing
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.io_structures import MonteCarloResults, MonteCarloInput, CalculationInputs, PowerFlowResults
-from GridCal.Engine.calculation_engine import CDF, MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.basic_structures import CDF
+
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP, PowerFlowOptions, power_flow_worker
 from GridCal.Engine.Drivers.time_series_driver import TimeSeriesResults
 

@@ -1005,9 +1005,9 @@ class Branch(ReliabilityDevice):
             template = str(self.template)
 
         return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.length, self.tap_module, self.angle, self.bus_to_regulated,
-                self.vset, self.temp_base, self.temp_oper, self.alpha, self.r_fault, self.x_fault, self.fault_pos,
-                conv.inv_conv[self.branch_type], template]
+                self.R, self.X, self.G, self.B, self.tolerance, self.length, self.tap_module, self.angle,
+                self.bus_to_regulated,  self.vset, self.temp_base, self.temp_oper, self.alpha, self.r_fault,
+                self.x_fault, self.fault_pos, conv.inv_conv[self.branch_type], template]
 
     def get_json_dict(self, id, bus_dict):
         """

@@ -20,7 +20,7 @@ import numpy as np
 # from timeit import default_timer as timer
 from PyQt5.QtCore import QRunnable
 
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
 from GridCal.Engine.Numerical.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Numerical.helm_power_flow import helm

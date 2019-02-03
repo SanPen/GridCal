@@ -21,7 +21,7 @@ from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.io_structures import PowerFlowResults, ResultTypes
 from GridCal.Engine.Numerical.continuation_power_flow import continuation_nr
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 
 

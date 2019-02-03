@@ -20,7 +20,9 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, PowerFlow, PowerFlowMP
 from GridCal.Engine.Drivers.stochastic_driver import MonteCarloResults, LatinHypercubeSampling
-from GridCal.Engine.calculation_engine import NumericalCircuit, MultiCircuit
+
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
 
 class CascadeType(Enum):

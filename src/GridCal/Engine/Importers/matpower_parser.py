@@ -16,8 +16,11 @@
 """
 import pandas as pd
 import numpy as np
-from GridCal.Engine.calculation_engine import *
 import os
+
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import *
 
 
 def find_between(s, first, last):

@@ -16,7 +16,9 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import *
 import math
 import numpy as np
 import pandas as pd

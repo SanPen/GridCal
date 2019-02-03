@@ -1,6 +1,7 @@
 import json
-
-from GridCal.Engine.calculation_engine import MultiCircuit, Bus, Branch, Load, Generator, Battery, BranchType
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import *
 
 
 def load_iPA(file_name):

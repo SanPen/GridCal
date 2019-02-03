@@ -10,7 +10,9 @@ import math
 from PyQt5.QtWidgets import *
 
 from GridCal.Gui.Analysis.gui import *
-from GridCal.Engine.calculation_engine import MultiCircuit, BranchType
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import BranchType
 
 
 class PandasModel(QtCore.QAbstractTableModel):

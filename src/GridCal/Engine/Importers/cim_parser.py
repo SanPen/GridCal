@@ -1,4 +1,5 @@
-from GridCal.Engine.calculation_engine import MultiCircuit, Bus, Generator, Branch, BranchType, Load, Shunt, StaticGenerator
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import Bus, Generator, Branch, BranchType, Load, Shunt, StaticGenerator
 from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, BranchType, \
                                             UndergroundLineType, SequenceLineType, Wire
 from math import sqrt

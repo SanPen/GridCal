@@ -12,13 +12,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import os
 import sys
+import networkx as nx
 from PyQt5.QtCore import *
 from PyQt5.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Engine.Drivers.topology_driver import reduce_grid_brute
 

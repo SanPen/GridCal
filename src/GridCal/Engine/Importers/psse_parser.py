@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.calculation_engine import *
 import math
 import chardet
 import numpy as np
@@ -21,6 +20,10 @@ import pandas as pd
 from numpy import array
 from pandas import DataFrame as df
 from warnings import warn
+
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import *
 
 
 class PSSeGrid:

@@ -16,7 +16,7 @@
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults
 from GridCal.Engine.Numerical.dynamic_modules import dynamic_simulation
 

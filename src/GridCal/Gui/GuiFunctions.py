@@ -20,8 +20,8 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import *
 from warnings import warn
 
-from GridCal.Engine.calculation_engine import BranchTypeConverter, BranchType
-from GridCal.Engine.device_types import BranchTemplate
+from GridCal.Engine.devices import BranchTypeConverter
+from GridCal.Engine.device_types import BranchTemplate, BranchType
 from GridCal.Engine.devices import Bus
 
 

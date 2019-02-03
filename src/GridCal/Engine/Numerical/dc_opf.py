@@ -18,8 +18,7 @@ import pulp
 import numpy as np
 from scipy.sparse import csc_matrix
 import pandas as pd
-
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 # class DcOpf_old:

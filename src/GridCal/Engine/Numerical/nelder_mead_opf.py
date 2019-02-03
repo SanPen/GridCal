@@ -2,7 +2,7 @@ import copy
 import numpy as np
 from GridCal.Engine.io_structures import OptimalPowerFlowResults
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP, PowerFlowOptions, SolverType
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 """
 Pure Python/Numpy implementation of the Nelder-Mead algorithm from

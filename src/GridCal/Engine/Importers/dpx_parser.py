@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 import chardet
-from GridCal.Engine.calculation_engine import MultiCircuit, Bus, Branch, Load, Generator, Battery, BranchType, StaticGenerator
 
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.devices import *
+from GridCal.Engine.device_types import *
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)

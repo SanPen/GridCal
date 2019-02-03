@@ -16,7 +16,7 @@
 from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.io_structures import OptimalPowerFlowResults
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Numerical.ac_opf import AcOpf
 from GridCal.Engine.Numerical.dc_opf import DcOpf
 from GridCal.Engine.Drivers.power_flow_driver import SolverType
