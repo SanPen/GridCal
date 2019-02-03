@@ -1,5 +1,5 @@
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, PowerFlow
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.devices import *
 
 Sbase = 100 # MVA

@@ -1,6 +1,6 @@
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, SolverType, ReactivePowerControlMode
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP, TapsControlMode
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.devices import *
 from GridCal.Engine.device_types import *
 

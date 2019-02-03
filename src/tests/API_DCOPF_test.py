@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
+from GridCal.Engine.Drivers.opf_driver import *
+from GridCal.Engine.Drivers.opf_time_series_driver import *
 from matplotlib import pyplot as plt
 
 

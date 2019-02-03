@@ -1,5 +1,5 @@
 
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, SolverType
 from matplotlib import pyplot as plt
 

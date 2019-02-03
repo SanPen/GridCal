@@ -1,4 +1,4 @@
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
 from math import sqrt
 
 if __name__ == '__main__':

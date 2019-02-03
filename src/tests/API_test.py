@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, SolverType
 from GridCal.Engine.Drivers.short_circuit_driver import *
 from GridCal.Engine.Drivers.time_series_driver import *

@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
+from GridCal.Engine.Drivers.power_flow_driver import *
 from multiprocessing import Pool
 
 grid = MultiCircuit()
@@ -27,7 +28,7 @@ fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_
 grid.load_file(fname)
 grid.compile()
 
-options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False)
+options = PowerFlowOptions(SolverType.NR, verbose=False)
 
 ####################################################################################################################
 # PowerFlow
