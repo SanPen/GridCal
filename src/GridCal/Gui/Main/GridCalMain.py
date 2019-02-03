@@ -221,7 +221,7 @@ class MainGUI(QMainWindow):
 
         self.calculation_inputs_to_display = None
 
-        self.project_directory = None
+        self.project_directory = os.path.expanduser("~")
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
