@@ -23,7 +23,7 @@ from pySOT.surrogate import GPRegressor
 from pySOT.optimization_problems import OptimizationProblem
 from poap.controller import ThreadController, BasicWorkerThread
 
-from GridCal.Engine.calculation_engine import MultiCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlow, PowerFlowOptions
 from GridCal.Engine.io_structures import MonteCarloResults
 from GridCal.Engine.Drivers.stochastic_driver import make_monte_carlo_input

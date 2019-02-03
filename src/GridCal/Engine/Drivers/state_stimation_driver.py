@@ -19,7 +19,8 @@ from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.Numerical.state_estimation import solve_se_lm
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults, PowerFlowMP
-from GridCal.Engine.calculation_engine import MultiCircuit, NumericalCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
 
 class MeasurementType(Enum):

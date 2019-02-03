@@ -4,7 +4,7 @@ Power System Load Flow Analysis - Lynn Powell
 
 Author: Santiago Peñate Vera (September 2018)
 """
-from GridCal.Engine.All import *
+from GridCal.Engine import *
 
 ########################################################################################################################
 # Define the circuit

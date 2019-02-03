@@ -6,7 +6,7 @@ The added profile is just to demosntrate how to create load profiles properly
 
 Author: Santiago Peñate Vera (September 2018)
 """
-from GridCal.Engine.All import *
+from GridCal.Engine import *
 
 ########################################################################################################################
 # Define the circuit
@@ -64,18 +64,13 @@ grid.add_bus(bus5)
 # Add the loads
 ########################################################################################################################
 
-
-
 # In GridCal, the loads, generators ect are stored within each bus object:
 
 # we'll define the first load completely
 l2 = Load(name='Load',
-          impedance=complex(0, 0),  # Impedance of the ZIP model in MVA at the nominal voltage
-          current=complex(0, 0),  # Current of the ZIP model in MVA at the nominal voltage
-          power=complex(40, 20),  # Power of the ZIP model in MVA
-          impedance_prof=None,  # Impedance profile
-          current_prof=None,  # Current profile
-          power_prof=None,  # Power profile
+          G=0, B=0,  # admittance of the ZIP model in MVA at the nominal voltage
+          Ir=0, Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
+          P=40, Q=20,  # Power of the ZIP model in MVA
           active=True,  # Is active?
           mttf=0.0,  # Mean time to failure
           mttr=0.0  # Mean time to recovery
@@ -83,25 +78,25 @@ l2 = Load(name='Load',
 grid.add_load(bus2, l2)
 
 # Define the others with the default parameters
-grid.add_load(bus3, Load(power=complex(25, 15)))
-grid.add_load(bus4, Load(power=complex(40, 20)))
-grid.add_load(bus5, Load(power=complex(50, 20)))
+grid.add_load(bus3, Load(P=25, Q=15))
+grid.add_load(bus4, Load(P=40, Q=20))
+grid.add_load(bus5, Load(P=50, Q=20))
 
 ########################################################################################################################
 # Add the generators
 ########################################################################################################################
 
-g1 = ControlledGenerator(name='gen',
-                         active_power=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
-                         voltage_module=1.0,  # Voltage set point to control
-                         Qmin=-9999,  # minimum reactive power in MVAr
-                         Qmax=9999,  # Maximum reactive power in MVAr
-                         Snom=9999,  # Nominal power in MVA
-                         power_prof=None,  # power profile
-                         vset_prof=None,  # voltage set point profile
-                         active=True  # Is active?
-                         )
-grid.add_controlled_generator(bus1, g1)
+g1 = Generator(name='gen',
+               active_power=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
+               voltage_module=1.0,  # Voltage set point to control
+               Qmin=-9999,  # minimum reactive power in MVAr
+               Qmax=9999,  # Maximum reactive power in MVAr
+               Snom=9999,  # Nominal power in MVA
+               power_prof=None,  # power profile
+               vset_prof=None,  # voltage set point profile
+               active=True  # Is active?
+               )
+grid.add_generator(bus1, g1)
 
 ########################################################################################################################
 # Add the lines
