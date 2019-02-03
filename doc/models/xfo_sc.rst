@@ -53,15 +53,27 @@ In GridCal I found the need to find the short circuit values (:math:`P_{cu}, V_{
 
     z_{sc} = \sqrt{R^2 + X^2}
 
+.. math::
+
     V_{sc} = 100 \cdot z_{sc}
+
+.. math::
 
     P_{cu} = R \cdot S_n \cdot 1000
 
+.. math::
+
     zl = 1 / (G + j B)
+
+.. math::
 
     r_{fe} = zl.real
 
+.. math::
+
     xm = zl.imag
+
+.. math::
 
     I0 = 100 \cdot \sqrt{1 / r_{fe}^2 + 1 / xm^2}
 

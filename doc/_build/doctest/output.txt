@@ -1,9 +1,0 @@
-Results of doctest builder run on 2019-01-20 13:33:26
-=====================================================
-
-Doctest summary
-===============
-    0 tests
-    0 failures in tests
-    0 failures in setup code
-    0 failures in cleanup code

@@ -3,9 +3,14 @@
 Newton-Raphson-Iwamoto
 ======================
 
-The Newton-Raphson method is the standard power flow method tough at schools. GridCal implements a slight but important modification of this method that turns it into a more robust, industry-standard algorithm. The Newton Raphson method is the first order Taylor approximation of the power flow equation. The method implemented in GridCal is the second order approximation, let's see how.
+The Newton-Raphson method is the standard power flow method tough at schools.
+GridCal implements a slight but important modification of this method that turns it
+into a more robust, industry-standard algorithm. The Newton Raphson method is the first
+order Taylor approximation of the power flow equation. The method implemented in
+GridCal is the second order approximation, let's see how.
 
-The expression to update the voltage solution in the Newton-Raphson algorithm is the following:
+The expression to update the voltage solution in the Newton-Raphson algorithm is the
+following:
 
 .. math::
 
@@ -44,7 +49,11 @@ The formulation implemented in GridCal includes the optimal acceleration paramet
 
     \textbf{V}_{t+1} = \textbf{V}_t + \mu \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
 
-Here *µ* is the Iwamoto optimal step size parameter. In 1982 S. Iwamoto and Y. Tamura present a method \cite{iwamoto1981load} where the Jacobian matrix *J* is only computed at the beginning, and the iteration control parameter *µ* is computed on every iteration. In GridCal I compute *J* and *µ* on every iteration getting a more robust method on the expense of a greater computational effort.
+Here *µ* is the Iwamoto optimal step size parameter. In 1982 S. Iwamoto and Y. Tamura
+present a method [1]_  where the Jacobian matrix *J* is only computed at the beginning,
+and the iteration control parameter *µ* is computed on every iteration. In GridCal I
+compute *J* and *µ* on every iteration getting a more robust method on the expense of a
+greater computational effort.
 
 To compute the parameter *µ* we must do the following:
 
@@ -56,24 +65,35 @@ To compute the parameter *µ* we must do the following:
     \textbf{b} = \textbf{J} \times \textbf{dx}
     \textbf{c} = \frac{1}{2} \textbf{dx} \cdot (\textbf{J'} \times \textbf{dx})
 
+.. math::
+
     g_0 = -\textbf{a} \cdot \textbf{b}
     g_1 = \textbf{b} \cdot \textbf{b} + 2  \textbf{a} \cdot \textbf{c}
     g_2 = -3  \textbf{b} \cdot \textbf{c}
     g_3 = 2  \textbf{c} \cdot \textbf{c}
 
+.. math::
+
     G(x) = g_0 + g_1x + g_2x^2 + g_3x^3
+
+.. math::
 
     µ = solve(G(x), x_0=1)
 
-There will be three solutions to the polynomial *G(x)*. Only the last solution will be real, and therefore it is the only valid value for *µ*.
-The polynomial can be solved numerically using *1* as the seed.
+There will be three solutions to the polynomial :math:`G(x)`. Only the last solution
+will be real, and therefore it is the only valid value for :math:`µ`. The polynomial
+can be solved numerically using *1* as the seed.
 
-The matrix :math:`\textbf{J'}` is the Jacobian matrix computed using the voltage derivative numerically computed as the voltage increment :math:`\textbf{dV}= \textbf{V}_{t} - \textbf{V}_{t-1}` (voltage difference between the current and the previous iteration).  
+The matrix :math:`\textbf{J'}` is the Jacobian matrix computed using the voltage
+derivative numerically computed as the voltage increment
+:math:`\textbf{dV}= \textbf{V}_{t} - \textbf{V}_{t-1}` (voltage difference between the
+current and the previous iteration).  
 
 Jacobian
 --------
 
-The Jacobian matrix is the derivative of the power flow equation for a given voltage set of values.
+The Jacobian matrix is the derivative of the power flow equation for a given voltage
+set of values.
 
 .. math::
 
@@ -108,3 +128,4 @@ Where:
 
 This Jacobian form can be used for other methods.
 
+.. [1] Iwamoto, S., and Y. Tamura. "A load flow calculation method for ill-conditioned power systems." IEEE transactions on power apparatus and systems 4 (1981): 1736-1743.

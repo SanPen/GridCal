@@ -5,7 +5,7 @@ Universal Branch Model
 
 The following describes the model that is applied to each type of admittance matrix in the `apply_to()` function inside the `Branch` object seen before. The model implemented to describe the behavior of the transformers and lines is the π model.
 
-.. figure:: ../Documentation/GridCal/Pictures/pi-trafo.dia
+.. figure:: ../figures/pi_trafo.png
     :alt: π model of a branch
 
     π model of a branch
@@ -29,6 +29,8 @@ Then we compose the equivalent series and shunt admittance values of the branch.
 
     Y_s = \frac{1}{z_{series}}
 
+.. math::
+
     Y_{sh} = \frac{y_{shunt}}{2}
 
 - :math:`z_{series}`: Complex series impedance of the branch composed by the line resistance and its inductance.
@@ -51,9 +53,15 @@ In this matrix, the elements are the following:
 
     Y_{ff} = \frac{Y_s + Y_{sh}}{tap \cdot conj(tap)}
 
+.. math::
+
     Y_{ft} = - Y_s / conj(tap)
 
+.. math::
+
     Y_{tf} = - Y_s / tap
+
+.. math::
 
     Y_{tt} = Y_s + Y_{sh}
 
@@ -66,9 +74,15 @@ The branch admittance values are applied to the complete admittance matrix as fo
 
     {Y_{bus}}_{f, f} = {Y_{bus}}_{f, f} + Y_{ff}
 
+.. math::
+
     {Y_{bus}}_{f, t} = {Y_{bus}}_{f, t} + Y_{ft}
 
+.. math::
+
     {Y_{bus}}_{t, f} = {Y_{bus}}_{t, f} + Y_{tf}
+
+.. math::
 
     {Y_{bus}}_{t, t} = {Y_{bus}}_{t, t} + Y_{tt}
 
@@ -82,6 +96,8 @@ Yshunt
 
     {Y_{shunt}}_f = {Y_{shunt}}_f + Y_{sh}
 
+.. math::
+
     {Y_{shunt}}_t = {Y_{shunt}}_t + \frac{Y_{sh}}{tap \cdot conj(tap)}
 
 Yseries
@@ -91,9 +107,15 @@ Yseries
 
     {Y_{series}}_{f, f} = {Y_{series}}_{f, f} + \frac{Y_{s}}{tap \cdot conj(tap)}
 
+.. math::
+
     {Y_{series}}_{f, t} = {Y_{series}}_{f, t} + Y_{ft}
 
+.. math::
+
     {Y_{series}}_{t, f} = {Y_{series}}_{t, f} + Y_{tf}
+
+.. math::
 
     {Y_{series}}_{t, t} = {Y_{series}}_{t, t} + Y_{s}
 
@@ -104,9 +126,15 @@ Yf and Yt
 
     {Y_f}_{i, f} = {Y_f}_{i, f} + Y_{ff}
 
+.. math::
+
     {Y_f}_{i, t} = {Y_f}_{i, t} + Y_{ft}
 
+.. math::
+
     {Y_t}_{i, f} = {Y_t}_{i, f} + Y_{tf}
+
+.. math::
 
     {Y_t}_{i, t} = {Y_t}_{i, t} + Y_{tt}
 

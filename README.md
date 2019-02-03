@@ -2,139 +2,34 @@
 
 # What is this?
 
-This software aims to be a complete platform for power systems research and simulation. [Watch the video](https://youtu.be/7BbO7KKWwEY) and
- [check out the manual](https://github.com/SanPen/GridCal/blob/master/Documentation/GridCal/Manual_of_GridCal.pdf)
+This software aims to be a complete platform for power systems research and simulation.
+[Watch the video](https://youtu.be/7BbO7KKWwEY) and
+[check out the documentation](https://gridcal.readthedocs.io)
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
+# Installation
 
-# Standalone setup
+Follow the
+[installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
+from the project's documentation.
 
-You can install GridCal as a separated standalone program without having to bother about setting up python.
+# Execution
 
-[GridCal for windows x64](https://sanpv.files.wordpress.com/2018/11/gridcalsetup.zip)
+GridCal can be used in 2 ways:
 
-[GridCal for linux x64](https://sanpv.files.wordpress.com/2018/11/gridcal-standalone-linux.zip)
+1. With a GUI;
+2. As a library.
 
-Remember to update the program to the latest version once installed. You'll find an update script in the installation folder.
+Executing `python3 -c "from GridCal.ExecuteGridCal import run; run()"` in a console
+should bring up the GUI under most platforms. For detailed instructions, follow the
+[instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
+from the project's documentation.
 
-# Python package installation
+# Examples
 
-GridCal is multiplatform and it will work in Linux, Windows and OSX.
-
-The recommended way to install GridCal if you have a python distribution already is to open a console and type:
-
-`pip install GridCal` (Windows)
-
-`pip3 install GridCal` (Linux / OSX)
-
-*You must have Python 3.6 or higher installed to work with the GUI
-
-Check out the video on how to install [**Python and GridCal on Windows 10**.](https://youtu.be/yGxMq2JB1Zo)
-
-### Manual package installation
-
-Sometimes `pip` does not download the lattest version for some reason. In those cases, go to https://pypi.python.org/pypi/GridCal/ and download the lattest GridCal file: `GridCal-x.xx.tar.gz`.
-
-From a console install the file manually:
-
-Windows: `pip install GridCal-x.xx.tar.gz`
-
-OSX/Linux: `pip3 install GridCal-x.xx.tar.gz`
-
-### Installation from GitHub
-
-To install the development version of `GridCal` that lives under `UnderDevelopment`, open a console and type:
-
-    python3 -m pip install -e 'git+git://github.com/SanPen/GridCal.git#egg=GridCal&subdirectory=UnderDevelopment'
-
-Installing `GridCal` from GitHub, `pip` can still freeze the version using a commit hash:
-
-    python -m pip install -e 'git+git://github.com/SanPen/GridCal.git@5c4dcb96998ae882412b5fee977cf0cff7a40d3c#egg=GridCal&subdirectory=UnderDevelopment'
-
-Here `5c4dcb96998ae882412b5fee977cf0cff7a40d3c` is the git version.
-
-# Run with user interface
-
-From a Python console:
-
-```
-from GridCal.ExecuteGridCal import run
-run()
-```
-
-Or directly from the shell:
-
-- (Windows, with python 3.6 or higher)
-
-    `python -c "from GridCal.ExecuteGridCal import run; run()"`
-
-- (Linux/OSX)
-
-    `python3 -c "from GridCal.ExecuteGridCal import run; run()"`
-
-The GUI should pop up.
-
-# Using GridCal as a library
-
-You can use the calculation engine directly or from other applications:
-
-`from GridCal.Engine.All import *`
-
-There are tutorials available at the folder:
-
-`GridCal/Tutorials/`
-
-The circuit internal calculation matrices divided by islands are accessible. You can use those matrices and vector to do research.
-
-
-Example:
-```
-from GridCal.Engine.All import *
-
-# Declare a multi-circuit object: this is an asset-based circuit representation that is object based
-grid = MultiCircuit()
-
-# Load the IEEE30 bus grid in the circuit object
-grid.load_file('IEEE30.xlsx')
-
-# Compile the assets of the MultiCircuit into a numerical equivalent
-numerical_circuit = self.circuit.compile()
-
-# Compute the islands of the numerical circuit (each island is self contained for computation)
-numerical_input_islands = numerical_circuit.compute()
-
-for island in numerical_input_islands:
-    # Print some useful computed vectors and matrices
-    print('\nAdmittance matrix:\n', island.Ybus.todense())
-    print('\nAdmittance matrix of the series elements:\n', island.Yseries.todense())
-    print('\nShunt admittances:\n', island.Ysh)
-    print('\nPower injections:\n', island.Sbus)
-    print('\nCurrent injections:\n', island.Ibus)
-    print('\nInitial voltage:\n', island.Vbus)
-    print('\nList of bus types:\n', island.types)
-    print('\nList of PQ buses:\n', island.pq)
-    print('\nList of PV buses:\n', island.pv)
-    print('\nList of Alack buses:\n', island.ref)
-```
-
-The main logic is to store the grid elements information in objects, and then "compile the objects" to get efficient arrays that represent the grid for calculation.
-
-The compilation detects the islands formed in the grid and treats each island as a different power system. Then the results are merged back into single multi-island vectors of results.
-
-All the engine objects and calculations can be accessed through the embedded python console in the GUI.
-
-## Testing with pytest
-
-Unit test (for pytest) are included in `UnderDevelopment\tests`. As defined in `pytest.ini`, all files matching `test_*.py` are executed by running:
-
-```
-pytest
-```
-
-Files matching `*_test.py` are not executed; they were not formatted specifically for `pytest` but were mostly done for manual testing and documentation purposes.
-
-Additional tests should be developped for each new and existing feature. `pytest` should be run before each commit to prevent easily detectable bugs.
+Examples are included in `Tutorials` folder of the GitHub repository. In addition, the
+tests under `src/tests` may serve as valuable examples.
 
 # Features overview
 
@@ -190,6 +85,8 @@ Some of the features you'll find already are:
 
 - Export the schematic in SVG and PNG formats.
 
-Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) to learn more and to get started.
+Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) and the
+[check out the documentation](https://gridcal.readthedocs.io) to learn more and to
+get started.
 
 Send feedback and requests to santiago.penate.vera@gmail.com.
