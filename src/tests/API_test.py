@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Importers.file_handler import *
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, SolverType
 from GridCal.Engine.Drivers.short_circuit_driver import *
 from GridCal.Engine.Drivers.time_series_driver import *
@@ -29,7 +29,6 @@ from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
 
-    main_circuit = MultiCircuit()
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
     # fname = 'Pegasus 89 Bus.xlsx'
     # fname = 'Illinois200Bus.xlsx'
@@ -46,7 +45,7 @@ if __name__ == '__main__':
     # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
 
     print('Reading...')
-    main_circuit.load_file(fname)
+    main_circuit = FileOpen(fname).open()
     options = PowerFlowOptions(SolverType.NR, verbose=False,
                                initialize_with_existing_solution=False,
                                multi_core=False, dispatch_storage=True,

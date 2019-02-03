@@ -18,7 +18,6 @@ from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Engine.device_types import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI
@@ -41,7 +40,8 @@ from GridCal.Engine.Drivers.voltage_collapse_driver import *
 from GridCal.Engine.Drivers.topology_driver import TopologyReduction, TopologyReductionOptions
 from GridCal.Engine.Drivers.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
-
+from GridCal.Engine.device_types import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
+from GridCal.Engine.Importers.file_handler import *
 import GridCal.Engine.plot_config as plot_config
 
 import gc
@@ -125,82 +125,6 @@ class ElementsDialogue(QtWidgets.QDialog):
     def accept_click(self):
         self.accepted = True
         self.accept()
-
-
-class FileOpenThread(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
-
-    def __init__(self, app, file_name):
-        """
-
-        :param app: instance of MainGui
-        """
-        QThread.__init__(self)
-
-        self.app = app
-
-        self.file_name = file_name
-
-        self.valid = False
-
-        self.logger = list()
-
-        self.circuit = None
-
-        self.__cancel__ = False
-
-    def progress_callback(self, val):
-        """
-        Send progress report
-        :param val: lambda value
-        :return: None
-        """
-        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(val) + '...')
-
-    def open_file_process(self, filename):
-        """
-        process to open a file without asking
-        :return:
-        """
-
-        # print(filename)
-        self.circuit = MultiCircuit()
-
-        path, fname = os.path.split(filename)
-
-        self.progress_text.emit('Loading ' + fname + '...')
-
-        self.logger = list()
-
-        self.logger += self.circuit.load_file(filename=filename)
-        self.valid = True
-
-        # try:
-        #     self.logger += self.circuit.load_file(filename=filename)
-        #
-        #     self.valid = True
-        #
-        # except Exception as ex:
-        #     exc_type, exc_value, exc_traceback = sys.exc_info()
-        #     self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
-        #     self.valid = False
-
-        # post events
-        self.progress_text.emit('Creating schematic...')
-
-    def run(self):
-        """
-        run the voltage collapse simulation
-        @return:
-        """
-        self.open_file_process(filename=self.file_name)
-
-        self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
 
 
 class MainGUI(QMainWindow):
@@ -1140,14 +1064,16 @@ class MainGUI(QMainWindow):
 
             # call to save the file in the circuit
 
-            # logger = self.circuit.save_file(filename)
+            # file_handler = FileSave(self.circuit, filename)
+            # logger = file_handler.save()
             #
             # if len(logger) > 0:
             #     dlg = LogsDialogue('Save file logger', logger)
             #     dlg.exec_()
 
             try:
-                logger = self.circuit.save_file(filename)
+                file_handler = FileSave(self.circuit, filename)
+                logger = file_handler.save()
 
                 if len(logger) > 0:
                     dlg = LogsDialogue('Save file logger', logger)

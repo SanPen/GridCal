@@ -2,8 +2,8 @@ from GridCal.Engine import *
 
 import os
 
+
 def test_all_grids():
-    circuit = MultiCircuit()
 
     curr_path = os.path.dirname(__file__)  # get the directory of this file
     grids_path = os.path.join(curr_path, '..', '..', 'Grids_and_profiles', 'grids')  # navigate to the grids folder
@@ -17,8 +17,8 @@ def test_all_grids():
         print('-' * 160)
         print('Loading', file_name, '...', end='')
         try:
-            circuit = MultiCircuit()
-            circuit.load_file(path)
+            file_handler = FileOpen(path)
+            circuit = file_handler.open()
             circuit.compile()
             print('ok')
         except:
@@ -32,8 +32,12 @@ def test_all_grids():
     for f in failed:
         print('Attempting', f)
         path = os.path.join(grids_path, f)
-        circuit = MultiCircuit()
-        circuit.load_file(path)
+        file_handler = FileOpen(path)
+        circuit = file_handler.open()
         circuit.compile()
 
     return len(failed) == 0
+
+
+if __name__ == '__main__':
+    test_all_grids()

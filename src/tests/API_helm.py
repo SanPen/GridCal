@@ -19,13 +19,13 @@ from GridCal.Engine import *
 from GridCal.Engine.Drivers.power_flow_driver import *
 
 np.set_printoptions(precision=4)
-grid = MultiCircuit()
 
+# fname = 'Muthu4Bus.xls'
+# fname = 'IEEE_30BUS.xls'
+fname = 'IEEE_39Bus.xls'
+# fname = 'case9target.xls'
 
-# grid.load_file('Muthu4Bus.xls')
-# grid.load_file('IEEE_30BUS.xls')
-grid.load_file('IEEE_39Bus.xls')
-# grid.load_file('case9target.xls')
+grid = FileOpen(fname).open()
 grid.compile()
 
 # print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())

@@ -16,7 +16,6 @@
 import networkx as nx
 from scipy.sparse import lil_matrix, diags, csc_matrix
 
-
 from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.devices import *
 from GridCal.Engine.io_structures import CalculationInputs

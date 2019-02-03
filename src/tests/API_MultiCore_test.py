@@ -17,7 +17,7 @@ from GridCal.Engine import *
 from GridCal.Engine.Drivers.power_flow_driver import *
 from multiprocessing import Pool
 
-grid = MultiCircuit()
+
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
@@ -25,7 +25,7 @@ fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_
 # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE_30_new.xlsx'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
-grid.load_file(fname)
+grid = FileOpen(fname).open()
 grid.compile()
 
 options = PowerFlowOptions(SolverType.NR, verbose=False)

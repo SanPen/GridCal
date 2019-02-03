@@ -33,8 +33,7 @@ from matplotlib import pyplot as plt
 fname = 'C:\\Users\\spenate\\Documents\\PROYECTOS\\Monash\\phase0\\Grid\\Monash University Campus with profiles.xlsx'
 
 print('loading...')
-grid = MultiCircuit()
-grid.load_file(fname)
+grid = FileOpen(fname).open()
 grid.compile()
 
 opf_options = OptimalPowerFlowOptions(load_shedding=False)
