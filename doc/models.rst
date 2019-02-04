@@ -4,7 +4,7 @@ Models
 ======
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
 
     models/admittance_matrices
     models/branch_model

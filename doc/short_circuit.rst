@@ -4,6 +4,6 @@ Short Circuit
 =============
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
 
     short_circuit/3_phase_sc
