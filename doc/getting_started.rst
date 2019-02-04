@@ -4,7 +4,7 @@ Getting Started
 ===============
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
 
     getting_started/install
     getting_started/run_with_interface
