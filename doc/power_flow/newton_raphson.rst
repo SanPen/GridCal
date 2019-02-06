@@ -49,27 +49,48 @@ The formulation implemented in GridCal includes the optimal acceleration paramet
 
     \textbf{V}_{t+1} = \textbf{V}_t + \mu \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
 
-Here *µ* is the Iwamoto optimal step size parameter. In 1982 S. Iwamoto and Y. Tamura
-present a method [1]_  where the Jacobian matrix *J* is only computed at the beginning,
-and the iteration control parameter *µ* is computed on every iteration. In GridCal I
-compute *J* and *µ* on every iteration getting a more robust method on the expense of a
+Here **µ** is the Iwamoto optimal step size parameter. In 1982 S. Iwamoto and Y. Tamura
+present a method [1]_  where the Jacobian matrix **J** is only computed at the beginning,
+and the iteration control parameter **µ** is computed on every iteration. In GridCal I
+compute **J** and **µ** on every iteration getting a more robust method on the expense of a
 greater computational effort.
 
-To compute the parameter *µ* we must do the following:
+To compute the parameter **µ** we must do the following:
 
 .. math::
 
     \textbf{J'} = Jacobian(\textbf{Y}, \textbf{dV})
+
+.. math::
+
     \textbf{dx} = \textbf{J}^{-1}(\textbf{S}_0 - \textbf{S}_{calc})
+
+.. math::
+
     \textbf{a} = \textbf{S}_0 - \textbf{S}_{calc}
+
+.. math::
+
     \textbf{b} = \textbf{J} \times \textbf{dx}
+
+.. math::
+
     \textbf{c} = \frac{1}{2} \textbf{dx} \cdot (\textbf{J'} \times \textbf{dx})
 
 .. math::
 
     g_0 = -\textbf{a} \cdot \textbf{b}
+
+.. math::
+
     g_1 = \textbf{b} \cdot \textbf{b} + 2  \textbf{a} \cdot \textbf{c}
+
+.. math::
+
     g_2 = -3  \textbf{b} \cdot \textbf{c}
+
+.. math::
+
     g_3 = 2  \textbf{c} \cdot \textbf{c}
 
 .. math::
@@ -87,7 +108,7 @@ can be solved numerically using *1* as the seed.
 The matrix :math:`\textbf{J'}` is the Jacobian matrix computed using the voltage
 derivative numerically computed as the voltage increment
 :math:`\textbf{dV}= \textbf{V}_{t} - \textbf{V}_{t-1}` (voltage difference between the
-current and the previous iteration).  
+current and the previous iteration).
 
 Jacobian
 --------
@@ -116,7 +137,7 @@ Where:
 
 Here we introduced two complex-valued derivatives:
 
-- :math:`\frac{\partial S}{\partial \theta} = V_{diag} \cdot (Y_{bus} \times V_{diag,norm})^* + I_{diag}^* \cdot V_{diag,norm}` 
+- :math:`\frac{\partial S}{\partial \theta} = V_{diag} \cdot (Y_{bus} \times V_{diag,norm})^* + I_{diag}^* \cdot V_{diag,norm}`
 - :math:`\frac{\partial S}{\partial |V|} =  1j \cdot V_{diag} \cdot (I_{diag} - Y_{bus} \times V_{diag})^*`
 
 Where:
