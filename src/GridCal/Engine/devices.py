@@ -563,16 +563,73 @@ class Bus(EditableDevice):
 
 
 class TapChanger:
+    """
+    The `TapChanger` class defines a transformer's tap changer, both onload and offload.
+    It needs to be attached to a predefined transformer, for example:
+
+    .. code:: ipython3
+
+        from GridCal.Engine.Core.multi_circuit import MultiCircuit
+        from GridCal.Engine.devices import *
+        from GridCal.Engine.device_types import *
+
+        # Create grid
+        grid = MultiCircuit()
+
+        # Create buses
+        POI = Bus(name="POI",
+                  vnom=100, #kV
+                  is_slack=True)
+        grid.add_bus(POI)
+
+        B_C3 = Bus(name="B_C3",
+                   vnom=10) #kV
+        grid.add_bus(B_C3)
+
+        # Create transformer types
+        SS = TransformerType(name="SS",
+                             hv_nominal_voltage=100, # kV
+                             lv_nominal_voltage=10, # kV
+                             nominal_power=100, # MVA
+                             copper_losses=1250, # kW
+                             iron_losses=125, # kW
+                             no_load_current=0.5, # %
+                             short_circuit_voltage=8) # %
+        grid.add_transformer_type(SS)
+
+        # Create transformer
+        X_C3 = Branch(bus_from=POI,
+                      bus_to=B_C3,
+                      name="X_C3",
+                      branch_type=BranchType.Transformer,
+                      template=SS,
+                      bus_to_regulated=True,
+                      vset=1.05)
+
+        # Attach tap changer
+        X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1, min_reg=0.9)
+        X_C3.tap_changer.set_tap(X_C3.tap_module)
+
+        # Add transformer to grid
+        grid.add_branch(X_C3)
+
+    Arguments:
+
+        **taps_up** (int, 5): Number of taps position up
+
+        **taps_down** (int, 5): Number of tap positions down
+
+        **max_reg** (float, 1.1): Maximum regulation up i.e 1.1 -> +10%
+
+        **min_reg** (float, 0.9): Maximum regulation down i.e 0.9 -> -10%
+
+    Additional Properties:
+
+        **tap** (int, 0): Current tap position
+
+    """
 
     def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
-        """
-        Tap changer
-        Args:
-            taps_up: Number of taps position up
-            taps_down: Number of tap positions down
-            max_reg: Maximum regulation up i.e 1.1 -> +10%
-            min_reg: Maximum regulation down i.e 0.9 -> -10%
-        """
         self.max_tap = taps_up
 
         self.min_tap = -taps_down

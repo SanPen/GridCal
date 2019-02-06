@@ -5,6 +5,9 @@ Devices
 
 .. module:: GridCal.Engine.devices
 
+Devices in **GridCal** need to be defined and added to the :ref:`MultiCircuit` object,
+using its addition methods (methods starting with `add_`).
+
 Battery
 -------
 

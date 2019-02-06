@@ -28,25 +28,26 @@ from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, 
 class MultiCircuit:
     """
     The concept of circuit should be easy enough to understand. It represents a set of
-    nodes (buses) and branches (lines, transformers or other impedances).
+    nodes (:ref:`buses<Bus>`) and :ref:`branches<Branch>` (lines, transformers or other
+    impedances).
 
-    The `MultiCircuit` class is the main object in GridCal. It represents a circuit that
-    may contain islands. It is important to understand that a circuit split in two or
-    more islands cannot be simulated as is, because the admittance matrix would be
+    The `MultiCircuit` class is the main object in **GridCal**. It represents a circuit
+    that may contain islands. It is important to understand that a circuit split in two
+    or more islands cannot be simulated as is, because the admittance matrix would be
     singular. The solution to this is to split the circuit in island-circuits. Therefore
     `MultiCircuit` identifies the islands and creates individual `Circuit` objects for
     each of them.
 
-    GridCal uses an object oriented approach for the data management. This allows to
+    **GridCal** uses an object oriented approach for the data management. This allows to
     group the data in a smart way. In GridCal there are only two types of object
-    directly declared in a `Circuit` or `MultiCircuit` object. These are the `Bus` and
-    the `Branch`. The branches connect the buses and the buses contain all the other
-    possible devices like loads, generators, batteries, etc. This simplifies enormously
-    the management of element when adding, associating and deleting.
+    directly declared in a `Circuit` or `MultiCircuit` object. These are the :ref:`Bus`
+    and the :ref:`Branch`. The branches connect the buses and the buses contain all the
+    other possible devices like loads, generators, batteries, etc. This simplifies
+    enormously the management of element when adding, associating and deleting.
 
     .. code:: ipython3
 
-        from GridCal.Engine.calculation_engine import MultiCircuit
+        from GridCal.Engine.Core.multi_circuit import MultiCircuit
         grid = MultiCircuit(name="My grid")
 
     """

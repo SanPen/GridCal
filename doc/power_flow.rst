@@ -4,7 +4,7 @@ Power Flow
 ==========
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
 
     power_flow/newton_raphson
     power_flow/levenberg_marquardt

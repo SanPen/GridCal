@@ -281,7 +281,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                 # plot
                 axs[j] = fig.add_subplot(k, k + 1, j + 1)
                 axs[j].set_facecolor('white')
-                axs[j].hist(x, bins=100, range=r, density=None, weights=None,
+                axs[j].hist(x, bins=100, range=r,
                             cumulative=False, bottom=None, histtype='bar',
                             align='mid', orientation='vertical')
                 axs[j].plot(x, np.zeros(n), 'o')

@@ -1,9 +1,10 @@
 .. _multicircuit:
 
-Circuit and MultiCircuit
-========================
+MultiCircuit
+============
 
-.. module:: GridCal.Engine.calculation_engine
+.. module:: GridCal.Engine.Core.multi_circuit
 
 .. autoclass:: MultiCircuit
     :members:
+
