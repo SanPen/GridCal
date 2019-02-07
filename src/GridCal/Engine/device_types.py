@@ -713,9 +713,6 @@ class TransformerType(EditableDevice):
             leakage_impedance: Series impedance
             magnetizing_impedance: Shunt impedance
         """
-        Vhv = self.HV_nominal_voltage
-
-        Vlv = self.LV_nominal_voltage
 
         Sn = self.Nominal_power
 
@@ -726,10 +723,6 @@ class TransformerType(EditableDevice):
         I0 = self.No_load_current
 
         Vsc = self.Short_circuit_voltage
-
-        GRhv = self.GR_hv1
-
-        GXhv = self.GX_hv1
 
         # Series impedance
         zsc = Vsc / 100.0
