@@ -765,7 +765,7 @@ class Branch(ReliabilityDevice):
         
         **active** (bool, True): Is the branch active?
         
-        **tolerance** (float, 0): Tolerance specified for the branch impedance
+        **tolerance** (float, 0): Tolerance specified for the branch impedance in %
         
         **mttf** (float, 0.0): Mean time to failure in hours
         
