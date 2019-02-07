@@ -666,35 +666,6 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
-        # self.edit_headers = ['name',
-        #                      'HV_nominal_voltage',
-        #                      'LV_nominal_voltage',
-        #                      'Nominal_power',
-        #                      'Copper_losses',
-        #                      'Iron_losses',
-        #                      'No_load_current',
-        #                      'Short_circuit_voltage']
-        #
-        # self.units = ['',
-        #               'kV',
-        #               'kV',
-        #               'MVA',
-        #               'kW',
-        #               'kW',
-        #               '%',
-        #               '%']
-        #
-        # self.non_editable_indices = list()
-        #
-        # self.edit_types = {'name': str,
-        #                    'HV_nominal_voltage': float,
-        #                    'LV_nominal_voltage': float,
-        #                    'Nominal_power': float,
-        #                    'Copper_losses': float,
-        #                    'Iron_losses': float,
-        #                    'No_load_current': float,
-        #                    'Short_circuit_voltage': float}
-
     def __str__(self):
         return self.name
 
