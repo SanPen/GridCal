@@ -754,9 +754,6 @@ class TransformerType(EditableDevice):
 
         return zs, zsh
 
-    def __str__(self):
-        return self.name
-
 
 def get_d_ij(xi, yi, xj, yj):
     """
