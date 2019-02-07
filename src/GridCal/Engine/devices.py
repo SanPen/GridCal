@@ -564,8 +564,12 @@ class Bus(EditableDevice):
 
 class TapChanger:
     """
-    The `TapChanger` class defines a transformer's tap changer, both onload and offload.
-    It needs to be attached to a predefined transformer, for example:
+    The **TapChanger** class defines a transformer's tap changer, either onload or
+    offload. It needs to be attached to a predefined transformer (i.e. a
+    :ref:`Branch<branch>` object).
+    
+    The following example shows how to attach a tap changer to a transformer tied to a
+    voltage regulated :ref:`bus`:
 
     .. code:: ipython3
 
@@ -591,7 +595,7 @@ class TapChanger:
                              hv_nominal_voltage=100, # kV
                              lv_nominal_voltage=10, # kV
                              nominal_power=100, # MVA
-                             copper_losses=1250, # kW
+                             copper_losses=10000, # kW
                              iron_losses=125, # kW
                              no_load_current=0.5, # %
                              short_circuit_voltage=8) # %
@@ -612,7 +616,7 @@ class TapChanger:
 
         # Add transformer to grid
         grid.add_branch(X_C3)
-
+    
     Arguments:
 
         **taps_up** (int, 5): Number of taps position up
@@ -668,7 +672,11 @@ class TapChanger:
     def set_tap(self, tap_module):
         """
         Set the integer tap position corresponding to a tap value
-        @param tap_module: value like 1.05
+
+        Attribute:
+
+            **tap_module** (float): Tap module centered around 1.0
+
         """
         if tap_module == 1.0:
             self.tap = 0
@@ -679,40 +687,118 @@ class TapChanger:
 
 
 class Branch(ReliabilityDevice):
+    """
+    The **Branch** class represents the connections between nodes (i.e.
+    :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
+    transformer, etc.) with an electrical impedance. The basic **Branch** class
+    includes basic electrical attributes for most passive elements, but other
+    :ref:`device types<device_types>` may be passed to the **Branch** constructor to
+    configure it as a specific type.
+
+    For example, a transformer may be created with the following code:
+
+    .. code:: ipython3
+
+        from GridCal.Engine.Core.multi_circuit import MultiCircuit
+        from GridCal.Engine.devices import *
+        from GridCal.Engine.device_types import *
+
+        # Create grid
+        grid = MultiCircuit()
+
+        # Create buses
+        POI = Bus(name="POI",
+                  vnom=100, #kV
+                  is_slack=True)
+        grid.add_bus(POI)
+
+        B_C3 = Bus(name="B_C3",
+                   vnom=10) #kV
+        grid.add_bus(B_C3)
+
+        # Create transformer types
+        SS = TransformerType(name="SS",
+                             hv_nominal_voltage=100, # kV
+                             lv_nominal_voltage=10, # kV
+                             nominal_power=100, # MVA
+                             copper_losses=10000, # kW
+                             iron_losses=125, # kW
+                             no_load_current=0.5, # %
+                             short_circuit_voltage=8) # %
+        grid.add_transformer_type(SS)
+
+        # Create transformer
+        X_C3 = Branch(bus_from=POI,
+                      bus_to=B_C3,
+                      name="X_C3",
+                      branch_type=BranchType.Transformer,
+                      template=SS,
+                      )
+
+        # Add transformer to grid
+        grid.add_branch(X_C3)
+
+    Refer to the :ref:`TapChanger<tap_changer>` class for an example using a
+    voltage regulator.
+
+    Arguments:
+
+        **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object
+
+        **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object
+        
+        **name** (str, "Branch"): Name of the branch
+        
+        **r** (float, 1e-20): Branch resistance in per unit
+        
+        **x** (float, 1e-20): Branch reactance in per unit
+        
+        **g** (float, 1e-20): Branch shunt conductance in per unit
+        
+        **b** (float, 1e-20): Branch shunt susceptance in per unit
+        
+        **rate** (float, 1.0): Branch rate in MVA
+        
+        **tap** (float, 1.0): Branch tap module
+        
+        **shift_angle** (int, 0): Tap shift angle in radians
+        
+        **active** (bool, True): Is the branch active?
+        
+        **tolerance** (float, 0): Tolerance specified for the branch impedance
+        
+        **mttf** (float, 0.0): Mean time to failure in hours
+        
+        **mttr** (float, 0.0): Mean time to recovery in hours
+        
+        **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
+        
+        **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
+        
+        **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
+        
+        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :ref:`BranchType.Transformer<transformer_type>`)
+        
+        **length** (float, 0.0): Length of the branch in km
+        
+        **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit
+        
+        **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C
+        
+        **temp_oper** (float, 20.0): Operating temperature in °C
+        
+        **alpha** (float, 0.0033): Thermal constant of the material in °C
+        
+        **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
+        
+        **template** (BranchTemplate, BranchTemplate()): Basic branch template
+    """
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType=BranchType.Line, length=1, vset=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
-        """
-
-        :param bus_from: "From" bus object
-        :param bus_to: "To" bus object
-        :param name: Name of the branch
-        :param r: Branch resistance in per unit
-        :param x: Branch reactance in per unit
-        :param g: Branch shunt conductance in per unit
-        :param b: Branch shunt susceptance in per unit
-        :param rate: Branch rate in MVA
-        :param tap: Branch tap module
-        :param shift_angle: Tap shift angle in radians
-        :param active: Is the branch active?
-        :param tolerance: tolerance specified for the branch impedance
-        :param mttf: Mean time to failure in hours
-        :param mttr: Mean time to recovery in hours
-        :param r_fault: Mid-line fault resistance in per unit (SC only)
-        :param x_fault: Mid-line fault reactance in per unit (SC only)
-        :param fault_pos: Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-        :param branch_type: Device type enumeration (ex.: BranchType.Transformer)
-        :param length: Length of the branch in km
-        :param vset: Voltage set-point of the voltage controlled bus in per unit
-        :param temp_base: Base temperature at which `r` is measured in °C
-        :param temp_oper: Operating temperature in °C
-        :param alpha: Thermal constant of the material in °C
-        :param bus_to_regulated:
-        :param template:
-        """
 
         ReliabilityDevice.__init__(self, name,
                                    active=active,
@@ -915,8 +1001,11 @@ class Branch(ReliabilityDevice):
     def apply_tap_changer(self, tap_changer: TapChanger):
         """
         Apply a new tap changer
-        Args:
-            tap_changer: Tap Changer object
+
+        Argument:
+
+            **tap_changer** (:ref:`TapChanger<tap_changer>`): Tap changer object
+
         """
         self.tap_changer = tap_changer
 
@@ -930,8 +1019,13 @@ class Branch(ReliabilityDevice):
         Get the branch virtual taps
 
         The virtual taps generate when a transformer nominal winding voltage differs from the bus nominal voltage
+
         Returns:
-            virtual taps at the from and to sides
+
+            **tap_f** (float, 1.0): Virtual tap at the *from* side
+
+            **tap_t** (float, 1.0): Virtual tap at the *to* side
+
         """
         if self.branch_type == BranchType.Transformer and type(self.template) == TransformerType:
             # resolve how the transformer is actually connected and set the virtual taps
@@ -959,8 +1053,15 @@ class Branch(ReliabilityDevice):
     def apply_template(self, obj, Sbase, logger=list()):
         """
         Apply a branch template to this object
-        Args:
-            obj: TransformerType or Tower object
+
+        Arguments:
+
+            **obj**: TransformerType or Tower object
+
+            **Sbase** (float): Nominal power in MVA
+
+            **logger** (list, []): Log list
+
         """
 
         if type(obj) is TransformerType:

@@ -678,21 +678,21 @@ class TransformerType(EditableDevice):
 
     def get_impedances(self):
         """
-        Compute the branch parameters of a transformer from the short circuit
-        test values
-        @return:
-            leakage_impedance: Series impedance
-            magnetizing_impedance: Shunt impedance
+        Compute the branch parameters of a transformer from the short circuit test
+        values.
+
+        Returns:
+
+            **zs** (complex): Series impedance in per unit
+
+            **zsh** (complex): Shunt impedance in per unit
+
         """
 
         Sn = self.Nominal_power
-
         Pcu = self.Copper_losses
-
         Pfe = self.Iron_losses
-
         I0 = self.No_load_current
-
         Vsc = self.Short_circuit_voltage
 
         # Series impedance
