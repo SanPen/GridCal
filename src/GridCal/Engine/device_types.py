@@ -666,35 +666,6 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
-        # self.edit_headers = ['name',
-        #                      'HV_nominal_voltage',
-        #                      'LV_nominal_voltage',
-        #                      'Nominal_power',
-        #                      'Copper_losses',
-        #                      'Iron_losses',
-        #                      'No_load_current',
-        #                      'Short_circuit_voltage']
-        #
-        # self.units = ['',
-        #               'kV',
-        #               'kV',
-        #               'MVA',
-        #               'kW',
-        #               'kW',
-        #               '%',
-        #               '%']
-        #
-        # self.non_editable_indices = list()
-        #
-        # self.edit_types = {'name': str,
-        #                    'HV_nominal_voltage': float,
-        #                    'LV_nominal_voltage': float,
-        #                    'Nominal_power': float,
-        #                    'Copper_losses': float,
-        #                    'Iron_losses': float,
-        #                    'No_load_current': float,
-        #                    'Short_circuit_voltage': float}
-
     def __str__(self):
         return self.name
 
@@ -707,29 +678,22 @@ class TransformerType(EditableDevice):
 
     def get_impedances(self):
         """
-        Compute the branch parameters of a transformer from the short circuit
-        test values
-        @return:
-            leakage_impedance: Series impedance
-            magnetizing_impedance: Shunt impedance
-        """
-        Vhv = self.HV_nominal_voltage
+        Compute the branch parameters of a transformer from the short circuit test
+        values.
 
-        Vlv = self.LV_nominal_voltage
+        Returns:
+
+            **zs** (complex): Series impedance in per unit
+
+            **zsh** (complex): Shunt impedance in per unit
+
+        """
 
         Sn = self.Nominal_power
-
         Pcu = self.Copper_losses
-
         Pfe = self.Iron_losses
-
         I0 = self.No_load_current
-
         Vsc = self.Short_circuit_voltage
-
-        GRhv = self.GR_hv1
-
-        GXhv = self.GX_hv1
 
         # Series impedance
         zsc = Vsc / 100.0
@@ -753,9 +717,6 @@ class TransformerType(EditableDevice):
         zsh = rm + 1j * xm
 
         return zs, zsh
-
-    def __str__(self):
-        return self.name
 
 
 def get_d_ij(xi, yi, xj, yj):

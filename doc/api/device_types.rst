@@ -11,6 +11,8 @@ Tower Type
 .. autoclass:: Tower
     :members:
 
+.. _transformer_type:
+
 Transformer Type
 ----------------
 

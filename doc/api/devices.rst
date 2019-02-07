@@ -54,6 +54,8 @@ Static Generator
 .. autoclass:: StaticGenerator
     :members:
 
+.. _tap_changer:
+
 Transformer Tap Changer
 -----------------------
 
