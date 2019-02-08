@@ -123,11 +123,18 @@ the voltage derivative numerically computed as the voltage increment
 current and the previous iteration).
 
 .. math::
+
     \textbf{dx} = \textbf{J}^{-1} \times  (\textbf{S}_0 - \textbf{S}_{calc})
+
+.. math::
 
     \textbf{a} = \textbf{S}_0 - \textbf{S}_{calc}
 
+.. math::
+
     \textbf{b} = \textbf{J} \times \textbf{dx}
+
+.. math::
 
     \textbf{c} = \frac{1}{2} \textbf{dx} \cdot (\textbf{J'} \times \textbf{dx})
 
@@ -135,9 +142,15 @@ current and the previous iteration).
 
     g_0 = -\textbf{a} \cdot \textbf{b}
 
+.. math::
+
     g_1 = \textbf{b} \cdot \textbf{b} + 2  \textbf{a} \cdot \textbf{c}
 
+.. math::
+
     g_2 = -3  \textbf{b} \cdot \textbf{c}
+
+.. math::
 
     g_3 = 2  \textbf{c} \cdot \textbf{c}
 
