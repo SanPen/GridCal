@@ -29,6 +29,8 @@ class EditableDevice:
 
         self.active = active
 
+        self.active_prof = None
+
         self.type_name = type_name
 
         # associated graphic object
