@@ -4988,6 +4988,9 @@ points from time series</string>
    <property name="text">
     <string>Online documentation</string>
    </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
   </action>
  </widget>
  <customwidgets>

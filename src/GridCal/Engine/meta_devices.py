@@ -30,6 +30,11 @@ class DeviceType(Enum):
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'
+    WireDevice = 'Wire'
+    SequenceLineDevice = 'Sequence line'
+    UnderGroundLineDevice = 'Underground line'
+    TowerDevice = 'Tower'
+    TransformerTypeDevice = 'Transformer type'
 
 
 class GCProp:

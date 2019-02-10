@@ -101,7 +101,7 @@ class ElementsDialogue(QtWidgets.QDialog):
 
         if len(elements) > 0:
             model = ObjectsModel(elements, elements[0].editable_headers,
-                                 parent=self.objects_table, editable=False, non_editable_indices=[1, 2, 14])
+                                 parent=self.objects_table, editable=False, non_editable_attributes=[1, 2, 14])
 
             self.objects_table.setModel(model)
 
@@ -1418,7 +1418,7 @@ class MainGUI(QMainWindow):
             raise Exception('elm_type not understood: ' + elm_type)
 
         mdl = ObjectsModel(elements, elm.editable_headers,
-                           parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+                           parent=self.ui.dataStructureTableView, editable=True, non_editable_attributes=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
         self.view_templates(False)
@@ -1763,7 +1763,7 @@ class MainGUI(QMainWindow):
             ax = fig.add_subplot(111)
 
             k = obj_idx[0].column()
-            units_dict = {attr: pair[0] for attr, pair in objects[k].editable_headers.items()}
+            units_dict = {attr: pair.units for attr, pair in objects[k].editable_headers.items()}
 
             unit = units_dict[magnitude]
             ax.set_ylabel(unit)
@@ -3527,7 +3527,7 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.overhead_line_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['tower_name'])
 
             elif tpe == 'Underground lines':
@@ -3535,7 +3535,7 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.underground_cable_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
 
             elif tpe == 'Sequence lines':
@@ -3543,14 +3543,14 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.sequence_line_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
             elif tpe == 'Wires':
                 elm = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0)
                 mdl = ObjectsModel(self.circuit.wire_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['wire_name'])
 
             elif tpe == 'Transformers':
@@ -3560,7 +3560,7 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.transformer_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
 
             else:

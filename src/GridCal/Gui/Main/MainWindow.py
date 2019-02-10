@@ -2257,6 +2257,7 @@ class Ui_mainWindow(object):
         self.actionLaunch_data_analysis_tool.setText(_translate("mainWindow", "Launch data analysis tool"))
         self.actionLaunch_data_analysis_tool.setShortcut(_translate("mainWindow", "F8"))
         self.actionOnline_documentation.setText(_translate("mainWindow", "Online documentation"))
+        self.actionOnline_documentation.setShortcut(_translate("mainWindow", "F1"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *

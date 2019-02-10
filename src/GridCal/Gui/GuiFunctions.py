@@ -436,14 +436,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     Class to populate a Qt table view with the properties of objects
     """
     def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_indices=list(),  transposed=False, check_unique=list()):
+                 non_editable_attributes=list(), transposed=False, check_unique=list()):
         """
 
         :param objects: list of objects associated to the editor
         :param editable_headers: Dictionary with the properties and theit units and type {attribute: ('unit', type)}
         :param parent: Parent object: the QTableView object
         :param editable: Is the table editable?
-        :param non_editable_indices: List of attributes that are not enabled for editing
+        :param non_editable_attributes: List of attributes that are not enabled for editing
         :param transposed: Display the table transposed?
         """
         QtCore.QAbstractTableModel.__init__(self, parent)
@@ -452,17 +452,17 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.attributes = list(editable_headers.keys())
 
-        self.attribute_types = [editable_headers[attr][1] for attr in self.attributes]
+        self.attribute_types = [editable_headers[attr].tpe for attr in self.attributes]
 
-        self.units = [editable_headers[attr][0] for attr in self.attributes]
+        self.units = [editable_headers[attr].units for attr in self.attributes]
 
-        self.tips = [editable_headers[attr][2] for attr in self.attributes]
+        self.tips = [editable_headers[attr].definition for attr in self.attributes]
 
         self.objects = objects
 
         self.editable = editable
 
-        self.non_editable_indices = non_editable_indices
+        self.non_editable_attributes = non_editable_attributes
 
         self.check_unique = check_unique
 
@@ -517,8 +517,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
             elif tpe is None:
                 F(i, None)
-                if len(self.non_editable_indices) == 0:
-                    self.non_editable_indices.append(i)
+                if len(self.non_editable_attributes) == 0:
+                    self.non_editable_attributes.append(self.attributes[i])
             else:
                 pass
 
@@ -544,7 +544,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             attr_idx = index.column()
 
-        if self.editable and attr_idx not in self.non_editable_indices:
+        if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
             return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         else:
             return QtCore.Qt.ItemIsEnabled
@@ -634,7 +634,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             taken = False
 
         if not taken:
-            if attr_idx not in self.non_editable_indices:
+            if self.attributes[attr_idx] not in self.non_editable_attributes:
                 if tpe is BranchType:
                     conv = BranchTypeConverter(None)
 
@@ -720,7 +720,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 obj_idx = row
                 attr_idx = col
 
-            if attr_idx not in self.non_editable_indices:
+            if self.attributes[attr_idx] not in self.non_editable_attributes:
                 setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
             else:
                 pass  # the column cannot be edited
@@ -729,7 +729,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 class BranchObjectModel(ObjectsModel):
 
     def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_indices=list(),  transposed=False, check_unique=list(), catalogue_dict=dict()):
+                 non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=dict()):
 
         # type templates catalogue
         self.catalogue_dict = catalogue_dict
@@ -739,7 +739,7 @@ class BranchObjectModel(ObjectsModel):
         #                       transposed=transposed, check_unique=check_unique)
 
         super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
-                                                editable=editable, non_editable_indices=non_editable_indices,
+                                                editable=editable, non_editable_attributes=non_editable_attributes,
                                                 transposed=transposed, check_unique=check_unique)
 
     def set_delegates(self):
@@ -784,8 +784,8 @@ class BranchObjectModel(ObjectsModel):
 
             elif tpe is None:
                 F(i, None)
-                if len(self.non_editable_indices) == 0:
-                    self.non_editable_indices.append(i)
+                if len(self.non_editable_attributes) == 0:
+                    self.non_editable_attributes.append(self.attributes[i])
             else:
                 pass
 
