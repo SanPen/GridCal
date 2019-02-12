@@ -1,7 +1,7 @@
 .. _api:
 
-GridCal's API reference
-=======================
+API reference
+=============
 
 GridCal uses an object oriented approach for all the data and simulation management. However the object orientation is very inefficient when used in numerical computation, that is why there are compile() functions that extract the information out of the objects and turn this information into vectors, matrices and DataFrames in order to have efficient numerical computations. After having been involved in quite some number-crunching software developments, I have found this approach to be the best compromise between efficiency and code scalability and maintainability.
 
