@@ -69,6 +69,51 @@ class TapsControlMode(Enum):
 
 
 class PowerFlowOptions:
+    """
+    Power flow options class; its object is used as an argument for the
+    :ref:`PowerFlowMP<pf_mp>` constructor.
+
+    Arguments:
+
+        **solver_type** (:ref:`SolverType<solver_type>`, SolverType.NR): Solver type
+
+        **retry_with_other_methods** (bool, True): Use a battery of methods to tackle
+        the problem if the main solver fails
+
+        **verbose** (bool, False): Print additional details in the logger
+
+        **initialize_with_existing_solution** (bool, True): *To be detailed*
+
+        **tolerance** (float, 1e-6): Solution tolerance for the power flow numerical
+        methods
+
+        **max_iter** (int, 25): Maximum number of iterations for the power flow
+        numerical method
+
+        **max_outer_loop_iter** (int, 100): Maximum number of iterations for the
+        controls outer loop
+
+        **control_q** (:ref:`ReactivePowerControlMode<q_control>`,
+        ReactivePowerControlMode.NoControl): Control mode for the PV nodes reactive
+        power limits
+
+        **control_taps** (:ref:`TapsControlMode<taps_control>`,
+        TapsControlMode.NoControl): Control mode for the transformer taps equipped with
+        a voltage regulator (as part of the outer loop)
+
+        **multi_core** (bool, False): Use multi-core processing? applicable for time series
+
+        **dispatch_storage** (bool, False): Dispatch storage?
+
+        **control_p** (bool, False): Control active power (optimization dispatch)
+
+        **apply_temperature_correction** (bool, False): Apply the temperature
+        correction to the resistance of the branches?
+
+        **branch_impedance_tolerance_mode** (BranchImpedanceMode,
+        BranchImpedanceMode.Specified): Type of modification of the branches impedance
+
+    """
 
     def __init__(self, solver_type: SolverType = SolverType.NR, retry_with_other_methods=True,
                  verbose=False, initialize_with_existing_solution=True,
@@ -78,23 +123,6 @@ class PowerFlowOptions:
                  multi_core=False, dispatch_storage=False,
                  control_p=False, apply_temperature_correction=False,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified):
-        """
-        Power flow options class
-        :param solver_type:
-        :param retry_with_other_methods:  Use a battery of methods to tackle the problem if the main solver fails
-        :param verbose:
-        :param initialize_with_existing_solution:
-        :param tolerance: Solution tolerance for the power flow numerical methods
-        :param max_iter: maximum number of iterations for the power flow numerical method
-        :param max_outer_loop_iter: Maximum number of iterations for the controls outer loop
-        :param control_q: Control mode for the PV nodes reactive power limits
-        :param control_taps: Control mode for the transformer taps equipped with a voltage regulator (as part of the outer loop)
-        :param multi_core: Use multi-core processing? applicable for time series
-        :param dispatch_storage: Dispatch storage?
-        :param control_p: Control active power (optimization dispatch)
-        :param apply_temperature_correction: Apply the temperature correction to the resistance of the branches?
-        :param branch_impedance_tolerance_mode: Type of modification of the branches impledance
-        """
 
         self.solver_type = solver_type
 
@@ -127,13 +155,17 @@ class PowerFlowOptions:
 
 class PowerFlowMP:
     """
-    Power flow without QT to use with multi processing
+    Power flow without QT to use with multi processing.
+
+    Arguments:
+
+        **grid** (:ref:`MultiCircuit<multicircuit>`): Electrical grid to run the power
+        flow in
+
+        **options** (:ref:`PowerFlowOptions<pf_options>`): Power flow options to use
     """
+
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
-        """
-        PowerFlow class constructor
-        @param grid: MultiCircuit Object
-        """
 
         # Grid to run a power flow in
         self.grid = grid
@@ -154,8 +186,7 @@ class PowerFlowMP:
     @staticmethod
     def compile_types(Sbus, types=None, logger=list()):
         """
-        Compile the types
-        @return:
+        Compile the types.
         """
 
         pq = np.where(types == BusMode.PQ.value[0])[0]
@@ -199,27 +230,40 @@ class PowerFlowMP:
     @staticmethod
     def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, pq, pv, ref, pqpv, tolerance, max_iter):
         """
-        Run a power flow simulation using the selected method (no outer loop controls)
-        :param solver_type:
-        :param V0: Voltage solution vector
-        :param Sbus: Power injections vector
-        :param Ibus: Current injections vector
-        :param Ybus: Admittance matrix
-        :param Yseries: Series elements' Admittance matrix
-        :param B1: B' for the fast decoupled method
-        :param B2: B'' for the fast decoupled method
-        :param pq: list of pq nodes
-        :param pv: list of pv nodes
-        :param ref: list of slack nodes
-        :param pqpv: list of pq and pv nodes
-        :param tolerance: power error tolerance
-        :param max_iter: maximum iterations
-        :return: V0 (Voltage solution),
-                 converged (converged?),
-                 normF (error in power),
-                 Scalc (Computed bus power),
-                 iterations,
-                 elapsed
+        Run a power flow simulation using the selected method (no outer loop controls).
+
+            **solver_type**:
+
+            **V0**: Voltage solution vector
+
+            **Sbus**: Power injections vector
+
+            **Ibus**: Current injections vector
+
+            **Ybus**: Admittance matrix
+
+            **Yseries**: Series elements' Admittance matrix
+
+            **B1**: B' for the fast decoupled method
+
+            **B2**: B'' for the fast decoupled method
+
+            **pq**: list of pq nodes
+
+            **pv**: list of pv nodes
+
+            **ref**: list of slack nodes
+
+            **pqpv**: list of pq and pv nodes
+
+            **tolerance**: power error tolerance
+
+            **max_iter**: maximum iterations
+
+        Returns:
+        
+            V0 (Voltage solution), converged (converged?), normF (error in power),
+            Scalc (Computed bus power), iterations, elapsed
         """
         # type HELM
         if solver_type == SolverType.HELM:
@@ -333,13 +377,24 @@ class PowerFlowMP:
 
     def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
         """
-        Run a power flow simulation for a single circuit using the selected outer loop controls
-        :param circuit: CalculationInputs instance
-        :param solver_type: type of power flow to use first
-        :param voltage_solution: vector of initial voltages
-        :param Sbus: vector of power injections
-        :param Ibus: vector of current injections
-        :return: PowerFlowResults instance
+        Run a power flow simulation for a single circuit using the selected outer loop
+        controls. This method shouldn't be called directly.
+
+        Arguments:
+
+            **circuit**: CalculationInputs instance
+
+            **solver_type**: type of power flow to use first
+
+            **voltage_solution**: vector of initial voltages
+
+            **Sbus**: vector of power injections
+
+            **Ibus**: vector of current injections
+
+        Return:
+            
+            PowerFlowResults instance
         """
 
         # get the original types and compile this class' own lists of node types for thread independence
@@ -547,27 +602,52 @@ class PowerFlowMP:
         The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
 
         The steepness factor k was set through trial an error.
+
+        Arguments:
+
+            **V1** (float): Current voltage
+
+            **V2** (float): Target voltage
+
+        Returns:
+
+            Q increment gain
         """
         k = 30
         return 2 * (1 / (1 + np.exp(-k * abs(V2 - V1))) - 0.5)
 
     def control_q_iterative(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
         """
-        Change the buses type in order to control the generators reactive power
-        using iterative changes in Q to reach Vset.
-        @param V: array of voltages (all buses)
-        @param Vset: Array of set points (all buses)
-        @param Q: Array of reactive power (all buses)
-        @param Qmin: Array of minimal reactive power (all buses)
-        @param Qmax: Array of maximal reactive power (all buses)
-        @param types: Array of types (all buses)
-        @param original_types: Types as originally intended (all buses)
-        @param verbose: output messages via the console
-        @return:
-            Vnew: New voltage values
-            Qnew: New reactive power values
-            types_new: Modified types array
-            any_control_issue: Was there any control issue?
+        Change the buses type in order to control the generators reactive power using
+        iterative changes in Q to reach Vset.
+
+        Arguments:
+
+            **V** (list): array of voltages (all buses)
+            
+            **Vset** (list): Array of set points (all buses)
+            
+            **Q** (list): Array of reactive power (all buses)
+            
+            **Qmin** (list): Array of minimal reactive power (all buses)
+            
+            **Qmax** (list): Array of maximal reactive power (all buses)
+            
+            **types** (list): Array of types (all buses)
+            
+            **original_types** (list): Types as originally intended (all buses)
+            
+            **verbose** (list): output messages via the console
+
+        Return:
+
+            **Vnew** (list): New voltage values
+
+            **Qnew** (list): New reactive power values
+            
+            **types_new** (list): Modified types array
+            
+            **any_control_issue** (bool): Was there any control issue?
         """
 
         if verbose:
@@ -656,11 +736,19 @@ class PowerFlowMP:
     @staticmethod
     def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False):
         """
-        Compute the power flows trough the branches
-        @param calculation_inputs: instance of Circuit
-        @param V: Voltage solution array for the circuit buses
-        @param only_power: compute only the power injection
-        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
+        Compute the power flows trough the branches.
+
+        Arguments:
+
+            **calculation_inputs**: instance of Circuit
+
+            **V**: Voltage solution array for the circuit buses
+
+            **only_power**: compute only the power injection
+
+        Returns:
+        
+            Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
         Sbus = calculation_inputs.Sbus
@@ -707,24 +795,38 @@ class PowerFlowMP:
     @staticmethod
     def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
         """
-        Change the buses type in order to control the generators reactive power
-        @param pq: array of pq indices
-        @param pv: array of pq indices
-        @param ref: array of pq indices
-        @param V: array of voltages (all buses)
-        @param Vset: Array of set points (all buses)
-        @param Q: Array of reactive power (all buses)
-        @param types: Array of types (all buses)
-        @param original_types: Types as originally intended (all buses)
-        @param verbose: output messages via the console
-        @return:
-            Vnew: New voltage values
-            Qnew: New reactive power values
-            types_new: Modified types array
-            any_control_issue: Was there any control issue?
-        """
+        Change the buses type in order to control the generators reactive power.
 
-        '''
+        Arguments:
+
+            **pq** (list): array of pq indices
+            
+            **pv** (list): array of pq indices
+            
+            **ref** (list): array of pq indices
+            
+            **V** (list): array of voltages (all buses)
+            
+            **Vset** (list): Array of set points (all buses)
+            
+            **Q** (list): Array of reactive power (all buses)
+            
+            **types** (list): Array of types (all buses)
+            
+            **original_types** (list): Types as originally intended (all buses)
+            
+            **verbose** (bool): output messages via the console
+        
+        Returns:
+
+            **Vnew** (list): New voltage values
+
+            **Qnew** (list): New reactive power values
+            
+            **types_new** (list): Modified types array
+            
+            **any_control_issue** (bool): Was there any control issue?
+
         ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
         Jinquan Zhao
 
@@ -773,7 +875,8 @@ class PowerFlowMP:
                 it is switched to PQ and set Qi = Qimin .
             If Qi min < Qi < Qimax , then
                 it is still a PV bus.
-        '''
+        """
+        
         if verbose:
             print('Q control logic (fast)')
 
@@ -856,19 +959,39 @@ class PowerFlowMP:
     def control_taps_iterative(self, voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
                               tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
         """
-        Change the taps and compute the continuous tap magnitude
-        :param voltage: array of bus voltages solution
-        :param T: array of indices of the "to" buses of each branch
-        :param bus_to_regulated_idx: array with the indices of the branches that regulate the bus "to"
-        :param tap_position: array of branch tap positions
-        :param tap_module: array of branch tap modules
-        :param min_tap: array of minimum tap positions
-        :param max_tap: array of maximum tap positions
-        :param tap_inc_reg_up: array of tap increment when regulating up
-        :param tap_inc_reg_down: array of tap increment when regulating down
-        :param vset: array of set voltages to control
-        :return: stable?, and the taps magnitude vector
+        Change the taps and compute the continuous tap magnitude.
+
+        Arguments:
+
+            **voltage** (list): array of bus voltages solution
+
+            **T** (list): array of indices of the "to" buses of each branch
+
+            **bus_to_regulated_idx** (list): array with the indices of the branches that regulate the bus "to"
+
+            **tap_position** (list): array of branch tap positions
+
+            **tap_module** (list): array of branch tap modules
+            
+            **min_tap** (list): array of minimum tap positions
+            
+            **max_tap** (list): array of maximum tap positions
+            
+            **tap_inc_reg_up** (list): array of tap increment when regulating up
+            
+            **tap_inc_reg_down** (list): array of tap increment when regulating down
+            
+            **vset** (list): array of set voltages to control
+        
+        Returns:
+        
+            **stable** (bool): Is the system stable (i.e.: are controllers stable)?
+            
+            **tap_magnitude** (list): Tap module at each bus in per unit
+            
+            **tap_position** (list): Tap position at each bus
         """
+
         stable = True
         for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
 
@@ -952,18 +1075,38 @@ class PowerFlowMP:
     def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
                            tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
         """
-        Change the taps and compute the continuous tap magnitude
-        :param voltage: array of bus voltages solution
-        :param T: array of indices of the "to" buses of each branch
-        :param bus_to_regulated_idx: array with the indices of the branches that regulate the bus "to"
-        :param tap_position: array of branch tap positions
-        :param tap_module: array of branch tap modules
-        :param min_tap: array of minimum tap positions
-        :param max_tap: array of maximum tap positions
-        :param tap_inc_reg_up: array of tap increment when regulating up
-        :param tap_inc_reg_down: array of tap increment when regulating down
-        :param vset: array of set voltages to control
-        :return: stable?, and the taps magnitude vector
+        Change the taps and compute the continuous tap magnitude.
+
+        Arguments:
+
+            **voltage** (list): array of bus voltages solution
+        
+            **T** (list): array of indices of the "to" buses of each branch
+        
+            **bus_to_regulated_idx** (list): array with the indices of the branches
+            that regulate the bus "to"
+        
+            **tap_position** (list): array of branch tap positions
+        
+            **tap_module** (list): array of branch tap modules
+        
+            **min_tap** (list): array of minimum tap positions
+        
+            **max_tap** (list): array of maximum tap positions
+        
+            **tap_inc_reg_up** (list): array of tap increment when regulating up
+        
+            **tap_inc_reg_down** (list): array of tap increment when regulating down
+        
+            **vset** (list): array of set voltages to control
+        
+        Returns:
+        
+            **stable** (bool): Is the system stable (i.e.: are controllers stable)?
+            
+            **tap_magnitude** (list): Tap module at each bus in per unit
+            
+            **tap_position** (list): Tap position at each bus
         """
         stable = True
         for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
@@ -1017,13 +1160,23 @@ class PowerFlowMP:
 
     def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
         """
-        Run a power flow for a circuit
-        Args:
-            circuit: CalculationInputs instance
-            Vbus: Initial Voltage
-            Sbus: Power injections
-            Ibus: Current injections
-        Returns: PowerFlowResults instance
+        Run a power flow for a circuit. In most cases, the **run** method should be
+        used instead.
+
+        Arguments:
+
+            **circuit** (:ref:`CalculationInputs<calc_inputs>`): CalculationInputs
+            instance
+
+            **Vbus** (list): Initial voltage at each bus in complex per unit
+
+            **Sbus** (list): Power injection at each bus in complex MVA
+
+            **Ibus** (list): Current injection at each bus in complex amperes
+
+        Returns:
+        
+            :ref:`PowerFlowResults<pf_results>` instance
         """
 
         # Retry with another solver
@@ -1106,15 +1259,23 @@ class PowerFlowMP:
 
     def run_multi_island(self, numerical_circuit, calculation_inputs, Vbus, Sbus, Ibus):
         """
-        Power flow execution for optimization purposes
-        Args:
-            numerical_circuit:
-            calculation_inputs:
-            Vbus:
-            Sbus:
-            Ibus:
+        Power flow execution for optimization purposes.
 
-        Returns: PowerFlowResults instance
+        Arguments:
+
+            **numerical_circuit**:
+
+            **calculation_inputs**:
+
+            **Vbus**:
+
+            **Sbus**:
+
+            **Ibus**:
+
+        Returns:
+        
+            PowerFlowResults instance
 
         """
         n = len(self.grid.buses)
@@ -1153,16 +1314,19 @@ class PowerFlowMP:
 
     def run(self):
         """
-        Pack run_pf for the QThread
-        :return:
+        Run a power flow for a circuit (wrapper for run_pf).
+
+        Returns:
+        
+            :ref:`PowerFlowResults<pf_results>` instance (self.results)
         """
+
         # print('PowerFlow at ', self.grid.name)
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         results = PowerFlowResults()
         results.initialize(n, m)
         # self.progress_signal.emit(0.0)
-        Sbase = self.grid.Sbase
 
         # columns of the report
         col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
@@ -1234,13 +1398,13 @@ class PowerFlowMP:
 def power_flow_worker(t, options: PowerFlowOptions, circuit: CalculationInputs, Vbus, Sbus, Ibus, return_dict):
     """
     Power flow worker to schedule parallel power flows
-    :param t: execution index
-    :param options: power flow options
-    :param circuit: circuit
-    :param Vbus: Voltages to initialize
-    :param Sbus: Power injections
-    :param Ibus: Current injections
-    :param return_dict: parallel module dictionary in wich to return the values
+        **t: execution index
+        **options: power flow options
+        **circuit: circuit
+        **Vbus: Voltages to initialize
+        **Sbus: Power injections
+        **Ibus: Current injections
+        **return_dict: parallel module dictionary in wich to return the values
     :return:
     """
 
@@ -1255,13 +1419,13 @@ def power_flow_worker_args(args):
     args -> t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict
 
 
-    :param t: execution index
-    :param options: power flow options
-    :param circuit: circuit
-    :param Vbus: Voltages to initialize
-    :param Sbus: Power injections
-    :param Ibus: Current injections
-    :param return_dict: parallel module dictionary in wich to return the values
+        **t: execution index
+        **options: power flow options
+        **circuit: circuit
+        **Vbus: Voltages to initialize
+        **Sbus: Power injections
+        **Ibus: Current injections
+        **return_dict: parallel module dictionary in wich to return the values
     :return:
     """
     t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
@@ -1277,7 +1441,7 @@ class PowerFlow(QRunnable):
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
         PowerFlow class constructor
-        @param grid: MultiCircuit Object
+        **grid: MultiCircuit Object
         """
         QRunnable.__init__(self)
 

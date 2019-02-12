@@ -77,14 +77,20 @@ class ResultTypes(Enum):
 
 
 class CalculationInputs:
+    """
+    **nbus** (int): Number of buses
+
+    **nbr** (int): Number of branches
+
+    **ntime** (int): Number of time steps
+
+    **nbat** (int): Number of batteries
+
+    **nctrlgen** (int): Number of voltage controlled generators
+    """
 
     def __init__(self, nbus, nbr, ntime, nbat, nctrlgen):
-        """
-        Constructor
-        :param nbus: number of buses
-        :param nbr: number of branches
-        :param ntime: number of time steps
-        """
+
         self.nbus = nbus
         self.nbr = nbr
         self.ntime = ntime
@@ -533,28 +539,48 @@ class CalculationInputs:
 
 
 class PowerFlowResults:
+    """
+    A **PowerFlowResults** object is create as an attribute of the
+    :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
+    provides access to the simulation results through its class attributes.
+
+    Attributes:
+
+        **Sbus** (list): Power at each bus in complex MVA
+
+        **voltage** (list): Voltage at each bus in complex per unit
+
+        **Sbranch** (list): Power through each branch in complex MVA
+
+        **Ibranch** (list): Current through each branch in complex per unit
+
+        **loading** (list): Loading of each branch in per unit
+
+        **losses** (list): Losses in each branch in complex MVA
+
+        **tap_module** (list): Computed tap module at each branch in per unit
+
+        **flow_direction** (list): Flow direction at each branch
+
+        **error** (float): Power flow computed error
+
+        **converged** (bool): Did the power flow converge?
+
+        **Qpv** (list): Reactive power at each PV node in per unit
+
+        **inner_it** (int): Number of inner iterations
+
+        **outer_it** (int): Number of outer iterations
+
+        **elapsed** (float): Simulation duration in seconds
+
+        **methods** (list): Power flow methods used
+
+    """
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, tap_module=None,
                  flow_direction=None, error=None, converged=None, Qpv=None, battery_power_inc=None, inner_it=None,
                  outer_it=None, elapsed=None, methods=None):
-        """
-        Power flow results
-        :param Sbus: Bus power calculated
-        :param voltage:  Voltages array (p.u.)
-        :param Sbranch: Branches power array (MVA)
-        :param Ibranch: Branches current array (p.u.)
-        :param loading: Branches loading array (p.u.)
-        :param losses: Branches losses array (MW)
-        :param tap_module: tap module computed for all the branches
-        :param flow_direction: flow direction at each of the branches
-        :param error: power flow error value
-        :param converged: converged (True / False)
-        :param Qpv: Reactive power at the PV nodes array (p.u.)
-        :param inner_it: number of inner iterations
-        :param outer_it: number of outer iterations
-        :param elapsed: time elapsed in seconds
-        :param methods: methods used
-        """
 
         self.Sbus = Sbus
 
@@ -668,11 +694,16 @@ class PowerFlowResults:
 
     def apply_from_island(self, results, b_idx, br_idx):
         """
-        Apply results from another island circuit to the circuit results represented here
-        @param results: PowerFlowResults
-        @param b_idx: bus original indices
-        @param br_idx: branch original indices
-        @return:
+        Apply results from another island circuit to the circuit results represented
+        here.
+
+        Arguments:
+
+            **results**: PowerFlowResults
+
+            **b_idx**: bus original indices
+
+            **br_idx**: branch original indices
         """
         self.Sbus[b_idx] = results.Sbus
 
@@ -715,15 +746,26 @@ class PowerFlowResults:
     def check_limits(self, F, T, Vmax, Vmin, wo=1, wv1=1, wv2=1):
         """
         Check the grid violations on the whole circuit
-        Args:
-            F:
-            T:
-            Vmax:
-            Vmin:
-            wo:
-            wv1:
-            wv2:
-        Returns:summation of the deviations
+
+        Arguments:
+
+            **F**:
+            
+            **T**:
+            
+            **Vmax**:
+            
+            **Vmin**:
+            
+            **wo**:
+            
+            **wv1**:
+            
+            **wv2**:
+        
+        Returns:
+        
+            Summation of the deviations
         """
         # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
         br_idx = np.where(self.loading > 1)[0]
@@ -766,9 +808,15 @@ class PowerFlowResults:
 
     def get_report_dataframe(self, island_idx=0):
         """
-        Get a DataFrame containing the convergence report
-        :param island_idx: (optional) island index
-        :return: DataFrame
+        Get a DataFrame containing the convergence report.
+
+        Arguments:
+        
+            **island_idx**: (optional) island index
+
+        Returns:
+        
+            DataFrame
         """
         if type(self.methods[island_idx]) == list:
 
@@ -792,13 +840,21 @@ class PowerFlowResults:
 
     def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
         """
-        Plot the results
-        Args:
-            result_type: ResultTypes
-            ax: matplotlib axis
-            indices: Indices f the array to plot (indices of the elements)
-            names: Names of the elements
-        Returns: DataFrame
+        Plot the results.
+
+        Arguments:
+
+            **result_type**: ResultTypes
+        
+            **ax**: matplotlib axis
+        
+            **indices**: Indices f the array to plot (indices of the elements)
+        
+            **names**: Names of the elements
+        
+        Returns:
+        
+            DataFrame
         """
 
         if ax is None:
@@ -877,8 +933,11 @@ class PowerFlowResults:
 
     def export_all(self):
         """
-        Exports all the results to DataFrames
-        :return: Bus results, Branch reuslts
+        Exports all the results to DataFrames.
+
+        Returns:
+        
+            Bus results, Branch reuslts
         """
 
         # buses results
@@ -1533,21 +1592,32 @@ class MonteCarloResults:
 
 
 class OptimalPowerFlowResults:
+    """
+    OPF results.
+
+    Arguments:
+
+        **Sbus**: bus power injections
+
+        **voltage**: bus voltages
+        
+        **load_shedding**: load shedding values
+        
+        **Sbranch**: branch power values
+        
+        **overloads**: branch overloading values
+        
+        **loading**: branch loading values
+        
+        **losses**: branch losses
+        
+        **converged**: converged?
+    """
 
     def __init__(self, Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
                  battery_power=None, controlled_generation_power=None,
                  Sbranch=None, overloads=None, loading=None, losses=None, converged=None):
-        """
-        OPF results constructor
-        :param Sbus: bus power injections
-        :param voltage: bus voltages
-        :param load_shedding: load shedding values
-        :param Sbranch: branch power values
-        :param overloads: branch overloading values
-        :param loading: branch loading values
-        :param losses: branch losses
-        :param converged: converged?
-        """
+
         self.Sbus = Sbus
 
         self.voltage = voltage
