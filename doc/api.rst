@@ -10,8 +10,10 @@ The whole idea can be summarized as:
 `Object oriented structures -> intermediate objects holding arrays -> Numerical modules`
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 4
 
     api/multicircuit
     api/devices
     api/device_types
+    api/io_structures
+    api/drivers
