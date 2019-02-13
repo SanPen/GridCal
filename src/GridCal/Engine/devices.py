@@ -1591,7 +1591,9 @@ class StaticGenerator(InjectionDevice):
 
 class Generator(InjectionDevice):
     """
-    Voltage controlled generator.
+    Voltage controlled generator. This generators supports several
+    :ref:`reactive power control modes<q_control>` to regulate the voltage on its
+    :ref:`bus` during :ref:`power flow simulations<pf_driver>`.
 
     Arguments:
 

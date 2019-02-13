@@ -3,6 +3,11 @@
 Power Flow
 ==========
 
+The following subsections include theory about the power flow algorithms supported by
+**GridCal**. For control modes (both :ref:`reactive power control<q_control>` and
+:ref:`transformer OLTC control<taps_control>`), refer to the
+:ref:`Power Flow Driver API Reference<pf_driver>`.
+
 .. toctree::
     :maxdepth: 3
 
