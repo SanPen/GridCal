@@ -1971,7 +1971,7 @@ class Generator(InjectionDevice):
 
 class Battery(Generator):
     """
-    Battery (voltage controlled and dispatchable).
+    :ref:`Battery<battery>` (voltage controlled and dispatchable).
 
     Arguments:
 
@@ -1983,7 +1983,8 @@ class Battery(Generator):
 
         **voltage_module** (float, 1.0): Voltage setpoint in per unit
 
-        **is_controlled** (bool, True): Is the unit voltage controlled (if so, the connection bus becomes a PV bus)
+        **is_controlled** (bool, True): Is the unit voltage controlled (if so, the
+        connection bus becomes a PV bus)
 
         **Qmin** (float, -9999): Minimum reactive power in MVAr
 
@@ -1999,11 +2000,14 @@ class Battery(Generator):
 
         **op_cost** (float, 1.0): Operational cost in Eur (or other currency) per MW
 
-        **power_prof** (DataFrame, None): Pandas DataFrame with the active power profile in MW
+        **power_prof** (DataFrame, None): Pandas DataFrame with the active power
+        profile in MW
 
-        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile
+        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor
+        profile
 
-        **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint profile in per unit
+        **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint
+        profile in per unit
 
         **active** (bool, True): Is the battery active?
 
@@ -2025,9 +2029,11 @@ class Battery(Generator):
 
         **soc** (float, 0.8): Current state of charge
 
-        **charge_per_cycle** (float, 0.1): Per unit of power to take per cycle when charging
+        **charge_per_cycle** (float, 0.1): Per unit of power to take per cycle when
+        charging
 
-        **discharge_per_cycle** (float, 0.1): Per unit of power to deliver per cycle when discharging
+        **discharge_per_cycle** (float, 0.1): Per unit of power to deliver per cycle
+        when discharging
 
     """
 
@@ -2113,7 +2119,7 @@ class Battery(Generator):
     def copy(self):
         """
         Make a copy of this object
-        Returns: Battery instance
+        Returns: :ref:`Battery<battery>` instance
         """
 
         # create a new instance of the battery
@@ -2227,7 +2233,7 @@ class Battery(Generator):
 
     def reset(self):
         """
-        Set he battery to its initial state
+        Set the battery to its initial state
         """
         self.soc = self.soc_0
         self.energy = self.Enom * self.soc
@@ -2392,4 +2398,3 @@ class Shunt(InjectionDevice):
                 'active': self.active,
                 'g': self.G,
                 'b': self.B}
-

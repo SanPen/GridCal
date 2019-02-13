@@ -7,6 +7,7 @@ You can use the calculation engine directly or from other applications:
 
 .. code:: ipython3
 
-    from GridCal.Engine.CalculationEngine import *
+    from GridCal.Engine import *
 
-This will provide access to all the objects in the calculation engine of GridCal.
+This will provide access to all the objects in the internal engine of **GridCal**.
+Refer to the :ref:`API Reference<api>` and the :ref:`examples` for more details.
