@@ -1,7 +1,7 @@
 .. _api:
 
-GridCal's API reference
-=======================
+API reference
+=============
 
 **GridCal** uses an object oriented approach for all the data and simulation
 management. However the object orientation is very inefficient when used in numerical
