@@ -15,7 +15,7 @@
 
 
 import pandas as pd
-from numpy import complex, zeros, ones, array
+from numpy import complex, zeros, ones, array, zeros_like
 import multiprocessing
 from matplotlib import pyplot as plt
 
@@ -272,9 +272,9 @@ class TimeSeriesResults(PowerFlowResults):
             indices = array(range(len(names)))
 
         if len(indices) > 0:
+
             labels = names[indices]
-            ylabel = ''
-            title = ''
+
             if result_type == ResultTypes.BusVoltage:
                 data = self.voltage[:, indices]
                 ylabel = '(p.u.)'
@@ -300,8 +300,13 @@ class TimeSeriesResults(PowerFlowResults):
                 ylabel = '(MVA)'
                 title = 'Branch losses'
 
+            elif result_type == ResultTypes.BatteryPower:
+                data = zeros_like(self.losses[:, indices])
+                ylabel = '$\Delta$ (MVA)'
+                title = 'Battery power'
+
             else:
-                pass
+                raise Exception('Result type not understood:' + str(result_type))
 
             # df.columns = labels
             if self.time is not None:

@@ -368,11 +368,6 @@ class CalculationInputs:
         # Branch loading in p.u.
         data.loading = data.Sbranch / (self.branch_rates + 1e-9)
 
-        # idx_ft = np.where(data.Sf > 0)[0]
-        # data.flow_direction[idx_ft] = np.ones(len(idx_ft))
-        # idx_ft = np.where(data.Sf < 0)[0]
-        # data.flow_direction[idx_ft] = -1.0 * np.ones(len(idx_ft))
-
         return data
 
     def re_calc_admittance_matrices(self, tap_mod):
