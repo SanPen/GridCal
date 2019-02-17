@@ -72,7 +72,7 @@ class PyPIDownloadAggregator(object):
                 self._downloads[release] = 0
                 for url in urls:
                     # upload times
-                    uptime = datetime.strptime(url['upload_time'].value, "%Y%m%dT%H:%M:%S")
+                    uptime = url['upload_time']
                     if self.first_upload is None or uptime < self.first_upload:
                         self.first_upload = uptime
                         self.first_upload_rel = release

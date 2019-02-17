@@ -364,7 +364,9 @@ class MultiCircuit:
 
         cpy.bus_original_idx = self.bus_original_idx.copy()
 
-        cpy.numerical_circuit = self.numerical_circuit.copy()
+        cpy.time_profile = self.time_profile.copy()
+
+        # cpy.numerical_circuit = self.numerical_circuit.copy()
 
         return cpy
 

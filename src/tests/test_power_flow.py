@@ -4,7 +4,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.devices import *
 from GridCal.Engine.device_types import *
 
-Sbase = 100 # MVA
+Sbase = 100  # MVA
 
 
 def complex_impedance(z, XR):
@@ -189,20 +189,20 @@ def test_gridcal_basic_pi():
 
     # Create buses
     POI = Bus(name="POI",
-              vnom=100, #kV
+              vnom=100,  # kV
               is_slack=True)
     grid.add_bus(POI)
 
     B_C3 = Bus(name="B_C3",
-               vnom=10) #kV
+               vnom=10)  # kV
     grid.add_bus(B_C3)
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10) #kV
+                   vnom=10)  # kV
     grid.add_bus(B_MV_M32)
 
     B_LV_M32 = Bus(name="B_LV_M32",
-                   vnom=0.6) #kV
+                   vnom=0.6)  # kV
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)
@@ -212,8 +212,8 @@ def test_gridcal_basic_pi():
 
     # Create static generators (with fixed power factor)
     M32 = StaticGenerator(name="M32",
-                          P=4.2, # MW
-                          Q=0.0j) # MVAR
+                          P=4.2,  # MW
+                          Q=0.0j)  # MVAR
     M32.bus = B_LV_M32
     grid.add_static_generator(B_LV_M32, M32)
 
@@ -222,12 +222,12 @@ def test_gridcal_basic_pi():
     z = 8 # %
     xr = 40
     SS = TransformerType(name="SS",
-                         hv_nominal_voltage=100, # kV
-                         lv_nominal_voltage=10, # kV
+                         hv_nominal_voltage=100,  # kV
+                         lv_nominal_voltage=10,  # kV
                          nominal_power=s,
                          copper_losses=complex_impedance(z, xr).real*s*1000/Sbase,
-                         iron_losses=6.25, # kW
-                         no_load_current=0.5, # %
+                         iron_losses=6.25,  # kW
+                         no_load_current=0.5,  # %
                          short_circuit_voltage=z)
     grid.add_transformer_type(SS)
 
@@ -235,12 +235,12 @@ def test_gridcal_basic_pi():
     z = 6 # %
     xr = 20
     PM = TransformerType(name="PM",
-                         hv_nominal_voltage=10, # kV
-                         lv_nominal_voltage=0.6, # kV
+                         hv_nominal_voltage=10,  # kV
+                         lv_nominal_voltage=0.6,  # kV
                          nominal_power=s,
                          copper_losses=complex_impedance(z, xr).real*s*1000/Sbase,
-                         iron_losses=6.25, # kW
-                         no_load_current=0.5, # %
+                         iron_losses=6.25,  # kW
+                         no_load_current=0.5,  # %
                          short_circuit_voltage=z)
     grid.add_transformer_type(PM)
 
@@ -287,8 +287,8 @@ def test_gridcal_basic_pi():
     power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 99.5, 102.7, 102.8] # Expected solution from GridCal
-    etap_sol = [100.0, 99.6, 102.7, 102.9] # ETAP 16.1.0, for reference (ignores magnetizing branch)
+    solution = [100.0, 99.5, 102.7, 102.8]  # Expected solution from GridCal
+    etap_sol = [100.0, 99.6, 102.7, 102.9]  # ETAP 16.1.0, for reference (ignores magnetizing branch)
 
     print()
     print(f"Test: {test_name}")

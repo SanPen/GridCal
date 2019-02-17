@@ -356,7 +356,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                     # gather the results
                     # get the branch flows (it is used more than one time)
                     Sbr = problem.get_branch_flows()
-                    ld = problem.get_load_shedding()
+                    ld = problem.get_load_shedding().real
                     ld[ld == None] = 0
                     bt = problem.get_batteries_power()
                     bt[bt == None] = 0
@@ -366,13 +366,13 @@ class OptimalPowerFlowTimeSeries(QThread):
                     gs[gs == None] = 0
 
                     self.results.voltage[t, :] = problem.get_voltage()
-                    self.results.load_shedding[t, :] = ld * self.grid.Sbase
+                    self.results.load_shedding[t, :] = ld * self.grid.Sbase.real
                     self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
                     self.results.battery_power[t, :] = bt * self.grid.Sbase
                     self.results.controlled_generator_power[t, :] = gn * self.grid.Sbase
                     self.results.Sbranch[t, :] = Sbr
-                    self.results.overloads[t, :] = problem.get_overloads()
-                    self.results.loading[t, :] = problem.get_loading()
+                    self.results.overloads[t, :] = problem.get_overloads().real
+                    self.results.loading[t, :] = problem.get_loading().real
                     self.results.converged[t] = bool(problem.converged)
 
                     # control batteries energy

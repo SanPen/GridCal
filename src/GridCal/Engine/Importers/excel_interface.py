@@ -67,6 +67,7 @@ def check_names(names):
             raise Exception('The file sheet ' + name + ' is not allowed.\n'
                             'Did you create this file manually? Use GridCal instead.')
 
+
 def load_from_xls(filename):
     """
     Loads the excel file content to a dictionary for parsing the data
@@ -311,7 +312,8 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 val = np.array([complex(v) for v in data['load_Sprof'].values[:, i]])
                 obj.create_profile(magnitude='P', index=idx, arr=val.real)
                 obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
-                if circuit.time_profile is None:
+
+                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
                     circuit.time_profile = idx
 
             if 'load_Iprof' in data.keys():
@@ -320,7 +322,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 obj.create_profile(magnitude='Ir', index=idx, arr=val.real)
                 obj.create_profile(magnitude='Ii', index=idx, arr=val.imag)
 
-                if circuit.time_profile is None:
+                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
                     circuit.time_profile = idx
 
             if 'load_Zprof' in data.keys():
@@ -329,7 +331,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 obj.create_profile(magnitude='G', index=idx, arr=val.real)
                 obj.create_profile(magnitude='B', index=idx, arr=val.imag)
 
-                if circuit.time_profile is None:
+                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
                     circuit.time_profile = idx
 
             try:
@@ -707,7 +709,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                     idx = data[sheet_name].index
                     setattr(obj, load_attr, pd.DataFrame(data=val, index=idx))
 
-                    if circuit.time_profile is None:
+                    if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
                         circuit.time_profile = idx
 
             try:
@@ -741,6 +743,9 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 obj.create_profile(magnitude='P', index=idx, arr=val)
                 # also create the Pf array because there might not be values in the file
                 obj.create_profile(magnitude='Pf', index=idx, arr=None)
+
+                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
+                    circuit.time_profile = idx
 
             if 'generator_Pf_prof' in data.keys():
                 val = data['generator_Pf_prof'].values[:, i]
