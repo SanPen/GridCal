@@ -15,7 +15,8 @@
 
 from enum import Enum
 from warnings import warn
-# from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array, exp
+# from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array
+# from numpy import exp
 import numpy as np
 # from timeit import default_timer as timer
 from PyQt5.QtCore import QRunnable
@@ -24,12 +25,19 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
 from GridCal.Engine.Numerical.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Numerical.helm_power_flow import helm
-from GridCal.Engine.Numerical.jacobian_based_power_flow import IwamotoNR, LevenbergMarquardtPF, NR_LS, NR_I_LS
+from GridCal.Engine.Numerical.jacobian_based_power_flow import IwamotoNR
+from GridCal.Engine.Numerical.jacobian_based_power_flow import LevenbergMarquardtPF
+from GridCal.Engine.Numerical.jacobian_based_power_flow import NR_LS, NR_I_LS
 from GridCal.Engine.Numerical.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.io_structures import PowerFlowResults, CalculationInputs
 
 
 class SolverType(Enum):
+    """
+    Refer to the :ref:`Power Flow section<power_flow>` for details about the different
+    algorithms supported by **GridCal**.
+    """
+
     NR = 1
     NRFD_XB = 2
     NRFD_BX = 3
@@ -56,16 +64,17 @@ class ReactivePowerControlMode(Enum):
     The :ref:`ReactivePowerControlMode<q_control>` offers 3 modes to control how
     :ref:`Generator<generator>` objects supply reactive power:
 
-    **NoControl**: In this mode, the generators don't try to regulate the voltage at
-    their bus.
+    **NoControl**: In this mode, the :ref:`generators<generator>` don't try to regulate
+    the voltage at their :ref:`bus<bus>`.
 
-    **Direct**: In this mode, the generators try to regulate the voltage at their bus.
-    **GridCal** does so by applying the following algorithm in an outer control loop.
-    For grids with numerous generators tied to the same system, for example wind farms,
-    this control method sometimes leads to either instability, or what could be
-    described as *generators not trying hard enough*. In the latter case, the
-    simulation converges but the voltage controlled buses do not reach their target
-    voltage, while their generator haven't reached their reactive power limit. In this
+    **Direct**: In this mode, the :ref:`generators<generator>` try to regulate the
+    voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
+    algorithm in an outer control loop. For grids with numerous
+    :ref:`generators<generator>` tied to the same system, for example wind farms, this
+    control method sometimes fails with some *:ref:`generators<generator>` not trying
+    hard enough*. In this case, the simulation converges but the voltage controlled
+    :ref:`buses<bus>` do not reach their target voltage, while their
+    :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
     case, the slower **Iterative** control mode may be used (see below).
 
         ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
@@ -117,19 +126,19 @@ class ReactivePowerControlMode(Enum):
             If Qi min < Qi < Qimax , then
                 it is still a PV bus.
 
-    **Iterative**: As mentioned above, the **Direct** control method may not yield
+    **Iterative**: As mentioned above, the **Direct** control mode may not yield
     satisfying results in some isolated cases. The **Direct** control mode tries to
     jump to the final solution in a single or few iterations, but in grids where a
-    significant change in reactive power at one generator has a significant impact on
-    other generators, additional iterations may be required to reach a satisfying
-    solution.
+    significant change in reactive power at one :ref:`generator<generator>` has a
+    significant impact on other :ref:`generators<generator>`, additional iterations may
+    be required to reach a satisfying solution.
 
     Instead of trying to jump to the final solution, the **Iterative** mode raises or
-    lowers each generator's reactive power incrementally. The increment is determined
-    using a logistic function based on the difference between the current bus voltage
-    its target voltage. The steepness factor :code:`k` of the logistic function was
-    determined through trial and error, with the intent of reducing the number of
-    iterations while avoiding instability.
+    lowers each :ref:`generator's<generator>` reactive power incrementally. The
+    increment is determined using a logistic function based on the difference between
+    the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
+    :code:`k` of the logistic function was determined through trial and error, with the
+    intent of reducing the number of iterations while avoiding instability.
 
     The :math:`Q_{Increment}` in per unit is determined by:
 
@@ -146,15 +155,47 @@ class ReactivePowerControlMode(Enum):
     Direct = "Direct"
     Iterative = "Iterative"
 
+
 class TapsControlMode(Enum):
+    """
+    The :ref:`TapsControlMode<taps_control>` offers 3 modes to control how
+    :ref:`transformers<transformer_type>`' :ref:`tap changer<tap_changer>` regulate
+    voltage on their regulated :ref:`bus<bus>`:
+
+    **NoControl**: In this mode, the :ref:`transformers<transformer_type>` don't try to
+    regulate the voltage at their :ref:`bus<bus>`.
+
+    **Direct**: In this mode, the :ref:`transformers<transformer_type>` try to regulate
+    the voltage at their bus. **GridCal** does so by jumping straight to the tap that
+    corresponds to the desired transformation ratio, or the highest or lowest tap if
+    the desired ratio is outside of the tap range.
+
+    This behavior may fail in certain cases, especially if both the
+    :ref:`TapControlMode<taps_control>` and :ref:`ReactivePowerControlMode<q_control>`
+    are set to **Direct**. In this case, the simulation converges but the voltage
+    controlled :ref:`buses<bus>` do not reach their target voltage, while their
+    :ref:`generator(s)<generator>` haven't reached their reactive power limit. When
+    this happens, the slower **Iterative** control mode may be used (see below).
+
+    **Iterative**: As mentioned above, the **Direct** control mode may not yield
+    satisfying results in some isolated cases. The **Direct** control mode tries to
+    jump to the final solution in a single or few iterations, but in grids where a
+    significant change of tap at one :ref:`transformer<transformer_type>` has a
+    significant impact on other :ref:`transformers<transformer_type>`, additional
+    iterations may be required to reach a satisfying solution.
+
+    Instead of trying to jump to the final solution, the **Iterative** mode raises or
+    lowers each :ref:`transformer's<transformer_type>` tap incrementally.
+    """
+
     NoControl = "NoControl"
     Direct = "Direct"
     Iterative = "Iterative"
 
 
-########################################################################################################################
+#######################################################################################
 # Power flow classes
-########################################################################################################################
+#######################################################################################
 
 
 class PowerFlowOptions:
@@ -190,7 +231,8 @@ class PowerFlowOptions:
         TapsControlMode.NoControl): Control mode for the transformer taps equipped with
         a voltage regulator (as part of the outer loop)
 
-        **multi_core** (bool, False): Use multi-core processing? applicable for time series
+        **multi_core** (bool, False): Use multi-core processing? applicable for time
+        series
 
         **dispatch_storage** (bool, False): Dispatch storage?
 
@@ -204,8 +246,9 @@ class PowerFlowOptions:
 
     """
 
-    def __init__(self, solver_type: SolverType = SolverType.NR, retry_with_other_methods=True,
-                 verbose=False, initialize_with_existing_solution=True,
+    def __init__(self, solver_type: SolverType = SolverType.NR,
+                 retry_with_other_methods=True, verbose=False,
+                 initialize_with_existing_solution=True,
                  tolerance=1e-6, max_iter=25, max_outer_loop_iter=100,
                  control_q=ReactivePowerControlMode.NoControl,
                  control_taps=TapsControlMode.NoControl,
