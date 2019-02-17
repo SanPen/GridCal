@@ -200,6 +200,8 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.losses[:, br_idx] = results.losses
 
+        self.flow_direction[:, br_idx] = results.flow_direction
+
         if (results.error > self.error).any():
             self.error = results.error
 

@@ -20,7 +20,7 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import *
 from warnings import warn
 
-from GridCal.Engine.devices import BranchTypeConverter
+from GridCal.Engine.devices import BranchTypeConverter, DeviceType
 from GridCal.Engine.device_types import BranchTemplate, BranchType
 from GridCal.Engine.devices import Bus
 
@@ -794,12 +794,12 @@ class ProfilesModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
-    def __init__(self, multi_circuit, device, magnitude, format, parent):
+    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, format, parent):
         """
 
         Args:
             multi_circuit: MultiCircuit instance
-            device: string with Load, StaticGenerator, etc...
+            device_type: string with Load, StaticGenerator, etc...
             magnitude: magnitude to display 'S', 'P', etc...
             parent: Parent object: the QTableView object
         """
@@ -811,7 +811,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.circuit = multi_circuit
 
-        self.device = device
+        self.device_type = device_type
 
         self.magnitude = magnitude
 
@@ -821,7 +821,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.r = len(self.circuit.time_profile)
 
-        self.elements, self.buses = self.circuit.get_node_elements_by_type(device)
+        self.elements = self.circuit.get_elements_by_type(device_type)
 
         self.c = len(self.elements)
 

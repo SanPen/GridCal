@@ -122,10 +122,14 @@ class MultiCircuit:
         self.time_profile = None
 
         # objects with profiles
-        self.objects_with_profiles = [Load(), StaticGenerator(), Generator(), Battery(), Shunt()]
+        self.objects_with_profiles = [Load(), StaticGenerator(),
+                                      Generator(), Battery(),
+                                      Shunt(), Branch(None, None)]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
+
+        self.device_type_name_dict = dict()
 
         '''
         self.type_name = 'Shunt'
@@ -135,8 +139,9 @@ class MultiCircuit:
         for dev in self.objects_with_profiles:
             if dev.properties_with_profile is not None:
                 profile_attr = list(dev.properties_with_profile.keys())
-                profile_types = [dev.properties_with_profile[attr][1] for attr in profile_attr]
-                self.profile_magnitudes[dev.type_name] = (profile_attr, profile_types)
+                profile_types = [dev.editable_headers[attr].tpe for attr in profile_attr]
+                self.profile_magnitudes[dev.device_type.value] = (profile_attr, profile_types)
+                self.device_type_name_dict[dev.device_type.value] = dev.device_type
 
     def clear(self):
 
@@ -172,24 +177,6 @@ class MultiCircuit:
 
         # Object with the necessary inputs for a power flow study
         self.numerical_circuit = None
-
-        #  containing the power flow results
-        self.power_flow_results = None
-
-        # containing the short circuit results
-        self.short_circuit_results = None
-
-        # Object with the necessary inputs for th time series simulation
-        self.time_series_input = None
-
-        # Object with the time series simulation results
-        self.time_series_results = None
-
-        # Monte Carlo input object
-        self.monte_carlo_input = None
-
-        # Monte Carlo time series batch
-        self.mc_time_series = None
 
         # Bus-Branch graph
         self.graph = None
@@ -292,6 +279,37 @@ class MultiCircuit:
                 lst.append(elm.Enom)
         return np.array(lst)
 
+    def get_elements_by_type(self, element_type: DeviceType):
+        """
+        Get set of elements and their parent nodes
+        :param element_type: DeviceTYpe instance
+        :return: List of elements, it raises an exception if the elements are unknown
+        """
+
+        if element_type == DeviceType.LoadDevice:
+            return self.get_loads()
+
+        elif element_type == DeviceType.StaticGeneratorDevice:
+            return self.get_static_generators()
+
+        elif element_type == DeviceType.GeneratorDevice:
+            return self.get_generators()
+
+        elif element_type == DeviceType.BatteryDevice:
+            return self.get_batteries()
+
+        elif element_type == DeviceType.ShuntDevice:
+            return self.get_shunts()
+
+        elif element_type == DeviceType.BranchDevice:
+            return self.branches
+
+        elif element_type == DeviceType.BusDevice:
+            return self.buses
+
+        else:
+            raise Exception('Element type not understood' + str(element_type))
+
     def get_Jacobian(self, sparse=False):
         """
         Returns the Grid Jacobian matrix
@@ -312,30 +330,6 @@ class MultiCircuit:
             return J
         else:
             return J.todense()
-
-    def get_bus_pf_results_df(self):
-        """
-        Returns a Pandas DataFrame with the bus results
-        :return: DataFrame
-        """
-
-        cols = ['|V| (p.u.)', 'angle (rad)', 'P (p.u.)', 'Q (p.u.)', 'Qmin', 'Qmax', 'Q ok?']
-
-        if self.power_flow_results is not None:
-            q_l = self.numerical_circuit.Qmin < self.power_flow_results.Sbus.imag
-            q_h = self.power_flow_results.Sbus.imag < self.numerical_circuit.Qmax
-            q_ok = q_l * q_h
-            data = np.c_[np.abs(self.power_flow_results.voltage),
-                         np.angle(self.power_flow_results.voltage),
-                         self.power_flow_results.Sbus.real,
-                         self.power_flow_results.Sbus.imag,
-                         self.numerical_circuit.Qmin,
-                         self.numerical_circuit.Qmax,
-                         q_ok.astype(np.bool)]
-        else:
-            data = [0, 0, 0, 0, 0, 0]
-
-        return pd.DataFrame(data=data, index=self.numerical_circuit.bus_names, columns=cols)
 
     def apply_lp_profiles(self):
         """
@@ -369,8 +363,6 @@ class MultiCircuit:
         cpy.branch_original_idx = self.branch_original_idx.copy()
 
         cpy.bus_original_idx = self.bus_original_idx.copy()
-
-        cpy.time_series_input = self.time_series_input.copy()
 
         cpy.numerical_circuit = self.numerical_circuit.copy()
 
@@ -779,63 +771,55 @@ class MultiCircuit:
 
         self.time_profile = np.array(index)
 
-        for bus in self.buses:
+        for elm in self.buses:
+            elm.create_profiles(index)
 
-            for elm in bus.loads:
-                elm.create_profiles(index)
+        for elm in self.branches:
+            elm.create_profiles(index)
 
-            for elm in bus.static_generators:
-                elm.create_profiles(index)
-
-            for elm in bus.controlled_generators:
-                elm.create_profiles(index)
-
-            for elm in bus.batteries:
-                elm.create_profiles(index)
-
-            for elm in bus.shunts:
-                elm.create_profiles(index)
-
-    def get_node_elements_by_type(self, element_type):
+    def get_node_elements_by_type(self, element_type: DeviceType):
         """
         Get set of elements and their parent nodes
         Args:
             element_type: String {'Load', 'StaticGenerator', 'Generator', 'Battery', 'Shunt'}
 
-        Returns: List of elements, list of matching parent buses
+        Returns: List of elements, lisself.busest of matching parent buses
         """
         elements = list()
         parent_buses = list()
 
-        if element_type == 'Load':
+        if element_type == DeviceType.LoadDevice:
             for bus in self.buses:
                 for elm in bus.loads:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif element_type == 'StaticGenerator':
+        elif element_type == DeviceType.StaticGeneratorDevice:
             for bus in self.buses:
                 for elm in bus.static_generators:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif element_type == 'Generator':
+        elif element_type == DeviceType.GeneratorDevice:
             for bus in self.buses:
                 for elm in bus.controlled_generators:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif element_type == 'Battery':
+        elif element_type == DeviceType.BatteryDevice:
             for bus in self.buses:
                 for elm in bus.batteries:
                     elements.append(elm)
                     parent_buses.append(bus)
 
-        elif element_type == 'Shunt':
+        elif element_type == DeviceType.ShuntDevice:
             for bus in self.buses:
                 for elm in bus.shunts:
                     elements.append(elm)
                     parent_buses.append(bus)
+
+        else:
+            pass
 
         return elements, parent_buses
 
@@ -1148,29 +1132,6 @@ class MultiCircuit:
             writer.save()
         else:
             raise Exception('There are no time series!')
-
-    def copy(self):
-        """
-        Returns a deep (true) copy of this circuit
-        @return:
-        """
-
-        cpy = MultiCircuit()
-
-        cpy.name = self.name
-
-        bus_dict = dict()
-        for bus in self.buses:
-            bus_cpy = bus.copy()
-            bus_dict[bus] = bus_cpy
-            cpy.add_bus(bus_cpy)
-
-        for branch in self.branches:
-            cpy.add_branch(branch.copy(bus_dict))
-
-        cpy.time_profile = self.time_profile
-
-        return cpy
 
     def dispatch(self):
         """

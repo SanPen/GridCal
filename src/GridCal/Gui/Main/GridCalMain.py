@@ -1485,10 +1485,11 @@ class MainGUI(QMainWindow):
         if dlg.exec_():
             steps, step_length, step_unit, time_base = dlg.get_values()
 
+            self.ui.profiles_tableView.setModel(None)
+
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
 
-            # # TODO: Correct this function to not to depend on a previous compilation
-            # self.compile()
+            self.display_profiles()
 
             self.set_up_profile_sliders()
 
@@ -1725,9 +1726,6 @@ class MainGUI(QMainWindow):
             # no buses or no actual change
             pass
 
-
-
-
     def plot_profiles(self):
         """
         Plot profiles from the time events
@@ -1788,16 +1786,23 @@ class MainGUI(QMainWindow):
         if self.circuit.time_profile is not None:
             # print('display_profiles')
 
-            dev_type = self.ui.profile_device_type_comboBox.currentText()
+            dev_type_text = self.ui.profile_device_type_comboBox.currentText()
 
-            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+
+            # get the enumeration univoque association with he device text
+            dev_type = self.circuit.device_type_name_dict[dev_type_text]
 
             idx = self.ui.device_type_magnitude_comboBox.currentIndex()
             magnitude = magnitudes[idx]
             mtype = mag_types[idx]
 
-            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype,
+            mdl = ProfilesModel(multi_circuit=self.circuit,
+                                device_type=dev_type,
+                                magnitude=magnitude,
+                                format=mtype,
                                 parent=self.ui.profiles_tableView)
+
             self.ui.profiles_tableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):

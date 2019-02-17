@@ -85,7 +85,7 @@ class EditableDevice:
 
         self.properties_with_profile = properties_with_profile
 
-        self.properties_with_profile['active'] = ('active_prof', TimeFrame.Continuous)
+        self.properties_with_profile['active'] = 'active_prof'
 
     def get_save_data(self):
         """
@@ -96,7 +96,7 @@ class EditableDevice:
         data = list()
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
-            if properties[1] not in [str, float, int, bool]:
+            if properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)
             data.append(obj)
         return data
@@ -110,16 +110,14 @@ class EditableDevice:
     def __str__(self):
         return self.name
 
-    def create_profiles(self, index, time_frame: TimeFrame):
+    def create_profiles(self, index):
         """
         Create the load object default profiles
         Args:
         :param index: pandas time index
-        :param time_frame: Time frame to use (Short term, Long term)
         """
         for magnitude, values in self.properties_with_profile.items():
-            if values[1] == time_frame:
-                self.create_profile(magnitude=magnitude, index=index)
+            self.create_profile(magnitude=magnitude, index=index)
 
     def resize_profiles(self, index, time_frame: TimeFrame):
         """
@@ -131,7 +129,7 @@ class EditableDevice:
         for magnitude, values in self.properties_with_profile.items():
             if values[1] == time_frame:
                 # get the current profile
-                val = getattr(self, self.properties_with_profile[magnitude][0]).values[:, 0]
+                val = getattr(self, self.properties_with_profile[magnitude]).values[:, 0]
                 n2 = val.shape[0]
 
                 if n1 > n2:
@@ -143,7 +141,7 @@ class EditableDevice:
                     val2 = val[:n1]
 
                 df = pd.DataFrame(data=val2, index=index, columns=[self.name])
-                setattr(self, self.properties_with_profile[magnitude][0], df)
+                setattr(self, self.properties_with_profile[magnitude], df)
 
     def create_profile(self, magnitude, index, arr=None, arr_in_pu=False):
         """
@@ -155,7 +153,7 @@ class EditableDevice:
         """
         # get the value of the magnitude
         x = getattr(self, magnitude)
-        tpe = self.editable_headers[magnitude][1]
+        tpe = self.editable_headers[magnitude].tpe
         if arr_in_pu:
             val = arr * x
         else:
@@ -163,37 +161,43 @@ class EditableDevice:
 
         # set the profile variable associated with the magnitude
         df = pd.DataFrame(data=val, index=index, columns=[self.name])
-        setattr(self, self.properties_with_profile[magnitude][0], df)
+        setattr(self, self.properties_with_profile[magnitude], df)
 
     def ensure_profiles_exist(self, index):
         """
-        It might be that when loading the Ordena Model has properties that the file has not.
+        It might be that when loading the GridCal Model has properties that the file has not.
         Those properties must be initialized as well
-        :param time_profiles: dictionary with the time profiles per each time frame (as recorded in the AssetModel)
+        :param index: Time series index (timestamps)
         """
         for magnitude in self.properties_with_profile.keys():
 
-            prof_attr = self.properties_with_profile[magnitude][0]
+            if index is not None:
+                prof_attr = self.properties_with_profile[magnitude]
 
-            df = getattr(self, prof_attr)
+                df = getattr(self, prof_attr)
 
-            if df is None:
-                print(self.name, ': created profile for ' + prof_attr)
-                self.create_profile(magnitude=magnitude, index=index)
-
-            elif df.shape[0] != len(index):
-                print(self.name, ': created profile for ' + prof_attr)
-                self.create_profile(magnitude=magnitude, index=index)
+                if df is None:
+                    # there is no profile, create a new one with the default values
+                    print(self.name, ': created profile for ' + prof_attr)
+                    self.create_profile(magnitude=magnitude, index=index)
+                else:
+                    if df.shape[0] != len(index):
+                        # the length of the profile is different from the length of the master profile
+                        print(self.name, ': created profile for ' + prof_attr)
+                        self.create_profile(magnitude=magnitude, index=index)
+                    else:
+                        # all ok
+                        pass
 
             else:
-                warn('the time idex is None')
+                warn('The time index is None')
 
     def delete_profiles(self):
         """
         Delete the object profiles (set all to None)
         """
         for magnitude in self.properties_with_profile.keys():
-            setattr(self, self.properties_with_profile[magnitude][0], None)
+            setattr(self, self.properties_with_profile[magnitude], None)
 
     def set_profile_values(self, t):
         """
@@ -201,7 +205,7 @@ class EditableDevice:
         :param t: time index (integer)
         """
         for magnitude in self.properties_with_profile.keys():
-            df = getattr(self, self.properties_with_profile[magnitude][0])
+            df = getattr(self, self.properties_with_profile[magnitude])
             setattr(self, magnitude, df.values[t])
 
 

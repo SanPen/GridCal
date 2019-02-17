@@ -406,15 +406,6 @@ class Bus(EditableDevice):
 
         return bus
 
-    # def get_save_data(self):
-    #     """
-    #     Return the data that matches the edit_headers
-    #     :return:
-    #     """
-    #     self.retrieve_graphic_position()
-    #     return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
-    #             self.x, self.y, self.h, self.w, self.area, self.zone, self.substation]
-
     def get_json_dict(self, id):
         """
         Return Json-like dictionary
@@ -499,6 +490,26 @@ class Bus(EditableDevice):
         for elm in self.shunts:
             elm.delete_profiles()
 
+    def create_profiles(self, index):
+        """
+        Delete all profiles
+        :return:
+        """
+        for elm in self.loads:
+            elm.create_profiles(index)
+
+        for elm in self.static_generators:
+            elm.create_profiles(index)
+
+        for elm in self.batteries:
+            elm.create_profiles(index)
+
+        for elm in self.controlled_generators:
+            elm.create_profiles(index)
+
+        for elm in self.shunts:
+            elm.create_profiles(index)
+
     def set_profile_values(self, t):
         """
         Set the default values from the profiles at time index t
@@ -550,9 +561,6 @@ class Bus(EditableDevice):
 
     def get_fault_impedance(self):
         return complex(self.r_fault, self.x_fault)
-
-    def __str__(self):
-        return self.name
 
 
 class TapChanger:
@@ -847,11 +855,8 @@ class Branch(EditableDevice):
                                                                       'therefore 0.5 is at the middle.'),
                                                   'branch_type': GCProp('', BranchType, ''),
                                                   'template': GCProp('', BranchTemplate, '')},
-                                non_editable_attributes=list(),
-                                properties_with_profile=dict())
-
-        # list of properties that hold a profile
-        self.properties_with_profile = None
+                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
+                                properties_with_profile={'active': 'active_prof'})
 
         # connectivity
         self.bus_from = bus_from
@@ -1533,72 +1538,72 @@ class StaticGenerator(EditableDevice):
                 'P': self.P,
                 'Q': self.Q}
 
-    def create_profiles(self, index, S=None):
-        """
-        Create the load object default profiles
-        Args:
-            index:
-            steps:
+    # def create_profiles(self, index, S=None):
+    #     """
+    #     Create the load object default profiles
+    #     Args:
+    #         index:
+    #         steps:
+    #
+    #     Returns:
+    #
+    #     """
+    #     self.create_S_profile(index, S)
 
-        Returns:
+    # def create_S_profile(self, index, arr, arr_in_pu=False):
+    #     """
+    #     Create power profile based on index
+    #     :param index: pandas index
+    #     :param arr: array of values to set
+    #     :param arr_in_pu:
+    #     :return:
+    #     """
+    #     if arr_in_pu:
+    #         P = arr * self.P
+    #         Q = arr * self.Q
+    #     else:
+    #         P = np.ones(len(index)) * self.P if arr is None else arr
+    #         Q = np.ones(len(index)) * self.Q if arr is None else arr
+    #
+    #     self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
+    #     self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
 
-        """
-        self.create_S_profile(index, S)
+    # def create_profile(self, magnitude, index, arr, arr_in_pu=False):
+    #     """
+    #     Create power profile based on index
+    #     :param magnitude: name of the property
+    #     :param index: pandas index
+    #     :param arr: array of values to set
+    #     :param arr_in_pu: is the array in per-unit?
+    #     """
+    #     x = getattr(self, magnitude)
+    #     x_prof = getattr(self, self.properties_with_profile[magnitude])
+    #
+    #     if arr_in_pu:
+    #         val = arr * x
+    #     else:
+    #         val = np.ones(len(index)) * x if arr is None else arr
+    #
+    #     x_prof = pd.DataFrame(data=val, index=index, columns=[self.name])
 
-    def create_S_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        :param index: pandas index
-        :param arr: array of values to set
-        :param arr_in_pu:
-        :return:
-        """
-        if arr_in_pu:
-            P = arr * self.P
-            Q = arr * self.Q
-        else:
-            P = np.ones(len(index)) * self.P if arr is None else arr
-            Q = np.ones(len(index)) * self.Q if arr is None else arr
-
-        self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
-        self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
-
-    def create_profile(self, magnitude, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        :param magnitude: name of the property
-        :param index: pandas index
-        :param arr: array of values to set
-        :param arr_in_pu: is the array in per-unit?
-        """
-        x = getattr(self, magnitude)
-        x_prof = getattr(self, self.properties_with_profile[magnitude])
-
-        if arr_in_pu:
-            val = arr * x
-        else:
-            val = np.ones(len(index)) * x if arr is None else arr
-
-        x_prof = pd.DataFrame(data=val, index=index, columns=[self.name])
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return:
-        """
-        self.P_prof = None
-        self.Q_prof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.P_prof.values[t]
-        self.Q = self.Q_prof.values[t]
-
-    def __str__(self):
-        return self.name
+    # def delete_profiles(self):
+    #     """
+    #     Delete the object profiles
+    #     :return:
+    #     """
+    #     self.P_prof = None
+    #     self.Q_prof = None
+    #
+    # def set_profile_values(self, t):
+    #     """
+    #     Set the profile values at t
+    #     :param t: time index
+    #     """
+    #     self.P = self.P_prof.values[t]
+    #     self.Q = self.Q_prof.values[t]
+    #
+    # def __str__(self):
+    #     return self.name
 
 
 class Generator(EditableDevice):
@@ -1831,63 +1836,63 @@ class Generator(EditableDevice):
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
 
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag == 'P':
-            self.create_profiles(index, P=arr, V=None, Pf=None)
-        if mag == 'Pf':
-            self.create_profiles(index, P=None, V=None, Pf=arr)
-        elif mag == 'V':
-            self.create_profiles(index, P=None, V=arr, Pf=None)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
+    # def create_profiles_maginitude(self, index, arr, mag):
+    #     """
+    #     Create profiles from magnitude
+    #     Args:
+    #         index: Time index
+    #         arr: values array
+    #         mag: String with the magnitude to assign
+    #     """
+    #     if mag == 'P':
+    #         self.create_profiles(index, P=arr, V=None, Pf=None)
+    #     if mag == 'Pf':
+    #         self.create_profiles(index, P=None, V=None, Pf=arr)
+    #     elif mag == 'V':
+    #         self.create_profiles(index, P=None, V=arr, Pf=None)
+    #     else:
+    #         raise Exception('Magnitude ' + mag + ' not supported')
 
-    def create_profiles(self, index, P=None, V=None, Pf=None):
-        """
-        Create the load object default profiles
-        Args:
-            index: time index associated
-            P: Active power (MW)
-            Pf: Power factor
-            V: voltage set points
-        """
-        self.create_P_profile(index, P)
-        self.create_Pf_profile(index, Pf)
-        self.create_Vset_profile(index, V)
-
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.P
-        else:
-            dta = np.ones(len(index)) * self.P if arr is None else arr
-        self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_Pf_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.Pf
-        else:
-            dta = np.ones(len(index)) * self.Pf if arr is None else arr
-        self.Pf_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+    # def create_profiles(self, index, P=None, V=None, Pf=None):
+    #     """
+    #     Create the load object default profiles
+    #     Args:
+    #         index: time index associated
+    #         P: Active power (MW)
+    #         Pf: Power factor
+    #         V: voltage set points
+    #     """
+    #     self.create_P_profile(index, P)
+    #     self.create_Pf_profile(index, Pf)
+    #     self.create_Vset_profile(index, V)
+    #
+    # def create_P_profile(self, index, arr=None, arr_in_pu=False):
+    #     """
+    #     Create power profile based on index
+    #     Args:
+    #         index: time index associated
+    #         arr: array of values
+    #         arr_in_pu: is the array in per unit?
+    #     """
+    #     if arr_in_pu:
+    #         dta = arr * self.P
+    #     else:
+    #         dta = np.ones(len(index)) * self.P if arr is None else arr
+    #     self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+    #
+    # def create_Pf_profile(self, index, arr=None, arr_in_pu=False):
+    #     """
+    #     Create power profile based on index
+    #     Args:
+    #         index: time index associated
+    #         arr: array of values
+    #         arr_in_pu: is the array in per unit?
+    #     """
+    #     if arr_in_pu:
+    #         dta = arr * self.Pf
+    #     else:
+    #         dta = np.ones(len(index)) * self.Pf if arr is None else arr
+    #     self.Pf_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
     def initialize_lp_vars(self):
         """
@@ -1910,58 +1915,58 @@ class Generator(EditableDevice):
         dta = [x.value() for x in self.LPVar_P_prof]
         return pd.DataFrame(data=dta, index=index, columns=[self.name])
 
-    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.Vset
-        else:
-            dta = np.ones(len(index)) * self.Vset if arr is None else arr
+    # def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
+    #     """
+    #     Create power profile based on index
+    #     Args:
+    #         index: time index associated
+    #         arr: array of values
+    #         arr_in_pu: is the array in per unit?
+    #     """
+    #     if arr_in_pu:
+    #         dta = arr * self.Vset
+    #     else:
+    #         dta = np.ones(len(index)) * self.Vset if arr is None else arr
+    #
+    #     self.Vset_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
 
-        self.Vset_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
+    # def get_profiles(self, index=None, use_opf_vals=False):
+    #     """
+    #     Get profiles and if the index is passed, create the profiles if needed
+    #     Args:
+    #         index: index of the Pandas DataFrame
+    #
+    #     Returns:
+    #         Power, Current and Impedance profiles
+    #     """
+    #     if index is not None:
+    #         if self.P_prof is None:
+    #             self.create_P_profile(index)
+    #         if self.Pf_prof is None:
+    #             self.create_Pf_profile(index)
+    #         if self.Vset_prof is None:
+    #             self.create_Vset_profile(index)
+    #
+    #     if use_opf_vals:
+    #         return self.get_lp_var_profile(index), self.Vset_prof
+    #     else:
+    #         return self.P_prof, self.Vset_prof
 
-    def get_profiles(self, index=None, use_opf_vals=False):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.P_prof is None:
-                self.create_P_profile(index)
-            if self.Pf_prof is None:
-                self.create_Pf_profile(index)
-            if self.Vset_prof is None:
-                self.create_Vset_profile(index)
-
-        if use_opf_vals:
-            return self.get_lp_var_profile(index), self.Vset_prof
-        else:
-            return self.P_prof, self.Vset_prof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return:
-        """
-        self.P_prof = None
-        self.Vset_prof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.P_prof.values[t]
-        self.Vset = self.Vset_prof.values[t]
+    # def delete_profiles(self):
+    #     """
+    #     Delete the object profiles
+    #     :return:
+    #     """
+    #     self.P_prof = None
+    #     self.Vset_prof = None
+    #
+    # def set_profile_values(self, t):
+    #     """
+    #     Set the profile values at t
+    #     :param t: time index
+    #     """
+    #     self.P = self.P_prof.values[t]
+    #     self.Vset = self.Vset_prof.values[t]
 
     def apply_lp_vars(self, at=None):
         """
@@ -1987,8 +1992,8 @@ class Generator(EditableDevice):
             # therefore fill the profiles with zeros when asked to copy the lp vars to the power profiles
             self.P_prof.values = np.zeros(self.P_prof.shape[0])
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
 
 class Battery(Generator):
@@ -2231,7 +2236,7 @@ class Battery(Generator):
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
 
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
+    def initialize_arrays(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -2243,8 +2248,6 @@ class Battery(Generator):
             dta = arr * self.P
         else:
             dta = np.ones(len(index)) * self.P if arr is None else arr
-        self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
         self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
         self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
 

@@ -219,7 +219,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 attr = 'template'
 
             if hasattr(obj_, attr):
-                conv = obj_.editable_headers[attr][1]  # get the type converter
+                conv = obj_.editable_headers[attr].tpe  # get the type converter
                 if conv is None:
                     setattr(obj_, attr, values[a])
                 elif conv is BranchType:
@@ -309,16 +309,16 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
                 # create the power profiles
                 val = np.array([complex(v) for v in data['load_Sprof'].values[:, i]])
-                obj.P_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.Q_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='P', index=idx, arr=val.real)
+                obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
                 if circuit.time_profile is None:
                     circuit.time_profile = idx
 
             if 'load_Iprof' in data.keys():
                 val = np.array([complex(v) for v in data['load_Iprof'].values[:, i]])
                 idx = data['load_Iprof'].index
-                obj.Ir_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.Ii_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='Ir', index=idx, arr=val.real)
+                obj.create_profile(magnitude='Ii', index=idx, arr=val.imag)
 
                 if circuit.time_profile is None:
                     circuit.time_profile = idx
@@ -326,8 +326,8 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'load_Zprof' in data.keys():
                 val = np.array([complex(v) for v in data['load_Zprof'].values[:, i]])
                 idx = data['load_Zprof'].index
-                obj.Ir_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.Ii_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='G', index=idx, arr=val.real)
+                obj.create_profile(magnitude='B', index=idx, arr=val.imag)
 
                 if circuit.time_profile is None:
                     circuit.time_profile = idx
@@ -360,20 +360,19 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'CtrlGen_P_profiles' in data.keys():
                 val = data['CtrlGen_P_profiles'].values[:, i]
                 idx = data['CtrlGen_P_profiles'].index
-                obj.create_P_profile(index=idx, arr=val)
+                obj.create_profile(magnitude='P', index=idx, arr=val)
                 # also create the Pf array because there might not be values in the file
-                obj.create_Pf_profile(index=idx)
+                obj.create_profile(magnitude='Pf', index=idx)
 
             if 'CtrlGen_Pf_profiles' in data.keys():
                 val = data['CtrlGen_Pf_profiles'].values[:, i]
                 idx = data['CtrlGen_Pf_profiles'].index
-                # obj.Pprof = pd.DataFrame(data=val, index=idx)
-                obj.create_Pf_profile(index=idx, arr=val)
+                obj.create_profile(magnitude='Pf', index=idx, arr=val)
 
             if 'CtrlGen_Vset_profiles' in data.keys():
                 val = data['CtrlGen_Vset_profiles'].values[:, i]
                 idx = data['CtrlGen_Vset_profiles'].index
-                obj.Vset_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='Vset', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -403,13 +402,18 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'battery_P_profiles' in data.keys():
                 val = data['battery_P_profiles'].values[:, i]
                 idx = data['battery_P_profiles'].index
-                # obj.Pprof = pd.DataFrame(data=val, index=idx)
-                obj.create_P_profile(index=idx, arr=val)
+                obj.create_profile(magnitude='P', index=idx, arr=val)
+                obj.create_profile(magnitude='Pf', index=idx)
+
+            if 'battery_Pf_profiles' in data.keys():
+                val = data['battery_Pf_profiles'].values[:, i]
+                idx = data['battery_Pf_profiles'].index
+                obj.create_profile(magnitude='Pf', index=idx, arr=val)
 
             if 'battery_Vset_profiles' in data.keys():
                 val = data['battery_Vset_profiles'].values[:, i]
                 idx = data['battery_Vset_profiles'].index
-                obj.Vset_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='Vset', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -439,19 +443,18 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'static_generator_Sprof' in data.keys():
                 val = data['static_generator_Sprof'].values[:, i]
                 idx = data['static_generator_Sprof'].index
-                # obj.Sprof = pd.DataFrame(data=val, index=idx)
-                obj.P_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.Q_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='P', index=idx, arr=val.real)
+                obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
 
             if 'static_generator_P_prof' in data.keys():
                 val = data['static_generator_P_prof'].values[:, i]
                 idx = data['static_generator_P_prof'].index
-                obj.P_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='P', index=idx, arr=val)
 
             if 'static_generator_Q_prof' in data.keys():
                 val = data['static_generator_Q_prof'].values[:, i]
                 idx = data['static_generator_Q_prof'].index
-                obj.Q_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='Q', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -481,9 +484,8 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'shunt_Y_profiles' in data.keys():
                 val = data['shunt_Y_profiles'].values[:, i]
                 idx = data['shunt_Y_profiles'].index
-                # obj.Yprof = pd.DataFrame(data=val, index=idx)
-                obj.G_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.B_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='G', index=idx, arr=val.real)
+                obj.create_profile(magnitude='B', index=idx, arr=val.imag)
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -654,7 +656,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 attr = 'template'
 
             if hasattr(obj_, attr):
-                conv = obj_.editable_headers[attr][1]  # get the type converter
+                conv = obj_.editable_headers[attr].tpe  # get the type converter
                 if conv is None:
                     setattr(obj_, attr, values[a])
                 elif conv is BranchType:
@@ -736,20 +738,19 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'generator_P_prof' in data.keys():
                 val = data['generator_P_prof'].values[:, i]
                 idx = data['generator_P_prof'].index
-                obj.create_P_profile(index=idx, arr=val)
+                obj.create_profile(magnitude='P', index=idx, arr=val)
                 # also create the Pf array because there might not be values in the file
-                obj.create_Pf_profile(index=idx)
+                obj.create_profile(magnitude='Pf', index=idx, arr=None)
 
             if 'generator_Pf_prof' in data.keys():
                 val = data['generator_Pf_prof'].values[:, i]
                 idx = data['generator_Pf_prof'].index
-                # obj.Pprof = pd.DataFrame(data=val, index=idx)
-                obj.create_Pf_profile(index=idx, arr=val)
+                obj.create_profile(magnitude='Pf', index=idx, arr=val)
 
             if 'generator_Vset_prof' in data.keys():
                 val = data['generator_Vset_prof'].values[:, i]
                 idx = data['generator_Vset_prof'].index
-                obj.Vset_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='Vset', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -779,13 +780,14 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'battery_P_prof' in data.keys():
                 val = data['battery_P_prof'].values[:, i]
                 idx = data['battery_P_prof'].index
-                # obj.Pprof = pd.DataFrame(data=val, index=idx)
-                obj.create_P_profile(index=idx, arr=val)
+                obj.create_profile(magnitude='P', index=idx, arr=val)
+                # also create the Pf array because there might not be values in the file
+                obj.create_profile(magnitude='Pf', index=idx, arr=None)
 
             if 'battery_Vset_prof' in data.keys():
                 val = data['battery_Vset_prof'].values[:, i]
                 idx = data['battery_Vset_prof'].index
-                obj.Vset_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='Vset', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -815,18 +817,18 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'static_generator_Sprof' in data.keys():
                 val = data['static_generator_Sprof'].values[:, i]
                 idx = data['static_generator_Sprof'].index
-                obj.P_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.Q_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='P', index=idx, arr=val.real)
+                obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
 
             if 'static_generator_P_prof' in data.keys():
                 val = data['static_generator_P_prof'].values[:, i]
                 idx = data['static_generator_P_prof'].index
-                obj.P_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='P', index=idx, arr=val)
 
             if 'static_generator_Q_prof' in data.keys():
                 val = data['static_generator_Q_prof'].values[:, i]
                 idx = data['static_generator_Q_prof'].index
-                obj.P_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='Q', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -856,18 +858,18 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'shunt_Y_profiles' in data.keys():
                 val = data['shunt_Y_profiles'].values[:, i]
                 idx = data['shunt_Y_profiles'].index
-                obj.G_prof = pd.DataFrame(data=val.real, index=idx)
-                obj.B_prof = pd.DataFrame(data=val.imag, index=idx)
+                obj.create_profile(magnitude='G', index=idx, arr=val.real)
+                obj.create_profile(magnitude='B', index=idx, arr=val.imag)
 
             if 'shunt_G_prof' in data.keys():
                 val = data['shunt_G_prof'].values[:, i]
                 idx = data['shunt_G_prof'].index
-                obj.G_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='G', index=idx, arr=val)
 
             if 'shunt_B_prof' in data.keys():
                 val = data['shunt_B_prof'].values[:, i]
                 idx = data['shunt_B_prof'].index
-                obj.B_prof = pd.DataFrame(data=val, index=idx)
+                obj.create_profile(magnitude='B', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
