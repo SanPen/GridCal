@@ -31,19 +31,20 @@ class MultiCircuit:
     nodes (:ref:`buses<Bus>`) and :ref:`branches<Branch>` (lines, transformers or other
     impedances).
 
-    The `MultiCircuit` class is the main object in **GridCal**. It represents a circuit
-    that may contain islands. It is important to understand that a circuit split in two
-    or more islands cannot be simulated as is, because the admittance matrix would be
-    singular. The solution to this is to split the circuit in island-circuits. Therefore
-    `MultiCircuit` identifies the islands and creates individual `Circuit` objects for
-    each of them.
+    The :ref:`MultiCircuit<multicircuit>` class is the main object in **GridCal**. It
+    represents a circuit that may contain islands. It is important to understand that a
+    circuit split in two or more islands cannot be simulated as is, because the
+    admittance matrix would be singular. The solution to this is to split the circuit
+    in island-circuits. Therefore :ref:`MultiCircuit<multicircuit>` identifies the
+    islands and creates individual **Circuit** objects for each of them.
 
-    **GridCal** uses an object oriented approach for the data management. This allows to
-    group the data in a smart way. In GridCal there are only two types of object
-    directly declared in a `Circuit` or `MultiCircuit` object. These are the :ref:`Bus`
-    and the :ref:`Branch`. The branches connect the buses and the buses contain all the
-    other possible devices like loads, generators, batteries, etc. This simplifies
-    enormously the management of element when adding, associating and deleting.
+    **GridCal** uses an object oriented approach for the data management. This allows
+    to group the data in a smart way. In **GridCal** there are only two types of object
+    directly declared in a **Circuit** or :ref:`MultiCircuit<multicircuit>` object.
+    These are the :ref:`Bus<bus>` and the :ref:`Branch<branch>`. The branches connect
+    the buses and the buses contain all the other possible devices like loads,
+    generators, batteries, etc. This simplifies enormously the management of element
+    when adding, associating and deleting.
 
     .. code:: ipython3
 
@@ -53,9 +54,6 @@ class MultiCircuit:
     """
 
     def __init__(self, name=''):
-        """
-        Multi Circuit Constructor
-        """
 
         self.name = name
 
@@ -144,7 +142,6 @@ class MultiCircuit:
                 self.device_type_name_dict[dev.device_type.value] = dev.device_type
 
     def clear(self):
-
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
 
@@ -195,8 +192,7 @@ class MultiCircuit:
 
     def get_loads(self):
         """
-
-        :return:
+        Returns a list of :ref:`Load<load>` objects in the grid.
         """
         lst = list()
         for bus in self.buses:
@@ -206,6 +202,9 @@ class MultiCircuit:
         return lst
 
     def get_load_names(self):
+        """
+        Returns a list of :ref:`Load<load>` names.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.loads:
@@ -213,6 +212,9 @@ class MultiCircuit:
         return np.array(lst)
 
     def get_static_generators(self):
+        """
+        Returns a list of :ref:`StaticGenerator<static_generator>` objects in the grid.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.static_generators:
@@ -221,6 +223,9 @@ class MultiCircuit:
         return lst
 
     def get_static_generators_names(self):
+        """
+        Returns a list of :ref:`StaticGenerator<static_generator>` names.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.static_generators:
@@ -228,6 +233,9 @@ class MultiCircuit:
         return np.array(lst)
 
     def get_shunts(self):
+        """
+        Returns a list of :ref:`Shunt<shunt>` objects in the grid.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.shunts:
@@ -236,6 +244,9 @@ class MultiCircuit:
         return lst
 
     def get_shunt_names(self):
+        """
+        Returns a list of :ref:`Shunt<shunt>` names.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.shunts:
@@ -243,6 +254,9 @@ class MultiCircuit:
         return np.array(lst)
 
     def get_generators(self):
+        """
+        Returns a list of :ref:`Generator<generator>` objects in the grid.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.controlled_generators:
@@ -251,6 +265,9 @@ class MultiCircuit:
         return lst
 
     def get_controlled_generator_names(self):
+        """
+        Returns a list of :ref:`Generator<generator>` names.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.controlled_generators:
@@ -258,6 +275,9 @@ class MultiCircuit:
         return np.array(lst)
 
     def get_batteries(self):
+        """
+        Returns a list of :ref:`Battery<battery>` objects in the grid.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.batteries:
@@ -266,6 +286,9 @@ class MultiCircuit:
         return lst
 
     def get_battery_names(self):
+        """
+        Returns a list of :ref:`Battery<battery>` names.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.batteries:
@@ -273,6 +296,9 @@ class MultiCircuit:
         return np.array(lst)
 
     def get_battery_capacities(self):
+        """
+        Returns a list of :ref:`Battery<battery>` capacities.
+        """
         lst = list()
         for bus in self.buses:
             for elm in bus.batteries:
@@ -312,9 +338,12 @@ class MultiCircuit:
 
     def get_Jacobian(self, sparse=False):
         """
-        Returns the Grid Jacobian matrix
-        Returns:
-            Grid Jacobian Matrix in CSR sparse format or as full matrix
+        Returns the grid Jacobian matrix.
+
+        Arguments:
+
+            **sparse** (bool, False): Return the matrix in CSR sparse format (True) or
+            as full matrix (False)
         """
 
         # Initial magnitudes
@@ -333,16 +362,14 @@ class MultiCircuit:
 
     def apply_lp_profiles(self):
         """
-        Apply the LP results as device profiles
-        :return:
+        Apply the LP results as device profiles.
         """
         for bus in self.buses:
             bus.apply_lp_profiles(self.Sbase)
 
     def copy(self):
         """
-        Returns a deep (true) copy of this circuit
-        @return:
+        Returns a deep (true) copy of this circuit.
         """
 
         cpy = MultiCircuit()
@@ -372,9 +399,11 @@ class MultiCircuit:
 
     def get_catalogue_dict(self, branches_only=False):
         """
-        Returns a dictionary with the catalogue types and the associated list of objects
-        :param branches_only: only branch types
-        :return: dictionary
+        Returns a dictionary with the catalogue types and the associated list of objects.
+
+        Arguments:
+
+            **branches_only** (bool, False): Only branch types
         """
         # 'Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers'
 
@@ -438,8 +467,12 @@ class MultiCircuit:
 
     def get_json_dict(self, id):
         """
-        Get json dictionary
-        :return:
+        Returns a JSON dictionary of the :ref:`MultiCircuit<multicircuit>` instance
+        with the following values: id, type, phases, name, Sbase, comments.
+
+        Arguments:
+
+            **id**: Arbitrary identifier
         """
         return {'id': id,
                 'type': 'circuit',
@@ -450,8 +483,12 @@ class MultiCircuit:
 
     def assign_circuit(self, circ):
         """
-        Assign a circuit object to this object
-        :param circ: instance of MultiCircuit or Circuit
+        Assign a circuit object to this object.
+
+        Arguments:
+
+            **circ** (:ref:`MultiCircuit<multicircuit>`):
+            :ref:`MultiCircuit<multicircuit>` object
         """
         self.buses = circ.buses
         self.branches = circ.branches
@@ -468,12 +505,11 @@ class MultiCircuit:
 
     def save_calculation_objects(self, file_path):
         """
-        Save all the calculation objects of all the grids
-        Args:
-            file_path: path to file
+        Save all the calculation objects of all the grids.
 
-        Returns:
+        Arguments:
 
+            **file_path** (str): Path to file
         """
 
         # print('Compiling...', end='')
@@ -493,8 +529,7 @@ class MultiCircuit:
 
     def build_graph(self):
         """
-        Build graph
-        :return: self.graph
+        Returns a networkx DiGraph object of the grid.
         """
         self.graph = nx.DiGraph()
 
@@ -509,12 +544,39 @@ class MultiCircuit:
 
     def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()):
         """
-        Compile the circuit assets into an equivalent circuit that only contains matrices and vectors for calculation
-        :param use_opf_vals:
-        :param opf_time_series_results:
-        :param logger:
-        :return:
+        Compile the circuit assets into an equivalent circuit that only contains
+        matrices and vectors for calculation. This method returns the numerical
+        circuit, but it also assigns it to **self.numerical_circuit**, which is used
+        when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
+        :ref:`driver<drivers>`, for example:
+
+        .. code:: ipython3
+
+            from GridCal.Engine import *
+
+            grid = MultiCircuit()
+            grid.load_file("grid.xlsx")
+            grid.compile()
+
+            options = PowerFlowOptions()
+
+            power_flow = PowerFlowMP(grid, options)
+            power_flow.run()
+
+        Arguments:
+
+            **use_opf_vals** (bool, False): Use OPF results as inputs
+
+            **opf_time_series_results** (list, None): OPF results to be used as inputs
+
+            **logger** (list, []): Message log
+
+        Returns:
+
+            **self.numerical_circuit** (NumericalCircuit): Compiled numerical circuit
+            of the grid
         """
+
         n = len(self.buses)
         m = len(self.branches)
         if self.time_profile is not None:
@@ -743,12 +805,17 @@ class MultiCircuit:
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
-        Set the default profiles in all the objects enabled to have profiles
-        Args:
-            steps: Number of time steps
-            step_length: time length (1, 2, 15, ...)
-            step_unit: unit of the time step
-            time_base: Date to start from
+        Set the default profiles in all the objects enabled to have profiles.
+
+        Arguments:
+
+            **steps** (int): Number of time steps
+
+            **step_length** (int): Time length (1, 2, 15, ...)
+
+            **step_unit** (str): Unit of the time step ("h", "m" or "s")
+
+            **time_base** (datetime, datetime.now()): Date to start from
         """
 
         index = [None] * steps
@@ -766,9 +833,11 @@ class MultiCircuit:
 
     def format_profiles(self, index):
         """
-        Format the pandas profiles in place using a time index
-        Args:
-            index: Time profile
+        Format the pandas profiles in place using a time index.
+
+        Arguments:
+
+            **index**: Time profile
         """
 
         self.time_profile = np.array(index)
@@ -781,11 +850,16 @@ class MultiCircuit:
 
     def get_node_elements_by_type(self, element_type: DeviceType):
         """
-        Get set of elements and their parent nodes
-        Args:
-            element_type: String {'Load', 'StaticGenerator', 'Generator', 'Battery', 'Shunt'}
+        Get set of elements and their parent nodes.
 
-        Returns: List of elements, lisself.busest of matching parent buses
+        Arguments:
+
+            **element_type** (str): Element type, either "Load", "StaticGenerator",
+            "Generator", "Battery" or "Shunt"
+
+        Returns:
+
+            List of elements, list of matching parent buses
         """
         elements = list()
         parent_buses = list()
@@ -827,8 +901,12 @@ class MultiCircuit:
 
     def set_power(self, S):
         """
-        Set the power array in the circuits
-        @param S: Array of power values in MVA for all the nodes in all the islands
+        Set the power array in the circuits.
+
+        Arguments:
+
+            **S** (list): Array of power values in MVA for all the nodes in all the
+            islands
         """
         for circuit_island in self.circuits:
             idx = circuit_island.bus_original_idx  # get the buses original indexing in the island
@@ -836,15 +914,21 @@ class MultiCircuit:
 
     def add_bus(self, obj: Bus):
         """
-        Add bus keeping track of it as object
-        @param obj:
+        Add a :ref:`Bus<bus>` object to the grid.
+
+        Arguments:
+
+            **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
         self.buses.append(obj)
 
     def delete_bus(self, obj: Bus):
         """
-        Remove bus
-        @param obj: Bus object
+        Delete a :ref:`Bus<bus>` object from the grid.
+
+        Arguments:
+
+            **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
 
         # remove associated branches in reverse order
@@ -857,24 +941,33 @@ class MultiCircuit:
 
     def add_branch(self, obj: Branch):
         """
-        Add a branch object to the circuit
-        @param obj: Branch object
+        Add a :ref:`Branch<branch>` object to the grid.
+
+        Arguments:
+
+            **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
         self.branches.append(obj)
 
     def delete_branch(self, obj: Branch):
         """
-        Delete a branch object from the circuit
-        @param obj:
+        Delete a :ref:`Branch<branch>` object from the grid.
+
+        Arguments:
+
+            **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
         self.branches.remove(obj)
 
     def add_load(self, bus: Bus, api_obj=None):
         """
-        Add load object to a bus
-        Args:
-            bus: Bus object
-            api_obj: Load object
+        Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
+
+        Arguments:
+
+            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+
+            **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
         if api_obj is None:
             api_obj = Load()
@@ -892,10 +985,14 @@ class MultiCircuit:
 
     def add_generator(self, bus: Bus, api_obj=None):
         """
-        Add controlled generator to a bus
-        Args:
-            bus: Bus object
-            api_obj: Generator object
+        Add a (controlled) :ref:`Generator<generator>` object to a :ref:`Bus<bus>`.
+
+        Arguments:
+
+            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+
+            **api_obj** (:ref:`Generator<generator>`): :ref:`Generator<generator>`
+            object
         """
         if api_obj is None:
             api_obj = Generator()
@@ -910,10 +1007,14 @@ class MultiCircuit:
 
     def add_static_generator(self, bus: Bus, api_obj=None):
         """
-        Add a static generator object to a bus
-        Args:
-            bus: Bus object to add it to
-            api_obj: StaticGenerator object
+        Add a :ref:`StaticGenerator<static_generator>` object to a :ref:`Bus<bus>`.
+
+        Arguments:
+
+            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+
+            **api_obj** (:ref:`StaticGenerator<static_generator>`):
+            :ref:`StaticGenerator<static_generator>` object
         """
         if api_obj is None:
             api_obj = StaticGenerator()
@@ -928,12 +1029,13 @@ class MultiCircuit:
 
     def add_battery(self, bus: Bus, api_obj=None):
         """
-        Add battery object to a bus.
+        Add a :ref:`Battery<battery>` object to a :ref:`Bus<bus>`.
 
-        Args:
-            **bus** (Bus): Bus object to add it to
+        Arguments:
 
-            **api_obj** (Battery, None): Battery object to add it to
+            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+
+            **api_obj** (:ref:`Battery<battery>`): :ref:`Battery<battery>` object
         """
         if api_obj is None:
             api_obj = Battery()
@@ -948,10 +1050,13 @@ class MultiCircuit:
 
     def add_shunt(self, bus: Bus, api_obj=None):
         """
-        Add shunt object to a bus
-        Args:
-            bus: Bus object to add it to
-            api_obj: Shunt object
+        Add a :ref:`Shunt<shunt>` object to a :ref:`Bus<bus>`.
+
+        Arguments:
+
+            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+
+            **api_obj** (:ref:`Shunt<shunt>`): :ref:`Shunt<shunt>` object
         """
         if api_obj is None:
             api_obj = Shunt()
@@ -965,24 +1070,15 @@ class MultiCircuit:
         return api_obj
 
     def add_wire(self, obj: Wire):
-        """
-        Add wire object
-        :param obj: Wire object
-        """
+
         self.wire_types.append(obj)
 
     def delete_wire(self, i):
-        """
-        Remove wire
-        :param i: index
-        """
+
         self.wire_types.pop(i)
 
     def add_overhead_line(self, obj: Tower):
-        """
-        Add overhead line
-        :param obj: Tower object
-        """
+
         self.overhead_line_types.append(obj)
 
     def delete_overhead_line(self, i):
@@ -1025,8 +1121,11 @@ class MultiCircuit:
 
     def plot_graph(self, ax=None):
         """
-        Plot the grid
-        @param ax: Matplotlib axis object
+        Plot the grid.
+
+        Arguments:
+
+            **ax**: Matplotlib axis object
         """
         if ax is None:
             fig = plt.figure()
@@ -1039,8 +1138,11 @@ class MultiCircuit:
 
     def export_pf(self, file_name, power_flow_results):
         """
-        Export power flow results to file
-        :param file_name: Excel file name
+        Export power flow results to file.
+
+        Arguments:
+
+            **file_name** (str): Excel file name
         """
 
         if power_flow_results is not None:
@@ -1058,9 +1160,11 @@ class MultiCircuit:
 
     def export_profiles(self, file_name):
         """
-        Export object profiles to file
-        :param file_name: Excel file name
-        :return: Nothing
+        Export object profiles to file.
+
+        Arguments:
+
+            **file_name** (str): Excel file name
         """
 
         if self.time_profile is not None:
@@ -1137,8 +1241,8 @@ class MultiCircuit:
 
     def dispatch(self):
         """
-        Dispatch either load or generation using a simple equalised share rule of the shedding to be done
-        @return: Nothing
+        Dispatch either load or generation using a simple equalised share rule of the
+        shedding to be done.
         """
         if self.numerical_circuit is not None:
 
@@ -1186,9 +1290,7 @@ class MultiCircuit:
 
     def set_state(self, t):
         """
-        Set the profiles state at the index t as the default values
-        :param t:
-        :return:
+        Set the profiles state at the index t as the default values.
         """
         for bus in self.buses:
             bus.set_state(t)

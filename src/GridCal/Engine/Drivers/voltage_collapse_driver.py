@@ -114,30 +114,54 @@ class VoltageCollapseResults:
 
         self.available_results = [ResultTypes.BusVoltage]
 
-    def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx, branch_original_idx, nbus_full):
+    def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx,
+                          branch_original_idx, nbus_full):
         """
         Apply the results of an island to this VoltageCollapseResults instance
         :param voltage_collapse_res: VoltageCollapseResults instance of the island
         :param bus_original_idx: indices of the buses in the complete grid
+        :param branch_original_idx: indices of the branches in the complete grid
         :param nbus_full: total number of buses in the complete grid
         :return:
         """
 
         if len(voltage_collapse_res.voltages) > 0:
-            l, n = voltage_collapse_res.voltages.shape
+
+            n_lambda, n_bus = voltage_collapse_res.voltages.shape
 
             if self.voltages is None:
-                self.voltages = np.zeros((l, nbus_full), dtype=complex)
+                # fill a matrix with the values of the (eligibly) first island
+                self.voltages = np.zeros((n_lambda, nbus_full), dtype=complex)
                 self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
                 self.lambdas = voltage_collapse_res.lambdas
             else:
+                # if the voltages are not none, that means that another island initialized the voltages.
+                # We know that the number of nodes is the total number of nodes, but the number of lambda-staps might
+                # be different. Hence we need to copy the new island voltages accordingly
                 lprev = self.voltages.shape[0]
-                if l > lprev:
-                    vv = self.voltages.copy()
-                    self.voltages = np.zeros((l, nbus_full), dtype=complex)
-                    self.voltages[0:l, :] = vv
 
-                self.voltages[0:l, bus_original_idx] = voltage_collapse_res.voltages
+                if n_lambda > lprev:
+                    # now there are more rows than before, hence we need to extend
+                    voltages_before = self.voltages.copy()
+
+                    # re-initialize the voltages array
+                    self.voltages = np.zeros((n_lambda, nbus_full), dtype=complex)
+
+                    # copy the old voltages to the empty voltages array
+                    self.voltages[0:lprev, :] = voltages_before
+
+                    # copy the new voltages
+                    self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
+
+                    # now there are more values of lambda, just use the new ones
+                    self.lambdas = voltage_collapse_res.lambdas
+
+                elif n_lambda < lprev:
+                    # the number of lambda values in this island is lower, so just copy at the beginning
+                    self.voltages[0:n_lambda, bus_original_idx] = voltage_collapse_res.voltages
+                else:
+                    # same number of lambda values, just copy where needed
+                    self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
 
             # set the branch values
             self.Sbranch[branch_original_idx] = pf_res.Sbranch

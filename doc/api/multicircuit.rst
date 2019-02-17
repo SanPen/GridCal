@@ -7,4 +7,4 @@ MultiCircuit
 
 .. autoclass:: MultiCircuit
     :members:
-
+    :undoc-members:
