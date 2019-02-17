@@ -1290,7 +1290,7 @@ class PowerFlowMP:
 
         return stable, tap_module, tap_position
 
-    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
+    def run_pf(self, circuit: CalculationInputs):
         """
         Run a power flow for a circuit. In most cases, the **run** method should be
         used instead.
@@ -1299,12 +1299,6 @@ class PowerFlowMP:
 
             **circuit** (:ref:`CalculationInputs<calc_inputs>`): CalculationInputs
             instance
-
-            **Vbus** (list): Initial voltage at each bus in complex per unit
-
-            **Sbus** (list): Power injection at each bus in complex MVA
-
-            **Ibus** (list): Current injection at each bus in complex amperes
 
         Returns:
         
@@ -1343,13 +1337,13 @@ class PowerFlowMP:
                 # print('Trying', solver)
 
                 # set the initial voltage
-                V0 = Vbus.copy()
+                V0 = circuit.Vbus.copy()
 
                 results = self.single_power_flow(circuit=circuit,
                                                  solver_type=solver,
                                                  voltage_solution=V0,
-                                                 Sbus=Sbus,
-                                                 Ibus=Ibus)
+                                                 Sbus=circuit.Sbus,
+                                                 Ibus=circuit.Ibus)
 
                 # did it worked?
                 worked = np.all(results.converged)
@@ -1475,12 +1469,9 @@ class PowerFlowMP:
             for i, calculation_input in enumerate(calculation_inputs):
 
                 if len(calculation_input.ref) > 0:
-                    Vbus = calculation_input.Vbus
-                    Sbus = calculation_input.Sbus
-                    Ibus = calculation_input.Ibus
 
                     # run circuit power flow
-                    res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
+                    res = self.run_pf(calculation_input)
 
                     bus_original_idx = numerical_circuit.islands[i]
                     branch_original_idx = numerical_circuit.island_branches[i]
@@ -1498,13 +1489,9 @@ class PowerFlowMP:
         else:
 
             if len(calculation_inputs[0].ref) > 0:
-                # only one island
-                Vbus = calculation_inputs[0].Vbus
-                Sbus = calculation_inputs[0].Sbus
-                Ibus = calculation_inputs[0].Ibus
 
                 # run circuit power flow
-                results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
+                results = self.run_pf(calculation_inputs[0])
 
                 # build the report
                 self.convergence_reports.append(results.get_report_dataframe())
