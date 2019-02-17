@@ -1,8 +1,4 @@
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, SolverType, ReactivePowerControlMode
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlow
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine import *
 
 Sbase = 100  # MVA
 
@@ -122,7 +118,6 @@ def test_basic():
         print(f" - bus[{i}]: {b}")
     print()
 
-    grid.compile()
     options = PowerFlowOptions(SolverType.LM,
                                verbose=True,
                                initialize_with_existing_solution=True,
@@ -274,7 +269,6 @@ def test_gridcal_basic_pi():
         print(f" - bus[{i}]: {b}")
     print()
 
-    grid.compile()
     options = PowerFlowOptions(SolverType.LM,
                                verbose=True,
                                initialize_with_existing_solution=True,

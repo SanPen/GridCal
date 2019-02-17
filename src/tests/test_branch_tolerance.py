@@ -1,7 +1,4 @@
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, PowerFlow
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.devices import Bus, Branch, Generator, Load
+from GridCal.Engine import *
 
 Sbase = 100  # MVA
 
@@ -35,7 +32,6 @@ def test_tolerance_lf_higher():
                            tolerance=10))
 
     # Run non-linear power flow
-    grid.compile()
     options = PowerFlowOptions(verbose=True,
                                branch_impedance_tolerance_mode=BranchImpedanceMode.Upper)
 
@@ -127,7 +123,6 @@ def test_tolerance_lf_lower():
                            tolerance=10))
 
     # Run non-linear power flow
-    grid.compile()
     options = PowerFlowOptions(verbose=True,
                                branch_impedance_tolerance_mode=BranchImpedanceMode.Lower)
 

@@ -1,6 +1,4 @@
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, PowerFlow
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
+from GridCal.Engine import *
 
 Sbase = 100  # MVA
 
@@ -32,7 +30,6 @@ def test_line_losses_1():
     grid.add_branch(Branch(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.01, x=0.05))
 
     # Run non-linear load flow
-    grid.compile()
     options = PowerFlowOptions(verbose=True)
 
     power_flow = PowerFlow(grid, options)
@@ -115,7 +112,6 @@ def test_line_losses_2():
     grid.add_branch(Branch(bus_from=Bus1, bus_to=Bus2, name="Cable1", r=0.005, x=0.025))
 
     # Run non-linear load flow
-    grid.compile()
     options = PowerFlowOptions(verbose=True)
 
     power_flow = PowerFlow(grid, options)
@@ -197,7 +193,6 @@ def test_line_losses_3():
     grid.add_branch(Branch(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.02, x=0.1))
 
     # Run non-linear load flow
-    grid.compile()
     options = PowerFlowOptions(verbose=True)
 
     power_flow = PowerFlow(grid, options)
