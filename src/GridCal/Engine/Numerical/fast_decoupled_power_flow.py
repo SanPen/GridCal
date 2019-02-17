@@ -41,43 +41,26 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     mis = Scalc - Sbus  # complex power mismatch
     incP = mis[pqpv].real
     incQ = mis[pq].imag
-    normP = norm(incP, Inf)
-    normQ = norm(incQ, Inf)
-    if normP < tol and normQ < tol:
-        converged = True
-    else:
-        converged = False
 
-    # iterate
-    iter_ = 0
-    while not converged and iter_ < max_it:
-
-        iter_ += 1
-
-        # solve voltage angles
-        dVa = -J1.solve(incP)
-
-        # update voltage
-        Va[pqpv] = Va[pqpv] + dVa
-        voltage = Vm * exp(1j * Va)
-
-        # evaluate mismatch
-        Scalc = voltage * conj(Ybus * voltage - Ibus)
-        mis = Scalc - Sbus  # complex power mismatch
-        incP = mis[pqpv].real
-        incQ = mis[pq].imag
+    if len(pqpv) > 0:
         normP = norm(incP, Inf)
         normQ = norm(incQ, Inf)
-
         if normP < tol and normQ < tol:
             converged = True
-
         else:
-            # Solve voltage modules
-            dVm = -J2.solve(incQ)
+            converged = False
+
+        # iterate
+        iter_ = 0
+        while not converged and iter_ < max_it:
+
+            iter_ += 1
+
+            # solve voltage angles
+            dVa = -J1.solve(incP)
 
             # update voltage
-            Vm[pq] = Vm[pq] + dVm
+            Va[pqpv] = Va[pqpv] + dVa
             voltage = Vm * exp(1j * Va)
 
             # evaluate mismatch
@@ -91,13 +74,36 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
             if normP < tol and normQ < tol:
                 converged = True
 
-    # evaluate F(x)
-    Scalc = voltage * conj(Ybus * voltage - Ibus)
-    mis = Scalc - Sbus  # complex power mismatch
-    F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+            else:
+                # Solve voltage modules
+                dVm = -J2.solve(incQ)
 
-    # check for convergence
-    normF = norm(F, Inf)
+                # update voltage
+                Vm[pq] = Vm[pq] + dVm
+                voltage = Vm * exp(1j * Va)
+
+                # evaluate mismatch
+                Scalc = voltage * conj(Ybus * voltage - Ibus)
+                mis = Scalc - Sbus  # complex power mismatch
+                incP = mis[pqpv].real
+                incQ = mis[pq].imag
+                normP = norm(incP, Inf)
+                normQ = norm(incQ, Inf)
+
+                if normP < tol and normQ < tol:
+                    converged = True
+
+        # evaluate F(x)
+        Scalc = voltage * conj(Ybus * voltage - Ibus)
+        mis = Scalc - Sbus  # complex power mismatch
+        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+
+        # check for convergence
+        normF = norm(F, Inf)
+    else:
+        normF = 0
+        converged = True
+        iter_ = 0
 
     end = time.time()
     elapsed = end - start

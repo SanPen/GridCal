@@ -101,7 +101,7 @@ class ElementsDialogue(QtWidgets.QDialog):
 
         if len(elements) > 0:
             model = ObjectsModel(elements, elements[0].editable_headers,
-                                 parent=self.objects_table, editable=False, non_editable_indices=[1, 2, 14])
+                                 parent=self.objects_table, editable=False, non_editable_attributes=[1, 2, 14])
 
             self.objects_table.setModel(model)
 
@@ -1023,25 +1023,31 @@ class MainGUI(QMainWindow):
                 except:
                     pass
 
-                # # compile the circuit (fast)
-                # self.compile()
+                # update the drop down menus that display dates
+                self.update_date_dependent_combos()
 
-                if self.circuit.time_profile is not None:
-                    # print('Profiles available')
-                    mdl = get_list_model(self.circuit.time_profile)
-                    # setup profile sliders
-                    self.set_up_profile_sliders()
-                else:
-                    mdl = QStandardItemModel()
-                self.ui.profile_time_selection_comboBox.setModel(mdl)
-                self.ui.vs_departure_comboBox.setModel(mdl)
-                self.ui.vs_target_comboBox.setModel(mdl)
+                # clear the results
                 self.clear_results()
 
             else:
                 warn('The file was not valid')
         else:
             pass
+
+    def update_date_dependent_combos(self):
+        """
+        update the drop down menus that display dates
+        """
+        if self.circuit.time_profile is not None:
+            # print('Profiles available')
+            mdl = get_list_model(self.circuit.time_profile)
+            # setup profile sliders
+            self.set_up_profile_sliders()
+        else:
+            mdl = QStandardItemModel()
+        self.ui.profile_time_selection_comboBox.setModel(mdl)
+        self.ui.vs_departure_comboBox.setModel(mdl)
+        self.ui.vs_target_comboBox.setModel(mdl)
 
     def save_file(self):
         """
@@ -1418,7 +1424,7 @@ class MainGUI(QMainWindow):
             raise Exception('elm_type not understood: ' + elm_type)
 
         mdl = ObjectsModel(elements, elm.editable_headers,
-                           parent=self.ui.dataStructureTableView, editable=True, non_editable_indices=[1])
+                           parent=self.ui.dataStructureTableView, editable=True, non_editable_attributes=[1])
 
         self.ui.dataStructureTableView.setModel(mdl)
         self.view_templates(False)
@@ -1485,12 +1491,15 @@ class MainGUI(QMainWindow):
         if dlg.exec_():
             steps, step_length, step_unit, time_base = dlg.get_values()
 
+            self.ui.profiles_tableView.setModel(None)
+
             self.circuit.create_profiles(steps, step_length, step_unit, time_base)
 
-            # # TODO: Correct this function to not to depend on a previous compilation
-            # self.compile()
+            self.display_profiles()
 
             self.set_up_profile_sliders()
+
+            self.update_date_dependent_combos()
 
     def delete_profiles_structure(self):
         """
@@ -1509,6 +1518,7 @@ class MainGUI(QMainWindow):
                 self.circuit.has_time_series = False
                 self.ui.profiles_tableView.setModel(None)
                 self.set_up_profile_sliders()
+                self.update_date_dependent_combos()
             else:
                 pass
         else:
@@ -1544,33 +1554,14 @@ class MainGUI(QMainWindow):
 
         # Load(), StaticGenerator(), Generator(), Battery(), Shunt()
 
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+
         idx = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude = magnitudes[idx]
 
-        if dev_type == 'Load':
-            objects = self.circuit.get_loads()
-            also_reactive_power = True
-
-        elif dev_type == 'StaticGenerator':
-            objects = self.circuit.get_static_generators()
-            also_reactive_power = True
-
-        elif dev_type == 'Generator':
-            objects = self.circuit.get_generators()
-            also_reactive_power = False
-
-        elif dev_type == 'Battery':
-            objects = self.circuit.get_batteries()
-            also_reactive_power = False
-
-        elif dev_type == 'Shunt':
-            objects = self.circuit.get_shunts()
-            also_reactive_power = True
-        else:
-            objects = list()
-            also_reactive_power = False
+        dev_type = self.circuit.device_type_name_dict[dev_type_text]
+        objects = self.circuit.get_elements_by_type(dev_type)
 
         if len(objects) > 0:
             dialogue = ProfileInputGUI(parent=self,
@@ -1606,6 +1597,7 @@ class MainGUI(QMainWindow):
 
                 # set up sliders
                 self.set_up_profile_sliders()
+                self.update_date_dependent_combos()
 
             else:
                 pass  # the dialogue was closed
@@ -1623,27 +1615,13 @@ class MainGUI(QMainWindow):
         """
         value = self.ui.profile_factor_doubleSpinBox.value()
 
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
         idx = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude = magnitudes[idx]
 
-        if dev_type == 'Load':
-            objects = self.circuit.get_loads()
-
-        elif dev_type == 'StaticGenerator':
-            objects = self.circuit.get_static_generators()
-
-        elif dev_type == 'Generator':
-            objects = self.circuit.get_generators()
-
-        elif dev_type == 'Battery':
-            objects = self.circuit.get_batteries()
-
-        elif dev_type == 'Shunt':
-            objects = self.circuit.get_shunts()
-        else:
-            objects = list()
+        dev_type = self.circuit.device_type_name_dict[dev_type_text]
+        objects = self.circuit.get_elements_by_type(dev_type)
 
         # Assign profiles
         if len(objects) > 0:
@@ -1664,6 +1642,7 @@ class MainGUI(QMainWindow):
                 raise Exception('Operation not supported: ' + str(operation))
 
             self.display_profiles()
+            self.update_date_dependent_combos()
 
     def set_profile_as_linear_combination(self):
         """
@@ -1673,8 +1652,8 @@ class MainGUI(QMainWindow):
 
         # value = self.ui.profile_factor_doubleSpinBox.value()
 
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
         idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude_from = magnitudes[idx_from]
 
@@ -1690,22 +1669,8 @@ class MainGUI(QMainWindow):
 
             if reply == QMessageBox.Yes:
 
-                if dev_type == 'Load':
-                    objects = self.circuit.get_loads()
-
-                elif dev_type == 'StaticGenerator':
-                    objects = self.circuit.get_static_generators()
-
-                elif dev_type == 'Generator':
-                    objects = self.circuit.get_generators()
-
-                elif dev_type == 'Battery':
-                    objects = self.circuit.get_batteries()
-
-                elif dev_type == 'Shunt':
-                    objects = self.circuit.get_shunts()
-                else:
-                    objects = list()
+                dev_type = self.circuit.device_type_name_dict[dev_type_text]
+                objects = self.circuit.get_elements_by_type(dev_type)
 
                 # Assign profiles
                 if len(objects) > 0:
@@ -1725,34 +1690,19 @@ class MainGUI(QMainWindow):
             # no buses or no actual change
             pass
 
-
-
-
     def plot_profiles(self):
         """
         Plot profiles from the time events
         """
         value = self.ui.profile_factor_doubleSpinBox.value()
 
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
         idx = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude = magnitudes[idx]
 
-        if dev_type == 'Load':
-            objects = self.circuit.get_loads()
-
-        elif dev_type == 'StaticGenerator':
-            objects = self.circuit.get_static_generators()
-
-        elif dev_type == 'Generator':
-            objects = self.circuit.get_generators()
-
-        elif dev_type == 'Battery':
-            objects = self.circuit.get_batteries()
-
-        elif dev_type == 'Shunt':
-            objects = self.circuit.get_shunts()
+        dev_type = self.circuit.device_type_name_dict[dev_type_text]
+        objects = self.circuit.get_elements_by_type(dev_type)
 
         # get the selected element
         obj_idx = self.ui.profiles_tableView.selectedIndexes()
@@ -1763,7 +1713,7 @@ class MainGUI(QMainWindow):
             ax = fig.add_subplot(111)
 
             k = obj_idx[0].column()
-            units_dict = {attr: pair[0] for attr, pair in objects[k].editable_headers.items()}
+            units_dict = {attr: pair.units for attr, pair in objects[k].editable_headers.items()}
 
             unit = units_dict[magnitude]
             ax.set_ylabel(unit)
@@ -1788,16 +1738,23 @@ class MainGUI(QMainWindow):
         if self.circuit.time_profile is not None:
             # print('display_profiles')
 
-            dev_type = self.ui.profile_device_type_comboBox.currentText()
+            dev_type_text = self.ui.profile_device_type_comboBox.currentText()
 
-            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type]
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+
+            # get the enumeration univoque association with he device text
+            dev_type = self.circuit.device_type_name_dict[dev_type_text]
 
             idx = self.ui.device_type_magnitude_comboBox.currentIndex()
             magnitude = magnitudes[idx]
             mtype = mag_types[idx]
 
-            mdl = ProfilesModel(multi_circuit=self.circuit, device=dev_type, magnitude=magnitude, format=mtype,
+            mdl = ProfilesModel(multi_circuit=self.circuit,
+                                device_type=dev_type,
+                                magnitude=magnitude,
+                                format=mtype,
                                 parent=self.ui.profiles_tableView)
+
             self.ui.profiles_tableView.setModel(mdl)
 
     def get_selected_power_flow_options(self):
@@ -3527,7 +3484,7 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.overhead_line_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['tower_name'])
 
             elif tpe == 'Underground lines':
@@ -3535,7 +3492,7 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.underground_cable_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
 
             elif tpe == 'Sequence lines':
@@ -3543,14 +3500,14 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.sequence_line_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
             elif tpe == 'Wires':
                 elm = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0)
                 mdl = ObjectsModel(self.circuit.wire_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['wire_name'])
 
             elif tpe == 'Transformers':
@@ -3560,7 +3517,7 @@ class MainGUI(QMainWindow):
                 mdl = ObjectsModel(self.circuit.transformer_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_indices=elm.non_editable_indices,
+                                   non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
 
             else:

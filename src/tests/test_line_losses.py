@@ -2,7 +2,8 @@ from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, PowerFlow
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.devices import *
 
-Sbase = 100 # MVA
+Sbase = 100  # MVA
+
 
 def test_line_losses_1():
     """
@@ -39,8 +40,8 @@ def test_line_losses_1():
 
     # Check solution
     approx_losses = round(1000*power_flow.results.losses[0], 3)
-    solution = complex(0.116, 0.58) # Expected solution from GridCal
-                                    # Tested on ETAP 16.1.0 and pandapower
+    solution = complex(0.116, 0.58)  # Expected solution from GridCal
+                                     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
     print(f"Test: {test_name}")
@@ -122,8 +123,8 @@ def test_line_losses_2():
 
     # Check solution
     approx_losses = round(1000*sum(power_flow.results.losses), 3)
-    solution = complex(0.116, 0.58) # Expected solution from GridCal
-                                    # Tested on ETAP 16.1.0 and pandapower
+    solution = complex(0.116, 0.58)  # Expected solution from GridCal
+                                     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
     print(f"Test: {test_name}")
@@ -204,8 +205,8 @@ def test_line_losses_3():
 
     # Check solution
     approx_losses = round(1000*sum(power_flow.results.losses), 3)
-    solution = complex(0.116, 0.58) # Expected solution from GridCal
-                                    # Tested on ETAP 16.1.0 and pandapower
+    solution = complex(0.116, 0.58)  # Expected solution from GridCal
+                                     # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
     print(f"Test: {test_name}")

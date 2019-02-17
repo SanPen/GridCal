@@ -226,54 +226,33 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     dS = Scalc - Sbus  # compute the mismatch
     F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
-    # check tolerance
-    normF = linalg.norm(F, Inf)
+    if (npq + npv) > 0:
+        # check tolerance
+        normF = linalg.norm(F, Inf)
 
-    if normF < tol:
-        converged = 1
+        if normF < tol:
+            converged = 1
 
-    # do Newton iterations
-    while not converged and iter_ < max_it:
-        # update iteration counter
-        iter_ += 1
+        # do Newton iterations
+        while not converged and iter_ < max_it:
+            # update iteration counter
+            iter_ += 1
 
-        # evaluate Jacobian
-        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            # evaluate Jacobian
+            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
-        # compute update step
-        dx = spsolve(J, F)
+            # compute update step
+            dx = spsolve(J, F)
 
-        # reassign the solution vector
-        if npv:
-            dVa[pv] = dx[j1:j2]
-        if npq:
-            dVa[pq] = dx[j3:j4]
-            dVm[pq] = dx[j5:j6]
+            # reassign the solution vector
+            if npv:
+                dVa[pv] = dx[j1:j2]
+            if npq:
+                dVa[pq] = dx[j3:j4]
+                dVm[pq] = dx[j5:j6]
 
-        # update voltage the Newton way (mu=1)
-        mu_ = 1.0
-        Vm -= mu_ * dVm
-        Va -= mu_ * dVa
-        Vnew = Vm * exp(1j * Va)
-
-        # compute the mismatch function f(x_new)
-        dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-        Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-        Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
-        cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
-
-        if not cond:
-            back_track_counter += 1
-
-        l_iter = 0
-        while not cond and l_iter < 10 and mu_ > 0.01:
-            # line search back
-
-            # to divide mu by 4 is the simplest backtracking process
-            # TODO: implement the more complex mu backtrack from numerical recipes
-
-            # update voltage with a closer value to the last value in the Jacobian direction
-            mu_ *= 0.25
+            # update voltage the Newton way (mu=1)
+            mu_ = 1.0
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
             Vnew = Vm * exp(1j * Va)
@@ -282,25 +261,50 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
             Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
             Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
-            cond = (Fnew < Fnew_prev).any()
+            cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
 
-            l_iter += 1
-            back_track_iterations += 1
+            if not cond:
+                back_track_counter += 1
 
-        # update calculation variables
-        V = Vnew
-        F = Fnew
+            l_iter = 0
+            while not cond and l_iter < 10 and mu_ > 0.01:
+                # line search back
 
-        # check for convergence
-        normF = linalg.norm(F, Inf)
+                # to divide mu by 4 is the simplest backtracking process
+                # TODO: implement the more complex mu backtrack from numerical recipes
 
-        if normF < tol:
-            converged = 1
+                # update voltage with a closer value to the last value in the Jacobian direction
+                mu_ *= 0.25
+                Vm -= mu_ * dVm
+                Va -= mu_ * dVa
+                Vnew = Vm * exp(1j * Va)
+
+                # compute the mismatch function f(x_new)
+                dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+                Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
+                cond = (Fnew < Fnew_prev).any()
+
+                l_iter += 1
+                back_track_iterations += 1
+
+            # update calculation variables
+            V = Vnew
+            F = Fnew
+
+            # check for convergence
+            normF = linalg.norm(F, Inf)
+
+            if normF < tol:
+                converged = 1
+
+    else:
+        # there are no pq nor pv nodes
+        normF = 0
+        converged = True
 
     end = time.time()
     elapsed = end - start
-
-    # print('iter_', iter_, '  -  back_track_counter', back_track_counter, '  -  back_track_iterations', back_track_iterations)
 
     return V, converged, normF, Scalc, iter_, elapsed
 
@@ -357,58 +361,65 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
            mis[pq].real,
            mis[pq].imag]
 
-    # check tolerance
-    normF = linalg.norm(F, Inf)
+    if (npq + npv) > 0:
 
-    if normF < tol:
-        converged = 1
-
-    # do Newton iterations
-    while not converged and iter_ < max_it:
-        # update iteration counter
-        iter_ += 1
-
-        # evaluate Jacobian
-        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-
-        # compute update step
-        dx = spsolve(J, F)
-
-        # reassign the solution vector
-        if npv:
-            dVa[pv] = dx[j1:j2]
-        if npq:
-            dVa[pq] = dx[j3:j4]
-            dVm[pq] = dx[j5:j6]
-        dV = dVm * exp(1j * dVa)  # voltage mismatch
-
-        # update voltage
-        if robust:
-            if not (dV == 0.0).any():  # if dV contains zeros will crash the second Jacobian drivative
-                mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)  # calculate the optimal multiplier for enhanced convergence
-            else:
-                mu_ = 1.0
-        else:
-            mu_ = 1.0
-
-        Vm -= mu_ * dVm
-        Va -= mu_ * dVa
-
-        V = Vm * exp(1j * Va)
-
-        Vm = abs(V)  # update Vm and Va again in case
-        Va = angle(V)  # we wrapped around with a negative Vm
-
-        # evaluate F(x)
-        Scalc = V * conj(Ybus * V - Ibus)
-        mis = Scalc - Sbus  # complex power mismatch
-        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
-
-        # check for convergence
+        # check tolerance
         normF = linalg.norm(F, Inf)
 
         if normF < tol:
             converged = 1
+
+        # do Newton iterations
+        while not converged and iter_ < max_it:
+            # update iteration counter
+            iter_ += 1
+
+            # evaluate Jacobian
+            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+
+            # compute update step
+            dx = spsolve(J, F)
+
+            # reassign the solution vector
+            if npv:
+                dVa[pv] = dx[j1:j2]
+            if npq:
+                dVa[pq] = dx[j3:j4]
+                dVm[pq] = dx[j5:j6]
+            dV = dVm * exp(1j * dVa)  # voltage mismatch
+
+            # update voltage
+            if robust:
+                # if dV contains zeros will crash the second Jacobian derivative
+                if not (dV == 0.0).any():
+                    # calculate the optimal multiplier for enhanced convergence
+                    mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)
+                else:
+                    mu_ = 1.0
+            else:
+                mu_ = 1.0
+
+            Vm -= mu_ * dVm
+            Va -= mu_ * dVa
+
+            V = Vm * exp(1j * Va)
+
+            Vm = abs(V)  # update Vm and Va again in case
+            Va = angle(V)  # we wrapped around with a negative Vm
+
+            # evaluate F(x)
+            Scalc = V * conj(Ybus * V - Ibus)
+            mis = Scalc - Sbus  # complex power mismatch
+            F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+
+            # check for convergence
+            normF = linalg.norm(F, Inf)
+
+            if normF < tol:
+                converged = 1
+    else:
+        normF = 0
+        converged = True
 
     end = time.time()
     elapsed = end - start
@@ -457,90 +468,96 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     j5 = j4
     j6 = j4 + npq
 
-    update_jacobian = True
-    converged = False
-    iter_ = 0
-    nu = 2.0
-    lbmda = 0
-    f_prev = 1e9  # very large number
-    nn = 2 * npq + npv
-    ii = np.linspace(0, nn-1, nn)
-    Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
+    if (npq + npv) > 0:
+        update_jacobian = True
+        converged = False
+        iter_ = 0
+        nu = 2.0
+        lbmda = 0
+        f_prev = 1e9  # very large number
+        nn = 2 * npq + npv
+        ii = np.linspace(0, nn-1, nn)
+        Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
 
-    while not converged and iter_ < max_it:
+        while not converged and iter_ < max_it:
 
-        # evaluate Jacobian
-        if update_jacobian:
-            H = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            # evaluate Jacobian
+            if update_jacobian:
+                H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
-        # evaluate the solution error F(x0)
+            # evaluate the solution error F(x0)
+            Scalc = V * conj(Ybus * V - Ibus)
+            mis = Scalc - Sbus  # compute the mismatch
+            dz = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+
+            # system matrix
+            # H1 = H^t
+            H1 = H.transpose().tocsr()
+
+            # H2 = H1·H
+            H2 = H1.dot(H)
+
+            # set first value of lmbda
+            if iter_ == 0:
+                lbmda = 1e-3 * H2.diagonal().max()
+
+            # compute system matrix A = H^T·H - lambda·I
+            A = H2 + lbmda * Idn
+
+            # right hand side
+            # H^t·dz
+            rhs = H1.dot(dz)
+
+            # Solve the increment
+            dx = spsolve(A, rhs)
+
+            # objective function to minimize
+            f = 0.5 * dz.dot(dz)
+
+            # decision function
+            val = dx.dot(lbmda * dx + rhs)
+            if val > 0.0:
+                rho = (f_prev - f) / (0.5 * val)
+            else:
+                rho = -1.0
+
+            # lambda update
+            if rho >= 0:
+                update_jacobian = True
+                lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
+                nu = 2.0
+
+                # reassign the solution vector
+                if npv:
+                    dVa[pv] = dx[j1:j2]
+                if npq:
+                    dVa[pq] = dx[j3:j4]
+                    dVm[pq] = dx[j5:j6]
+
+                Vm -= dVm
+                Va -= dVa
+                # update Vm and Va again in case we wrapped around with a negative Vm
+                V = Vm * exp(1j * Va)
+                Vm = np.abs(V)
+                Va = angle(V)
+            else:
+                update_jacobian = False
+                lbmda *= nu
+                nu *= 2.0
+
+            # check convergence
+            # normF = np.linalg.norm(dx, np.Inf)
+            normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
+            converged = normF < tol
+            f_prev = f
+
+            # update iteration counter
+            iter_ += 1
+    else:
+        normF = 0
+        converged = True
         Scalc = V * conj(Ybus * V - Ibus)
-        mis = Scalc - Sbus  # compute the mismatch
-        dz = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
-
-        # system matrix
-        # H1 = H^t
-        H1 = H.transpose().tocsr()
-
-        # H2 = H1·H
-        H2 = H1.dot(H)
-
-        # set first value of lmbda
-        if iter_ == 0:
-            lbmda = 1e-3 * H2.diagonal().max()
-
-        # compute system matrix A = H^T·H - lambda·I
-        A = H2 + lbmda * Idn
-
-        # right hand side
-        # H^t·dz
-        rhs = H1.dot(dz)
-
-        # Solve the increment
-        dx = spsolve(A, rhs)
-
-        # objective function to minimize
-        f = 0.5 * dz.dot(dz)
-
-        # decision function
-        val = dx.dot(lbmda * dx + rhs)
-        if val > 0.0:
-            rho = (f_prev - f) / (0.5 * val)
-        else:
-            rho = -1.0
-
-        # lambda update
-        if rho >= 0:
-            update_jacobian = True
-            lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
-            nu = 2.0
-
-            # reassign the solution vector
-            if npv:
-                dVa[pv] = dx[j1:j2]
-            if npq:
-                dVa[pq] = dx[j3:j4]
-                dVm[pq] = dx[j5:j6]
-
-            Vm -= dVm
-            Va -= dVa
-            # update Vm and Va again in case we wrapped around with a negative Vm
-            V = Vm * exp(1j * Va)
-            Vm = np.abs(V)
-            Va = angle(V)
-        else:
-            update_jacobian = False
-            lbmda *= nu
-            nu *= 2.0
-
-        # check convergence
-        # normF = np.linalg.norm(dx, np.Inf)
-        normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
-        converged = normF < tol
-        f_prev = f
-
-        # update iteration counter
-        iter_ += 1
+        iter_ = 0
 
     end = time.time()
     elapsed = end - start

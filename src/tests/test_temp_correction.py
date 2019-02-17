@@ -4,43 +4,43 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 from pytest import approx
 
-Sbase = 100 # MVA
+Sbase = 100  # MVA
 
 
 def test_cable_temp():
     B_C3 = Bus(name="B_C3",
-               vnom=10) #kV
+               vnom=10)  # kV
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10) #kV
+                   vnom=10)  # kV
 
     cable = Branch(bus_from=B_C3,
                    bus_to=B_MV_M32,
                    name="C_M32",
                    r=0.784,
                    x=0.174,
-                   temp_base=20, # °C
-                   temp_oper=90, # °C
-                   alpha=0.00323) # Copper
+                   temp_base=20,  # °C
+                   temp_oper=90,  # °C
+                   alpha=0.00323)  # Copper
 
     assert approx(cable.R_corrected) == 0.961262
 
 
 def test_same_temp():
     B_C3 = Bus(name="B_C3",
-               vnom=10) #kV
+               vnom=10)  # kV
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10) #kV
+                   vnom=10)  # kV
 
     cable = Branch(bus_from=B_C3,
                    bus_to=B_MV_M32,
                    name="C_M32",
                    r=0.784,
                    x=0.174,
-                   temp_base=20, # °C
-                   temp_oper=20, # °C
-                   alpha=0.00323) # Copper
+                   temp_base=20,  # °C
+                   temp_oper=20,  # °C
+                   alpha=0.00323)  # Copper
 
     assert cable.R_corrected == 0.784
 
@@ -72,9 +72,9 @@ def test_corr_line_losses():
                    name="Cable0",
                    r=0.784,
                    x=0.174,
-                   temp_base=20, # °C
-                   temp_oper=90, # °C
-                   alpha=0.00323) # Copper
+                   temp_base=20,  # °C
+                   temp_oper=90,  # °C
+                   alpha=0.00323)  # Copper
 
     grid.add_branch(cable)
 
@@ -88,8 +88,8 @@ def test_corr_line_losses():
 
     # Check solution
     approx_losses = round(power_flow.results.losses[0], 3)
-    solution = complex(0.011, 0.002) # Expected solution from GridCal
-                                     # Tested on ETAP 16.1.0
+    solution = complex(0.011, 0.002)  # Expected solution from GridCal
+                                      # Tested on ETAP 16.1.0
 
     print("\n=================================================================")
     print(f"Test: {test_name}")

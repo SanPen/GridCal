@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 from PyQt5 import QtCore
 from enum import Enum
 
-from GridCal.Engine.meta_devices import EditableDevice, ReliabilityDevice, InjectionDevice
+from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 
 """
 Equations source:
@@ -56,14 +56,16 @@ class Wire(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
-                                type_name='Wire',
-                                editable_headers={'wire_name': ('', str, "Name of the conductor"),
-                                                  'r': ('Ohm/km', float, "resistance of the conductor"),
-                                                  'x': ('Ohm/km', float, "reactance of the conductor"),
-                                                  'gmr': ('m', float, "Geometric Mean Radius of the conductor"),
-                                                  'xpos': ('m', float, "Conductor x position within the tower"),
-                                                  'ypos': ('m', float, "Conductor y position within the tower"),
-                                                  'phase': ('', int, "Phase of the conductor (0, 1, 2)")})
+                                device_type=DeviceType.WireDevice,
+                                editable_headers={'wire_name': GCProp('', str, "Name of the conductor"),
+                                                  'r': GCProp('Ohm/km', float, "resistance of the conductor"),
+                                                  'x': GCProp('Ohm/km', float, "reactance of the conductor"),
+                                                  'gmr': GCProp('m', float, "Geometric Mean Radius of the conductor"),
+                                                  'xpos': GCProp('m', float, "Conductor x position within the tower"),
+                                                  'ypos': GCProp('m', float, "Conductor y position within the tower"),
+                                                  'phase': GCProp('', int, "Phase of the conductor (0, 1, 2)")},
+                                non_editable_attributes=list(),
+                                properties_with_profile={})
 
         self.wire_name = name
         self.xpos = xpos
@@ -72,17 +74,6 @@ class Wire(EditableDevice):
         self.x = x
         self.gmr = gmr
         self.phase = phase
-
-        # self.edit_headers = ['wire_name', 'r', 'x', 'gmr']
-        # self.units = ['', 'Ohm/km', 'Ohm/km', 'm']
-        # self.non_editable_indices = list()
-        # self.edit_types = {'wire_name': str,
-        #                    'r': float,
-        #                    'x': float,
-        #                    'gmr': float,
-        #                    'xpos': float,
-        #                    'ypos': float,
-        #                    'phase': int}
 
     def copy(self):
         """
@@ -212,7 +203,7 @@ class BranchTemplate:
         return dta
 
 
-class SequenceLineType(QtCore.QAbstractTableModel, EditableDevice):
+class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None, edit_callback=None, name='SequenceLine',
                  R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
@@ -230,27 +221,31 @@ class SequenceLineType(QtCore.QAbstractTableModel, EditableDevice):
         :param G0: Conductance of zero sequence in Ohm/km
         :param B0: Susceptance of zero sequence in Ohm/km
         """
-        QtCore.QAbstractTableModel.__init__(self, parent,
-                                            name=name,
-                                            active=True,
-                                            type_name='Wire',
-                                            editable_headers={'name': ('', str, "Name of the line template"),
-                                                              'R': ('Ohm/km', float, "Positive-sequence "
-                                                                                     "resistance per km"),
-                                                              'X': ('Ohm/km', float, "Positive-sequence "
-                                                                                     "reactance per km"),
-                                                              'G': ('S/km', float, "Positive-sequence "
-                                                                                   "shunt conductance per km"),
-                                                              'B': ('S/km', float, "Positive-sequence "
-                                                                                   "shunt susceptance per km"),
-                                                              'R0': ('Ohm/km', float, "Zero-sequence "
-                                                                                      "resistance per km"),
-                                                              'X0': ('Ohm/km', float, "Zero-sequence "
-                                                                                      "reactance per km"),
-                                                              'G0': ('S/km', float, "Zero-sequence "
-                                                                                    "shunt conductance per km"),
-                                                              'B0': ('S/km', float, "Zero-sequence "
-                                                                                    "shunt susceptance per km")})
+
+        # QtCore.QAbstractTableModel.__init__
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=True,
+                                device_type=DeviceType.SequenceLineDevice,
+                                editable_headers={'name': GCProp('', str, "Name of the line template"),
+                                                  'R': GCProp('Ohm/km', float, "Positive-sequence "
+                                                              "resistance per km"),
+                                                  'X': GCProp('Ohm/km', float, "Positive-sequence "
+                                                              "reactance per km"),
+                                                  'G': GCProp('S/km', float, "Positive-sequence "
+                                                              "shunt conductance per km"),
+                                                  'B': GCProp('S/km', float, "Positive-sequence "
+                                                              "shunt susceptance per km"),
+                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence "
+                                                               "resistance per km"),
+                                                  'X0': GCProp('Ohm/km', float, "Zero-sequence "
+                                                               "reactance per km"),
+                                                  'G0': GCProp('S/km', float, "Zero-sequence "
+                                                               "shunt conductance per km"),
+                                                  'B0': GCProp('S/km', float, "Zero-sequence "
+                                                               "shunt susceptance per km")},
+                                non_editable_attributes=list(),
+                                properties_with_profile={})
 
         self.tpe = tpe
 
@@ -265,45 +260,51 @@ class SequenceLineType(QtCore.QAbstractTableModel, EditableDevice):
         self.G0 = G0
         self.B0 = B0
 
-        # self.edit_headers = ['name', 'R', 'X', 'G', 'B', 'R0', 'X0', 'G0', 'B0']
-        # self.units = ['', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km']
-        # self.non_editable_indices = []
-        # self.edit_types = {'name': str,
-        #                    'R': float,
-        #                    'X': float,
-        #                    'G': float,
-        #                    'B': float,
-        #                    'R0': float,
-        #                    'X0': float,
-        #                    'G0': float,
-        #                    'B0': float}
 
-
-class UndergroundLineType(QtCore.QAbstractTableModel, EditableDevice):
+class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None, edit_callback=None, name='UndergroundLine',
                        R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
-        QtCore.QAbstractTableModel.__init__(self, parent,
-                                            name=name,
-                                            active=True,
-                                            type_name='UndergroundLineType',
-                                            editable_headers={'name': ('', str, "Name of the line template"),
-                                                              'R': ('Ohm/km', float, "Positive-sequence "
-                                                                                     "resistance per km"),
-                                                              'X': ('Ohm/km', float, "Positive-sequence "
-                                                                                     "reactance per km"),
-                                                              'G': ('S/km', float, "Positive-sequence "
-                                                                                   "shunt conductance per km"),
-                                                              'B': ('S/km', float, "Positive-sequence "
-                                                                                   "shunt susceptance per km"),
-                                                              'R0': ('Ohm/km', float, "Zero-sequence "
-                                                                                      "resistance per km"),
-                                                              'X0': ('Ohm/km', float, "Zero-sequence "
-                                                                                      "reactance per km"),
-                                                              'G0': ('S/km', float, "Zero-sequence "
-                                                                                    "shunt conductance per km"),
-                                                              'B0': ('S/km', float, "Zero-sequence "
-                                                                                    "shunt susceptance per km")})
+        """
+
+        :param parent:
+        :param edit_callback:
+        :param name:
+        :param R:
+        :param X:
+        :param G:
+        :param B:
+        :param R0:
+        :param X0:
+        :param G0:
+        :param B0:
+        :param tpe:
+        """
+
+        # QtCore.QAbstractTableModel.__init__
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=True,
+                                device_type=DeviceType.UnderGroundLineDevice,
+                                editable_headers={'name': GCProp('', str, "Name of the line template"),
+                                                  'R': GCProp('Ohm/km', float, "Positive-sequence "
+                                                                               "resistance per km"),
+                                                  'X': GCProp('Ohm/km', float, "Positive-sequence "
+                                                                               "reactance per km"),
+                                                  'G': GCProp('S/km', float, "Positive-sequence "
+                                                                             "shunt conductance per km"),
+                                                  'B': GCProp('S/km', float, "Positive-sequence "
+                                                                             "shunt susceptance per km"),
+                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence "
+                                                                                "resistance per km"),
+                                                  'X0': GCProp('Ohm/km', float, "Zero-sequence "
+                                                                                "reactance per km"),
+                                                  'G0': GCProp('S/km', float, "Zero-sequence "
+                                                                              "shunt conductance per km"),
+                                                  'B0': GCProp('S/km', float, "Zero-sequence "
+                                                                              "shunt susceptance per km")},
+                                non_editable_attributes=list(),
+                                properties_with_profile={})
 
         self.tpe = tpe
 
@@ -319,25 +320,45 @@ class UndergroundLineType(QtCore.QAbstractTableModel, EditableDevice):
         self.B0 = B0
 
 
-class Tower(QtCore.QAbstractTableModel, EditableDevice):
+class Tower(EditableDevice, QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None, edit_callback=None, name='Tower', tpe=BranchType.Branch):
-        QtCore.QAbstractTableModel.__init__(self,
-                                            parent,
-                                            name=name,
-                                            active=True,
-                                            type_name='Tower',
-                                            editable_headers={'tower_name': ('', str, "Tower name"),
-                                                              'earth_resistivity': ('Ohm/m3', float, "Earth resistivity"),
-                                                              'frequency': ('Hz', float, "Frequency"),
-                                                              'R1': ('Ohm/km', float, "Positive sequence resistance"),
-                                                              'X1': ('Ohm/km', float, "Positive sequence reactance"),
-                                                              'Gsh1': ('S/km', float, "Positive sequence shunt conductance"),
-                                                              'Bsh1': ('S/km', float, "Positive sequence shunt susceptance"),
-                                                              'R0': ('Ohm/km', float, "Zero-sequence resistance"),
-                                                              'X0': ('Ohm/km', float, "Zero sequence reactance"),
-                                                              'Gsh0': ('S/km', float, "Zero sequence shunt conductance"),
-                                                              'Bsh0': ('S/km', float, "Zero sequence shunt susceptance")})
+        """
+
+        :param parent:
+        :param edit_callback:
+        :param name:
+        :param tpe:
+        """
+
+        QtCore.QAbstractTableModel.__init__(self)
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=True,
+                                device_type=DeviceType.TowerDevice,
+                                editable_headers={'tower_name': GCProp('', str, "Tower name"),
+                                                              'earth_resistivity': GCProp('Ohm/m3', float,
+                                                                                          "Earth resistivity"),
+                                                              'frequency': GCProp('Hz', float,
+                                                                                  "Frequency"),
+                                                              'R1': GCProp('Ohm/km', float,
+                                                                           "Positive sequence resistance"),
+                                                              'X1': GCProp('Ohm/km', float,
+                                                                           "Positive sequence reactance"),
+                                                              'Gsh1': GCProp('S/km', float,
+                                                                             "Positive sequence shunt conductance"),
+                                                              'Bsh1': GCProp('S/km', float,
+                                                                             "Positive sequence shunt susceptance"),
+                                                              'R0': GCProp('Ohm/km', float,
+                                                                           "Zero-sequence resistance"),
+                                                              'X0': GCProp('Ohm/km', float,
+                                                                           "Zero sequence reactance"),
+                                                              'Gsh0': GCProp('S/km', float,
+                                                                             "Zero sequence shunt conductance"),
+                                                              'Bsh0': GCProp('S/km', float,
+                                                                             "Zero sequence shunt susceptance")},
+                                non_editable_attributes=['tower_name'],
+                                properties_with_profile={})
 
         self.tpe = tpe
 
@@ -379,23 +400,11 @@ class Tower(QtCore.QAbstractTableModel, EditableDevice):
         self.wires = list()
         self.edit_callback = edit_callback
 
-        # wire properties for edition
+        # wire properties for edition (do not confuse with the properties of this very object...)
         self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', 'Ri (Ohm/km)', 'Xi (Ohm/km)', 'GMR (m)']
         self.index_prop = {0: 'wire_name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'r', 5: 'x', 6: 'gmr'}
         self.converter = {0: str, 1: float, 2: float, 3: int, 4: float, 5: float, 6: float}
         self.editable_wire = [False, True, True, True, True, True, True]
-
-        # properties for the object model
-        # self.edit_headers = ['tower_name', 'earth_resistivity', 'frequency', 'R1', 'X1', 'Gsh1', 'Bsh1']
-        # self.units = ['', 'Ohm/m3', 'Hz', 'Ohm/km', 'Ohm/km', 'S/km', 'S/km']
-        # self.non_editable_indices = [3, 4]
-        # self.edit_types = {'tower_name': str,
-        #                    'earth_resistivity': float,
-        #                    'frequency': float,
-        #                    'R1': float,
-        #                    'X1': float,
-        #                    'Gsh1': float,
-        #                    'Bsh1': float}
 
     def __str__(self):
         return self.tower_name
@@ -628,25 +637,38 @@ class TransformerType(EditableDevice):
     def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0, copper_losses=0, iron_losses=0,
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
                  name='TransformerType', tpe=BranchType.Transformer):
+        """
 
+        :param hv_nominal_voltage:
+        :param lv_nominal_voltage:
+        :param nominal_power:
+        :param copper_losses:
+        :param iron_losses:
+        :param no_load_current:
+        :param short_circuit_voltage:
+        :param gr_hv1:
+        :param gx_hv1:
+        :param name:
+        :param tpe:
+        """
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
-                                type_name='TransformerType',
-                                editable_headers={'name': ('', str, "Name of the transformer type"),
-                                                  'HV_nominal_voltage': ('kV', float, "Nominal voltage al the "
-                                                                                      "high voltage side"),
-                                                  'LV_nominal_voltage': ('kV', float, "Nominal voltage al the "
-                                                                                      "low voltage side"),
-                                                  'Nominal_power': ('MVA', float, "Nominal power"),
-                                                  'Copper_losses': ('kW', float, "Copper losses"),
-                                                  'Iron_losses': ('kW', float, "Iron losses"),
-                                                  'No_load_current': ('%', float, "No-load current"),
-                                                  'Short_circuit_voltage': ('%', float, "Short-circuit voltage")})
+                                device_type=DeviceType.TransformerTypeDevice,
+                                editable_headers={'name': GCProp('', str, "Name of the transformer type"),
+                                                  'HV_nominal_voltage': GCProp('kV', float, "Nominal voltage al the "
+                                                                               "high voltage side"),
+                                                  'LV_nominal_voltage': GCProp('kV', float, "Nominal voltage al the "
+                                                                               "low voltage side"),
+                                                  'Nominal_power': GCProp('MVA', float, "Nominal power"),
+                                                  'Copper_losses': GCProp('kW', float, "Copper losses"),
+                                                  'Iron_losses': GCProp('kW', float, "Iron losses"),
+                                                  'No_load_current': GCProp('%', float, "No-load current"),
+                                                  'Short_circuit_voltage': GCProp('%', float, "Short-circuit voltage")},
+                                non_editable_attributes=list(),
+                                properties_with_profile={})
 
         self.tpe = tpe
-
-        self.properties_with_profile = None
 
         self.HV_nominal_voltage = hv_nominal_voltage
 

@@ -4,9 +4,9 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, SolverType
 from matplotlib import pyplot as plt
 
+
 if __name__ == '__main__':
 
-    main_circuit = MultiCircuit()
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
 
     print('Reading...')
@@ -16,6 +16,9 @@ if __name__ == '__main__':
                                multi_core=False, dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
                                control_p=True)
+
+    # grid.export_profiles('ppppppprrrrroooofiles.xlsx')
+    # exit()
 
     ####################################################################################################################
     # PowerFlow

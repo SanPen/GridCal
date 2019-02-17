@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.meta_devices import EditableDevice, ReliabilityDevice, InjectionDevice
+from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, BranchType, \
                                             UndergroundLineType, SequenceLineType, Wire
 
@@ -74,16 +74,6 @@ class TimeGroups(Enum):
     NoGroup = 0,
     ByDay = 1,
     ByHour = 2
-
-
-class DeviceType(Enum):
-    BusDevice = 1,
-    BranchDevice = 2,
-    GeneratorDevice = 3,
-    StaticGeneratorDevice = 4,
-    BatteryDevice = 5,
-    ShuntDevice = 6,
-    LoadDevice = 7
 
 ########################################################################################################################
 # Circuit classes
@@ -155,30 +145,33 @@ class Bus(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 active=active,
-                                type_name='Bus',
-                                editable_headers={'name': ('', str, 'Name of the bus'),
-                                                  'active': ('', bool, 'Is the bus active? used to disable the bus.'),
-                                                  'is_slack': ('', bool, 'Force the bus to be of slack type.'),
-                                                  'Vnom': ('kV', float, 'Nominal line voltage of the bus.'),
-                                                  'Vmin': ('p.u.', float, 'Lower range of allowed voltage.'),
-                                                  'Vmax': ('p.u.', float, 'Higher range of allowed range.'),
-                                                  'r_fault': ('p.u.', float, 'Resistance of the fault.\n'
-                                                                             'This is used for short circuit studies.'),
-                                                  'x_fault': ('p.u.', float, 'Reactance of the fault.\n'
-                                                                             'This is used for short circuit studies.'),
-                                                  'x': ('px', float, 'x position in pixels.'),
-                                                  'y': ('px', float, 'y position in pixels.'),
-                                                  'h': ('px', float, 'height of the bus in pixels.'),
-                                                  'w': ('px', float, 'Width of the bus in pixels.'),
-                                                  'area': ('', str, 'Area of the bus'),
-                                                  'zone': ('', str, 'Zone of the bus'),
-                                                  'substation': ('', str, 'Substation of the bus.')})
-
-        # self.name = name
-        #
-        # self.type_name = 'Bus'
-
-        # self.properties_with_profile = None
+                                device_type=DeviceType.BusDevice,
+                                editable_headers={'name': GCProp('', str, 'Name of the bus'),
+                                                  'active': GCProp('', bool,
+                                                                   'Is the bus active? used to disable the bus.'),
+                                                  'is_slack': GCProp('', bool,
+                                                                     'Force the bus to be of slack type.'),
+                                                  'Vnom': GCProp('kV', float,
+                                                                 'Nominal line voltage of the bus.'),
+                                                  'Vmin': GCProp('p.u.', float,
+                                                                 'Lower range of allowed voltage.'),
+                                                  'Vmax': GCProp('p.u.', float,
+                                                                 'Higher range of allowed range.'),
+                                                  'r_fault': GCProp('p.u.', float,
+                                                                    'Resistance of the fault.\n'
+                                                                    'This is used for short circuit studies.'),
+                                                  'x_fault': GCProp('p.u.', float,
+                                                                    'Reactance of the fault.\n'
+                                                                    'This is used for short circuit studies.'),
+                                                  'x': GCProp('px', float, 'x position in pixels.'),
+                                                  'y': GCProp('px', float, 'y position in pixels.'),
+                                                  'h': GCProp('px', float, 'height of the bus in pixels.'),
+                                                  'w': GCProp('px', float, 'Width of the bus in pixels.'),
+                                                  'area': GCProp('', str, 'Area of the bus'),
+                                                  'zone': GCProp('', str, 'Zone of the bus'),
+                                                  'substation': GCProp('', str, 'Substation of the bus.')},
+                                non_editable_attributes=list(),
+                                properties_with_profile=dict())
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -413,15 +406,6 @@ class Bus(EditableDevice):
 
         return bus
 
-    # def get_save_data(self):
-    #     """
-    #     Return the data that matches the edit_headers
-    #     :return:
-    #     """
-    #     self.retrieve_graphic_position()
-    #     return [self.name, self.active, self.is_slack, self.Vnom, self.Vmin, self.Vmax, self.Zf,
-    #             self.x, self.y, self.h, self.w, self.area, self.zone, self.substation]
-
     def get_json_dict(self, id):
         """
         Return Json-like dictionary
@@ -506,6 +490,26 @@ class Bus(EditableDevice):
         for elm in self.shunts:
             elm.delete_profiles()
 
+    def create_profiles(self, index):
+        """
+        Delete all profiles
+        :return:
+        """
+        for elm in self.loads:
+            elm.create_profiles(index)
+
+        for elm in self.static_generators:
+            elm.create_profiles(index)
+
+        for elm in self.batteries:
+            elm.create_profiles(index)
+
+        for elm in self.controlled_generators:
+            elm.create_profiles(index)
+
+        for elm in self.shunts:
+            elm.create_profiles(index)
+
     def set_profile_values(self, t):
         """
         Set the default values from the profiles at time index t
@@ -557,9 +561,6 @@ class Bus(EditableDevice):
 
     def get_fault_impedance(self):
         return complex(self.r_fault, self.x_fault)
-
-    def __str__(self):
-        return self.name
 
 
 class TapChanger:
@@ -686,7 +687,7 @@ class TapChanger:
             self.tap = -int((1.0 - tap_module) / self.inc_reg_down)
 
 
-class Branch(ReliabilityDevice):
+class Branch(EditableDevice):
     """
     The **Branch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
@@ -797,65 +798,65 @@ class Branch(ReliabilityDevice):
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType=BranchType.Line, length=1, vset=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
+                 branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
+                 temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
 
-        ReliabilityDevice.__init__(self, name,
-                                   active=active,
-                                   type_name='Branch',
-                                   editable_headers={'name': ('', str, 'Name of the branch.'),
-                                                     'bus_from': ('', Bus, 'Name of the bus at the "from" '
-                                                                           'side of the branch.'),
-                                                     'bus_to': ('', Bus, 'Name of the bus at the "to" '
-                                                                         'side of the branch.'),
-                                                     'active': ('', bool, 'Is the branch active?'),
-                                                     'rate': ('MVA', float, 'Thermal rating power of the branch.'),
-                                                     'mttf': ('h', float, 'Mean time to failure, '
-                                                                          'used in reliability studies.'),
-                                                     'mttr': ('h', float, 'Mean time to recovery, '
-                                                                          'used in reliability studies.'),
-                                                     'R': ('p.u.', float, 'Total resistance.'),
-                                                     'X': ('p.u.', float, 'Total reactance.'),
-                                                     'G': ('p.u.', float, 'Total shunt conductance.'),
-                                                     'B': ('p.u.', float, 'Total shunt susceptance.'),
-                                                     'tolerance': ('%', float, 'Tolerance expected for the impedance values\n'
-                                                                               '7% is expected for transformers\n'
-                                                                               '0% for lines.'),
-                                                     'length': ('km', float, 'Length of the branch '
-                                                                             '(not used for calculation)'),
-                                                     'tap_module': ('', float, 'Tap changer module, '
-                                                                               'it a value close to 1.0'),
-                                                     'angle': ('rad', float, 'Angle shift of the tap changer.'),
-                                                     'bus_to_regulated': ('', bool, 'Is the bus tap regulated?'),
-                                                     'vset': ('p.u.', float, 'Objective voltage at the "to" side of '
-                                                                             'the bus when regulating the tap.'),
-                                                     'temp_base': ('ºC', float, 'Base temperature at which R was '
-                                                                                'measured.'),
-                                                     'temp_oper': ('ºC', float, 'Operation temperature to modify R.'),
-                                                     'alpha': ('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                              'around a reference temperature\n'
-                                                                              'using a linear approximation.\n'
-                                                                              'For example:\n'
-                                                                              'Copper @ 20ºC: 0.004041,\n'
-                                                                              'Copper @ 75ºC: 0.00323,\n'
-                                                                              'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                              'Aluminum @ 20ºC: 0.004308,\n'
-                                                                              'Aluminum @ 75ºC: 0.00330'),
-                                                     'r_fault': ('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                                'Used in short circuit studies.'),
-                                                     'x_fault': ('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                                'Used in short circuit studies.'),
-                                                     'fault_pos': ('p.u.', float, 'Per-unit positioning of the fault:\n'
-                                                                                  '0 would be at the "from" side,\n'
-                                                                                  '1 would be at the "to" side,\n'
-                                                                                  'therefore 0.5 is at the middle.'),
-                                                     'branch_type': ('', BranchType, ''),
-                                                     'template': ('', BranchTemplate, '')},
-                                   mttf=mttf,
-                                   mttr=mttr)
-
-        # list of properties that hold a profile
-        self.properties_with_profile = None
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=active,
+                                device_type=DeviceType.BranchDevice,
+                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'bus_from': GCProp('', Bus,
+                                                                     'Name of the bus at the "from" side of the branch.'),
+                                                  'bus_to': GCProp('', Bus, 'Name of the bus at the "to" '
+                                                                   'side of the branch.'),
+                                                  'active': GCProp('', bool, 'Is the branch active?'),
+                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
+                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
+                                                                 'used in reliability studies.'),
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
+                                                                 'used in reliability studies.'),
+                                                  'R': GCProp('p.u.', float, 'Total resistance.'),
+                                                  'X': GCProp('p.u.', float, 'Total reactance.'),
+                                                  'G': GCProp('p.u.', float, 'Total shunt conductance.'),
+                                                  'B': GCProp('p.u.', float, 'Total shunt susceptance.'),
+                                                  'tolerance': GCProp('%', float,
+                                                                      'Tolerance expected for the impedance values\n'
+                                                                      '7% is expected for transformers\n'
+                                                                      '0% for lines.'),
+                                                  'length': GCProp('km', float, 'Length of the branch '
+                                                                   '(not used for calculation)'),
+                                                  'tap_module': GCProp('', float, 'Tap changer module, '
+                                                                       'it a value close to 1.0'),
+                                                  'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
+                                                  'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
+                                                  'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
+                                                                 'the bus when regulating the tap.'),
+                                                  'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
+                                                                      'measured.'),
+                                                  'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
+                                                  'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
+                                                                  'around a reference temperature\n'
+                                                                  'using a linear approximation.\n'
+                                                                  'For example:\n'
+                                                                  'Copper @ 20ºC: 0.004041,\n'
+                                                                  'Copper @ 75ºC: 0.00323,\n'
+                                                                  'Annealed copper @ 20ºC: 0.00393,\n'
+                                                                  'Aluminum @ 20ºC: 0.004308,\n'
+                                                                  'Aluminum @ 75ºC: 0.00330'),
+                                                  'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
+                                                                    'Used in short circuit studies.'),
+                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
+                                                                    'Used in short circuit studies.'),
+                                                  'fault_pos': GCProp('p.u.', float, 'Per-unit positioning of the fault:\n'
+                                                                      '0 would be at the "from" side,\n'
+                                                                      '1 would be at the "to" side,\n'
+                                                                      'therefore 0.5 is at the middle.'),
+                                                  'branch_type': GCProp('', BranchType, ''),
+                                                  'template': GCProp('', BranchTemplate, '')},
+                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
+                                properties_with_profile={'active': 'active_prof'})
 
         # connectivity
         self.bus_from = bus_from
@@ -883,6 +884,10 @@ class Branch(ReliabilityDevice):
         self.X = x
         self.G = g
         self.B = b
+
+        self.mttf = mttf
+
+        self.mttr = mttr
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
@@ -1200,7 +1205,7 @@ class Branch(ReliabilityDevice):
         return self.name
 
 
-class Load(InjectionDevice):
+class Load(EditableDevice):
     """
     The load object implements the so-called ZIP model, in which the load can be
     represented by a combination of power (P), current(I), and impedance (Z).
@@ -1247,30 +1252,38 @@ class Load(InjectionDevice):
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
                  active=True, mttf=0.0, mttr=0.0):
 
-        InjectionDevice.__init__(self,
-                                 name=name,
-                                 bus=None,
-                                 active=active,
-                                 type_name='Load',
-                                 editable_headers={'name': ('', str, 'Load name'),
-                                                   'bus': ('', None, 'Connection bus name'),
-                                                   'active': ('', bool, 'Is the load active?'),
-                                                   'P': ('MW', float, 'Active power'),
-                                                   'Q': ('MVAr', float, 'Reactive power'),
-                                                   'Ir': ('MW', float, 'Active power of the current component at V=1.0 p.u.'),
-                                                   'Ii': ('MVAr', float, 'Reactive power of the current component at V=1.0 p.u.'),
-                                                   'G': ('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
-                                                   'B': ('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
-                                                   'mttf': ('h', float, 'Mean time to failure'),
-                                                   'mttr': ('h', float, 'Mean time to recovery')},
-                                 mttf=mttf,
-                                 mttr=mttr,
-                                 properties_with_profile={'P': 'P_prof',
-                                                          'Q': 'Q_prof',
-                                                          'Ir': 'Ir_prof',
-                                                          'Ii': 'Ii_prof',
-                                                          'G': 'G_prof',
-                                                          'B': 'B_prof'})
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=active,
+                                device_type=DeviceType.LoadDevice,
+                                editable_headers={'name': GCProp('', str, 'Load name'),
+                                                   'bus': GCProp('', None, 'Connection bus name'),
+                                                   'active': GCProp('', bool, 'Is the load active?'),
+                                                   'P': GCProp('MW', float, 'Active power'),
+                                                   'Q': GCProp('MVAr', float, 'Reactive power'),
+                                                   'Ir': GCProp('MW', float,
+                                                                'Active power of the current component at V=1.0 p.u.'),
+                                                   'Ii': GCProp('MVAr', float,
+                                                                'Reactive power of the current component at V=1.0 p.u.'),
+                                                   'G': GCProp('MW', float,
+                                                               'Active power of the impedance component at V=1.0 p.u.'),
+                                                   'B': GCProp('MVAr', float,
+                                                               'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
+                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                non_editable_attributes=list(),
+                                properties_with_profile={'P': 'P_prof',
+                                                         'Q': 'Q_prof',
+                                                         'Ir': 'Ir_prof',
+                                                         'Ii': 'Ii_prof',
+                                                         'G': 'G_prof',
+                                                         'B': 'B_prof'})
+
+        self.bus = None
+
+        self.mttf = mttf
+
+        self.mttr = mttr
 
         # Impedance in equivalent MVA
         self.G = G
@@ -1286,102 +1299,102 @@ class Load(InjectionDevice):
         self.P_prof = P_prof
         self.Q_prof = Q_prof
 
-    def create_profiles(self, index, S=None, I=None, Y=None):
-        """
-        Create the load object default profiles
-        Args:
-            index: DataFrame time index
-            S: Array of complex power values
-            I: Array of complex current values
-            Y: Array of complex admittance values
-        """
-
-        self.create_S_profile(index, S)
-        self.create_I_profile(index, I)
-        self.create_Y_profile(index, Y)
-
-    def create_S_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index
-            arr: array
-            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-        """
-        if arr_in_pu:
-            P = arr * self.P
-            Q = arr * self.Q
-        else:
-            nt = len(index)
-            P = np.ones(nt) * self.P if arr is None else arr
-            Q = np.ones(nt) * self.Q if arr is None else arr
-
-        self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
-        self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
-
-    def create_I_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create current profile based on index
-        Args:
-            index: time index
-            arr: array
-            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-        """
-        if arr_in_pu:
-            Ir = arr * self.Ir
-            Ii = arr * self.Ii
-        else:
-            nt = len(index)
-            Ir = np.ones(nt) * self.Ir if arr is None else arr
-            Ii = np.ones(nt) * self.Ii if arr is None else arr
-
-        self.Ir_prof = pd.DataFrame(data=Ir, index=index, columns=[self.name])
-        self.Ii_prof = pd.DataFrame(data=Ii, index=index, columns=[self.name])
-
-    def create_Y_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create impedance profile based on index
-        Args:
-            index: time index
-            arr: array
-            arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-        Returns:
-
-        """
-        if arr_in_pu:
-            G = arr * self.G
-            B = arr * self.B
-        else:
-            nt = len(index)
-            G = np.ones(nt) * self.G if arr is None else arr
-            B = np.ones(nt) * self.B if arr is None else arr
-
-        self.G_prof = pd.DataFrame(data=G, index=index, columns=[self.name])
-        self.B_prof = pd.DataFrame(data=B, index=index, columns=[self.name])
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return:
-        """
-        self.P_prof = None
-        self.Q_prof = None
-        self.Ir_prof = None
-        self.Ii_prof = None
-        self.G_prof = None
-        self.B_prof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.P_prof.values[t]
-        self.Q = self.Q_prof.values[t]
-        self.Ir = self.Ir_prof.values[t]
-        self.Ii = self.Ii_prof.values[t]
-        self.G = self.G_prof.values[t]
-        self.B = self.B_prof.values[t]
+    # def create_profiles(self, index, S=None, I=None, Y=None):
+    #     """
+    #     Create the load object default profiles
+    #     Args:
+    #         index: DataFrame time index
+    #         S: Array of complex power values
+    #         I: Array of complex current values
+    #         Y: Array of complex admittance values
+    #     """
+    #
+    #     self.create_S_profile(index, S)
+    #     self.create_I_profile(index, I)
+    #     self.create_Y_profile(index, Y)
+    #
+    # def create_S_profile(self, index, arr=None, arr_in_pu=False):
+    #     """
+    #     Create power profile based on index
+    #     Args:
+    #         index: time index
+    #         arr: array
+    #         arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
+    #     """
+    #     if arr_in_pu:
+    #         P = arr * self.P
+    #         Q = arr * self.Q
+    #     else:
+    #         nt = len(index)
+    #         P = np.ones(nt) * self.P if arr is None else arr
+    #         Q = np.ones(nt) * self.Q if arr is None else arr
+    #
+    #     self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
+    #     self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
+    #
+    # def create_I_profile(self, index, arr, arr_in_pu=False):
+    #     """
+    #     Create current profile based on index
+    #     Args:
+    #         index: time index
+    #         arr: array
+    #         arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
+    #     """
+    #     if arr_in_pu:
+    #         Ir = arr * self.Ir
+    #         Ii = arr * self.Ii
+    #     else:
+    #         nt = len(index)
+    #         Ir = np.ones(nt) * self.Ir if arr is None else arr
+    #         Ii = np.ones(nt) * self.Ii if arr is None else arr
+    #
+    #     self.Ir_prof = pd.DataFrame(data=Ir, index=index, columns=[self.name])
+    #     self.Ii_prof = pd.DataFrame(data=Ii, index=index, columns=[self.name])
+    #
+    # def create_Y_profile(self, index, arr, arr_in_pu=False):
+    #     """
+    #     Create impedance profile based on index
+    #     Args:
+    #         index: time index
+    #         arr: array
+    #         arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
+    #     Returns:
+    #
+    #     """
+    #     if arr_in_pu:
+    #         G = arr * self.G
+    #         B = arr * self.B
+    #     else:
+    #         nt = len(index)
+    #         G = np.ones(nt) * self.G if arr is None else arr
+    #         B = np.ones(nt) * self.B if arr is None else arr
+    #
+    #     self.G_prof = pd.DataFrame(data=G, index=index, columns=[self.name])
+    #     self.B_prof = pd.DataFrame(data=B, index=index, columns=[self.name])
+    #
+    # def delete_profiles(self):
+    #     """
+    #     Delete the object profiles
+    #     :return:
+    #     """
+    #     self.P_prof = None
+    #     self.Q_prof = None
+    #     self.Ir_prof = None
+    #     self.Ii_prof = None
+    #     self.G_prof = None
+    #     self.B_prof = None
+    #
+    # def set_profile_values(self, t):
+    #     """
+    #     Set the profile values at t
+    #     :param t: time index
+    #     """
+    #     self.P = self.P_prof.values[t]
+    #     self.Q = self.Q_prof.values[t]
+    #     self.Ir = self.Ir_prof.values[t]
+    #     self.Ii = self.Ii_prof.values[t]
+    #     self.G = self.G_prof.values[t]
+    #     self.B = self.B_prof.values[t]
 
     def copy(self):
 
@@ -1439,11 +1452,8 @@ class Load(InjectionDevice):
                 'P': self.P,
                 'Q': self.Q}
 
-    def __str__(self):
-        return self.name
 
-
-class StaticGenerator(InjectionDevice):
+class StaticGenerator(EditableDevice):
     """
     Arguments:
 
@@ -1467,22 +1477,26 @@ class StaticGenerator(InjectionDevice):
 
     def __init__(self, name='StaticGen', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True, mttf=0.0, mttr=0.0):
 
-        InjectionDevice.__init__(self,
-                                 name=name,
-                                 bus=None,
-                                 active=active,
-                                 type_name='StaticGenerator',
-                                 editable_headers={'name': ('', str, ''),
-                                                   'bus': ('', None, ''),
-                                                   'active': ('', bool, ''),
-                                                   'P': ('MW', float, 'Active power'),
-                                                   'Q': ('MVAr', float, 'Reactive power'),
-                                                   'mttf': ('h', float, 'Mean time to failure'),
-                                                   'mttr': ('h', float, 'Mean time to recovery')},
-                                 mttf=mttf,
-                                 mttr=mttr,
-                                 properties_with_profile={'P': 'P_prof',
-                                                          'Q': 'Q_prof'})
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=active,
+                                device_type=DeviceType.StaticGeneratorDevice,
+                                editable_headers={'name': GCProp('', str, ''),
+                                                  'bus': GCProp('', None, ''),
+                                                  'active': GCProp('', bool, ''),
+                                                  'P': GCProp('MW', float, 'Active power'),
+                                                  'Q': GCProp('MVAr', float, 'Reactive power'),
+                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                non_editable_attributes=list(),
+                                properties_with_profile={'P': 'P_prof',
+                                                         'Q': 'Q_prof'})
+
+        self.bus = None
+
+        self.mttf = mttf
+
+        self.mttr = mttr
 
         # Power (MW + jMVAr)
         self.P = P
@@ -1521,75 +1535,8 @@ class StaticGenerator(InjectionDevice):
                 'P': self.P,
                 'Q': self.Q}
 
-    def create_profiles(self, index, S=None):
-        """
-        Create the load object default profiles
-        Args:
-            index:
-            steps:
 
-        Returns:
-
-        """
-        self.create_S_profile(index, S)
-
-    def create_S_profile(self, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        :param index: pandas index
-        :param arr: array of values to set
-        :param arr_in_pu:
-        :return:
-        """
-        if arr_in_pu:
-            P = arr * self.P
-            Q = arr * self.Q
-        else:
-            P = np.ones(len(index)) * self.P if arr is None else arr
-            Q = np.ones(len(index)) * self.Q if arr is None else arr
-
-        self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
-        self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
-
-    def create_profile(self, magnitude, index, arr, arr_in_pu=False):
-        """
-        Create power profile based on index
-        :param magnitude: name of the property
-        :param index: pandas index
-        :param arr: array of values to set
-        :param arr_in_pu: is the array in per-unit?
-        """
-        x = getattr(self, magnitude)
-        x_prof = getattr(self, self.properties_with_profile[magnitude])
-
-        if arr_in_pu:
-            val = arr * x
-        else:
-            val = np.ones(len(index)) * x if arr is None else arr
-
-        x_prof = pd.DataFrame(data=val, index=index, columns=[self.name])
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return:
-        """
-        self.P_prof = None
-        self.Q_prof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.P_prof.values[t]
-        self.Q = self.Q_prof.values[t]
-
-    def __str__(self):
-        return self.name
-
-
-class Generator(InjectionDevice):
+class Generator(EditableDevice):
     """
     Voltage controlled generator. This generators supports several
     :ref:`reactive power control modes<q_control>` to regulate the voltage on its
@@ -1641,32 +1588,42 @@ class Generator(InjectionDevice):
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None, active=True,
                  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True, mttf=0.0, mttr=0.0):
 
-        InjectionDevice.__init__(self,
-                                 name=name,
-                                 bus=None,
-                                 active=active,
-                                 type_name='Generator',
-                                 editable_headers={'name': ('', str, 'Name of the generator'),
-                                                   'bus': ('', None, 'Connection bus name'),
-                                                   'active': ('', bool, 'Is the generator active?'),
-                                                   'is_controlled': ('', bool, 'Is this generator voltage-controlled?'),
-                                                   'P': ('MW', float, 'Active power'),
-                                                   'Pf': ('', float, 'Power factor (cos(fi)). This is used for non-controlled generators.'),
-                                                   'Vset': ('p.u.', float, 'Set voltage. This is used for controlled generators.'),
-                                                   'Snom': ('MVA', float, 'Nomnial power.'),
-                                                   'Qmin': ('MVAr', float, 'Minimum reactive power.'),
-                                                   'Qmax': ('MVAr', float, 'Maximum reactive power.'),
-                                                   'Pmin': ('MW', float, 'Minimum active power. Used in OPF.'),
-                                                   'Pmax': ('MW', float, 'Maximum active power. Used in OPF.'),
-                                                   'Cost': ('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
-                                                   'enabled_dispatch': ('', bool, 'Enabled for dispatch? Used in OPF.'),
-                                                   'mttf': ('h', float, 'Mean time to failure'),
-                                                   'mttr': ('h', float, 'Mean time to recovery')},
-                                 mttf=mttf,
-                                 mttr=mttr,
-                                 properties_with_profile={'P': 'P_prof',
-                                                          'Pf': 'Pf_prof',
-                                                          'Vset': 'Vset_prof'})
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=active,
+                                device_type=DeviceType.GeneratorDevice,
+                                editable_headers={'name': GCProp('', str, 'Name of the generator'),
+                                                  'bus': GCProp('', None, 'Connection bus name'),
+                                                  'active': GCProp('', bool, 'Is the generator active?'),
+                                                  'is_controlled': GCProp('', bool,
+                                                                          'Is this generator voltage-controlled?'),
+                                                  'P': GCProp('MW', float, 'Active power'),
+                                                  'Pf': GCProp('', float,
+                                                               'Power factor (cos(fi)). '
+                                                               'This is used for non-controlled generators.'),
+                                                  'Vset': GCProp('p.u.', float,
+                                                                 'Set voltage. '
+                                                                 'This is used for controlled generators.'),
+                                                  'Snom': GCProp('MVA', float, 'Nomnial power.'),
+                                                  'Qmin': GCProp('MVAr', float, 'Minimum reactive power.'),
+                                                  'Qmax': GCProp('MVAr', float, 'Maximum reactive power.'),
+                                                  'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
+                                                  'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
+                                                  'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                                  'enabled_dispatch': GCProp('', bool,
+                                                                             'Enabled for dispatch? Used in OPF.'),
+                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                non_editable_attributes=list(),
+                                properties_with_profile={'P': 'P_prof',
+                                                         'Pf': 'Pf_prof',
+                                                         'Vset': 'Vset_prof'})
+
+        self.bus = None
+
+        self.mttf = mttf
+
+        self.mttr = mttr
 
         # is the device active active power dispatch?
         self.enabled_dispatch = enabled_dispatch
@@ -1811,64 +1768,6 @@ class Generator(InjectionDevice):
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
 
-    def create_profiles_maginitude(self, index, arr, mag):
-        """
-        Create profiles from magnitude
-        Args:
-            index: Time index
-            arr: values array
-            mag: String with the magnitude to assign
-        """
-        if mag == 'P':
-            self.create_profiles(index, P=arr, V=None, Pf=None)
-        if mag == 'Pf':
-            self.create_profiles(index, P=None, V=None, Pf=arr)
-        elif mag == 'V':
-            self.create_profiles(index, P=None, V=arr, Pf=None)
-        else:
-            raise Exception('Magnitude ' + mag + ' not supported')
-
-    def create_profiles(self, index, P=None, V=None, Pf=None):
-        """
-        Create the load object default profiles
-        Args:
-            index: time index associated
-            P: Active power (MW)
-            Pf: Power factor
-            V: voltage set points
-        """
-        self.create_P_profile(index, P)
-        self.create_Pf_profile(index, Pf)
-        self.create_Vset_profile(index, V)
-
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.P
-        else:
-            dta = np.ones(len(index)) * self.P if arr is None else arr
-        self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_Pf_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.Pf
-        else:
-            dta = np.ones(len(index)) * self.Pf if arr is None else arr
-        self.Pf_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
     def initialize_lp_vars(self):
         """
         Initialize the LP variables
@@ -1876,10 +1775,6 @@ class Generator(InjectionDevice):
         self.lp_name = self.type_name + '_' + self.name + str(id(self))
 
         self.LPVar_P = pulp.LpVariable(self.lp_name + '_P', self.Pmin / self.Sbase, self.Pmax / self.Sbase)
-
-        # self.LPVar_P_prof = [pulp.LpVariable(self.lp_name + '_P_' + str(t),
-        #                                      self.Pmin / self.Sbase,
-        #                                      self.Pmax / self.Sbase) for t in range(self.Pprof.shape[0])]
 
     def get_lp_var_profile(self, index):
         """
@@ -1889,59 +1784,6 @@ class Generator(InjectionDevice):
         """
         dta = [x.value() for x in self.LPVar_P_prof]
         return pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def create_Vset_profile(self, index, arr=None, arr_in_pu=False):
-        """
-        Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
-        """
-        if arr_in_pu:
-            dta = arr * self.Vset
-        else:
-            dta = np.ones(len(index)) * self.Vset if arr is None else arr
-
-        self.Vset_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
-    def get_profiles(self, index=None, use_opf_vals=False):
-        """
-        Get profiles and if the index is passed, create the profiles if needed
-        Args:
-            index: index of the Pandas DataFrame
-
-        Returns:
-            Power, Current and Impedance profiles
-        """
-        if index is not None:
-            if self.P_prof is None:
-                self.create_P_profile(index)
-            if self.Pf_prof is None:
-                self.create_Pf_profile(index)
-            if self.Vset_prof is None:
-                self.create_Vset_profile(index)
-
-        if use_opf_vals:
-            return self.get_lp_var_profile(index), self.Vset_prof
-        else:
-            return self.P_prof, self.Vset_prof
-
-    def delete_profiles(self):
-        """
-        Delete the object profiles
-        :return:
-        """
-        self.P_prof = None
-        self.Vset_prof = None
-
-    def set_profile_values(self, t):
-        """
-        Set the profile values at t
-        :param t: time index
-        """
-        self.P = self.P_prof.values[t]
-        self.Vset = self.Vset_prof.values[t]
 
     def apply_lp_vars(self, at=None):
         """
@@ -1966,9 +1808,6 @@ class Generator(InjectionDevice):
             # there are no values in the LP vars because this generator is deactivated,
             # therefore fill the profiles with zeros when asked to copy the lp vars to the power profiles
             self.P_prof.values = np.zeros(self.P_prof.shape[0])
-
-    def __str__(self):
-        return self.name
 
 
 class Battery(Generator):
@@ -2063,32 +1902,33 @@ class Battery(Generator):
                            mttr=mttr)
 
         # type of this device
-        self.type_name = 'Battery'
+        self.device_type = DeviceType.BatteryDevice
 
         # manually modify the editable headers
-        self.editable_headers = {'name': ('', str, 'Name of the battery'),
-                                 'bus': ('', None, 'Connection bus name'),
-                                 'active': ('', bool, 'Is the battery active?'),
-                                 'is_controlled': ('', bool, 'Is this battery voltage-controlled?'),
-                                 'P': ('MW', float, 'Active power'),
-                                 'Pf': ('', float, 'Power factor (cos(fi)). This is used for non-controlled batteries.'),
-                                 'Vset': ('p.u.', float, 'Set voltage. This is used for controlled batteries.'),
-                                 'Snom': ('MVA', float, 'Nomnial power.'),
-                                 'Enom': ('MWh', float, 'Nominal energy capacity.'),
-                                 'max_soc': ('p.u.', float, 'Minimum state of charge.'),
-                                 'min_soc': ('p.u.', float, 'Maximum state of charge.'),
-                                 'soc_0': ('p.u.', float, 'Initial state of charge.'),
-                                 'charge_efficiency': ('p.u.', float, 'Charging efficiency.'),
-                                 'discharge_efficiency': ('p.u.', float, 'Discharge efficiency.'),
-                                 'discharge_per_cycle': ('p.u.', float, ''),
-                                 'Qmin': ('MVAr', float, 'Minimum reactive power.'),
-                                 'Qmax': ('MVAr', float, 'Maximum reactive power.'),
-                                 'Pmin': ('MW', float, 'Minimum active power. Used in OPF.'),
-                                 'Pmax': ('MW', float, 'Maximum active power. Used in OPF.'),
-                                 'Cost': ('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
-                                 'enabled_dispatch': ('', bool, 'Enabled for dispatch? Used in OPF.'),
-                                 'mttf': ('h', float, 'Mean time to failure'),
-                                 'mttr': ('h', float, 'Mean time to recovery')}
+        self.editable_headers = {'name': GCProp('', str, 'Name of the battery'),
+                                 'bus': GCProp('', None, 'Connection bus name'),
+                                 'active': GCProp('', bool, 'Is the battery active?'),
+                                 'is_controlled': GCProp('', bool, 'Is this battery voltage-controlled?'),
+                                 'P': GCProp('MW', float, 'Active power'),
+                                 'Pf': GCProp('', float,
+                                              'Power factor (cos(fi)). This is used for non-controlled batteries.'),
+                                 'Vset': GCProp('p.u.', float, 'Set voltage. This is used for controlled batteries.'),
+                                 'Snom': GCProp('MVA', float, 'Nomnial power.'),
+                                 'Enom': GCProp('MWh', float, 'Nominal energy capacity.'),
+                                 'max_soc': GCProp('p.u.', float, 'Minimum state of charge.'),
+                                 'min_soc': GCProp('p.u.', float, 'Maximum state of charge.'),
+                                 'soc_0': GCProp('p.u.', float, 'Initial state of charge.'),
+                                 'charge_efficiency': GCProp('p.u.', float, 'Charging efficiency.'),
+                                 'discharge_efficiency': GCProp('p.u.', float, 'Discharge efficiency.'),
+                                 'discharge_per_cycle': GCProp('p.u.', float, ''),
+                                 'Qmin': GCProp('MVAr', float, 'Minimum reactive power.'),
+                                 'Qmax': GCProp('MVAr', float, 'Maximum reactive power.'),
+                                 'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
+                                 'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
+                                 'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                 'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
+                                 'mttf': GCProp('h', float, 'Mean time to failure'),
+                                 'mttr': GCProp('h', float, 'Mean time to recovery')}
 
         self.charge_efficiency = charge_efficiency
 
@@ -2216,7 +2056,7 @@ class Battery(Generator):
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
 
-    def create_P_profile(self, index, arr=None, arr_in_pu=False):
+    def initialize_arrays(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
         Args:
@@ -2228,8 +2068,6 @@ class Battery(Generator):
             dta = arr * self.P
         else:
             dta = np.ones(len(index)) * self.P if arr is None else arr
-        self.P_prof = pd.DataFrame(data=dta, index=index, columns=[self.name])
-
         self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
         self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
 
@@ -2318,7 +2156,7 @@ class Battery(Generator):
         return processed_power
 
 
-class Shunt(InjectionDevice):
+class Shunt(EditableDevice):
     """
     Arguments:
 
@@ -2342,25 +2180,29 @@ class Shunt(InjectionDevice):
 
     def __init__(self, name='shunt', G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, mttf=0.0, mttr=0.0):
 
-        InjectionDevice.__init__(self,
-                                 name=name,
-                                 bus=None,
-                                 active=active,
-                                 type_name='Shunt',
-                                 editable_headers={'name': ('', str, 'Shunt name'),
-                                                   'bus': ('', None, 'Connection bus name'),
-                                                   'active': ('', bool, 'Is the shunt active?'),
-                                                   'G': ('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
-                                                   'B': ('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
-                                                   'mttf': ('h', float, 'Mean time to failure'),
-                                                   'mttr': ('h', float, 'Mean time to recovery')},
-                                 mttf=mttf,
-                                 mttr=mttr,
-                                 properties_with_profile={'G': 'G_prof',
-                                                          'B': 'B_prof'})
+        EditableDevice.__init__(self,
+                                name=name,
+                                active=active,
+                                device_type=DeviceType.ShuntDevice,
+                                editable_headers={'name': GCProp('', str, 'Load name'),
+                                                  'bus': GCProp('', None, 'Connection bus name'),
+                                                  'active': GCProp('', bool, 'Is the load active?'),
+                                                  'G': GCProp('MW', float,
+                                                              'Active power of the impedance component at V=1.0 p.u.'),
+                                                  'B': GCProp('MVAr', float,
+                                                              'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                non_editable_attributes=list(),
+                                properties_with_profile={'G': 'G_prof',
+                                                         'B': 'B_prof'})
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
+
+        self.mttf = mttf
+
+        self.mttr = mttr
 
         # Impedance (MVA)
         self.G = G
