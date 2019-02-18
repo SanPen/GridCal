@@ -1,6 +1,4 @@
-from GridCal.Engine.devices import *
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, PowerFlow
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine import *
 
 from pytest import approx
 
@@ -78,8 +76,6 @@ def test_corr_line_losses():
 
     grid.add_branch(cable)
 
-    # Run non-linear load flow
-    grid.compile()
     options = PowerFlowOptions(verbose=True,
                                apply_temperature_correction=True)
 

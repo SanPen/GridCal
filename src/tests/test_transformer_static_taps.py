@@ -1,10 +1,7 @@
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, SolverType, ReactivePowerControlMode
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlow
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine import *
 
 Sbase = 100 # MVA
+
 
 def complex_impedance(z, XR):
     """
@@ -118,7 +115,6 @@ def test_xfo_static_tap_1():
         print(f" - bus[{i}]: {b}")
     print()
 
-    grid.compile()
     options = PowerFlowOptions(SolverType.LM,
                                verbose=True,
                                initialize_with_existing_solution=True,
@@ -270,7 +266,6 @@ def test_xfo_static_tap_2():
         print(f" - bus[{i}]: {b}")
     print()
 
-    grid.compile()
     options = PowerFlowOptions(SolverType.LM,
                                verbose=True,
                                initialize_with_existing_solution=True,
