@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>949</width>
-    <height>537</height>
+    <height>676</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,7 +70,7 @@
               </sizepolicy>
              </property>
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
@@ -98,7 +98,7 @@
               </sizepolicy>
              </property>
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
@@ -163,7 +163,7 @@
               </sizepolicy>
              </property>
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
@@ -188,7 +188,7 @@
                 </property>
                 <widget class="QFrame" name="frame_3">
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
@@ -208,7 +208,7 @@
                 </widget>
                 <widget class="QFrame" name="frame_4">
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
@@ -227,7 +227,7 @@
                   <item>
                    <widget class="QFrame" name="frame">
                     <property name="frameShape">
-                     <enum>QFrame::StyledPanel</enum>
+                     <enum>QFrame::NoFrame</enum>
                     </property>
                     <property name="frameShadow">
                      <enum>QFrame::Raised</enum>
@@ -244,15 +244,29 @@
                      </property>
                      <item>
                       <widget class="QPushButton" name="add_to_tower_pushButton">
+                       <property name="toolTip">
+                        <string>Add wire</string>
+                       </property>
                        <property name="text">
-                        <string>Add selected wire</string>
+                        <string/>
+                       </property>
+                       <property name="icon">
+                        <iconset resource="icons.qrc">
+                         <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
                        </property>
                       </widget>
                      </item>
                      <item>
                       <widget class="QPushButton" name="delete_from_tower_pushButton">
-                       <property name="text">
+                       <property name="toolTip">
                         <string>Delete wire</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="icon">
+                        <iconset resource="icons.qrc">
+                         <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
                        </property>
                       </widget>
                      </item>
@@ -271,8 +285,15 @@
                      </item>
                      <item>
                       <widget class="QPushButton" name="compute_pushButton">
+                       <property name="toolTip">
+                        <string>Compute matrices</string>
+                       </property>
                        <property name="text">
-                        <string>Compute</string>
+                        <string/>
+                       </property>
+                       <property name="icon">
+                        <iconset resource="icons.qrc">
+                         <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
                        </property>
                       </widget>
                      </item>
@@ -410,6 +431,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

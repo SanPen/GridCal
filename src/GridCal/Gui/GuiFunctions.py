@@ -688,11 +688,15 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         # add a tooltip
         if role == QtCore.Qt.ToolTipRole:
-            if self.units[p_int] != "":
-                unit = '\nUnits: ' + self.units[p_int]
+            if p_int < self.c:
+                if self.units[p_int] != "":
+                    unit = '\nUnits: ' + self.units[p_int]
+                else:
+                    unit = ''
+                return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
             else:
-                unit = ''
-            return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
+                # somehow the index is out of range
+                return ""
 
         # if role == QtCore.Qt.DecorationRole:
         #     pixmap = QPixmap(26, 26)

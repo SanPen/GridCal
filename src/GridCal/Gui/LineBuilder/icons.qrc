@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="Icons">
+    <file>icons/delete.svg</file>
+    <file>icons/gear.svg</file>
+    <file>icons/minus.svg</file>
+    <file>icons/plus.svg</file>
+    <file>icons/edit.svg</file>
+  </qresource>
+</RCC>

@@ -160,37 +160,44 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             logger_diag = LogsDialogue(name='Tower computation', logs=logs)
             logger_diag.exec_()
         else:
-            # compute the matrices
-            self.tower.compute()
+            try:
+                # compute the matrices
+                self.tower.compute()
 
-            # Impedances in Ohm/km
-            cols = ['Phase' + str(i) for i in self.tower.z_phases_abcn]
-            z_df = pd.DataFrame(data=self.tower.z_abcn, columns=cols, index=cols)
-            self.ui.z_tableView_abcn.setModel(PandasModel(z_df))
+                # Impedances in Ohm/km
+                cols = ['Phase' + str(i) for i in self.tower.z_phases_abcn]
+                z_df = pd.DataFrame(data=self.tower.z_abcn, columns=cols, index=cols)
+                self.ui.z_tableView_abcn.setModel(PandasModel(z_df))
 
-            cols = ['Phase' + str(i) for i in self.tower.z_phases_abc]
-            z_df = pd.DataFrame(data=self.tower.z_abc, columns=cols, index=cols)
-            self.ui.z_tableView_abc.setModel(PandasModel(z_df))
+                cols = ['Phase' + str(i) for i in self.tower.z_phases_abc]
+                z_df = pd.DataFrame(data=self.tower.z_abc, columns=cols, index=cols)
+                self.ui.z_tableView_abc.setModel(PandasModel(z_df))
 
-            cols = ['Sequence ' + str(i) for i in range(3)]
-            z_df = pd.DataFrame(data=self.tower.z_seq, columns=cols, index=cols)
-            self.ui.z_tableView_seq.setModel(PandasModel(z_df))
+                cols = ['Sequence ' + str(i) for i in range(3)]
+                z_df = pd.DataFrame(data=self.tower.z_seq, columns=cols, index=cols)
+                self.ui.z_tableView_seq.setModel(PandasModel(z_df))
 
-            # Admittances in uS/km
-            cols = ['Phase' + str(i) for i in self.tower.y_phases_abcn]
-            z_df = pd.DataFrame(data=self.tower.y_abcn * 1e6, columns=cols, index=cols)
-            self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
+                # Admittances in uS/km
+                cols = ['Phase' + str(i) for i in self.tower.y_phases_abcn]
+                z_df = pd.DataFrame(data=self.tower.y_abcn * 1e6, columns=cols, index=cols)
+                self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
 
-            cols = ['Phase' + str(i) for i in self.tower.y_phases_abc]
-            z_df = pd.DataFrame(data=self.tower.y_abc * 1e6, columns=cols, index=cols)
-            self.ui.y_tableView_abc.setModel(PandasModel(z_df))
+                cols = ['Phase' + str(i) for i in self.tower.y_phases_abc]
+                z_df = pd.DataFrame(data=self.tower.y_abc * 1e6, columns=cols, index=cols)
+                self.ui.y_tableView_abc.setModel(PandasModel(z_df))
 
-            cols = ['Sequence ' + str(i) for i in range(3)]
-            z_df = pd.DataFrame(data=self.tower.y_seq * 1e6, columns=cols, index=cols)
-            self.ui.y_tableView_seq.setModel(PandasModel(z_df))
+                cols = ['Sequence ' + str(i) for i in range(3)]
+                z_df = pd.DataFrame(data=self.tower.y_seq * 1e6, columns=cols, index=cols)
+                self.ui.y_tableView_seq.setModel(PandasModel(z_df))
 
-            # plot
-            self.plot()
+                # plot
+                self.plot()
+
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Tower calculation')
+                # logger_diag = LogsDialogue(name='Tower computation', logs=logs)
+                # logger_diag.exec_()
 
     def plot(self):
 
