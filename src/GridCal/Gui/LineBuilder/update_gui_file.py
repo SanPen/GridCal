@@ -10,7 +10,7 @@ filename = 'gui.py'
 filename_ui = 'gui.ui'
 
 # update icon/images resources
-# call(['pyrcc5', 'icons.qrc', '-o', 'icons_rc.py'])
+call(['pyrcc5', 'icons.qrc', '-o', 'icons_rc.py'])
 
 # update ui handler file
 call(['pyuic5', '-x', filename_ui, '-o', filename])

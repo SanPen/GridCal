@@ -337,26 +337,26 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
                                 active=True,
                                 device_type=DeviceType.TowerDevice,
                                 editable_headers={'tower_name': GCProp('', str, "Tower name"),
-                                                              'earth_resistivity': GCProp('Ohm/m3', float,
-                                                                                          "Earth resistivity"),
-                                                              'frequency': GCProp('Hz', float,
-                                                                                  "Frequency"),
-                                                              'R1': GCProp('Ohm/km', float,
-                                                                           "Positive sequence resistance"),
-                                                              'X1': GCProp('Ohm/km', float,
-                                                                           "Positive sequence reactance"),
-                                                              'Gsh1': GCProp('S/km', float,
-                                                                             "Positive sequence shunt conductance"),
-                                                              'Bsh1': GCProp('S/km', float,
-                                                                             "Positive sequence shunt susceptance"),
-                                                              'R0': GCProp('Ohm/km', float,
-                                                                           "Zero-sequence resistance"),
-                                                              'X0': GCProp('Ohm/km', float,
-                                                                           "Zero sequence reactance"),
-                                                              'Gsh0': GCProp('S/km', float,
-                                                                             "Zero sequence shunt conductance"),
-                                                              'Bsh0': GCProp('S/km', float,
-                                                                             "Zero sequence shunt susceptance")},
+                                                  'earth_resistivity': GCProp('Ohm/m3', float,
+                                                                              "Earth resistivity"),
+                                                  'frequency': GCProp('Hz', float,
+                                                                      "Frequency"),
+                                                  'R1': GCProp('Ohm/km', float,
+                                                               "Positive sequence resistance"),
+                                                  'X1': GCProp('Ohm/km', float,
+                                                               "Positive sequence reactance"),
+                                                  'Gsh1': GCProp('S/km', float,
+                                                                 "Positive sequence shunt conductance"),
+                                                  'Bsh1': GCProp('S/km', float,
+                                                                 "Positive sequence shunt susceptance"),
+                                                  'R0': GCProp('Ohm/km', float,
+                                                               "Zero-sequence resistance"),
+                                                  'X0': GCProp('Ohm/km', float,
+                                                               "Zero sequence reactance"),
+                                                  'Gsh0': GCProp('S/km', float,
+                                                                 "Zero sequence shunt conductance"),
+                                                  'Bsh0': GCProp('S/km', float,
+                                                                 "Zero sequence shunt susceptance")},
                                 non_editable_attributes=['tower_name'],
                                 properties_with_profile={})
 
@@ -472,21 +472,26 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
             ax = fig.add_subplot(1, 1, 1)
 
         n = len(self.wires)
-        x = np.zeros(n)
-        y = np.zeros(n)
-        for i, wire in enumerate(self.wires):
-            x[i] = wire.xpos
-            y[i] = wire.ypos
 
-        ax.plot(x, y, '.')
-        ax.set_title('Tower wire position')
-        ax.set_xlabel('m')
-        ax.set_ylabel('m')
-        ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
-        ax.set_ylim([0, np.max(y) + 1])
-        ax.patch.set_facecolor('white')
-        ax.grid(False)
-        ax.grid(which='major', axis='y', linestyle='--')
+        if n > 0:
+            x = np.zeros(n)
+            y = np.zeros(n)
+            for i, wire in enumerate(self.wires):
+                x[i] = wire.xpos
+                y[i] = wire.ypos
+
+            ax.plot(x, y, '.')
+            ax.set_title('Tower wire position')
+            ax.set_xlabel('m')
+            ax.set_ylabel('m')
+            ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
+            ax.set_ylim([0, np.max(y) + 1])
+            ax.patch.set_facecolor('white')
+            ax.grid(False)
+            ax.grid(which='major', axis='y', linestyle='--')
+        else:
+            # there are no wires
+            pass
 
     def check(self, logger=list()):
         """
@@ -494,7 +499,14 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
         :return:
         """
 
+        all_y_zero = True
+        phases = set()
         for i, wire_i in enumerate(self.wires):
+
+            phases.add(wire_i.phase)
+
+            if wire_i.ypos != 0.0:
+                all_y_zero = False
 
             if wire_i.gmr < 0:
                 logger.append('The wires' + wire_i.wire_name + '(' + str(i) + ') has GRM=0 which is impossible.')
@@ -510,6 +522,15 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
                 else:
                     pass
 
+        if all_y_zero:
+            logger.append('All the vertical coordinates (y) are exactly zero.\n'
+                          'If this is correct, try a very small value.')
+            return False
+
+        if len(phases) == 1:
+            logger.append('All the wires are in the same phase!')
+            return False
+
         return True
 
     def compute(self):
@@ -523,11 +544,11 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
         if all_ok:
             # Impedances
             self.z_abcn, self.z_phases_abcn, self.z_abc, \
-            self.z_phases_abc, self.z_seq = calc_z_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+             self.z_phases_abc, self.z_seq = calc_z_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             self.y_abcn, self.y_phases_abcn, self.y_abc, \
-            self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+             self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
 
             self.R0 = self.z_seq[0, 0].real
             self.X0 = self.z_seq[0, 0].imag
@@ -991,9 +1012,13 @@ def calc_y_matrix(wires: list, f=50, rho=100):
     for i, wire_i in enumerate(wires):
 
         # self impedance
-        p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / wire_i.gmr)
+        if wire_i.ypos > 0:
+            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / (wire_i.gmr + 1e-12))
+        else:
+            p_prim[i, i] = 0
+            print(wire_i.wire_name, 'has y=0 !')
 
-        # mutual impedances
+            # mutual impedances
         for j, wire_j in enumerate(wires):
 
             if i != j:

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(949, 537)
+        Dialog.resize(949, 676)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout.setContentsMargins(1, 1, 1, 1)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -20,7 +20,6 @@ class Ui_Dialog(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.tab_2)
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.main_splitter = QtWidgets.QSplitter(self.tab_2)
         self.main_splitter.setOrientation(QtCore.Qt.Horizontal)
@@ -38,7 +37,7 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_5.sizePolicy().hasHeightForWidth())
         self.frame_5.setSizePolicy(sizePolicy)
-        self.frame_5.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_5.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_5.setObjectName("frame_5")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame_5)
@@ -56,7 +55,7 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_6.sizePolicy().hasHeightForWidth())
         self.frame_6.setSizePolicy(sizePolicy)
-        self.frame_6.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_6.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_6.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_6.setObjectName("frame_6")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_6)
@@ -86,7 +85,7 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
         self.frame_2.setSizePolicy(sizePolicy)
-        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_2.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
         self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.frame_2)
@@ -96,7 +95,7 @@ class Ui_Dialog(object):
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
         self.frame_3 = QtWidgets.QFrame(self.splitter)
-        self.frame_3.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_3.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_3.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_3.setObjectName("frame_3")
         self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.frame_3)
@@ -108,7 +107,7 @@ class Ui_Dialog(object):
         self.wires_tableView.setObjectName("wires_tableView")
         self.verticalLayout_8.addWidget(self.wires_tableView)
         self.frame_4 = QtWidgets.QFrame(self.splitter)
-        self.frame_4.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_4.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_4.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_4.setObjectName("frame_4")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.frame_4)
@@ -120,21 +119,33 @@ class Ui_Dialog(object):
         self.tower_tableView.setObjectName("tower_tableView")
         self.verticalLayout_4.addWidget(self.tower_tableView)
         self.frame = QtWidgets.QFrame(self.frame_4)
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame)
         self.horizontalLayout_2.setContentsMargins(0, -1, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.add_to_tower_pushButton = QtWidgets.QPushButton(self.frame)
+        self.add_to_tower_pushButton.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Icons/icons/plus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.add_to_tower_pushButton.setIcon(icon)
         self.add_to_tower_pushButton.setObjectName("add_to_tower_pushButton")
         self.horizontalLayout_2.addWidget(self.add_to_tower_pushButton)
         self.delete_from_tower_pushButton = QtWidgets.QPushButton(self.frame)
+        self.delete_from_tower_pushButton.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/Icons/icons/minus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.delete_from_tower_pushButton.setIcon(icon1)
         self.delete_from_tower_pushButton.setObjectName("delete_from_tower_pushButton")
         self.horizontalLayout_2.addWidget(self.delete_from_tower_pushButton)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
         self.compute_pushButton = QtWidgets.QPushButton(self.frame)
+        self.compute_pushButton.setText("")
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/Icons/icons/gear.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.compute_pushButton.setIcon(icon2)
         self.compute_pushButton.setObjectName("compute_pushButton")
         self.horizontalLayout_2.addWidget(self.compute_pushButton)
         self.verticalLayout_4.addWidget(self.frame)
@@ -158,7 +169,6 @@ class Ui_Dialog(object):
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.tab)
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.label = QtWidgets.QLabel(self.tab)
         self.label.setObjectName("label")
@@ -182,7 +192,6 @@ class Ui_Dialog(object):
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.tab_3)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.label_2 = QtWidgets.QLabel(self.tab_3)
         self.label_2.setObjectName("label_2")
@@ -217,9 +226,9 @@ class Ui_Dialog(object):
         self.label_11.setText(_translate("Dialog", "Earth resistivity (Ohm/m^3)"))
         self.label_12.setText(_translate("Dialog", "Wire catalogue"))
         self.label_10.setText(_translate("Dialog", "Wire compisition"))
-        self.add_to_tower_pushButton.setText(_translate("Dialog", "Add selected wire"))
-        self.delete_from_tower_pushButton.setText(_translate("Dialog", "Delete wire"))
-        self.compute_pushButton.setText(_translate("Dialog", "Compute"))
+        self.add_to_tower_pushButton.setToolTip(_translate("Dialog", "Add wire"))
+        self.delete_from_tower_pushButton.setToolTip(_translate("Dialog", "Delete wire"))
+        self.compute_pushButton.setToolTip(_translate("Dialog", "Compute matrices"))
         self.label_4.setText(_translate("Dialog", "Tower"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Tower"))
         self.label.setText(_translate("Dialog", "   Z series (Ohm / km) for ABCN"))
@@ -232,6 +241,7 @@ class Ui_Dialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "Y"))
 
 from .matplotlibwidget import MatplotlibWidget
+from .icons_rc import *
 
 if __name__ == "__main__":
     import sys
