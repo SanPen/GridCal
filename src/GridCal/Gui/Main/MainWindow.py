@@ -1998,7 +1998,7 @@ class Ui_mainWindow(object):
         self.toolBar.addSeparator()
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(4)
+        self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)

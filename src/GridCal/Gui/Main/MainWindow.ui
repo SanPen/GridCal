@@ -55,7 +55,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
@@ -438,7 +438,7 @@
                       <string/>
                      </property>
                      <property name="icon">
-                      <iconset>
+                      <iconset resource="icons.qrc">
                        <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
                      </property>
                     </widget>
@@ -465,7 +465,7 @@
                       <string/>
                      </property>
                      <property name="icon">
-                      <iconset>
+                      <iconset resource="icons.qrc">
                        <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
                      </property>
                     </widget>
@@ -492,7 +492,7 @@
                       <string/>
                      </property>
                      <property name="icon">
-                      <iconset>
+                      <iconset resource="icons.qrc">
                        <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
                      </property>
                     </widget>
@@ -656,7 +656,7 @@
                        <string/>
                       </property>
                       <property name="icon">
-                       <iconset>
+                       <iconset resource="icons.qrc">
                         <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
                       </property>
                      </widget>
@@ -1586,7 +1586,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset>
+                 <iconset resource="icons.qrc">
                   <normaloff>:/Icons/icons/uncheck_all.svg</normaloff>:/Icons/icons/uncheck_all.svg</iconset>
                 </property>
                </widget>
@@ -1600,7 +1600,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset>
+                 <iconset resource="icons.qrc">
                   <normaloff>:/Icons/icons/check_all.svg</normaloff>:/Icons/icons/check_all.svg</iconset>
                 </property>
                </widget>
