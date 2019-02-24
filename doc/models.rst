@@ -6,6 +6,6 @@ Models
 .. toctree::
     :maxdepth: 3
 
-    models/admittance_matrices
+    models/from_objects_to_matrices
     models/branch_model
     models/xfo_sc

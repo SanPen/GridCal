@@ -1827,7 +1827,9 @@ class MainGUI(QMainWindow):
 
             # compute the automatic precision
             if self.ui.auto_precision_checkBox.isChecked():
-                lg = np.log10(abs(self.circuit.numerical_circuit.Sbus.real))
+                numerical = self.circuit.compile()
+                S = numerical.load_power / numerical.Sbase
+                lg = np.log10(abs(S))
                 lg[lg == -np.inf] = 0
                 tol_idx = int(min(abs(lg))) + 3
                 tolerance = 1.0 / (10.0 ** tol_idx)
