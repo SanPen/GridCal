@@ -71,7 +71,7 @@ class ReactivePowerControlMode(Enum):
     voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
     algorithm in an outer control loop. For grids with numerous
     :ref:`generators<generator>` tied to the same system, for example wind farms, this
-    control method sometimes fails with some *:ref:`generators<generator>` not trying
+    control method sometimes fails with some :ref:`generators<generator>` not trying
     hard enough*. In this case, the simulation converges but the voltage controlled
     :ref:`buses<bus>` do not reach their target voltage, while their
     :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
@@ -138,7 +138,8 @@ class ReactivePowerControlMode(Enum):
     increment is determined using a logistic function based on the difference between
     the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
     :code:`k` of the logistic function was determined through trial and error, with the
-    intent of reducing the number of iterations while avoiding instability.
+    intent of reducing the number of iterations while avoiding instability. Other
+    values may be specified in :ref:`PowerFlowOptions<pf_options>`.
 
     The :math:`Q_{Increment}` in per unit is determined by:
 
@@ -148,7 +149,7 @@ class ReactivePowerControlMode(Enum):
 
     Where:
 
-        k = 30
+        k = 30 (by default)
 
     """
     NoControl = "NoControl"
@@ -244,17 +245,28 @@ class PowerFlowOptions:
         **branch_impedance_tolerance_mode** (BranchImpedanceMode,
         BranchImpedanceMode.Specified): Type of modification of the branches impedance
 
+        **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the
+        :ref:`ReactivePowerControlMode<q_control>` iterative control
+
     """
 
-    def __init__(self, solver_type: SolverType = SolverType.NR,
-                 retry_with_other_methods=True, verbose=False,
+    def __init__(self,
+                 solver_type: SolverType = SolverType.NR,
+                 retry_with_other_methods=True,
+                 verbose=False,
                  initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, max_outer_loop_iter=100,
+                 tolerance=1e-6,
+                 max_iter=25,
+                 max_outer_loop_iter=100,
                  control_q=ReactivePowerControlMode.NoControl,
                  control_taps=TapsControlMode.NoControl,
-                 multi_core=False, dispatch_storage=False,
-                 control_p=False, apply_temperature_correction=False,
-                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified):
+                 multi_core=False,
+                 dispatch_storage=False,
+                 control_p=False,
+                 apply_temperature_correction=False,
+                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+                 q_steepness_factor=30,
+                 ):
 
         self.solver_type = solver_type
 
@@ -283,6 +295,8 @@ class PowerFlowOptions:
         self.apply_temperature_correction = apply_temperature_correction
 
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
+
+        self.q_steepness_factor = q_steepness_factor
 
 
 class PowerFlowMP:
@@ -393,7 +407,7 @@ class PowerFlowMP:
             **max_iter**: maximum iterations
 
         Returns:
-        
+
             V0 (Voltage solution), converged (converged?), normF (error in power),
             Scalc (Computed bus power), iterations, elapsed
         """
@@ -525,7 +539,7 @@ class PowerFlowMP:
             **Ibus**: vector of current injections
 
         Return:
-            
+
             PowerFlowResults instance
         """
 
@@ -613,7 +627,8 @@ class PowerFlowMP:
                                                                     Qmin=circuit.Qmin,
                                                                     types=circuit.types,
                                                                     original_types=original_types,
-                                                                    verbose=self.options.verbose)
+                                                                    verbose=self.options.verbose,
+                                                                    )
 
                     elif self.options.control_Q == ReactivePowerControlMode.Iterative:
 
@@ -626,7 +641,9 @@ class PowerFlowMP:
                                                                        Qmin=circuit.Qmin,
                                                                        types=circuit.types,
                                                                        original_types=original_types,
-                                                                       verbose=self.options.verbose)
+                                                                       verbose=self.options.verbose,
+                                                                       k=self.options.q_steepness_factor,
+                                                                       )
 
                     else:
                         # did not check Q limits
@@ -726,14 +743,15 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def get_q_increment(V1, V2):
+    def get_q_increment(V1, V2, k):
         """
         Logistic function to get the Q increment gain using the difference
         between the current voltage (V1) and the target voltage (V2).
 
         The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
 
-        The steepness factor k was set through trial an error.
+        The default steepness factor k was set through trial an error. Other values may
+        be specified as a :ref:`PowerFlowOptions<pf_options>`.
 
         Arguments:
 
@@ -741,14 +759,28 @@ class PowerFlowMP:
 
             **V2** (float): Target voltage
 
+            **k** (float, 30): Steepness factor
+
         Returns:
 
             Q increment gain
         """
-        k = 30
+
         return 2 * (1 / (1 + np.exp(-k * abs(V2 - V1))) - 0.5)
 
-    def control_q_iterative(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+    def control_q_iterative(
+        self,
+        V,
+        Vset,
+        Q,
+        Qmax,
+        Qmin,
+        types,
+        original_types,
+        verbose,
+        k,
+    ):
+
         """
         Change the buses type in order to control the generators reactive power using
         iterative changes in Q to reach Vset.
@@ -756,29 +788,29 @@ class PowerFlowMP:
         Arguments:
 
             **V** (list): array of voltages (all buses)
-            
+
             **Vset** (list): Array of set points (all buses)
-            
+
             **Q** (list): Array of reactive power (all buses)
-            
+
             **Qmin** (list): Array of minimal reactive power (all buses)
-            
+
             **Qmax** (list): Array of maximal reactive power (all buses)
-            
+
             **types** (list): Array of types (all buses)
-            
+
             **original_types** (list): Types as originally intended (all buses)
-            
+
             **verbose** (list): output messages via the console
+
+            **k** (float, 30): Steepness factor
 
         Return:
 
-            **Vnew** (list): New voltage values
-
             **Qnew** (list): New reactive power values
-            
+
             **types_new** (list): Modified types array
-            
+
             **any_control_issue** (bool): Was there any control issue?
         """
 
@@ -788,15 +820,11 @@ class PowerFlowMP:
         n = len(V)
         Vm = abs(V)
         Qnew = Q.copy()
-        Vnew = V.copy()
         types_new = types.copy()
         any_control_issue = False
         precision = 4
-
-#        if verbose:
-#            print(f"Q = {Q}")
-#            print(f"Types = {types}")
-#            print(f"Original types = {original_types}")
+        inc_prec = int(1.5 * precision)
+        #inc_prec = precision
 
         for i in range(n):
 
@@ -805,12 +833,12 @@ class PowerFlowMP:
 
             elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
 
-                gain = self.get_q_increment(Vm[i], abs(Vset[i]))
+                gain = self.get_q_increment(Vm[i], abs(Vset[i]), k)
 
                 if round(Vm[i], precision) < round(abs(Vset[i]), precision):
-                    increment = round(abs(Qmax[i] - Q[i])*gain, precision)
+                    increment = round(abs(Qmax[i] - Q[i])*gain, inc_prec)
 
-                    if increment > 0 and Q[i] < (Qmax[i] - increment/2):
+                    if increment > 0 and Q[i] + increment < Qmax[i]:
                         # I can push more VAr, so let's do so
                         Qnew[i] = Q[i] + increment
                         if verbose:
@@ -819,37 +847,77 @@ class PowerFlowMP:
                                                                                 round(Vm[i], precision),
                                                                                 abs(Vset[i])))
                             print("Bus {} increment = {} (Q = {}, Qmax = {})".format(i,
-                                                                                     round(increment, precision),
+                                                                                     round(increment, inc_prec),
                                                                                      round(Q[i], precision),
-                                                                                     abs(Qmax[i])))
+                                                                                     round(abs(Qmax[i]), precision),
+                                                                                     )
+                            )
                             print("Bus {} raising its Q from {} to {} (V = {}, Vset = {})".format(i,
                                                                                                   round(Q[i], precision),
                                                                                                   round(Qnew[i], precision),
                                                                                                   round(Vm[i], precision),
-                                                                                                  abs(Vset[i])))
+                                                                                                  abs(Vset[i]),
+                                                                                                  )
+                            )
                         any_control_issue = True
 
-                elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
-                    increment = round(abs(Qmin[i] - Q[i])*gain, precision)
+                    else:
+                        if verbose:
+                            print("Bus {} stable enough (inc = {}, Q = {}, Qmax = {}, V = {}, Vset = {})".format(i,
+                                                                                                                 round(increment, inc_prec),
+                                                                                                                 round(Q[i], precision),
+                                                                                                                 round(abs(Qmax[i]), precision),
+                                                                                                                 round(Vm[i], precision),
+                                                                                                                 abs(Vset[i]),
+                                                                                                                 )
+                            )
 
-                    if increment > 0 and Q[i] > (Qmin[i] + increment/2):
+                elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
+                    increment = round(abs(Qmin[i] - Q[i])*gain, inc_prec)
+
+                    if increment > 0 and Q[i] - increment > Qmin[i]:
                         # I can pull more VAr, so let's do so
                         Qnew[i] = Q[i] - increment
                         if verbose:
                             print("Bus {} increment = {} (Q = {}, Qmin = {})".format(i,
-                                                                                     round(increment, precision),
+                                                                                     round(increment, inc_prec),
                                                                                      round(Q[i], precision),
-                                                                                     abs(Qmin[i])))
+                                                                                     round(abs(Qmin[i]), precision),
+                                                                                     )
+                            )
                             print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
                                                                                 round(gain, precision),
                                                                                 round(Vm[i], precision),
-                                                                                abs(Vset[i])))
+                                                                                abs(Vset[i]),
+                                                                                )
+                            )
                             print("Bus {} lowering its Q from {} to {} (V = {}, Vset = {})".format(i,
                                                                                                    round(Q[i], precision),
                                                                                                    round(Qnew[i], precision),
                                                                                                    round(Vm[i], precision),
-                                                                                                   abs(Vset[i])))
+                                                                                                   abs(Vset[i]),
+                                                                                                   )
+                            )
                         any_control_issue = True
+
+                    else:
+                        if verbose:
+                            print("Bus {} stable enough (inc = {}, Q = {}, Qmin = {}, V = {}, Vset = {})".format(i,
+                                                                                                                 round(increment, inc_prec),
+                                                                                                                 round(Q[i], precision),
+                                                                                                                 round(abs(Qmin[i]), precision),
+                                                                                                                 round(Vm[i], precision),
+                                                                                                                 abs(Vset[i]),
+                                                                                                                 )
+                            )
+
+                else:
+                    if verbose:
+                        print("Bus {} stable (V = {}, Vset = {})".format(i,
+                                                                         round(Vm[i], precision),
+                                                                         abs(Vset[i]),
+                                                                         )
+                        )
 
             elif types[i] == BusMode.PV.value[0]:
                 # If it's still in PV mode (first run), change it to PQ mode
@@ -859,10 +927,6 @@ class PowerFlowMP:
                     print("Bus {} switching to PQ control, with a Q of 0".format(i))
                 any_control_issue = True
 
-#        if verbose:
-#            print(f"Qnew = {Qnew}")
-#            print(f"New types = {types_new}")
-#            print(f"Control issue? = {any_control_issue}")
         return Qnew, types_new, any_control_issue
 
     @staticmethod
@@ -879,7 +943,7 @@ class PowerFlowMP:
             **only_power**: compute only the power injection
 
         Returns:
-        
+
             Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
@@ -932,31 +996,31 @@ class PowerFlowMP:
         Arguments:
 
             **pq** (list): array of pq indices
-            
+
             **pv** (list): array of pq indices
-            
+
             **ref** (list): array of pq indices
-            
+
             **V** (list): array of voltages (all buses)
-            
+
             **Vset** (list): Array of set points (all buses)
-            
+
             **Q** (list): Array of reactive power (all buses)
-            
+
             **types** (list): Array of types (all buses)
-            
+
             **original_types** (list): Types as originally intended (all buses)
-            
+
             **verbose** (bool): output messages via the console
-        
+
         Returns:
 
             **Vnew** (list): New voltage values
 
             **Qnew** (list): New reactive power values
-            
+
             **types_new** (list): Modified types array
-            
+
             **any_control_issue** (bool): Was there any control issue?
 
         ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
@@ -1008,7 +1072,7 @@ class PowerFlowMP:
             If Qi min < Qi < Qimax , then
                 it is still a PV bus.
         """
-        
+
         if verbose:
             print('Q control logic (fast)')
 
@@ -1035,7 +1099,7 @@ class PowerFlowMP:
 
                     else:  # switch back to PV, set Vinew = Viset.
                         if verbose:
-                            print('Bus', i, ' switched back to PV')
+                            print('Bus', i, 'switched back to PV')
                         types_new[i] = BusMode.PV.value[0]
                         Vnew[i] = complex(Vset[i], 0)
 
@@ -1048,14 +1112,14 @@ class PowerFlowMP:
 
                 if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
+                        print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmax[i]
                     any_control_issue = True
 
                 elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
+                        print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmin[i]
                     any_control_issue = True
@@ -1104,23 +1168,23 @@ class PowerFlowMP:
             **tap_position** (list): array of branch tap positions
 
             **tap_module** (list): array of branch tap modules
-            
+
             **min_tap** (list): array of minimum tap positions
-            
+
             **max_tap** (list): array of maximum tap positions
-            
+
             **tap_inc_reg_up** (list): array of tap increment when regulating up
-            
+
             **tap_inc_reg_down** (list): array of tap increment when regulating down
-            
+
             **vset** (list): array of set voltages to control
-        
+
         Returns:
-        
+
             **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-            
+
             **tap_magnitude** (list): Tap module at each bus in per unit
-            
+
             **tap_position** (list): Tap position at each bus
         """
 
@@ -1130,7 +1194,7 @@ class PowerFlowMP:
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
             if verbose:
-                print("Bus", j, "regulated by branch", i, ": U=", v, "pu, U_set=", vset[i])
+                print("Bus", j, "regulated by branch", i, ": U =", round(v, 4), "pu, U_set =", vset[i])
 
             if tap_position[i] > 0:
 
@@ -1142,7 +1206,7 @@ class PowerFlowMP:
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print("Branch ", i, ": Lowering from tap ", tap_position[i])
+                        print("Branch", i, ": Lowering from tap ", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
@@ -1153,24 +1217,24 @@ class PowerFlowMP:
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print("Branch ", i, ": Raising from tap ", tap_position[i])
+                        print("Branch", i, ": Raising from tap ", tap_position[i])
                     stable = False
 
             elif tap_position[i] < 0:
                 if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print("Branch ", i, ": Already at lowest tap (", tap_position[i], "), skipping")
+                            print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print("Branch ", i, ": Lowering from tap", tap_position[i])
+                        print("Branch", i, ": Lowering from tap", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i]/2:
                     if tap_position[i] == max_tap[i]:
-                        print("Branch ", i, ": Already at highest tap (", tap_position[i], "), skipping")
+                        print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
@@ -1182,12 +1246,12 @@ class PowerFlowMP:
                 if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print("Branch ", i, ": Already at lowest tap (", tap_position[i], "), skipping")
+                            print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print("Branch ", i, ": Lowering from tap ", tap_position[i])
+                        print("Branch", i, ": Lowering from tap ", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i] / 2:
@@ -1198,7 +1262,7 @@ class PowerFlowMP:
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print("Branch ", i, ": Raising from tap ", tap_position[i])
+                        print("Branch", i, ": Raising from tap ", tap_position[i])
                     stable = False
 
         return stable, tap_module, tap_position
@@ -1212,32 +1276,32 @@ class PowerFlowMP:
         Arguments:
 
             **voltage** (list): array of bus voltages solution
-        
+
             **T** (list): array of indices of the "to" buses of each branch
-        
+
             **bus_to_regulated_idx** (list): array with the indices of the branches
             that regulate the bus "to"
-        
+
             **tap_position** (list): array of branch tap positions
-        
+
             **tap_module** (list): array of branch tap modules
-        
+
             **min_tap** (list): array of minimum tap positions
-        
+
             **max_tap** (list): array of maximum tap positions
-        
+
             **tap_inc_reg_up** (list): array of tap increment when regulating up
-        
+
             **tap_inc_reg_down** (list): array of tap increment when regulating down
-        
+
             **vset** (list): array of set voltages to control
-        
+
         Returns:
-        
+
             **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-            
+
             **tap_magnitude** (list): Tap module at each bus in per unit
-            
+
             **tap_position** (list): Tap position at each bus
         """
         stable = True
@@ -1246,7 +1310,7 @@ class PowerFlowMP:
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
             if verbose:
-                print("Bus", j, "regulated by branch", i, ": U=", v, "pu, U_set=", vset[i])
+                print("Bus", j, "regulated by branch", i, ": U=", round(v, 4), "pu, U_set=", vset[i])
 
             tap_inc = tap_inc_reg_up
             if tap_inc_reg_up.all() != tap_inc_reg_down.all():
@@ -1307,7 +1371,7 @@ class PowerFlowMP:
             **Ibus** (list): Current injection at each bus in complex amperes
 
         Returns:
-        
+
             :ref:`PowerFlowResults<pf_results>` instance
         """
 
@@ -1406,7 +1470,7 @@ class PowerFlowMP:
             **Ibus**:
 
         Returns:
-        
+
             PowerFlowResults instance
 
         """
@@ -1449,7 +1513,7 @@ class PowerFlowMP:
         Run a power flow for a circuit (wrapper for run_pf).
 
         Returns:
-        
+
             :ref:`PowerFlowResults<pf_results>` instance (self.results)
         """
 
