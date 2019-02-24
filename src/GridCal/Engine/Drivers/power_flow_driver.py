@@ -807,8 +807,6 @@ class PowerFlowMP:
 
         Return:
 
-            **Vnew** (list): New voltage values
-
             **Qnew** (list): New reactive power values
 
             **types_new** (list): Modified types array
@@ -822,15 +820,11 @@ class PowerFlowMP:
         n = len(V)
         Vm = abs(V)
         Qnew = Q.copy()
-        Vnew = V.copy()
         types_new = types.copy()
         any_control_issue = False
         precision = 4
-
-#        if verbose:
-#            print(f"Q = {Q}")
-#            print(f"Types = {types}")
-#            print(f"Original types = {original_types}")
+        inc_prec = int(1.5 * precision)
+        #inc_prec = precision
 
         for i in range(n):
 
@@ -842,9 +836,9 @@ class PowerFlowMP:
                 gain = self.get_q_increment(Vm[i], abs(Vset[i]), k)
 
                 if round(Vm[i], precision) < round(abs(Vset[i]), precision):
-                    increment = round(abs(Qmax[i] - Q[i])*gain, precision)
+                    increment = round(abs(Qmax[i] - Q[i])*gain, inc_prec)
 
-                    if increment > 0 and Q[i] < (Qmax[i] - increment/2):
+                    if increment > 0 and Q[i] + increment < Qmax[i]:
                         # I can push more VAr, so let's do so
                         Qnew[i] = Q[i] + increment
                         if verbose:
@@ -853,37 +847,77 @@ class PowerFlowMP:
                                                                                 round(Vm[i], precision),
                                                                                 abs(Vset[i])))
                             print("Bus {} increment = {} (Q = {}, Qmax = {})".format(i,
-                                                                                     round(increment, precision),
+                                                                                     round(increment, inc_prec),
                                                                                      round(Q[i], precision),
-                                                                                     abs(Qmax[i])))
+                                                                                     round(abs(Qmax[i]), precision),
+                                                                                     )
+                            )
                             print("Bus {} raising its Q from {} to {} (V = {}, Vset = {})".format(i,
                                                                                                   round(Q[i], precision),
                                                                                                   round(Qnew[i], precision),
                                                                                                   round(Vm[i], precision),
-                                                                                                  abs(Vset[i])))
+                                                                                                  abs(Vset[i]),
+                                                                                                  )
+                            )
                         any_control_issue = True
 
-                elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
-                    increment = round(abs(Qmin[i] - Q[i])*gain, precision)
+                    else:
+                        if verbose:
+                            print("Bus {} stable enough (inc = {}, Q = {}, Qmax = {}, V = {}, Vset = {})".format(i,
+                                                                                                                 round(increment, inc_prec),
+                                                                                                                 round(Q[i], precision),
+                                                                                                                 round(abs(Qmax[i]), precision),
+                                                                                                                 round(Vm[i], precision),
+                                                                                                                 abs(Vset[i]),
+                                                                                                                 )
+                            )
 
-                    if increment > 0 and Q[i] > (Qmin[i] + increment/2):
+                elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
+                    increment = round(abs(Qmin[i] - Q[i])*gain, inc_prec)
+
+                    if increment > 0 and Q[i] - increment > Qmin[i]:
                         # I can pull more VAr, so let's do so
                         Qnew[i] = Q[i] - increment
                         if verbose:
                             print("Bus {} increment = {} (Q = {}, Qmin = {})".format(i,
-                                                                                     round(increment, precision),
+                                                                                     round(increment, inc_prec),
                                                                                      round(Q[i], precision),
-                                                                                     abs(Qmin[i])))
+                                                                                     round(abs(Qmin[i]), precision),
+                                                                                     )
+                            )
                             print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
                                                                                 round(gain, precision),
                                                                                 round(Vm[i], precision),
-                                                                                abs(Vset[i])))
+                                                                                abs(Vset[i]),
+                                                                                )
+                            )
                             print("Bus {} lowering its Q from {} to {} (V = {}, Vset = {})".format(i,
                                                                                                    round(Q[i], precision),
                                                                                                    round(Qnew[i], precision),
                                                                                                    round(Vm[i], precision),
-                                                                                                   abs(Vset[i])))
+                                                                                                   abs(Vset[i]),
+                                                                                                   )
+                            )
                         any_control_issue = True
+
+                    else:
+                        if verbose:
+                            print("Bus {} stable enough (inc = {}, Q = {}, Qmin = {}, V = {}, Vset = {})".format(i,
+                                                                                                                 round(increment, inc_prec),
+                                                                                                                 round(Q[i], precision),
+                                                                                                                 round(abs(Qmin[i]), precision),
+                                                                                                                 round(Vm[i], precision),
+                                                                                                                 abs(Vset[i]),
+                                                                                                                 )
+                            )
+
+                else:
+                    if verbose:
+                        print("Bus {} stable (V = {}, Vset = {})".format(i,
+                                                                         round(Vm[i], precision),
+                                                                         abs(Vset[i]),
+                                                                         )
+                        )
 
             elif types[i] == BusMode.PV.value[0]:
                 # If it's still in PV mode (first run), change it to PQ mode
@@ -893,10 +927,6 @@ class PowerFlowMP:
                     print("Bus {} switching to PQ control, with a Q of 0".format(i))
                 any_control_issue = True
 
-#        if verbose:
-#            print(f"Qnew = {Qnew}")
-#            print(f"New types = {types_new}")
-#            print(f"Control issue? = {any_control_issue}")
         return Qnew, types_new, any_control_issue
 
     @staticmethod
@@ -1069,7 +1099,7 @@ class PowerFlowMP:
 
                     else:  # switch back to PV, set Vinew = Viset.
                         if verbose:
-                            print('Bus', i, ' switched back to PV')
+                            print('Bus', i, 'switched back to PV')
                         types_new[i] = BusMode.PV.value[0]
                         Vnew[i] = complex(Vset[i], 0)
 
@@ -1082,14 +1112,14 @@ class PowerFlowMP:
 
                 if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
+                        print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmax[i]
                     any_control_issue = True
 
                 elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
                     if verbose:
-                        print('Bus', i, ' switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
+                        print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
                     types_new[i] = BusMode.PQ.value[0]
                     Qnew[i] = Qmin[i]
                     any_control_issue = True
@@ -1164,7 +1194,7 @@ class PowerFlowMP:
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
             if verbose:
-                print("Bus", j, "regulated by branch", i, ": U=", v, "pu, U_set=", vset[i])
+                print("Bus", j, "regulated by branch", i, ": U =", round(v, 4), "pu, U_set =", vset[i])
 
             if tap_position[i] > 0:
 
@@ -1176,7 +1206,7 @@ class PowerFlowMP:
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print("Branch ", i, ": Lowering from tap ", tap_position[i])
+                        print("Branch", i, ": Lowering from tap ", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
@@ -1187,24 +1217,24 @@ class PowerFlowMP:
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print("Branch ", i, ": Raising from tap ", tap_position[i])
+                        print("Branch", i, ": Raising from tap ", tap_position[i])
                     stable = False
 
             elif tap_position[i] < 0:
                 if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print("Branch ", i, ": Already at lowest tap (", tap_position[i], "), skipping")
+                            print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print("Branch ", i, ": Lowering from tap", tap_position[i])
+                        print("Branch", i, ": Lowering from tap", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i]/2:
                     if tap_position[i] == max_tap[i]:
-                        print("Branch ", i, ": Already at highest tap (", tap_position[i], "), skipping")
+                        print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
@@ -1216,12 +1246,12 @@ class PowerFlowMP:
                 if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
-                            print("Branch ", i, ": Already at lowest tap (", tap_position[i], "), skipping")
+                            print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
 
                     tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
                     if verbose:
-                        print("Branch ", i, ": Lowering from tap ", tap_position[i])
+                        print("Branch", i, ": Lowering from tap ", tap_position[i])
                     stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i] / 2:
@@ -1232,7 +1262,7 @@ class PowerFlowMP:
                     tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
                     tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
                     if verbose:
-                        print("Branch ", i, ": Raising from tap ", tap_position[i])
+                        print("Branch", i, ": Raising from tap ", tap_position[i])
                     stable = False
 
         return stable, tap_module, tap_position
@@ -1280,7 +1310,7 @@ class PowerFlowMP:
             j = T[i]  # get the index of the "to" bus of the branch "i"
             v = abs(voltage[j])
             if verbose:
-                print("Bus", j, "regulated by branch", i, ": U=", v, "pu, U_set=", vset[i])
+                print("Bus", j, "regulated by branch", i, ": U=", round(v, 4), "pu, U_set=", vset[i])
 
             tap_inc = tap_inc_reg_up
             if tap_inc_reg_up.all() != tap_inc_reg_down.all():
