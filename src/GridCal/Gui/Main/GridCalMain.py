@@ -1765,6 +1765,7 @@ class MainGUI(QMainWindow):
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
         reactve_power_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
+        q_steepness_factor = self.ui.q_steepness_factor_spinBox.value()
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
         exponent = self.ui.tolerance_spinBox.value()
@@ -1806,7 +1807,9 @@ class MainGUI(QMainWindow):
                                dispatch_storage=dispatch_storage,
                                control_taps=taps_control_mode,
                                apply_temperature_correction=temp_correction,
-                               branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
+                               branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
+                               q_steepness_factor=q_steepness_factor,
+                               )
 
         return ops
 

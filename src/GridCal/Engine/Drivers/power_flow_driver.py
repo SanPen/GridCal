@@ -71,7 +71,7 @@ class ReactivePowerControlMode(Enum):
     voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
     algorithm in an outer control loop. For grids with numerous
     :ref:`generators<generator>` tied to the same system, for example wind farms, this
-    control method sometimes fails with some *:ref:`generators<generator>` not trying
+    control method sometimes fails with some :ref:`generators<generator>` not trying
     hard enough*. In this case, the simulation converges but the voltage controlled
     :ref:`buses<bus>` do not reach their target voltage, while their
     :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
@@ -138,7 +138,8 @@ class ReactivePowerControlMode(Enum):
     increment is determined using a logistic function based on the difference between
     the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
     :code:`k` of the logistic function was determined through trial and error, with the
-    intent of reducing the number of iterations while avoiding instability.
+    intent of reducing the number of iterations while avoiding instability. Other
+    values may be specified in :ref:`PowerFlowOptions<pf_options>`.
 
     The :math:`Q_{Increment}` in per unit is determined by:
 
@@ -148,7 +149,7 @@ class ReactivePowerControlMode(Enum):
 
     Where:
 
-        k = 30
+        k = 30 (by default)
 
     """
     NoControl = "NoControl"
@@ -244,17 +245,28 @@ class PowerFlowOptions:
         **branch_impedance_tolerance_mode** (BranchImpedanceMode,
         BranchImpedanceMode.Specified): Type of modification of the branches impedance
 
+        **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the
+        :ref:`ReactivePowerControlMode<q_control>` iterative control
+
     """
 
-    def __init__(self, solver_type: SolverType = SolverType.NR,
-                 retry_with_other_methods=True, verbose=False,
+    def __init__(self,
+                 solver_type: SolverType = SolverType.NR,
+                 retry_with_other_methods=True,
+                 verbose=False,
                  initialize_with_existing_solution=True,
-                 tolerance=1e-6, max_iter=25, max_outer_loop_iter=100,
+                 tolerance=1e-6,
+                 max_iter=25,
+                 max_outer_loop_iter=100,
                  control_q=ReactivePowerControlMode.NoControl,
                  control_taps=TapsControlMode.NoControl,
-                 multi_core=False, dispatch_storage=False,
-                 control_p=False, apply_temperature_correction=False,
-                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified):
+                 multi_core=False,
+                 dispatch_storage=False,
+                 control_p=False,
+                 apply_temperature_correction=False,
+                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+                 q_steepness_factor=30,
+                 ):
 
         self.solver_type = solver_type
 
@@ -283,6 +295,8 @@ class PowerFlowOptions:
         self.apply_temperature_correction = apply_temperature_correction
 
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
+
+        self.q_steepness_factor = q_steepness_factor
 
 
 class PowerFlowMP:
@@ -393,7 +407,7 @@ class PowerFlowMP:
             **max_iter**: maximum iterations
 
         Returns:
-        
+
             V0 (Voltage solution), converged (converged?), normF (error in power),
             Scalc (Computed bus power), iterations, elapsed
         """
@@ -525,7 +539,7 @@ class PowerFlowMP:
             **Ibus**: vector of current injections
 
         Return:
-            
+
             PowerFlowResults instance
         """
 
@@ -613,7 +627,8 @@ class PowerFlowMP:
                                                                     Qmin=circuit.Qmin,
                                                                     types=circuit.types,
                                                                     original_types=original_types,
-                                                                    verbose=self.options.verbose)
+                                                                    verbose=self.options.verbose,
+                                                                    )
 
                     elif self.options.control_Q == ReactivePowerControlMode.Iterative:
 
@@ -626,7 +641,9 @@ class PowerFlowMP:
                                                                        Qmin=circuit.Qmin,
                                                                        types=circuit.types,
                                                                        original_types=original_types,
-                                                                       verbose=self.options.verbose)
+                                                                       verbose=self.options.verbose,
+                                                                       k=self.options.q_steepness_factor,
+                                                                       )
 
                     else:
                         # did not check Q limits
@@ -726,14 +743,15 @@ class PowerFlowMP:
         return results
 
     @staticmethod
-    def get_q_increment(V1, V2):
+    def get_q_increment(V1, V2, k):
         """
         Logistic function to get the Q increment gain using the difference
         between the current voltage (V1) and the target voltage (V2).
 
         The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
 
-        The steepness factor k was set through trial an error.
+        The default steepness factor k was set through trial an error. Other values may
+        be specified as a :ref:`PowerFlowOptions<pf_options>`.
 
         Arguments:
 
@@ -741,14 +759,28 @@ class PowerFlowMP:
 
             **V2** (float): Target voltage
 
+            **k** (float, 30): Steepness factor
+
         Returns:
 
             Q increment gain
         """
-        k = 30
+
         return 2 * (1 / (1 + np.exp(-k * abs(V2 - V1))) - 0.5)
 
-    def control_q_iterative(self, V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+    def control_q_iterative(
+        self,
+        V,
+        Vset,
+        Q,
+        Qmax,
+        Qmin,
+        types,
+        original_types,
+        verbose,
+        k,
+    ):
+
         """
         Change the buses type in order to control the generators reactive power using
         iterative changes in Q to reach Vset.
@@ -756,29 +788,31 @@ class PowerFlowMP:
         Arguments:
 
             **V** (list): array of voltages (all buses)
-            
+
             **Vset** (list): Array of set points (all buses)
-            
+
             **Q** (list): Array of reactive power (all buses)
-            
+
             **Qmin** (list): Array of minimal reactive power (all buses)
-            
+
             **Qmax** (list): Array of maximal reactive power (all buses)
-            
+
             **types** (list): Array of types (all buses)
-            
+
             **original_types** (list): Types as originally intended (all buses)
-            
+
             **verbose** (list): output messages via the console
+
+            **k** (float, 30): Steepness factor
 
         Return:
 
             **Vnew** (list): New voltage values
 
             **Qnew** (list): New reactive power values
-            
+
             **types_new** (list): Modified types array
-            
+
             **any_control_issue** (bool): Was there any control issue?
         """
 
@@ -805,7 +839,7 @@ class PowerFlowMP:
 
             elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
 
-                gain = self.get_q_increment(Vm[i], abs(Vset[i]))
+                gain = self.get_q_increment(Vm[i], abs(Vset[i]), k)
 
                 if round(Vm[i], precision) < round(abs(Vset[i]), precision):
                     increment = round(abs(Qmax[i] - Q[i])*gain, precision)
@@ -879,7 +913,7 @@ class PowerFlowMP:
             **only_power**: compute only the power injection
 
         Returns:
-        
+
             Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
         """
         # Compute the slack and pv buses power
@@ -932,31 +966,31 @@ class PowerFlowMP:
         Arguments:
 
             **pq** (list): array of pq indices
-            
+
             **pv** (list): array of pq indices
-            
+
             **ref** (list): array of pq indices
-            
+
             **V** (list): array of voltages (all buses)
-            
+
             **Vset** (list): Array of set points (all buses)
-            
+
             **Q** (list): Array of reactive power (all buses)
-            
+
             **types** (list): Array of types (all buses)
-            
+
             **original_types** (list): Types as originally intended (all buses)
-            
+
             **verbose** (bool): output messages via the console
-        
+
         Returns:
 
             **Vnew** (list): New voltage values
 
             **Qnew** (list): New reactive power values
-            
+
             **types_new** (list): Modified types array
-            
+
             **any_control_issue** (bool): Was there any control issue?
 
         ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
@@ -1008,7 +1042,7 @@ class PowerFlowMP:
             If Qi min < Qi < Qimax , then
                 it is still a PV bus.
         """
-        
+
         if verbose:
             print('Q control logic (fast)')
 
@@ -1104,23 +1138,23 @@ class PowerFlowMP:
             **tap_position** (list): array of branch tap positions
 
             **tap_module** (list): array of branch tap modules
-            
+
             **min_tap** (list): array of minimum tap positions
-            
+
             **max_tap** (list): array of maximum tap positions
-            
+
             **tap_inc_reg_up** (list): array of tap increment when regulating up
-            
+
             **tap_inc_reg_down** (list): array of tap increment when regulating down
-            
+
             **vset** (list): array of set voltages to control
-        
+
         Returns:
-        
+
             **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-            
+
             **tap_magnitude** (list): Tap module at each bus in per unit
-            
+
             **tap_position** (list): Tap position at each bus
         """
 
@@ -1212,32 +1246,32 @@ class PowerFlowMP:
         Arguments:
 
             **voltage** (list): array of bus voltages solution
-        
+
             **T** (list): array of indices of the "to" buses of each branch
-        
+
             **bus_to_regulated_idx** (list): array with the indices of the branches
             that regulate the bus "to"
-        
+
             **tap_position** (list): array of branch tap positions
-        
+
             **tap_module** (list): array of branch tap modules
-        
+
             **min_tap** (list): array of minimum tap positions
-        
+
             **max_tap** (list): array of maximum tap positions
-        
+
             **tap_inc_reg_up** (list): array of tap increment when regulating up
-        
+
             **tap_inc_reg_down** (list): array of tap increment when regulating down
-        
+
             **vset** (list): array of set voltages to control
-        
+
         Returns:
-        
+
             **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-            
+
             **tap_magnitude** (list): Tap module at each bus in per unit
-            
+
             **tap_position** (list): Tap position at each bus
         """
         stable = True
@@ -1307,7 +1341,7 @@ class PowerFlowMP:
             **Ibus** (list): Current injection at each bus in complex amperes
 
         Returns:
-        
+
             :ref:`PowerFlowResults<pf_results>` instance
         """
 
@@ -1406,7 +1440,7 @@ class PowerFlowMP:
             **Ibus**:
 
         Returns:
-        
+
             PowerFlowResults instance
 
         """
@@ -1449,7 +1483,7 @@ class PowerFlowMP:
         Run a power flow for a circuit (wrapper for run_pf).
 
         Returns:
-        
+
             :ref:`PowerFlowResults<pf_results>` instance (self.results)
         """
 
