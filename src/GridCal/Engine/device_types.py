@@ -222,7 +222,7 @@ class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
         :param B0: Susceptance of zero sequence in Ohm/km
         """
 
-        # QtCore.QAbstractTableModel.__init__
+        QtCore.QAbstractTableModel.__init__(self)
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
@@ -280,8 +280,7 @@ class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
         :param B0:
         :param tpe:
         """
-
-        # QtCore.QAbstractTableModel.__init__
+        QtCore.QAbstractTableModel.__init__(self)
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
@@ -318,6 +317,18 @@ class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
         self.X0 = X0
         self.G0 = G0
         self.B0 = B0
+
+    def z_series(self):
+        """
+        positive sequence series impedance in Ohm per unit of length
+        """
+        return self.R + 1j * self.X
+
+    def y_shunt(self):
+        """
+        positive sequence shunt admittance in S per unit of length
+        """
+        return self.G + 1j * self.B
 
 
 class Tower(EditableDevice, QtCore.QAbstractTableModel):
@@ -408,6 +419,18 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
 
     def __str__(self):
         return self.tower_name
+
+    def z_series(self):
+        """
+        positive sequence series impedance in Ohm per unit of length
+        """
+        return self.R1 + 1j * self.X1
+
+    def y_shunt(self):
+        """
+        positive sequence shunt admittance in S per unit of length
+        """
+        return self.Gsh1 + 1j * self.Bsh1
 
     def get_save_data(self, dta_list=list()):
         """

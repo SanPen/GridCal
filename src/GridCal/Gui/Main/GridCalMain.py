@@ -1831,6 +1831,7 @@ class MainGUI(QMainWindow):
             # compute the automatic precision
             if self.ui.auto_precision_checkBox.isChecked():
                 numerical = self.circuit.compile()
+                numerical = self.circuit.compile()
                 S = numerical.load_power / numerical.Sbase
                 lg = np.log10(abs(S))
                 lg[lg == -np.inf] = 0
@@ -3326,7 +3327,6 @@ class MainGUI(QMainWindow):
         Add object to the catalogue
         :return:
         """
-        print('Add')
         something_happened = False
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 

@@ -1104,8 +1104,8 @@ class Branch(EditableDevice):
                 Zbase = (Vn * Vn) / Sbase
                 Ybase = 1 / Zbase
 
-                z = obj.seq_resistance * self.length / Zbase
-                y = obj.seq_admittance * self.length / Ybase
+                z = obj.z_series() * self.length / Zbase
+                y = obj.y_shunt() * self.length / Ybase
 
                 self.R = np.round(z.real, 6)
                 self.X = np.round(z.imag, 6)
@@ -1123,8 +1123,8 @@ class Branch(EditableDevice):
             Zbase = (Vn * Vn) / Sbase
             Ybase = 1 / Zbase
 
-            z = obj.seq_resistance * self.length / Zbase
-            y = obj.seq_admittance * self.length / Ybase
+            z = obj.z_series() * self.length / Zbase
+            y = obj.y_shunt() * self.length / Ybase
 
             self.R = np.round(z.real, 6)
             self.X = np.round(z.imag, 6)
