@@ -136,11 +136,11 @@ class VoltageCollapseResults:
                 self.lambdas = voltage_collapse_res.lambdas
             else:
                 # if the voltages are not none, that means that another island initialized the voltages.
-                # We know that the number of nodes is the total number of nodes, but the number of lambda-staps might
+                # We know that the number of nodes is the total number of nodes, but the number of lambda-steps might
                 # be different. Hence we need to copy the new island voltages accordingly
-                lprev = self.voltages.shape[0]
+                l_prev = self.voltages.shape[0]
 
-                if n_lambda > lprev:
+                if n_lambda > l_prev:
                     # now there are more rows than before, hence we need to extend
                     voltages_before = self.voltages.copy()
 
@@ -148,7 +148,7 @@ class VoltageCollapseResults:
                     self.voltages = np.zeros((n_lambda, nbus_full), dtype=complex)
 
                     # copy the old voltages to the empty voltages array
-                    self.voltages[0:lprev, :] = voltages_before
+                    self.voltages[0:l_prev, :] = voltages_before
 
                     # copy the new voltages
                     self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
@@ -156,7 +156,7 @@ class VoltageCollapseResults:
                     # now there are more values of lambda, just use the new ones
                     self.lambdas = voltage_collapse_res.lambdas
 
-                elif n_lambda < lprev:
+                elif n_lambda < l_prev:
                     # the number of lambda values in this island is lower, so just copy at the beginning
                     self.voltages[0:n_lambda, bus_original_idx] = voltage_collapse_res.voltages
                 else:

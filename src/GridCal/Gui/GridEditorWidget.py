@@ -2436,7 +2436,6 @@ class MapWidget(QGraphicsRectItem):
             self.img = ImageQt(map.img)
             self.image = QPixmap.fromImage(self.img)
             self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-
         except:
             warn('Could not load the map')
 

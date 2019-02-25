@@ -56,7 +56,7 @@ objects.
 
 This module is the one doing all the heavy lifting; For the computations ahead 
 we will need to have a number of admittance-based matrices. 
-We will compose matrices and vector for the complete circuit, and 
+We will compose matrices and vectors for the complete circuit, and
 then split those per circuit island (CalculationInputs objects). 
 Remember that the calculation matrices are only valid for island circuits, 
 this is because multi-island circuits present singular admittance matrices that 
@@ -156,8 +156,10 @@ shunt admittance and the tap shift.
 .. math::
     [Ys] = \frac{1}{[R] + j \cdot [X]}
 
+.. math::
     [GBc] = [G] + j \cdot [B]
 
+.. math::
     [tap] = [tap_{module}] \cdot e^{j \cdot [tap_{angle}]}
 
 Where:
@@ -223,10 +225,13 @@ Compute the branch primitives:
 
     [Y_{tt}] = \frac{\frac{[Ys] + [GBc]}{2}}{[tap_t] \cdot [tap_t]}
 
+.. math::
     [Y_{ff}] = \frac{\frac{[Ys] + [GBc]}{2}}{[tap_f] \cdot [tap_f] \cdot [tap] \cdot [tap]^*}
 
+.. math::
     [Y_{ft}] = - \frac{Ys}{[tap_f] \cdot [tap_t] \cdot [tap]^*}
 
+.. math::
     [Y_{tf}] = - \frac{Ys}{[tap_t] \cdot [tap_f] \cdot [tap]}
 
 .. list-table::
@@ -256,13 +261,13 @@ Compose the "from", "to" and complete admittance matrices:
 .. math::
     [Y_{sh}]= [C_{s,bus}]^\top \cdot [shunt_Y] + [C_{l,bus}]^\top \cdot [load_Y]
 
-
+.. math::
     [Y_f] = diag([Y_{ff}]) \times [C_f] + diag([Y_{ft}]) \times [C_t]
 
-
+.. math::
     [Y_t] = diag([Y_{tf}]) \times [C_f] + diag([Y_{tt}]) \times [C_t]
 
-
+.. math::
     [Y_{bus}] = [C_f]^\top \times [Y_f] + [C_t]^\top \times Y_t + diag([Y_{sh}])
 
 
@@ -351,7 +356,7 @@ A snippet from the code where the admittances are computed:
 Adjacency matrix
 """"""""""""""""
 
-THe computation of the circuit adjacency matrix from matrices that we need anyway
+The computation of the circuit adjacency matrix from matrices that we need anyway
 for the admittance matrix computation is a very efficient way of dealing with the
 topological computation. First we establish the total branch-bus connectivity matrix:
 
