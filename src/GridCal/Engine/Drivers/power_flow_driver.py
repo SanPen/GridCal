@@ -1202,68 +1202,68 @@ class PowerFlowMP:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-
-                    tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap ", tap_position[i])
-                    stable = False
+                    else:
+                        tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
+                        tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
+                        if verbose:
+                            print("Branch", i, ": Lowering from tap ", tap_position[i])
+                        stable = False
 
                 elif vset[i] < v - tap_inc_reg_up[i] / 2:
                     if tap_position[i] == max_tap[i]:
                         if verbose:
                             print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-
-                    tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap ", tap_position[i])
-                    stable = False
+                    else:
+                        tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
+                        tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
+                        if verbose:
+                            print("Branch", i, ": Raising from tap ", tap_position[i])
+                        stable = False
 
             elif tap_position[i] < 0:
                 if vset[i] > v + tap_inc_reg_down[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-
-                    tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap", tap_position[i])
-                    stable = False
+                    else:
+                        tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
+                        tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
+                        if verbose:
+                            print("Branch", i, ": Lowering from tap", tap_position[i])
+                        stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i]/2:
                     if tap_position[i] == max_tap[i]:
                         print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-
-                    tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap", tap_position[i])
-                    stable = False
+                    else:
+                        tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
+                        tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
+                        if verbose:
+                            print("Branch", i, ": Raising from tap", tap_position[i])
+                        stable = False
 
             else:
                 if vset[i] > v + tap_inc_reg_up[i]/2:
                     if tap_position[i] == min_tap[i]:
                         if verbose:
                             print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-
-                    tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap ", tap_position[i])
-                    stable = False
+                    else:
+                        tap_position[i] = self.tap_down(tap_position[i], min_tap[i])
+                        tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_down[i]
+                        if verbose:
+                            print("Branch", i, ": Lowering from tap ", tap_position[i])
+                        stable = False
 
                 elif vset[i] < v - tap_inc_reg_down[i] / 2:
                     if tap_position[i] == max_tap[i]:
                         if verbose:
                             print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-
-                    tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap ", tap_position[i])
-                    stable = False
+                    else:
+                        tap_position[i] = self.tap_up(tap_position[i], max_tap[i])
+                        tap_module[i] = 1.0 + tap_position[i]*tap_inc_reg_up[i]
+                        if verbose:
+                            print("Branch", i, ": Raising from tap ", tap_position[i])
+                        stable = False
 
         return stable, tap_module, tap_position
 
