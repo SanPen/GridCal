@@ -568,7 +568,7 @@ class TapChanger:
     The **TapChanger** class defines a transformer's tap changer, either onload or
     offload. It needs to be attached to a predefined transformer (i.e. a
     :ref:`Branch<branch>` object).
-    
+
     The following example shows how to attach a tap changer to a transformer tied to a
     voltage regulated :ref:`bus`:
 
@@ -617,7 +617,7 @@ class TapChanger:
 
         # Add transformer to grid
         grid.add_branch(X_C3)
-    
+
     Arguments:
 
         **taps_up** (int, 5): Number of taps position up
@@ -682,9 +682,9 @@ class TapChanger:
         if tap_module == 1.0:
             self.tap = 0
         elif tap_module > 1:
-            self.tap = int((tap_module - 1.0) / self.inc_reg_up)
+            self.tap = round((tap_module - 1.0) / self.inc_reg_up)
         elif tap_module < 1:
-            self.tap = -int((1.0 - tap_module) / self.inc_reg_down)
+            self.tap = -round((1.0 - tap_module) / self.inc_reg_down)
 
 
 class Branch(EditableDevice):
@@ -747,51 +747,51 @@ class Branch(EditableDevice):
         **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object
 
         **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object
-        
+
         **name** (str, "Branch"): Name of the branch
-        
+
         **r** (float, 1e-20): Branch resistance in per unit
-        
+
         **x** (float, 1e-20): Branch reactance in per unit
-        
+
         **g** (float, 1e-20): Branch shunt conductance in per unit
-        
+
         **b** (float, 1e-20): Branch shunt susceptance in per unit
-        
+
         **rate** (float, 1.0): Branch rate in MVA
-        
+
         **tap** (float, 1.0): Branch tap module
-        
+
         **shift_angle** (int, 0): Tap shift angle in radians
-        
+
         **active** (bool, True): Is the branch active?
-        
+
         **tolerance** (float, 0): Tolerance specified for the branch impedance in %
-        
+
         **mttf** (float, 0.0): Mean time to failure in hours
-        
+
         **mttr** (float, 0.0): Mean time to recovery in hours
-        
+
         **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
-        
+
         **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
-        
+
         **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-        
+
         **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :ref:`BranchType.Transformer<transformer_type>`)
-        
+
         **length** (float, 0.0): Length of the branch in km
-        
+
         **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit
-        
+
         **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C
-        
+
         **temp_oper** (float, 20.0): Operating temperature in °C
-        
+
         **alpha** (float, 0.0033): Thermal constant of the material in °C
-        
+
         **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
-        
+
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
@@ -1819,7 +1819,7 @@ class Battery(Generator):
         **name** (str, "batt"): Name of the battery
 
         **active_power** (float, 0.0): Active power in MW
-        
+
         **power_factor** (float, 0.8): Power factor
 
         **voltage_module** (float, 1.0): Voltage setpoint in per unit
