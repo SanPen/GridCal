@@ -479,6 +479,7 @@ class CIMExport:
         model = GeneralContainer(id=self.circuit.name, tpe='Model')
         model.properties['name'] = self.circuit.name
         model.properties['version'] = 1
+        model.properties['description'] = self.circuit.comments
         text_file.write(model.get_xml(1))
 
         bus_id_dict = dict()
@@ -596,22 +597,22 @@ class CIMExport:
                         model.properties['BaseVoltage'] = base_voltage
                         model.properties['EquipmentContainer'] = voltage_level_id
                         model.properties['LoadResponse'] = id3
-                        model.properties['pfixed'] = elm.S.real
-                        model.properties['qfixed'] = elm.S.imag
+                        model.properties['pfixed'] = elm.P
+                        model.properties['qfixed'] = elm.Q
                         model.properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
                         model = GeneralContainer(id=id3, tpe='LoadResponseCharacteristic', resources=[])
                         model.properties['name'] = elm.name
                         model.properties['exponentModel'] = 'false'
-                        model.properties['pConstantCurrent'] = elm.I.real
-                        model.properties['pConstantImpedance'] = elm.Z.real
-                        model.properties['pConstantPower'] = elm.S.real
+                        model.properties['pConstantCurrent'] = elm.Ir
+                        model.properties['pConstantImpedance'] = 1 / (elm.G + 1e-20)
+                        model.properties['pConstantPower'] = elm.P
                         model.properties['pVoltageExponent'] = 0.0
                         model.properties['pFrequencyExponent'] = 0.0
-                        model.properties['qConstantCurrent'] = elm.I.imag
-                        model.properties['qConstantImpedance'] = elm.Z.imag
-                        model.properties['qConstantPower'] = elm.S.imag
+                        model.properties['qConstantCurrent'] = elm.Ir
+                        model.properties['qConstantImpedance'] = 1 / (elm.B + 1e-20)
+                        model.properties['qConstantPower'] = elm.Q
                         model.properties['qVoltageExponent'] = 0.0
                         model.properties['qFrequencyExponent'] = 0.0
                         text_file.write(model.get_xml(1))
@@ -642,8 +643,8 @@ class CIMExport:
                         model.properties['aliasName'] = elm.name
                         model.properties['BaseVoltage'] = base_voltage
                         model.properties['EquipmentContainer'] = voltage_level_id
-                        model.properties['pfixed'] = -elm.S.real
-                        model.properties['qfixed'] = -elm.S.imag
+                        model.properties['pfixed'] = -elm.P
+                        model.properties['qfixed'] = -elm.Q
                         model.properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
@@ -722,8 +723,8 @@ class CIMExport:
                         model.properties['aliasName'] = elm.name
                         model.properties['BaseVoltage'] = base_voltage
                         model.properties['EquipmentContainer'] = voltage_level_id
-                        model.properties['gPerSection'] = elm.Y.real
-                        model.properties['bPerSection'] = elm.Y.imag
+                        model.properties['gPerSection'] = elm.G
+                        model.properties['bPerSection'] = elm.B
                         model.properties['g0PerSection'] = 0.0
                         model.properties['b0PerSection'] = 0.0
                         model.properties['normallyInService'] = elm.active
@@ -1096,7 +1097,11 @@ class CIMImport:
         # Model
         if 'Model' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['Model']:
-                circuit.name = elm.properties['description']
+                if 'description' in elm.properties.keys():
+                    circuit.comments = elm.properties['description']
+
+                if 'name' in elm.properties.keys():
+                    circuit.name = elm.properties['name']
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
