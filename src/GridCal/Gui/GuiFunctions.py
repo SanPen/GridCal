@@ -22,6 +22,7 @@ from warnings import warn
 
 from GridCal.Engine.devices import BranchTypeConverter, DeviceType
 from GridCal.Engine.device_types import BranchTemplate, BranchType
+from GridCal.Engine.io_structures import ResultTypes
 from GridCal.Engine.devices import Bus
 
 
@@ -364,7 +365,17 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             # gather values
-            names = [val.name for val in self._cols]
+            if type(self._cols) == pd.Index:
+                names = self._cols.values
+
+                if len(names) > 0:
+                    if type(names[0]) == ResultTypes:
+                        names = [val.name for val in names]
+
+            elif type(self._cols) == ResultTypes:
+                names = [val.name for val in self._cols]
+            else:
+                names = [val.name for val in self._cols]
 
             if self.data.dtype == complex:
 
@@ -419,7 +430,7 @@ class PandasModel(QtCore.QAbstractTableModel):
 
             # data
             for t, index_value in enumerate(index):
-                txt += index_value + '\t' + '\t'.join(data[t, :]) + '\n'
+                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
             cb = QApplication.clipboard()
