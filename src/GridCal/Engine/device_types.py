@@ -41,15 +41,16 @@ class BranchType(Enum):
 
 class Wire(EditableDevice):
 
-    def __init__(self, name='', xpos=0, ypos=0, gmr=0.01, r=0.01, x=0.0, phase=0):
+    def __init__(self, name='', xpos=0, ypos=0, gmr=0.01, r=0.01, x=0.0, max_current=1, phase=0):
         """
         Wire definition
         :param name: Name of the wire type
-        :param x: x position (m)
-        :param y: y position (m)
+        :param xpos: x position (m)
+        :param ypos: y position (m)
         :param gmr: Geometric Mean Radius (m)
         :param r: Resistance per unit length (Ohm / km)
-        :param r: Reactance per unit length (Ohm / km)
+        :param x: Reactance per unit length (Ohm / km)
+        :param max_current: Maximum current of the conductor in (A)
         :param phase: 0->Neutral, 1->A, 2->B, 3->C
         """
 
@@ -61,6 +62,7 @@ class Wire(EditableDevice):
                                                   'r': GCProp('Ohm/km', float, "resistance of the conductor"),
                                                   'x': GCProp('Ohm/km', float, "reactance of the conductor"),
                                                   'gmr': GCProp('m', float, "Geometric Mean Radius of the conductor"),
+                                                  'max_current': GCProp('A', float, "Maximum current of the conductor"),
                                                   'xpos': GCProp('m', float, "Conductor x position within the tower"),
                                                   'ypos': GCProp('m', float, "Conductor y position within the tower"),
                                                   'phase': GCProp('', int, "Phase of the conductor (0, 1, 2)")},
@@ -73,6 +75,7 @@ class Wire(EditableDevice):
         self.r = r
         self.x = x
         self.gmr = gmr
+        self.max_current = max_current
         self.phase = phase
 
     def copy(self):
@@ -80,7 +83,7 @@ class Wire(EditableDevice):
         Copy of the wire
         :return:
         """
-        return Wire(self.wire_name, self.xpos, self.ypos, self.gmr, self.r, self.x, self.phase)
+        return Wire(self.wire_name, self.xpos, self.ypos, self.gmr, self.r, self.x, self.max_current, self.phase)
 
 
 class WiresCollection(QtCore.QAbstractTableModel):
@@ -348,26 +351,17 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
                                 active=True,
                                 device_type=DeviceType.TowerDevice,
                                 editable_headers={'tower_name': GCProp('', str, "Tower name"),
-                                                  'earth_resistivity': GCProp('Ohm/m3', float,
-                                                                              "Earth resistivity"),
-                                                  'frequency': GCProp('Hz', float,
-                                                                      "Frequency"),
-                                                  'R1': GCProp('Ohm/km', float,
-                                                               "Positive sequence resistance"),
-                                                  'X1': GCProp('Ohm/km', float,
-                                                               "Positive sequence reactance"),
-                                                  'Gsh1': GCProp('S/km', float,
-                                                                 "Positive sequence shunt conductance"),
-                                                  'Bsh1': GCProp('S/km', float,
-                                                                 "Positive sequence shunt susceptance"),
-                                                  'R0': GCProp('Ohm/km', float,
-                                                               "Zero-sequence resistance"),
-                                                  'X0': GCProp('Ohm/km', float,
-                                                               "Zero sequence reactance"),
-                                                  'Gsh0': GCProp('S/km', float,
-                                                                 "Zero sequence shunt conductance"),
-                                                  'Bsh0': GCProp('S/km', float,
-                                                                 "Zero sequence shunt susceptance")},
+                                                  'earth_resistivity': GCProp('Ohm/m3', float, "Earth resistivity"),
+                                                  'frequency': GCProp('Hz', float, "Frequency"),
+                                                  'R1': GCProp('Ohm/km', float, "Positive sequence resistance"),
+                                                  'X1': GCProp('Ohm/km', float, "Positive sequence reactance"),
+                                                  'Gsh1': GCProp('S/km', float, "Positive sequence shunt conductance"),
+                                                  'Bsh1': GCProp('S/km', float, "Positive sequence shunt susceptance"),
+                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence resistance"),
+                                                  'X0': GCProp('Ohm/km', float, "Zero sequence reactance"),
+                                                  'Gsh0': GCProp('S/km', float, "Zero sequence shunt conductance"),
+                                                  'Bsh0': GCProp('S/km', float, "Zero sequence shunt susceptance"),
+                                                  'rating': GCProp('kA', float, "Current rating of the tower")},
                                 non_editable_attributes=['tower_name'],
                                 properties_with_profile={})
 
@@ -393,6 +387,9 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
         # total shunt admittance (positive sequence)
         self.Gsh0 = 0.0
         self.Bsh0 = 0.0
+
+        # current rating of the tower in kA
+        self.rating = 0.0
 
         # impedances
         self.z_abcn = None
@@ -452,6 +449,10 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
             dta_list.append(wire_dta)
 
     def get_wire_properties(self):
+        """
+        Get the wire properties in a list
+        :return: list of properties (list of lists)
+        """
         return [self.index_prop[i] for i in range(len(self.index_prop))]
 
     def get_save_headers(self):
@@ -556,6 +557,17 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
 
         return True
 
+    def compute_rating(self):
+        """
+        Compute the sum of the wires max current in A
+        :return: max current iof the tower in A
+        """
+        r = 0
+        for wire in self.wires:
+            r += wire.max_current
+
+        return r
+
     def compute(self):
         """
         Compute the tower matrices
@@ -573,6 +585,9 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
             self.y_abcn, self.y_phases_abcn, self.y_abc, \
              self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
 
+            # compute the tower rating in kA
+            self.rating = self.compute_rating() / 1000.0
+
             self.R0 = self.z_seq[0, 0].real
             self.X0 = self.z_seq[0, 0].imag
             self.Gsh0 = self.y_seq[0, 0].real
@@ -586,30 +601,60 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
             pass
 
     def delete_by_name(self, wire: Wire):
+        """
+        Delete wire by name
+        :param wire: Wire object
+        """
         n = len(self.wires)
         for i in range(n-1, -1, -1):
             if self.wires[i].wire_name == wire.wire_name:
                 self.delete(i)
 
     def is_used(self, wire: Wire):
+        """
+
+        :param wire:
+        :return:
+        """
         n = len(self.wires)
         for i in range(n-1, -1, -1):
             if self.wires[i].wire_name == wire.wire_name:
                 return True
 
     def flags(self, index):
+        """
+
+        :param index:
+        :return:
+        """
         if self.editable_wire[index.column()]:
             return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         else:
             return QtCore.Qt.ItemIsEnabled
 
     def rowCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self.wires)
 
     def columnCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self.header)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 val = getattr(self.wires[index.row()], self.index_prop[index.column()])
@@ -617,6 +662,13 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
         return None
 
     def headerData(self, p_int, orientation, role):
+        """
+
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 return self.header[p_int]
