@@ -1112,6 +1112,9 @@ class Branch(EditableDevice):
                 self.G = np.round(y.real, 6)
                 self.B = np.round(y.imag, 6)
 
+                # get the rating in MVA = kA * kV
+                self.rate = obj.rating * Vn
+
                 if obj != self.template:
                     self.template = obj
                     self.branch_type = BranchType.Line
