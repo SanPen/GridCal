@@ -1,0 +1,521 @@
+%!PS-Adobe-3.0 % %EPSF-3.0 
+%%BoundingBox: 0 40 610 450
+%%Creator: (ets)
+%%Orientation: Portrait
+%%Title: (graph)
+%%CreationDate: (Mon Jul 19 10:02:01 2010)
+%%EndComments
+/q {quit} bind def
+/tkplot-dict 100 dict dup begin
+/bd {bind def} bind def
+/sf {setfont} bd
+/ff {findfont} bd
+/scf {scalefont} bd
+/TR /Times-Bold findfont 60 scf def
+/HBtitle /Helvetica-Bold ff 86 scf def
+/SYMmark /Symbol ff 50 scf def
+/HBlarge /Helvetica-Bold ff 80 scf def
+/HBmed /Helvetica-Bold ff 60 scf def
+/HBsmall /Helvetica-Bold ff 40 scf def
+/HBtiny /Helvetica-Bold ff 21 scf def
+/HBmark /Helvetica-Bold ff 90 scf def HBmark sf
+/SYMtitle /Symbol ff 86 scf def
+/SYMlarge /Symbol ff 80 scf def
+/SYMmed /Symbol ff 53 scf def
+/SYMsmall /Symbol ff 40 scf def
+/LineWidth 2 def /Scale  0.26 def
+/Helvetica-Bold findfont
+dup length dict begin
+ { 1 index /FID ne {def} {pop pop} ifelse } forall
+ /Encoding ISOLatin1Encoding def
+ currentdict
+end
+/Helvetica-Bold-ISO exch definefont pop
+/HBEsmall /Helvetica-Bold-ISO ff 40 scf def
+100 100 moveto (+) false charpath pathbbox
+/ury exch def
+/urx exch def
+/lly exch def
+/llx exch def
+ury lly add 2 div 100 sub /dyplus exch def
+urx llx add 2 div 100 sub /dxplus exch def
+newpath
+100 100 moveto (o) false charpath pathbbox
+/ury exch def
+/urx exch def
+/lly exch def
+/llx exch def
+ury lly add 2 div 100 sub /dyo exch def
+urx llx add 2 div 100 sub /dxo exch def
+newpath
+100 100 moveto (*) false charpath pathbbox
+/ury exch def
+/urx exch def
+/lly exch def
+/llx exch def
+ury lly add 2 div 100 sub /dyast exch def
+urx llx add 2 div 100 sub /dxast exch def
+newpath
+SYMmark sf
+100 100 moveto (¨) false charpath pathbbox
+/ury exch def
+/urx exch def
+/lly exch def
+/llx exch def
+ury lly add 2 div 100 sub /dydiam exch def
+urx llx add 2 div 100 sub /dxdiam exch def
+newpath
+100 100 moveto (·) false charpath pathbbox
+/ury exch def
+/urx exch def
+/lly exch def
+/llx exch def
+ury lly add 2 div 100 sub /dybull exch def
+urx llx add 2 div 100 sub /dxbull exch def
+newpath
+100 100 moveto (´) false charpath pathbbox
+/ury exch def
+/urx exch def
+/lly exch def
+/llx exch def
+ury lly add 2 div 100 sub /dycross exch def
+urx llx add 2 div 100 sub /dxcross exch def
+newpath
+HBlarge sf
+/Xscale 0.25 def
+/Yscale 0.25 def
+/m {moveto} bd
+/rm {rmoveto} bd
+/l {lineto} bd
+/rl {rlineto} bd
+/st {stroke} bd
+/s {show} bd
+/r {rotate} bd
+/t {translate} bd
+/sd {setdash} bd
+/sc {scale} bd
+/sl {setlinewidth} bd
+/srgb {setrgbcolor} bd
+/rpx {1 0 rl} bd
+/rmx {-1 0 rl} bd
+/rpy {0 1 rl} bd
+/rmy {0 -1 rl} bd
+/pl {dyplus sub exch dxplus sub exch m (+) s } bd
+/o {dyo sub exch dxo sub exch m (o) s } bd
+/as {dyast sub exch dxast sub exch m (*) s } bd
+/diam {/f currentfont def SYMmark sf
+ dydiam sub exch dxdiam sub exch m (¨) s f sf } bd
+/bull {/f currentfont def SYMmark sf
+ dybull sub exch dxbull sub exch m (·) s f sf } bd
+/cross {/f currentfont def SYMmark sf
+ dycross sub exch dxcross sub exch m (´) s f sf } bd
+/Diam {(\() s x0 20 add y0 20 sub m (¨) syms x0 70 add y0 20 sub m (\))} bd
+/Bull {(\() s x0 25 add y0 20 sub m (´) syms x0 70 add y0 20 sub m (\))} bd
+/Cross {(\() s x0 30 add y0 30 sub m (·) syms x0 70 add y0 20 sub m (\))} bd
+/sxsq { (s) syms 0 -10 rm (c) symss -10 10 rm (2) sups } bd
+/syms { /:cf currentfont def SYMlarge sf s :cf sf } bd
+/symss { /:cf currentfont def SYMsmall sf s :cf sf } bd
+/subs { currentfont 0.8 scf sf
+        0 -30 rm s 0 30 rm
+        currentfont 1.25 scf sf } bd
+/subsups { currentfont 0.625 scf sf  % subscript to a superscript
+        0 20 rm s 0 -20 rm
+        currentfont 1.6 scf sf } bd
+/sups { currentfont 0.8 scf sf
+        0 30 rm s 0 -30 rm
+        currentfont 1.25 scf sf } bd
+/supsubs { currentfont 0.625 scf sf  % superscript to a subscript
+        0 -20 rm s 0 20 rm
+        currentfont 1.6 scf sf } bd
+/rjust { currentpoint /:y0 exch def /:x0 exch def
+  dup
+  false charpath pathbbox
+  /:ury exch def
+  /:urx exch def
+  /:lly exch def
+  /:llx exch def
+  newpath
+  :x0 :urx :llx sub sub :y0 m s
+} bd
+
+/fixz0 { /post post 1 lpost 1 sub getinterval def } bd
+/fixz0p { /post post 2 lpost 2 sub getinterval def } bd
+/fixz0m { /post post 1 lpost 1 sub getinterval def post 0 45 put } bd
+/addlen { false charpath pathbbox
+  /:ury exch def
+  /:urx exch def
+  /:lly exch def
+  /:llx exch def
+  newpath
+  /:x0 :x0 :urx :llx sub sub def
+  :x0 :y0 m } bd
+/addlenh { false charpath pathbbox
+  /:ury exch def
+  /:urx exch def
+  /:lly exch def
+  /:llx exch def
+  newpath
+  /:x0 :x0 :urx :llx sub 2 div sub def
+  :x0 :y0 m } bd
+/rejust { (e) search
+ { /pre exch def pop /post exch def
+   /lpre pre length def /lpost post length def
+   0 1 6 {
+     pre lpre 1 sub get 48 eq pre lpre 2 sub get 46 ne and % ?.*0 -> ?.*
+       { /pre pre 0 lpre 1 sub getinterval def /lpre pre length def } if
+   } for
+   pre (1) eq { /pre () def /lpre 0 def } if
+   pre (-1) eq { /pre (-) def /lpre 1 def } if
+   post 0 get 48 eq /fixz0 load {
+     post 1 get 48 eq post 0 get 45 eq and /fixz0m load
+     { post 1 get 48 eq post 0 get 43 eq and /fixz0p load if } ifelse
+   } ifelse
+   currentpoint /:y0 exch def /:x0 exch def
+   lpre 0 ne pre (-) ne and {
+     pre addlen
+     SYMlarge sf
+     (´) addlen
+     HBlarge sf
+     (10) addlen
+     post addlen
+     pre s (´) syms (10) s post sups }
+     {  pre addlen (10) addlen
+     post addlen
+     pre s (10) s post sups } ifelse
+ }
+ { dup (0.010) eq { pop (0.01) } if rjust } ifelse } bd
+/cjustx { currentpoint /:y0 exch def /:x0 exch def
+  dup
+  false charpath pathbbox
+  /:ury exch def
+  /:urx exch def
+  /:lly exch def
+  /:llx exch def
+  newpath
+  :x0 :urx :llx sub 2 div sub :y0 m s
+} bd
+/cejustx { (e) search
+ { /pre exch def pop /post exch def
+   /lpre pre length def /lpost post length def
+   pre lpre 1 sub get 48 eq pre lpre 2 sub get 46 ne and
+     { /pre pre 0 lpre 1 sub getinterval def /lpre pre length def } if
+   pre lpre 1 sub get 48 eq pre lpre 2 sub get 46 eq and
+     { /pre pre 0 lpre 2 sub getinterval def /lpre pre length def } if
+   pre (1) eq { /pre () def /lpre 0 def } if
+   pre (-1) eq { /pre (-) def /lpre 1 def } if
+   post 0 get 48 eq /fixz0 load {
+     post 1 get 48 eq post 0 get 45 eq and /fixz0m load
+     { post 1 get 48 eq post 0 get 43 eq and /fixz0p load if } ifelse
+   } ifelse
+   currentpoint /:y0 exch def /:x0 exch def
+   lpre 0 ne pre (-) ne and {
+     pre addlenh
+     SYMlarge sf
+     (´) addlenh
+     HBlarge sf
+     (10) addlenh
+     post addlenh
+     pre s (´) syms (10) s post sups }
+     {  pre addlenh (10) addlenh
+     post addlenh
+     pre s (10) s post sups } ifelse
+ }
+ { dup (0.010) eq { pop (0.01) } if cjustx } ifelse } bd
+/black { 0 0 0 srgb } bd
+/red { 1 0 0 srgb } bd
+/blue { 0 0 1 srgb } bd
+/green { 0 1 0 srgb } bd
+/orange { 1 0.647 0 srgb } bd
+/gold4 { 0.545 0.459 0.000 srgb } bd
+/magenta { 1 0 1 srgb } bd
+/cyan { 0 1 1 srgb } bd
+/brown { 0.647 0.165 0.165 srgb } bd
+/pink { 1.000 0.753 0.796 srgb } bd
+/grey { 0.600 0.600 0.600 srgb } bd
+/seg { currentpoint 100 0 rl st exch 120 add exch 20 sub m black s
+ currentpoint 20 add m } bd
+/itm matrix currentmatrix def
+/invertmatrix { % matrix invertmatrix matrix
+   /.mat exch def /.nmat matrix def
+   /.a .mat 0 get def
+   /.b .mat 1 get def
+   /.c .mat 2 get def
+   /.d .mat 3 get def
+   /.tx .mat 4 get def
+   /.ty .mat 5 get def
+   /.det .a .d mul .b .c mul sub def
+   .nmat 0 .d .det div put
+   .nmat 1 .b neg .det div put
+   .nmat 2 .c neg .det div put
+   .nmat 3 .a .det div put
+   .nmat 4 .c .ty mul .d .tx mul sub .det div put
+   .nmat 5 .b .tx mul .a .ty mul sub .det div put
+   .nmat
+} bd
+/convertpoint { % matrix x y convertpoint x y
+   /.y exch def
+   /.x exch def
+   /.mat exch def
+   /.a .mat 0 get def
+   /.b .mat 1 get def
+   /.c .mat 2 get def
+   /.d .mat 3 get def
+   /.tx .mat 4 get def
+   /.ty .mat 5 get def
+   /.xp .a .x mul .c .y mul add .tx add def
+   /.yp .b .x mul .d .y mul add .ty add def
+   .xp .yp
+} bd
+/itminv itm invertmatrix def
+end def
+
+%%Page: 1 1
+gsave
+tkplot-dict begin
+0 0 0 srgb
+[ ] 0 sd
+LineWidth sl
+Xscale Yscale sc
+[ ] 0 sd
+
+%2160 360 t 90 r
+
+%100 200 t 0.9 0.9 sc
+
+120 1000 m 90 r (P, Q) s -90 r
+1200 200 m (a) s
+
+500 1500 m (EMTP Theory Book -- corrected) s
+6 sl /x0 1500 def /y0 1300 def
+green
+x0 y0 m 150 0 rl st black x0 180 add y0 30 sub m (P[series]) s
+/y0 y0 80 sub def
+blue
+x0 y0 m 150 0 rl st black x0 180 add y0 30 sub m (Q[series]) s
+/y0 y0 80 sub def
+[ 20 20 ] 0 sd
+green
+x0 y0 m 150 0 rl st black x0 180 add y0 30 sub m (P[large a]) s
+/y0 y0 80 sub def
+blue
+x0 y0 m 150 0 rl st black x0 180 add y0 30 sub m (Q[large a]) s
+/y0 y0 80 sub def
+[ 60 20 ] 0 sd
+green
+x0 y0 m 150 0 rl st black x0 180 add y0 30 sub m (P[small a]) s
+/y0 y0 80 sub def
+blue
+x0 y0 m 150 0 rl st black x0 180 add y0 30 sub m (Q[small a]) s
+/y0 y0 80 sub def
+0 0 0 srgb 2 sl [ ] 0 sd
+
+/ctm matrix currentmatrix def
+/tm ctm itminv matrix concatmatrix def
+/tminv tm invertmatrix def
+%/x 395 def
+%/y 422 def
+%tminv x y convertpoint m
+
+[ ] 0 sd
+310 1705 m 0 -1295 rl st
+310 410 m 2015 0 rl st
+2325 410 m 0 1295 rl st
+2325 1705 m -2015 0 rl st
+2117 410 m 0 -20 rl st
+2117 1725 m 0 -20 rl st
+2107 290 m (9) cejustx
+2320 410 m 0 -5 rl st
+2320 1710 m 0 -5 rl st
+1712 410 m 0 -20 rl st
+1712 1725 m 0 -20 rl st
+1702 290 m (7) cejustx
+1915 410 m 0 -5 rl st
+1915 1710 m 0 -5 rl st
+1307 410 m 0 -20 rl st
+1307 1725 m 0 -20 rl st
+1297 290 m (5) cejustx
+1510 410 m 0 -5 rl st
+1510 1710 m 0 -5 rl st
+902 410 m 0 -20 rl st
+902 1725 m 0 -20 rl st
+892 290 m (3) cejustx
+1104 410 m 0 -5 rl st
+1104 1710 m 0 -5 rl st
+497 410 m 0 -20 rl st
+497 1725 m 0 -20 rl st
+487 290 m (1) cejustx
+699 410 m 0 -5 rl st
+699 1710 m 0 -5 rl st
+290 1382 m 20 0 rl st
+2325 1382 m 20 0 rl st
+280 1355 m (1.0) rejust
+305 1453 m 5 0 rl st
+2325 1453 m 5 0 rl st
+305 1524 m 5 0 rl st
+2325 1524 m 5 0 rl st
+305 1595 m 5 0 rl st
+2325 1595 m 5 0 rl st
+305 1667 m 5 0 rl st
+2325 1667 m 5 0 rl st
+290 1026 m 20 0 rl st
+2325 1026 m 20 0 rl st
+280 999 m (0.5) rejust
+305 1098 m 5 0 rl st
+2325 1098 m 5 0 rl st
+305 1169 m 5 0 rl st
+2325 1169 m 5 0 rl st
+305 1240 m 5 0 rl st
+2325 1240 m 5 0 rl st
+305 1311 m 5 0 rl st
+2325 1311 m 5 0 rl st
+290 671 m 20 0 rl st
+2325 671 m 20 0 rl st
+280 644 m (0) rejust
+305 742 m 5 0 rl st
+2325 742 m 5 0 rl st
+305 813 m 5 0 rl st
+2325 813 m 5 0 rl st
+305 884 m 5 0 rl st
+2325 884 m 5 0 rl st
+305 955 m 5 0 rl st
+2325 955 m 5 0 rl st
+305 457 m 5 0 rl st
+2325 457 m 5 0 rl st
+305 528 m 5 0 rl st
+2325 528 m 5 0 rl st
+305 600 m 5 0 rl st
+2325 600 m 5 0 rl st
+6 sl
+green
+[ ] 0 sd
+[ ] 0 sd
+315 957 m
+20 4 rl 20 2 rl 20 0 rl 21 -1 rl 
+20 -3 rl 20 -5 rl 20 -5 rl 21 -7 rl 
+20 -7 rl 20 -9 rl 20 -9 rl 21 -10 rl 
+20 -10 rl 20 -11 rl 20 -11 rl 21 -12 rl 
+20 -11 rl 20 -12 rl 20 -12 rl 21 -12 rl 
+20 -11 rl 20 -12 rl 20 -11 rl 21 -11 rl 
+20 -11 rl 20 -10 rl 20 -11 rl 21 -9 rl 
+20 -10 rl 20 -9 rl 20 -8 rl 21 -8 rl 
+20 -8 rl 20 -7 rl 20 -6 rl 21 -7 rl 
+20 -5 rl 20 -6 rl 20 -4 rl 21 -5 rl 
+20 -4 rl 20 -3 rl 20 -3 rl 21 -3 rl 
+20 -2 rl 20 -2 rl 20 -2 rl 21 -1 rl 
+20 -1 rl 20 -1 rl 20 0 rl 21 0 rl 
+20 0 rl 20 0 rl 21 0 rl 20 1 rl 
+20 0 rl 20 1 rl 21 1 rl 20 1 rl 
+20 1 rl 20 1 rl 21 1 rl 20 1 rl 
+20 1 rl 20 1 rl 21 1 rl 20 2 rl 
+20 1 rl 20 1 rl 21 1 rl 20 1 rl 
+20 1 rl 20 1 rl 21 0 rl 20 1 rl 
+20 1 rl 20 1 rl 21 0 rl 20 1 rl 
+20 0 rl 20 1 rl 21 0 rl 20 1 rl 
+20 0 rl 20 0 rl 21 1 rl 20 0 rl 
+20 0 rl 20 0 rl 21 0 rl 20 1 rl 
+20 0 rl 20 0 rl 21 0 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl st
+[ ] 0 sd
+blue
+[ ] 0 sd
+[ ] 0 sd
+315 1700 m
+20 -254 rl 20 -151 rl 20 -109 rl 21 -86 rl 
+20 -70 rl 20 -60 rl 20 -52 rl 21 -45 rl 
+20 -40 rl 20 -36 rl 20 -32 rl 21 -28 rl 
+20 -26 rl 20 -23 rl 20 -21 rl 21 -18 rl 
+20 -17 rl 20 -15 rl 20 -13 rl 21 -11 rl 
+20 -10 rl 20 -9 rl 20 -7 rl 21 -6 rl 
+20 -5 rl 20 -4 rl 20 -3 rl 21 -2 rl 
+20 -1 rl 20 -1 rl 20 0 rl 21 0 rl 
+20 2 rl 20 1 rl 20 2 rl 21 2 rl 
+20 3 rl 20 3 rl 20 3 rl 21 4 rl 
+20 3 rl 20 4 rl 20 3 rl 21 4 rl 
+20 4 rl 20 4 rl 20 3 rl 21 4 rl 
+20 3 rl 20 4 rl 20 3 rl 21 3 rl 
+20 3 rl 20 3 rl 21 3 rl 20 3 rl 
+20 2 rl 20 3 rl 21 2 rl 20 2 rl 
+20 2 rl 20 1 rl 21 2 rl 20 1 rl 
+20 2 rl 20 1 rl 21 1 rl 20 1 rl 
+20 1 rl 20 0 rl 21 1 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl 20 1 rl 
+20 0 rl 20 0 rl 21 0 rl 20 0 rl 
+20 0 rl 20 0 rl 21 0 rl 20 0 rl 
+20 0 rl 20 0 rl 21 0 rl 20 0 rl 
+20 0 rl 20 -1 rl 21 0 rl 20 0 rl 
+20 0 rl 20 -1 rl 21 0 rl 20 -1 rl 
+20 0 rl 20 -1 rl 21 -1 rl st
+[ ] 0 sd
+green
+[ 20 20 ] 0 sd
+[ 20 20 ] 0 sd
+720 730 m
+20 -22 rl 20 -17 rl 20 -12 rl 21 -9 rl 
+20 -7 rl 20 -6 rl 20 -4 rl 21 -3 rl 
+20 -3 rl 20 -2 rl 20 -2 rl 21 -1 rl 
+20 -1 rl 20 -1 rl 20 -1 rl 21 0 rl 
+20 -1 rl 20 0 rl 20 0 rl 21 0 rl 
+20 0 rl 20 0 rl 20 0 rl 21 0 rl 
+20 0 rl 20 0 rl 20 0 rl 21 0 rl 
+20 1 rl 20 0 rl 20 0 rl 21 0 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl 20 0 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 0 rl 20 0 rl 21 1 rl 20 0 rl 
+20 0 rl 20 0 rl 21 0 rl 20 1 rl 
+20 0 rl 20 0 rl 21 0 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl 20 0 rl 
+20 0 rl 20 0 rl 21 1 rl st
+[ ] 0 sd
+blue
+[ 20 20 ] 0 sd
+[ 20 20 ] 0 sd
+720 415 m
+20 34 rl 20 26 rl 20 20 rl 21 17 rl 
+20 13 rl 20 11 rl 20 9 rl 21 8 rl 
+20 7 rl 20 6 rl 20 5 rl 21 5 rl 
+20 4 rl 20 4 rl 20 3 rl 21 4 rl 
+20 2 rl 20 3 rl 20 3 rl 21 2 rl 
+20 2 rl 20 2 rl 20 2 rl 21 2 rl 
+20 1 rl 20 2 rl 20 1 rl 21 2 rl 
+20 1 rl 20 1 rl 20 1 rl 21 2 rl 
+20 1 rl 20 1 rl 21 1 rl 20 1 rl 
+20 1 rl 20 1 rl 21 0 rl 20 1 rl 
+20 1 rl 20 1 rl 21 0 rl 20 1 rl 
+20 1 rl 20 0 rl 21 1 rl 20 1 rl 
+20 0 rl 20 1 rl 21 0 rl 20 1 rl 
+20 0 rl 20 1 rl 21 0 rl 20 1 rl 
+20 0 rl 20 1 rl 21 0 rl 20 1 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl 20 1 rl 
+20 0 rl 20 0 rl 21 1 rl 20 0 rl 
+20 0 rl 20 1 rl 21 0 rl 20 0 rl 
+20 1 rl 20 0 rl 21 0 rl st
+[ ] 0 sd
+green
+[ 60 20 ] 0 sd
+[ 60 20 ] 0 sd
+315 957 m
+20 4 rl 20 2 rl 20 0 rl 21 -3 rl 
+20 -4 rl 20 -6 rl 20 -7 rl 21 -9 rl 
+20 -11 rl 20 -12 rl 20 -14 rl 21 -16 rl 
+20 -16 rl 20 -19 rl 20 -19 rl 21 -21 rl 
+20 -22 rl 20 -24 rl st
+[ ] 0 sd
+blue
+[ 60 20 ] 0 sd
+[ 60 20 ] 0 sd
+315 1700 m
+20 -255 rl 20 -152 rl 20 -111 rl 21 -88 rl 
+20 -73 rl 20 -63 rl 20 -56 rl 21 -50 rl 
+20 -46 rl 20 -42 rl 20 -40 rl 21 -36 rl 
+20 -35 rl 20 -33 rl 20 -31 rl 21 -30 rl 
+20 -29 rl 20 -28 rl st
+[ ] 0 sd
+showpage
+end
+grestore
