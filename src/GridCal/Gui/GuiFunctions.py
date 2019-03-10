@@ -364,7 +364,7 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             # gather values
-            names = [val.name for val in self._cols.values]
+            names = [val.name for val in self._cols]
 
             if self.data.dtype == complex:
 
