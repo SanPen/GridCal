@@ -2750,10 +2750,14 @@ class GridEditor(QSplitter):
         splitter2.setOrientation(Qt.Vertical)
         self.addWidget(splitter2)
         self.addWidget(self.diagramView)
+
+        # factor 1:10
+        splitter2.setStretchFactor(0, 1)
         splitter2.setStretchFactor(1, 10)
 
         self.started_branch = None
 
+        self.setStretchFactor(0, 1)
         self.setStretchFactor(1, 10)
 
     def startConnection(self, port: TerminalItem):

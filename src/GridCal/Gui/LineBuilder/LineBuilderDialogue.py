@@ -70,6 +70,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.delete_from_tower_pushButton.clicked.connect(self.delete_wire_from_tower)
         self.ui.compute_pushButton.clicked.connect(self.compute)
 
+        self.ui.name_lineEdit.textChanged.connect(self.name_changed)
+
     def msg(self, text, title="Warning"):
         """
         Message box
@@ -84,6 +86,13 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
+
+    def name_changed(self):
+        """
+        Change name
+        :return:
+        """
+        self.tower.tower_name = self.ui.name_lineEdit.text()
 
     def add_wire_to_collection(self):
         """

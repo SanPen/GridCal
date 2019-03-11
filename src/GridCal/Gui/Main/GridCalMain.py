@@ -254,8 +254,15 @@ class MainGUI(QMainWindow):
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
         self.grid_editor.setStretchFactor(1, 10)
-        self.ui.dataStructuresSplitter.setStretchFactor(1, 15)
-        self.ui.templatesSplitter.setStretchFactor(15, 1)
+
+        # 1:4
+        self.ui.dataStructuresSplitter.setStretchFactor(0, 1)
+        self.ui.dataStructuresSplitter.setStretchFactor(1, 4)
+
+        # 4:1
+        self.ui.templatesSplitter.setStretchFactor(0, 4)
+        self.ui.templatesSplitter.setStretchFactor(1, 1)
+
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
         self.ui.catalogueSplitter.setStretchFactor(1, 15)
 
@@ -1437,15 +1444,24 @@ class MainGUI(QMainWindow):
         catalogue_dict = self.circuit.get_catalogue_dict(branches_only=True)
 
         model = QStandardItemModel()
+
         model.setHorizontalHeaderLabels(['Template'])
+
         for key in catalogue_dict.keys():
             # add parent node
             parent1 = QStandardItem(str(key))
+            parent1.setEditable(False)
+
             # add children to parent
             for elm in catalogue_dict[key]:
                 child1 = QStandardItem(str(elm))
+                child1.setEditable(False)
                 parent1.appendRow([child1])
+
+            # add parent to the model
             model.appendRow(parent1)
+
+        # set the model to the tree
         self.ui.catalogueTreeView.setModel(model)
 
     def view_simulation_objects_data(self):
