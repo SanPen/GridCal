@@ -28,9 +28,13 @@ from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, 
                                             UndergroundLineType, SequenceLineType, Wire
 
 
+# set the sq of 3
+SQRT3 = np.sqrt(3.0)
+
 ########################################################################################################################
 # Enumerations
 ########################################################################################################################
+
 
 class BranchTypeConverter:
 
@@ -1112,8 +1116,8 @@ class Branch(EditableDevice):
                 self.G = np.round(y.real, 6)
                 self.B = np.round(y.imag, 6)
 
-                # get the rating in MVA = kA * kV
-                self.rate = obj.rating * Vn
+                # get the rating in MVA = kA * kV * sqrt(3)
+                self.rate = obj.rating * Vn * SQRT3
 
                 if obj != self.template:
                     self.template = obj
