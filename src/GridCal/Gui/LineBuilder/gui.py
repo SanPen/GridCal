@@ -2,16 +2,17 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(949, 676)
+        Dialog.resize(1183, 675)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout.setContentsMargins(1, 1, 1, 1)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -25,7 +26,7 @@ class Ui_Dialog(object):
         self.main_splitter.setOrientation(QtCore.Qt.Horizontal)
         self.main_splitter.setObjectName("main_splitter")
         self.frame_8 = QtWidgets.QFrame(self.main_splitter)
-        self.frame_8.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_8.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_8.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_8.setObjectName("frame_8")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.frame_8)
@@ -152,7 +153,7 @@ class Ui_Dialog(object):
         self.verticalLayout_9.addWidget(self.splitter)
         self.verticalLayout_5.addWidget(self.frame_2)
         self.PlotFrame = QtWidgets.QFrame(self.main_splitter)
-        self.PlotFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.PlotFrame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.PlotFrame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.PlotFrame.setObjectName("PlotFrame")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.PlotFrame)
@@ -240,8 +241,10 @@ class Ui_Dialog(object):
         self.label_5.setText(_translate("Dialog", "   Y shunt (uS / km) for the sequence components"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "Y"))
 
+
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
+
 
 if __name__ == "__main__":
     import sys
@@ -251,4 +254,3 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
-

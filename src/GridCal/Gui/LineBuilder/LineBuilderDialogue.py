@@ -43,7 +43,9 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
 
-        self.ui.main_splitter.setSizes([10, 1])
+        # 10:1
+        self.ui.main_splitter.setStretchFactor(0, 8)
+        self.ui.main_splitter.setStretchFactor(1, 2)
 
         # create wire collection from the catalogue
         self.wire_collection = WiresCollection(self)
@@ -267,7 +269,7 @@ if __name__ == "__main__":
     window.example_2()
     window.compute()
 
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio
+    window.resize(1.81 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
 

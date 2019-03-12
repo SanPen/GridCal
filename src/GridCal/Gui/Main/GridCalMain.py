@@ -3417,7 +3417,7 @@ class MainGUI(QMainWindow):
 
                     # launch editor
                     dialogue = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
-                    dialogue.resize(1.81 * 600.0, 600.0)
+                    dialogue.resize(1.81 * 700.0, 700.0)
                     dialogue.exec()
 
                     something_happened = True
