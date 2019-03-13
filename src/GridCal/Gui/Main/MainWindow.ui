@@ -584,7 +584,7 @@
                  </property>
                  <widget class="QFrame" name="frame_26">
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
@@ -623,7 +623,7 @@
                    <item row="0" column="0" colspan="2">
                     <widget class="QLabel" name="label_3">
                      <property name="text">
-                      <string>Data structures</string>
+                      <string>Object types</string>
                      </property>
                     </widget>
                    </item>
@@ -641,7 +641,7 @@
                   </property>
                   <widget class="QFrame" name="frame_38">
                    <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
+                    <enum>QFrame::NoFrame</enum>
                    </property>
                    <property name="frameShadow">
                     <enum>QFrame::Raised</enum>
@@ -658,20 +658,6 @@
                       <property name="icon">
                        <iconset resource="icons.qrc">
                         <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QPushButton" name="viewTemplatesButton">
-                      <property name="toolTip">
-                       <string>View templates</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
                       </property>
                      </widget>
                     </item>
@@ -702,10 +688,24 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="0" colspan="4">
+                    <item row="2" column="4">
+                     <widget class="QPushButton" name="viewTemplatesButton">
+                      <property name="toolTip">
+                       <string>View templates catalogue</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0" colspan="5">
                      <widget class="QTableView" name="dataStructureTableView"/>
                     </item>
-                    <item row="0" column="0" colspan="4">
+                    <item row="0" column="0" colspan="5">
                      <widget class="QLabel" name="label_4">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -714,7 +714,7 @@
                        </sizepolicy>
                       </property>
                       <property name="text">
-                       <string>Elements data</string>
+                       <string>Data</string>
                       </property>
                      </widget>
                     </item>
@@ -722,7 +722,7 @@
                   </widget>
                   <widget class="QFrame" name="templatesFrame">
                    <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
+                    <enum>QFrame::NoFrame</enum>
                    </property>
                    <property name="frameShadow">
                     <enum>QFrame::Raised</enum>
@@ -731,7 +731,7 @@
                     <item>
                      <widget class="QLabel" name="label_53">
                       <property name="text">
-                       <string>Element Templates</string>
+                       <string>Templates</string>
                       </property>
                      </widget>
                     </item>
@@ -741,7 +741,7 @@
                     <item>
                      <widget class="QFrame" name="frame_37">
                       <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
+                       <enum>QFrame::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
                        <enum>QFrame::Raised</enum>
@@ -760,19 +760,6 @@
                         <number>1</number>
                        </property>
                        <item>
-                        <spacer name="horizontalSpacer_17">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>278</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item>
                         <widget class="QPushButton" name="assignTemplateButton">
                          <property name="toolTip">
                           <string>Assign template to selected element</string>
@@ -785,6 +772,19 @@
                            <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
                          </property>
                         </widget>
+                       </item>
+                       <item>
+                        <spacer name="horizontalSpacer_17">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>278</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
                        </item>
                       </layout>
                      </widget>
@@ -815,7 +815,7 @@
               </property>
               <widget class="QFrame" name="frame_34">
                <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
@@ -835,7 +835,7 @@
               </widget>
               <widget class="QFrame" name="frame_35">
                <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
@@ -961,7 +961,7 @@
                  </property>
                  <widget class="QFrame" name="frame_28">
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
@@ -1032,7 +1032,7 @@
                  </widget>
                  <widget class="QFrame" name="frame_29">
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
@@ -4371,7 +4371,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1212</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

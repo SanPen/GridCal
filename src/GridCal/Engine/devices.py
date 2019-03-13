@@ -27,14 +27,12 @@ from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, BranchType, \
                                             UndergroundLineType, SequenceLineType, Wire
 
-
-# set the sq of 3
+# Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
 
 ########################################################################################################################
 # Enumerations
 ########################################################################################################################
-
 
 class BranchTypeConverter:
 
@@ -1116,7 +1114,7 @@ class Branch(EditableDevice):
                 self.G = np.round(y.real, 6)
                 self.B = np.round(y.imag, 6)
 
-                # get the rating in MVA = kA * kV * sqrt(3)
+                # get the rating in MVA = kA * kV
                 self.rate = obj.rating * Vn * SQRT3
 
                 if obj != self.template:

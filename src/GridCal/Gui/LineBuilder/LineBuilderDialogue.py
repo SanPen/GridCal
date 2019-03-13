@@ -43,7 +43,9 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
 
-        self.ui.main_splitter.setSizes([10, 1])
+        # 10:1
+        self.ui.main_splitter.setStretchFactor(0, 8)
+        self.ui.main_splitter.setStretchFactor(1, 2)
 
         # create wire collection from the catalogue
         self.wire_collection = WiresCollection(self)
@@ -70,6 +72,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.delete_from_tower_pushButton.clicked.connect(self.delete_wire_from_tower)
         self.ui.compute_pushButton.clicked.connect(self.compute)
 
+        self.ui.name_lineEdit.textChanged.connect(self.name_changed)
+
     def msg(self, text, title="Warning"):
         """
         Message box
@@ -84,6 +88,13 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
+
+    def name_changed(self):
+        """
+        Change name
+        :return:
+        """
+        self.tower.tower_name = self.ui.name_lineEdit.text()
 
     def add_wire_to_collection(self):
         """
@@ -258,7 +269,7 @@ if __name__ == "__main__":
     window.example_2()
     window.compute()
 
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio
+    window.resize(1.81 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
 
