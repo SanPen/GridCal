@@ -3,35 +3,143 @@
 Universal Branch Model
 ======================
 
-The following describes the model that is applied to each type of admittance matrix in the `apply_to()` function inside the `Branch` object seen before. The model implemented to describe the behavior of the transformers and lines is the π model.
+This section describes the branch model implemented in GridCal. This branch model is a positive sequence model that
+has been formulated such that it is state of the art.
 
-.. figure:: ../figures/pi_trafo.png
+.. figure:: ../figures/BranchModel.png
     :alt: π model of a branch
 
     π model of a branch
     
 To define the π branch model we need to specify the following magnitudes:
 
-- :math:`z_{series}`: Magnetizing impedance or simply series impedance in per unit.
-- :math:`y_{shunt}`: Leakage impedance or simply shunt impedance in per unit.
-- tap_module: Module of the tap changer, magnitude around 1.
-- tap_angle: Angle of the tap changer in radians.
+Where:
 
-In order to apply the effect of a branch to the admittance matrices, first we compute the complex tap value.
+.. list-table::
+   :widths: 15 10 80
+   :header-rows: 1
+
+   * - Magnitude
+     - Units
+     - Description
+
+   * - :math:`R`
+     - p.u.
+     - Resistance of the equivalent branch model.
+
+   * - :math:`X`
+     - p.u.
+     - Reactance of the equivalent branch model.
+
+   * - :math:`G`
+     - p.u.
+     - Shunt conductance of the equivalent branch model.
+
+   * - :math:`B`
+     - p.u.
+     - Shunt susceptance of the equivalent branch model.
+
+   * - :math:`|tap|`
+     - p.u.
+     - Transformer tap module. This value indicates the internal voltage regulation and it is around 1.
+       i.e. 0.98, or 1.05.
+
+   * - :math:`\delta`
+     - radians
+     - Phase shift angle.
+
+   * - :math:`tap_f`
+     - p.u.
+     - Virtual tap that appears because the difference of bus HV rating and the transformer HV rating.
+
+   * - :math:`tap_t`
+     - p.u.
+     - Virtual tap that appears because the difference of bus LV rating and the transformer LV rating.
+
+GridCal computes :math:`tap_f` and :math:`tap_t` automatically from the values. Also bear in mind that the sense in
+which the transformer is connected matters. This is dealt with automatically as well.
+
+The basic complex magnitudes are:
+
+.. math::
+    Y_s = \frac{1}{R + j \cdot X}
+
+.. math::
+    Y_{sh} = G + j \cdot B
+
+.. math::
+    tap = |tap| \cdot e^{j \cdot \delta}
+
+.. math::
+    tap_f = V_{HV} / V_{bus, HV}
+
+.. math::
+    tap_t = V_{LV} / V_{bus, LV}
+
+The compete formulation of the branch primitives for the admittance matrix is:
 
 .. math::
 
-    tap = tap\_module \cdot e^{−j \cdot tap\_angle}
-
-Then we compose the equivalent series and shunt admittance values of the branch. Both values are complex.
+    Y_{tt} = \frac{Y_s + Y_{sh}}{2 \cdot tap_t^2}
 
 .. math::
-
-    Y_s = \frac{1}{z_{series}}
+    Y_{ff} = \frac{Y_s + Y_{sh}}{2 \cdot tap_f^2 \cdot tap \cdot tap^*}
 
 .. math::
+    Y_{ft} = - \frac{Y_s}{tap_f \cdot tap_t \cdot tap^*}
 
-    Y_{sh} = \frac{y_{shunt}}{2}
+.. math::
+    Y_{tf} = - \frac{Y_s}{tap_t \cdot tap_f \cdot tap}
 
-- :math:`z_{series}`: Complex series impedance of the branch composed by the line resistance and its inductance.
-- :math:`y_{shunt}`: Complex shunt admittance of the line composed by the conductance and the susceptance.
+In GridCal the primitives of all the branches are computed at once in a matrix fashion, but for didactic purposes
+the non-matrix formulas are included here.
+
+
+Temperature correction
+----------------------
+
+The general branch model of gridCal features correction of the resistance due to the temperature. This feature is most
+applicable to lines. Usually the wires' catalogue resistance is measured at 20ºC. To account for corrections GridCal
+
+.. math::
+    R' = R \cdot (1 + \alpha \cdot \Delta t)
+
+Where :math:`\alpha` is a parameter that depends of the material of the wires anf :math:`\Delta t` is the temperature
+difference between the base and the operational temperatures.
+
+For example
+
+.. list-table::
+   :widths: 5 5 5
+   :header-rows: 1
+
+   * - Material
+     - Test temperature (ºC)
+     - :math:`\alpha` (1/ºC)
+
+   * - Copper
+     - 20
+     - 0.004041
+
+   * - Copper
+     - 75
+     - 0.00323
+
+   * - Annealed copper
+     - 20
+     - 0.00393
+
+   * - Aluminum
+     - 20
+     - 0.004308
+
+   * - Aluminum
+     - 75
+     - 0.00330
+
+
+Embedded Tap changer
+--------------------
+
+The general branch model features a discrete tap changer to be able to regulate the :math:`|tap|` parameter manually
+and automatically from the power flow routines in a realistic way.

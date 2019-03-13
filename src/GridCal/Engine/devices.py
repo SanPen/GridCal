@@ -34,6 +34,7 @@ SQRT3 = np.sqrt(3.0)
 # Enumerations
 ########################################################################################################################
 
+
 class BranchTypeConverter:
 
     def __init__(self, tpe: BranchType):
@@ -1849,8 +1850,7 @@ class Battery(Generator):
         **power_prof** (DataFrame, None): Pandas DataFrame with the active power
         profile in MW
 
-        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor
-        profile
+        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile
 
         **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint
         profile in per unit
@@ -1875,8 +1875,7 @@ class Battery(Generator):
 
         **soc** (float, 0.8): Current state of charge
 
-        **charge_per_cycle** (float, 0.1): Per unit of power to take per cycle when
-        charging
+        **charge_per_cycle** (float, 0.1): Per unit of power to take per cycle when charging
 
         **discharge_per_cycle** (float, 0.1): Per unit of power to deliver per cycle
         when discharging
@@ -2064,10 +2063,9 @@ class Battery(Generator):
     def initialize_arrays(self, index, arr=None, arr_in_pu=False):
         """
         Create power profile based on index
-        Args:
-            index: time index associated
-            arr: array of values
-            arr_in_pu: is the array in per unit?
+        :param index: time index associated
+        :param arr: array of values
+        :param arr_in_pu: is the array in per unit?
         """
         if arr_in_pu:
             dta = arr * self.P
