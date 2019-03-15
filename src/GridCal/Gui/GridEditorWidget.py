@@ -627,10 +627,18 @@ class BranchGraphicItem(QGraphicsLineItem):
             ra2 = menu.addAction('Delete')
             ra2.triggered.connect(self.remove)
 
+            menu.addSeparator()
+
             ra3 = menu.addAction('Edit')
             ra3.triggered.connect(self.edit)
 
             if self.api_object.branch_type == BranchType.Transformer:
+
+                ra3 = menu.addAction('Add to catalogue')
+                ra3.triggered.connect(self.add_to_templates)
+
+                menu.addSeparator()
+
                 ra4 = menu.addAction('Tap up')
                 ra4.triggered.connect(self.tap_up)
 

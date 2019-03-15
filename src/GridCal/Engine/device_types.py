@@ -50,7 +50,7 @@ class Wire(EditableDevice):
         :param gmr: Geometric Mean Radius (m)
         :param r: Resistance per unit length (Ohm / km)
         :param x: Reactance per unit length (Ohm / km)
-        :param max_current: Maximum current of the conductor in (A)
+        :param max_current: Maximum current of the conductor in (kA)
         :param phase: 0->Neutral, 1->A, 2->B, 3->C
         """
 
@@ -62,7 +62,7 @@ class Wire(EditableDevice):
                                                   'r': GCProp('Ohm/km', float, "resistance of the conductor"),
                                                   'x': GCProp('Ohm/km', float, "reactance of the conductor"),
                                                   'gmr': GCProp('m', float, "Geometric Mean Radius of the conductor"),
-                                                  'max_current': GCProp('A', float, "Maximum current of the conductor"),
+                                                  'max_current': GCProp('kA', float, "Maximum current of the conductor"),
                                                   'xpos': GCProp('m', float, "Conductor x position within the tower"),
                                                   'ypos': GCProp('m', float, "Conductor y position within the tower"),
                                                   'phase': GCProp('', int, "Phase of the conductor (0, 1, 2)")},
@@ -266,13 +266,14 @@ class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
 
 class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
 
-    def __init__(self, parent=None, edit_callback=None, name='UndergroundLine',
+    def __init__(self, parent=None, edit_callback=None, name='UndergroundLine', rating=1,
                        R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
         """
 
         :param parent:
         :param edit_callback:
         :param name:
+        :param rating: rating in kA
         :param R:
         :param X:
         :param G:
@@ -289,6 +290,7 @@ class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
                                 active=True,
                                 device_type=DeviceType.UnderGroundLineDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the line template"),
+                                                  'rating': GCProp('kA', float, "Current rating of the tower"),
                                                   'R': GCProp('Ohm/km', float, "Positive-sequence "
                                                                                "resistance per km"),
                                                   'X': GCProp('Ohm/km', float, "Positive-sequence "
@@ -309,6 +311,8 @@ class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
                                 properties_with_profile={})
 
         self.tpe = tpe
+
+        self.rating = rating
 
         # impedances and admittances per unit of length
         self.R = R
@@ -586,7 +590,7 @@ class Tower(EditableDevice, QtCore.QAbstractTableModel):
              self.y_phases_abc, self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
-            self.rating = self.compute_rating() / 1000.0
+            self.rating = self.compute_rating()
 
             self.R0 = self.z_seq[0, 0].real
             self.X0 = self.z_seq[0, 0].imag
