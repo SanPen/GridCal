@@ -1040,17 +1040,17 @@ class Branch(EditableDevice):
             bus_f_v = self.bus_from.Vnom
             bus_t_v = self.bus_to.Vnom
 
-            dhf = abs(self.template.HV_nominal_voltage - bus_f_v)
-            dht = abs(self.template.HV_nominal_voltage - bus_t_v)
+            dhf = abs(self.template.HV - bus_f_v)
+            dht = abs(self.template.HV - bus_t_v)
 
             if dhf < dht:
                 # the HV side is on the from side
-                tpe_f_v = self.template.HV_nominal_voltage
-                tpe_t_v = self.template.LV_nominal_voltage
+                tpe_f_v = self.template.HV
+                tpe_t_v = self.template.LV
             else:
                 # the HV side is on the to side
-                tpe_t_v = self.template.HV_nominal_voltage
-                tpe_f_v = self.template.LV_nominal_voltage
+                tpe_t_v = self.template.HV
+                tpe_f_v = self.template.LV
 
             tap_f = tpe_f_v / bus_f_v
             tap_t = tpe_t_v / bus_t_v
@@ -1080,7 +1080,7 @@ class Branch(EditableDevice):
                 z_series, zsh = obj.get_impedances()
 
                 # Change the impedances to the system base
-                base_change = Sbase / obj.Nominal_power
+                base_change = Sbase / obj.rating
                 z_series *= base_change
                 zsh *= base_change
 
@@ -1092,7 +1092,7 @@ class Branch(EditableDevice):
                 self.G = np.round(y_shunt.real, 6)
                 self.B = np.round(y_shunt.imag, 6)
 
-                self.rate = obj.Nominal_power
+                self.rate = obj.rating
 
                 if obj != self.template:
                     self.template = obj
@@ -1137,6 +1137,9 @@ class Branch(EditableDevice):
             self.G = np.round(y.real, 6)
             self.B = np.round(y.imag, 6)
 
+            # get the rating in MVA = kA * kV
+            self.rate = obj.rating * Vn * SQRT3
+
             if obj != self.template:
                 self.template = obj
                 self.branch_type = BranchType.Line
@@ -1151,6 +1154,9 @@ class Branch(EditableDevice):
             self.X = np.round(obj.X * self.length / Zbase, 6)
             self.G = np.round(obj.G * self.length / Ybase, 6)
             self.B = np.round(obj.B * self.length / Ybase, 6)
+
+            # get the rating in MVA = kA * kV
+            self.rate = obj.rating * Vn * SQRT3
 
             if obj != self.template:
                 self.template = obj

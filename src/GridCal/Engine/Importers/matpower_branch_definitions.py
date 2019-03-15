@@ -292,6 +292,7 @@ def get_transformer_impedances(HV_nominal_voltage, LV_nominal_voltage, Nominal_p
 
         return leakage_impedance, magnetizing_impedance
 
+
 if __name__ == '__main__':
 
     Zs, Zsh = get_transformer_impedances(HV_nominal_voltage=20.0,

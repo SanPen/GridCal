@@ -22,7 +22,7 @@ Sbase = 100
 z_series, zsh = obj.get_impedances()
 
 # Change the base to the system base power
-base_change = obj.Nominal_power / Sbase
+base_change = obj.rating / Sbase
 z_series *= base_change
 zsh *= base_change
 

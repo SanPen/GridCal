@@ -915,7 +915,7 @@
           <widget class="QWidget" name="tab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/piece.svg</normaloff>:/Icons/icons/piece.svg</iconset>
+             <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>Simulation data</string>

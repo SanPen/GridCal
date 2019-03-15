@@ -208,13 +208,14 @@ class BranchTemplate:
 
 class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
 
-    def __init__(self, parent=None, edit_callback=None, name='SequenceLine',
+    def __init__(self, parent=None, edit_callback=None, name='SequenceLine', rating=1,
                  R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
         """
 
         :param parent:
         :param edit_callback:
         :param name: name of the model
+        :param rating: Line rating in kA
         :param R: Resistance of positive sequence in Ohm/km
         :param X: Reactance of positive sequence in Ohm/km
         :param G: Conductance of positive sequence in Ohm/km
@@ -231,6 +232,7 @@ class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
                                 active=True,
                                 device_type=DeviceType.SequenceLineDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the line template"),
+                                                  'rating': GCProp('kA', float, "Current rating of the line"),
                                                   'R': GCProp('Ohm/km', float, "Positive-sequence "
                                                               "resistance per km"),
                                                   'X': GCProp('Ohm/km', float, "Positive-sequence "
@@ -251,6 +253,8 @@ class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
                                 properties_with_profile={})
 
         self.tpe = tpe
+
+        self.rating = rating
 
         # impedances and admittances per unit of length
         self.R = R
@@ -290,7 +294,7 @@ class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
                                 active=True,
                                 device_type=DeviceType.UnderGroundLineDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the line template"),
-                                                  'rating': GCProp('kA', float, "Current rating of the tower"),
+                                                  'rating': GCProp('kA', float, "Current rating of the cable"),
                                                   'R': GCProp('Ohm/km', float, "Positive-sequence "
                                                                                "resistance per km"),
                                                   'X': GCProp('Ohm/km', float, "Positive-sequence "
@@ -756,47 +760,48 @@ class TransformerType(EditableDevice):
                                 active=True,
                                 device_type=DeviceType.TransformerTypeDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the transformer type"),
-                                                  'HV_nominal_voltage': GCProp('kV', float, "Nominal voltage al the "
-                                                                               "high voltage side"),
-                                                  'LV_nominal_voltage': GCProp('kV', float, "Nominal voltage al the "
-                                                                               "low voltage side"),
-                                                  'Nominal_power': GCProp('MVA', float, "Nominal power"),
-                                                  'Copper_losses': GCProp('kW', float, "Copper losses"),
-                                                  'Iron_losses': GCProp('kW', float, "Iron losses"),
-                                                  'No_load_current': GCProp('%', float, "No-load current"),
-                                                  'Short_circuit_voltage': GCProp('%', float, "Short-circuit voltage")},
+                                                  'HV': GCProp('kV', float, "Nominal voltage al the high voltage side"),
+                                                  'LV': GCProp('kV', float, "Nominal voltage al the low voltage side"),
+                                                  'rating': GCProp('MVA', float, "Nominal power"),
+                                                  'Pcu': GCProp('kW', float, "Copper losses"),
+                                                  'Pfe': GCProp('kW', float, "Iron losses"),
+                                                  'I0': GCProp('%', float, "No-load current"),
+                                                  'Vsc': GCProp('%', float, "Short-circuit voltage")},
                                 non_editable_attributes=list(),
                                 properties_with_profile={})
 
         self.tpe = tpe
 
-        self.HV_nominal_voltage = hv_nominal_voltage
+        self.HV = hv_nominal_voltage
 
-        self.LV_nominal_voltage = lv_nominal_voltage
+        self.LV = lv_nominal_voltage
 
-        self.Nominal_power = nominal_power
+        self.rating = nominal_power
 
-        self.Copper_losses = copper_losses
+        self.Pcu = copper_losses
 
-        self.Iron_losses = iron_losses
+        self.Pfe = iron_losses
 
-        self.No_load_current = no_load_current
+        self.I0 = no_load_current
 
-        self.Short_circuit_voltage = short_circuit_voltage
+        self.Vsc = short_circuit_voltage
 
         self.GR_hv1 = gr_hv1
 
         self.GX_hv1 = gx_hv1
 
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-
-        dta = list()
-        for property in self.editable_headers:
-            dta.append(getattr(self, property))
-        return dta
+    # def __str__(self):
+    #     return self.name
+    #
+    # def get_save_data(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     dta = list()
+    #     for property in self.editable_headers:
+    #         dta.append(getattr(self, property))
+    #     return dta
 
     def get_impedances(self):
         """
@@ -810,11 +815,11 @@ class TransformerType(EditableDevice):
             **zsh** (complex): Shunt impedance in per unit
         """
 
-        Sn = self.Nominal_power
-        Pcu = self.Copper_losses
-        Pfe = self.Iron_losses
-        I0 = self.No_load_current
-        Vsc = self.Short_circuit_voltage
+        Sn = self.rating
+        Pcu = self.Pcu
+        Pfe = self.Pfe
+        I0 = self.I0
+        Vsc = self.Vsc
 
         # Series impedance
         zsc = Vsc / 100.0
