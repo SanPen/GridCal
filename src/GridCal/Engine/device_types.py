@@ -804,7 +804,6 @@ class TransformerType(EditableDevice):
             **zs** (complex): Series impedance in per unit
 
             **zsh** (complex): Shunt impedance in per unit
-
         """
 
         Sn = self.Nominal_power

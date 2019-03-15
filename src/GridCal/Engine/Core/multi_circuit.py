@@ -1070,43 +1070,93 @@ class MultiCircuit:
         return api_obj
 
     def add_wire(self, obj: Wire):
-
-        self.wire_types.append(obj)
+        """
+        Add Wire to the collection
+        :param obj: Wire instance
+        """
+        if obj is not None:
+            if type(obj) == Wire:
+                self.wire_types.append(obj)
+            else:
+                print('The template is not a wire!')
 
     def delete_wire(self, i):
-
+        """
+        Delete wire from the collection
+        :param i: index
+        """
         self.wire_types.pop(i)
 
     def add_overhead_line(self, obj: Tower):
-
-        self.overhead_line_types.append(obj)
+        """
+        Add overhead line (tower) template to the collection
+        :param obj: Tower instance
+        """
+        if obj is not None:
+            if type(obj) == Tower:
+                self.overhead_line_types.append(obj)
+            else:
+                print('The template is not an overhead line!')
 
     def delete_overhead_line(self, i):
-
+        """
+        Delete tower from the collection
+        :param i: index
+        """
         self.overhead_line_types.pop(i)
 
     def add_underground_line(self, obj: UndergroundLineType):
-
-        self.underground_cable_types.append(obj)
+        """
+        Add underground line
+        :param obj: UndergroundLineType instance
+        """
+        if obj is not None:
+            if type(obj) == UndergroundLineType:
+                self.underground_cable_types.append(obj)
+            else:
+                print('The template is not an underground line!')
 
     def delete_underground_line(self, i):
-
+        """
+        Delete underground line
+        :param i: index
+        """
         self.underground_cable_types.pop(i)
 
     def add_sequence_line(self, obj: SequenceLineType):
-
-        self.sequence_line_types.append(obj)
+        """
+        Add sequence line to the collection
+        :param obj: SequenceLineType instance
+        """
+        if obj is not None:
+            if type(obj) == SequenceLineType:
+                self.sequence_line_types.append(obj)
+            else:
+                print('The template is not a sequence line!')
 
     def delete_sequence_line(self, i):
-
+        """
+        Delete sequence line from the collection
+        :param i: index
+        """
         self.sequence_line_types.pop(i)
 
     def add_transformer_type(self, obj: TransformerType):
-
-        self.transformer_types.append(obj)
+        """
+        Add transformer template
+        :param obj: TransformerType instance
+        """
+        if obj is not None:
+            if type(obj) == TransformerType:
+                self.transformer_types.append(obj)
+            else:
+                print('The template is not a transformer!')
 
     def delete_transformer_type(self, i):
-
+        """
+        Delete transformer type from the colection
+        :param i: index
+        """
         self.transformer_types.pop(i)
 
     def apply_all_branch_types(self):
@@ -1122,10 +1172,8 @@ class MultiCircuit:
     def plot_graph(self, ax=None):
         """
         Plot the grid.
-
-        Arguments:
-
-            **ax**: Matplotlib axis object
+        :param ax: Matplotlib axis object
+        :return:
         """
         if ax is None:
             fig = plt.figure()

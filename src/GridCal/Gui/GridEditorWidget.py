@@ -360,7 +360,7 @@ class TransformerEditor(QDialog):
         # z_series = leakage_impedance
         # y_shunt = 1 / magnetizing_impedance
 
-        self.branch.apply_template(tpe)
+        self.branch.apply_template(tpe, Sbase=self.Sbase)
 
         self.accept()
 
@@ -890,6 +890,26 @@ class BranchGraphicItem(QGraphicsLineItem):
         if self.api_object.branch_type == BranchType.Transformer:
             dlg = TransformerEditor(self.api_object, Sbase)
             if dlg.exec_():
+                pass
+
+        elif self.api_object.branch_type == BranchType.Line:
+            dlg = LineEditor(self.api_object, Sbase)
+            if dlg.exec_():
+                pass
+
+    def add_to_templates(self):
+        """
+        Open the appropriate editor dialogue
+        :return:
+        """
+        Sbase = self.diagramScene.circuit.Sbase
+
+        if self.api_object.branch_type == BranchType.Transformer:
+
+            if self.api_object.template is not None:
+                self.diagramScene.circuit.add_transformer_type(self.api_object.template)
+            else:
+                print('The transformer does not have a template!')
                 pass
 
         elif self.api_object.branch_type == BranchType.Line:
