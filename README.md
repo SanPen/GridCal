@@ -10,7 +10,9 @@ This software aims to be a complete platform for power systems research and simu
 
 # Installation
 
-Follow the
+Try: `pip install GridCal`
+
+For more options, follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
 from the project's documentation.
 
