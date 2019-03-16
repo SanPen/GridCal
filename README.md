@@ -43,8 +43,8 @@ In an effort to ease the simulation and construction of grids, We have included 
 
 # Examples
 
-Examples are included in `Tutorials` folder of the GitHub repository. In addition, the
-tests under `src/tests` may serve as valuable examples.
+Examples are included in [Tutorials](https://github.com/SanPen/GridCal/tree/master/Tutorials) folder of the GitHub repository. In addition, the
+tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as valuable examples.
 
 # Features overview
 
