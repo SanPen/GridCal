@@ -26,6 +26,20 @@ should bring up the GUI under most platforms. For detailed instructions, follow 
 [instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
 from the project's documentation.
 
+# Tutorials
+
+0. Cloning the repository: https://youtu.be/59W_rqimB6w
+
+1. Making a grid with profiles: https://youtu.be/H2d_2bMsIS0
+
+# Batteries included
+
+In an effort to ease the simulation and construction of grids, We have included extra materials to work with. 
+[Here](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles) you can find:
+- Load profiles for your projects
+- Standard IEEE grids as well as grids from open projects
+- Equipment catalogue (Wires, Cables and Transformers) ready to use in GridCal
+
 # Examples
 
 Examples are included in `Tutorials` folder of the GitHub repository. In addition, the
@@ -56,8 +70,6 @@ Some of the features you'll find already are:
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
   - Linear AC approximation.
-
-- DC Optimal power flow
 
 - Time series with profiles in all the objects physical magnitudes.
 
