@@ -34,7 +34,8 @@ from the project's documentation.
 
 # Batteries included
 
-In an effort to ease the simulation and construction of grids, We have included extra materials to work with. 
+In an effort to ease the simulation and construction of grids, We have included extra materials to work with.
+ 
 [Here](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles) you can find:
 - Load profiles for your projects
 - Standard IEEE grids as well as grids from open projects
