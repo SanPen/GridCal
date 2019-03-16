@@ -3,7 +3,7 @@
 # What is this?
 
 This software aims to be a complete platform for power systems research and simulation.
-[Watch the video](https://youtu.be/7BbO7KKWwEY) and
+[Watch the video](https://youtu.be/SY66WgLGo54) and
 [check out the documentation](https://gridcal.readthedocs.io)
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
@@ -30,9 +30,11 @@ from the project's documentation.
 
 # Tutorials
 
-0. Cloning the repository: https://youtu.be/59W_rqimB6w
+- Cloning the repository: https://youtu.be/59W_rqimB6w
 
-1. Making a grid with profiles: https://youtu.be/H2d_2bMsIS0
+- Standalone GridCal setup: https://youtu.be/SY66WgLGo54
+
+- Making a grid with profiles: https://youtu.be/H2d_2bMsIS0
 
 # Batteries included
 
