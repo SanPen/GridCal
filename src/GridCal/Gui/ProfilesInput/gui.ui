@@ -31,7 +31,7 @@
          </property>
          <widget class="QFrame" name="frame_4">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -40,16 +40,29 @@
            <item>
             <widget class="QFrame" name="frame">
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
               <item>
                <widget class="QPushButton" name="open_button">
+                <property name="toolTip">
+                 <string>Import file</string>
+                </property>
                 <property name="text">
-                 <string>Import</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/import_profiles.svg</normaloff>:/Icons/icons/import_profiles.svg</iconset>
                 </property>
                </widget>
               </item>
@@ -82,18 +95,11 @@
            <item>
             <widget class="QListView" name="sources_list"/>
            </item>
-           <item>
-            <widget class="QCheckBox" name="normalized_checkBox">
-             <property name="text">
-              <string>normalized</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
          <widget class="QFrame" name="frame_6">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -102,23 +108,71 @@
            <item>
             <widget class="QFrame" name="frame_10">
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
               <item>
                <widget class="QPushButton" name="autolink_button">
+                <property name="toolTip">
+                 <string>Automatic link profiles to objects based on their name</string>
+                </property>
                 <property name="text">
-                 <string>Auto-link</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/auto-link.svg</normaloff>:/Icons/icons/auto-link.svg</iconset>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="rnd_link_pushButton">
+                <property name="toolTip">
+                 <string>Random-link profiles and objects</string>
+                </property>
                 <property name="text">
-                 <string>Random-link</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/auto-link-rnd.svg</normaloff>:/Icons/icons/auto-link-rnd.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="assign_to_all_pushButton">
+                <property name="toolTip">
+                 <string>Assign profile to all objects</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/link-to-all.svg</normaloff>:/Icons/icons/link-to-all.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="assign_to_selection_pushButton">
+                <property name="toolTip">
+                 <string>Assign profile to object selection</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/link-to-selection.svg</normaloff>:/Icons/icons/link-to-selection.svg</iconset>
                 </property>
                </widget>
               </item>
@@ -136,23 +190,16 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="assign_to_all_pushButton">
-                <property name="text">
-                 <string>Assign to all</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="assign_to_selection_pushButton">
-                <property name="text">
-                 <string>Assign to selection</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QPushButton" name="clear_selection_button">
-                <property name="text">
+                <property name="toolTip">
                  <string>Clear selection</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
                 </property>
                </widget>
               </item>
@@ -165,12 +212,21 @@
            <item>
             <widget class="QFrame" name="frame_9">
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item row="0" column="3">
                <spacer name="horizontalSpacer_3">
                 <property name="orientation">
@@ -186,19 +242,19 @@
               </item>
               <item row="0" column="0">
                <widget class="QPushButton" name="set_multiplier_button">
-                <property name="text">
+                <property name="toolTip">
                  <string>Set multiplier</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/multiply.svg</normaloff>:/Icons/icons/multiply.svg</iconset>
                 </property>
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QPushButton" name="set_cosfi_button">
-                <property name="text">
-                 <string>Set cos(φ)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
                <widget class="QDoubleSpinBox" name="multSpinBox">
                 <property name="minimum">
                  <double>-99999.000000000000000</double>
@@ -208,10 +264,30 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="4">
-               <widget class="QCheckBox" name="setQ_on_cosfi_checkbox">
+              <item row="0" column="5">
+               <widget class="QPushButton" name="doit_button">
+                <property name="toolTip">
+                 <string>Do it!</string>
+                </property>
+                <property name="statusTip">
+                 <string/>
+                </property>
                 <property name="text">
-                 <string>Set Q on Cos(φ)</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <widget class="QCheckBox" name="normalized_checkBox">
+                <property name="toolTip">
+                 <string>Check if you want the profiles to be normalized on the base object property</string>
+                </property>
+                <property name="text">
+                 <string>normalized</string>
                 </property>
                </widget>
               </item>
@@ -236,7 +312,7 @@
          </property>
          <widget class="QFrame" name="frame_8">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -252,7 +328,7 @@
          </widget>
          <widget class="QFrame" name="PlotFrame">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -269,38 +345,6 @@
      </widget>
     </widget>
    </item>
-   <item>
-    <widget class="QFrame" name="frame_2">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_6">
-      <item>
-       <spacer name="horizontalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="doit_button">
-        <property name="text">
-         <string>Do it</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -311,6 +355,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

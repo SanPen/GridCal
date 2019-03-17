@@ -84,14 +84,14 @@ class MultiplierType(Enum):
 
 class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=list(), magnitudes=None):
+    def __init__(self, parent=None, list_of_objects=list(), magnitudes=['']):
         """
 
         Args:
             parent:
             list_of_objects: List of objects to which set a profile to
             magnitudes: Property of the objects to which set the pandas DataFrame
-            AlsoReactivePower: Link also the reactive power?
+            list_of_objects: list ob object to modify
         """
         QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
@@ -145,8 +145,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
         # if AlsoReactivePower:
         #     self.magnitudes.append('Q')
         # else:
-        self.ui.setQ_on_cosfi_checkbox.setVisible(False)
-        self.ui.set_cosfi_button.setVisible(False)
+        # self.ui.setQ_on_cosfi_checkbox.setVisible(False)
+        # self.ui.set_cosfi_button.setVisible(False)
 
         self.associations = list()
         mag = [''] * len(self.magnitudes)
@@ -170,7 +170,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.open_button.clicked.connect(self.import_profile)
         self.ui.doit_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
         self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
-        self.ui.set_cosfi_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Cosfi))
+        # self.ui.set_cosfi_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Cosfi))
         self.ui.autolink_button.clicked.connect(self.auto_link)
         self.ui.rnd_link_pushButton.clicked.connect(self.rnd_link)
         self.ui.assign_to_selection_pushButton.clicked.connect(self.link_to_selection)
@@ -387,10 +387,15 @@ class ProfileInputGUI(QtWidgets.QDialog):
             idx_s = 0
             for source in self.profile_names:
 
-                if self.normalize_string(source) in self.normalize_string(objective.name) \
-                        or self.normalize_string(objective.name) in self.normalize_string(source)  \
-                        or source in objective.name \
-                        or objective.name in source:
+                try:
+                    name = objective.name
+                except:
+                    name = ''
+
+                if self.normalize_string(source) in self.normalize_string(name) \
+                 or self.normalize_string(name) in self.normalize_string(source)  \
+                 or source in name \
+                 or name in source:
 
                     self.make_association(idx_s, idx_o, mult)
 
@@ -408,32 +413,38 @@ class ProfileInputGUI(QtWidgets.QDialog):
         mult = 1
         scale = self.get_multiplier()
 
-        if self.ui.sources_list.model().rowCount() > 0:
-            # make a list of the source indices
-            source_indices = [i for i in range(self.ui.sources_list.model().rowCount())]
+        if self.ui.sources_list.model() is not None:
 
-            # make a list of the destination indices
-            destination_indices = [i for i in range(self.ui.assignation_table.model().rowCount())]
+            if self.ui.sources_list.model().rowCount() > 0:
+                # make a list of the source indices
+                source_indices = [i for i in range(self.ui.sources_list.model().rowCount())]
 
-            # while there are elements in the destination indices
-            while len(destination_indices) > 0:
+                # make a list of the destination indices
+                destination_indices = [i for i in range(self.ui.assignation_table.model().rowCount())]
 
-                # pick a random source
-                rnd_idx_s = randint(0, len(source_indices)-1)
+                # while there are elements in the destination indices
+                while len(destination_indices) > 0:
 
-                # pick and delete a random destination
-                rnd_idx_o = randint(0, len(destination_indices)-1)
+                    # pick a random source
+                    rnd_idx_s = randint(0, len(source_indices)-1)
 
-                # get the actual index
-                idx_s = source_indices[rnd_idx_s]
+                    # pick and delete a random destination
+                    rnd_idx_o = randint(0, len(destination_indices)-1)
 
-                # get the actual index
-                idx_o = destination_indices.pop(rnd_idx_o)
+                    # get the actual index
+                    idx_s = source_indices[rnd_idx_s]
 
-                # make the association
-                self.make_association(idx_s, idx_o, scale, cosfi, mult)
+                    # get the actual index
+                    idx_o = destination_indices.pop(rnd_idx_o)
 
-            self.display_associations()
+                    # make the association
+                    self.make_association(idx_s, idx_o, scale, cosfi, mult)
+
+                self.display_associations()
+            else:
+                pass
+        else:
+            pass
 
     def link_to_selection(self):
         """
@@ -595,7 +606,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    window = ProfileInputGUI(list_of_objects=['Test object'] * 10, AlsoReactivePower=False)
+    window = ProfileInputGUI(list_of_objects=['Test object'] * 10)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
