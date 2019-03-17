@@ -632,6 +632,11 @@ class BranchGraphicItem(QGraphicsLineItem):
             ra3 = menu.addAction('Edit')
             ra3.triggered.connect(self.edit)
 
+            menu.addSeparator()
+
+            ra6 = menu.addAction('Plot profiles')
+            ra6.triggered.connect(self.plot_profiles)
+
             if self.api_object.branch_type == BranchType.Transformer:
 
                 ra3 = menu.addAction('Add to catalogue')
@@ -780,6 +785,19 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))
+
+    def plot_profiles(self):
+        """
+        Plot the time series profiles
+        @return:
+        """
+        # Ridiculously large call to get the main GUI that hosts this bus graphic
+        # time series object from the last simulation
+        ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
+        # get the index of this object
+        i = self.diagramScene.circuit.branches.index(self.api_object)
+        # plot the profiles
+        self.api_object.plot_profiles(time_series=ts, my_index=i)
 
     def setFromPort(self, fromPort):
         """

@@ -1583,7 +1583,7 @@ class MainGUI(QMainWindow):
             dialogue = ProfileInputGUI(parent=self,
                                        list_of_objects=objects,
                                        magnitudes=[magnitude])
-            dialogue.resize(int(1.61 * 600.0), 600)  # golden ratio
+            dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             dialogue.exec()  # exec leaves the parent on hold
 
             if dialogue.time is not None:

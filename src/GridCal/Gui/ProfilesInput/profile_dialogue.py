@@ -159,6 +159,9 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.SCALE_idx = 0
         self.COSFI_idx = 0
 
+        self.ui.splitter.setStretchFactor(0, 3)
+        self.ui.splitter.setStretchFactor(1, 7)
+
         if len(self.associations) > 0:
             self.display_associations()
 
@@ -607,7 +610,7 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     window = ProfileInputGUI(list_of_objects=['Test object'] * 10)
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio
+    window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
 

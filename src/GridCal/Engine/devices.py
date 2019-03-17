@@ -295,7 +295,8 @@ class Bus(EditableDevice):
         """
 
         if ax_load is None:
-            fig = plt.figure()
+            fig = plt.figure(figsize=(12, 8))
+            fig.suptitle(self.name, fontsize=20)
             if time_series is not None:
                 # 2 plots: load + voltage
                 ax_load = fig.add_subplot(211)
@@ -327,10 +328,9 @@ class Bus(EditableDevice):
             df.plot(ax=ax_voltage)
 
         plt.legend()
-        plt.title(self.name)
-        ax_load.set_ylabel('MW')
+        ax_load.set_ylabel('Load [MW]', fontsize=11)
         if ax_voltage is not None:
-            ax_voltage.set_ylabel('Voltage (p.u.)')
+            ax_voltage.set_ylabel('Voltage [p.u.]', fontsize=11)
         if show_fig:
             plt.show()
 
@@ -1213,8 +1213,41 @@ class Branch(EditableDevice):
                 'tap_angle': self.angle,
                 'branch_type': self.branch_type}
 
-    def __str__(self):
-        return self.name
+    def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
+        """
+        Plot the time series results of this object
+        :param time_series: TimeSeries Instance
+        :param my_index: index of this object in the simulation
+        :param show_fig: Show the figure?
+        """
+
+        if time_series is not None:
+            fig = plt.figure(figsize=(12, 8))
+
+            ax_1 = fig.add_subplot(211)
+            ax_2 = fig.add_subplot(212)
+
+            x = time_series.results.time
+
+            # loading
+            y = time_series.results.loading * 100.0
+            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
+            ax_1.set_title('Loading', fontsize=14)
+            ax_1.set_ylabel('Loading [%]', fontsize=11)
+            df.plot(ax=ax_1)
+
+            # losses
+            y = time_series.results.losses
+            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
+            ax_2.set_title('Losses', fontsize=14)
+            ax_2.set_ylabel('Losses [MVA]', fontsize=11)
+            df.plot(ax=ax_2)
+
+            plt.legend()
+            fig.suptitle(self.name, fontsize=20)
+
+        if show_fig:
+            plt.show()
 
 
 class Load(EditableDevice):
