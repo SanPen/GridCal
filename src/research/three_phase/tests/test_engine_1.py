@@ -1,6 +1,8 @@
 
 from research.three_phase.Engine import *
 
+np.set_printoptions(linewidth=100000)
+
 if __name__ == "__main__":
 
     P = np.array([2.5, 2.5, 2.5])
@@ -14,7 +16,7 @@ if __name__ == "__main__":
     b2.add_load(LoadSIY("", S, np.zeros_like(S), np.zeros_like(S)))
 
     b3 = Bus("B3", number_of_phases=3, Vnom=10.0)
-    b3.add_generator(Generator("", P=P*0.5, v=1.0))
+    # b3.add_generator(Generator("", P=P*0.5, v=1.0))
 
     line_type1 = LineTypeSeq(name="",
                              Z_SEQ=np.array([0.4606 + 1.7536j, 0.1808 + 0.6054j, 0.1808 + 0.6054j])/100,
