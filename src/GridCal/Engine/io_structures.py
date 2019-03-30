@@ -41,6 +41,8 @@ class ResultTypes(Enum):
     # Power flow
     BusVoltage = 'Bus voltage', DeviceType.BusDevice
     BusVoltagePolar = 'Bus voltage (polar)', DeviceType.BusDevice
+    BusActivePower = 'Bus active power', DeviceType.BusDevice
+    BusReactivePower = 'Bus reactive power', DeviceType.BusDevice
     BranchPower = 'Branch power', DeviceType.BranchDevice
     BranchCurrent = 'Branch current', DeviceType.BranchDevice
     BranchLoading = 'Branch loading', DeviceType.BranchDevice
@@ -1349,19 +1351,25 @@ class MonteCarloResults:
         self.loading = self.l_avg_conv[-2]
         self.losses = self.loss_avg_conv[-2]
 
+    def get_results_dict(self):
+        """
+        Returns a dictionary with the results sorted in a dictionary
+        :return: dictionary of 2D numpy arrays (probably of complex numbers)
+        """
+        data = {'S': self.S_points,
+                'V': self.V_points,
+                'Ibr': self.I_points,
+                'Sbr': self.Sbr_points,
+                'loading': self.loading_points,
+                'losses': self.losses_points}
+        return data
+
     def save(self, fname):
         """
         Export as pickle
-        Args:
-            fname:
-
-        Returns:
-
         """
-        data = [self.S_points, self.V_points, self.I_points]
-
         with open(fname, "wb") as output_file:
-            pkl.dump(data, output_file)
+            pkl.dump(self.get_results_dict(), output_file)
 
     def open(self, fname):
         """

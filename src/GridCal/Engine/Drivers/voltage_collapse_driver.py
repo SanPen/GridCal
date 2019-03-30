@@ -15,6 +15,7 @@
 
 import pandas as pd
 import numpy as np
+import pickle as pkl
 from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
@@ -114,15 +115,32 @@ class VoltageCollapseResults:
 
         self.available_results = [ResultTypes.BusVoltage]
 
+    def get_results_dict(self):
+        """
+        Returns a dictionary with the results sorted in a dictionary
+        :return: dictionary of 2D numpy arrays (probably of complex numbers)
+        """
+        data = {'lambda': self.lambdas,
+                'V': self.voltages,
+                'error': self.error}
+        return data
+
+    def save(self, fname):
+        """
+        Export as pickle
+        """
+        with open(fname, "wb") as output_file:
+            pkl.dump(self.get_results_dict(), output_file)
+
     def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx,
                           branch_original_idx, nbus_full):
         """
         Apply the results of an island to this VoltageCollapseResults instance
         :param voltage_collapse_res: VoltageCollapseResults instance of the island
+        :param pf_res: Power flow results instance
         :param bus_original_idx: indices of the buses in the complete grid
         :param branch_original_idx: indices of the branches in the complete grid
         :param nbus_full: total number of buses in the complete grid
-        :return:
         """
 
         if len(voltage_collapse_res.voltages) > 0:
@@ -325,4 +343,7 @@ class VoltageCollapse(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled!')
+        self.done_signal.emit()
 

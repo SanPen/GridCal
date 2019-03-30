@@ -1380,7 +1380,7 @@ class PowerFlowMP:
         if self.options.retry_with_other_methods:
             solvers = [self.options.solver_type,
                        SolverType.IWAMOTO,
-                       SolverType.FASTDECOUPLED,
+                       # SolverType.FASTDECOUPLED,
                        SolverType.LM,
                        SolverType.LACPF]
         else:
@@ -1389,69 +1389,62 @@ class PowerFlowMP:
 
         # set worked to false to enter in the loop
         worked = False
-        k = 0
+        solver_idx = 0
         methods = list()
         inner_it = list()
         elapsed = list()
         errors = list()
         converged_lst = list()
         outer_it = 0
+        results = PowerFlowResults()
+
+        while solver_idx < len(solvers) and not worked:
+
+            # get the solver
+            solver = solvers[solver_idx]
+
+            # set the initial voltage
+            V0 = Vbus.copy()
+
+            # solve the power flow
+            results = self.single_power_flow(circuit=circuit,
+                                             solver_type=solver,
+                                             voltage_solution=V0,
+                                             Sbus=Sbus,
+                                             Ibus=Ibus)
+
+            # did it worked?
+            worked = np.all(results.converged)
+
+            # record the solver steps
+            methods += results.methods
+            inner_it += results.inner_iterations
+            outer_it += results.outer_iterations
+            elapsed += results.elapsed
+            errors += results.error
+            converged_lst += results.converged
+
+            solver_idx += 1
 
         if not worked:
+            warn('Did not converge, even after retry!, Error:', results.error)
+            return results
 
-            while k < len(solvers) and not worked:
-
-                # get the solver
-                solver = solvers[k]
-
-                # print('Trying', solver)
-
-                # set the initial voltage
-                V0 = Vbus.copy()
-
-                results = self.single_power_flow(circuit=circuit,
-                                                 solver_type=solver,
-                                                 voltage_solution=V0,
-                                                 Sbus=Sbus,
-                                                 Ibus=Ibus)
-
-                # did it worked?
-                worked = np.all(results.converged)
-
-                # record the solver steps
-                methods += results.methods
-                inner_it += results.inner_iterations
-                outer_it += results.outer_iterations
-                elapsed += results.elapsed
-                errors += results.error
-                converged_lst += results.converged
-
-                k += 1
-
-            if not worked:
-                print('Did not converge, even after retry!, Error:', results.error)
-                return None
-
-            else:
-                # set the total process variables:
-                results.methods = methods
-                results.inner_iterations = inner_it
-                results.outer_iterations = outer_it
-                results.elapsed = elapsed
-                results.error = errors
-                results.converged = converged_lst
-
-                # check the power flow limits
-                results.check_limits(F=circuit.F, T=circuit.T,
-                                     Vmax=circuit.Vmax, Vmin=circuit.Vmin,
-                                     wo=1, wv1=1, wv2=1)
-
-                return results
         else:
-            # the original solver worked
-            pass
+            # set the total process variables:
+            results.methods = methods
+            results.inner_iterations = inner_it
+            results.outer_iterations = outer_it
+            results.elapsed = elapsed
+            results.error = errors
+            results.converged = converged_lst
 
-            return PowerFlowResults()
+            # check the power flow limits
+            results.check_limits(F=circuit.F, T=circuit.T,
+                                 Vmax=circuit.Vmax, Vmin=circuit.Vmin,
+                                 wo=1, wv1=1, wv2=1)
+
+            return results
 
     def run_multi_island(self, numerical_circuit, calculation_inputs, Vbus, Sbus, Ibus):
         """

@@ -85,6 +85,20 @@ class ResultTypes(Enum):
     gen_reactive_power = 16
 
 
+class SimulationTypes(Enum):
+    PowerFlow_run = 'power flow'
+    ShortCircuit_run = 'Short circuit'
+    MonteCarlo_run = 'Monte Carlo'
+    TimeSeries_run = 'Time series power flow'
+    VoltageCollapse_run = 'Voltage collapse'
+    LatinHypercube_run = 'Latin Hypercube'
+    Cascade_run = 'Cascade'
+    OPF_run = 'Optimal power flow'
+    OPFTimeSeries_run = 'OPF Time series'
+    TransientStability_run = 'Transient stability'
+    TopologyReduction_run = 'Topology reduction'
+
+
 class ElementsDialogue(QtWidgets.QDialog):
     """
     Selected elements dialogue window
@@ -281,6 +295,8 @@ class MainGUI(QMainWindow):
         self.transient_stability = None
         self.topology_reduction = None
 
+        self.stuff_running_now = list()
+
         self.open_file_thread_object = None
 
         self.results_df = None
@@ -367,6 +383,8 @@ class MainGUI(QMainWindow):
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
 
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
+
+        self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
         # Buttons
 
@@ -535,6 +553,21 @@ class MainGUI(QMainWindow):
         @return:
         """
         self.LOCK(False)
+
+    def add_simulation(self, val: SimulationTypes):
+        """
+        Add a simulation to the simulations list
+        :param val: simulation type
+        """
+        self.stuff_running_now.append(val)
+
+    def remove_simulation(self, val: SimulationTypes):
+        """
+        Remove a simulation from the simulations list
+        :param val: simulation type
+        """
+        if val in self.stuff_running_now:
+            self.stuff_running_now.remove(val)
 
     def view_templates(self, value=True):
         """
@@ -1188,6 +1221,42 @@ class MainGUI(QMainWindow):
         else:
             self.msg('There are no profiles!', 'Export object profiles')
 
+    def export_all(self):
+        """
+        Export all the results
+        :return:
+        """
+
+        # set grid name
+        self.circuit.name = self.grid_editor.name_label.text()
+
+        files_types = "Python pickle (*.pkl)"
+
+        fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
+
+        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+        if filename is not "":
+
+            data = dict()
+
+            if self.time_series is not None:
+                if self.time_series.results is not None:
+                    data['ts'] = self.time_series.results.get_results_dict()
+
+            if self.latin_hypercube_sampling is not None:
+                if self.latin_hypercube_sampling.results is not None:
+                    data['lhs'] = self.latin_hypercube_sampling.results.get_results_dict()
+
+            if self.monte_carlo is not None:
+                if self.monte_carlo.results is not None:
+                    data['mc'] = self.monte_carlo.results.get_results_dict()
+
+            with open(fname, "wb") as output_file:
+                pkl.dump(data, output_file)
+
+            print('Check the pickle at', output_file)
+
     def export_simulation_data(self):
         """
         Export the calculation objects to file
@@ -1835,41 +1904,47 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            self.LOCK()
 
-            self.ui.progress_label.setText('Compiling the grid...')
-            QtGui.QGuiApplication.processEvents()
-            # self.compile()  # compiles inside
+            if SimulationTypes.PowerFlow_run not in self.stuff_running_now:
 
-            # get the power flow options from the GUI
-            options = self.get_selected_power_flow_options()
+                self.LOCK()
 
-            # compute the automatic precision
-            if self.ui.auto_precision_checkBox.isChecked():
-                numerical = self.circuit.compile()
-                numerical = self.circuit.compile()
-                S = numerical.load_power / numerical.Sbase
-                lg = np.log10(abs(S))
-                lg[lg == -np.inf] = 0
-                tol_idx = int(min(abs(lg))) + 3
-                tolerance = 1.0 / (10.0 ** tol_idx)
-                options.tolerance = tolerance
-                self.ui.tolerance_spinBox.setValue(tol_idx)
+                self.add_simulation(SimulationTypes.PowerFlow_run)
 
-            self.ui.progress_label.setText('Running power flow...')
-            QtGui.QGuiApplication.processEvents()
-            # set power flow object instance
-            self.power_flow = PowerFlow(self.circuit, options)
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+                # self.compile()  # compiles inside
 
-            # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-            # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
-            # self.power_flow.done_signal.connect(self.UNLOCK)
-            # self.power_flow.done_signal.connect(self.post_power_flow)
+                # get the power flow options from the GUI
+                options = self.get_selected_power_flow_options()
 
-            # self.power_flow.run()
-            self.threadpool.start(self.power_flow)
-            self.threadpool.waitForDone()
-            self.post_power_flow()
+                # compute the automatic precision
+                if self.ui.auto_precision_checkBox.isChecked():
+                    numerical = self.circuit.compile()
+                    S = numerical.load_power / numerical.Sbase
+                    lg = np.log10(abs(S))
+                    lg[lg == -np.inf] = 0
+                    tol_idx = int(min(abs(lg))) + 3
+                    tolerance = 1.0 / (10.0 ** tol_idx)
+                    options.tolerance = tolerance
+                    self.ui.tolerance_spinBox.setValue(tol_idx)
+
+                self.ui.progress_label.setText('Running power flow...')
+                QtGui.QGuiApplication.processEvents()
+                # set power flow object instance
+                self.power_flow = PowerFlow(self.circuit, options)
+
+                # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+                # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
+                # self.power_flow.done_signal.connect(self.UNLOCK)
+                # self.power_flow.done_signal.connect(self.post_power_flow)
+
+                # self.power_flow.run()
+                self.threadpool.start(self.power_flow)
+                self.threadpool.waitForDone()
+                self.post_power_flow()
+            else:
+                self.msg('Another simulation of the same type is running...')
         else:
             pass
 
@@ -1884,6 +1959,8 @@ class MainGUI(QMainWindow):
         if self.power_flow.results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
             QtGui.QGuiApplication.processEvents()
+
+            self.remove_simulation(SimulationTypes.PowerFlow_run)
 
             self.color_based_of_pf(s_bus=self.power_flow.results.Sbus,
                                    s_branch=self.power_flow.results.Sbranch,
@@ -1906,7 +1983,8 @@ class MainGUI(QMainWindow):
             self.msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
-        self.UNLOCK()
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def run_short_circuit(self):
         """
@@ -1916,51 +1994,55 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
+            if SimulationTypes.ShortCircuit_run not in self.stuff_running_now:
+                if self.power_flow is not None:
 
-            if self.power_flow is not None:
+                    self.add_simulation(SimulationTypes.ShortCircuit_run)
 
-                # Since we must run this study in the same conditions as
-                # the last power flow, no compilation is needed
+                    # Since we must run this study in the same conditions as
+                    # the last power flow, no compilation is needed
 
-                # get the short circuit selected buses
-                sel_buses = list()
-                for i, bus in enumerate(self.circuit.buses):
-                    if bus.graphic_obj.sc_enabled is True:
-                        sel_buses.append(i)
+                    # get the short circuit selected buses
+                    sel_buses = list()
+                    for i, bus in enumerate(self.circuit.buses):
+                        if bus.graphic_obj.sc_enabled is True:
+                            sel_buses.append(i)
 
-                if len(sel_buses) == 0:
-                    self.msg('You need to enable some buses for short circuit.'
-                             + '\nEnable them by right click, and selecting on the context menu.')
-                else:
-                    self.LOCK()
-
-                    if self.ui.apply_impedance_tolerances_checkBox.isChecked():
-                        branch_impedance_tolerance_mode = BranchImpedanceMode.Lower
+                    if len(sel_buses) == 0:
+                        self.msg('You need to enable some buses for short circuit.'
+                                 + '\nEnable them by right click, and selecting on the context menu.')
                     else:
-                        branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
+                        self.LOCK()
 
-                    # get the power flow options from the GUI
-                    sc_options = ShortCircuitOptions(bus_index=sel_buses,
-                                                     branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
-                    self.short_circuit = ShortCircuit(self.circuit, sc_options, self.power_flow.results)
+                        if self.ui.apply_impedance_tolerances_checkBox.isChecked():
+                            branch_impedance_tolerance_mode = BranchImpedanceMode.Lower
+                        else:
+                            branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
 
-                    # self.threadpool.start(self.short_circuit)
-                    # self.threadpool.waitForDone()
-                    # self.post_short_circuit()
+                        # get the power flow options from the GUI
+                        sc_options = ShortCircuitOptions(bus_index=sel_buses,
+                                                         branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
+                        self.short_circuit = ShortCircuit(self.circuit, sc_options, self.power_flow.results)
 
-                    try:
-                        self.threadpool.start(self.short_circuit)
-                        self.threadpool.waitForDone()
-                        self.post_short_circuit()
+                        # self.threadpool.start(self.short_circuit)
+                        # self.threadpool.waitForDone()
+                        # self.post_short_circuit()
 
-                    except Exception as ex:
-                        exc_type, exc_value, exc_traceback = sys.exc_info()
-                        self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
-                        self.short_circuit = None
-                        self.UNLOCK()
+                        try:
+                            self.threadpool.start(self.short_circuit)
+                            self.threadpool.waitForDone()
+                            self.post_short_circuit()
 
+                        except Exception as ex:
+                            exc_type, exc_value, exc_traceback = sys.exc_info()
+                            self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
+                            self.short_circuit = None
+                            self.UNLOCK()
+
+                else:
+                    self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
             else:
-                self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+                self.msg('Another short circuit is being executed now...')
         else:
             pass
 
@@ -1971,11 +2053,9 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        # print('Post short circuit')
         if self.power_flow.results is not None:
-            # print('Vbus:\n', abs(self.circuit.short_circuit_results.voltage))
-            # print('Sbr:\n', abs(self.circuit.short_circuit_results.Sbranch))
-            # print('ld:\n', abs(self.circuit.short_circuit_results.loading))
+
+            self.remove_simulation(SimulationTypes.ShortCircuit_run)
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -1988,7 +2068,9 @@ class MainGUI(QMainWindow):
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
-        self.UNLOCK()
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def get_selected_voltage_stability(self):
         """
@@ -2014,81 +2096,85 @@ class MainGUI(QMainWindow):
         """
 
         if len(self.circuit.buses) > 0:
-            # get the selected UI options
-            use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
 
-            mode = self.ui.vc_stop_at_comboBox.currentText()
+            if SimulationTypes.VoltageCollapse_run not in self.stuff_running_now:
 
-            vc_stop_at_dict = {VCStopAt.Nose.value: VCStopAt.Nose,
-                               VCStopAt.Full.value: VCStopAt.Full}
+                # get the selected UI options
+                use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
 
-            # declare voltage collapse options
-            vc_options = VoltageCollapseOptions(stop_at=vc_stop_at_dict[mode])
+                mode = self.ui.vc_stop_at_comboBox.currentText()
 
-            if use_alpha:
-                '''
-                use the current power situation as start
-                and a linear combination of the current situation as target
-                '''
-                if self.power_flow is not None:
-                    # lock the UI
-                    self.LOCK()
+                vc_stop_at_dict = {VCStopAt.Nose.value: VCStopAt.Nose,
+                                   VCStopAt.Full.value: VCStopAt.Full}
 
-                    self.ui.progress_label.setText('Compiling the grid...')
-                    QtGui.QGuiApplication.processEvents()
-                    # self.compile()
+                # declare voltage collapse options
+                vc_options = VoltageCollapseOptions(stop_at=vc_stop_at_dict[mode])
 
-                    n = len(self.circuit.buses)
-                    #  compose the base power
-                    Sbase = self.power_flow.results.Sbus
+                if use_alpha:
+                    '''
+                    use the current power situation as start
+                    and a linear combination of the current situation as target
+                    '''
+                    if self.power_flow is not None:
+                        # lock the UI
+                        self.LOCK()
 
-                    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                                     Vbase=self.power_flow.results.voltage,
-                                                     Starget=Sbase * alpha)
+                        self.ui.progress_label.setText('Compiling the grid...')
+                        QtGui.QGuiApplication.processEvents()
+                        # self.compile()
 
-                    # create object
-                    self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
+                        n = len(self.circuit.buses)
+                        #  compose the base power
+                        Sbase = self.power_flow.results.Sbus
 
-                    # make connections
-                    self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
-                    self.voltage_stability.done_signal.connect(self.UNLOCK)
-                    self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+                        vc_inputs = VoltageCollapseInput(Sbase=Sbase,
+                                                         Vbase=self.power_flow.results.voltage,
+                                                         Starget=Sbase * alpha)
 
-                    # thread start
-                    self.voltage_stability.start()
-                else:
-                    self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+                        # create object
+                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
 
-            elif use_profiles:
-                '''
-                Here the start and finish power states are taken from the profiles
-                '''
-                if start_idx > -1 and end_idx > -1:
+                        # make connections
+                        self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                        self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
+                        self.voltage_stability.done_signal.connect(self.post_voltage_stability)
 
-                    # lock the UI
-                    self.LOCK()
+                        # thread start
+                        self.voltage_stability.start()
+                    else:
+                        self.msg('Run a power flow simulation first.\n'
+                                 'The results are needed to initialize this simulation.')
 
-                    # self.compile()
+                elif use_profiles:
+                    '''
+                    Here the start and finish power states are taken from the profiles
+                    '''
+                    if start_idx > -1 and end_idx > -1:
 
-                    self.power_flow.run_at(start_idx)
+                        # lock the UI
+                        self.LOCK()
 
-                    vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
-                                                     Vbase=self.power_flow.results.voltage,
-                                                     Starget=self.circuit.time_series_input.Sprof.values[end_idx, :])
+                        # self.compile()
 
-                    # create object
-                    self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
+                        self.power_flow.run_at(start_idx)
 
-                    # make connections
-                    self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.voltage_stability.done_signal.connect(self.UNLOCK)
-                    self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+                        vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
+                                                         Vbase=self.power_flow.results.voltage,
+                                                         Starget=self.circuit.time_series_input.Sprof.values[end_idx, :])
 
-                    # thread start
-                    self.voltage_stability.start()
-                else:
-                    self.msg('Check the selected start and finnish time series indices.')
+                        # create object
+                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
+
+                        # make connections
+                        self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                        self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+
+                        # thread start
+                        self.voltage_stability.start()
+                    else:
+                        self.msg('Check the selected start and finnish time series indices.')
+            else:
+                self.msg('Another voltage collapse simulation is running...')
         else:
             pass
 
@@ -2098,6 +2184,8 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.voltage_stability.results is not None:
+
+            self.remove_simulation(SimulationTypes.VoltageCollapse_run)
 
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
@@ -2112,7 +2200,9 @@ class MainGUI(QMainWindow):
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
             warn('Something went wrong, There are no voltage stability results.')
-        self.UNLOCK()
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def run_time_series(self):
         """
@@ -2120,46 +2210,49 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
+            if SimulationTypes.TimeSeries_run not in self.stuff_running_now:
+                if self.circuit.time_profile is not None:
 
-            if self.circuit.time_profile is not None:
+                    self.LOCK()
 
-                self.LOCK()
+                    self.add_simulation(SimulationTypes.TimeSeries_run)
 
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
 
-                use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
+                    use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
 
-                if self.optimal_power_flow_time_series is None:
-                    if use_opf_vals:
-                        use_opf_vals = False
-                        self.msg('There are not OPF time series, '
-                                 'therefore this operation will continue with the profile stored values.')
-                        self.ui.actionUse_OPF_in_TS.setChecked(False)
+                    if self.optimal_power_flow_time_series is None:
+                        if use_opf_vals:
+                            use_opf_vals = False
+                            self.msg('There are not OPF time series, '
+                                     'therefore this operation will continue with the profile stored values.')
+                            self.ui.actionUse_OPF_in_TS.setChecked(False)
 
-                    opf_time_series_results = None
+                        opf_time_series_results = None
+                    else:
+                        opf_time_series_results = self.optimal_power_flow_time_series.results
+
+                    options = self.get_selected_power_flow_options()
+                    start = self.ui.profile_start_slider.value()
+                    end = self.ui.profile_end_slider.value() + 1
+
+                    self.time_series = TimeSeries(grid=self.circuit, options=options,
+                                                  use_opf_vals=use_opf_vals,
+                                                  opf_time_series_results=opf_time_series_results,
+                                                  start_=start, end_=end)
+
+                    # Set the time series run options
+                    self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.time_series.progress_text.connect(self.ui.progress_label.setText)
+                    self.time_series.done_signal.connect(self.post_time_series)
+
+                    self.time_series.start()
+
                 else:
-                    opf_time_series_results = self.optimal_power_flow_time_series.results
-
-                options = self.get_selected_power_flow_options()
-                start = self.ui.profile_start_slider.value()
-                end = self.ui.profile_end_slider.value() + 1
-
-                self.time_series = TimeSeries(grid=self.circuit, options=options,
-                                              use_opf_vals=use_opf_vals,
-                                              opf_time_series_results=opf_time_series_results,
-                                              start_=start, end_=end)
-
-                # Set the time series run options
-                self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
-                self.time_series.progress_text.connect(self.ui.progress_label.setText)
-                self.time_series.done_signal.connect(self.UNLOCK)
-                self.time_series.done_signal.connect(self.post_time_series)
-
-                self.time_series.start()
-
+                    self.msg('There are no time series.', 'Time series')
             else:
-                self.msg('There are no time series.', 'Time series')
+                self.msg('Another time series power flow is being executed now...')
         else:
             pass
 
@@ -2170,6 +2263,8 @@ class MainGUI(QMainWindow):
         """
 
         if self.time_series.results is not None:
+
+            self.remove_simulation(SimulationTypes.TimeSeries_run)
 
             voltage = self.time_series.results.voltage.max(axis=0)
             loading = self.time_series.results.loading.max(axis=0)
@@ -2183,6 +2278,9 @@ class MainGUI(QMainWindow):
         else:
             print('No results for the time series simulation.')
 
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def run_stochastic(self):
         """
         Run a Monte Carlo simulation
@@ -2191,28 +2289,34 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if self.circuit.time_profile is not None:
+            if SimulationTypes.MonteCarlo_run not in self.stuff_running_now:
 
-                self.LOCK()
+                if self.circuit.time_profile is not None:
 
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
-                # self.compile()  # compiles inside
+                    self.LOCK()
 
-                options = self.get_selected_power_flow_options()
+                    self.add_simulation(SimulationTypes.MonteCarlo_run)
 
-                tol = 10**(-1*self.ui.tolerance_stochastic_spinBox.value())
-                max_iter = self.ui.max_iterations_stochastic_spinBox.value()
-                self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100, max_mc_iter=max_iter)
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+                    # self.compile()  # compiles inside
 
-                self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
-                self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
-                self.monte_carlo.done_signal.connect(self.UNLOCK)
-                self.monte_carlo.done_signal.connect(self.post_stochastic)
+                    options = self.get_selected_power_flow_options()
 
-                self.monte_carlo.start()
+                    tol = 10**(-1*self.ui.tolerance_stochastic_spinBox.value())
+                    max_iter = self.ui.max_iterations_stochastic_spinBox.value()
+                    self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100, max_mc_iter=max_iter)
+
+                    self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
+                    self.monte_carlo.done_signal.connect(self.post_stochastic)
+
+                    self.monte_carlo.start()
+                else:
+                    self.msg('There are no time series.')
+
             else:
-                self.msg('There are no time series.')
+                self.msg('Another Monte Carlo simulation is running...')
 
         else:
             # self.msg('There are no time series.')
@@ -2224,6 +2328,9 @@ class MainGUI(QMainWindow):
         @return:
         """
         if not self.monte_carlo.__cancel__:
+
+            self.remove_simulation(SimulationTypes.MonteCarlo_run)
+
             self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
                                    loadings=self.monte_carlo.results.loading,
                                    s_branch=self.monte_carlo.results.sbranch,
@@ -2234,6 +2341,9 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def run_lhs(self):
         """
         Run a Monte Carlo simulation with Latin-Hypercube sampling
@@ -2242,29 +2352,33 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if self.circuit.time_profile is not None:
+            if SimulationTypes.LatinHypercube_run not in self.stuff_running_now:
 
-                self.LOCK()
+                if self.circuit.time_profile is not None:
 
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
-                # self.compile()  # compiles inside
+                    self.add_simulation(SimulationTypes.LatinHypercube_run)
 
-                options = self.get_selected_power_flow_options()
+                    self.LOCK()
 
-                sampling_points = self.ui.lhs_samples_number_spinBox.value()
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+                    # self.compile()  # compiles inside
 
-                self.latin_hypercube_sampling = LatinHypercubeSampling(self.circuit, options, sampling_points)
+                    options = self.get_selected_power_flow_options()
 
-                self.latin_hypercube_sampling.progress_signal.connect(self.ui.progressBar.setValue)
-                self.latin_hypercube_sampling.progress_text.connect(self.ui.progress_label.setText)
-                self.latin_hypercube_sampling.done_signal.connect(self.UNLOCK)
-                self.latin_hypercube_sampling.done_signal.connect(self.post_lhs)
+                    sampling_points = self.ui.lhs_samples_number_spinBox.value()
 
-                self.latin_hypercube_sampling.start()
+                    self.latin_hypercube_sampling = LatinHypercubeSampling(self.circuit, options, sampling_points)
+
+                    self.latin_hypercube_sampling.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.latin_hypercube_sampling.progress_text.connect(self.ui.progress_label.setText)
+                    self.latin_hypercube_sampling.done_signal.connect(self.post_lhs)
+
+                    self.latin_hypercube_sampling.start()
+                else:
+                    self.msg('There are no time series.')
             else:
-                self.msg('There are no time series.')
-
+                self.msg('Another latin hypercube is being sampled...')
         else:
             pass
 
@@ -2273,11 +2387,9 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        # print('post_lhs')
-        # update the results in the circuit structures
-        # print('Vbus:\n', abs(self.latin_hypercube_sampling.results.voltage))
-        # print('Ibr:\n', abs(self.latin_hypercube_sampling.results.current))
-        # print('ld:\n', abs(self.latin_hypercube_sampling.results.loading))
+
+        self.remove_simulation(SimulationTypes.LatinHypercube_run)
+
         if not self.latin_hypercube_sampling.__cancel__:
             self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
                                    loadings=self.latin_hypercube_sampling.results.loading,
@@ -2288,6 +2400,9 @@ class MainGUI(QMainWindow):
 
         else:
             pass
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def clear_cascade(self):
         """
@@ -2328,33 +2443,38 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            self.LOCK()
+            if SimulationTypes.Cascade_run not in self.stuff_running_now:
 
-            self.ui.progress_label.setText('Compiling the grid...')
-            QtGui.QGuiApplication.processEvents()
-            # self.compile()  # compiles inside
+                self.add_simulation(SimulationTypes.Cascade_run)
 
-            options = self.get_selected_power_flow_options()
-            options.solver_type = SolverType.LM
+                self.LOCK()
 
-            # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+                # self.compile()  # compiles inside
 
-            max_isl = self.ui.cascading_islands_spinBox.value()
-            n_lsh_samples = self.ui.lhs_samples_number_spinBox.value()
+                options = self.get_selected_power_flow_options()
+                options.solver_type = SolverType.LM
 
-            self.cascade = Cascading(self.circuit.copy(), options,
-                                     max_additional_islands=max_isl,
-                                     n_lhs_samples_=n_lsh_samples)
+                # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
 
-            # connect signals
-            self.cascade.progress_signal.connect(self.ui.progressBar.setValue)
-            self.cascade.progress_text.connect(self.ui.progress_label.setText)
-            self.cascade.done_signal.connect(self.UNLOCK)
-            self.cascade.done_signal.connect(self.post_cascade)
+                max_isl = self.ui.cascading_islands_spinBox.value()
+                n_lsh_samples = self.ui.lhs_samples_number_spinBox.value()
 
-            # run
-            self.cascade.start()
+                self.cascade = Cascading(self.circuit.copy(), options,
+                                         max_additional_islands=max_isl,
+                                         n_lhs_samples_=n_lsh_samples)
 
+                # connect signals
+                self.cascade.progress_signal.connect(self.ui.progressBar.setValue)
+                self.cascade.progress_text.connect(self.ui.progress_label.setText)
+                self.cascade.done_signal.connect(self.post_cascade)
+
+                # run
+                self.cascade.start()
+
+            else:
+                self.msg('Another cascade is running...')
         else:
             pass
 
@@ -2364,6 +2484,8 @@ class MainGUI(QMainWindow):
         """
 
         # update the results in the circuit structures
+
+        self.remove_simulation(SimulationTypes.Cascade_run)
 
         n = len(self.cascade.results.events)
 
@@ -2395,12 +2517,16 @@ class MainGUI(QMainWindow):
             # Update results
             self.update_available_results()
 
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def cascade_table_click(self):
         """
         Display cascade upon cascade scenario click
         Returns:
 
         """
+
         idx = self.ui.cascade_tableView.currentIndex()
         if idx.row() > -1:
             self.post_cascade(idx=idx.row())
@@ -2410,80 +2536,12 @@ class MainGUI(QMainWindow):
         Run OPF simulation
         """
         if len(self.circuit.buses) > 0:
-            self.LOCK()
 
-            # get the power flow options from the GUI
-            load_shedding = self.ui.load_shedding_checkBox.isChecked()
-            realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
-            generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
-            solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-            control_batteries = self.ui.control_batteries_checkBox.isChecked()
-            load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
-            gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
-            pf_options = self.get_selected_power_flow_options()
-            options = OptimalPowerFlowOptions(load_shedding=load_shedding,
-                                              generation_shedding=generation_shedding,
-                                              solver=solver,
-                                              realistic_results=realistic_results,
-                                              control_batteries=control_batteries,
-                                              load_shedding_weight=load_shedding_w,
-                                              generation_shedding_weight=gen_shedding_w,
-                                              power_flow_options=pf_options)
+            if SimulationTypes.OPF_run not in self.stuff_running_now:
 
-            self.ui.progress_label.setText('Running optimal power flow...')
-            QtGui.QGuiApplication.processEvents()
-            # set power flow object instance
-            self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
-
-            # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-            # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
-            # self.power_flow.done_signal.connect(self.UNLOCK)
-            # self.power_flow.done_signal.connect(self.post_power_flow)
-
-            # self.power_flow.run()
-            self.threadpool.start(self.optimal_power_flow)
-            self.threadpool.waitForDone()
-            self.post_opf()
-        else:
-            pass
-
-    def post_opf(self):
-        """
-        Actions to run after the OPF simulation
-        """
-        if self.optimal_power_flow is not None:
-
-            if self.optimal_power_flow.results.converged:
-
-                self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
-                                       loadings=self.optimal_power_flow.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       s_branch=self.optimal_power_flow.results.Sbranch,
-                                       s_bus=self.optimal_power_flow.results.Sbus)
-                self.update_available_results()
-
-            else:
-
-                self.msg('Some islands did not solve.\n'
-                         'Check that all branches have rating and \n'
-                         'that there is a generator at the slack node.', 'OPF')
-
-        self.UNLOCK()
-
-    def run_opf_time_series(self):
-        """
-        OPF Time Series run
-        :return:
-        """
-        if len(self.circuit.buses) > 0:
-
-            if self.circuit.time_profile is not None:
+                self.remove_simulation(SimulationTypes.OPF_run)
 
                 self.LOCK()
-
-                # Compile the grid
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
 
                 # get the power flow options from the GUI
                 load_shedding = self.ui.load_shedding_checkBox.isChecked()
@@ -2503,26 +2561,113 @@ class MainGUI(QMainWindow):
                                                   generation_shedding_weight=gen_shedding_w,
                                                   power_flow_options=pf_options)
 
-                start = self.ui.profile_start_slider.value()
-                end = self.ui.profile_end_slider.value() + 1
+                self.ui.progress_label.setText('Running optimal power flow...')
+                QtGui.QGuiApplication.processEvents()
+                # set power flow object instance
+                self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
 
-                # create the OPF time series instance
-                self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                                                 options=options,
-                                                                                 start_=start,
-                                                                                 end_=end)
+                # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+                # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
+                # self.power_flow.done_signal.connect(self.UNLOCK)
+                # self.power_flow.done_signal.connect(self.post_power_flow)
 
-                # make the thread connections to the GUI
-                self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
-                self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
-                self.optimal_power_flow_time_series.done_signal.connect(self.UNLOCK)
-                self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
-
-                # Run
-                self.optimal_power_flow_time_series.start()
+                # self.power_flow.run()
+                self.threadpool.start(self.optimal_power_flow)
+                self.threadpool.waitForDone()
+                self.post_opf()
 
             else:
-                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+                self.msg('Another OPF is being run...')
+        else:
+            pass
+
+    def post_opf(self):
+        """
+        Actions to run after the OPF simulation
+        """
+        if self.optimal_power_flow is not None:
+
+            self.remove_simulation(SimulationTypes.OPF_run)
+
+            if self.optimal_power_flow.results.converged:
+
+                self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
+                                       loadings=self.optimal_power_flow.results.loading,
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       s_branch=self.optimal_power_flow.results.Sbranch,
+                                       s_bus=self.optimal_power_flow.results.Sbus)
+                self.update_available_results()
+
+            else:
+
+                self.msg('Some islands did not solve.\n'
+                         'Check that all branches have rating and \n'
+                         'that there is a generator at the slack node.', 'OPF')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
+    def run_opf_time_series(self):
+        """
+        OPF Time Series run
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if SimulationTypes.OPFTimeSeries_run not in self.stuff_running_now:
+
+                if self.circuit.time_profile is not None:
+
+                    self.add_simulation(SimulationTypes.OPFTimeSeries_run)
+
+                    self.LOCK()
+
+                    # Compile the grid
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+
+                    # get the power flow options from the GUI
+                    load_shedding = self.ui.load_shedding_checkBox.isChecked()
+                    realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
+                    generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
+                    solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+                    control_batteries = self.ui.control_batteries_checkBox.isChecked()
+                    load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
+                    gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
+                    pf_options = self.get_selected_power_flow_options()
+                    options = OptimalPowerFlowOptions(load_shedding=load_shedding,
+                                                      generation_shedding=generation_shedding,
+                                                      solver=solver,
+                                                      realistic_results=realistic_results,
+                                                      control_batteries=control_batteries,
+                                                      load_shedding_weight=load_shedding_w,
+                                                      generation_shedding_weight=gen_shedding_w,
+                                                      power_flow_options=pf_options)
+
+                    start = self.ui.profile_start_slider.value()
+                    end = self.ui.profile_end_slider.value() + 1
+
+                    # create the OPF time series instance
+                    self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
+                                                                                     options=options,
+                                                                                     start_=start,
+                                                                                     end_=end)
+
+                    # make the thread connections to the GUI
+                    self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
+                    self.optimal_power_flow_time_series.done_signal.connect(self.UNLOCK)
+                    self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
+
+                    # Run
+                    self.optimal_power_flow_time_series.start()
+
+                else:
+                    self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+
+            else:
+                self.msg('Another OPF time series is being run...')
+
         else:
             pass
 
@@ -2532,6 +2677,8 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.optimal_power_flow_time_series is not None:
+
+            self.remove_simulation(SimulationTypes.OPFTimeSeries_run)
 
             voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
             loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
@@ -2545,6 +2692,9 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def run_transient_stability(self):
         """
         Run transient stability
@@ -2557,6 +2707,8 @@ class MainGUI(QMainWindow):
                 # the last power flow, no compilation is needed
 
                 self.LOCK()
+
+                self.add_simulation(SimulationTypes.TransientStability_run)
 
                 options = TransientStabilityOptions()
                 options.t_sim = self.ui.transient_time_span_doubleSpinBox.value()
@@ -2586,8 +2738,16 @@ class MainGUI(QMainWindow):
             pass
 
     def post_transient_stability(self):
+        """
+        Executed when the transient stability is done
+        :return:
+        """
+        self.remove_simulation(SimulationTypes.TransientStability_run)
 
         self.update_available_results()
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def copy_opf_to_time_series(self):
         """
@@ -2627,62 +2787,68 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            # compute the options
-            rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
-            exponent = self.ui.rxThresholdSpinBox.value()
-            rx_threshold = 1.0 / (10.0**exponent)
-            # type_criteria = self.ui.removeByTypeCheckBox.isChecked()
-            # selected_type_txt = self.ui.removeByTypeComboBox.currentText()
-            # selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
+            if SimulationTypes.TopologyReduction_run not in self.stuff_running_now:
 
-            # get the selected indices
-            checked = get_checked_indices(self.ui.removeByTypeListView.model())
+                # compute the options
+                rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
+                exponent = self.ui.rxThresholdSpinBox.value()
+                rx_threshold = 1.0 / (10.0**exponent)
+                # type_criteria = self.ui.removeByTypeCheckBox.isChecked()
+                # selected_type_txt = self.ui.removeByTypeComboBox.currentText()
+                # selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
 
-            if len(checked) > 0:
+                # get the selected indices
+                checked = get_checked_indices(self.ui.removeByTypeListView.model())
 
-                selected_types = list()
-                for i in checked:
-                    selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                    selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
-                    selected_types.append(selected_type)
+                if len(checked) > 0:
 
-                # compose options
-                options = TopologyReductionOptions(rx_criteria=rx_criteria,
-                                                   rx_threshold=rx_threshold,
-                                                   selected_types=selected_types)
+                    selected_types = list()
+                    for i in checked:
+                        selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
+                        selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
+                        selected_types.append(selected_type)
 
-                # find which branches to remove
-                br_to_remove = select_branches_to_reduce(circuit=self.circuit,
-                                                         rx_criteria=options.rx_criteria,
-                                                         rx_threshold=options.rx_threshold,
-                                                         selected_types=options.selected_type)
-                if len(br_to_remove) > 0:
-                    # raise dialogue
-                    elms = [self.circuit.branches[i] for i in br_to_remove]
-                    diag = ElementsDialogue('Elements to be reduced', elms)
-                    diag.show()
-                    diag.exec_()
+                    # compose options
+                    options = TopologyReductionOptions(rx_criteria=rx_criteria,
+                                                       rx_threshold=rx_threshold,
+                                                       selected_types=selected_types)
 
-                    if diag.accepted:
+                    # find which branches to remove
+                    br_to_remove = select_branches_to_reduce(circuit=self.circuit,
+                                                             rx_criteria=options.rx_criteria,
+                                                             rx_threshold=options.rx_threshold,
+                                                             selected_types=options.selected_type)
+                    if len(br_to_remove) > 0:
+                        # raise dialogue
+                        elms = [self.circuit.branches[i] for i in br_to_remove]
+                        diag = ElementsDialogue('Elements to be reduced', elms)
+                        diag.show()
+                        diag.exec_()
 
-                        self.LOCK()
+                        if diag.accepted:
 
-                        # reduce the grid
-                        self.topology_reduction = TopologyReduction(grid=self.circuit, branch_indices=br_to_remove)
+                            self.LOCK()
 
-                        # Set the time series run options
-                        self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
-                        self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
-                        self.topology_reduction.done_signal.connect(self.UNLOCK)
-                        self.topology_reduction.done_signal.connect(self.post_reduce_grid)
+                            self.add_simulation(SimulationTypes.TopologyReduction_run)
 
-                        self.topology_reduction.start()
+                            # reduce the grid
+                            self.topology_reduction = TopologyReduction(grid=self.circuit, branch_indices=br_to_remove)
+
+                            # Set the time series run options
+                            self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
+                            self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
+                            self.topology_reduction.done_signal.connect(self.post_reduce_grid)
+
+                            self.topology_reduction.start()
+                        else:
+                            pass
                     else:
-                        pass
+                        self.msg('There were no branches identified', 'Topological grid reduction')
                 else:
-                    self.msg('There were no branches identified', 'Topological grid reduction')
+                    self.msg('Select at least one reduction option in the topology settings',
+                             'Topological grid reduction')
             else:
-                self.msg('Select at least one reduction option in the topology settings', 'Topological grid reduction')
+                self.msg('Another topological reduction is being conducted...', 'Topological grid reduction')
         else:
             pass
 
@@ -2691,9 +2857,15 @@ class MainGUI(QMainWindow):
         Actions after reducing
         :return:
         """
+
+        self.remove_simulation(SimulationTypes.TopologyReduction_run)
+
         self.create_schematic_from_api(explode_factor=1)
 
         self.clear_results()
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def storage_location(self):
 
@@ -2802,9 +2974,6 @@ class MainGUI(QMainWindow):
 
             if self.voltage_stability is not None:
                 self.voltage_stability.cancel()
-
-            if self.monte_carlo is not None:
-                self.monte_carlo.cancel()
 
             if self.latin_hypercube_sampling is not None:
                 self.latin_hypercube_sampling.cancel()

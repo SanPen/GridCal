@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/export_pickle.svg</file>
     <file>icons/check_all.svg</file>
     <file>icons/uncheck_all.svg</file>
     <file>icons/copy2down.svg</file>

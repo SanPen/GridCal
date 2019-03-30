@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import pickle as pkl
 import pandas as pd
 from numpy import complex, zeros, ones, array, zeros_like
 import multiprocessing
@@ -54,6 +54,8 @@ class TimeSeriesResults(PowerFlowResults):
         if nt > 0:
             self.voltage = zeros((nt, n), dtype=complex)
 
+            self.S = zeros((nt, n), dtype=complex)
+
             self.Sbranch = zeros((nt, m), dtype=complex)
 
             self.Ibranch = zeros((nt, m), dtype=complex)
@@ -87,6 +89,8 @@ class TimeSeriesResults(PowerFlowResults):
         else:
             self.voltage = None
 
+            self.S = None
+
             self.Sbranch = None
 
             self.Ibranch = None
@@ -118,6 +122,8 @@ class TimeSeriesResults(PowerFlowResults):
             self.buses_useful_for_storage = None
 
             self.available_results = [ResultTypes.BusVoltage,
+                                      ResultTypes.BusActivePower,
+                                      ResultTypes.BusReactivePower,
                                       ResultTypes.BranchPower,
                                       ResultTypes.BranchCurrent,
                                       ResultTypes.BranchLoading,
@@ -132,6 +138,8 @@ class TimeSeriesResults(PowerFlowResults):
         """
 
         self.voltage[t, :] = results.voltage
+
+        self.S[t, :] = results.Sbus
 
         self.Sbranch[t, :] = results.Sbranch
 
@@ -192,6 +200,8 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.voltage[:, b_idx] = results.voltage
 
+        self.S[:, b_idx] = results.S
+
         self.Sbranch[:, br_idx] = results.Sbranch
 
         self.Ibranch[:, br_idx] = results.Ibranch
@@ -207,35 +217,26 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.converged = self.converged * results.converged
 
-        # self.voltage = self.merge_if(self.voltage, results.voltage, index, b_idx)
-        #
-        # self.Sbranch = self.merge_if(self.Sbranch, results.Sbranch, index, br_idx)
-        #
-        # self.Ibranch = self.merge_if(self.Ibranch, results.Ibranch, index, br_idx)
-        #
-        # self.loading = self.merge_if(self.loading, results.loading, index, br_idx)
-        #
-        # self.losses = self.merge_if(self.losses, results.losses, index, br_idx)
-        #
-        # self.error = self.merge_if(self.error, results.error, index, [grid_idx])
-        #
-        # self.converged = self.merge_if(self.converged, results.converged, index, [grid_idx])
+    def get_results_dict(self):
+        """
+        Returns a dictionary with the results sorted in a dictionary
+        :return: dictionary of 2D numpy arrays (probably of complex numbers)
+        """
+        data = {'V': self.voltage,
+                'S': self.S,
+                'Sbr': self.Sbranch,
+                'Ibr': self.Ibranch,
+                'loading': self.loading,
+                'losses': self.losses}
+        return data
 
-        # self.Qpv = Qpv
+    def save(self, fname):
+        """
+        Export as pickle
+        """
 
-        # self.overloads = self.merge_if(self.voltage, results.voltage, index, b_idx)
-        #
-        # self.overvoltage = self.merge_if(self.voltage, results.voltage, index, b_idx)
-        #
-        # self.undervoltage = self.merge_if(self.voltage, results.voltage, index, b_idx)
-        #
-        # self.overloads_idx = None
-        #
-        # self.overvoltage_idx = None
-        #
-        # self.undervoltage_idx = None
-        #
-        # self.buses_useful_for_storage = None
+        with open(fname, "wb") as output_file:
+            pkl.dump(self.get_results_dict(), output_file)
 
     def analyze(self):
         """
@@ -277,32 +278,42 @@ class TimeSeriesResults(PowerFlowResults):
 
             if result_type == ResultTypes.BusVoltage:
                 data = self.voltage[:, indices]
-                ylabel = '(p.u.)'
+                y_label = '(p.u.)'
                 title = 'Bus voltage '
+
+            elif result_type == ResultTypes.BusActivePower:
+                data = self.Sbus[:, indices].real
+                y_label = '(MW)'
+                title = 'Bus active power '
+
+            elif result_type == ResultTypes.BusReactivePower:
+                data = self.Sbus[:, indices].imag
+                y_label = '(MVAr)'
+                title = 'Bus reactive power '
 
             elif result_type == ResultTypes.BranchPower:
                 data = self.Sbranch[:, indices]
-                ylabel = '(MVA)'
+                y_label = '(MVA)'
                 title = 'Branch power '
 
             elif result_type == ResultTypes.BranchCurrent:
                 data = self.Ibranch[:, indices]
-                ylabel = '(kA)'
+                y_label = '(kA)'
                 title = 'Branch current '
 
             elif result_type == ResultTypes.BranchLoading:
                 data = self.loading[:, indices] * 100
-                ylabel = '(%)'
+                y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == ResultTypes.BranchLosses:
                 data = self.losses[:, indices]
-                ylabel = '(MVA)'
+                y_label = '(MVA)'
                 title = 'Branch losses'
 
             elif result_type == ResultTypes.BatteryPower:
                 data = zeros_like(self.losses[:, indices])
-                ylabel = '$\Delta$ (MVA)'
+                y_label = '$\Delta$ (MVA)'
                 title = 'Battery power'
 
             else:
@@ -320,7 +331,7 @@ class TimeSeriesResults(PowerFlowResults):
                 df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
 
             ax.set_title(title)
-            ax.set_ylabel(ylabel)
+            ax.set_ylabel(y_label)
             ax.set_xlabel('Time')
 
             return df
@@ -584,4 +595,8 @@ class TimeSeries(QThread):
 
     def cancel(self):
         self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled!')
+        self.done_signal.emit()
+
 

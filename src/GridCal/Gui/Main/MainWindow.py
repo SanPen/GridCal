@@ -1932,6 +1932,11 @@ class Ui_mainWindow(object):
         self.actionLaunch_data_analysis_tool.setObjectName("actionLaunch_data_analysis_tool")
         self.actionOnline_documentation = QtWidgets.QAction(mainWindow)
         self.actionOnline_documentation.setObjectName("actionOnline_documentation")
+        self.actionExport_all_results = QtWidgets.QAction(mainWindow)
+        icon56 = QtGui.QIcon()
+        icon56.addPixmap(QtGui.QPixmap(":/Icons/icons/export_pickle.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionExport_all_results.setIcon(icon56)
+        self.actionExport_all_results.setObjectName("actionExport_all_results")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -1964,6 +1969,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionExport)
+        self.menuActions.addAction(self.actionExport_all_results)
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuActions.menuAction())
         self.menuBar.addAction(self.menuAbout.menuAction())
@@ -2266,6 +2272,8 @@ class Ui_mainWindow(object):
         self.actionLaunch_data_analysis_tool.setShortcut(_translate("mainWindow", "F8"))
         self.actionOnline_documentation.setText(_translate("mainWindow", "Online documentation"))
         self.actionOnline_documentation.setShortcut(_translate("mainWindow", "F1"))
+        self.actionExport_all_results.setText(_translate("mainWindow", "Export all results"))
+        self.actionExport_all_results.setToolTip(_translate("mainWindow", "Export all the results"))
 
 
 from .matplotlibwidget import MatplotlibWidget

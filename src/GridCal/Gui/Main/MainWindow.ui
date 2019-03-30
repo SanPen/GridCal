@@ -4420,6 +4420,7 @@ points from time series</string>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
+    <addaction name="actionExport_all_results"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -5007,6 +5008,18 @@ points from time series</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="actionExport_all_results">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export all results</string>
+   </property>
+   <property name="toolTip">
+    <string>Export all the results</string>
    </property>
   </action>
  </widget>
