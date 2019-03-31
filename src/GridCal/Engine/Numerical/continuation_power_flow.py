@@ -358,7 +358,7 @@ def cpf_corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
             ], format="csc")
     
         # compute update step
-        dx = -splu(J).solve(F)   #-np.linalg.solve(J, F)
+        dx = -splu(J).solve(F)
     
         # update voltage
         if npv:

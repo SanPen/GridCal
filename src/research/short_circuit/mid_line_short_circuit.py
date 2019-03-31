@@ -1,4 +1,4 @@
-from GridCal.Engine.All import *
+from GridCal.Engine import *
 
 
 def split_branch(branch: Branch, fault_position, r_fault, x_fault):
