@@ -17,8 +17,8 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults
-from GridCal.Engine.Numerical.dynamic_modules import dynamic_simulation
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
+from GridCal.Engine.Simulations.Dynamics.dynamic_modules import dynamic_simulation
 
 ########################################################################################################################
 # Transient stability

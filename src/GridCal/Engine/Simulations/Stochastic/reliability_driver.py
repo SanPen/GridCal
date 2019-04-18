@@ -17,7 +17,7 @@ import numpy as np
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Devices import DeviceType

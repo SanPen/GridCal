@@ -21,9 +21,10 @@ from scipy.sparse import csc_matrix, hstack as hstack_s, vstack as vstack_s
 
 # from GridCal.Engine.calculation_engine import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP, MultiCircuit
-from GridCal.Engine.io_structures import CalculationInputs, OptimalPowerFlowResults
-from GridCal.Engine.Numerical.dc_opf import Cproduct
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowMP, MultiCircuit
+from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from GridCal.Engine.Simulations.OPF.dc_opf import Cproduct
 
 
 class AcOpf_old:

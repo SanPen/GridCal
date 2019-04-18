@@ -18,13 +18,9 @@
 # This file retains the BSD-Style license
 
 
-from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \
-empty, float64, int32, arange
-from scipy.sparse import issparse, csr_matrix as sparse, hstack, vstack
-from scipy.sparse.linalg import spsolve, splu
+from numpy import angle
 import scipy
 scipy.ALLOW_THREADS = True
-import time
 import numpy as np
 
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
@@ -35,7 +31,7 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 ########################################################################################################################
 if __name__ == "__main__":
     from GridCal.Engine.All import *
-    from GridCal.Engine.Numerical.jacobian_based_power_flow import ContinuousNR
+    from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import ContinuousNR
     import pandas as pd
 
     pd.set_option('display.max_rows', 500)

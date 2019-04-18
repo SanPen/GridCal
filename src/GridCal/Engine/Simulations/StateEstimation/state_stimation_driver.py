@@ -14,41 +14,14 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from enum import Enum
 from PyQt5.QtCore import QRunnable
 
-from GridCal.Engine.Numerical.state_estimation import solve_se_lm
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults, PowerFlowMP
+from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowMP
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Simulations.StateEstimation.measurement import MeasurementType
 
-
-class MeasurementType(Enum):
-    Pinj = 1,
-    Qinj = 2,
-    Vmag = 3,
-    Pflow = 4,
-    Qflow = 5,
-    Iflow = 6
-
-
-class Measurement:
-
-    def __init__(self, value, uncertainty, mtype: MeasurementType):
-        """
-        Constructor
-        :param value: value
-        :param uncertainty: uncertainty (standard deviation)
-        :param mtype: type of measurement
-        """
-        self.val = value
-        self.sigma = uncertainty
-        self.measurement_type = mtype
-
-
-########################################################################################################################
-# State Estimation classes
-########################################################################################################################
 
 class StateEstimationInput:
 

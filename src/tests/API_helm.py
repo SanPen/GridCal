@@ -13,10 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np
-
 from GridCal.Engine import *
-from GridCal.Engine.Drivers.power_flow_driver import *
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 
 np.set_printoptions(precision=4)
 

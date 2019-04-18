@@ -21,7 +21,7 @@ from PyQt5.QtGui import *
 from warnings import warn
 
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType
-from GridCal.Engine.io_structures import ResultTypes
+from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Bus
 
 

@@ -21,15 +21,11 @@ from matplotlib import pyplot as plt
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from GridCal.Engine.io_structures import PowerFlowResults, ResultTypes
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Drivers.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
-
-
-########################################################################################################################
-# Time series classes
-########################################################################################################################
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
 
 
 class TimeSeriesResults(PowerFlowResults):

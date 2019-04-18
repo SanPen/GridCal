@@ -23,13 +23,14 @@ from PyQt5.QtCore import QRunnable
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
-from GridCal.Engine.Numerical.linearized_power_flow import dcpf, lacpf
-from GridCal.Engine.Numerical.helm_power_flow import helm
-from GridCal.Engine.Numerical.jacobian_based_power_flow import IwamotoNR
-from GridCal.Engine.Numerical.jacobian_based_power_flow import LevenbergMarquardtPF
-from GridCal.Engine.Numerical.jacobian_based_power_flow import NR_LS, NR_I_LS
-from GridCal.Engine.Numerical.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.io_structures import PowerFlowResults, CalculationInputs
+from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import LevenbergMarquardtPF
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS
+from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 
 
 class SolverType(Enum):

@@ -1,4 +1,4 @@
-from numpy import zeros, sqrt, diag
+from numpy import zeros, diag
 
 
 def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):

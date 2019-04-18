@@ -15,13 +15,13 @@
 
 from PyQt5.QtCore import QRunnable
 
-from GridCal.Engine.io_structures import OptimalPowerFlowResults
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Numerical.ac_opf import AcOpf
-from GridCal.Engine.Numerical.dc_opf import DcOpf
-from GridCal.Engine.Drivers.power_flow_driver import SolverType
-from GridCal.Engine.Numerical.nelder_mead_opf import AcOpfNelderMead
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions
+from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
+from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
+from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 
 ########################################################################################################################
 # Optimal Power flow classes

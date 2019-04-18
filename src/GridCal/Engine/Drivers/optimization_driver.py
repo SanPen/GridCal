@@ -13,10 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-from numpy import zeros, array, ones, arange
 from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, pyqtSignal
-from poap.controller import SerialController
 from pySOT.experimental_design import SymmetricLatinHypercube
 from pySOT.strategy import SRBFStrategy
 from pySOT.surrogate import GPRegressor
@@ -24,9 +22,9 @@ from pySOT.optimization_problems import OptimizationProblem
 from poap.controller import ThreadController, BasicWorkerThread
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlow, PowerFlowOptions
-from GridCal.Engine.io_structures import MonteCarloResults
-from GridCal.Engine.Drivers.stochastic_driver import make_monte_carlo_input
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlow, PowerFlowOptions
+from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
+from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 
 ########################################################################################################################
 # Optimization classes

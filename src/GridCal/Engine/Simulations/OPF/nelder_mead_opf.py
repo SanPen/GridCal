@@ -1,7 +1,7 @@
 import copy
 import numpy as np
-from GridCal.Engine.io_structures import OptimalPowerFlowResults
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowMP, PowerFlowOptions, SolverType
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowMP, PowerFlowOptions, SolverType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 """

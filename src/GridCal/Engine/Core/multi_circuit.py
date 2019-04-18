@@ -13,14 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import networkx as nx
-import json
-
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
 
 class MultiCircuit:

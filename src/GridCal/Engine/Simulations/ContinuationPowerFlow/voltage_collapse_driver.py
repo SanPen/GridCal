@@ -18,10 +18,11 @@ import numpy as np
 import pickle as pkl
 from matplotlib import pyplot as plt
 
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal
 
-from GridCal.Engine.io_structures import PowerFlowResults, ResultTypes
-from GridCal.Engine.Numerical.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 

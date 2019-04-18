@@ -18,7 +18,7 @@ from scipy.sparse import lil_matrix, diags, csc_matrix
 
 from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.Devices import *
-from GridCal.Engine.io_structures import CalculationInputs
+from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 
 

@@ -1,8 +1,7 @@
 from GridCal.Engine import *
-from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
-from scipy.sparse import issparse, csr_matrix as sparse, hstack as hstack_sp, vstack as vstack_sp, diags
-from scipy.sparse.linalg import spsolve, splu
+from scipy.sparse import hstack as hstack_sp, vstack as vstack_sp
 
 circuit = MultiCircuit()
 

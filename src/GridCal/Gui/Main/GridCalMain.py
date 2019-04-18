@@ -25,18 +25,18 @@ from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 
 # Engine imports
-from GridCal.Engine.Drivers.blackout_driver import *
-from GridCal.Engine.io_structures import *
-from GridCal.Engine.Drivers.opf_driver import *
-from GridCal.Engine.Drivers.opf_time_series_driver import *
+from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
+from GridCal.Engine.Simulations.OPF.opf_driver import *
+from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 # from GridCal.Engine.OptimizationDriver import *
-from GridCal.Engine.Drivers.power_flow_driver import *
-from GridCal.Engine.Drivers.short_circuit_driver import *
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
+from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 # from GridCal.Engine.StateEstimationDriver import *
-from GridCal.Engine.Drivers.stochastic_driver import *
-from GridCal.Engine.Drivers.time_series_driver import *
-from GridCal.Engine.Drivers.transient_stability_driver import *
-from GridCal.Engine.Drivers.voltage_collapse_driver import *
+from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
+from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
+from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
+from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
+from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Drivers.topology_driver import TopologyReduction, TopologyReductionOptions
 from GridCal.Engine.Drivers.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis

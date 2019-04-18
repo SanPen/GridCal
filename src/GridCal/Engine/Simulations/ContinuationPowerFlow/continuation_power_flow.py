@@ -2,12 +2,12 @@
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
 import numpy as np
-from numpy import angle, conj, exp, r_, linalg, Inf, dot, zeros
+from numpy import angle, exp, r_, linalg, Inf, dot, zeros, conj
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
 
-from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
 
 class VCStopAt(Enum):
@@ -725,11 +725,11 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parametri
     J2 = vstack([hstack([J,     dF_dlam.reshape(nj, 1)]),
                  hstack([dP_dV, dP_dlam])], format="csc")
 
-    Va_prev = angle(V)
+    Va_prev = np.angle(V)
     Vm_prev = np.abs(V)
     
     # compute normalized tangent predictor
-    s = zeros(npv + 2 * npq + 1)
+    s = np.zeros(npv + 2 * npq + 1)
 
     # increase in the direction of lambda
     s[npv + 2 * npq] = 1
@@ -934,15 +934,15 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
 if __name__ == '__main__':
 
     from GridCal.Engine.Importers.file_handler import *
-    from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, \
+    from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, \
         SolverType
-    from GridCal.Engine.Drivers.short_circuit_driver import *
-    from GridCal.Engine.Drivers.time_series_driver import *
-    from GridCal.Engine.Drivers.opf_driver import *
-    from GridCal.Engine.Drivers.opf_time_series_driver import *
-    from GridCal.Engine.Drivers.voltage_collapse_driver import *
-    from GridCal.Engine.Drivers.stochastic_driver import *
-    from GridCal.Engine.Drivers.blackout_driver import *
+    from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
+    from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
+    from GridCal.Engine.Simulations.OPF.opf_driver import *
+    from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
+    from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
+    from GridCal.Engine.Simulations.MonteCarlo.stochastic_driver import *
+    from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
     from GridCal.Engine.Drivers.optimization_driver import *
     from GridCal.Engine.io_structures import *
     from GridCal.Engine.grid_analysis import *

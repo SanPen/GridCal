@@ -22,14 +22,14 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Drivers.power_flow_driver import SolverType
-from GridCal.Engine.Drivers.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
-from GridCal.Engine.Numerical.ac_opf import AcOpf
-from GridCal.Engine.Numerical.dc_opf import DcOpf
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
+from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
+from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
+from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
 # from research.DYCORS_OPF import AcOpfDYCORS
-from GridCal.Engine.Numerical.nelder_mead_opf import AcOpfNelderMead
-from GridCal.Engine.Drivers.power_flow_driver import PowerFlowOptions
-from GridCal.Engine.io_structures import ResultTypes
+from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
+from GridCal.Engine.Simulations.result_types import ResultTypes
 
 
 class OptimalPowerFlowTimeSeriesResults:

@@ -288,10 +288,8 @@ class Battery(Generator):
         """
         self.soc = self.soc_0
         self.energy = self.Enom * self.soc
-        dta = self.P_prof.values.copy()
-        index = self.P_prof.index
-        self.power_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
-        self.energy_array = pd.DataFrame(data=dta.copy(), index=index, columns=[self.name])
+        self.power_array = self.P_prof.copy()
+        self.energy_array = self.P_prof.copy()
 
     def process(self, P, dt, charge_if_needed=False):
         """
@@ -356,13 +354,13 @@ class Battery(Generator):
         :param store_values: store the values?
         :return: active power processed by the battery control in MW
         """
-        power_value = self.P_prof.values[t]
+        power_value = self.P_prof[t]
 
         processed_power, processed_energy = self.process(power_value, dt)
 
         if store_values:
-            self.energy_array.values[t] = processed_energy
-            self.power_array.values[t] = processed_power
+            self.energy_array[t] = processed_energy
+            self.power_array[t] = processed_power
 
         return processed_power
 
