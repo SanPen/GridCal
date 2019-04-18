@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5 import QtCore
-
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 
