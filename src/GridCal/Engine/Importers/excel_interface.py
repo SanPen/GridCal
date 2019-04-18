@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-import pandas as pd
+
 import numpy as np
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -706,7 +706,8 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 if sheet_name in data.keys():
                     val = data[sheet_name].values[:, i]
                     idx = data[sheet_name].index
-                    setattr(obj, load_attr, pd.DataFrame(data=val, index=idx))
+                    # setattr(obj, load_attr, pd.DataFrame(data=val, index=idx))
+                    setattr(obj, load_attr, val)
 
                     if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
                         circuit.time_profile = idx
@@ -1078,19 +1079,19 @@ def create_data_frames(circuit: MultiCircuit):
             hdr.append(elm.name)
             if T is not None:
                 if p_profiles is None and elm.P_prof is not None:
-                    p_profiles = elm.P_prof.values
-                    q_profiles = elm.Q_prof.values
-                    ir_profiles = elm.Ir_prof.values
-                    ii_profiles = elm.Ii_prof.values
-                    g_profiles = elm.G_prof.values
-                    b_profiles = elm.B_prof.values
+                    p_profiles = elm.P_prof
+                    q_profiles = elm.Q_prof
+                    ir_profiles = elm.Ir_prof
+                    ii_profiles = elm.Ii_prof
+                    g_profiles = elm.G_prof
+                    b_profiles = elm.B_prof
                 else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof.values]
-                    q_profiles = np.c_[q_profiles, elm.Q_prof.values]
-                    ir_profiles = np.c_[ir_profiles, elm.Ir_prof.values]
-                    ii_profiles = np.c_[ii_profiles, elm.Ii_prof.values]
-                    g_profiles = np.c_[g_profiles, elm.G_prof.values]
-                    b_profiles = np.c_[b_profiles, elm.B_prof.values]
+                    p_profiles = np.c_[p_profiles, elm.P_prof]
+                    q_profiles = np.c_[q_profiles, elm.Q_prof]
+                    ir_profiles = np.c_[ir_profiles, elm.Ir_prof]
+                    ii_profiles = np.c_[ii_profiles, elm.Ii_prof]
+                    g_profiles = np.c_[g_profiles, elm.G_prof]
+                    b_profiles = np.c_[b_profiles, elm.B_prof]
 
         dfs['load'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -1117,11 +1118,11 @@ def create_data_frames(circuit: MultiCircuit):
             hdr.append(elm.name)
             if T is not None:
                 if p_profiles is None and elm.Sprof is not None:
-                    p_profiles = elm.P_prof.values
-                    q_profiles = elm.Q_prof.values
+                    p_profiles = elm.P_prof
+                    q_profiles = elm.Q_prof
                 else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof.values]
-                    q_profiles = np.c_[q_profiles, elm.Q_prof.values]
+                    p_profiles = np.c_[p_profiles, elm.P_prof]
+                    q_profiles = np.c_[q_profiles, elm.Q_prof]
 
         dfs['static_generator'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -1145,11 +1146,11 @@ def create_data_frames(circuit: MultiCircuit):
             hdr.append(elm.name)
             if T is not None:
                 if p_profiles is None and elm.P_prof is not None:
-                    p_profiles = elm.P_prof.values
-                    v_set_profiles = elm.Vset_prof.values
+                    p_profiles = elm.P_prof
+                    v_set_profiles = elm.Vset_prof
                 else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof.values]
-                    v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof.values]
+                    p_profiles = np.c_[p_profiles, elm.P_prof]
+                    v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof]
         dfs['battery'] = pd.DataFrame(data=obj, columns=headers)
 
         if p_profiles is not None:
@@ -1172,11 +1173,11 @@ def create_data_frames(circuit: MultiCircuit):
             hdr.append(elm.name)
             if T is not None and elm.P_prof is not None:
                 if p_profiles is None:
-                    p_profiles = elm.P_prof.values
-                    v_set_profiles = elm.Vset_prof.values
+                    p_profiles = elm.P_prof
+                    v_set_profiles = elm.Vset_prof
                 else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof.values]
-                    v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof.values]
+                    p_profiles = np.c_[p_profiles, elm.P_prof]
+                    v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof]
 
         dfs['generator'] = pd.DataFrame(data=obj, columns=headers)
 
@@ -1200,12 +1201,12 @@ def create_data_frames(circuit: MultiCircuit):
             obj.append(elm.get_save_data())
             hdr.append(elm.name)
             if T is not None:
-                if g_profiles is None and elm.G_prof.values is not None:
-                    g_profiles = elm.G_prof.values
-                    b_profiles = elm.B_prof.values
+                if g_profiles is None and elm.G_prof is not None:
+                    g_profiles = elm.G_prof
+                    b_profiles = elm.B_prof
                 else:
-                    g_profiles = np.c_[g_profiles, elm.G_prof.values]
-                    b_profiles = np.c_[b_profiles, elm.B_prof.values]
+                    g_profiles = np.c_[g_profiles, elm.G_prof]
+                    b_profiles = np.c_[b_profiles, elm.B_prof]
 
         dfs['shunt'] = pd.DataFrame(data=obj, columns=headers)
 

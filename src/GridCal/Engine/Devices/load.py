@@ -14,13 +14,6 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from enum import Enum
-from warnings import warn
-import pandas as pd
-import pulp
-import numpy as np
-from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 
 
@@ -68,8 +61,8 @@ class Load(EditableDevice):
     """
 
     def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0,
-                 G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                 active=True, mttf=0.0, mttr=0.0):
+                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
+                  active=True, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -117,103 +110,6 @@ class Load(EditableDevice):
         self.Ii_prof = Ii_prof
         self.P_prof = P_prof
         self.Q_prof = Q_prof
-
-    # def create_profiles(self, index, S=None, I=None, Y=None):
-    #     """
-    #     Create the load object default profiles
-    #     Args:
-    #         index: DataFrame time index
-    #         S: Array of complex power values
-    #         I: Array of complex current values
-    #         Y: Array of complex admittance values
-    #     """
-    #
-    #     self.create_S_profile(index, S)
-    #     self.create_I_profile(index, I)
-    #     self.create_Y_profile(index, Y)
-    #
-    # def create_S_profile(self, index, arr=None, arr_in_pu=False):
-    #     """
-    #     Create power profile based on index
-    #     Args:
-    #         index: time index
-    #         arr: array
-    #         arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-    #     """
-    #     if arr_in_pu:
-    #         P = arr * self.P
-    #         Q = arr * self.Q
-    #     else:
-    #         nt = len(index)
-    #         P = np.ones(nt) * self.P if arr is None else arr
-    #         Q = np.ones(nt) * self.Q if arr is None else arr
-    #
-    #     self.P_prof = pd.DataFrame(data=P, index=index, columns=[self.name])
-    #     self.Q_prof = pd.DataFrame(data=Q, index=index, columns=[self.name])
-    #
-    # def create_I_profile(self, index, arr, arr_in_pu=False):
-    #     """
-    #     Create current profile based on index
-    #     Args:
-    #         index: time index
-    #         arr: array
-    #         arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-    #     """
-    #     if arr_in_pu:
-    #         Ir = arr * self.Ir
-    #         Ii = arr * self.Ii
-    #     else:
-    #         nt = len(index)
-    #         Ir = np.ones(nt) * self.Ir if arr is None else arr
-    #         Ii = np.ones(nt) * self.Ii if arr is None else arr
-    #
-    #     self.Ir_prof = pd.DataFrame(data=Ir, index=index, columns=[self.name])
-    #     self.Ii_prof = pd.DataFrame(data=Ii, index=index, columns=[self.name])
-    #
-    # def create_Y_profile(self, index, arr, arr_in_pu=False):
-    #     """
-    #     Create impedance profile based on index
-    #     Args:
-    #         index: time index
-    #         arr: array
-    #         arr_in_pu: is the array in per unit? if true, it is applied as a mask profile
-    #     Returns:
-    #
-    #     """
-    #     if arr_in_pu:
-    #         G = arr * self.G
-    #         B = arr * self.B
-    #     else:
-    #         nt = len(index)
-    #         G = np.ones(nt) * self.G if arr is None else arr
-    #         B = np.ones(nt) * self.B if arr is None else arr
-    #
-    #     self.G_prof = pd.DataFrame(data=G, index=index, columns=[self.name])
-    #     self.B_prof = pd.DataFrame(data=B, index=index, columns=[self.name])
-    #
-    # def delete_profiles(self):
-    #     """
-    #     Delete the object profiles
-    #     :return:
-    #     """
-    #     self.P_prof = None
-    #     self.Q_prof = None
-    #     self.Ir_prof = None
-    #     self.Ii_prof = None
-    #     self.G_prof = None
-    #     self.B_prof = None
-    #
-    # def set_profile_values(self, t):
-    #     """
-    #     Set the profile values at t
-    #     :param t: time index
-    #     """
-    #     self.P = self.P_prof.values[t]
-    #     self.Q = self.Q_prof.values[t]
-    #     self.Ir = self.Ir_prof.values[t]
-    #     self.Ii = self.Ii_prof.values[t]
-    #     self.G = self.G_prof.values[t]
-    #     self.B = self.B_prof.values[t]
 
     def copy(self):
 

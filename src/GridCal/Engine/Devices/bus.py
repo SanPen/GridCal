@@ -227,18 +227,20 @@ class Bus(EditableDevice):
         for elm in (self.controlled_generators + self.batteries):
             elm.initialize_lp_vars()
 
-    def plot_profiles(self, ax_load=None, ax_voltage=None, time_series=None, my_index=0):
+    def plot_profiles(self, time_profile, ax_load=None, ax_voltage=None, time_series_driver=None, my_index=0):
         """
-
-        @param time_idx: Master time profile: usually stored in the circuit
-        @param ax_load: Figure axis, if not provided one will be created
-        @return:
+        plot the profiles of this bus
+        :param time_profile: Master profile of time steps (stored in the MultiCircuit)
+        :param time_series_driver: time series driver
+        :param ax_load: Load axis, if not provided one will be created
+        :param ax_voltage: Voltage axis, if not provided one will be created
+        :param my_index: index of this object in the time series results
         """
 
         if ax_load is None:
             fig = plt.figure(figsize=(12, 8))
             fig.suptitle(self.name, fontsize=20)
-            if time_series is not None:
+            if time_series_driver is not None:
                 # 2 plots: load + voltage
                 ax_load = fig.add_subplot(211)
                 ax_voltage = fig.add_subplot(212)
@@ -250,28 +252,26 @@ class Bus(EditableDevice):
         else:
             show_fig = False
 
-        for elm in self.loads:
-            elm.P_prof.columns = [elm.name]
-            elm.P_prof.plot(ax=ax_load)
+        if time_series_driver is not None:
+            v = np.abs(time_series_driver.results.voltage[:, my_index])
+            p = np.abs(time_series_driver.results.S[:, my_index])
+            t = time_series_driver.results.time
+            ax_voltage.plot(t, v)
+            ax_load.plot(t, p, label='computed')
 
-        for elm in self.controlled_generators + self.batteries:
-            elm.P_prof.columns = [elm.name]
-            elm.P_prof.plot(ax=ax_load)
+        else:
+            pass
 
-        for elm in self.static_generators:
-            elm.P_prof.columns = [elm.name]
-            elm.P_prof.plot(ax=ax_load)
+        # plot the objects' active power profiles
+        for elm in self.loads + self.controlled_generators + self.batteries + self.static_generators:
+            ax_load.plot(time_profile, elm.P_prof, label='defined')
 
-        if time_series is not None:
-            y = time_series.results.voltage
-            x = time_series.results.time
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            df.plot(ax=ax_voltage)
-
-        plt.legend()
-        ax_load.set_ylabel('Load [MW]', fontsize=11)
+        ax_load.set_ylabel('Power [MW]', fontsize=11)
+        ax_load.legend()
         if ax_voltage is not None:
-            ax_voltage.set_ylabel('Voltage [p.u.]', fontsize=11)
+            ax_voltage.set_ylabel('Voltage module [p.u.]', fontsize=11)
+            ax_voltage.legend()
+
         if show_fig:
             plt.show()
 

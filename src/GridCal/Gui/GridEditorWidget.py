@@ -793,8 +793,10 @@ class BranchGraphicItem(QGraphicsLineItem):
         # Ridiculously large call to get the main GUI that hosts this bus graphic
         # time series object from the last simulation
         ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
+
         # get the index of this object
         i = self.diagramScene.circuit.branches.index(self.api_object)
+
         # plot the profiles
         self.api_object.plot_profiles(time_series=ts, my_index=i)
 
@@ -2299,10 +2301,20 @@ class BusGraphicItem(QGraphicsRectItem):
         # Ridiculously large call to get the main GUI that hosts this bus graphic
         # time series object from the last simulation
         ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
+
         # get the index of this object
         i = self.diagramScene.circuit.buses.index(self.api_object)
+
+        # get the time
+        t = self.diagramScene.circuit.time_profile
+
         # plot the profiles
-        self.api_object.plot_profiles(ax_load=None, ax_voltage=None, time_series=ts, my_index=i)
+        if t is not None:
+            self.api_object.plot_profiles(time_profile=t,
+                                          ax_load=None,
+                                          ax_voltage=None,
+                                          time_series_driver=ts,
+                                          my_index=i)
 
     def mousePressEvent(self, event):
         """

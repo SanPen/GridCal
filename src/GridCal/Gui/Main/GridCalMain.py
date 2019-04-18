@@ -55,6 +55,13 @@ from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
 
+try:
+    from pandas.plotting import register_matplotlib_converters
+    register_matplotlib_converters()
+except:
+    from pandas.tseries import converter
+    converter.register()
+
 __author__ = 'Santiago Peñate Vera'
 
 """
@@ -1675,9 +1682,10 @@ class MainGUI(QMainWindow):
                             data = dialogue.data[:, i]
                         else:
                             data = dialogue.data[:, i]
-                        df = pd.DataFrame(data=data, index=dialogue.time)
+
+                        # assign the profile to the object
                         prof_attr = elm.properties_with_profile[magnitude]
-                        setattr(elm, prof_attr, df)
+                        setattr(elm, prof_attr, data)
                         # elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
 
                 # set up sliders
@@ -1792,6 +1800,8 @@ class MainGUI(QMainWindow):
         # get the selected element
         obj_idx = self.ui.profiles_tableView.selectedIndexes()
 
+        t = self.circuit.time_profile
+
         # Assign profiles
         if len(obj_idx):
             fig = plt.figure(figsize=(12, 8))
@@ -1811,9 +1821,10 @@ class MainGUI(QMainWindow):
             # plot every column
             for k in cols:
                 attr = objects[k].properties_with_profile[magnitude]
-                df = getattr(objects[k], attr)
-                df.columns = [objects[k].name]
-                df.plot(ax=ax)
+                profile = getattr(objects[k], attr)
+                ax.plot(t, profile, label=objects[k].name)
+
+            ax.legend()
             plt.show()
 
     def display_profiles(self):

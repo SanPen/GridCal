@@ -132,9 +132,8 @@ class TimeSeriesResults(PowerFlowResults):
     def set_at(self, t, results: PowerFlowResults):
         """
         Set the results at the step t
-        @param t:
-        @param results:
-        @return:
+        @param t: time index
+        @param results: PowerFlowResults instance
         """
 
         self.voltage[t, :] = results.voltage

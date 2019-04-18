@@ -639,9 +639,9 @@ class MultiCircuit:
                 circuit.load_mttr[i_ld] = elm.mttr
 
                 if n_time > 0:
-                    circuit.load_power_profile[:, i_ld] = elm.P_prof.values[:, 0] + 1j * elm.Q_prof.values[:, 0]
-                    circuit.load_current_profile[:, i_ld] = elm.Ir_prof.values[:, 0] + 1j * elm.Ii_prof.values[:, 0]
-                    circuit.load_admittance_profile[:, i_ld] = elm.G_prof.values[:, 0] + 1j * elm.B_prof.values[:, 0]
+                    circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+                    circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
+                    circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
 
                     if use_opf_vals:
                         # subtract the load shedding from the generation
@@ -659,7 +659,7 @@ class MultiCircuit:
                 # circuit.static_gen_dispatchable[i_sta_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
-                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof.values[:, 0] + 1j * elm.Q_prof.values[:, 0]
+                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
 
                 circuit.C_sta_gen_bus[i_sta_gen, i] = 1
                 i_sta_gen += 1
@@ -684,13 +684,13 @@ class MultiCircuit:
                         circuit.generator_power_profile[:, i_gen] = \
                             opf_time_series_results.controlled_generator_power[:, i_gen]
                     else:
-                        circuit.generator_power_profile[:, i_gen] = elm.P_prof.values[:, 0]
+                        circuit.generator_power_profile[:, i_gen] = elm.P_prof
 
                     # Power factor profile
-                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof.values[:, 0]
+                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof
 
                     # Voltage profile
-                    circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof.values[:, 0]
+                    circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
 
                 circuit.C_gen_bus[i_gen, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -725,9 +725,9 @@ class MultiCircuit:
                         circuit.battery_power_profile[:, i_batt] = \
                             opf_time_series_results.battery_power[:, i_batt]
                     else:
-                        circuit.battery_power_profile[:, i_batt] = elm.P_prof.values[:, 0]
+                        circuit.battery_power_profile[:, i_batt] = elm.P_prof
                     # Voltage profile
-                    circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof.values[:, 0]
+                    circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
 
                 circuit.C_batt_bus[i_batt, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -740,7 +740,7 @@ class MultiCircuit:
                 circuit.shunt_mttr[i_sh] = elm.mttr
 
                 if n_time > 0:
-                    circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof.values[:, 0] + 1j * elm.B_prof.values[:, 0]
+                    circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
 
                 circuit.C_shunt_bus[i_sh, i] = 1
                 i_sh += 1
@@ -1234,27 +1234,27 @@ class MultiCircuit:
 
                 for elm in bus.loads:
                     load_names.append(elm.name)
-                    P.append(elm.P_prof.values[:, 0])
-                    Q.append(elm.Q_prof.values[:, 0])
+                    P.append(elm.P_prof)
+                    Q.append(elm.Q_prof)
 
-                    Ir.append(elm.Ir_prof.values[:, 0])
-                    Ii.append(elm.Ii_prof.values[:, 0])
+                    Ir.append(elm.Ir_prof)
+                    Ii.append(elm.Ii_prof)
 
-                    G.append(elm.G_prof.values[:, 0])
-                    B.append(elm.B_prof.values[:, 0])
+                    G.append(elm.G_prof)
+                    B.append(elm.B_prof)
 
                 for elm in bus.controlled_generators:
                     gen_names.append(elm.name)
 
-                    P_gen.append(elm.P_prof.values[:, 0])
-                    V_gen.append(elm.Vset_prof.values[:, 0])
+                    P_gen.append(elm.P_prof)
+                    V_gen.append(elm.Vset_prof)
 
                 for elm in bus.batteries:
                     bat_names.append(elm.name)
                     gen_names.append(elm.name)
-                    P_gen.append(elm.P_prof.values[:, 0])
-                    V_gen.append(elm.Vsetprof.values[:, 0])
-                    E_batt.append(elm.energy_array.values[:, 0])
+                    P_gen.append(elm.P_prof)
+                    V_gen.append(elm.Vsetprof)
+                    E_batt.append(elm.energy_array)
 
             # form DataFrames
             P = pd.DataFrame(data=np.array(P).transpose(), index=self.time_profile, columns=load_names)
