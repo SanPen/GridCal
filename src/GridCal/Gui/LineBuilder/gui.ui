@@ -293,7 +293,13 @@
                        </property>
                        <property name="icon">
                         <iconset resource="icons.qrc">
-                         <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+                         <normaloff>:/Icons/icons/calc.svg</normaloff>:/Icons/icons/calc.svg</iconset>
+                       </property>
+                       <property name="iconSize">
+                        <size>
+                         <width>32</width>
+                         <height>32</height>
+                        </size>
                        </property>
                       </widget>
                      </item>

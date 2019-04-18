@@ -98,19 +98,6 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
-    # def __str__(self):
-    #     return self.name
-    #
-    # def get_save_data(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #     dta = list()
-    #     for property in self.editable_headers:
-    #         dta.append(getattr(self, property))
-    #     return dta
-
     def get_impedances(self):
         """
         Compute the branch parameters of a transformer from the short circuit test

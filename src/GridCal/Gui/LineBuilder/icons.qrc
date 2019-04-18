@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/calc.svg</file>
     <file>icons/delete.svg</file>
     <file>icons/gear.svg</file>
     <file>icons/minus.svg</file>

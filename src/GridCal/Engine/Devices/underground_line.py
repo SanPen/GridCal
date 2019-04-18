@@ -19,27 +19,23 @@ from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 
 
-class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
+class UndergroundLineType(EditableDevice):
 
-    def __init__(self, parent=None, edit_callback=None, name='UndergroundLine', rating=1,
-                       R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
+    def __init__(self, name='UndergroundLine', rating=1, R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0):
         """
-
-        :param parent:
-        :param edit_callback:
-        :param name:
+        Constructor
+        :param name: name of the device
         :param rating: rating in kA
-        :param R:
-        :param X:
-        :param G:
-        :param B:
-        :param R0:
-        :param X0:
-        :param G0:
-        :param B0:
+        :param R: Resistance of positive sequence in Ohm/km
+        :param X: Reactance of positive sequence in Ohm/km
+        :param G: Conductance of positive sequence in Ohm/km
+        :param B: Susceptance of positive sequence in Ohm/km
+        :param R0: Resistance of zero sequence in Ohm/km
+        :param X0: Reactance of zero sequence in Ohm/km
+        :param G0: Conductance of zero sequence in Ohm/km
+        :param B0: Susceptance of zero sequence in Ohm/km
         :param tpe:
         """
-        QtCore.QAbstractTableModel.__init__(self)
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
@@ -65,7 +61,7 @@ class UndergroundLineType(EditableDevice, QtCore.QAbstractTableModel):
                                 non_editable_attributes=list(),
                                 properties_with_profile={})
 
-        self.tpe = tpe
+        self.tpe = BranchType.Line
 
         self.rating = rating
 

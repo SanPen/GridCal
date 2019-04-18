@@ -19,14 +19,12 @@ from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
 
 
-class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
+class SequenceLineType(EditableDevice):
 
-    def __init__(self, parent=None, edit_callback=None, name='SequenceLine', rating=1,
+    def __init__(self, name='SequenceLine', rating=1,
                  R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
         """
-
-        :param parent:
-        :param edit_callback:
+        Constructor
         :param name: name of the model
         :param rating: Line rating in kA
         :param R: Resistance of positive sequence in Ohm/km
@@ -39,7 +37,6 @@ class SequenceLineType(EditableDevice, QtCore.QAbstractTableModel):
         :param B0: Susceptance of zero sequence in Ohm/km
         """
 
-        QtCore.QAbstractTableModel.__init__(self)
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
