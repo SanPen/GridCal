@@ -202,7 +202,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     iter_ = 0
     V = V0
     Va = angle(V)
-    Vm = abs(V)
+    Vm = np.abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
 

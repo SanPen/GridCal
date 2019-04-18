@@ -17,8 +17,7 @@
 """
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
 import math
 import numpy as np
 import pandas as pd

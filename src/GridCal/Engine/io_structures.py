@@ -33,7 +33,7 @@ from sklearn.ensemble import RandomForestRegressor
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.devices import DeviceType
+from GridCal.Engine.Devices import DeviceType
 from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
 
 

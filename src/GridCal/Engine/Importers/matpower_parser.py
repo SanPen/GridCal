@@ -19,8 +19,7 @@ import numpy as np
 import os
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
 
 
 def find_between(s, first, last):

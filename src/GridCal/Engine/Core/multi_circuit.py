@@ -18,11 +18,9 @@ import networkx as nx
 import json
 
 from GridCal.Gui.GeneralDialogues import *
-from GridCal.Engine.devices import *
+from GridCal.Engine.Devices import *
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, BranchType, \
-                                            UndergroundLineType, SequenceLineType, Wire
 
 
 class MultiCircuit:

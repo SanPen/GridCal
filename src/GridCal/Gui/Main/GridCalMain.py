@@ -40,7 +40,7 @@ from GridCal.Engine.Drivers.voltage_collapse_driver import *
 from GridCal.Engine.Drivers.topology_driver import TopologyReduction, TopologyReductionOptions
 from GridCal.Engine.Drivers.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
-from GridCal.Engine.device_types import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
+from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Engine.Importers.file_handler import *
 import GridCal.Engine.plot_config as plot_config
 
@@ -2108,7 +2108,16 @@ class MainGUI(QMainWindow):
                                    VCStopAt.Full.value: VCStopAt.Full}
 
                 # declare voltage collapse options
-                vc_options = VoltageCollapseOptions(stop_at=vc_stop_at_dict[mode])
+                vc_options = VoltageCollapseOptions(step=0.0001,
+                                                    approximation_order=VCParametrization.Natural,
+                                                    adapt_step=True,
+                                                    step_min=0.00001,
+                                                    step_max=0.2,
+                                                    error_tol=1e-3,
+                                                    tol=1e-6,
+                                                    max_it=20,
+                                                    stop_at=vc_stop_at_dict[mode],
+                                                    verbose=False)
 
                 if use_alpha:
                     '''

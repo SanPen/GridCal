@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
 
 from GridCal.Engine.io_structures import PowerFlowResults, ResultTypes
-from GridCal.Engine.Numerical.continuation_power_flow import continuation_nr, VCStopAt
+from GridCal.Engine.Numerical.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 
@@ -33,8 +33,8 @@ from GridCal.Engine.plot_config import LINEWIDTH
 
 class VoltageCollapseOptions:
 
-    def __init__(self, step=0.01, approximation_order=1, adapt_step=True, step_min=0.0001, step_max=0.2,
-                 error_tol=1e-3, tol=1e-6, max_it=20, stop_at=VCStopAt.Nose, verbose=False):
+    def __init__(self, step=0.01, approximation_order=VCParametrization.Natural, adapt_step=True, step_min=0.0001,
+                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20, stop_at=VCStopAt.Nose, verbose=False):
         """
         Voltage collapse options
         @param step: Step length

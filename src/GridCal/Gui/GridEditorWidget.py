@@ -21,8 +21,7 @@ import smopy
 from PIL.ImageQt import ImageQt
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Engine.Drivers.topology_driver import reduce_grid_brute
 

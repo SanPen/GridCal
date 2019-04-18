@@ -22,8 +22,7 @@ from pandas import DataFrame as df
 from warnings import warn
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
 
 
 class PSSeGrid:

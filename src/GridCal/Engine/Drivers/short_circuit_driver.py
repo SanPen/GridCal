@@ -25,7 +25,7 @@ from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Drivers.power_flow_driver import PowerFlowResults
 from GridCal.Engine.io_structures import CalculationInputs, ResultTypes
-from GridCal.Engine.devices import Branch, Bus
+from GridCal.Engine.Devices import Branch, Bus
 
 ########################################################################################################################
 # Short circuit classes

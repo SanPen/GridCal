@@ -3,8 +3,7 @@ import numpy as np
 import chardet
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)

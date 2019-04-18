@@ -20,10 +20,9 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import *
 from warnings import warn
 
-from GridCal.Engine.devices import BranchTypeConverter, DeviceType
-from GridCal.Engine.device_types import BranchTemplate, BranchType
+from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType
 from GridCal.Engine.io_structures import ResultTypes
-from GridCal.Engine.devices import Bus
+from GridCal.Engine.Devices import Bus
 
 
 class TreeDelegate(QItemDelegate):

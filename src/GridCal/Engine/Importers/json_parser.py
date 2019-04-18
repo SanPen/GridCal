@@ -16,7 +16,7 @@
 import json
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
+from GridCal.Engine.Devices import *
 
 
 def parse_json_data(data):

@@ -25,7 +25,8 @@ import math
 from PyQt5.QtWidgets import *
 
 from GridCal.Gui.LineBuilder.gui import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
+from GridCal.Engine.Drivers.tower_driver import *
 from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 
@@ -54,16 +55,16 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         # was there a tower passed? else create one
         if tower is None:
-            self.tower = Tower(self, edit_callback=self.plot)
+            self.tower_driver = TowerDriver(self, edit_callback=self.plot)
         else:
-            self.tower = tower
+            self.tower_driver = TowerDriver(self, edit_callback=self.plot, tower=tower)
 
-        self.ui.name_lineEdit.setText(self.tower.tower_name)
-        self.ui.rho_doubleSpinBox.setValue(self.tower.earth_resistivity)
+        self.ui.name_lineEdit.setText(self.tower_driver.tower.tower_name)
+        self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)
 
         # set models
         self.ui.wires_tableView.setModel(self.wire_collection)
-        self.ui.tower_tableView.setModel(self.tower)
+        self.ui.tower_tableView.setModel(self.tower_driver)
 
         # button clicks
         # self.ui.add_wire_pushButton.clicked.connect(self.add_wire_to_collection)
@@ -94,7 +95,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         Change name
         :return:
         """
-        self.tower.tower_name = self.ui.name_lineEdit.text()
+        self.tower_driver.tower.tower_name = self.ui.name_lineEdit.text()
 
     def add_wire_to_collection(self):
         """
@@ -116,7 +117,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         if sel_idx > -1:
 
             # delete all the wires from the tower too
-            self.tower.delete_by_name(self.wire_collection.wires[sel_idx])
+            self.tower_driver.delete_by_name(self.wire_collection.wires[sel_idx])
 
             # delete from the catalogue
             self.wire_collection.delete(sel_idx)
@@ -135,7 +136,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         if sel_idx > -1:
             selected_wire = self.wire_collection.wires[sel_idx].copy()
-            self.tower.add(selected_wire)
+            self.tower_driver.add(selected_wire)
         else:
             self.msg('Select a wire in the wires catalogue')
 
@@ -148,7 +149,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            self.tower.delete(sel_idx)
+            self.tower_driver.delete(sel_idx)
 
             self.plot()
         else:
@@ -160,12 +161,12 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :return:
         """
 
-        self.tower.frequency = self.ui.frequency_doubleSpinBox.value()
-        self.tower.earth_resistivity = self.ui.rho_doubleSpinBox.value()
+        self.tower_driver.tower.frequency = self.ui.frequency_doubleSpinBox.value()
+        self.tower_driver.tower.earth_resistivity = self.ui.rho_doubleSpinBox.value()
 
         # heck the wires configuration
         logs = list()
-        all_ok = self.tower.check(logs)
+        all_ok = self.tower_driver.tower.check(logs)
 
         if not all_ok:
             logger_diag = LogsDialogue(name='Tower computation', logs=logs)
@@ -173,32 +174,32 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         else:
             try:
                 # compute the matrices
-                self.tower.compute()
+                self.tower_driver.tower.compute()
 
                 # Impedances in Ohm/km
-                cols = ['Phase' + str(i) for i in self.tower.z_phases_abcn]
-                z_df = pd.DataFrame(data=self.tower.z_abcn, columns=cols, index=cols)
+                cols = ['Phase' + str(i) for i in self.tower_driver.tower.z_phases_abcn]
+                z_df = pd.DataFrame(data=self.tower_driver.tower.z_abcn, columns=cols, index=cols)
                 self.ui.z_tableView_abcn.setModel(PandasModel(z_df))
 
-                cols = ['Phase' + str(i) for i in self.tower.z_phases_abc]
-                z_df = pd.DataFrame(data=self.tower.z_abc, columns=cols, index=cols)
+                cols = ['Phase' + str(i) for i in self.tower_driver.tower.z_phases_abc]
+                z_df = pd.DataFrame(data=self.tower_driver.tower.z_abc, columns=cols, index=cols)
                 self.ui.z_tableView_abc.setModel(PandasModel(z_df))
 
                 cols = ['Sequence ' + str(i) for i in range(3)]
-                z_df = pd.DataFrame(data=self.tower.z_seq, columns=cols, index=cols)
+                z_df = pd.DataFrame(data=self.tower_driver.tower.z_seq, columns=cols, index=cols)
                 self.ui.z_tableView_seq.setModel(PandasModel(z_df))
 
                 # Admittances in uS/km
-                cols = ['Phase' + str(i) for i in self.tower.y_phases_abcn]
-                z_df = pd.DataFrame(data=self.tower.y_abcn * 1e6, columns=cols, index=cols)
+                cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abcn]
+                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abcn * 1e6, columns=cols, index=cols)
                 self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
 
-                cols = ['Phase' + str(i) for i in self.tower.y_phases_abc]
-                z_df = pd.DataFrame(data=self.tower.y_abc * 1e6, columns=cols, index=cols)
+                cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abc]
+                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abc * 1e6, columns=cols, index=cols)
                 self.ui.y_tableView_abc.setModel(PandasModel(z_df))
 
                 cols = ['Sequence ' + str(i) for i in range(3)]
-                z_df = pd.DataFrame(data=self.tower.y_seq * 1e6, columns=cols, index=cols)
+                z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq * 1e6, columns=cols, index=cols)
                 self.ui.y_tableView_seq.setModel(PandasModel(z_df))
 
                 # plot
@@ -207,18 +208,18 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Tower calculation')
-                # logger_diag = LogsDialogue(name='Tower computation', logs=logs)
-                # logger_diag.exec_()
 
     def plot(self):
-
+        """
+        PLot the tower distribution
+        """
         self.ui.plotwidget.clear()
 
         fig = self.ui.plotwidget.get_figure()
         fig.set_facecolor('white')
         ax = self.ui.plotwidget.get_axis()
 
-        self.tower.plot(ax=ax)
+        self.tower_driver.tower.plot(ax=ax)
         self.ui.plotwidget.redraw()
 
     def example_1(self):
@@ -227,10 +228,10 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         x = 0  # ohm / km
         gmr = 0.002481072  # m
 
-        self.tower.add(Wire(name, xpos=0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=0))
-        self.tower.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=3))
+        self.tower_driver.add(Wire(name, xpos=0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=0))
+        self.tower_driver.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower_driver.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower_driver.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=3))
 
         self.wire_collection.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
 
@@ -243,19 +244,19 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         incx = 0.1
         incy = 0.1
 
-        self.tower.add(Wire(name, xpos=0,      ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower.add(Wire(name, xpos=0.762,  ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
-        self.tower.add(Wire(name, xpos=1.2192, ypos=7.62,   gmr=gmr, r=r, x=x, phase=0))
+        self.tower_driver.add(Wire(name, xpos=0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower_driver.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower_driver.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
+        self.tower_driver.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=0))
 
-        self.tower.add(Wire(name, xpos=incx+0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower.add(Wire(name, xpos=incx+0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower.add(Wire(name, xpos=incx+2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
+        self.tower_driver.add(Wire(name, xpos=incx + 0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower_driver.add(Wire(name, xpos=incx + 0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower_driver.add(Wire(name, xpos=incx + 2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
         # self.tower.add(Wire(name, xpos=incx+1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=0))
 
-        self.tower.add(Wire(name, xpos=incx/2 + 0,    ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower.add(Wire(name, xpos=incx/2 + 0.762, ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower.add(Wire(name, xpos=incx/2 + 2.1336, ypos=incy+8.8392, gmr=gmr, r=r, x=x, phase=3))
+        self.tower_driver.add(Wire(name, xpos=incx / 2 + 0, ypos=incy + 8.8392, gmr=gmr, r=r, x=x, phase=1))
+        self.tower_driver.add(Wire(name, xpos=incx / 2 + 0.762, ypos=incy + 8.8392, gmr=gmr, r=r, x=x, phase=2))
+        self.tower_driver.add(Wire(name, xpos=incx / 2 + 2.1336, ypos=incy + 8.8392, gmr=gmr, r=r, x=x, phase=3))
         # self.tower.add(Wire(name, xpos=incx/2 + 1.2192, ypos=incy+7.62, gmr=gmr, r=r, x=x, phase=0))
 
         self.wire_collection.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))

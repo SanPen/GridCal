@@ -16,8 +16,7 @@ import pandas as pd
 import numpy as np
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
+from GridCal.Engine.Devices import *
 
 # this dictionary sets the allowed excel sheets and the possible specific converter
 allowed_data_sheets = {'Conf': None,
