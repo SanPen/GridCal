@@ -824,17 +824,17 @@ class AcOpf:
         # compile the indices
         # indices of generators that contribute to the static power vector 'S'
         self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.generator_dispatchable)
-                                   * self.numerical_circuit.generator_enabled) == True)[0]
+                                   * self.numerical_circuit.generator_active) == True)[0]
 
         self.bat_s_idx = np.where((np.logical_not(self.numerical_circuit.battery_dispatchable)
-                                   * self.numerical_circuit.battery_enabled) == True)[0]
+                                   * self.numerical_circuit.battery_active) == True)[0]
 
         # indices of generators that are to be optimized via the solution vector 'x'
         self.gen_x_idx = np.where((self.numerical_circuit.generator_dispatchable
-                                   * self.numerical_circuit.generator_enabled) == True)[0]
+                                   * self.numerical_circuit.generator_active) == True)[0]
 
         self.bat_x_idx = np.where((self.numerical_circuit.battery_dispatchable
-                                   * self.numerical_circuit.battery_enabled) == True)[0]
+                                   * self.numerical_circuit.battery_active) == True)[0]
 
         # get the devices
         self.generators = self.multi_circuit.get_generators()
@@ -1036,11 +1036,11 @@ class AcOpf:
         Sbase = self.numerical_circuit.Sbase
 
         # Loads for all the circuits
-        S = - self.numerical_circuit.C_load_bus.T * (load_power / Sbase * self.numerical_circuit.load_enabled)
+        S = - self.numerical_circuit.C_load_bus.T * (load_power / Sbase * self.numerical_circuit.load_active)
 
         # static generators for all the circuits
         S += self.numerical_circuit.C_sta_gen_bus.T * (static_gen_power / Sbase *
-                                                       self.numerical_circuit.static_gen_enabled)
+                                                       self.numerical_circuit.static_gen_active)
 
         # decompose in real and imaginary
         P = S.real

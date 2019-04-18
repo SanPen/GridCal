@@ -125,22 +125,22 @@ def run_events(nc: NumericalCircuit, events_list: list):
             pass
 
         elif tpe == DeviceType.BranchDevice:
-            nc.branch_states[i] = state
+            nc.branch_active[i] = state
 
         elif tpe == DeviceType.GeneratorDevice:
-            nc.generator_enabled[i] = state
+            nc.generator_active[i] = state
 
         elif tpe == DeviceType.StaticGeneratorDevice:
-            nc.static_gen_enabled[i] = state
+            nc.static_gen_active[i] = state
 
         elif tpe == DeviceType.BatteryDevice:
-            nc.battery_enabled[i] = state
+            nc.battery_active[i] = state
 
         elif tpe == DeviceType.ShuntDevice:
-            nc.shunt_enabled[i] = state
+            nc.shunt_active[i] = state
 
         elif tpe == DeviceType.LoadDevice:
-            nc.load_enabled[i] = state
+            nc.load_active[i] = state
 
         else:
             pass
