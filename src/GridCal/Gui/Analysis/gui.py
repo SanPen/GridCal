@@ -2,18 +2,19 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(828, 449)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
-        self.verticalLayout.setContentsMargins(1, 1, 1, 1)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.tabWidget = QtWidgets.QTabWidget(Dialog)
         self.tabWidget.setObjectName("tabWidget")
@@ -25,7 +26,7 @@ class Ui_Dialog(object):
         self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
         self.splitter_3.setObjectName("splitter_3")
         self.frame_8 = QtWidgets.QFrame(self.splitter_3)
-        self.frame_8.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_8.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_8.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_8.setObjectName("frame_8")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.frame_8)
@@ -35,7 +36,7 @@ class Ui_Dialog(object):
         self.objectsListView.setObjectName("objectsListView")
         self.verticalLayout_7.addWidget(self.objectsListView)
         self.PlotFrame = QtWidgets.QFrame(self.splitter_3)
-        self.PlotFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.PlotFrame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.PlotFrame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.PlotFrame.setObjectName("PlotFrame")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.PlotFrame)
@@ -66,7 +67,9 @@ class Ui_Dialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Analysis"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Diagnostic"))
 
+
 from .matplotlibwidget import MatplotlibWidget
+
 
 if __name__ == "__main__":
     import sys
@@ -76,4 +79,3 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
-

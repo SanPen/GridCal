@@ -607,6 +607,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
             # set the branch
             circuit.add_branch(obj)
+            obj.ensure_profiles_exist(circuit.time_profile)
 
     else:
         circuit.logger.append('No branches in the file!')
@@ -996,6 +997,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             # set the branch
             circuit.add_branch(obj)
+            obj.ensure_profiles_exist(circuit.time_profile)
 
     else:
         circuit.logger.append('No branches in the file!')
@@ -1266,7 +1268,6 @@ def create_data_frames(circuit: MultiCircuit):
 
     if len(elements) > 0:
         obj = list()
-        hdr = list()
         for elm in elements:
             obj.append(elm.get_save_data())
 
