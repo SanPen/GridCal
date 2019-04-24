@@ -392,10 +392,10 @@ class TimeSeries(QThread):
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
-        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+        calc_inputs = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         # For every circuit, run the time series
-        for nc, calculation_input in enumerate(calculation_inputs):
+        for island_index, calculation_input in enumerate(calc_inputs):
 
             # make a copy of the circuit to allow controls in place
             # circuit = circuit_orig.copy()
@@ -411,11 +411,11 @@ class TimeSeries(QThread):
                         batteries.append(batt)
                         batteries_bus_idx.append(k)
 
-            self.progress_text.emit('Time series at circuit ' + str(nc) + '...')
+            self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
 
             # find the original indices
-            bus_original_idx = numerical_circuit.islands[nc]
-            branch_original_idx = numerical_circuit.island_branches[nc]
+            bus_original_idx = numerical_circuit.islands[island_index]
+            branch_original_idx = numerical_circuit.island_branches[island_index]
 
             # if there are valid profiles...
             if self.grid.time_profile is not None:
@@ -436,9 +436,9 @@ class TimeSeries(QThread):
                     # set the power values
                     # if the storage dispatch option is active, the batteries power was not included
                     # it shall be included now, after processing
-                    Y = calculation_input.Ysh_prof[:, t]
-                    I = calculation_input.Ibus_prof[:, t]
-                    S = calculation_input.Sbus_prof[:, t]
+                    Y = calculation_input.Ysh[:, t]
+                    I = calculation_input.Ibus[:, t]
+                    S = calculation_input.Sbus[:, t]
 
                     # add the controlled storage power if controlling storage
                     if self.options.dispatch_storage:
@@ -466,7 +466,7 @@ class TimeSeries(QThread):
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
-                    self.progress_text.emit('Simulating island ' + str(nc) + ' at ' + str(self.grid.time_profile[t]))
+                    self.progress_text.emit('Simulating island ' + str(island_index) + ' at ' + str(self.grid.time_profile[t]))
                     t += 1
 
                 # merge  the circuit's results

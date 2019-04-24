@@ -959,7 +959,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
-            formatter = self.elements[0].editable_headers[self.magnitude][1]
+            formatter = self.elements[0].editable_headers[self.magnitude].tpe
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -973,15 +973,21 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                 values = row.split('\t')
                 r2 = r + row_idx
                 for c, val in enumerate(values):
+
                     c2 = c + col_idx
+
                     try:
                         val2 = formatter(val)
-                        if c2 < n and r2 < nt:
-                            getattr(self.elements[c2], profile_property).values[r2, 0] = val2
-                        else:
-                            print('Out of profile bounds')
+                        parsed = True
                     except:
                         warn("could not parse '" + str(val) + "'")
+                        parsed = False
+
+                    if parsed:
+                        if c2 < n and r2 < nt:
+                            getattr(self.elements[c2], profile_property)[r2] = val2
+                        else:
+                            print('Out of profile bounds')
         else:
             # there are no elements
             pass
@@ -1000,7 +1006,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             values = [None] * n
             for c in range(n):
                 names[c] = self.elements[c].name
-                values[c] = getattr(self.elements[c], profile_property).values[:, 0]
+                values[c] = getattr(self.elements[c], profile_property)
             values = np.array(values).transpose().astype(str)
 
             # header first

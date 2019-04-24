@@ -14,14 +14,10 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from enum import Enum
-from warnings import warn
-import pandas as pd
-import pulp
 import numpy as np
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 
 
 class Bus(EditableDevice):

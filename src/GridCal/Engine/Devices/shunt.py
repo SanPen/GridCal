@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 
 
 class Shunt(EditableDevice):

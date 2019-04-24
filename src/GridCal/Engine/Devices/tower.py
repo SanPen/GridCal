@@ -14,12 +14,11 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from numpy import pi, cos, sin, log, arccos, sqrt, exp
+from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
-from PyQt5 import QtCore
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.wire import Wire
-from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 
 """
 Equations source:

@@ -14,10 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-from warnings import warn
 import pandas as pd
-import pulp
 import numpy as np
 from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.bus import Bus
@@ -26,7 +23,7 @@ from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.sequence_line import SequenceLineType
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 from GridCal.Engine.Devices.tower import Tower
-from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
@@ -395,9 +392,6 @@ class Branch(EditableDevice):
         # connectivity
         self.bus_from = bus_from
         self.bus_to = bus_to
-
-        # Is the branch active?
-        self.active = active
 
         # List of measurements
         self.measurements = list()

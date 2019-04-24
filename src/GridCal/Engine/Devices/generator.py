@@ -16,7 +16,7 @@
 import pandas as pd
 import pulp
 import numpy as np
-from GridCal.Engine.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 
 
 class Generator(EditableDevice):

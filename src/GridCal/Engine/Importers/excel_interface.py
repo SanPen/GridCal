@@ -18,49 +18,15 @@ import numpy as np
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
-# this dictionary sets the allowed excel sheets and the possible specific converter
-allowed_data_sheets = {'Conf': None,
-                       'config': None,
-                       'bus': None,
-                       'branch': None,
-                       'load': None,
-                       'load_Sprof': complex,
-                       'load_Iprof': complex,
-                       'load_Zprof': complex,
-                       'load_P_prof': float,
-                       'load_Q_prof': float,
-                       'load_Ir_prof': float,
-                       'load_Ii_prof': float,
-                       'load_G_prof': float,
-                       'load_B_prof': float,
-                       'static_generator': None,
-                       'static_generator_Sprof': complex,
-                       'static_generator_P_prof': complex,
-                       'static_generator_Q_prof': complex,
-                       'battery': None,
-                       'battery_Vset_profiles': float,
-                       'battery_P_profiles': float,
-                       'battery_Vset_prof': float,
-                       'battery_P_prof': float,
-                       'controlled_generator': None,
-                       'CtrlGen_Vset_profiles': float,
-                       'CtrlGen_P_profiles': float,
-                       'generator': None,
-                       'generator_Vset_prof': float,
-                       'generator_P_prof': float,
-                       'generator_Pf_prof': float,
-                       'shunt': None,
-                       'shunt_Y_profiles': complex,
-                       'shunt_G_prof': float,
-                       'shunt_B_prof': float,
-                       'wires': None,
-                       'overhead_line_types': None,
-                       'underground_cable_types': None,
-                       'sequence_line_types': None,
-                       'transformer_types': None}
-
 
 def check_names(names):
+    """
+    Check that the names are allowed
+    :param names:
+    :return:
+    """
+    allowed_data_sheets = get_allowed_sheets()
+
     for name in names:
         if name not in allowed_data_sheets.keys():
             raise Exception('The file sheet ' + name + ' is not allowed.\n'
@@ -132,7 +98,9 @@ def load_from_xls(filename):
                 data["Gprof"] = np.nan_to_num(df.values)
                 data["master_time"] = df.index  # it is the same
 
-    elif 'config' in names:  # version 2
+    elif 'config' in names:  # version 2 / 3
+
+        allowed_data_sheets = get_allowed_sheets()
 
         for name in names:
 
@@ -180,13 +148,12 @@ def load_from_xls(filename):
 
 def interprete_excel_v2(circuit: MultiCircuit, data):
     """
-    Interpret the new file version
-    Args:
-        data: Dictionary with the excel file sheet labels and the corresponding DataFrame
-
-    Returns: Nothing, just applies the loaded data to this MultiCircuit instance
-
+    Interpret the file version 2
+    :param circuit:
+    :param data: Dictionary with the excel file sheet labels and the corresponding DataFrame
+    :return: Nothing, just applies the loaded data to this MultiCircuit instance
     """
+
     # print('Interpreting V2 data...')
 
     # clear all the data
@@ -620,12 +587,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     """
     Interpret the file version 3
     In this file version there are no complex numbers saved
-    Args:
-        data: Dictionary with the excel file sheet labels and the corresponding DataFrame
-
-    Returns: Nothing, just applies the loaded data to this MultiCircuit instance
-
+    :param circuit:
+    :param data: Dictionary with the excel file sheet labels and the corresponding DataFrame
+    :return: Nothing, just applies the loaded data to this MultiCircuit instance
     """
+
     # print('Interpreting V2 data...')
 
     # clear all the data
@@ -696,7 +662,8 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                         'load_Ir_prof': 'Ir_prof',
                         'load_Ii_prof': 'Ii_prof',
                         'load_G_prof': 'G_prof',
-                        'load_B_prof': 'B_prof'}
+                        'load_B_prof': 'B_prof',
+                        'load_active_prof': 'active_prof'}
 
         for i in range(len(lst)):
             obj = Load()
@@ -758,6 +725,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 idx = data['generator_Vset_prof'].index
                 obj.create_profile(magnitude='Vset', index=idx, arr=val)
 
+            if 'generator_active_prof' in data.keys():
+                val = data['generator_active_prof'].values[:, i]
+                idx = data['generator_active_prof'].index
+                obj.create_profile(magnitude='active', index=idx, arr=val)
+
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -794,6 +766,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 val = data['battery_Vset_prof'].values[:, i]
                 idx = data['battery_Vset_prof'].index
                 obj.create_profile(magnitude='Vset', index=idx, arr=val)
+
+            if 'battery_active_prof' in data.keys():
+                val = data['battery_active_prof'].values[:, i]
+                idx = data['battery_active_prof'].index
+                obj.create_profile(magnitude='active', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -836,6 +813,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 idx = data['static_generator_Q_prof'].index
                 obj.create_profile(magnitude='Q', index=idx, arr=val)
 
+            if 'static_generator_active_prof' in data.keys():
+                val = data['static_generator_active_prof'].values[:, i]
+                idx = data['static_generator_active_prof'].index
+                obj.create_profile(magnitude='active', index=idx, arr=val)
+
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -876,6 +858,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 val = data['shunt_B_prof'].values[:, i]
                 idx = data['shunt_B_prof'].index
                 obj.create_profile(magnitude='B', index=idx, arr=val)
+
+            if 'shunt_active_prof' in data.keys():
+                val = data['shunt_active_prof'].values[:, i]
+                idx = data['shunt_active_prof'].index
+                obj.create_profile(magnitude='active', index=idx, arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -989,6 +976,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             set_object_attributes(obj, hdr, vals[i, :])
 
+            if 'branch_active_prof' in data.keys():
+                val = data['branch_active_prof'].values[:, i]
+                idx = data['branch_active_prof'].index
+                obj.create_profile(magnitude='active', index=idx, arr=val)
+
             # correct the branch template object
             template_name = str(obj.template)
             if template_name in branch_types.keys():
@@ -1006,7 +998,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     circuit.logger += circuit.apply_all_branch_types()
 
 
-def create_data_frames(circuit: MultiCircuit):
+def create_data_frames_old(circuit: MultiCircuit):
     """
     Pack the circuit information into tables (DataFrames)
     :param circuit: MultiCircuit instance
@@ -1291,6 +1283,235 @@ def create_data_frames(circuit: MultiCircuit):
         dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
     return dfs
+
+
+def get_objects_dictionary(circuit=MultiCircuit()):
+    """
+
+    :param circuit:
+    :return:
+    """
+    object_types = {'bus': [Bus(),
+                            circuit.buses],
+                    'branch': [Branch(None, None),
+                               circuit.branches],
+                    'load': [Load(),
+                             circuit.get_loads()],
+                    'static_generator': [StaticGenerator(),
+                                         circuit.get_static_generators()],
+                    'battery': [Battery(),
+                                circuit.get_batteries()],
+                    'generator': [Generator(),
+                                  circuit.get_generators()],
+                    'shunt': [Shunt(),
+                              circuit.get_shunts()]
+                    }
+
+    return object_types
+
+
+def get_allowed_sheets(circuit=MultiCircuit()):
+    """
+
+    :param circuit:
+    :return:
+    """
+    ########################################################################################################
+    # declare objects to iterate  name: [sample object, list of objects, headers]
+    ########################################################################################################
+    object_types = get_objects_dictionary(circuit)
+
+    ########################################################################################################
+    # generic object iteration
+    ########################################################################################################
+
+    allowed_data_sheets = {'Conf': None,
+                           'config': None,
+                           'wires': None,
+                           'overhead_line_types': None,
+                           'underground_cable_types': None,
+                           'sequence_line_types': None,
+                           'transformer_types': None}
+
+    for object_type_name in object_types.keys():
+
+        object_sample, lists_of_objects = object_types[object_type_name]
+
+        for main_property, profile_property in object_sample.properties_with_profile.items():
+
+            if profile_property not in allowed_data_sheets.keys():
+                # create the profile
+                allowed_data_sheets[object_type_name + '_' + profile_property] = object_sample.editable_headers[main_property].tpe
+
+        # declare the DataFrames for the normal data
+        allowed_data_sheets[object_type_name] = None
+
+    return allowed_data_sheets
+
+
+def create_data_frames(circuit: MultiCircuit):
+    """
+    Pack the circuit information into tables (DataFrames)
+    :param circuit: MultiCircuit instance
+    :return: dictionary of DataFrames
+    """
+    dfs = dict()
+
+    # configuration ################################################################################################
+    obj = list()
+    obj.append(['BaseMVA', circuit.Sbase])
+    obj.append(['Version', 3])
+    obj.append(['Name', circuit.name])
+    obj.append(['Comments', circuit.comments])
+    obj.append(['program', 'GridCal'])
+
+    dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
+
+    # get the master time profile
+    T = circuit.time_profile
+
+    ########################################################################################################
+    # retrieve buses information that is necessary
+    ########################################################################################################
+    names_count = dict()
+    if len(circuit.buses) > 0:
+        for elm in circuit.buses:
+
+            # check name: if the name is repeated, change it so that it is not
+            if elm.name in names_count.keys():
+                names_count[elm.name] += 1
+                elm.name = elm.name + '_' + str(names_count[elm.name])
+            else:
+                names_count[elm.name] = 1
+
+            elm.retrieve_graphic_position()
+
+    ########################################################################################################
+    # declare objects to iterate  name: [sample object, list of objects, headers]
+    ########################################################################################################
+    object_types = get_objects_dictionary(circuit)
+
+    ########################################################################################################
+    # generic object iteration
+    ########################################################################################################
+    for object_type_name in object_types.keys():
+
+        object_sample, lists_of_objects = object_types[object_type_name]
+
+        headers = object_sample.editable_headers.keys()
+
+        obj = list()
+        profiles = dict()
+        object_names = list()
+        if len(lists_of_objects) > 0:
+
+            for elm in lists_of_objects:
+
+                # get the object normal information
+                obj.append(elm.get_save_data())
+
+                object_names.append(elm.name)
+
+                if len(T) > 0:
+
+                    elm.ensure_profiles_exist(T)
+
+                    for profile_property in object_sample.properties_with_profile.values():
+
+                        if profile_property not in profiles.keys():
+                            # create the profile
+                            profiles[profile_property] = getattr(elm, profile_property)
+                        else:
+                            # concatenate the new profile
+                            profiles[profile_property] = np.c_[profiles[profile_property],
+                                                               getattr(elm, profile_property)]
+
+            # convert the objects' list to an array
+            dta = np.array(obj)
+        else:
+            # declare an empty array
+            dta = np.zeros((0, len(headers)))
+
+        # declare the DataFrames for the normal data
+        dfs[object_type_name] = pd.DataFrame(data=dta, columns=headers)
+
+        # create the profiles' DataFrames
+        for prop, data in profiles.items():
+            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_names, index=T)
+
+    # wires ########################################################################################################
+
+    elements = circuit.wire_types
+    headers = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0, phase=0).editable_headers.keys()
+
+    if len(elements) > 0:
+        obj = list()
+        for elm in elements:
+            obj.append(elm.get_save_data())
+
+        dfs['wires'] = pd.DataFrame(data=obj, columns=headers)
+    else:
+        dfs['wires'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    # overhead cable types ######################################################################################
+
+    elements = circuit.overhead_line_types
+    headers = Tower().get_save_headers()
+
+    if len(elements) > 0:
+        obj = list()
+        for elm in elements:
+            elm.get_save_data(dta_list=obj)
+
+        dfs['overhead_line_types'] = pd.DataFrame(data=obj, columns=headers)
+    else:
+        dfs['overhead_line_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    # underground cable types ######################################################################################
+
+    elements = circuit.underground_cable_types
+    headers = UndergroundLineType().editable_headers.keys()
+
+    if len(elements) > 0:
+        obj = list()
+        for elm in elements:
+            obj.append(elm.get_save_data())
+
+        dfs['underground_cable_types'] = pd.DataFrame(data=obj, columns=headers)
+    else:
+        dfs['underground_cable_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    # sequence line types ##########################################################################################
+
+    elements = circuit.sequence_line_types
+    headers = SequenceLineType().editable_headers.keys()
+
+    if len(elements) > 0:
+        obj = list()
+        for elm in elements:
+            obj.append(elm.get_save_data())
+
+        dfs['sequence_line_types'] = pd.DataFrame(data=obj, columns=headers)
+    else:
+        dfs['sequence_line_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    # transformer types ############################################################################################
+
+    elements = circuit.transformer_types
+    headers = TransformerType().editable_headers.keys()
+
+    if len(elements) > 0:
+        obj = list()
+        object_names = list()
+        for elm in elements:
+            obj.append(elm.get_save_data())
+
+        dfs['transformer_types'] = pd.DataFrame(data=obj, columns=headers)
+    else:
+        dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    return dfs
+
 
 
 def save_excel(circuit: MultiCircuit, file_path):

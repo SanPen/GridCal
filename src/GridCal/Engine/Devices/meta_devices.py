@@ -15,6 +15,7 @@
 import numpy as np
 from warnings import warn
 from enum import Enum
+from typing import List, Dict, AnyStr, Any, Optional
 
 
 class TimeFrame(Enum):
@@ -52,9 +53,9 @@ class GCProp:
 class EditableDevice:
 
     def __init__(self, name, active, device_type: DeviceType,
-                 editable_headers,
-                 non_editable_attributes=list(),
-                 properties_with_profile=dict()):
+                 editable_headers: Dict[str, GCProp],
+                 non_editable_attributes: List[str],
+                 properties_with_profile: Dict[str, Optional[Any]]):
         """
         Class to generalize any editable device
         :param name: Asset's name
@@ -100,13 +101,17 @@ class EditableDevice:
             data.append(obj)
         return data
 
-    def get_headers(self):
+    def get_headers(self) -> List[AnyStr]:
         """
         Return a list of headers
         """
         return list(self.editable_headers.keys())
 
-    def __str__(self):
+    def __str__(self) -> AnyStr:
+        """
+        Name of the object
+        :return: string
+        """
         return self.name
 
     def create_profiles(self, index):

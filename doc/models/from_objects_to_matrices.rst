@@ -57,7 +57,7 @@ objects.
 This module is the one doing all the heavy lifting; For the computations ahead 
 we will need to have a number of admittance-based matrices. 
 We will compose matrices and vectors for the complete circuit, and
-then split those per circuit island (CalculationInputs objects). 
+then split those per circuit island (CalculationInputs objects).
 Remember that the calculation matrices are only valid for island circuits, 
 this is because multi-island circuits present singular admittance matrices that 
 lead to no numerical solution by their own.
