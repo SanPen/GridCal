@@ -439,6 +439,8 @@ class MainGUI(QMainWindow):
 
         self.ui.profile_divide_pushButton.clicked.connect(lambda: self.modify_profiles('/'))
 
+        self.ui.set_profile_value_pushButton.clicked.connect(lambda: self.modify_profiles('set'))
+
         self.ui.set_linear_combination_profile_pushButton.clicked.connect(self.set_profile_as_linear_combination)
 
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
@@ -472,6 +474,10 @@ class MainGUI(QMainWindow):
         self.ui.close_colour_toolbox_pushButton.clicked.connect(self.hide_color_tool_box)
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
+
+        self.ui.undo_pushButton.clicked.connect(self.undo)
+
+        self.ui.redo_pushButton.clicked.connect(self.redo)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1715,27 +1721,84 @@ class MainGUI(QMainWindow):
 
         dev_type = self.circuit.device_type_name_dict[dev_type_text]
         objects = self.circuit.get_elements_by_type(dev_type)
-
         # Assign profiles
         if len(objects) > 0:
-            attr = objects[0].properties_with_profile[magnitude]
-            if operation == '+':
-                for i, elm in enumerate(objects):
-                    setattr(elm, attr, getattr(elm, attr) + value)
-            elif operation == '-':
-                for i, elm in enumerate(objects):
-                    setattr(elm, attr, getattr(elm, attr) - value)
-            elif operation == '*':
-                for i, elm in enumerate(objects):
-                    setattr(elm, attr, getattr(elm, attr) * value)
-            elif operation == '/':
-                for i, elm in enumerate(objects):
-                    setattr(elm, attr, getattr(elm, attr) / value)
-            else:
-                raise Exception('Operation not supported: ' + str(operation))
 
-            self.display_profiles()
-            self.update_date_dependent_combos()
+            indices = self.ui.profiles_tableView.selectedIndexes()
+
+            attr = objects[0].properties_with_profile[magnitude]
+
+            model = self.ui.profiles_tableView.model()
+
+            mod_cols = list()
+
+            if len(indices) == 0:
+                # no index was selected
+
+                if operation == '+':
+                    for i, elm in enumerate(objects):
+                        setattr(elm, attr, getattr(elm, attr) + value)
+                        mod_cols.append(i)
+
+                elif operation == '-':
+                    for i, elm in enumerate(objects):
+                        setattr(elm, attr, getattr(elm, attr) - value)
+                        mod_cols.append(i)
+
+                elif operation == '*':
+                    for i, elm in enumerate(objects):
+                        setattr(elm, attr, getattr(elm, attr) * value)
+                        mod_cols.append(i)
+
+                elif operation == '/':
+                    for i, elm in enumerate(objects):
+                        setattr(elm, attr, getattr(elm, attr) / value)
+                        mod_cols.append(i)
+
+                elif operation == 'set':
+                    for i, elm in enumerate(objects):
+                        arr = getattr(elm, attr)
+                        setattr(elm, attr,  np.ones(len(arr)) * value)
+                        mod_cols.append(i)
+
+                else:
+                    raise Exception('Operation not supported: ' + str(operation))
+
+            else:
+                # indices were selected ...
+
+                for idx in indices:
+
+                    elm = objects[idx.column()]
+
+                    if operation == '+':
+                        getattr(elm, attr)[idx.row()] += value
+                        mod_cols.append(idx.column())
+
+                    elif operation == '-':
+                        getattr(elm, attr)[idx.row()] -= value
+                        mod_cols.append(idx.column())
+
+                    elif operation == '*':
+                        getattr(elm, attr)[idx.row()] *= value
+                        mod_cols.append(idx.column())
+
+                    elif operation == '/':
+                        getattr(elm, attr)[idx.row()] /= value
+                        mod_cols.append(idx.column())
+
+                    elif operation == 'set':
+                        getattr(elm, attr)[idx.row()] = value
+                        mod_cols.append(idx.column())
+
+                    else:
+                        raise Exception('Operation not supported: ' + str(operation))
+
+            model.add_state(mod_cols, 'linear combinations')
+
+            # self.display_profiles()
+            model.update()
+            # self.update_date_dependent_combos()
 
     def set_profile_as_linear_combination(self):
         """
@@ -3877,6 +3940,27 @@ class MainGUI(QMainWindow):
             print('Pasted!')
         else:
             self.msg('There is no profile displayed, please display one', 'Paste profile to clipboard')
+
+    def undo(self):
+        """
+        Undo table changes
+        """
+
+        model = self.ui.profiles_tableView.model()
+        if model is not None:
+            model.undo()
+        else:
+            pass
+
+    def redo(self):
+        """
+        redo table changes
+        """
+        model = self.ui.profiles_tableView.model()
+        if model is not None:
+            model.redo()
+        else:
+            pass
 
 
 def run():

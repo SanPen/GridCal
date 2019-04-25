@@ -1172,6 +1172,34 @@
                 </spacer>
                </item>
                <item>
+                <widget class="QPushButton" name="undo_pushButton">
+                 <property name="toolTip">
+                  <string>Un-do action (only for the current profile)</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/undo.svg</normaloff>:/Icons/icons/undo.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="redo_pushButton">
+                 <property name="toolTip">
+                  <string>Re-do action (only for the current profile)</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/redo.svg</normaloff>:/Icons/icons/redo.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QPushButton" name="copy_profile_pushButton">
                  <property name="toolTip">
                   <string>Copy displayed profile</string>
@@ -1394,11 +1422,28 @@
                </item>
                <item>
                 <widget class="QDoubleSpinBox" name="profile_factor_doubleSpinBox">
+                 <property name="minimum">
+                  <double>-999999.000000000000000</double>
+                 </property>
                  <property name="maximum">
                   <double>9999999.000000000000000</double>
                  </property>
                  <property name="value">
                   <double>1.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="set_profile_value_pushButton">
+                 <property name="toolTip">
+                  <string>Set the value to all or to the selection</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/up.svg</normaloff>:/Icons/icons/up.svg</iconset>
                  </property>
                 </widget>
                </item>

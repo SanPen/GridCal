@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/up.svg</file>
+    <file>icons/undo.svg</file>
+    <file>icons/redo.svg</file>
     <file>icons/export_pickle.svg</file>
     <file>icons/check_all.svg</file>
     <file>icons/uncheck_all.svg</file>
