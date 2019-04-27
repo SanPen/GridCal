@@ -907,6 +907,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         # contains copies of the table
         self.history = ObjectHistory(max_undo_states)
 
+        # add the initial state
         self.add_state(columns=range(self.columnCount()), action_name='initial')
 
         self.set_delegates()
