@@ -13,20 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import string
 import sys
-from enum import Enum
 
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import math
 from PyQt5.QtWidgets import *
 
-from GridCal.Gui.LineBuilder.gui import *
+from GridCal.Gui.TowerBuilder.gui import *
 from GridCal.Engine.Devices import *
-from GridCal.Engine.Drivers.tower_driver import *
+from GridCal.Gui.TowerBuilder.tower_model import *
 from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 
@@ -55,9 +48,9 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         # was there a tower passed? else create one
         if tower is None:
-            self.tower_driver = TowerDriver(self, edit_callback=self.plot)
+            self.tower_driver = TowerModel(self, edit_callback=self.plot)
         else:
-            self.tower_driver = TowerDriver(self, edit_callback=self.plot, tower=tower)
+            self.tower_driver = TowerModel(self, edit_callback=self.plot, tower=tower)
 
         self.ui.name_lineEdit.setText(self.tower_driver.tower.tower_name)
         self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)

@@ -14,10 +14,10 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import networkx as nx
+import numpy as np
 from scipy.sparse import lil_matrix, diags, csc_matrix
 
 from GridCal.Engine.Core.csc_graph import Graph
-from GridCal.Engine.Devices import *
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 
@@ -1073,7 +1073,6 @@ class NumericalCircuit:
 
 if __name__ == '__main__':
     from GridCal.Engine.Importers.file_handler import *
-    from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import ReactivePowerControlMode
     from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
     from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
     from GridCal.Engine.Simulations.OPF.opf_driver import *
@@ -1082,7 +1081,7 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
     from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
     from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-    from GridCal.Engine.Drivers.optimization_driver import *
+    from GridCal.Engine.Simulations.Optimization.optimization_driver import *
     fname = os.path.join('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids', 'Some distribution grid.xlsx')
 
     print('Reading...')

@@ -1,8 +1,7 @@
 # This file is a python port of the routines included in MATPOWER to perform continuation power flow.
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
-import numpy as np
-from numpy import angle, exp, r_, linalg, Inf, dot, zeros, conj
+from numpy import angle, exp, r_, linalg, Inf, dot
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
@@ -943,7 +942,7 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
     from GridCal.Engine.Simulations.MonteCarlo.stochastic_driver import *
     from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-    from GridCal.Engine.Drivers.optimization_driver import *
+    from GridCal.Engine.Simulations.Optimization.optimization_driver import *
     from GridCal.Engine.io_structures import *
     from GridCal.Engine.grid_analysis import *
 

@@ -31,15 +31,14 @@ Typical values of earth
 """
 
 
-class TowerDriver(QtCore.QAbstractTableModel):
+class TowerModel(QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None, edit_callback=None, tower: Tower=None):
         """
 
         :param parent:
         :param edit_callback:
-        :param name:
-        :param tpe:
+        :param tower:
         """
 
         QtCore.QAbstractTableModel.__init__(self)

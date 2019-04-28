@@ -20,7 +20,7 @@ from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
-from GridCal.Gui.LineBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 
@@ -37,8 +37,8 @@ from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
-from GridCal.Engine.Drivers.topology_driver import TopologyReduction, TopologyReductionOptions
-from GridCal.Engine.Drivers.topology_driver import select_branches_to_reduce
+from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions
+from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Engine.Importers.file_handler import *
