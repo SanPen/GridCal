@@ -54,6 +54,7 @@ from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
+from PyQt5 import QtWidgets
 
 try:
     from pandas.plotting import register_matplotlib_converters
@@ -1018,9 +1019,11 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
+        # files_types = ''
         # call dialog to select the file
 
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                              caption='Open file',
                                                               directory=self.project_directory,
                                                               filter=files_types)
 

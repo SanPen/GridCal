@@ -13,12 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import networkx as nx
 import numpy as np
+import networkx as nx
 from scipy.sparse import lil_matrix, diags, csc_matrix
 
-from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 
 
