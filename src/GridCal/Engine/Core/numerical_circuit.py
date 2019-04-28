@@ -16,10 +16,42 @@
 import numpy as np
 import networkx as nx
 from scipy.sparse import lil_matrix, diags, csc_matrix
+from typing import List
 
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.basic_structures import BranchImpedanceMode
+
+
+def get_branches_of_the_island(island, C_branch_bus):
+    """
+    Get the branch indices of the island
+    :param island: array of bus indices of the island
+    :param C_branch_bus: connectivity matrix of the branches and the buses
+    :return: array of indices of the branches
+    """
+
+    # faster method
+    A = csc_matrix(C_branch_bus)
+    n = A.shape[0]
+    visited = np.zeros(n, dtype=bool)
+    br_idx = np.zeros(n, dtype=int)
+    n_visited = 0
+    for k in range(len(island)):
+        j = island[k]
+
+        for l in range(A.indptr[j], A.indptr[j + 1]):
+            i = A.indices[l]  # row index
+
+            if not visited[i]:
+                visited[i] = True
+                br_idx[n_visited] = i
+                n_visited += 1
+
+    # resize vector
+    br_idx = br_idx[:n_visited]
+
+    return br_idx
 
 
 def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_temperature, R_corrected, R, X, G, B,
@@ -141,6 +173,71 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
     C_bus_bus = C_branch_bus.T * C_branch_bus
 
     return Ybus, Yf, Yt, B1, B2, Yseries, Ys, GBc, Cf, Ct, C_bus_bus, C_branch_bus
+
+
+def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus, C_batt_bus,
+                 nbus, nbr, time_idx) -> List[CalculationInputs]:
+    """
+    Partition the circuit in islands for the designated time intervals
+    :param circuit: CalculationInputs instance with all the data regardless of the islands and the branch states
+    :param C_bus_bus: bus-bus connectivity matrix
+    :param C_branch_bus: branch-bus connectivity matrix
+    :param C_gen_bus: gen-bus connectivity matrix
+    :param C_batt_bus: battery-bus connectivity matrix
+    :param nbus: number of buses
+    :param nbr: number of branches
+    :param time_idx: array with the time indices where this set of islands belong to
+    :return: list of CalculationInputs instances
+    """
+    # find the islands of the circuit
+    islands = Graph(csc_matrix(C_bus_bus)).find_islands()
+
+    # clear the list of circuits
+    calculation_islands = list()
+
+    # find the branches that belong to each island
+    island_branches = list()
+
+    if len(islands) > 1:
+
+        # there are islands, pack the islands into sub circuits
+        for island_bus_idx in islands:
+            # get the branch indices of the island
+            island_br_idx = get_branches_of_the_island(island_bus_idx, C_branch_bus)
+            island_br_idx = np.sort(island_br_idx)  # sort
+            island_branches.append(island_br_idx)
+
+            # indices of batteries and controlled generators that belong to this island
+            gen_idx = np.where(C_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+            bat_idx = np.where(C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+
+            # Get the island circuit (the bus types are computed automatically)
+            # The island original indices are generated within the get_island function
+            circuit_island = circuit.get_island(island_bus_idx, island_br_idx, gen_idx, bat_idx)
+
+            # store the island
+            calculation_islands.append(circuit_island)
+    else:
+        # Only one island
+
+        # compile bus types
+        circuit.consolidate()
+
+        # only one island, no need to split anything
+        calculation_islands.append(circuit)
+
+        island_bus_idx = np.arange(start=0, stop=nbus, step=1, dtype=int)
+        island_br_idx = np.arange(start=0, stop=nbr, step=1, dtype=int)
+
+        # set the indices in the island too
+        circuit.original_bus_idx = island_bus_idx
+        circuit.original_branch_idx = island_br_idx
+
+        # append a list with all the branch indices for completeness
+        island_branches.append(island_br_idx)
+
+    # return the list of islands
+    return calculation_islands
 
 
 class NumericalCircuit:
@@ -324,10 +421,10 @@ class NumericalCircuit:
         self.C_shunt_bus = lil_matrix((n_sh, n_bus), dtype=int)
 
         # Islands indices
-        self.islands = list()  # bus indices per island
-        self.island_branches = list()  # branch indices per island
-
-        self.calculation_islands = list()
+        # self.islands = list()  # bus indices per island
+        # self.island_branches = list()  # branch indices per island
+        #
+        # self.calculation_islands = list()
 
     def get_different_states(self):
         """
@@ -353,26 +450,21 @@ class NumericalCircuit:
 
         return states
 
-    def compute(self, add_storage=True, add_generation=True, apply_temperature=False,
-                branch_tolerance_mode=BranchImpedanceMode.Specified):
-        """
-        Compute the cross connectivity matrices to determine the circuit connectivity
-        towards the calculation. Additionally, compute the calculation matrices.
-        :param add_storage:
-        :param add_generation:
-        :param apply_temperature:
-        :param branch_tolerance_mode:
-        :return:
-        """
+    def get_raw_circuit(self, add_generation, add_storage):
+
         # Declare object to store the calculation inputs
         circuit = CalculationInputs(self.nbus, self.nbr, self.ntime, self.n_batt, self.n_ctrl_gen)
 
+        # branches
         circuit.branch_rates = self.br_rates
         circuit.F = self.F
         circuit.T = self.T
+        circuit.tap_f = self.tap_f
+        circuit.tap_t = self.tap_t
         circuit.bus_names = self.bus_names
         circuit.branch_names = self.branch_names
 
+        # connectivity matrices
         circuit.C_load_bus = self.C_load_bus
         circuit.C_batt_bus = self.C_batt_bus
         circuit.C_sta_gen_bus = self.C_sta_gen_bus
@@ -452,6 +544,7 @@ class NumericalCircuit:
         circuit.Qmax = q_max
         circuit.Qmin = q_min
 
+        # if there are profiles...
         if self.ntime > 0:
             # Shunts
             Ysh_prof = self.C_shunt_bus.T * (self.shunt_admittance_profile / self.Sbase * self.shunt_active).T
@@ -465,7 +558,7 @@ class NumericalCircuit:
             if add_generation:
                 # static generators
                 Sbus_prof += self.C_sta_gen_bus.T * (
-                            self.static_gen_power_profile / self.Sbase * self.static_gen_active).T
+                        self.static_gen_power_profile / self.Sbase * self.static_gen_active).T
 
                 # generators
                 pf2 = np.power(self.generator_power_factor_profile, 2.0)
@@ -485,10 +578,24 @@ class NumericalCircuit:
             circuit.Ibus_prof = I_prof
             circuit.time_array = self.time_array
 
-        ################################################################################################################
-        # Form the admittance matrix
-        ################################################################################################################
+        return circuit
 
+    def compute(self, add_storage=True, add_generation=True, apply_temperature=False,
+                branch_tolerance_mode=BranchImpedanceMode.Specified):
+        """
+        Compute the cross connectivity matrices to determine the circuit connectivity
+        towards the calculation. Additionally, compute the calculation matrices.
+        :param add_storage:
+        :param add_generation:
+        :param apply_temperature:
+        :param branch_tolerance_mode:
+        :return:
+        """
+
+        # get the raw circuit wwith the inner arrays computed
+        circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
+
+        # compute the connectivity and the different admittance matrices
         Ybus, Yf, Yt, B1, B2, \
         Yseries, Ys, GBc, Cf, Ct, \
         C_bus_bus, C_branch_bus = calc_connectivity(branch_active=self.branch_active,
@@ -506,7 +613,7 @@ class NumericalCircuit:
                                                     tap_ang=self.tap_ang,
                                                     tap_t=self.tap_t,
                                                     tap_f=self.tap_f,
-                                                    Ysh=Ysh)
+                                                    Ysh=circuit.Ysh)
 
         circuit.Ybus = Ybus
         circuit.Yf = Yf
@@ -518,360 +625,19 @@ class NumericalCircuit:
         circuit.C_branch_bus_t = Ct
         circuit.Ys = Ys
         circuit.GBc = GBc
-        circuit.tap_f = self.tap_f
-        circuit.tap_t = self.tap_t
 
-        ################################################################################################################
-        # Islands
-        ################################################################################################################
-        # find the islands of the circuit
-        self.islands = Graph(csc_matrix(C_bus_bus)).find_islands()
-
-        # clear the list of circuits
-        self.calculation_islands = list()
-
-        # find the branches that belong to each island
-        self.island_branches = list()
-
-        if len(self.islands) > 1:
-
-            # pack the islands
-            for island_bus_idx in self.islands:
-                # get the branch indices of the island
-                island_br_idx = self.get_branches_of_the_island(island_bus_idx, C_branch_bus)
-                island_br_idx = np.sort(island_br_idx)  # sort
-                self.island_branches.append(island_br_idx)
-
-                # indices of batteries and controlled generators that belong to this island
-                gen_idx = np.where(self.C_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
-                bat_idx = np.where(self.C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
-
-                # Get the island circuit (the bus types are computed automatically)
-                # The island original indices are generated within the get_island function
-                circuit_island = circuit.get_island(island_bus_idx, island_br_idx, gen_idx, bat_idx)
-
-                # store the island
-                self.calculation_islands.append(circuit_island)
-        else:
-            # compile bus types
-            circuit.consolidate()
-
-            # only one island, no need to split anything
-            self.calculation_islands.append(circuit)
-
-            island_bus_idx = np.arange(start=0, stop=self.nbus, step=1, dtype=int)
-            island_br_idx = np.arange(start=0, stop=self.nbr, step=1, dtype=int)
-
-            # set the indices in the island too
-            circuit.original_bus_idx = island_bus_idx
-            circuit.original_branch_idx = island_br_idx
-
-            # append a list with all the branch indices for completeness
-            self.island_branches.append(island_br_idx)
+        #  split the circuit object into the individual circuits that may arise from the topological islands
+        calculation_islands = calc_islands(circuit=circuit,
+                                           C_bus_bus=C_bus_bus,
+                                           C_branch_bus=C_branch_bus,
+                                           C_gen_bus=self.C_gen_bus,
+                                           C_batt_bus=self.C_batt_bus,
+                                           nbus=self.nbus,
+                                           nbr=self.nbr,
+                                           time_idx=None)
 
         # return the list of islands
-        return self.calculation_islands
-
-    def compute_ts(self, add_storage=True, add_generation=True, apply_temperature=False,
-                branch_tolerance_mode=BranchImpedanceMode.Specified, compile_states=False):
-        """
-        Compute the cross connectivity matrices to determine the circuit connectivity
-        towards the calculation. Additionally, compute the calculation matrices.
-        :param add_storage:
-        :param add_generation:
-        :param apply_temperature:
-        :param branch_tolerance_mode:
-        :param compile_states: Compile all the possible connectivity states due to time series?
-        :return:
-        """
-        # Declare object to store the calculation inputs with one time index
-        circuit = CalculationInputs(self.nbus, self.nbr, 1, self.n_batt, self.n_ctrl_gen)
-
-        circuit.branch_rates = self.br_rates
-        circuit.F = self.F
-        circuit.T = self.T
-        circuit.bus_names = self.bus_names
-        circuit.branch_names = self.branch_names
-
-        circuit.C_load_bus = self.C_load_bus
-        circuit.C_batt_bus = self.C_batt_bus
-        circuit.C_sta_gen_bus = self.C_sta_gen_bus
-        circuit.C_ctrl_gen_bus = self.C_gen_bus
-        circuit.C_shunt_bus = self.C_shunt_bus
-
-        # needed for the tap changer
-        circuit.is_bus_to_regulated = self.is_bus_to_regulated
-        circuit.tap_position = self.tap_position
-        circuit.min_tap = self.min_tap
-        circuit.max_tap = self.max_tap
-        circuit.tap_inc_reg_up = self.tap_inc_reg_up
-        circuit.tap_inc_reg_down = self.tap_inc_reg_down
-        circuit.vset = self.vset
-        circuit.tap_ang = self.tap_ang
-        circuit.tap_mod = self.tap_mod
-
-        # active power control
-        circuit.controlled_gen_pmin = self.generator_pmin
-        circuit.controlled_gen_pmax = self.generator_pmax
-        circuit.controlled_gen_enabled = self.generator_active
-        circuit.controlled_gen_dispatchable = self.generator_dispatchable
-        circuit.battery_pmin = self.battery_pmin
-        circuit.battery_pmax = self.battery_pmax
-        circuit.battery_Enom = self.battery_Enom
-        circuit.battery_soc_0 = self.battery_soc_0
-        circuit.battery_discharge_efficiency = self.battery_discharge_efficiency
-        circuit.battery_charge_efficiency = self.battery_charge_efficiency
-        circuit.battery_min_soc = self.battery_min_soc
-        circuit.battery_max_soc = self.battery_max_soc
-        circuit.battery_enabled = self.battery_active
-        circuit.battery_dispatchable = self.battery_dispatchable
-
-        ################################################################################################################
-        # loads, generators, batteries, etc...
-        ################################################################################################################
-
-        # Qmax
-        q_max = self.C_gen_bus.T * (self.generator_qmax / self.Sbase)
-        q_max += self.C_batt_bus.T * (self.battery_qmax/ self.Sbase)
-
-        # Qmin
-        q_min = self.C_gen_bus.T * (self.generator_qmin / self.Sbase)
-        q_min += self.C_batt_bus.T * (self.battery_qmin / self.Sbase)
-
-        # assign the values
-
-        circuit.Vbus = self.V0
-        circuit.Sbase = self.Sbase
-        circuit.types = self.bus_types
-        circuit.Qmax = q_max
-        circuit.Qmin = q_min
-
-        if compile_states and self.ntime > 0:  # profile mode
-
-            # Shunts
-            Ysh_prof = self.C_shunt_bus.T * (self.shunt_admittance_profile / self.Sbase * self.shunt_active_prof).T
-
-            # Loads
-            I_prof = self.C_load_bus.T * (- self.load_current_profile / self.Sbase * self.load_active_prof).T
-            Ysh_prof += self.C_load_bus.T * (self.load_admittance_profile / self.Sbase * self.load_active_prof).T
-
-            Sbus_prof = self.C_load_bus.T * (- self.load_power_profile / self.Sbase * self.load_active_prof).T
-
-            if add_generation:
-                # static generators
-                Sbus_prof += self.C_sta_gen_bus.T * (self.static_gen_power_profile
-                                                     / self.Sbase * self.static_gen_active_prof).T
-
-                # generators
-                pf2 = np.power(self.generator_power_factor_profile, 2.0)
-                # compute the reactive power from the active power and the power factor
-                pf_sign = (self.generator_power_factor_profile + 1e-20) / np.abs(
-                    self.generator_power_factor_profile + 1e-20)
-                Q = pf_sign * self.generator_power_profile * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
-                gen_S = self.generator_power_profile + 1j * Q
-                Sbus_prof += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_active_prof).T
-
-            # batteries
-            if add_storage:
-                Sbus_prof += self.C_batt_bus.T * (self.battery_power_profile / self.Sbase * self.battery_active_prof).T
-
-            circuit.Ysh = Ysh_prof.T
-            circuit.Sbus = Sbus_prof.T
-            circuit.Ibus = I_prof.T
-
-        else:  # snapshot mode
-
-            # Shunts
-            Ysh = self.C_shunt_bus.T * (self.shunt_admittance / self.Sbase)
-
-            # Loads
-            S = self.C_load_bus.T * (- self.load_power / self.Sbase * self.load_active)
-            I = self.C_load_bus.T * (- self.load_current / self.Sbase * self.load_active)
-            Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase * self.load_active)
-
-            if add_generation:
-                # static generators
-                S += self.C_sta_gen_bus.T * (self.static_gen_power / self.Sbase * self.static_gen_active)
-
-                # generators
-                pf2 = np.power(self.generator_power_factor, 2.0)
-                # compute the reactive power from the active power and the power factor
-                pf_sign = (self.generator_power_factor + 1e-20) / np.abs(self.generator_power_factor + 1e-20)
-                Q = pf_sign * self.generator_power * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
-                gen_S = self.generator_power + 1j * Q
-                S += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_active)
-
-            # batteries
-            if add_storage:
-                S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_active)
-
-            circuit.Ysh = Ysh
-            circuit.Sbus = S
-            circuit.Ibus = I
-
-        ################################################################################################################
-        # Form the admittance matrix
-        ################################################################################################################
-
-        if compile_states:
-            states = self.get_different_states()
-        else:
-            states = {0: []}
-
-        # compile each different connectivity state
-        for t in states.keys():
-
-            # form the connectivity matrices with the states applied
-            if compile_states:
-                states_dia = diags(self.branch_active_prof[t, :])
-            else:
-                states_dia = diags(self.branch_active)
-
-            Cf = states_dia * self.C_branch_bus_f
-            Ct = states_dia * self.C_branch_bus_t
-
-            # use the specified of the temperature-corrected resistance
-            if apply_temperature:
-                R = self.R_corrected
-            else:
-                R = self.R
-
-            # modify the branches impedance with the lower, upper tolerance values
-            if branch_tolerance_mode == BranchImpedanceMode.Lower:
-                R *= (1 - self.impedance_tolerance / 100.0)
-            elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-                R *= (1 + self.impedance_tolerance / 100.0)
-            else:
-                pass
-
-            Ys = 1.0 / (R + 1.0j * self.X)
-            GBc = self.G + 1.0j * self.B
-            tap = self.tap_mod * np.exp(1.0j * self.tap_ang)
-
-            # branch primitives in vector form
-            Ytt = (Ys + GBc / 2.0) / (self.tap_t * self.tap_t)
-            Yff = (Ys + GBc / 2.0) / (self.tap_f * self.tap_f * tap * np.conj(tap))
-            Yft = - Ys / (self.tap_f * self.tap_t * np.conj(tap))
-            Ytf = - Ys / (self.tap_t * self.tap_f * tap)
-
-            # form the admittance matrices
-            Yf = diags(Yff) * Cf + diags(Yft) * Ct
-            Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
-            Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
-
-            # branch primitives in vector form
-            Ytts = Ys
-            Yffs = Ytts / (tap * np.conj(tap))
-            Yfts = - Ys / np.conj(tap)
-            Ytfs = - Ys / tap
-
-            # form the admittance matrices of the series elements
-            Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
-            Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
-            Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
-
-            # Form the matrices for fast decoupled
-            '''
-            # B1 for FDPF (no shunts, no resistance, no tap module)
-            b1 = 1.0 / (self.X + 1e-20)
-            B1[f, f] -= b1
-            B1[f, t] -= b1
-            B1[t, f] -= b1
-            B1[t, t] -= b1
-    
-            # B2 for FDPF (with shunts, only the tap module)
-            b2 = b1 + self.B
-            B2[f, f] -= (b2 / (tap * conj(tap))).real
-            B2[f, t] -= (b1 / conj(tap)).real
-            B2[t, f] -= (b1 / tap).real
-            B2[t, t] -= b2
-            '''
-            b1 = 1.0 / (self.X + 1e-20)
-            B1f = diags(-b1) * Cf + diags(-b1) * Ct
-            B1t = diags(-b1) * Cf + diags(-b1) * Ct
-            B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
-
-            b2 = b1 + self.B
-            b2_ff = -(b2 / (tap * np.conj(tap))).real
-            b2_ft = -(b1 / np.conj(tap)).real
-            b2_tf = -(b1 / tap).real
-            b2_tt = - b2
-            B2f = diags(b2_ff) * Cf + diags(b2_ft) * Ct
-            B2t = diags(b2_tf) * Cf + diags(b2_tt) * Ct
-            B2 = csc_matrix(Cf.T * B2f + Ct.T * B2t)
-
-            # assign to the calc element
-            circuit.Ybus[t] = Ybus
-            circuit.Yf[t] = Yf
-            circuit.Yt[t] = Yt
-            circuit.B1[t] = B1
-            circuit.B2[t] = B2
-            circuit.Yseries[t] = Yseries
-            circuit.C_branch_bus_f[t] = Cf
-            circuit.C_branch_bus_t[t] = Ct
-            circuit.Ys[t] = Ys
-            circuit.GBc[t] = GBc
-            circuit.tap_f = self.tap_f
-            circuit.tap_t = self.tap_t
-
-            ############################################################################################################
-            # Bus connectivity
-            ############################################################################################################
-            # branch - bus connectivity
-            C_branch_bus = Cf + Ct
-
-            # Connectivity node - Connectivity node connectivity matrix
-            C_bus_bus = C_branch_bus.T * C_branch_bus
-
-            ############################################################################################################
-            # Islands
-            ############################################################################################################
-            # find the islands of the circuit
-            islands = Graph(csc_matrix(C_bus_bus)).find_islands()
-
-            # initialize the indices
-            n_islands = len(islands)
-            circuit.original_bus_idx[t] = [None] * n_islands
-            circuit.original_branch_idx[t] = [None] * n_islands
-            circuit.original_gen_idx[t] = [None] * n_islands
-            circuit.original_bat_idx[t] = [None] * n_islands
-
-            if len(islands) > 1:
-
-                # pack the islands
-                for island_bus_idx in islands:
-
-                    # get the branch indices of the island
-                    island_br_idx = self.get_branches_of_the_island(island_bus_idx, C_branch_bus)
-                    island_br_idx = np.sort(island_br_idx)  # sort
-
-                    # indices of batteries and controlled generators that belong to this island
-                    gen_idx = np.where(self.C_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
-                    bat_idx = np.where(self.C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
-
-                    # store the data
-                    circuit.original_bus_idx[t][island_bus_idx] = island_bus_idx
-                    circuit.original_branch_idx[t][island_bus_idx] = island_br_idx
-                    circuit.original_gen_idx[t][island_bus_idx] = gen_idx
-                    circuit.original_bat_idx[t][island_bus_idx] = bat_idx
-
-            else:
-                # compile bus types
-                circuit.consolidate()
-
-                island_bus_idx = np.arange(start=0, stop=self.nbus, step=1, dtype=int)
-                island_br_idx = np.arange(start=0, stop=self.nbr, step=1, dtype=int)
-                gen_idx = np.arange(start=0, stop=self.n_ctrl_gen, step=1, dtype=int)
-                bat_idx = np.arange(start=0, stop=self.n_batt, step=1, dtype=int)
-
-                # store the data
-                circuit.original_bus_idx[t][0] = island_bus_idx
-                circuit.original_branch_idx[t][0] = island_br_idx
-                circuit.original_gen_idx[t][0] = gen_idx
-                circuit.original_bat_idx[t][0] = bat_idx
-
-        # return the list of islands
-        return circuit
+        return calculation_islands
 
     @property
     def R_corrected(self):
@@ -917,37 +683,6 @@ class NumericalCircuit:
         Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
 
         return Ybus.imag
-
-    @staticmethod
-    def get_branches_of_the_island(island, C_branch_bus):
-        """
-        Get the branch indices of the island
-        :param island: array of bus indices of the island
-        :param C_branch_bus: connectivity matrix of the branches and the buses
-        :return: array of indices of the branches
-        """
-
-        # faster method
-        A = csc_matrix(C_branch_bus)
-        n = A.shape[0]
-        visited = np.zeros(n, dtype=bool)
-        br_idx = np.zeros(n, dtype=int)
-        n_visited = 0
-        for k in range(len(island)):
-            j = island[k]
-
-            for l in range(A.indptr[j], A.indptr[j+1]):
-                i = A.indices[l]  # row index
-
-                if not visited[i]:
-                    visited[i] = True
-                    br_idx[n_visited] = i
-                    n_visited += 1
-
-        # resize vector
-        br_idx = br_idx[:n_visited]
-
-        return br_idx
 
     def power_flow_post_process(self, V, only_power=False, t=0):
         """

@@ -392,7 +392,7 @@ class TimeSeries(QThread):
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
-        calc_inputs = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+        calc_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         # For every circuit, run the time series
         for island_index, calculation_input in enumerate(calc_inputs):
@@ -406,16 +406,19 @@ class TimeSeries(QThread):
             batteries_bus_idx = list()
             if self.options.dispatch_storage:
                 for k, bus in enumerate(self.grid.buses):
-                    for batt in bus.batteries:
-                        batt.reset()  # reset the calculation values
-                        batteries.append(batt)
+                    for battery in bus.batteries:
+                        battery.reset()  # reset the calculation values
+                        batteries.append(battery)
                         batteries_bus_idx.append(k)
 
             self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
 
             # find the original indices
-            bus_original_idx = numerical_circuit.islands[island_index]
-            branch_original_idx = numerical_circuit.island_branches[island_index]
+            # bus_original_idx = numerical_circuit.islands[island_index]
+            # branch_original_idx = numerical_circuit.island_branches[island_index]
+
+            bus_original_idx = calculation_input.original_bus_idx
+            branch_original_idx = calculation_input.original_branch_idx
 
             # if there are valid profiles...
             if self.grid.time_profile is not None:
@@ -424,7 +427,7 @@ class TimeSeries(QThread):
                 n = calculation_input.nbus
                 m = calculation_input.nbr
                 results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
-                Vlast = calculation_input.Vbus
+                last_voltage = calculation_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
@@ -434,42 +437,46 @@ class TimeSeries(QThread):
                 # traverse the profiles time and simulate each time step
                 while t < self.end_ and not self.__cancel__:
                     # set the power values
-                    # if the storage dispatch option is active, the batteries power was not included
-                    # it shall be included now, after processing
-                    Y = calculation_input.Ysh[:, t]
-                    I = calculation_input.Ibus[:, t]
-                    S = calculation_input.Sbus[:, t]
+                    # if the storage dispatch option is active, the batteries power is not included
+                    # therefore, it shall be included after processing
+                    Ysh = calculation_input.Ysh_prof[:, t]
+                    I = calculation_input.Ibus_prof[:, t]
+                    S = calculation_input.Sbus_prof[:, t]
 
-                    # add the controlled storage power if controlling storage
+                    # add the controlled storage power if we are controlling the storage devices
                     if self.options.dispatch_storage:
 
                         if t < self.end_-1:
                             # compute the time delta: the time values come in nanoseconds
-                            dt = (calculation_input.time_array[t+1] - calculation_input.time_array[t]).value * 1e-9 / 3600
+                            dt = (calculation_input.time_array[t + 1]
+                                  - calculation_input.time_array[t]).value * 1e-9 / 3600.0
 
-                        for k, batt in enumerate(batteries):
+                        for k, battery in enumerate(batteries):
 
-                            P = batt.get_processed_at(t, dt=dt, store_values=True)
+                            power = battery.get_processed_at(t, dt=dt, store_values=True)
+
                             bus_idx = batteries_bus_idx[k]
-                            S[bus_idx] += (P / calculation_input.Sbase)
-                        else:
-                            pass
+
+                            S[bus_idx] += power / calculation_input.Sbase
+                    else:
+                        pass
 
                     # run power flow at the circuit
-                    res = power_flow.run_pf(circuit=calculation_input, Vbus=Vlast, Sbus=S, Ibus=I)
+                    res = power_flow.run_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I)
 
                     # Recycle voltage solution
-                    Vlast = res.voltage
+                    last_voltage = res.voltage
 
                     # store circuit results at the time index 't'
                     results.set_at(t, res)
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
-                    self.progress_text.emit('Simulating island ' + str(island_index) + ' at ' + str(self.grid.time_profile[t]))
+                    self.progress_text.emit('Simulating island ' + str(island_index)
+                                            + ' at ' + str(self.grid.time_profile[t]))
                     t += 1
 
-                # merge  the circuit's results
+                # merge the circuit's results
                 time_series_results.apply_from_island(results,
                                                       bus_original_idx,
                                                       branch_original_idx,
@@ -493,24 +500,23 @@ class TimeSeries(QThread):
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
         time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+
         if self.end_ is None:
             self.end_ = nt
 
         n_cores = multiprocessing.cpu_count()
 
-        # print('Compiling...', end='')
-        # numerical_circuit = self.grid.compile()
-        # calculation_inputs = numerical_circuit.compute()
-
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
-        calculation_inputs = numerical_circuit.compute(
-            branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+
+        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=
+                                                       self.options.branch_impedance_tolerance_mode)
 
         # For every circuit, run the time series
-        for nc, calculation_input in enumerate(calculation_inputs):
+        for island_index, calculation_input in enumerate(calculation_inputs):
 
-            self.progress_text.emit('Time series at circuit ' + str(nc) + ' in parallel using ' + str(n_cores) + ' cores ...')
+            self.progress_text.emit('Time series at circuit ' + str(island_index)
+                                    + ' in parallel using ' + str(n_cores) + ' cores ...')
 
             if nt > 0:
 
@@ -518,7 +524,7 @@ class TimeSeries(QThread):
                 n = calculation_input.nbus
                 m = calculation_input.nbr
                 results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
-                Vlast = calculation_input.Vbus
+                last_voltage = calculation_input.Vbus
 
                 self.progress_signal.emit(0.0)
 
@@ -541,15 +547,18 @@ class TimeSeries(QThread):
                         S = calculation_input.Sbus_prof[:, t]
 
                         # run power flow at the circuit
-                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options, calculation_input, Vlast, S, I, return_dict))
+                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options,
+                                                                                    calculation_input,
+                                                                                    last_voltage, S,
+                                                                                    I, return_dict))
                         jobs.append(p)
                         p.start()
                         k += 1
                         t += 1
 
                     # wait for all jobs to complete
-                    for proc in jobs:
-                        proc.join()
+                    for process_ in jobs:
+                        process_.join()
 
                     progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
                     self.progress_signal.emit(progress)
@@ -589,6 +598,9 @@ class TimeSeries(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Cancel the simulation
+        """
         self.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled!')
