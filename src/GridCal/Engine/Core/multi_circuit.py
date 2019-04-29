@@ -926,6 +926,9 @@ class MultiCircuit:
 
             **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+
         self.buses.append(obj)
 
     def delete_bus(self, obj: Bus):
@@ -953,6 +956,10 @@ class MultiCircuit:
 
             **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+
         self.branches.append(obj)
 
     def delete_branch(self, obj: Branch):

@@ -16,7 +16,7 @@
 import numpy as np
 import networkx as nx
 from scipy.sparse import lil_matrix, diags, csc_matrix
-from typing import List
+from typing import List, Dict
 
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.csc_graph import Graph
@@ -176,7 +176,7 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
 
 
 def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus, C_batt_bus,
-                 nbus, nbr, time_idx) -> List[CalculationInputs]:
+                 nbus, nbr, time_idx=None) -> List[CalculationInputs]:
     """
     Partition the circuit in islands for the designated time intervals
     :param circuit: CalculationInputs instance with all the data regardless of the islands and the branch states
@@ -186,7 +186,8 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
     :param C_batt_bus: battery-bus connectivity matrix
     :param nbus: number of buses
     :param nbr: number of branches
-    :param time_idx: array with the time indices where this set of islands belong to
+    :param time_idx: array with the time indices where this set of islands belongs to
+                    (if None all the time series are kept)
     :return: list of CalculationInputs instances
     """
     # find the islands of the circuit
@@ -215,8 +216,12 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
             # The island original indices are generated within the get_island function
             circuit_island = circuit.get_island(island_bus_idx, island_br_idx, gen_idx, bat_idx)
 
+            if time_idx is not None:
+                circuit_island.trim_profiles(time_idx=time_idx)
+
             # store the island
             calculation_islands.append(circuit_island)
+
     else:
         # Only one island
 
@@ -232,6 +237,9 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
         # set the indices in the island too
         circuit.original_bus_idx = island_bus_idx
         circuit.original_branch_idx = island_br_idx
+
+        if time_idx is not None:
+            circuit.trim_profiles(time_idx=time_idx)
 
         # append a list with all the branch indices for completeness
         island_branches.append(island_br_idx)
@@ -445,8 +453,8 @@ class NumericalCircuit:
                     found = True
 
             if not found:
-                # new state found
-                states[t] = []
+                # new state found (append itself)
+                states[t] = [t]
 
         return states
 
@@ -581,7 +589,7 @@ class NumericalCircuit:
         return circuit
 
     def compute(self, add_storage=True, add_generation=True, apply_temperature=False,
-                branch_tolerance_mode=BranchImpedanceMode.Specified):
+                branch_tolerance_mode=BranchImpedanceMode.Specified) -> List[CalculationInputs]:
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
         towards the calculation. Additionally, compute the calculation matrices.
@@ -589,42 +597,40 @@ class NumericalCircuit:
         :param add_generation:
         :param apply_temperature:
         :param branch_tolerance_mode:
-        :return:
+        :return: list of CalculationInputs instances where each one is a circuit island
         """
 
         # get the raw circuit wwith the inner arrays computed
         circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
         # compute the connectivity and the different admittance matrices
-        Ybus, Yf, Yt, B1, B2, \
-        Yseries, Ys, GBc, Cf, Ct, \
-        C_bus_bus, C_branch_bus = calc_connectivity(branch_active=self.branch_active,
-                                                    C_branch_bus_f=self.C_branch_bus_f,
-                                                    C_branch_bus_t=self.C_branch_bus_t,
-                                                    apply_temperature=apply_temperature,
-                                                    R_corrected=self.R_corrected,
-                                                    R=self.R,
-                                                    X=self.X,
-                                                    G=self.G,
-                                                    B=self.B,
-                                                    branch_tolerance_mode=branch_tolerance_mode,
-                                                    impedance_tolerance=self.impedance_tolerance,
-                                                    tap_mod=self.tap_mod,
-                                                    tap_ang=self.tap_ang,
-                                                    tap_t=self.tap_t,
-                                                    tap_f=self.tap_f,
-                                                    Ysh=circuit.Ysh)
-
-        circuit.Ybus = Ybus
-        circuit.Yf = Yf
-        circuit.Yt = Yt
-        circuit.B1 = B1
-        circuit.B2 = B2
-        circuit.Yseries = Yseries
-        circuit.C_branch_bus_f = Cf
-        circuit.C_branch_bus_t = Ct
-        circuit.Ys = Ys
-        circuit.GBc = GBc
+        circuit.Ybus, \
+        circuit.Yf, \
+        circuit.Yt, \
+        circuit.B1, \
+        circuit.B2, \
+        circuit.Yseries, \
+        circuit.Ys, \
+        circuit.GBc, \
+        circuit.C_branch_bus_f, \
+        circuit.C_branch_bus_t, \
+        C_bus_bus, \
+        C_branch_bus = calc_connectivity(branch_active=self.branch_active,
+                                         C_branch_bus_f=self.C_branch_bus_f,
+                                         C_branch_bus_t=self.C_branch_bus_t,
+                                         apply_temperature=apply_temperature,
+                                         R_corrected=self.R_corrected,
+                                         R=self.R,
+                                         X=self.X,
+                                         G=self.G,
+                                         B=self.B,
+                                         branch_tolerance_mode=branch_tolerance_mode,
+                                         impedance_tolerance=self.impedance_tolerance,
+                                         tap_mod=self.tap_mod,
+                                         tap_ang=self.tap_ang,
+                                         tap_t=self.tap_t,
+                                         tap_f=self.tap_f,
+                                         Ysh=circuit.Ysh)
 
         #  split the circuit object into the individual circuits that may arise from the topological islands
         calculation_islands = calc_islands(circuit=circuit,
@@ -638,6 +644,71 @@ class NumericalCircuit:
 
         # return the list of islands
         return calculation_islands
+
+    def compute_ts(self, add_storage=True, add_generation=True, apply_temperature=False,
+                   branch_tolerance_mode=BranchImpedanceMode.Specified) -> Dict[int, List[CalculationInputs]]:
+        """
+        Compute the cross connectivity matrices to determine the circuit connectivity
+        towards the calculation. Additionally, compute the calculation matrices.
+        :param add_storage:
+        :param add_generation:
+        :param apply_temperature:
+        :param branch_tolerance_mode:
+        :return: dictionary of lists of CalculationInputs instances where each one is a circuit island
+        """
+
+        # get the raw circuit with the inner arrays computed
+        circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
+
+        states = self.get_different_states()
+
+        calculation_islands_collection = dict()
+
+        for t, t_array in states.items():
+
+            # compute the connectivity and the different admittance matrices
+            circuit.Ybus, \
+             circuit.Yf, \
+             circuit.Yt, \
+             circuit.B1, \
+             circuit.B2, \
+             circuit.Yseries, \
+             circuit.Ys, \
+             circuit.GBc, \
+             circuit.C_branch_bus_f, \
+             circuit.C_branch_bus_t, \
+             C_bus_bus, \
+             C_branch_bus = calc_connectivity(branch_active=self.branch_active_prof[t, :],
+                                              C_branch_bus_f=self.C_branch_bus_f,
+                                              C_branch_bus_t=self.C_branch_bus_t,
+                                              apply_temperature=apply_temperature,
+                                              R_corrected=self.R_corrected,
+                                              R=self.R,
+                                              X=self.X,
+                                              G=self.G,
+                                              B=self.B,
+                                              branch_tolerance_mode=branch_tolerance_mode,
+                                              impedance_tolerance=self.impedance_tolerance,
+                                              tap_mod=self.tap_mod,
+                                              tap_ang=self.tap_ang,
+                                              tap_t=self.tap_t,
+                                              tap_f=self.tap_f,
+                                              Ysh=circuit.Ysh_prof[:, t])
+
+            #  split the circuit object into the individual circuits that may arise from the topological islands
+            calculation_islands = calc_islands(circuit=circuit,
+                                               C_bus_bus=C_bus_bus,
+                                               C_branch_bus=C_branch_bus,
+                                               C_gen_bus=self.C_gen_bus,
+                                               C_batt_bus=self.C_batt_bus,
+                                               nbus=self.nbus,
+                                               nbr=self.nbr,
+                                               time_idx=t_array)
+
+            calculation_islands_collection[t] = calculation_islands
+
+        # return the list of islands
+        return calculation_islands_collection
 
     @property
     def R_corrected(self):

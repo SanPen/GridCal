@@ -47,6 +47,7 @@ class CalculationInputs:
 
         self.original_bus_idx = list()
         self.original_branch_idx = list()
+        self.original_time_idx = list()
 
         self.bus_names = np.empty(self.nbus, dtype=object)
         self.branch_names = np.empty(self.nbr, dtype=object)
@@ -197,6 +198,17 @@ class CalculationInputs:
 
         self.compile_types()
 
+    def trim_profiles(self, time_idx):
+        """
+        Trims the profiles with the passed time indices and stores those time indices for later
+        :param time_idx: array of time indices
+        """
+        self.original_time_idx = time_idx
+
+        self.Ysh_prof = self.Ysh_prof[:, time_idx]
+        self.Sbus_prof = self.Sbus_prof[:, time_idx]
+        self.Ibus_prof = self.Ibus_prof[:, time_idx]
+
     def get_island(self, bus_idx, branch_idx, gen_idx, bat_idx):
         """
         Get a sub-island
@@ -217,15 +229,15 @@ class CalculationInputs:
         obj.B1 = self.B1[bus_idx, :][:, bus_idx].copy()
         obj.B2 = self.B2[bus_idx, :][:, bus_idx].copy()
 
-        obj.Ysh = self.Ysh[bus_idx]
-        obj.Sbus = self.Sbus[bus_idx]
-        obj.Ibus = self.Ibus[bus_idx]
-        obj.Vbus = self.Vbus[bus_idx]
-        obj.types = self.types[bus_idx]
-        obj.Qmin = self.Qmin[bus_idx]
-        obj.Qmax = self.Qmax[bus_idx]
-        obj.Vmin = self.Vmin[bus_idx]
-        obj.Vmax = self.Vmax[bus_idx]
+        obj.Ysh = self.Ysh[bus_idx].copy()
+        obj.Sbus = self.Sbus[bus_idx].copy()
+        obj.Ibus = self.Ibus[bus_idx].copy()
+        obj.Vbus = self.Vbus[bus_idx].copy()
+        obj.types = self.types[bus_idx].copy()
+        obj.Qmin = self.Qmin[bus_idx].copy()
+        obj.Qmax = self.Qmax[bus_idx].copy()
+        obj.Vmin = self.Vmin[bus_idx].copy()
+        obj.Vmax = self.Vmax[bus_idx].copy()
 
         obj.F = self.F[branch_idx]
         obj.T = self.T[branch_idx]
@@ -233,9 +245,9 @@ class CalculationInputs:
         obj.bus_names = self.bus_names[bus_idx]
         obj.branch_names = self.branch_names[branch_idx]
 
-        obj.Ysh_prof = self.Ysh_prof[bus_idx, :]
-        obj.Sbus_prof = self.Sbus_prof[bus_idx, :]
-        obj.Ibus_prof = self.Ibus_prof[bus_idx, :]
+        obj.Ysh_prof = self.Ysh_prof[bus_idx, :].copy()
+        obj.Sbus_prof = self.Sbus_prof[bus_idx, :].copy()
+        obj.Ibus_prof = self.Ibus_prof[bus_idx, :].copy()
 
         obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
         obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
