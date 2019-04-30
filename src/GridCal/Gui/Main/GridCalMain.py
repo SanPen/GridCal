@@ -944,6 +944,42 @@ class MainGUI(QMainWindow):
             self.grid_editor.diagramView.fitInView(self.grid_editor.diagramScene.sceneRect(), Qt.KeepAspectRatio)
             self.grid_editor.diagramView.scale(1.0, 1.0)
 
+    def new_project_now(self):
+
+        # print('New')
+        self.circuit = MultiCircuit()
+
+        lat0 = self.ui.lat1_doubleSpinBox.value()
+        lon0 = self.ui.lon1_doubleSpinBox.value()
+        zoom = self.ui.zoom_spinBox.value()
+
+        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
+
+        self.grid_editor.diagramView.view_map(False)
+
+        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
+
+        # delete all widgets
+        for i in reversed(range(self.ui.schematic_layout.count())):
+            self.ui.schematic_layout.itemAt(i).widget().deleteLater()
+
+        # add the widgets
+        self.ui.schematic_layout.addWidget(self.grid_editor)
+        # self.ui.splitter_8.setStretchFactor(1, 15)
+
+        # clear the results
+        self.ui.resultsPlot.clear()
+        self.ui.resultsTableView.setModel(None)
+
+        # clear the simulation objects
+        self.power_flow = None
+        self.monte_carlo = None
+        self.time_series = None
+        self.voltage_stability = None
+        self.results_df = None
+
+        self.clear_results()
+
     def new_project(self):
         """
         Create new grid
@@ -954,40 +990,8 @@ class MainGUI(QMainWindow):
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-                # print('New')
-                self.circuit = MultiCircuit()
 
-                lat0 = self.ui.lat1_doubleSpinBox.value()
-                lon0 = self.ui.lon1_doubleSpinBox.value()
-                zoom = self.ui.zoom_spinBox.value()
-
-                self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
-
-                self.grid_editor.diagramView.view_map(False)
-
-                self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
-
-                # delete all widgets
-                for i in reversed(range(self.ui.schematic_layout.count())):
-                    self.ui.schematic_layout.itemAt(i).widget().deleteLater()
-
-                # add the widgets
-                self.ui.schematic_layout.addWidget(self.grid_editor)
-                # self.ui.splitter_8.setStretchFactor(1, 15)
-
-                # clear the results
-                self.ui.resultsPlot.clear()
-                self.ui.resultsTableView.setModel(None)
-
-                # clear the simulation objects
-                self.power_flow = None
-                self.monte_carlo = None
-                self.time_series = None
-                self.voltage_stability = None
-                self.results_df = None
-
-                self.clear_results()
-
+                self.new_project_now()
             else:
                 pass
         else:
@@ -1005,7 +1009,7 @@ class MainGUI(QMainWindow):
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-
+                self.new_project_now()
                 self.open_file_threaded()
             else:
                 pass
