@@ -17,17 +17,19 @@ import json
 from warnings import warn
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Importers.json_parser import save_json_file
-from GridCal.Engine.Importers.cim_parser import CIMExport
-from GridCal.Engine.Importers.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
-from GridCal.Engine.Importers.matpower_parser import interpret_data_v1
-from GridCal.Engine.Importers.dgs_parser import dgs_to_circuit
-from GridCal.Engine.Importers.matpower_parser import parse_matpower_file
-from GridCal.Engine.Importers.dpx_parser import load_dpx
-from GridCal.Engine.Importers.ipa_parser import load_iPA
-from GridCal.Engine.Importers.json_parser import parse_json
-from GridCal.Engine.Importers.psse_parser import PSSeParser
-from GridCal.Engine.Importers.cim_parser import CIMImport
+from GridCal.Engine.IO.json_parser import save_json_file
+from GridCal.Engine.IO.cim_parser import CIMExport
+from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2, \
+                                               create_data_frames
+from GridCal.Engine.IO.matpower_parser import interpret_data_v1
+from GridCal.Engine.IO.dgs_parser import dgs_to_circuit
+from GridCal.Engine.IO.matpower_parser import parse_matpower_file
+from GridCal.Engine.IO.dpx_parser import load_dpx
+from GridCal.Engine.IO.ipa_parser import load_iPA
+from GridCal.Engine.IO.json_parser import parse_json
+from GridCal.Engine.IO.psse_parser import PSSeParser
+from GridCal.Engine.IO.cim_parser import CIMImport
+from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
 
 
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -46,10 +48,12 @@ class FileOpen:
 
         self.logger = list()
 
-    def open(self):
+    def open(self, text_func=None, progress_func=None):
         """
         Load GridCal compatible file
-        @return: logger with information
+        :param text_func: pointer to function that prints the names
+        :param progress_func: pointer to function that prints the progress 0~100
+        :return: logger with information
         """
         logger = list()
 
@@ -74,6 +78,15 @@ class FileOpen:
                 else:
                     warn('The file could not be processed')
                     # return self.circuit
+
+            elif file_extension.lower() == '.gridcal':
+
+                # open file content
+                data_dictionary = open_data_frames_from_zip(self.file_name,
+                                                            text_func=text_func,
+                                                            progress_func=progress_func)
+                # interpret file content
+                interpret_excel_v3(self.circuit, data_dictionary)
 
             elif file_extension.lower() == '.dgs':
                 circ = dgs_to_circuit(self.file_name)
@@ -158,6 +171,9 @@ class FileSave:
         if self.file_name.endswith('.xlsx'):
             logger = self.save_excel()
 
+        elif self.file_name.endswith('.gridcal'):
+            logger = self.save_zip()
+
         elif self.file_name.endswith('.json'):
             logger = self.save_json()
 
@@ -177,6 +193,21 @@ class FileSave:
         """
 
         logger = save_excel(self.circuit, self.file_name)
+
+        return logger
+
+    def save_zip(self):
+        """
+        Save the circuit information in zip format
+        :return: logger with information
+        """
+
+        logger = list()
+
+        dfs = create_data_frames(self.circuit)
+
+        save_data_frames_to_zip(dfs, filename_zip=self.file_name,
+                                text_func=None, progress_func=None)
 
         return logger
 
@@ -225,14 +256,6 @@ class FileOpenThread(QThread):
 
         self.__cancel__ = False
 
-    def progress_callback(self, val):
-        """
-        Send progress report
-        :param val: lambda value
-        :return: None
-        """
-        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(val) + '...')
-
     def open_file_process(self, filename):
         """
         process to open a file without asking
@@ -249,19 +272,10 @@ class FileOpenThread(QThread):
         self.logger = list()
 
         file_handler = FileOpen(file_name=filename)
-        self.circuit = file_handler.open()
+        self.circuit = file_handler.open(text_func=self.progress_text.emit,
+                                         progress_func=self.progress_signal.emit)
         self.logger += file_handler.logger
         self.valid = True
-
-        # try:
-        #     self.logger += self.circuit.load_file(filename=filename)
-        #
-        #     self.valid = True
-        #
-        # except Exception as ex:
-        #     exc_type, exc_value, exc_traceback = sys.exc_info()
-        #     self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
-        #     self.valid = False
 
         # post events
         self.progress_text.emit('Creating schematic...')
@@ -271,7 +285,7 @@ class FileOpenThread(QThread):
         run the voltage collapse simulation
         @return:
         """
-        self.open_file_process(filename=self.file_name)
+        self.open_file_process(filename=self.file_name,)
 
         self.done_signal.emit()
 

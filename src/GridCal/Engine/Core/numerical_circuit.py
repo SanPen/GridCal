@@ -878,7 +878,7 @@ class NumericalCircuit:
 
 
 if __name__ == '__main__':
-    from GridCal.Engine.Importers.file_handler import *
+    from GridCal.Engine.IO.file_handler import *
     from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
     from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
     from GridCal.Engine.Simulations.OPF.opf_driver import *

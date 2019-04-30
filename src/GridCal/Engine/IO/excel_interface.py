@@ -1331,7 +1331,29 @@ def get_allowed_sheets(circuit=MultiCircuit()):
                            'overhead_line_types': None,
                            'underground_cable_types': None,
                            'sequence_line_types': None,
-                           'transformer_types': None}
+                           'transformer_types': None,
+                           'load_Sprof': complex,
+                           'load_Iprof': complex,
+                           'load_Zprof': complex,
+                           'load_P_prof': float,
+                           'load_Q_prof': float,
+                           'load_Ir_prof': float,
+                           'load_Ii_prof': float,
+                           'load_G_prof': float,
+                           'load_B_prof': float,
+                           'static_generator': None,
+                           'static_generator_Sprof': complex,
+                           'static_generator_P_prof': complex,
+                           'static_generator_Q_prof': complex,
+                           'battery': None,
+                           'battery_Vset_profiles': float,
+                           'battery_P_profiles': float,
+                           'battery_Vset_prof': float,
+                           'battery_P_prof': float,
+                           'controlled_generator': None,
+                           'CtrlGen_Vset_profiles': float,
+                           'CtrlGen_P_profiles': float,
+                           'shunt_Y_profiles': complex}
 
     for object_type_name in object_types.keys():
 
@@ -1511,7 +1533,6 @@ def create_data_frames(circuit: MultiCircuit):
         dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
 
     return dfs
-
 
 
 def save_excel(circuit: MultiCircuit, file_path):

@@ -41,7 +41,7 @@ from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReductio
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
-from GridCal.Engine.Importers.file_handler import *
+from GridCal.Engine.IO.file_handler import *
 import GridCal.Engine.plot_config as plot_config
 
 import gc
@@ -1018,7 +1018,7 @@ class MainGUI(QMainWindow):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
+        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx *.gridcal)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1110,7 +1110,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "Excel (*.xlsx);;CIM (*.xml);;JSON (*.json)"
+        files_types = "GridCal zip (*.gridcal);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json)"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1133,6 +1133,7 @@ class MainGUI(QMainWindow):
             extension['Excel (*.xlsx)'] = '.xlsx'
             extension['CIM (*.xml)'] = '.xml'
             extension['JSON (*.json)'] = '.json'
+            extension['GridCal zip (*.gridcal)'] = '.gridcal'
 
             if file_extension == '':
                 filename = name + extension[type_selected]

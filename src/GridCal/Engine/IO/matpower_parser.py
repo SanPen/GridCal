@@ -333,7 +333,7 @@ def interpret_data_v1(circuit, data):
     else:
         master_time_array = None
 
-    import GridCal.Engine.Importers.matpower_bus_definitions as e
+    import GridCal.Engine.IO.matpower_bus_definitions as e
     # Buses
     table = data['bus']
     buses_dict = dict()
@@ -394,7 +394,7 @@ def interpret_data_v1(circuit, data):
         # Add the bus to the circuit buses
         circuit.add_bus(bus)
 
-    import GridCal.Engine.Importers.matpower_gen_definitions as e
+    import GridCal.Engine.IO.matpower_gen_definitions as e
     # Generators
     table = data['gen']
     n = len(table)
@@ -427,7 +427,7 @@ def interpret_data_v1(circuit, data):
         gen.bus = circuit.buses[bus_idx]
         circuit.buses[bus_idx].controlled_generators.append(gen)
 
-    import GridCal.Engine.Importers.matpower_branch_definitions as e
+    import GridCal.Engine.IO.matpower_branch_definitions as e
     # Branches
     table = data['branch']
     n = len(table)
@@ -466,7 +466,7 @@ def interpret_data_v1(circuit, data):
                 circuit.buses[i].loads[0].Q_prof = pd.DataFrame(data=Qprof[:, i],
                                                                 index=master_time_array,
                                                                 columns=['Load@' + names[i]])
-        import GridCal.Engine.Importers.matpower_gen_definitions as e
+        import GridCal.Engine.IO.matpower_gen_definitions as e
         table = data['gen']
         for i in range(len(table)):
             bus_idx = int(table[i, e.GEN_BUS]) - 1

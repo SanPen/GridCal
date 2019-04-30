@@ -225,7 +225,7 @@ class TopologyReduction(QThread):
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
     # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 3.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\UnderDevelopment\\GridCal\\Engine\\Importers\\Export_sensible_v15_modif.json.xlsx'
+    fname = 'D:\\GitHub\\GridCal\\UnderDevelopment\\GridCal\\Engine\\IO\\Export_sensible_v15_modif.json.xlsx'
 
     circuit_ = MultiCircuit()
     circuit_.load_file(fname)
