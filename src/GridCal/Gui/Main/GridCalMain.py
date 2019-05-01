@@ -306,6 +306,9 @@ class MainGUI(QMainWindow):
         self.stuff_running_now = list()
 
         self.open_file_thread_object = None
+        self.save_file_thread_object = None
+
+        self.file_name = ''
 
         self.results_df = None
 
@@ -347,6 +350,8 @@ class MainGUI(QMainWindow):
         self.ui.actionOpen_file.triggered.connect(self.open_file)
 
         self.ui.actionSave.triggered.connect(self.save_file)
+
+        self.ui.actionSave_as.triggered.connect(self.save_file_as)
 
         self.ui.actionPower_flow.triggered.connect(self.run_power_flow)
 
@@ -945,9 +950,14 @@ class MainGUI(QMainWindow):
             self.grid_editor.diagramView.scale(1.0, 1.0)
 
     def new_project_now(self):
-
-        # print('New')
+        """
+        New project right now without asking questions
+        """
+        # clear the circuit model
         self.circuit = MultiCircuit()
+
+        # clear the file name
+        self.file_name = ''
 
         lat0 = self.ui.lat1_doubleSpinBox.value()
         lon0 = self.ui.lon1_doubleSpinBox.value()
@@ -1022,25 +1032,27 @@ class MainGUI(QMainWindow):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx *.gridcal)"
+        files_types = "Formats (*.gridcal *.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
         # files_types = ''
         # call dialog to select the file
 
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                              caption='Open file',
-                                                              directory=self.project_directory,
-                                                              filter=files_types)
+                                                                        caption='Open file',
+                                                                        directory=self.project_directory,
+                                                                        filter=files_types)
 
         if len(filename) > 0:
 
-            # store the working directory
-            self.project_directory = os.path.dirname(filename)
+            self.file_name = filename
 
-            # loack the ui
+            # store the working directory
+            self.project_directory = os.path.dirname(self.file_name)
+
+            # lock the ui
             self.LOCK()
 
             # create thread
-            self.open_file_thread_object = FileOpenThread(app=self, file_name=filename)
+            self.open_file_thread_object = FileOpenThread(file_name=self.file_name)
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1109,6 +1121,14 @@ class MainGUI(QMainWindow):
         self.ui.vs_departure_comboBox.setModel(mdl)
         self.ui.vs_target_comboBox.setModel(mdl)
 
+    def save_file_as(self):
+        """
+        Save this file as...
+        """
+        # by deleting the file_name, the save_file function will ask for it
+        self.file_name = ''
+        self.save_file()
+
     def save_file(self):
         """
         Save the circuit case to a file
@@ -1123,48 +1143,66 @@ class MainGUI(QMainWindow):
         # set grid name
         self.circuit.name = self.grid_editor.name_label.text()
 
+        # gather comments
         self.circuit.comments = self.ui.comments_textEdit.toPlainText()
 
-        fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+        if self.file_name == '':
+            # if the global file_name is empty, ask where to save
+            fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
-        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  fname, files_types)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  fname, files_types)
 
-        if filename is not "":
-            # if the user did not enter the extension, add it automatically
-            name, file_extension = os.path.splitext(filename)
+            if filename != '':
 
-            extension = dict()
-            extension['Excel (*.xlsx)'] = '.xlsx'
-            extension['CIM (*.xml)'] = '.xml'
-            extension['JSON (*.json)'] = '.json'
-            extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                # if the user did not enter the extension, add it automatically
+                name, file_extension = os.path.splitext(self.file_name)
 
-            if file_extension == '':
-                filename = name + extension[type_selected]
+                extension = dict()
+                extension['Excel (*.xlsx)'] = '.xlsx'
+                extension['CIM (*.xml)'] = '.xml'
+                extension['JSON (*.json)'] = '.json'
+                extension['GridCal zip (*.gridcal)'] = '.gridcal'
 
-            # call to save the file in the circuit
+                if file_extension == '':
+                    filename = name + extension[type_selected]
 
-            # file_handler = FileSave(self.circuit, filename)
-            # logger = file_handler.save()
-            #
-            # if len(logger) > 0:
-            #     dlg = LogsDialogue('Save file logger', logger)
-            #     dlg.exec_()
+                # we were able to compose the file correctly, now save it
+                self.file_name = filename
+                self.save_file_now(self.file_name)
+        else:
 
-            try:
-                file_handler = FileSave(self.circuit, filename)
-                logger = file_handler.save()
+            # save directly
+            self.save_file_now(self.file_name)
 
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Save file logger', logger)
-                    dlg.exec_()
+    def save_file_now(self, filename):
+        """
+        Save the file right now, without questions
+        :param filename: filename to save to
+        """
+        # lock the ui
+        self.LOCK()
 
-                # call the garbage collector to free memory
-                gc.collect()
+        self.save_file_thread_object = FileSaveThread(self.circuit, filename)
 
-            except:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'File saving')
+        # make connections
+        self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+        self.save_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+        self.save_file_thread_object.done_signal.connect(self.UNLOCK)
+        self.save_file_thread_object.done_signal.connect(self.post_file_save)
+
+        # thread start
+        self.save_file_thread_object.start()
+
+    def post_file_save(self):
+        """
+        Actions after the threaded file save
+        """
+        if len(self.save_file_thread_object.logger) > 0:
+            dlg = LogsDialogue('Save file logger', self.save_file_thread_object.logger)
+            dlg.exec_()
+
+        # call the garbage collector to free memory
+        gc.collect()
 
     def closeEvent(self, event):
         """
@@ -1335,55 +1373,6 @@ class MainGUI(QMainWindow):
         self.grid_editor.circuit = self.circuit
 
         self.grid_editor.schematic_from_api(explode_factor=explode_factor)
-
-        # # clear all
-        # self.grid_editor.diagramView.scene_.clear()
-        #
-        # # set "infinite" limits for the figure
-        # min_x = sys.maxsize
-        # min_y = sys.maxsize
-        # max_x = -sys.maxsize
-        # max_y = -sys.maxsize
-        #
-        # # first create the buses
-        # for bus in self.circuit.buses:
-        #     # print(bus.x, bus.y)
-        #     graphic_obj = self.grid_editor.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
-        #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-        #
-        #     # get the item position
-        #     x = graphic_obj.pos().x()
-        #     y = graphic_obj.pos().y()
-        #
-        #     # compute the boundaries of the grid
-        #     max_x = max(max_x, x)
-        #     min_x = min(min_x, x)
-        #     max_y = max(max_y, y)
-        #     min_y = min(min_y, y)
-        #
-        #     bus.graphic_obj = graphic_obj
-        #     bus.graphic_obj.create_children_icons()
-        #     bus.graphic_obj.arrange_children()
-        #
-        # # set the figure limits
-        # self.grid_editor.set_limits(min_x, max_x, min_y, max_y)
-        #
-        # for branch in self.circuit.branches:
-        #     terminal_from = branch.bus_from.graphic_obj.terminal
-        #     terminal_to = branch.bus_to.graphic_obj.terminal
-        #     graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.grid_editor.diagramScene, branch=branch)
-        #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-        #     terminal_from.hosting_connections.append(graphic_obj)
-        #     terminal_to.hosting_connections.append(graphic_obj)
-        #     graphic_obj.redraw()
-        #     branch.graphic_obj = graphic_obj
-        #
-        # # Align lines
-        # for bus in self.circuit.buses:
-        #     bus.graphic_obj.arrange_children()
-        #
-        # #  center the view
-        # self.grid_editor.center_nodes()
 
     def update_map(self):
         """

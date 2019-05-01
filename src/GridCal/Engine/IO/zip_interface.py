@@ -10,8 +10,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                             text_func=None, progress_func=None):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
-    :param dfs: list of pandas dataFrames
-    :param names: list of names matching the dataFrames
+    :param dfs: dictionary of pandas dataFrames {name: DataFrame}
     :param filename_zip: file name where to save all
     :param text_func: pointer to function that prints the names
     :param progress_func: pointer to function that prints the progress 0~100
@@ -30,7 +29,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
             filename = name + ".csv"
 
             if text_func is not None:
-                text_func('Unpacking ' + name + '...')
+                text_func('Flushing ' + name + ' to ' + filename_zip + '...')
 
             if progress_func is not None:
                 progress_func((i + 1) / n * 100)
@@ -45,6 +44,8 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                 myzip.writestr(filename, buffer.getvalue())
 
             i += 1
+
+    print('All DataFrames flushed to zip!')
 
 
 def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
@@ -71,7 +72,7 @@ def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None)
         name, extension = os.path.splitext(file_name)
 
         if text_func is not None:
-            text_func(name)
+            text_func('Unpacking ' + name + ' from ' + file_name_zip)
 
         if progress_func is not None:
             progress_func((i + 1) / n * 100)

@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import json
+import sys
 from warnings import warn
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -153,15 +154,21 @@ class FileOpen:
 
 class FileSave:
 
-    def __init__(self, circuit: MultiCircuit, file_name):
+    def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None):
         """
         File saver
         :param circuit: MultiCircuit
         :param file_name: file name to save to
+        :param text_func: Pointer to the text function
+        :param progress_func: Pointer to the progress function
         """
         self.circuit = circuit
 
         self.file_name = file_name
+
+        self.text_func = text_func
+
+        self.progress_func = progress_func
 
     def save(self):
         """
@@ -206,8 +213,10 @@ class FileSave:
 
         dfs = create_data_frames(self.circuit)
 
-        save_data_frames_to_zip(dfs, filename_zip=self.file_name,
-                                text_func=None, progress_func=None)
+        save_data_frames_to_zip(dfs,
+                                filename_zip=self.file_name,
+                                text_func=self.text_func,
+                                progress_func=self.progress_func)
 
         return logger
 
@@ -237,14 +246,12 @@ class FileOpenThread(QThread):
     progress_text = pyqtSignal(str)
     done_signal = pyqtSignal()
 
-    def __init__(self, app, file_name):
+    def __init__(self, file_name):
         """
-
-        :param app: instance of MainGui
+        Constructor
+        :param file_name: file name were to save
         """
         QThread.__init__(self)
-
-        self.app = app
 
         self.file_name = file_name
 
@@ -256,39 +263,91 @@ class FileOpenThread(QThread):
 
         self.__cancel__ = False
 
-    def open_file_process(self, filename):
+    def run(self):
         """
-        process to open a file without asking
-        :return:
+        run the file open procedure
         """
-
-        # print(filename)
         self.circuit = MultiCircuit()
 
-        path, fname = os.path.split(filename)
+        path, fname = os.path.split(self.file_name)
 
         self.progress_text.emit('Loading ' + fname + '...')
 
         self.logger = list()
 
-        file_handler = FileOpen(file_name=filename)
+        file_handler = FileOpen(file_name=self.file_name)
+
         self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                          progress_func=self.progress_signal.emit)
+
         self.logger += file_handler.logger
         self.valid = True
 
         # post events
-        self.progress_text.emit('Creating schematic...')
-
-    def run(self):
-        """
-        run the voltage collapse simulation
-        @return:
-        """
-        self.open_file_process(filename=self.file_name,)
+        self.progress_text.emit('Done!')
 
         self.done_signal.emit()
 
     def cancel(self):
         self.__cancel__ = True
 
+
+class FileSaveThread(QThread):
+    progress_signal = pyqtSignal(float)
+    progress_text = pyqtSignal(str)
+    done_signal = pyqtSignal()
+
+    def __init__(self, circuit: MultiCircuit, file_name):
+        """
+        Constructor
+        :param circuit: MultiCircuit instance
+        :param file_name: name of the file where to save
+        """
+        QThread.__init__(self)
+
+        self.circuit = circuit
+
+        self.file_name = file_name
+
+        self.valid = False
+
+        self.logger = list()
+
+        self.error_msg = ''
+
+        self.__cancel__ = False
+
+    def run(self):
+        """
+        run the file save procedure
+        @return:
+        """
+
+        try:
+            path, fname = os.path.split(self.file_name)
+
+            self.progress_text.emit('Flushing ' + fname + ' into ' + fname + '...')
+
+            self.logger = list()
+
+            file_handler = FileSave(self.circuit,
+                                    self.file_name,
+                                    text_func=self.progress_text.emit,
+                                    progress_func=self.progress_signal.emit)
+
+            self.logger = file_handler.save()
+
+            self.valid = True
+
+            # post events
+            self.progress_text.emit('Done!')
+
+        except:
+            self.valid = False
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
+
+        self.done_signal.emit()
+
+    def cancel(self):
+        self.__cancel__ = True
