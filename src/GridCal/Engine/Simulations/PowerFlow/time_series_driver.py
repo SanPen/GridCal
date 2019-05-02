@@ -372,16 +372,15 @@ class TimeSeries(QThread):
         """
         return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
 
-    def run_single_thread(self):
+    def run_single_thread(self) -> TimeSeriesResults:
         """
         Run single thread time series
-        :return:
+        :return: TimeSeriesResults instance
         """
         # initialize the power flow
         power_flow = PowerFlowMP(self.grid, self.options)
 
-        # initialize the grid time series results
-        # we will append the island results with another function
+        # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
@@ -389,21 +388,21 @@ class TimeSeries(QThread):
         if self.end_ is None:
             self.end_ = nt
 
-        # print('Compiling...', end='')
+        # compile the multi-circuit
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
+
+        # do the topological computation
         calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=
                                                         self.options.branch_impedance_tolerance_mode)
 
+        # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():
 
-            # For every circuit, run the time series
+            # For every island, run the time series
             for island_index, calculation_input in enumerate(calc_inputs):
 
-                # make a copy of the circuit to allow controls in place
-                # circuit = circuit_orig.copy()
-
-                # are we dispatching storage? if so, generate a dictionary of battery -> bus index
+                # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
                 # to be able to set the batteries values into the vector S
                 batteries = list()
                 batteries_bus_idx = list()
@@ -417,15 +416,13 @@ class TimeSeries(QThread):
                 self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
 
                 # find the original indices
-                # bus_original_idx = numerical_circuit.islands[island_index]
-                # branch_original_idx = numerical_circuit.island_branches[island_index]
-
                 bus_original_idx = calculation_input.original_bus_idx
                 branch_original_idx = calculation_input.original_branch_idx
 
                 # if there are valid profiles...
                 if self.grid.time_profile is not None:
 
+                    # declare a results object for the partition
                     nt = calculation_input.ntime
                     n = calculation_input.nbus
                     m = calculation_input.nbr
@@ -434,12 +431,10 @@ class TimeSeries(QThread):
 
                     self.progress_signal.emit(0.0)
 
-                    # t = self.start_
-                    dt = 1.0  # default value in case of single-valued profile
+                    # default value in case of single-valued profile
+                    dt = 1.0
 
-                    # traverse the profiles time and simulate each time step
-                    # while t < self.end_ and not self.__cancel__:
-
+                    # traverse the time profiles of the partition and simulate each time step
                     for it, t in enumerate(calculation_input.original_time_idx):
 
                         if (t >= self.start_) and (t < self.end_):
@@ -486,26 +481,36 @@ class TimeSeries(QThread):
                         else:
                             pass
 
+                        if self.__cancel__:
+                            # merge the circuit's results
+                            time_series_results.apply_from_island(results,
+                                                                  bus_original_idx,
+                                                                  branch_original_idx,
+                                                                  calculation_input.time_array,
+                                                                  'TS')
+                            # abort by returning at this point
+                            return time_series_results
+
                     # merge the circuit's results
                     time_series_results.apply_from_island(results,
                                                           bus_original_idx,
                                                           branch_original_idx,
                                                           calculation_input.time_array,
                                                           'TS')
+
                 else:
                     print('There are no profiles')
                     self.progress_text.emit('There are no profiles')
 
         return time_series_results
 
-    def run_multi_thread(self):
+    def run_multi_thread(self) -> TimeSeriesResults:
         """
         Run multi thread time series
-        :return:
+        :return: TimeSeriesResults instance
         """
 
-        # initialize the grid time series results
-        # we will append the island results with another function
+        # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
@@ -516,78 +521,191 @@ class TimeSeries(QThread):
 
         n_cores = multiprocessing.cpu_count()
 
+        # compile the multi-circuit
         numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
                                               opf_time_series_results=self.opf_time_series_results)
 
-        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=
-                                                       self.options.branch_impedance_tolerance_mode)
+        # perform the topological computation
+        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=
+                                                        self.options.branch_impedance_tolerance_mode)
 
-        # For every circuit, run the time series
-        for island_index, calculation_input in enumerate(calculation_inputs):
+        jobs = list()
 
-            self.progress_text.emit('Time series at circuit ' + str(island_index)
-                                    + ' in parallel using ' + str(n_cores) + ' cores ...')
+        if len(calc_inputs_dict) == 1:
 
-            if nt > 0:
+            # there is only one partition
+            calc_inputs = calc_inputs_dict[0]
 
-                nt = calculation_input.ntime
-                n = calculation_input.nbus
-                m = calculation_input.nbr
-                results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
-                last_voltage = calculation_input.Vbus
+            # For every circuit, run the time series
+            for island_index, calculation_input in enumerate(calc_inputs):
 
-                self.progress_signal.emit(0.0)
+                self.progress_text.emit('Time series at circuit ' + str(island_index)
+                                        + ' in parallel using ' + str(n_cores) + ' cores ...')
 
-                # Start jobs
-                manager = multiprocessing.Manager()
-                return_dict = manager.dict()
+                if nt > 0:
 
-                t = self.start_
-                while t < self.end_ and not self.__cancel__:
+                    nt = calculation_input.ntime
+                    n = calculation_input.nbus
+                    m = calculation_input.nbr
+                    results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
+                    last_voltage = calculation_input.Vbus
 
-                    k = 0
-                    jobs = list()
+                    self.progress_signal.emit(0.0)
 
-                    # launch only n_cores jobs at the time
-                    while k < n_cores+2 and (t+k) < nt:
-                        # set the power values
-                        # Y, I, S = calculation_input.time_series_input.get_at(t)
-                        Y = calculation_input.Ysh_prof[:, t]
-                        I = calculation_input.Ibus_prof[:, t]
-                        S = calculation_input.Sbus_prof[:, t]
+                    # Start jobs
+                    manager = multiprocessing.Manager()
+                    return_dict = manager.dict()
 
-                        # run power flow at the circuit
-                        p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options,
-                                                                                    calculation_input,
-                                                                                    last_voltage, S,
-                                                                                    I, return_dict))
-                        jobs.append(p)
-                        p.start()
-                        k += 1
-                        t += 1
+                    t = self.start_
+                    while t < self.end_ and not self.__cancel__:
 
-                    # wait for all jobs to complete
-                    for process_ in jobs:
-                        process_.join()
+                        k = 0
 
-                    progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
-                    self.progress_signal.emit(progress)
+                        # launch only n_cores jobs at the time
+                        while k < n_cores + 2 and (t + k) < nt:
 
-                # collect results
-                self.progress_text.emit('Collecting results...')
-                for t in return_dict.keys():
-                    # store circuit results at the time index 't'
-                    results.set_at(t, return_dict[t])
+                            # set the power values
+                            Ysh = calculation_input.Ysh_prof[:, t]
+                            I = calculation_input.Ibus_prof[:, t]
+                            S = calculation_input.Sbus_prof[:, t]
 
-                # merge  the circuit's results
-                time_series_results.apply_from_island(results,
-                                                      calculation_input.original_bus_idx,
-                                                      calculation_input.original_branch_idx,
-                                                      calculation_input.time_array,
-                                                      'TS multi-thread')
-            else:
-                print('There are no profiles')
-                self.progress_text.emit('There are no profiles')
+                            # run power flow at the circuit
+                            p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options,
+                                                                                        calculation_input,
+                                                                                        last_voltage, S,
+                                                                                        I, return_dict))
+                            jobs.append(p)
+                            p.start()
+                            k += 1
+                            t += 1
+
+                        # wait for all jobs to complete
+                        for process_ in jobs:
+                            process_.join()
+
+                        progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
+                        self.progress_signal.emit(progress)
+
+                    # collect results
+                    self.progress_text.emit('Collecting results...')
+                    for t in return_dict.keys():
+                        # store circuit results at the time index 't'
+                        results.set_at(t, return_dict[t])
+
+                    # merge  the circuit's results
+                    time_series_results.apply_from_island(results,
+                                                          calculation_input.original_bus_idx,
+                                                          calculation_input.original_branch_idx,
+                                                          calculation_input.time_array,
+                                                          'TS multi-thread')
+                else:
+                    print('There are no profiles')
+                    self.progress_text.emit('There are no profiles')
+
+        else:
+            # there are more than one partition
+
+            # for each partition of the profiles...
+            for t_key, calc_inputs in calc_inputs_dict.items():
+
+                # For every island, run the time series
+                for island_index, calculation_input in enumerate(calc_inputs):
+
+                    self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
+
+                    # find the original indices
+                    bus_original_idx = calculation_input.original_bus_idx
+                    branch_original_idx = calculation_input.original_branch_idx
+
+                    # Start jobs
+                    manager = multiprocessing.Manager()
+                    return_dict = manager.dict()
+
+                    # if there are valid profiles...
+                    if self.grid.time_profile is not None:
+
+                        # declare a results object for the partition
+                        nt = calculation_input.ntime
+                        n = calculation_input.nbus
+                        m = calculation_input.nbr
+                        results = TimeSeriesResults(n, m, nt, self.start_, self.end_)
+                        last_voltage = calculation_input.Vbus
+
+                        self.progress_signal.emit(0.0)
+
+                        # traverse the time profiles of the partition and simulate each time step
+                        for it, t in enumerate(calculation_input.original_time_idx):
+
+                            if (t >= self.start_) and (t < self.end_):
+
+                                # set the power values
+                                # if the storage dispatch option is active, the batteries power is not included
+                                # therefore, it shall be included after processing
+                                Ysh = calculation_input.Ysh_prof[:, it]
+                                I = calculation_input.Ibus_prof[:, it]
+                                S = calculation_input.Sbus_prof[:, it]
+
+                                # run power flow at the circuit
+                                p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options,
+                                                                                            calculation_input,
+                                                                                            last_voltage, S,
+                                                                                            I, return_dict))
+                                jobs.append(p)
+                                p.start()
+
+                                # wait for all jobs to complete
+                                if len(jobs) >= n_cores:
+                                    for process_ in jobs:
+                                        process_.join()
+
+                                    # clear the jobs
+                                    jobs = list()
+
+                                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
+                                self.progress_signal.emit(progress)
+                                self.progress_text.emit('Simulating island ' + str(island_index)
+                                                        + ' at ' + str(self.grid.time_profile[t]))
+
+                            else:
+                                pass
+
+                            if self.__cancel__:
+
+                                # collect results
+                                self.progress_text.emit('Collecting results...')
+                                for t in return_dict.keys():
+                                    # store circuit results at the time index 't'
+                                    results.set_at(t, return_dict[t])
+
+                                # merge the circuit's results
+                                time_series_results.apply_from_island(results,
+                                                                      bus_original_idx,
+                                                                      branch_original_idx,
+                                                                      calculation_input.time_array,
+                                                                      'TS')
+                                # abort by returning at this point
+                                return time_series_results
+
+                        # wait for the possibly open jobs to finish
+                        for process_ in jobs:
+                            process_.join()
+
+                        # collect results
+                        self.progress_text.emit('Collecting results...')
+                        for t in return_dict.keys():
+                            # store circuit results at the time index 't'
+                            results.set_at(t, return_dict[t])
+
+                        # merge the circuit's results
+                        time_series_results.apply_from_island(results,
+                                                              bus_original_idx,
+                                                              branch_original_idx,
+                                                              calculation_input.time_array,
+                                                              'TS')
+
+                    else:
+                        print('There are no profiles')
+                        self.progress_text.emit('There are no profiles')
 
         return time_series_results
 

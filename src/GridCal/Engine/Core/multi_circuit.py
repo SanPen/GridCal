@@ -537,7 +537,7 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()):
+    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()) -> NumericalCircuit:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -796,6 +796,7 @@ class MultiCircuit:
 
             if n_time > 0:
                 circuit.branch_active_prof[:, i] = branch.active_prof
+                circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
 
             # switches
             if branch.branch_type == BranchType.Switch:
@@ -807,7 +808,7 @@ class MultiCircuit:
 
         # Assign and return
         self.numerical_circuit = circuit
-        return self.numerical_circuit
+        return circuit
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """

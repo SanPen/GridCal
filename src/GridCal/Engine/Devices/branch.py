@@ -29,9 +29,6 @@ from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCPr
 SQRT3 = np.sqrt(3.0)
 
 
-
-
-
 class BranchTypeConverter:
 
     def __init__(self, tpe: BranchType):
@@ -387,7 +384,8 @@ class Branch(EditableDevice):
                                                   'branch_type': GCProp('', BranchType, ''),
                                                   'template': GCProp('', BranchTemplate, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
-                                properties_with_profile={'active': 'active_prof'})
+                                properties_with_profile={'active': 'active_prof',
+                                                         'temp_oper': 'temp_oper_prof'})
 
         # connectivity
         self.bus_from = bus_from
@@ -420,6 +418,8 @@ class Branch(EditableDevice):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
+
+        self.temp_oper_prof = None
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha

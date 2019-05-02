@@ -40,7 +40,13 @@ class DeviceType(Enum):
 class GCProp:
 
     def __init__(self, units, tpe, definition, profile_name=''):
-
+        """
+        GridCal property
+        :param units: units of the property
+        :param tpe: data type (int, complex, float, etc...)
+        :param definition: Definition of the property
+        :param profile_name: name of the associated profile property
+        """
         self.units = units
 
         self.tpe = tpe

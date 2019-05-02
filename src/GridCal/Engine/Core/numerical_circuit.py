@@ -309,6 +309,7 @@ class NumericalCircuit:
 
         self.branch_active = np.zeros(n_br, dtype=int)
         self.branch_active_prof = np.zeros((n_time, n_br), dtype=int)
+        self.temp_oper_prof = np.zeros((n_time, n_br), dtype=float)
 
         self.br_mttf = np.zeros(n_br, dtype=float)
         self.br_mttr = np.zeros(n_br, dtype=float)
@@ -619,7 +620,7 @@ class NumericalCircuit:
                                          C_branch_bus_f=self.C_branch_bus_f,
                                          C_branch_bus_t=self.C_branch_bus_t,
                                          apply_temperature=apply_temperature,
-                                         R_corrected=self.R_corrected,
+                                         R_corrected=self.R_corrected(),
                                          R=self.R,
                                          X=self.X,
                                          G=self.G,
@@ -682,7 +683,7 @@ class NumericalCircuit:
                                               C_branch_bus_f=self.C_branch_bus_f,
                                               C_branch_bus_t=self.C_branch_bus_t,
                                               apply_temperature=apply_temperature,
-                                              R_corrected=self.R_corrected,
+                                              R_corrected=self.R_corrected(t),
                                               R=self.R,
                                               X=self.X,
                                               G=self.G,
@@ -710,17 +711,24 @@ class NumericalCircuit:
         # return the list of islands
         return calculation_islands_collection
 
-    @property
-    def R_corrected(self):
+    def R_corrected(self, t=None):
         """
         Returns temperature corrected resistances (numpy array) based on a formula
         provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
         https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
         (version of 2019-01-03 at 15:20 EST).
         """
-        return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
+        if t is None:
+            return self.R * (1.0 + self.alpha * (self.temp_oper - self.temp_base))
+        else:
+            return self.R * (1.0 + self.alpha * (self.temp_oper_prof[t, :] - self.temp_base))
 
     def get_B(self, apply_temperature=False):
+        """
+
+        :param apply_temperature:
+        :return:
+        """
 
         # Shunts
         Ysh = self.C_shunt_bus.T * (self.shunt_admittance / self.Sbase)
@@ -734,7 +742,7 @@ class NumericalCircuit:
         Ct = states_dia * self.C_branch_bus_t
 
         if apply_temperature:
-            R = self.R_corrected
+            R = self.R_corrected()
         else:
             R = self.R
 
