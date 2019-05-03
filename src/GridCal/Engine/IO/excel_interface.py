@@ -638,7 +638,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     # time profile #################################################################################################
     if 'time' in data.keys():
         time_df = data['time']
-        circuit.time_profile = time_df.values[:, 0]
+        circuit.time_profile = pd.to_datetime(time_df.values[:, 0])
     else:
         circuit.time_profile = None
 
