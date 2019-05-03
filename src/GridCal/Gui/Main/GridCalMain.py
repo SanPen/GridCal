@@ -1155,7 +1155,7 @@ class MainGUI(QMainWindow):
             if filename != '':
 
                 # if the user did not enter the extension, add it automatically
-                name, file_extension = os.path.splitext(self.file_name)
+                name, file_extension = os.path.splitext(filename)
 
                 extension = dict()
                 extension['Excel (*.xlsx)'] = '.xlsx'

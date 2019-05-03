@@ -1727,7 +1727,7 @@ class Ui_mainWindow(object):
         self.tabWidget.addTab(self.SettingsTab, icon12, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.progress_frame = QtWidgets.QFrame(self.centralwidget)
-        self.progress_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.progress_frame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.progress_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.progress_frame.setObjectName("progress_frame")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.progress_frame)
