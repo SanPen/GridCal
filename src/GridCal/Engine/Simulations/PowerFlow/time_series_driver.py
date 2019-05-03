@@ -19,7 +19,7 @@ from numpy import complex, zeros, ones, array, zeros_like
 import multiprocessing
 from matplotlib import pyplot as plt
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -336,9 +336,9 @@ class TimeSeriesResults(PowerFlowResults):
 
 
 class TimeSeries(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, use_opf_vals=False, opf_time_series_results=None,
                  start_=0, end_=None):

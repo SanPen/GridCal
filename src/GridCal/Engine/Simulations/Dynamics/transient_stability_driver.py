@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
@@ -43,9 +43,9 @@ class TransientStabilityOptions:
 
 
 class TransientStability(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, grid: MultiCircuit, options: TransientStabilityOptions, pf_res: PowerFlowResults):
         """

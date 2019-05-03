@@ -15,8 +15,8 @@
 import os
 import sys
 import networkx as nx
-from PyQt5.QtCore import *
-from PyQt5.QtSvg import QSvgGenerator
+from PySide2.QtCore import *
+from PySide2.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt
 
@@ -2486,15 +2486,15 @@ class MapWidget(QGraphicsRectItem):
         # print('map:', lat0, lon0, zoom)
 
         # get map
-        try:
-            map = smopy.Map((lat0, lon0), z=zoom)
-
-            # w, h = map.img.size
-            self.img = ImageQt(map.img)
-            self.image = QPixmap.fromImage(self.img)
-            self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        except:
-            print('Could not load the map')
+        # try:
+        #     map = smopy.Map((lat0, lon0), z=zoom)
+        #
+        #     # w, h = map.img.size
+        #     self.img = ImageQt(map.img)
+        #     self.image = QPixmap.fromImage(self.img)
+        #     self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        # except:
+        #     print('Could not load the map')
 
     def repaint(self):
         """

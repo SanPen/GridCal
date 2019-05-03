@@ -10,11 +10,10 @@ filename = 'gui.py'
 filename_ui = 'gui.ui'
 
 # update icon/images resources
-call(['pyrcc5', 'icons.qrc', '-o', 'icons_rc.py'])
+call(['pyside2-rcc', 'icons.qrc', '-o', 'icons_rc.py'])
 
 # update ui handler file
-call(['pyuic5', '-x', filename_ui, '-o', filename])
-
+call(['pyside2-uic', '-x', filename_ui, '-o', filename])
 
 # replace annoying text import
 # Read in the file

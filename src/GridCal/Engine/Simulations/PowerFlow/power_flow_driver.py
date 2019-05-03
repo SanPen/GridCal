@@ -19,7 +19,7 @@ from warnings import warn
 # from numpy import exp
 import numpy as np
 # from timeit import default_timer as timer
-from PyQt5.QtCore import QRunnable
+from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode

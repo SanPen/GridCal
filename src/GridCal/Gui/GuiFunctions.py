@@ -15,9 +15,9 @@
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
-from PyQt5.QtGui import *
+from PySide2.QtWidgets import *
+from PySide2 import QtCore, QtWidgets, QtGui
+from PySide2.QtGui import *
 from warnings import warn
 
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType
@@ -26,7 +26,7 @@ from GridCal.Engine.Devices import Bus
 
 
 class TreeDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
@@ -43,7 +43,7 @@ class TreeDelegate(QItemDelegate):
         # dictionary of lists
         self.data = data
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def double_click(self):
         print('double clicked!')
         self.commitData.emit(self.sender())
@@ -84,7 +84,7 @@ class TreeDelegate(QItemDelegate):
 
 
 class ComboDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
@@ -104,7 +104,7 @@ class ComboDelegate(QItemDelegate):
         # object description to display in the combobox. i.e. ['True', 'False']
         self.object_names = object_names
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def currentIndexChanged(self):
         self.commitData.emit(self.sender())
 
@@ -126,7 +126,7 @@ class ComboDelegate(QItemDelegate):
 
 
 class TextDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QLineEdit in every
     cell of the column to which it's applied
@@ -138,7 +138,7 @@ class TextDelegate(QItemDelegate):
         """
         QItemDelegate.__init__(self, parent)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def returnPressed(self):
         self.commitData.emit(self.sender())
 
@@ -158,7 +158,7 @@ class TextDelegate(QItemDelegate):
 
 
 class FloatDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QDoubleSpinBox in every
     cell of the column to which it's applied
@@ -172,7 +172,7 @@ class FloatDelegate(QItemDelegate):
         self.min = min_
         self.max = max_
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def returnPressed(self):
         self.commitData.emit(self.sender())
 
@@ -195,7 +195,7 @@ class FloatDelegate(QItemDelegate):
 
 
 class ComplexDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning Complex Editor in every
     cell of the column to which it's applied
@@ -207,7 +207,7 @@ class ComplexDelegate(QItemDelegate):
         """
         QItemDelegate.__init__(self, parent)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def returnPressed(self):
         """
 
@@ -1046,7 +1046,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             formatter = self.elements[0].editable_headers[self.magnitude].tpe
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             text = cb.text(mode=cb.Clipboard)
 
             rows = text.split('\n')
@@ -1107,7 +1107,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                 data += str(date) + '\t' + '\t'.join(values[t, :]) + '\n'
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(data, mode=cb.Clipboard)
 
@@ -1183,25 +1183,25 @@ class EnumModel(QtCore.QAbstractListModel):
                 return QtCore.QVariant(self.items[index.row()].value[0])
             elif role == QtCore.Qt.ItemDataRole:
                 return QtCore.QVariant(self.items[index.row()].value[0])
-        return QtCore.QVariant()
+        return ""  # QtCore.QVariant()
 
 
 def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
     """
-    list_model = QStandardItemModel()
+    list_model = QtGui.QStandardItemModel()
     if lst is not None:
         if not checks:
             for val in lst:
                 # for the list model
-                item = QStandardItem(str(val))
+                item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 list_model.appendRow(item)
         else:
             for val in lst:
                 # for the list model
-                item = QStandardItem(str(val))
+                item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 item.setCheckable(True)
                 item.setCheckState(QtCore.Qt.Checked)
@@ -1210,7 +1210,7 @@ def get_list_model(lst, checks=False):
     return list_model
 
 
-def get_checked_indices(mdl: QStandardItemModel()):
+def get_checked_indices(mdl: QtGui.QStandardItemModel()):
     """
     Get a list of the selected indices in a QStandardItemModel
     :param mdl:

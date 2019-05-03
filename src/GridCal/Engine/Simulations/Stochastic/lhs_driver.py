@@ -15,7 +15,7 @@
 from numpy import complex, zeros, power
 
 import multiprocessing
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, Signal
 
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -27,9 +27,9 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesRe
 
 
 class LatinHypercubeSampling(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, sampling_points=1000):
         """

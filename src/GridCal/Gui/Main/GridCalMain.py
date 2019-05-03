@@ -54,7 +54,7 @@ from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
-from PyQt5 import QtWidgets
+from PySide2 import QtWidgets
 
 try:
     from pandas.plotting import register_matplotlib_converters
@@ -158,7 +158,7 @@ class MainGUI(QMainWindow):
         """
 
         # create main window
-        QWidget.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         self.ui = Ui_mainWindow()
         self.ui.setupUi(self)
 
@@ -3164,7 +3164,7 @@ class MainGUI(QMainWindow):
         self.ui.result_listView.setModel(None)
         self.ui.resultsTableView.setModel(None)
         self.ui.result_type_listView.setModel(None)
-        self.ui.available_results_to_color_comboBox.setModel(None)
+        self.ui.available_results_to_color_comboBox.model().clear()
         self.ui.result_element_selection_listView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)

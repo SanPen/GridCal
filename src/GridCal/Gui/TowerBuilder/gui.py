@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui.ui'
+# Form implementation generated from reading ui file 'gui.ui',
+# licensing of 'gui.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.12
+# Created: Fri May  3 11:05:47 2019
+#      by: pyside2-uic  running on PySide2 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -221,31 +222,28 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Tower creation"))
-        self.label_9.setText(_translate("Dialog", "Name"))
-        self.label_8.setText(_translate("Dialog", "Frequency (Hz)"))
-        self.label_11.setText(_translate("Dialog", "Earth resistivity (Ohm/m^3)"))
-        self.label_12.setText(_translate("Dialog", "Wire catalogue"))
-        self.label_10.setText(_translate("Dialog", "Wire compisition"))
-        self.add_to_tower_pushButton.setToolTip(_translate("Dialog", "Add wire"))
-        self.delete_from_tower_pushButton.setToolTip(_translate("Dialog", "Delete wire"))
-        self.compute_pushButton.setToolTip(_translate("Dialog", "Compute matrices"))
-        self.label_4.setText(_translate("Dialog", "Tower"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Tower"))
-        self.label.setText(_translate("Dialog", "   Z series (Ohm / km) for ABCN"))
-        self.label_6.setText(_translate("Dialog", "   Z series (Ohm / km) for ABC"))
-        self.label_7.setText(_translate("Dialog", "   Z series (Ohm / km) in sequence components"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Z"))
-        self.label_2.setText(_translate("Dialog", "   Y shunt (uS / km) for ABCN"))
-        self.label_3.setText(_translate("Dialog", "   Y shunt (uS / km) for ABC"))
-        self.label_5.setText(_translate("Dialog", "   Y shunt (uS / km) for the sequence components"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "Y"))
-
+        Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "Tower creation", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("Dialog", "Name", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("Dialog", "Frequency (Hz)", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("Dialog", "Earth resistivity (Ohm/m^3)", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("Dialog", "Wire catalogue", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("Dialog", "Wire compisition", None, -1))
+        self.add_to_tower_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Add wire", None, -1))
+        self.delete_from_tower_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Delete wire", None, -1))
+        self.compute_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Compute matrices", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("Dialog", "Tower", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtWidgets.QApplication.translate("Dialog", "Tower", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Dialog", "   Z series (Ohm / km) for ABCN", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("Dialog", "   Z series (Ohm / km) for ABC", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("Dialog", "   Z series (Ohm / km) in sequence components", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("Dialog", "Z", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Dialog", "   Y shunt (uS / km) for ABCN", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Dialog", "   Y shunt (uS / km) for ABC", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "   Y shunt (uS / km) for the sequence components", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtWidgets.QApplication.translate("Dialog", "Y", None, -1))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
-
 
 if __name__ == "__main__":
     import sys
@@ -255,3 +253,4 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
+

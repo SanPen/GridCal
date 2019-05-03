@@ -33,7 +33,7 @@ from GridCal.Engine.IO.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
 
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, Signal
 
 
 class FileOpen:
@@ -242,9 +242,9 @@ class FileSave:
 
 
 class FileOpenThread(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, file_name):
         """
@@ -293,9 +293,9 @@ class FileOpenThread(QThread):
 
 
 class FileSaveThread(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, circuit: MultiCircuit, file_name):
         """

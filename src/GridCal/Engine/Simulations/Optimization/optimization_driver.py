@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from matplotlib import pyplot as plt
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, Signal
 from pySOT.experimental_design import SymmetricLatinHypercube
 from pySOT.strategy import SRBFStrategy
 from pySOT.surrogate import GPRegressor
@@ -120,9 +120,9 @@ class VoltageOptimizationProblem(OptimizationProblem):
 
 
 class Optimize(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, circuit: MultiCircuit, options: PowerFlowOptions, max_iter=1000):
         """

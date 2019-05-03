@@ -82,7 +82,7 @@ install_requires = ["numpy>=1.14.0",
                     "pandas>=0.22",
                     "xlwt>=1.3.0",
                     "xlrd>=1.1.0",
-                    "PyQt5>=5.8",
+                    "PySide2>=5.11",
                     "matplotlib>=2.1.1",
                     "qtconsole>=4.3.1",
                     "pyDOE>=0.3.8",
@@ -94,6 +94,7 @@ install_requires = ["numpy>=1.14.0",
                     "scikit-learn>=0.18",
                     "geopy>=1.16",
                     "pytest>=3.8",
+                    "PIL>=5.1.0"
                     ]
 
 if platform.system() == 'Windows':
