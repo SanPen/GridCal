@@ -4677,7 +4677,7 @@ points from time series</string>
   <action name="actionBigger_nodes">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
+     <normaloff>:/Icons/icons/plus (gray).svg</normaloff>:/Icons/icons/plus (gray).svg</iconset>
    </property>
    <property name="text">
     <string>Expand</string>
@@ -4692,7 +4692,7 @@ points from time series</string>
   <action name="actionSmaller_nodes">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
+     <normaloff>:/Icons/icons/minus (gray).svg</normaloff>:/Icons/icons/minus (gray).svg</iconset>
    </property>
    <property name="text">
     <string>Shrink</string>
