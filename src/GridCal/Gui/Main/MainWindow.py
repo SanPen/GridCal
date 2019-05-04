@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.12
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
@@ -1728,7 +1727,7 @@ class Ui_mainWindow(object):
         self.tabWidget.addTab(self.SettingsTab, icon12, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.progress_frame = QtWidgets.QFrame(self.centralwidget)
-        self.progress_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.progress_frame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.progress_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.progress_frame.setObjectName("progress_frame")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.progress_frame)
@@ -1952,9 +1951,13 @@ class Ui_mainWindow(object):
         icon59.addPixmap(QtGui.QPixmap(":/Icons/icons/export_pickle.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionExport_all_results.setIcon(icon59)
         self.actionExport_all_results.setObjectName("actionExport_all_results")
+        self.actionSave_as = QtWidgets.QAction(mainWindow)
+        self.actionSave_as.setIcon(icon19)
+        self.actionSave_as.setObjectName("actionSave_as")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
+        self.menuProject.addAction(self.actionSave_as)
         self.menuProject.addSeparator()
         self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionAbout)
@@ -2292,11 +2295,10 @@ class Ui_mainWindow(object):
         self.actionOnline_documentation.setShortcut(_translate("mainWindow", "F1"))
         self.actionExport_all_results.setText(_translate("mainWindow", "Export all results"))
         self.actionExport_all_results.setToolTip(_translate("mainWindow", "Export all the results"))
-
+        self.actionSave_as.setText(_translate("mainWindow", "Save as"))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
-
 
 if __name__ == "__main__":
     import sys
@@ -2306,3 +2308,4 @@ if __name__ == "__main__":
     ui.setupUi(mainWindow)
     mainWindow.show()
     sys.exit(app.exec_())
+

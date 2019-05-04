@@ -310,7 +310,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     j8 = j6+1
     
     # evaluate F(x0, lam0), including Sxfr transfer/loading
-    mismatch = V * conj(Ybus * V) - Sbus - lam * Sxfr
+    mismatch = V * np.conj(Ybus * V) - Sbus - lam * Sxfr
     # F = r_[mismatch[pvpq].real, mismatch[pq].imag]
     
     # evaluate P(x0, lambda0)
@@ -933,7 +933,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
 
 if __name__ == '__main__':
 
-    from GridCal.Engine.Importers.file_handler import *
+    from GridCal.Engine.IO.file_handler import *
     from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, \
         SolverType
     from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
@@ -943,7 +943,7 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
     from GridCal.Engine.Simulations.MonteCarlo.stochastic_driver import *
     from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-    from GridCal.Engine.Drivers.optimization_driver import *
+    from GridCal.Engine.Simulations.Optimization.optimization_driver import *
     from GridCal.Engine.io_structures import *
     from GridCal.Engine.grid_analysis import *
 

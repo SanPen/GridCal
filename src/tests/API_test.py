@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.Importers.file_handler import *
+from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import ReactivePowerControlMode
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver im
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-from GridCal.Engine.Drivers.optimization_driver import *
+from GridCal.Engine.Simulations.Optimization.optimization_driver import *
 
 from GridCal.Engine.grid_analysis import *
 

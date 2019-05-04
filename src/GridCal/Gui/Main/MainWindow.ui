@@ -1180,7 +1180,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="icons.qrc">
+                  <iconset>
                    <normaloff>:/Icons/icons/undo.svg</normaloff>:/Icons/icons/undo.svg</iconset>
                  </property>
                 </widget>
@@ -1194,7 +1194,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="icons.qrc">
+                  <iconset>
                    <normaloff>:/Icons/icons/redo.svg</normaloff>:/Icons/icons/redo.svg</iconset>
                  </property>
                 </widget>
@@ -1442,7 +1442,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="icons.qrc">
+                  <iconset>
                    <normaloff>:/Icons/icons/up.svg</normaloff>:/Icons/icons/up.svg</iconset>
                  </property>
                 </widget>
@@ -4356,7 +4356,7 @@ points from time series</string>
     <item>
      <widget class="QFrame" name="progress_frame">
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
@@ -4414,6 +4414,7 @@ points from time series</string>
     <addaction name="actionNew_project"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
+    <addaction name="actionSave_as"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -5045,7 +5046,7 @@ points from time series</string>
   </action>
   <action name="actionExport_all_results">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
    </property>
    <property name="text">
@@ -5053,6 +5054,15 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>Export all the results</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save as</string>
    </property>
   </action>
  </widget>

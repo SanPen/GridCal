@@ -29,13 +29,9 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacob
 class CalculationInputs:
     """
     **nbus** (int): Number of buses
-
     **nbr** (int): Number of branches
-
     **ntime** (int): Number of time steps
-
     **nbat** (int): Number of batteries
-
     **nctrlgen** (int): Number of voltage controlled generators
     """
 
@@ -49,38 +45,28 @@ class CalculationInputs:
 
         self.time_array = None
 
+        self.original_bus_idx = list()
+        self.original_branch_idx = list()
+        self.original_time_idx = list()
+
         self.bus_names = np.empty(self.nbus, dtype=object)
         self.branch_names = np.empty(self.nbr, dtype=object)
 
-        # lists of connectivity matrices (calculation)
-        self.C_branch_bus_f = [csc_matrix((nbr, nbus), dtype=complex)] * ntime
-        self.C_branch_bus_t = [csc_matrix((nbr, nbus), dtype=complex)] * ntime
-        self.Yf = [csc_matrix((nbr, nbus), dtype=complex)] * ntime
-        self.Yt = [csc_matrix((nbr, nbus), dtype=complex)] * ntime
-        self.Ybus = [csc_matrix((nbus, nbus), dtype=complex)] * ntime
-        self.Yseries = [csc_matrix((nbus, nbus), dtype=complex)] * ntime
-        self.B1 = [csc_matrix((nbus, nbus), dtype=float)] * ntime
-        self.B2 = [csc_matrix((nbus, nbus), dtype=float)] * ntime
+        # resulting matrices (calculation)
+        self.Yf = csc_matrix((nbr, nbus), dtype=complex)
+        self.Yt = csc_matrix((nbr, nbus), dtype=complex)
+        self.Ybus = csc_matrix((nbus, nbus), dtype=complex)
+        self.Yseries = csc_matrix((nbus, nbus), dtype=complex)
+        self.B1 = csc_matrix((nbus, nbus), dtype=float)
+        self.B2 = csc_matrix((nbus, nbus), dtype=float)
 
-        # structures to keep indices
-        # time -> island -> indices
-        self.original_bus_idx = [list()] * ntime
-        self.original_branch_idx = [list()] * ntime
-        self.original_gen_idx = [list()] * ntime
-        self.original_bat_idx = [list()] * ntime
+        self.Ysh = np.zeros(nbus, dtype=complex)
+        self.Sbus = np.zeros(nbus, dtype=complex)
+        self.Ibus = np.zeros(nbus, dtype=complex)
 
-        # vectors to re-calculate the admittance matrices
-        self.Ys = [np.zeros(nbr, dtype=complex)] * ntime
-        self.GBc = [np.zeros(nbr, dtype=complex)] * ntime
-        self.tap_f = np.zeros(nbr, dtype=float)
-        self.tap_t = np.zeros(nbr, dtype=float)
-        self.tap_ang = np.zeros(nbr, dtype=float)
-        self.tap_mod = np.zeros(nbr, dtype=float)
-
-        # injection profiles
-        self.Ysh = np.zeros((ntime, nbus), dtype=complex)
-        self.Sbus = np.zeros((ntime, nbus), dtype=complex)
-        self.Ibus = np.zeros((ntime, nbus), dtype=complex)
+        self.Ysh_prof = np.zeros((nbus, ntime), dtype=complex)
+        self.Sbus_prof = np.zeros((nbus, ntime), dtype=complex)
+        self.Ibus_prof = np.zeros((nbus, ntime), dtype=complex)
 
         self.Vbus = np.ones(nbus, dtype=complex)
         self.Vmin = np.ones(nbus, dtype=float)
@@ -89,10 +75,16 @@ class CalculationInputs:
         self.Qmin = np.zeros(nbus, dtype=float)
         self.Qmax = np.zeros(nbus, dtype=float)
 
-        # branch properties
         self.F = np.zeros(nbr, dtype=int)
         self.T = np.zeros(nbr, dtype=int)
-        self.branch_rates = np.zeros(nbr)
+
+        # vectors to re-calculate the admittance matrices
+        self.Ys = np.zeros(nbr, dtype=complex)
+        self.GBc = np.zeros(nbr, dtype=complex)
+        self.tap_f = np.zeros(nbr, dtype=float)
+        self.tap_t = np.zeros(nbr, dtype=float)
+        self.tap_ang = np.zeros(nbr, dtype=float)
+        self.tap_mod = np.zeros(nbr, dtype=float)
 
         # needed fot the tap changer
         self.is_bus_to_regulated = np.zeros(nbr, dtype=int)
@@ -103,6 +95,9 @@ class CalculationInputs:
         self.tap_inc_reg_up = np.zeros(nbr, dtype=float)
         self.tap_inc_reg_down = np.zeros(nbr, dtype=float)
         self.vset = np.zeros(nbr, dtype=float)
+
+        self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
+        self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
 
         # Active power control
         self.controlled_gen_pmin = np.zeros(nctrlgen, dtype=float)
@@ -134,14 +129,15 @@ class CalculationInputs:
         # ACPF system matrix factorization
         self.Asys = None
 
-        # this lists initially remain the same
+        self.branch_rates = np.zeros(nbr)
+
         self.pq = list()
         self.pv = list()
         self.ref = list()
         self.sto = list()
         self.pqpv = list()
 
-        self.logger = list()
+        self.logger =list()
 
         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', "B'", "B''", 'Types',
                                      'Jacobian', 'Qmin', 'Qmax']
@@ -202,47 +198,59 @@ class CalculationInputs:
 
         self.compile_types()
 
-    def get_island(self, bus_idx, branch_idx, gen_idx, bat_idx, t=0):
+    def trim_profiles(self, time_idx):
+        """
+        Trims the profiles with the passed time indices and stores those time indices for later
+        :param time_idx: array of time indices
+        """
+        self.original_time_idx = time_idx
+
+        self.Ysh_prof = self.Ysh_prof[:, time_idx]
+        self.Sbus_prof = self.Sbus_prof[:, time_idx]
+        self.Ibus_prof = self.Ibus_prof[:, time_idx]
+
+    def get_island(self, bus_idx, branch_idx, gen_idx, bat_idx):
         """
         Get a sub-island
         :param bus_idx: bus indices of the island
         :param branch_idx: branch indices of the island
-        :param gen_idx: generator indices
-        :param bat_idx: battery indices
-        :param t: snapshot index
         :return: CalculationInputs instance
         """
-        obj = CalculationInputs(len(bus_idx), len(branch_idx), 1, len(bat_idx), len(gen_idx))
+        obj = CalculationInputs(len(bus_idx), len(branch_idx), self.ntime, len(bat_idx), len(gen_idx))
 
         # remember the island original indices
-        obj.original_bus_idx[0] = bus_idx
-        obj.original_branch_idx[0] = branch_idx
+        obj.original_bus_idx = bus_idx
+        obj.original_branch_idx = branch_idx
 
-        obj.Yf[0] = self.Yf[t][branch_idx, :][:, bus_idx].copy()
-        obj.Yt[0] = self.Yt[t][branch_idx, :][:, bus_idx].copy()
-        obj.Ybus[0] = self.Ybus[t][bus_idx, :][:, bus_idx].copy()
-        obj.Yseries[0] = self.Yseries[t][bus_idx, :][:, bus_idx].copy()
-        obj.B1[0] = self.B1[t][bus_idx, :][:, bus_idx].copy()
-        obj.B2[0] = self.B2[t][bus_idx, :][:, bus_idx].copy()
-        obj.C_branch_bus_f[0] = self.C_branch_bus_f[t][branch_idx, :][:, bus_idx]
-        obj.C_branch_bus_t[0] = self.C_branch_bus_t[t][branch_idx, :][:, bus_idx]
+        obj.Yf = self.Yf[branch_idx, :][:, bus_idx].copy()
+        obj.Yt = self.Yt[branch_idx, :][:, bus_idx].copy()
+        obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx].copy()
+        obj.Yseries = self.Yseries[bus_idx, :][:, bus_idx].copy()
+        obj.B1 = self.B1[bus_idx, :][:, bus_idx].copy()
+        obj.B2 = self.B2[bus_idx, :][:, bus_idx].copy()
 
-        obj.Ysh = self.Ysh[t, bus_idx]
-        obj.Sbus = self.Sbus[t, bus_idx]
-        obj.Ibus = self.Ibus[t, bus_idx]
-
-        obj.Vbus = self.Vbus[bus_idx]
-        obj.types = self.types[bus_idx]
-        obj.Qmin = self.Qmin[bus_idx]
-        obj.Qmax = self.Qmax[bus_idx]
-        obj.Vmin = self.Vmin[bus_idx]
-        obj.Vmax = self.Vmax[bus_idx]
+        obj.Ysh = self.Ysh[bus_idx].copy()
+        obj.Sbus = self.Sbus[bus_idx].copy()
+        obj.Ibus = self.Ibus[bus_idx].copy()
+        obj.Vbus = self.Vbus[bus_idx].copy()
+        obj.types = self.types[bus_idx].copy()
+        obj.Qmin = self.Qmin[bus_idx].copy()
+        obj.Qmax = self.Qmax[bus_idx].copy()
+        obj.Vmin = self.Vmin[bus_idx].copy()
+        obj.Vmax = self.Vmax[bus_idx].copy()
 
         obj.F = self.F[branch_idx]
         obj.T = self.T[branch_idx]
         obj.branch_rates = self.branch_rates[branch_idx]
         obj.bus_names = self.bus_names[bus_idx]
         obj.branch_names = self.branch_names[branch_idx]
+
+        obj.Ysh_prof = self.Ysh_prof[bus_idx, :].copy()
+        obj.Sbus_prof = self.Sbus_prof[bus_idx, :].copy()
+        obj.Ibus_prof = self.Ibus_prof[bus_idx, :].copy()
+
+        obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
+        obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
 
         obj.C_load_bus = self.C_load_bus[:, bus_idx]
         obj.C_batt_bus = self.C_batt_bus[:, bus_idx]
@@ -284,7 +292,7 @@ class CalculationInputs:
 
         return obj
 
-    def compute_branch_results(self, V, t=0):
+    def compute_branch_results(self, V):
         """
         Compute the branch magnitudes from the voltages
         :param V: Voltage vector solution in p.u.
@@ -299,18 +307,18 @@ class CalculationInputs:
 
         # power at the slack nodes
         data.Sbus = self.Sbus.copy()
-        data.Sbus[self.ref] = V[self.ref] * np.conj(self.Ybus[t][self.ref, :].dot(V))
+        data.Sbus[self.ref] = V[self.ref] * np.conj(self.Ybus[self.ref, :].dot(V))
 
         # Reactive power at the pv nodes: keep the original P injection and set the calculated reactive power
-        Q = (V[self.pv] * np.conj(self.Ybus[t][self.pv, :].dot(V))).imag
+        Q = (V[self.pv] * np.conj(self.Ybus[self.pv, :].dot(V))).imag
 
-        data.Sbus[t, self.pv] = self.Sbus[t, self.pv].real + 1j * Q
+        data.Sbus[self.pv] = self.Sbus[self.pv].real + 1j * Q
 
         # Branches current, loading, etc
-        data.If = self.Yf[t] * V
-        data.It = self.Yt[t] * V
-        data.Sf = self.C_branch_bus_f[t] * V * np.conj(data.If)
-        data.St = self.C_branch_bus_t[t] * V * np.conj(data.It)
+        data.If = self.Yf * V
+        data.It = self.Yt * V
+        data.Sf = self.C_branch_bus_f * V * np.conj(data.If)
+        data.St = self.C_branch_bus_t * V * np.conj(data.It)
 
         # Branch losses in MVA
         data.losses = (data.Sf + data.St)
@@ -326,11 +334,10 @@ class CalculationInputs:
 
         return data
 
-    def re_calc_admittance_matrices(self, tap_mod, t=0):
+    def re_calc_admittance_matrices(self, tap_mod):
         """
         Recalculate the admittance matrices as the tap changes
         :param tap_mod: tap modules per bus
-        :param t: snapshot index
         :return: Nothing, the matrices are changed in-place
         """
         # here the branch_bus matrices do have the states embedded
@@ -346,9 +353,9 @@ class CalculationInputs:
         Ytf = - self.Ys / (self.tap_t * self.tap_f * tap)
 
         # form the admittance matrices
-        self.Yf[t] = diags(Yff) * Cf + diags(Yft) * Ct
-        self.Yt[t] = diags(Ytf) * Cf + diags(Ytt) * Ct
-        self.Ybus[t] = csc_matrix(Cf.T * self.Yf[t] + Ct.T * self.Yt[t] + diags(self.Ysh[t, :]))
+        self.Yf = diags(Yff) * Cf + diags(Yft) * Ct
+        self.Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
+        self.Ybus = csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt + diags(self.Ysh))
 
         # branch primitives in vector form
         Ytts = self.Ys
@@ -359,13 +366,13 @@ class CalculationInputs:
         # form the admittance matrices of the series elements
         Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
         Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
-        self.Yseries[t] = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
+        self.Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
 
         X = (1 / self.Ys).imag
         b1 = 1.0 / (X + 1e-20)
         B1f = diags(-b1) * Cf + diags(-b1) * Ct
         B1t = diags(-b1) * Cf + diags(-b1) * Ct
-        self.B1[t] = csc_matrix(Cf.T * B1f + Ct.T * B1t)
+        self.B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
 
         b2 = b1 + self.GBc.imag  # B == GBc.imag
         b2_ff = -(b2 / (tap * np.conj(tap))).real
@@ -374,36 +381,34 @@ class CalculationInputs:
         b2_tt = - b2
         B2f = diags(b2_ff) * Cf + diags(b2_ft) * Ct
         B2t = diags(b2_tf) * Cf + diags(b2_tt) * Ct
-        self.B2[t] = csc_matrix(Cf.T * B2f + Ct.T * B2t)
+        self.B2 = csc_matrix(Cf.T * B2f + Ct.T * B2t)
 
-    def build_linear_ac_sys_mat(self, t=0):
+    def build_linear_ac_sys_mat(self):
         """
         Get the AC linear approximation matrices
-        :param t: snapshot index
         :return:
         """
-        A11 = -self.Yseries[t].imag[self.pqpv, :][:, self.pqpv]
-        A12 = self.Ybus[t].real[self.pqpv, :][:, self.pq]
-        A21 = -self.Yseries[t].real[self.pq, :][:, self.pqpv]
-        A22 = -self.Ybus[t].imag[self.pq, :][:, self.pq]
+        A11 = -self.Yseries.imag[self.pqpv, :][:, self.pqpv]
+        A12 = self.Ybus.real[self.pqpv, :][:, self.pq]
+        A21 = -self.Yseries.real[self.pq, :][:, self.pqpv]
+        A22 = -self.Ybus.imag[self.pq, :][:, self.pq]
 
         A = vstack_s([hstack_s([A11, A12]),
                       hstack_s([A21, A22])], format="csc")
 
         # form the slack system matrix
-        A11s = -self.Yseries[t].imag[self.ref, :][:, self.pqpv]
-        A12s = self.Ybus[t].real[self.ref, :][:, self.pq]
+        A11s = -self.Yseries.imag[self.ref, :][:, self.pqpv]
+        A12s = self.Ybus.real[self.ref, :][:, self.pq]
         A_slack = hstack_s([A11s, A12s], format="csr")
 
-        self.Asys[t] = factorized(A)
-
+        self.Asys = factorized(A)
         return A, A_slack
 
-    def get_structure(self, structure_type, t=0):
+    def get_structure(self, structure_type):
         """
         Get a DataFrame with the input
-        :param structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
-        :param t: snapshot index
+        Args:
+            structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
         Returns: Pandas DataFrame
         """
 
@@ -412,25 +417,25 @@ class CalculationInputs:
             df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
 
         elif structure_type == 'Sbus':
-            df = pd.DataFrame(data=self.Sbus[t, :], columns=['Power (p.u.)'], index=self.bus_names)
+            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
 
         elif structure_type == 'Ibus':
-            df = pd.DataFrame(data=self.Ibus[t, :], columns=['Current (p.u.)'], index=self.bus_names)
+            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
 
         elif structure_type == 'Ybus':
-            df = pd.DataFrame(data=self.Ybus[t].toarray(), columns=self.bus_names, index=self.bus_names)
+            df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
 
         elif structure_type == 'Yshunt':
-            df = pd.DataFrame(data=self.Ysh[t, :], columns=['Shunt admittance (p.u.)'], index=self.bus_names)
+            df = pd.DataFrame(data=self.Ysh, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
 
         elif structure_type == 'Yseries':
-            df = pd.DataFrame(data=self.Yseries[t].toarray(), columns=self.bus_names, index=self.bus_names)
+            df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
 
         elif structure_type == "B'":
-            df = pd.DataFrame(data=self.B1[t].toarray(), columns=self.bus_names, index=self.bus_names)
+            df = pd.DataFrame(data=self.B1.toarray(), columns=self.bus_names, index=self.bus_names)
 
         elif structure_type == "B''":
-            df = pd.DataFrame(data=self.B2[t].toarray(), columns=self.bus_names, index=self.bus_names)
+            df = pd.DataFrame(data=self.B2.toarray(), columns=self.bus_names, index=self.bus_names)
 
         elif structure_type == 'Types':
             df = pd.DataFrame(data=self.types, columns=['Bus types'], index=self.bus_names)
@@ -443,7 +448,7 @@ class CalculationInputs:
 
         elif structure_type == 'Jacobian':
 
-            J = Jacobian(self.Ybus[t], self.Vbus, self.Ibus[t, :], self.pq, self.pqpv)
+            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
 
             """
             J11 = dS_dVa[array([pvpq]).T, pvpq].real
@@ -464,25 +469,27 @@ class CalculationInputs:
 
         return df
 
-    def print(self, bus_names, t=0):
+    def print(self, bus_names):
         """
         print in console
-        :param bus_names: Names of the buses
-        :param t: snapshot index
+        :return:
         """
+        # print('\ntypes\n', self.types)
+        # print('\nSbus\n', self.Sbus)
+        # print('\nVbus\n', self.Vbus)
+        # print('\nYsh\n', self.Ysh)
 
         df_bus = pd.DataFrame(
             np.c_[self.types, np.abs(self.Vbus), np.angle(self.Vbus), self.Vbus.real, self.Vbus.imag,
-                  self.Sbus[t, :].real, self.Sbus[t, :].imag, self.Ysh[t, :].real, self.Ysh[t, :].imag],
+                  self.Sbus.real, self.Sbus.imag, self.Ysh.real, self.Ysh.imag],
             index=bus_names, columns=['Type', '|V|', 'angle', 're{V}', 'im{V}', 'P', 'Q', 'Gsh', 'Bsh'])
         # df_bus.sort_index(inplace=True)
 
         print('\nBus info\n', df_bus)
 
         if self.nbus < 100:
-            print('\nYbus\n', pd.DataFrame(self.Ybus[t].todense(), columns=bus_names, index=bus_names))
+            print('\nYbus\n', pd.DataFrame(self.Ybus.todense(), columns=bus_names, index=bus_names))
 
         print('PQ:', self.pq)
         print('PV:', self.pv)
         print('REF:', self.ref)
-

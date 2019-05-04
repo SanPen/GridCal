@@ -1527,7 +1527,7 @@ class PowerFlowMP:
         calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction,
                                                        branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
-        if len(numerical_circuit.islands) > 1:
+        if len(calculation_inputs) > 1:
 
             # simulate each island and merge the results
             for i, calculation_input in enumerate(calculation_inputs):
@@ -1540,8 +1540,10 @@ class PowerFlowMP:
                     # run circuit power flow
                     res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
 
-                    bus_original_idx = numerical_circuit.islands[i]
-                    branch_original_idx = numerical_circuit.island_branches[i]
+                    # bus_original_idx = numerical_circuit.islands[i]
+                    # branch_original_idx = numerical_circuit.island_branches[i]
+                    bus_original_idx = calculation_input.original_bus_idx
+                    branch_original_idx = calculation_input.original_branch_idx
 
                     # merge the results from this island
                     results.apply_from_island(res, bus_original_idx, branch_original_idx)
