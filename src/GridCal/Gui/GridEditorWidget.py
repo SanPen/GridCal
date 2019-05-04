@@ -20,11 +20,11 @@ from PyQt5.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+
 from GridCal.Engine.Devices import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
-
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 '''
 Dependencies:
 
