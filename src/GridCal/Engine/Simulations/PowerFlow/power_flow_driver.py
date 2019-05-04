@@ -1473,15 +1473,15 @@ class PowerFlowMP:
         results = PowerFlowResults()
         results.initialize(n, m)
 
-        if len(numerical_circuit.islands) > 1:
+        if len(calculation_inputs) > 1:
 
             # simulate each island and merge the results
             for i, calculation_input in enumerate(calculation_inputs):
 
                 if len(calculation_input.ref) > 0:
 
-                    bus_original_idx = numerical_circuit.islands[i]
-                    branch_original_idx = numerical_circuit.island_branches[i]
+                    bus_original_idx = calculation_input.original_bus_idx
+                    branch_original_idx = calculation_input.original_branch_idx
 
                     # run circuit power flow
                     res = self.run_pf(calculation_input,

@@ -449,7 +449,7 @@ class TimeSeries(QThread):
                             # add the controlled storage power if we are controlling the storage devices
                             if self.options.dispatch_storage:
 
-                                if it < len(calculation_input.original_time_idx):
+                                if (it+1) < len(calculation_input.original_time_idx):
                                     # compute the time delta: the time values come in nanoseconds
                                     dt = (calculation_input.time_array[it + 1]
                                           - calculation_input.time_array[it]).value * 1e-9 / 3600.0

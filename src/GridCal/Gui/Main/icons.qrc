@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/copy2up.svg</file>
+    <file>icons/calculator.svg</file>
+    <file>icons/magnifying_glass.svg</file>
     <file>icons/up.svg</file>
     <file>icons/undo.svg</file>
     <file>icons/redo.svg</file>

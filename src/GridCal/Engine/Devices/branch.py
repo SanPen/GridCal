@@ -515,6 +515,8 @@ class Branch(EditableDevice):
 
         b.measurements = self.measurements
 
+        b.active_prof = self.active_prof.copy()
+
         return b
 
     def tap_up(self):

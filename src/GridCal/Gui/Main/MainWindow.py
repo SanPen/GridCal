@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
@@ -466,15 +467,7 @@ class Ui_mainWindow(object):
         self.TimeEventsTab.setObjectName("TimeEventsTab")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.TimeEventsTab)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.tabWidget_4 = QtWidgets.QTabWidget(self.TimeEventsTab)
-        self.tabWidget_4.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.tabWidget_4.setTabPosition(QtWidgets.QTabWidget.South)
-        self.tabWidget_4.setObjectName("tabWidget_4")
-        self.tab_11 = QtWidgets.QWidget()
-        self.tab_11.setObjectName("tab_11")
-        self.verticalLayout_14 = QtWidgets.QVBoxLayout(self.tab_11)
-        self.verticalLayout_14.setObjectName("verticalLayout_14")
-        self.frame = QtWidgets.QFrame(self.tab_11)
+        self.frame = QtWidgets.QFrame(self.TimeEventsTab)
         self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
@@ -560,7 +553,7 @@ class Ui_mainWindow(object):
         self.profile_display_pushButton = QtWidgets.QPushButton(self.frame)
         self.profile_display_pushButton.setText("")
         icon26 = QtGui.QIcon()
-        icon26.addPixmap(QtGui.QPixmap(":/Icons/icons/squares.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon26.addPixmap(QtGui.QPixmap(":/Icons/icons/magnifying_glass.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.profile_display_pushButton.setIcon(icon26)
         self.profile_display_pushButton.setObjectName("profile_display_pushButton")
         self.horizontalLayout.addWidget(self.profile_display_pushButton)
@@ -571,12 +564,12 @@ class Ui_mainWindow(object):
         self.plot_time_series_pushButton.setIcon(icon27)
         self.plot_time_series_pushButton.setObjectName("plot_time_series_pushButton")
         self.horizontalLayout.addWidget(self.plot_time_series_pushButton)
-        self.verticalLayout_14.addWidget(self.frame)
-        self.profiles_tableView = QtWidgets.QTableView(self.tab_11)
+        self.verticalLayout_4.addWidget(self.frame)
+        self.profiles_tableView = QtWidgets.QTableView(self.TimeEventsTab)
         self.profiles_tableView.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.profiles_tableView.setObjectName("profiles_tableView")
-        self.verticalLayout_14.addWidget(self.profiles_tableView)
-        self.frame_12 = QtWidgets.QFrame(self.tab_11)
+        self.verticalLayout_4.addWidget(self.profiles_tableView)
+        self.frame_12 = QtWidgets.QFrame(self.TimeEventsTab)
         self.frame_12.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_12.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_12.setObjectName("frame_12")
@@ -607,19 +600,19 @@ class Ui_mainWindow(object):
         self.profile_divide_pushButton.setIcon(icon29)
         self.profile_divide_pushButton.setObjectName("profile_divide_pushButton")
         self.horizontalLayout_4.addWidget(self.profile_divide_pushButton)
+        self.set_profile_value_pushButton = QtWidgets.QPushButton(self.frame_12)
+        self.set_profile_value_pushButton.setText("")
+        icon30 = QtGui.QIcon()
+        icon30.addPixmap(QtGui.QPixmap(":/Icons/icons/copy2up.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.set_profile_value_pushButton.setIcon(icon30)
+        self.set_profile_value_pushButton.setObjectName("set_profile_value_pushButton")
+        self.horizontalLayout_4.addWidget(self.set_profile_value_pushButton)
         self.profile_factor_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_12)
         self.profile_factor_doubleSpinBox.setMinimum(-999999.0)
         self.profile_factor_doubleSpinBox.setMaximum(9999999.0)
         self.profile_factor_doubleSpinBox.setProperty("value", 1.0)
         self.profile_factor_doubleSpinBox.setObjectName("profile_factor_doubleSpinBox")
         self.horizontalLayout_4.addWidget(self.profile_factor_doubleSpinBox)
-        self.set_profile_value_pushButton = QtWidgets.QPushButton(self.frame_12)
-        self.set_profile_value_pushButton.setText("")
-        icon30 = QtGui.QIcon()
-        icon30.addPixmap(QtGui.QPixmap(":/Icons/icons/up.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.set_profile_value_pushButton.setIcon(icon30)
-        self.set_profile_value_pushButton.setObjectName("set_profile_value_pushButton")
-        self.horizontalLayout_4.addWidget(self.set_profile_value_pushButton)
         spacerItem10 = QtWidgets.QSpacerItem(267, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem10)
         self.profile_label = QtWidgets.QLabel(self.frame_12)
@@ -639,9 +632,7 @@ class Ui_mainWindow(object):
         self.profile_end_slider.setOrientation(QtCore.Qt.Horizontal)
         self.profile_end_slider.setObjectName("profile_end_slider")
         self.horizontalLayout_4.addWidget(self.profile_end_slider)
-        self.verticalLayout_14.addWidget(self.frame_12)
-        self.tabWidget_4.addTab(self.tab_11, "")
-        self.verticalLayout_4.addWidget(self.tabWidget_4)
+        self.verticalLayout_4.addWidget(self.frame_12)
         icon31 = QtGui.QIcon()
         icon31.addPixmap(QtGui.QPixmap(":/Icons/icons/clock.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tabWidget.addTab(self.TimeEventsTab, icon31, "")
@@ -2023,7 +2014,6 @@ class Ui_mainWindow(object):
         self.retranslateUi(mainWindow)
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
-        self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
@@ -2097,7 +2087,6 @@ class Ui_mainWindow(object):
         self.profile_label.setText(_translate("mainWindow", "..."))
         self.label_36.setText(_translate("mainWindow", "Start"))
         self.label_35.setText(_translate("mainWindow", "End"))
-        self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_11), _translate("mainWindow", "Time series"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.TimeEventsTab), _translate("mainWindow", "Time events"))
         self.label_16.setText(_translate("mainWindow", "Studies with results"))
         self.label_7.setText(_translate("mainWindow", "Types of results available"))
@@ -2297,8 +2286,10 @@ class Ui_mainWindow(object):
         self.actionExport_all_results.setToolTip(_translate("mainWindow", "Export all the results"))
         self.actionSave_as.setText(_translate("mainWindow", "Save as"))
 
+
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
+
 
 if __name__ == "__main__":
     import sys
@@ -2308,4 +2299,3 @@ if __name__ == "__main__":
     ui.setupUi(mainWindow)
     mainWindow.show()
     sys.exit(app.exec_())
-
