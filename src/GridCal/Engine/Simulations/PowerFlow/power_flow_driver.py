@@ -21,7 +21,7 @@ import numpy as np
 # from timeit import default_timer as timer
 from PyQt5.QtCore import QRunnable
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+
 from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class SolverType(Enum):

@@ -21,7 +21,9 @@ _____________
 - Replace the internal profiles from Pandas DataFrames to numpy arrays.
   This makes the processing simpler and more robust.
 
-- Added rating to cables
+- Added rating to cables.
+
+- Changed the TransformerType inner property names to shorter ones.
 
 - Plenty of bug fixes.
 
