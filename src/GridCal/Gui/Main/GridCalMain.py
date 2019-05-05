@@ -782,7 +782,7 @@ class MainGUI(QMainWindow):
         vmin = 0
         vmax = 1.2
         vrng = vmax - vmin
-        vabs = abs(voltages)
+        vabs = np.abs(voltages)
         vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
         Sbase = self.circuit.Sbase

@@ -281,12 +281,12 @@ class TimeSeriesResults(PowerFlowResults):
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusActivePower:
-                data = self.Sbus[:, indices].real
+                data = self.S[:, indices].real
                 y_label = '(MW)'
                 title = 'Bus active power '
 
             elif result_type == ResultTypes.BusReactivePower:
-                data = self.Sbus[:, indices].imag
+                data = self.S[:, indices].imag
                 y_label = '(MVAr)'
                 title = 'Bus reactive power '
 
