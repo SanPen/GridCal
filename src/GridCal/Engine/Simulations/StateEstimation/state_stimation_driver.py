@@ -148,8 +148,11 @@ class StateEstimation(QRunnable):
         """
         se_input = StateEstimationInput()
 
+        buses = np.array(circuit.buses)
+        branches = np.array(circuit.branches)
+
         # collect the bus measurements
-        for i, bus in enumerate(circuit.buses[bus_idx]):
+        for i, bus in enumerate(buses[bus_idx]):
 
             for m in bus.measurements:
 
@@ -169,7 +172,7 @@ class StateEstimation(QRunnable):
                     raise Exception('The bus ' + str(bus) + ' contains a measurement of type ' + str(m.measurement_type))
 
         # collect the branch measurements
-        for i, branch in enumerate(circuit.branches[branch_idx]):
+        for i, branch in enumerate(branches[branch_idx]):
 
             for m in branch.measurements:
 

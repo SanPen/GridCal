@@ -2937,7 +2937,6 @@ class MainGUI(QMainWindow):
     def post_reduce_grid(self):
         """
         Actions after reducing
-        :return:
         """
 
         self.remove_simulation(SimulationTypes.TopologyReduction_run)
@@ -2953,8 +2952,6 @@ class MainGUI(QMainWindow):
 
         """
         Add storage markers to the schematic
-        Returns:
-
         """
 
         if len(self.circuit.buses) > 0:

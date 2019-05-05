@@ -324,6 +324,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
 
     update_jacobian = True
     converged = False
+    err = 1e20
     nu = 2.0
 
     while not converged and iter_ < max_iter:
@@ -402,7 +403,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
 
 if __name__ == '__main__':
 
-    from GridCal.Engine.calculation_engine import *
+    from GridCal.Engine import *
 
     np.set_printoptions(linewidth=10000)
 
@@ -441,8 +442,6 @@ if __name__ == '__main__':
     br = [br1, br2, br3]
 
     m_circuit.compile()
-
-    circuit = m_circuit.circuits[0]
 
     se = StateEstimation(circuit=m_circuit)
 
