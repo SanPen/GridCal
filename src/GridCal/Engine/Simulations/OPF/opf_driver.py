@@ -33,7 +33,7 @@ class OptimalPowerFlowOptions:
     def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
                  solver=SolverType.DC_OPF, realistic_results=False, control_batteries=True,
                  faster_less_accurate=False, generation_shedding_weight=10000, load_shedding_weight=10000,
-                 power_flow_options=None):
+                 power_flow_options=None, bus_types=None):
         """
         OPF options constructor
         :param verbose:
@@ -42,6 +42,7 @@ class OptimalPowerFlowOptions:
         :param solver:
         :param realistic_results:
         :param faster_less_accurate:
+        :param bus_types:
         """
         self.verbose = verbose
 
@@ -62,6 +63,8 @@ class OptimalPowerFlowOptions:
         self.load_shedding_weight = load_shedding_weight
 
         self.power_flow_options = power_flow_options
+
+        self.bus_types = bus_types
 
 
 class OptimalPowerFlow(QRunnable):
@@ -105,6 +108,8 @@ class OptimalPowerFlow(QRunnable):
         # print('PowerFlow at ', self.grid.name)
 
         # self.progress_signal.emit(0.0)
+        numerical_circuit = self.grid.compile()
+        islands = numerical_circuit.compute()
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
@@ -125,9 +130,10 @@ class OptimalPowerFlow(QRunnable):
         elif self.options.solver == SolverType.NELDER_MEAD_OPF:
 
             if self.options.power_flow_options is None:
-                options = PowerFlowOptions(SolverType.LACPF, verbose=False, robust=False,
+                options = PowerFlowOptions(SolverType.LACPF, verbose=False,
                                            initialize_with_existing_solution=False,
-                                           multi_core=False, dispatch_storage=True, control_q=False, control_taps=False)
+                                           multi_core=False, dispatch_storage=True,
+                                           control_q=False, control_taps=False)
             else:
                 options = self.options.power_flow_options
 
@@ -162,7 +168,8 @@ class OptimalPowerFlow(QRunnable):
                                                Sbranch=Sbr * self.grid.Sbase,
                                                overloads=problem.get_overloads(),
                                                loading=problem.get_loading(),
-                                               converged=bool(problem.converged))
+                                               converged=bool(problem.converged),
+                                               bus_types = numerical_circuit.bus_types)
 
         return self.results
 

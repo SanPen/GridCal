@@ -141,7 +141,7 @@ class StateEstimation(QRunnable):
         self.se_results = None
 
     @staticmethod
-    def collect_measurements(circuit: NumericalCircuit):
+    def collect_measurements(circuit: MultiCircuit, bus_idx, branch_idx):
         """
         Form the input from the circuit measurements
         :return: nothing, the input object is stored in this class
@@ -149,7 +149,7 @@ class StateEstimation(QRunnable):
         se_input = StateEstimationInput()
 
         # collect the bus measurements
-        for i, bus in enumerate(circuit.buses):
+        for i, bus in enumerate(circuit.buses[bus_idx]):
 
             for m in bus.measurements:
 
@@ -169,7 +169,7 @@ class StateEstimation(QRunnable):
                     raise Exception('The bus ' + str(bus) + ' contains a measurement of type ' + str(m.measurement_type))
 
         # collect the branch measurements
-        for i, branch in enumerate(circuit.branches):
+        for i, branch in enumerate(circuit.branches[branch_idx]):
 
             for m in branch.measurements:
 
@@ -201,25 +201,33 @@ class StateEstimation(QRunnable):
         self.se_results = StateEstimationResults()
         self.se_results.initialize(n, m)
 
-        for circuit in self.grid.circuits:
+        numerical_circuit = self.grid.compile()
+        islands = numerical_circuit.compute()
 
-            # collect inputs
-            se_input = self.collect_measurements(circuit=circuit)
+        self.se_results.bus_types = numerical_circuit.bus_types
+
+        for island in islands:
+
+            # collect inputs of the island
+            se_input = self.collect_measurements(circuit=self.grid,
+                                                 bus_idx=island.original_bus_idx,
+                                                 branch_idx=island.original_branch_idx)
 
             # run solver
-            v_sol, err, converged = solve_se_lm(Ybus=circuit.power_flow_input.Ybus,
-                                                Yf=circuit.power_flow_input.Yf,
-                                                Yt=circuit.power_flow_input.Yt,
-                                                f=circuit.power_flow_input.F,
-                                                t=circuit.power_flow_input.T,
+            v_sol, err, converged = solve_se_lm(Ybus=island.Ybus,
+                                                Yf=island.Yf,
+                                                Yt=island.Yt,
+                                                f=island.F,
+                                                t=island.T,
                                                 se_input=se_input,
-                                                ref=circuit.power_flow_input.ref,
-                                                pq=circuit.power_flow_input.pq,
-                                                pv=circuit.power_flow_input.pv)
+                                                ref=island.ref,
+                                                pq=island.pq,
+                                                pv=island.pv)
 
             # Compute the branches power and the slack buses power
             Sbranch, Ibranch, loading, \
-            losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=circuit, V=v_sol)
+            losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=island,
+                                                                               V=v_sol)
 
             # pack results into a SE results object
             results = StateEstimationResults(Sbus=Sbus,
@@ -232,4 +240,6 @@ class StateEstimation(QRunnable):
                                              converged=[converged],
                                              Qpv=None)
 
-            self.se_results.apply_from_island(results, circuit.bus_original_idx, circuit.branch_original_idx)
+            self.se_results.apply_from_island(results,
+                                              island.original_bus_idx,
+                                              island.original_branch_idx)

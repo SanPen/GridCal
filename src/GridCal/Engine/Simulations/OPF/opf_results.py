@@ -46,7 +46,7 @@ class OptimalPowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sbranch=None, overloads=None, loading=None, losses=None, converged=None):
+                 Sbranch=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
 
         self.Sbus = Sbus
 
@@ -57,6 +57,8 @@ class OptimalPowerFlowResults:
         self.generation_shedding = generation_shedding
 
         self.Sbranch = Sbranch
+
+        self.bus_types = bus_types
 
         self.overloads = overloads
 

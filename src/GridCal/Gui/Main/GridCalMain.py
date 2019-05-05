@@ -2039,7 +2039,7 @@ class MainGUI(QMainWindow):
                                    s_branch=self.power_flow.results.Sbranch,
                                    voltages=self.power_flow.results.voltage,
                                    loadings=self.power_flow.results.loading,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.power_flow.results.bus_types,
                                    losses=self.power_flow.results.losses)
             self.update_available_results()
 
@@ -2136,7 +2136,7 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
                                    s_branch=self.short_circuit.results.Sbranch,
                                    voltages=self.short_circuit.results.voltage,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.short_circuit.results.bus_types,
                                    loadings=self.short_circuit.results.loading)
             self.update_available_results()
         else:
@@ -2276,7 +2276,7 @@ class MainGUI(QMainWindow):
                                        s_branch=self.voltage_stability.results.Sbranch,
                                        voltages=V,
                                        loadings=self.voltage_stability.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types)
+                                       types=self.voltage_stability.results.bus_types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
@@ -2353,7 +2353,7 @@ class MainGUI(QMainWindow):
             Sbranch = self.time_series.results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.circuit.numerical_circuit.bus_types)
+                                   types=self.time_series.results.bus_types)
 
             self.update_available_results()
 
@@ -2416,7 +2416,7 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
                                    loadings=self.monte_carlo.results.loading,
                                    s_branch=self.monte_carlo.results.sbranch,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.monte_carlo.results.bus_types,
                                    s_bus=None)
             self.update_available_results()
 
@@ -2475,7 +2475,7 @@ class MainGUI(QMainWindow):
         if not self.latin_hypercube_sampling.__cancel__:
             self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
                                    loadings=self.latin_hypercube_sampling.results.loading,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.latin_hypercube_sampling.results.bus_types,
                                    s_branch=self.latin_hypercube_sampling.results.sbranch,
                                    s_bus=None)
             self.update_available_results()
@@ -2588,7 +2588,7 @@ class MainGUI(QMainWindow):
             # print grid
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=results.bus_types,
                                    s_branch=results.sbranch,
                                    s_bus=None,
                                    failed_br_idx=br_idx)
@@ -2675,7 +2675,7 @@ class MainGUI(QMainWindow):
 
                 self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
                                        loadings=self.optimal_power_flow.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types,
+                                       types=self.optimal_power_flow.results.bus_types,
                                        s_branch=self.optimal_power_flow.results.Sbranch,
                                        s_bus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
@@ -2767,7 +2767,7 @@ class MainGUI(QMainWindow):
             Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.circuit.numerical_circuit.bus_types)
+                                   types=self.optimal_power_flow_time_series.results.bus_types)
 
             self.update_available_results()
 

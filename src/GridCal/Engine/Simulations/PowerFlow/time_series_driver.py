@@ -47,6 +47,8 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.time = time
 
+        self.bus_types = zeros(n, dtype=int)
+
         if nt > 0:
             self.voltage = zeros((nt, n), dtype=complex)
 
@@ -395,6 +397,8 @@ class TimeSeries(QThread):
         # do the topological computation
         calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=
                                                         self.options.branch_impedance_tolerance_mode)
+
+        time_series_results.bus_types = numerical_circuit.bus_types
 
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():

@@ -114,6 +114,8 @@ class VoltageCollapseResults:
 
         self.Sbus = np.zeros(nbus, dtype=complex)
 
+        self.bus_types = np.zeros(nbus, dtype=int)
+
         self.available_results = [ResultTypes.BusVoltage]
 
     def get_results_dict(self):
@@ -290,6 +292,8 @@ class VoltageCollapse(QThread):
         # compile the numerical circuit
         numerical_circuit = self.circuit.compile()
         numerical_input_islands = numerical_circuit.compute()
+
+        self.results.bus_types = numerical_circuit.bus_types
 
         for nc, numerical_island in enumerate(numerical_input_islands):
 

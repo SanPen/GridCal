@@ -120,6 +120,8 @@ class MonteCarlo(QThread):
         numerical_circuit = self.circuit.compile()
         numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
+        mc_results.bus_types = numerical_circuit.bus_types
+
         v_sum = zeros(n, dtype=complex)
 
         self.progress_signal.emit(0.0)
@@ -258,6 +260,8 @@ class MonteCarlo(QThread):
         numerical_circuit = self.circuit.compile()
         numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
+
+
         mc_results = MonteCarloResults(n, m)
         avg_res = PowerFlowResults()
         avg_res.initialize(n, m)
@@ -334,6 +338,7 @@ class MonteCarlo(QThread):
         # compile results
         mc_results.sbranch = avg_res.Sbranch
         # mc_results.losses = avg_res.losses
+        mc_results.bus_types = numerical_circuit.bus_types
 
         # send the finnish signal
         self.progress_signal.emit(0.0)

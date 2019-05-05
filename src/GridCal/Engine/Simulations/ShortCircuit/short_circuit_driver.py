@@ -444,6 +444,8 @@ class ShortCircuit(QRunnable):
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
+        results.bus_types = numerical_circuit.bus_types
+
         Zf = self.compile_zf(grid)
 
         if len(calculation_inputs) > 1:  # multi-island

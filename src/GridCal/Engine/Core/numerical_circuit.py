@@ -460,8 +460,13 @@ class NumericalCircuit:
 
         return states
 
-    def get_raw_circuit(self, add_generation, add_storage):
+    def get_raw_circuit(self, add_generation, add_storage) -> CalculationInputs:
+        """
 
+        :param add_generation:
+        :param add_storage:
+        :return:
+        """
         # Declare object to store the calculation inputs
         circuit = CalculationInputs(self.nbus, self.nbr, self.ntime, self.n_batt, self.n_ctrl_gen)
 
@@ -602,7 +607,7 @@ class NumericalCircuit:
         :return: list of CalculationInputs instances where each one is a circuit island
         """
 
-        # get the raw circuit wwith the inner arrays computed
+        # get the raw circuit with the inner arrays computed
         circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
         # compute the connectivity and the different admittance matrices
@@ -643,6 +648,9 @@ class NumericalCircuit:
                                            nbus=self.nbus,
                                            nbr=self.nbr,
                                            time_idx=None)
+
+        for island in calculation_islands:
+            self.bus_types[island.original_bus_idx] = island.types
 
         # return the list of islands
         return calculation_islands
@@ -708,6 +716,10 @@ class NumericalCircuit:
                                                time_idx=t_array)
 
             calculation_islands_collection[t] = calculation_islands
+
+            if t == 0:
+                for island in calculation_islands:
+                    self.bus_types[island.original_bus_idx] = island.types
 
         # return the list of islands
         return calculation_islands_collection
