@@ -19,8 +19,7 @@ from PyQt5.QtCore import QRunnable
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowMP
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.StateEstimation.measurement import MeasurementType
+from GridCal.Engine.Devices.measurement import MeasurementType
 
 
 class StateEstimationInput:
@@ -148,13 +147,10 @@ class StateEstimation(QRunnable):
         """
         se_input = StateEstimationInput()
 
-        buses = np.array(circuit.buses)
-        branches = np.array(circuit.branches)
-
         # collect the bus measurements
-        for i, bus in enumerate(buses[bus_idx]):
+        for i in bus_idx:
 
-            for m in bus.measurements:
+            for m in circuit.buses[i].measurements:
 
                 if m.measurement_type == MeasurementType.Pinj:
                     se_input.p_inj_idx.append(i)
@@ -169,12 +165,15 @@ class StateEstimation(QRunnable):
                     se_input.vm_m.append(m)
 
                 else:
-                    raise Exception('The bus ' + str(bus) + ' contains a measurement of type ' + str(m.measurement_type))
+                    raise Exception('The bus ' + str(circuit.buses[i]) + ' contains a measurement of type '
+                                    + str(m.measurement_type))
 
         # collect the branch measurements
-        for i, branch in enumerate(branches[branch_idx]):
+        for i in branch_idx:
 
-            for m in branch.measurements:
+            # branch = circuit.branches[i]
+
+            for m in circuit.branches[i].measurements:
 
                 if m.measurement_type == MeasurementType.Pflow:
                     se_input.p_flow_idx.append(i)
@@ -189,8 +188,8 @@ class StateEstimation(QRunnable):
                     se_input.i_flow.append(m)
 
                 else:
-                    raise Exception(
-                        'The branch ' + str(branch) + ' contains a measurement of type ' + str(m.measurement_type))
+                    raise Exception('The branch ' + str(circuit.branches[i]) + ' contains a measurement of type '
+                                    + str(m.measurement_type))
 
         return se_input
 
@@ -229,8 +228,8 @@ class StateEstimation(QRunnable):
 
             # Compute the branches power and the slack buses power
             Sbranch, Ibranch, loading, \
-            losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=island,
-                                                                               V=v_sol)
+             losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=island,
+                                                                                V=v_sol)
 
             # pack results into a SE results object
             results = StateEstimationResults(Sbus=Sbus,

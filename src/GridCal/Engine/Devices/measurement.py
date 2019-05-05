@@ -17,12 +17,12 @@ from enum import Enum
 
 
 class MeasurementType(Enum):
-    Pinj = 1,
-    Qinj = 2,
-    Vmag = 3,
-    Pflow = 4,
-    Qflow = 5,
-    Iflow = 6
+    Pinj = "Active power injection",
+    Qinj = "Reactive power injection",
+    Vmag = "Voltage magnitude",
+    Pflow = "Active power flow",
+    Qflow = "Reactive power flow",
+    Iflow = "Current module flow"
 
 
 class Measurement:

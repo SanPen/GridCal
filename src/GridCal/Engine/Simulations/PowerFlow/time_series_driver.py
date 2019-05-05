@@ -119,13 +119,14 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.buses_useful_for_storage = None
 
-            self.available_results = [ResultTypes.BusVoltage,
-                                      ResultTypes.BusActivePower,
-                                      ResultTypes.BusReactivePower,
-                                      ResultTypes.BranchPower,
-                                      ResultTypes.BranchCurrent,
-                                      ResultTypes.BranchLoading,
-                                      ResultTypes.BranchLosses]
+        self.available_results = [ResultTypes.BusVoltage,
+                                  ResultTypes.BusActivePower,
+                                  ResultTypes.BusReactivePower,
+                                  ResultTypes.BranchPower,
+                                  ResultTypes.BranchCurrent,
+                                  ResultTypes.BranchLoading,
+                                  ResultTypes.BranchLosses,
+                                  ResultTypes.SimulationError]
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -210,7 +211,7 @@ class TimeSeriesResults(PowerFlowResults):
         self.flow_direction[:, br_idx] = results.flow_direction
 
         if (results.error > self.error).any():
-            self.error = results.error
+            self.error += results.error
 
         self.converged = self.converged * results.converged
 
@@ -250,7 +251,8 @@ class TimeSeriesResults(PowerFlowResults):
             bus_overvoltage_frequency[self.overvoltage_idx[i]] += 1
             buses_selected_for_storage_frequency[self.buses_useful_for_storage[i]] += 1
 
-        return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, buses_selected_for_storage_frequency
+        return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
+                buses_selected_for_storage_frequency
 
     def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
         """
@@ -313,10 +315,15 @@ class TimeSeriesResults(PowerFlowResults):
                 y_label = '$\Delta$ (MVA)'
                 title = 'Battery power'
 
+            elif result_type == ResultTypes.SimulationError:
+                data = self.error
+                y_label = 'Per unit power'
+                labels = [y_label]
+                title = 'Error'
+
             else:
                 raise Exception('Result type not understood:' + str(result_type))
 
-            # df.columns = labels
             if self.time is not None:
                 df = pd.DataFrame(data=data, columns=labels, index=self.time)
             else:
