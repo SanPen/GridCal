@@ -16,6 +16,8 @@ _____________
   as with the excel files but with much faster saving and loading times. Especially suited for
   large grids with large profiles.
 
+- Added error logging for the power flow time series.
+
 - Massive refactoring of the the files in the program structure, hoping to provide a more intuitive interface.
 
 - Replace the internal profiles from Pandas DataFrames to numpy arrays.
