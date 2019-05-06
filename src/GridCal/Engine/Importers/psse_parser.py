@@ -1454,7 +1454,7 @@ class PSSeParser:
 
         if grid.REV not in self.versions:
             logger.append('The PSSe version is not compatible. Compatible versions are:' + str(self.versions))
-            return
+            return grid, logger
         else:
             version = grid.REV
 
