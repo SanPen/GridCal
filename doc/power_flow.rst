@@ -17,3 +17,4 @@ The following subsections include theory about the power flow algorithms support
     power_flow/linear_ac_power_flow
     power_flow/holomorphic_embedding
     power_flow/post_power_flow
+    power_flow/continuation_power_flow

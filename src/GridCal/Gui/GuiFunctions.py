@@ -20,10 +20,9 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import *
 from warnings import warn
 
-from GridCal.Engine.devices import BranchTypeConverter, DeviceType
-from GridCal.Engine.device_types import BranchTemplate, BranchType
-from GridCal.Engine.io_structures import ResultTypes
-from GridCal.Engine.devices import Bus
+from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
+from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Core import MultiCircuit
 
 
 class TreeDelegate(QItemDelegate):
@@ -805,11 +804,74 @@ class BranchObjectModel(ObjectsModel):
                 pass
 
 
+class ObjectHistory:
+
+    def __init__(self, max_undo_states=100):
+        """
+        Constructor
+        :param max_undo_states: maximum number of undo states
+        """
+        self.max_undo_states = max_undo_states
+        self.position = 0
+        self.undo_stack = list()
+        self.redo_stack = list()
+
+    def add_state(self, action_name, data: dict):
+        """
+        Add an undo state
+        :param action_name: name of the action that was performed
+        :param data: dictionary {column index -> profile array}
+        """
+
+        # if the stack is too long delete the oldest entry
+        if len(self.undo_stack) > (self.max_undo_states + 1):
+            self.undo_stack.pop(0)
+
+        # stack the newest entry
+        self.undo_stack.append((action_name, data))
+
+        self.position = len(self.undo_stack) - 1
+
+        print('Stored', action_name)
+
+    def redo(self):
+        """
+        Re-do table
+        :return: table instance
+        """
+        val = self.redo_stack.pop()
+        self.undo_stack.append(val)
+        return val
+
+    def undo(self):
+        """
+        Un-do table
+        :return: table instance
+        """
+        val = self.undo_stack.pop()
+        self.redo_stack.append(val)
+        return val
+
+    def can_redo(self):
+        """
+        is it possible to redo?
+        :return: True / False
+        """
+        return len(self.redo_stack) > 0
+
+    def can_undo(self):
+        """
+        Is it possible to undo?
+        :return: True / False
+        """
+        return len(self.undo_stack) > 0
+
+
 class ProfilesModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
-    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, format, parent):
+    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, format, parent, max_undo_states=100):
         """
 
         Args:
@@ -842,6 +904,12 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.formatter = lambda x: "%.2f" % x
 
+        # contains copies of the table
+        self.history = ObjectHistory(max_undo_states)
+
+        # add the initial state
+        self.add_state(columns=range(self.columnCount()), action_name='initial')
+
         self.set_delegates()
 
     def set_delegates(self):
@@ -865,6 +933,19 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         elif self.format is complex:
             delegate = ComplexDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
+
+    def update(self):
+        """
+        update
+        """
+        # row = self.rowCount()
+        # self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # # whatever code
+        # self.endInsertRows()
+
+        self.layoutAboutToBeChanged.emit()
+
+        self.layoutChanged.emit()
 
     def flags(self, index):
         """
@@ -904,8 +985,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
-                df = getattr(self.elements[index.column()], profile_property)
-                return str(df.values[index.row(), 0])
+                array = getattr(self.elements[index.column()], profile_property)
+                return str(array[index.row()])
 
         return None
 
@@ -917,10 +998,12 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        c = index.column()
+        if c not in self.non_editable_indices:
+            profile_property = self.elements[c].properties_with_profile[self.magnitude]
+            getattr(self.elements[c], profile_property)[c] = value
 
-        if index.column() not in self.non_editable_indices:
-            profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
-            getattr(self.elements[index.column()], profile_property).values[index.row(), 0] = value
+            self.add_state(columns=[c], action_name='')
         else:
             pass  # the column cannot be edited
 
@@ -960,7 +1043,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
-            formatter = self.elements[0].editable_headers[self.magnitude][1]
+            formatter = self.elements[0].editable_headers[self.magnitude].tpe
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -968,21 +1051,33 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
             rows = text.split('\n')
 
+            mod_cols = list()
+
             # gather values
             for r, row in enumerate(rows):
 
                 values = row.split('\t')
                 r2 = r + row_idx
                 for c, val in enumerate(values):
+
                     c2 = c + col_idx
+
                     try:
                         val2 = formatter(val)
-                        if c2 < n and r2 < nt:
-                            getattr(self.elements[c2], profile_property).values[r2, 0] = val2
-                        else:
-                            print('Out of profile bounds')
+                        parsed = True
                     except:
                         warn("could not parse '" + str(val) + "'")
+                        parsed = False
+
+                    if parsed:
+                        if c2 < n and r2 < nt:
+                            mod_cols.append((c2))
+                            getattr(self.elements[c2], profile_property)[r2] = val2
+                        else:
+                            print('Out of profile bounds')
+
+            if len(mod_cols) > 0:
+                self.add_state(mod_cols, 'paste')
         else:
             # there are no elements
             pass
@@ -1001,7 +1096,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             values = [None] * n
             for c in range(n):
                 names[c] = self.elements[c].name
-                values[c] = getattr(self.elements[c], profile_property).values[:, 0]
+                values[c] = getattr(self.elements[c], profile_property)
             values = np.array(values).transpose().astype(str)
 
             # header first
@@ -1020,11 +1115,91 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
+    def add_state(self, columns, action_name=''):
+        """
+        Compile data of an action and store the data in the undo history
+        :param columns: list of column indices changed
+        :param action_name: name of the action
+        :return: None
+        """
+        data = dict()
+
+        for col in columns:
+            profile_property = self.elements[col].properties_with_profile[self.magnitude]
+            data[col] = getattr(self.elements[col], profile_property).copy()
+
+        self.history.add_state(action_name, data)
+
+    def restore(self, data: dict):
+        """
+        Set profiles data from undo history
+        :param data: dictionary comming from the history
+        :return:
+        """
+        for col, array in data.items():
+            profile_property = self.elements[col].properties_with_profile[self.magnitude]
+            setattr(self.elements[col], profile_property, array)
+
+    def undo(self):
+        """
+        Un-do table changes
+        """
+        if self.history.can_undo():
+
+            action, data = self.history.undo()
+
+            self.restore(data)
+
+            print('Undo ', action)
+
+            self.update()
+
+    def redo(self):
+        """
+        Re-do table changes
+        """
+        if self.history.can_redo():
+
+            action, data = self.history.redo()
+
+            self.restore(data)
+
+            print('Redo ', action)
+
+            self.update()
+
 
 class EnumModel(QtCore.QAbstractListModel):
+
     def __init__(self, list_of_enums):
+        """
+        Enumeration model
+        :param list_of_enums: list of enumeration values to show
+        """
         QtCore.QAbstractListModel.__init__(self)
         self.items = list_of_enums
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self.items)
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid() is True:
+            if role == QtCore.Qt.DisplayRole:
+                return QtCore.QVariant(self.items[index.row()].value[0])
+            elif role == QtCore.Qt.ItemDataRole:
+                return QtCore.QVariant(self.items[index.row()].value[0])
+        return QtCore.QVariant()
+
+
+class MeasurementsModel(QtCore.QAbstractListModel):
+
+    def __init__(self, circuit: MultiCircuit):
+        """
+        Enumeration model
+        :param circuit: MultiCircuit instance
+        """
+        QtCore.QAbstractListModel.__init__(self)
+        self.circuit = circuit
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.items)

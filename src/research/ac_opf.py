@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
 
 
 class AcOPf:
 
-    def __init__(self, circuit: Circuit, voltage_band=0.1):
+    def __init__(self, circuit: MultiCircuit, voltage_band=0.1):
         """
         Linearized AC power flow, solved with a linear solver :o
         :param circuit: GridCal Circuit instance
@@ -490,19 +490,17 @@ class AcOPf:
 if __name__ == '__main__':
 
     print('Loading...')
-    grid = MultiCircuit()
+    grid = FileOpen('lynn5buspv.xlsx').open()
 
-    grid.load_file('lynn5buspv.xlsx')
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('Illinois200Bus.xlsx')
 
     grid.compile()
 
     print('Solving...')
-    for circuit in grid.circuits:
-        # declare and solve problem
-        problem = AcOPf(circuit)
-        problem.build()
-        problem.set_loads()
-        problem.solve()
-        problem.print()
+    # declare and solve problem
+    problem = AcOPf(grid)
+    problem.build()
+    problem.set_loads()
+    problem.solve()
+    problem.print()

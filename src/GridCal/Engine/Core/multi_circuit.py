@@ -13,16 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import networkx as nx
-import json
-
-from GridCal.Gui.GeneralDialogues import *
-from GridCal.Engine.devices import *
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Numerical.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.device_types import TransformerType, Tower, BranchTemplate, BranchType, \
-                                            UndergroundLineType, SequenceLineType, Wire
+from GridCal.Gui.GeneralDialogues import *
+from GridCal.Engine.Devices import *
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
 
 class MultiCircuit:
@@ -542,7 +537,7 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()):
+    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()) -> NumericalCircuit:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -636,14 +631,15 @@ class MultiCircuit:
                 circuit.load_power[i_ld] = complex(elm.P, elm.Q)
                 circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
                 circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
-                circuit.load_enabled[i_ld] = elm.active
+                circuit.load_active[i_ld] = elm.active
                 circuit.load_mttf[i_ld] = elm.mttf
                 circuit.load_mttr[i_ld] = elm.mttr
 
                 if n_time > 0:
-                    circuit.load_power_profile[:, i_ld] = elm.P_prof.values[:, 0] + 1j * elm.Q_prof.values[:, 0]
-                    circuit.load_current_profile[:, i_ld] = elm.Ir_prof.values[:, 0] + 1j * elm.Ii_prof.values[:, 0]
-                    circuit.load_admittance_profile[:, i_ld] = elm.G_prof.values[:, 0] + 1j * elm.B_prof.values[:, 0]
+                    circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+                    circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
+                    circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
+                    circuit.load_active_prof[:, i_ld] = elm.active_prof
 
                     if use_opf_vals:
                         # subtract the load shedding from the generation
@@ -655,13 +651,14 @@ class MultiCircuit:
             for elm in bus.static_generators:
                 circuit.static_gen_names[i_sta_gen] = elm.name
                 circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
-                circuit.static_gen_enabled[i_sta_gen] = elm.active
+                circuit.static_gen_active[i_sta_gen] = elm.active
                 circuit.static_gen_mttf[i_sta_gen] = elm.mttf
                 circuit.static_gen_mttr[i_sta_gen] = elm.mttr
                 # circuit.static_gen_dispatchable[i_sta_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
-                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof.values[:, 0] + 1j * elm.Q_prof.values[:, 0]
+                    circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
+                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
 
                 circuit.C_sta_gen_bus[i_sta_gen, i] = 1
                 i_sta_gen += 1
@@ -675,7 +672,7 @@ class MultiCircuit:
                 circuit.generator_qmax[i_gen] = elm.Qmax
                 circuit.generator_pmin[i_gen] = elm.Pmin
                 circuit.generator_pmax[i_gen] = elm.Pmax
-                circuit.generator_enabled[i_gen] = elm.active
+                circuit.generator_active[i_gen] = elm.active
                 circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
                 circuit.generator_mttf[i_gen] = elm.mttf
                 circuit.generator_mttr[i_gen] = elm.mttr
@@ -686,13 +683,15 @@ class MultiCircuit:
                         circuit.generator_power_profile[:, i_gen] = \
                             opf_time_series_results.controlled_generator_power[:, i_gen]
                     else:
-                        circuit.generator_power_profile[:, i_gen] = elm.P_prof.values[:, 0]
+                        circuit.generator_power_profile[:, i_gen] = elm.P_prof
+
+                    circuit.generator_active_prof[:, i_gen] = elm.active_prof
 
                     # Power factor profile
-                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof.values[:, 0]
+                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof
 
                     # Voltage profile
-                    circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof.values[:, 0]
+                    circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
 
                 circuit.C_gen_bus[i_gen, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -707,7 +706,7 @@ class MultiCircuit:
                 circuit.battery_voltage[i_batt] = elm.Vset
                 circuit.battery_qmin[i_batt] = elm.Qmin
                 circuit.battery_qmax[i_batt] = elm.Qmax
-                circuit.battery_enabled[i_batt] = elm.active
+                circuit.battery_active[i_batt] = elm.active
                 circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
                 circuit.battery_mttf[i_batt] = elm.mttf
                 circuit.battery_mttr[i_batt] = elm.mttr
@@ -727,9 +726,11 @@ class MultiCircuit:
                         circuit.battery_power_profile[:, i_batt] = \
                             opf_time_series_results.battery_power[:, i_batt]
                     else:
-                        circuit.battery_power_profile[:, i_batt] = elm.P_prof.values[:, 0]
+                        circuit.battery_power_profile[:, i_batt] = elm.P_prof
                     # Voltage profile
-                    circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof.values[:, 0]
+                    circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
+
+                circuit.battery_active_prof[:, i_batt] = elm.active_prof
 
                 circuit.C_batt_bus[i_batt, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -737,12 +738,14 @@ class MultiCircuit:
 
             for elm in bus.shunts:
                 circuit.shunt_names[i_sh] = elm.name
+                circuit.shunt_active[i_sh] = elm.active
                 circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
                 circuit.shunt_mttf[i_sh] = elm.mttf
                 circuit.shunt_mttr[i_sh] = elm.mttr
 
                 if n_time > 0:
-                    circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof.values[:, 0] + 1j * elm.B_prof.values[:, 0]
+                    circuit.shunt_active_prof[:, i_sh] = elm.active_prof
+                    circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
 
                 circuit.C_shunt_bus[i_sh, i] = 1
                 i_sh += 1
@@ -763,7 +766,7 @@ class MultiCircuit:
 
             # name and state
             circuit.branch_names[i] = branch.name
-            circuit.branch_states[i] = branch.active
+            circuit.branch_active[i] = branch.active
             circuit.br_mttf[i] = branch.mttf
             circuit.br_mttr[i] = branch.mttr
 
@@ -791,6 +794,10 @@ class MultiCircuit:
             circuit.tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
             circuit.vset[i] = branch.vset
 
+            if n_time > 0:
+                circuit.branch_active_prof[:, i] = branch.active_prof
+                circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
+
             # switches
             if branch.branch_type == BranchType.Switch:
                 circuit.switch_indices.append(i)
@@ -801,7 +808,7 @@ class MultiCircuit:
 
         # Assign and return
         self.numerical_circuit = circuit
-        return self.numerical_circuit
+        return circuit
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -920,6 +927,9 @@ class MultiCircuit:
 
             **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+
         self.buses.append(obj)
 
     def delete_bus(self, obj: Bus):
@@ -947,6 +957,10 @@ class MultiCircuit:
 
             **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+
         self.branches.append(obj)
 
     def delete_branch(self, obj: Branch):
@@ -1236,27 +1250,27 @@ class MultiCircuit:
 
                 for elm in bus.loads:
                     load_names.append(elm.name)
-                    P.append(elm.P_prof.values[:, 0])
-                    Q.append(elm.Q_prof.values[:, 0])
+                    P.append(elm.P_prof)
+                    Q.append(elm.Q_prof)
 
-                    Ir.append(elm.Ir_prof.values[:, 0])
-                    Ii.append(elm.Ii_prof.values[:, 0])
+                    Ir.append(elm.Ir_prof)
+                    Ii.append(elm.Ii_prof)
 
-                    G.append(elm.G_prof.values[:, 0])
-                    B.append(elm.B_prof.values[:, 0])
+                    G.append(elm.G_prof)
+                    B.append(elm.B_prof)
 
                 for elm in bus.controlled_generators:
                     gen_names.append(elm.name)
 
-                    P_gen.append(elm.P_prof.values[:, 0])
-                    V_gen.append(elm.Vset_prof.values[:, 0])
+                    P_gen.append(elm.P_prof)
+                    V_gen.append(elm.Vset_prof)
 
                 for elm in bus.batteries:
                     bat_names.append(elm.name)
                     gen_names.append(elm.name)
-                    P_gen.append(elm.P_prof.values[:, 0])
-                    V_gen.append(elm.Vsetprof.values[:, 0])
-                    E_batt.append(elm.energy_array.values[:, 0])
+                    P_gen.append(elm.P_prof)
+                    V_gen.append(elm.Vsetprof)
+                    E_batt.append(elm.energy_array)
 
             # form DataFrames
             P = pd.DataFrame(data=np.array(P).transpose(), index=self.time_profile, columns=load_names)

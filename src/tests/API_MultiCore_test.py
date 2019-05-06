@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine import *
-from GridCal.Engine.Drivers.power_flow_driver import *
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from multiprocessing import Pool
 
 

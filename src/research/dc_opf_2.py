@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
 
 
 class DcOpf:

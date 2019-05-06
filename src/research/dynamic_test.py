@@ -1,5 +1,5 @@
 from GridCal.Engine.calculation_engine import *
-from GridCal.Engine.Numerical.dynamic_modules import *
+from GridCal.Engine.Simulations.Dynamics.dynamic_modules import *
 
 
 grid = MultiCircuit()

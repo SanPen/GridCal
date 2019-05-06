@@ -150,7 +150,7 @@ def test_gridcal_regulator():
 
     print("Transformer types:")
     for t in grid.transformer_types:
-        print(f" - {t}: Copper losses={int(t.Copper_losses)}kW, Iron losses={int(t.Iron_losses)}kW, SC voltage={t.Short_circuit_voltage}%")
+        print(f" - {t}: Copper losses={int(t.Pcu)}kW, Iron losses={int(t.Pfe)}kW, SC voltage={t.Vsc}%")
     print()
 
     print("Losses:")

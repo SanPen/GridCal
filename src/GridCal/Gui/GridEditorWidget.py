@@ -20,12 +20,11 @@ from PyQt5.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import *
-from GridCal.Gui.GuiFunctions import *
-from GridCal.Engine.Drivers.topology_driver import reduce_grid_brute
 
+from GridCal.Engine.Devices import *
+from GridCal.Gui.GuiFunctions import *
+from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 '''
 Dependencies:
 
@@ -669,7 +668,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
                                 parent=self.diagramScene.parent().object_editor_table,
                                 editable=True, transposed=True,
-                                non_editable_attributes=self.api_object.non_editable_indices)
+                                non_editable_attributes=self.api_object.non_editable_attributes)
 
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -680,7 +679,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         :return:
         """
 
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line ]:
+        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
             # trigger the editor
             self.edit()
         elif self.api_object.branch_type is BranchType.Switch:
@@ -794,8 +793,10 @@ class BranchGraphicItem(QGraphicsLineItem):
         # Ridiculously large call to get the main GUI that hosts this bus graphic
         # time series object from the last simulation
         ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
+
         # get the index of this object
         i = self.diagramScene.circuit.branches.index(self.api_object)
+
         # plot the profiles
         self.api_object.plot_profiles(time_series=ts, my_index=i)
 
@@ -2300,10 +2301,20 @@ class BusGraphicItem(QGraphicsRectItem):
         # Ridiculously large call to get the main GUI that hosts this bus graphic
         # time series object from the last simulation
         ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
+
         # get the index of this object
         i = self.diagramScene.circuit.buses.index(self.api_object)
+
+        # get the time
+        t = self.diagramScene.circuit.time_profile
+
         # plot the profiles
-        self.api_object.plot_profiles(ax_load=None, ax_voltage=None, time_series=ts, my_index=i)
+        if t is not None:
+            self.api_object.plot_profiles(time_profile=t,
+                                          ax_load=None,
+                                          ax_voltage=None,
+                                          time_series_driver=ts,
+                                          my_index=i)
 
     def mousePressEvent(self, event):
         """

@@ -15,7 +15,7 @@
 import numpy as np
 
 
-from GridCal.Engine.Drivers.time_series_driver import TimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
 from GridCal.Engine.Core.multi_circuit import NumericalCircuit
 
 

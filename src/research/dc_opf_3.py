@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
 
 
 class DcOpf:
@@ -120,7 +120,7 @@ class DcOpf:
 
             # add the nodal demand
             for load in self.multi_circuit.buses[i].loads:
-                d -= load.S.real / self.Sbase
+                d -= load.P / self.Sbase
 
             prob.add(s == d, 'ct_node_mismatch_' + str(i))
 
@@ -181,9 +181,9 @@ class DcOpf:
         Print results
         :return:
         """
-        print('\nVoltage angles (in rad)')
+        print('\nVoltages in p.u.')
         for i, th in enumerate(self.theta):
-            print('Bus', i, '->', th.value())
+            print('Bus', i, '->', 1, '<', th.value(), 'rad')
 
         print('\nGeneration power (in MW)')
         for i, g in enumerate(self.PG):
@@ -205,11 +205,9 @@ class DcOpf:
 
 if __name__ == '__main__':
 
-    grid = MultiCircuit()
-
-    grid.load_file('lynn5buspv.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    # grid.load_file('Illinois200Bus.xlsx')
+    grid = FileOpen('lynn5buspv.xlsx').open()
+    # grid = FileOpen('IEEE30.xlsx').open()
+    # grid = FileOpen('Illinois200Bus.xlsx').open()
 
     # declare and solve problem
     problem = DcOpf(grid)

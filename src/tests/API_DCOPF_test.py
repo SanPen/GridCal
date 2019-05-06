@@ -14,10 +14,8 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine import *
-from GridCal.Engine.Drivers.opf_driver import *
-from GridCal.Engine.Drivers.opf_time_series_driver import *
-from matplotlib import pyplot as plt
-
+from GridCal.Engine.Simulations.OPF.opf_driver import *
+from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 
 # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
 # fname = 'Pegasus 89 Bus.xlsx'

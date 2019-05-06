@@ -20,3 +20,4 @@ find simulation examples and interesting information in the author's
     gui
     development
     examples
+    change_log

@@ -15,7 +15,7 @@
    height="192"
    viewBox="0 0 192 192"
    sodipodi:docname="divide.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+   inkscape:version="0.92.4 (unknown)">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -39,14 +39,14 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1851"
-     inkscape:window-height="998"
+     inkscape:window-width="1863"
+     inkscape:window-height="1025"
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.7383042"
-     inkscape:cx="-175.19615"
+     inkscape:cx="-170.56346"
      inkscape:cy="209.44504"
-     inkscape:window-x="69"
+     inkscape:window-x="57"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="g831" />
@@ -58,16 +58,16 @@
        inkscape:connector-curvature="0"
        id="path812-3"
        d="m 134.96147,95.594487 -79.795108,0.0945"
-       style="fill:none;fill-rule:evenodd;stroke:#b3b3b3;stroke-width:16;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       style="fill:none;fill-rule:evenodd;stroke:#37c8ab;stroke-width:16;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <ellipse
-       style="opacity:1;fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       style="opacity:1;fill:#37c8ab;fill-opacity:1;stroke:#37c8ab;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="path833"
        cx="95.063919"
        cy="61.41296"
        rx="8.0538263"
        ry="7.4785528" />
     <ellipse
-       style="opacity:1;fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       style="opacity:1;fill:#37c8ab;fill-opacity:1;stroke:#37c8ab;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="path833-6"
        cx="95.063919"
        cy="128.71994"

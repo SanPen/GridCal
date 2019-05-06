@@ -11,8 +11,7 @@ from PyQt5.QtWidgets import *
 
 from GridCal.Gui.Analysis.gui import *
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.devices import *
-from GridCal.Engine.device_types import BranchType
+from GridCal.Engine.Devices import *
 
 
 class PandasModel(QtCore.QAbstractTableModel):
