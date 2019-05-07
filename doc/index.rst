@@ -14,9 +14,7 @@ find simulation examples and interesting information in the author's
     about
     getting_started
     api/api
-    models
-    power_flow
-    short_circuit
+    theory/models
     gui
     development
     change_log
