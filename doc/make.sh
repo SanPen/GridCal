@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-sphinx-build . _build
+sphinx-build -E . _build

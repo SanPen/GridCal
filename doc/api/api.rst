@@ -20,8 +20,5 @@ modules*
 .. toctree::
     :maxdepth: 4
 
-    api/multicircuit
-    api/devices
-    api/device_types
-    api/io_structures
-    api/drivers
+    auto/GridCal
+
