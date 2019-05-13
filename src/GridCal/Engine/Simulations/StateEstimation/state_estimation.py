@@ -316,20 +316,21 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     max_iter = 100
     iter_ = 0
     Idn = csc_matrix(np.identity(2 * n - nvd))  # identity matrix
-    x = np.r_[np.angle(V)[pvpq], np.abs(V)]
+    # x = np.r_[np.angle(V)[pvpq], np.abs(V)]
     Va = np.angle(V)
     Vm = np.abs(V)
     lbmda = 0  # any large number
     f_obj_prev = 1e9  # very large number
 
-    update_jacobian = True
+    update_jacobian = False
     converged = False
+    err = 1e20
     nu = 2.0
 
-    while not converged and iter_ < max_iter:
+    # first computation of the jacobian and free term
+    H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
 
-        if update_jacobian:
-            H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+    while not converged and iter_ < max_iter:
 
         # measurements error
         dz = z - h
@@ -360,17 +361,8 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
         # decision function
         rho = (f_obj_prev - f_obj) / (0.5 * dx.dot(lbmda * dx + rhs))
 
-        # print('/' * 180)
-        # print('/' * 180)
-        # print('\niter ', iter_, ' >> lbmda:', lbmda, '\tfmin:', f, ' -> \ndx:', dx, '\tx', x)
-        # print('H:\n', H.todense())
-        # print('A:\n', A.todense())
-        # print('RHS:', rhs)
-        # print('z: ', z, '\nh_: ', h, '\ndz: ', dz)
-
         # lambda update
         if rho > 0:
-            update_jacobian = True
             lbmda = lbmda * max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
             nu = 2.0
 
@@ -381,13 +373,12 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
             Vm += dVm
             V = Vm * np.exp(1j * Va)
 
-            # print('Vm: ', Vm, '\nVa: ', Va, '\nV: ', V)
+            # update Jacobian
+            H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
 
         else:
-            update_jacobian = False
             lbmda = lbmda * nu
             nu = nu * 2
-            converged = False
 
         # compute the convergence
         err = np.linalg.norm(dx, np.Inf)
@@ -402,7 +393,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
 
 if __name__ == '__main__':
 
-    from GridCal.Engine.calculation_engine import *
+    from GridCal.Engine import *
 
     np.set_printoptions(linewidth=10000)
 
@@ -440,13 +431,7 @@ if __name__ == '__main__':
 
     br = [br1, br2, br3]
 
-    m_circuit.compile()
-
-    circuit = m_circuit.circuits[0]
-
     se = StateEstimation(circuit=m_circuit)
-
-    # se.run()
 
     se.run()
 
@@ -458,7 +443,7 @@ if __name__ == '__main__':
     """
     The validated output is:
     
-    V:  [0.99962926+0.j         0.97392515-0.02120941j 0.94280676-0.04521561j]
-    Vm:  [0.99962926 0.97415607 0.94389038]
-    Va:  [ 0.        -0.0217738 -0.0479218]
+    V:   [0.99962926+0.j        0.97392515-0.02120941j  0.94280676-0.04521561j]
+    Vm:  [0.99962926            0.97415607              0.94389038]
+    Va:  [ 0.                   -0.0217738              -0.0479218]
     """

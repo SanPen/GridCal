@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1212</width>
+    <width>1194</width>
     <height>799</height>
    </rect>
   </property>
@@ -553,7 +553,7 @@
              <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Data</string>
+            <string>Objects</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <property name="leftMargin">
@@ -900,196 +900,13 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab">
+          <widget class="QWidget" name="tab_7">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+             <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Simulation data</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QFrame" name="frame_18">
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_26">
-               <property name="leftMargin">
-                <number>4</number>
-               </property>
-               <property name="topMargin">
-                <number>4</number>
-               </property>
-               <property name="rightMargin">
-                <number>4</number>
-               </property>
-               <property name="bottomMargin">
-                <number>4</number>
-               </property>
-               <item>
-                <widget class="QSplitter" name="simulationDataSplitter">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <widget class="QFrame" name="frame_28">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_19">
-                   <item row="4" column="1">
-                    <spacer name="horizontalSpacer_6">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QPushButton" name="exportSimulationDataButton">
-                     <property name="toolTip">
-                      <string>Export simulation data</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QPushButton" name="compute_simulation_data_pushButton">
-                     <property name="toolTip">
-                      <string>Update the islands dispayed</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QComboBox" name="simulation_data_island_comboBox"/>
-                   </item>
-                   <item row="3" column="0" colspan="2">
-                    <widget class="QListView" name="simulationDataStructuresListView"/>
-                   </item>
-                   <item row="0" column="0" colspan="2">
-                    <widget class="QLabel" name="label_23">
-                     <property name="text">
-                      <string>Island</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0" colspan="2">
-                    <widget class="QLabel" name="label_30">
-                     <property name="text">
-                      <string>Data structures</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                 <widget class="QFrame" name="frame_29">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_28">
-                   <item>
-                    <widget class="QLabel" name="label_31">
-                     <property name="text">
-                      <string>Data table</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QTableView" name="simulationDataStructureTableView"/>
-                   </item>
-                  </layout>
-                 </widget>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_2">
-           <attribute name="icon">
-            <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
-           </attribute>
-           <attribute name="title">
-            <string>Comments</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_18">
-            <item>
-             <widget class="QTextEdit" name="comments_textEdit">
-              <property name="toolTip">
-               <string>Write here some comments about the grid</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="TimeEventsTab">
-       <attribute name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
-       </attribute>
-       <attribute name="title">
-        <string>Time events</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QTabWidget" name="tabWidget_4">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="tabPosition">
-           <enum>QTabWidget::South</enum>
-          </property>
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
-          <widget class="QWidget" name="tab_11">
-           <attribute name="title">
-            <string>Time series</string>
+            <string>Time events</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_14">
             <item>
@@ -1180,7 +997,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/undo.svg</normaloff>:/Icons/icons/undo.svg</iconset>
                  </property>
                 </widget>
@@ -1194,7 +1011,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/redo.svg</normaloff>:/Icons/icons/redo.svg</iconset>
                  </property>
                 </widget>
@@ -1315,7 +1132,7 @@
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
+                   <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1421,6 +1238,20 @@
                 </widget>
                </item>
                <item>
+                <widget class="QPushButton" name="set_profile_value_pushButton">
+                 <property name="toolTip">
+                  <string>Set the value to all or to the selection</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy2up.svg</normaloff>:/Icons/icons/copy2up.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QDoubleSpinBox" name="profile_factor_doubleSpinBox">
                  <property name="minimum">
                   <double>-999999.000000000000000</double>
@@ -1430,20 +1261,6 @@
                  </property>
                  <property name="value">
                   <double>1.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="set_profile_value_pushButton">
-                 <property name="toolTip">
-                  <string>Set the value to all or to the selection</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>:/Icons/icons/up.svg</normaloff>:/Icons/icons/up.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1496,6 +1313,145 @@
                 </widget>
                </item>
               </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>Compiled arrays</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QSplitter" name="simulationDataSplitter">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QFrame" name="frame_28">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_19">
+                <item row="4" column="1">
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QPushButton" name="exportSimulationDataButton">
+                  <property name="toolTip">
+                   <string>Export simulation data</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="compute_simulation_data_pushButton">
+                  <property name="toolTip">
+                   <string>Update the islands dispayed</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QComboBox" name="simulation_data_island_comboBox"/>
+                </item>
+                <item row="3" column="0" colspan="2">
+                 <widget class="QListView" name="simulationDataStructuresListView"/>
+                </item>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QLabel" name="label_23">
+                  <property name="text">
+                   <string>Island</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0" colspan="2">
+                 <widget class="QLabel" name="label_30">
+                  <property name="text">
+                   <string>Data structures</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_29">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_28">
+                <item>
+                 <widget class="QLabel" name="label_31">
+                  <property name="text">
+                   <string>Data table</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTableView" name="simulationDataStructureTableView"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>Comments</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_18">
+            <item>
+             <widget class="QTextEdit" name="comments_textEdit">
+              <property name="toolTip">
+               <string>Write here some comments about the grid</string>
+              </property>
              </widget>
             </item>
            </layout>
@@ -4356,7 +4312,7 @@ points from time series</string>
     <item>
      <widget class="QFrame" name="progress_frame">
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
@@ -4403,7 +4359,7 @@ points from time series</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1212</width>
+     <width>1194</width>
      <height>22</height>
     </rect>
    </property>
@@ -4697,7 +4653,7 @@ points from time series</string>
   <action name="actionBigger_nodes">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
+     <normaloff>:/Icons/icons/plus (gray).svg</normaloff>:/Icons/icons/plus (gray).svg</iconset>
    </property>
    <property name="text">
     <string>Expand</string>
@@ -4712,7 +4668,7 @@ points from time series</string>
   <action name="actionSmaller_nodes">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
+     <normaloff>:/Icons/icons/minus (gray).svg</normaloff>:/Icons/icons/minus (gray).svg</iconset>
    </property>
    <property name="text">
     <string>Shrink</string>
@@ -5046,7 +5002,7 @@ points from time series</string>
   </action>
   <action name="actionExport_all_results">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
    </property>
    <property name="text">

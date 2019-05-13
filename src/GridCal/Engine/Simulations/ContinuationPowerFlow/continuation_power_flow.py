@@ -1,7 +1,8 @@
 # This file is a python port of the routines included in MATPOWER to perform continuation power flow.
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
-from numpy import angle, exp, r_, linalg, Inf, dot
+import numpy as np
+from numpy import angle, exp, r_, linalg, Inf, dot, zeros, conj
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
@@ -309,7 +310,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     j8 = j6+1
     
     # evaluate F(x0, lam0), including Sxfr transfer/loading
-    mismatch = V * conj(Ybus * V) - Sbus - lam * Sxfr
+    mismatch = V * np.conj(Ybus * V) - Sbus - lam * Sxfr
     # F = r_[mismatch[pvpq].real, mismatch[pq].imag]
     
     # evaluate P(x0, lambda0)

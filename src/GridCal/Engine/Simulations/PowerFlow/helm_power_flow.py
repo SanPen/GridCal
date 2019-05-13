@@ -375,15 +375,11 @@ def res_2_df(V, Sbus, tpe):
 
 
 if __name__ == '__main__':
-    from GridCal.Engine.calculation_engine import *
+    from GridCal.Engine import *
 
-    grid = MultiCircuit()
-    # grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('lynn5buspv.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
+    file_name = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+
+    grid = FileOpen(file_name).open()
 
     grid.compile()
 
@@ -400,14 +396,14 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    v, err = helm_(Vbus=circuit.power_flow_input.Vbus,
-                   Sbus=circuit.power_flow_input.Sbus,
-                   Ibus=circuit.power_flow_input.Ibus,
-                   Ybus=circuit.power_flow_input.Ybus,
-                   pq=circuit.power_flow_input.pq,
-                   pv=circuit.power_flow_input.pv,
-                   ref=circuit.power_flow_input.ref,
-                   pqpv=circuit.power_flow_input.pqpv)
+    v, err = helm(Vbus=circuit.power_flow_input.Vbus,
+                  Sbus=circuit.power_flow_input.Sbus,
+                  Ibus=circuit.power_flow_input.Ibus,
+                  Ybus=circuit.power_flow_input.Ybus,
+                  pq=circuit.power_flow_input.pq,
+                  pv=circuit.power_flow_input.pv,
+                  ref=circuit.power_flow_input.ref,
+                  pqpv=circuit.power_flow_input.pqpv)
 
     print('HEM:')
     print("--- %s seconds ---" % (time.time() - start_time))
@@ -416,7 +412,7 @@ if __name__ == '__main__':
 
     # check the HELM solution: v against the NR power flow
     print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9, control_q=False)
+    options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
     power_flow = PowerFlow(grid, options)
 
     start_time = time.time()

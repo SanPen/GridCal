@@ -59,6 +59,8 @@ class MonteCarloResults:
 
         self.error_series = list()
 
+        self.bus_types = np.zeros(n, dtype=int)
+
         self.voltage = np.zeros(n)
         self.current = np.zeros(m)
         self.loading = np.zeros(m)

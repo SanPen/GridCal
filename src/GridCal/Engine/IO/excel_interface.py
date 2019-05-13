@@ -608,7 +608,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     # Set comments
     circuit.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
-    circuit.time_profile = None
+
 
     circuit.logger = list()
 
@@ -634,6 +634,13 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                     setattr(obj_, attr, conv(values[a]))
             else:
                 warn(str(obj_) + ' has no ' + attr + ' property.')
+
+    # time profile #################################################################################################
+    if 'time' in data.keys():
+        time_df = data['time']
+        circuit.time_profile = pd.to_datetime(time_df.values[:, 0])
+    else:
+        circuit.time_profile = None
 
     # Add the buses ################################################################################################
     bus_dict = dict()
@@ -998,293 +1005,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     circuit.logger += circuit.apply_all_branch_types()
 
 
-def create_data_frames_old(circuit: MultiCircuit):
-    """
-    Pack the circuit information into tables (DataFrames)
-    :param circuit: MultiCircuit instance
-    :return: dictionary of DataFrames
-    """
-    dfs = dict()
-
-    # configuration ################################################################################################
-    obj = list()
-    obj.append(['BaseMVA', circuit.Sbase])
-    obj.append(['Version', 3])
-    obj.append(['Name', circuit.name])
-    obj.append(['Comments', circuit.comments])
-    obj.append(['program', 'GridCal'])
-
-    dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
-
-    # get the master time profile
-    T = circuit.time_profile
-
-    # buses ########################################################################################################
-    obj = list()
-    names_count = dict()
-    headers = Bus().editable_headers.keys()
-    if len(circuit.buses) > 0:
-        for elm in circuit.buses:
-
-            # check name: if the name is repeated, change it so that it is not
-            if elm.name in names_count.keys():
-                names_count[elm.name] += 1
-                elm.name = elm.name + '_' + str(names_count[elm.name])
-            else:
-                names_count[elm.name] = 1
-
-            elm.retrieve_graphic_position()
-
-            obj.append(elm.get_save_data())
-
-        dta = np.array(obj)
-    else:
-        dta = np.zeros((0, len(headers)))
-
-    dfs['bus'] = pd.DataFrame(data=dta, columns=headers)
-
-    # branches #####################################################################################################
-    headers = Branch(None, None).editable_headers.keys()
-    if len(circuit.branches) > 0:
-        obj = list()
-        for elm in circuit.branches:
-            obj.append(elm.get_save_data())
-
-        dta = np.array(obj)
-    else:
-        dta = np.zeros((0, len(headers)))
-
-    dfs['branch'] = pd.DataFrame(data=dta, columns=headers)
-
-    # loads ########################################################################################################
-    headers = Load().editable_headers.keys()
-    loads = circuit.get_loads()
-    if len(loads) > 0:
-        obj = list()
-        p_profiles = None
-        q_profiles = None
-        ir_profiles = None
-        ii_profiles = None
-        g_profiles = None
-        b_profiles = None
-        hdr = list()
-        for elm in loads:
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if p_profiles is None and elm.P_prof is not None:
-                    p_profiles = elm.P_prof
-                    q_profiles = elm.Q_prof
-                    ir_profiles = elm.Ir_prof
-                    ii_profiles = elm.Ii_prof
-                    g_profiles = elm.G_prof
-                    b_profiles = elm.B_prof
-                else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof]
-                    q_profiles = np.c_[q_profiles, elm.Q_prof]
-                    ir_profiles = np.c_[ir_profiles, elm.Ir_prof]
-                    ii_profiles = np.c_[ii_profiles, elm.Ii_prof]
-                    g_profiles = np.c_[g_profiles, elm.G_prof]
-                    b_profiles = np.c_[b_profiles, elm.B_prof]
-
-        dfs['load'] = pd.DataFrame(data=obj, columns=headers)
-
-        if p_profiles is not None:
-            dfs['load_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
-            dfs['load_Q_prof'] = pd.DataFrame(data=q_profiles, columns=hdr, index=T)
-            dfs['load_Ir_prof'] = pd.DataFrame(data=ir_profiles, columns=hdr, index=T)
-            dfs['load_Ii_prof'] = pd.DataFrame(data=ii_profiles, columns=hdr, index=T)
-            dfs['load_G_prof'] = pd.DataFrame(data=g_profiles, columns=hdr, index=T)
-            dfs['load_B_prof'] = pd.DataFrame(data=b_profiles, columns=hdr, index=T)
-    else:
-        dfs['load'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # static generators ############################################################################################
-    headers = StaticGenerator().editable_headers.keys()
-    st_gen = circuit.get_static_generators()
-    if len(st_gen) > 0:
-        obj = list()
-        hdr = list()
-        p_profiles = None
-        q_profiles = None
-        for elm in st_gen:
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if p_profiles is None and elm.Sprof is not None:
-                    p_profiles = elm.P_prof
-                    q_profiles = elm.Q_prof
-                else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof]
-                    q_profiles = np.c_[q_profiles, elm.Q_prof]
-
-        dfs['static_generator'] = pd.DataFrame(data=obj, columns=headers)
-
-        if p_profiles is not None:
-            dfs['static_generator_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
-            dfs['static_generator_Q_prof'] = pd.DataFrame(data=q_profiles, columns=hdr, index=T)
-    else:
-        dfs['static_generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # battery ######################################################################################################
-    batteries = circuit.get_batteries()
-    headers = Battery().editable_headers.keys()
-
-    if len(batteries) > 0:
-        obj = list()
-        hdr = list()
-        v_set_profiles = None
-        p_profiles = None
-        for elm in batteries:
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if p_profiles is None and elm.P_prof is not None:
-                    p_profiles = elm.P_prof
-                    v_set_profiles = elm.Vset_prof
-                else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof]
-                    v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof]
-        dfs['battery'] = pd.DataFrame(data=obj, columns=headers)
-
-        if p_profiles is not None:
-            dfs['battery_Vset_prof'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
-            dfs['battery_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
-    else:
-        dfs['battery'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # controlled generator #########################################################################################
-    con_gen = circuit.get_generators()
-    headers = Generator().editable_headers.keys()
-
-    if len(con_gen) > 0:
-        obj = list()
-        hdr = list()
-        v_set_profiles = None
-        p_profiles = None
-        for elm in con_gen:
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None and elm.P_prof is not None:
-                if p_profiles is None:
-                    p_profiles = elm.P_prof
-                    v_set_profiles = elm.Vset_prof
-                else:
-                    p_profiles = np.c_[p_profiles, elm.P_prof]
-                    v_set_profiles = np.c_[v_set_profiles, elm.Vset_prof]
-
-        dfs['generator'] = pd.DataFrame(data=obj, columns=headers)
-
-        if p_profiles is not None:
-            dfs['generator_Vset_prof'] = pd.DataFrame(data=v_set_profiles, columns=hdr, index=T)
-            dfs['generator_P_prof'] = pd.DataFrame(data=p_profiles, columns=hdr, index=T)
-    else:
-        dfs['generator'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # shunt ########################################################################################################
-
-    shunts = circuit.get_shunts()
-    headers = Shunt().editable_headers.keys()
-
-    if len(shunts) > 0:
-        obj = list()
-        hdr = list()
-        g_profiles = None
-        b_profiles = None
-        for elm in shunts:
-            obj.append(elm.get_save_data())
-            hdr.append(elm.name)
-            if T is not None:
-                if g_profiles is None and elm.G_prof is not None:
-                    g_profiles = elm.G_prof
-                    b_profiles = elm.B_prof
-                else:
-                    g_profiles = np.c_[g_profiles, elm.G_prof]
-                    b_profiles = np.c_[b_profiles, elm.B_prof]
-
-        dfs['shunt'] = pd.DataFrame(data=obj, columns=headers)
-
-        if g_profiles is not None:
-            dfs['shunt_G_prof'] = pd.DataFrame(data=g_profiles, columns=hdr, index=T)
-            dfs['shunt_B_prof'] = pd.DataFrame(data=b_profiles, columns=hdr, index=T)
-    else:
-
-        dfs['shunt'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # wires ########################################################################################################
-
-    elements = circuit.wire_types
-    headers = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0, phase=0).editable_headers.keys()
-
-    if len(elements) > 0:
-        obj = list()
-        for elm in elements:
-            obj.append(elm.get_save_data())
-
-        dfs['wires'] = pd.DataFrame(data=obj, columns=headers)
-    else:
-        dfs['wires'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # overhead cable types ######################################################################################
-
-    elements = circuit.overhead_line_types
-    headers = Tower().get_save_headers()
-
-    if len(elements) > 0:
-        obj = list()
-        for elm in elements:
-            elm.get_save_data(dta_list=obj)
-
-        dfs['overhead_line_types'] = pd.DataFrame(data=obj, columns=headers)
-    else:
-        dfs['overhead_line_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # underground cable types ######################################################################################
-
-    elements = circuit.underground_cable_types
-    headers = UndergroundLineType().editable_headers.keys()
-
-    if len(elements) > 0:
-        obj = list()
-        for elm in elements:
-            obj.append(elm.get_save_data())
-
-        dfs['underground_cable_types'] = pd.DataFrame(data=obj, columns=headers)
-    else:
-        dfs['underground_cable_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # sequence line types ##########################################################################################
-
-    elements = circuit.sequence_line_types
-    headers = SequenceLineType().editable_headers.keys()
-
-    if len(elements) > 0:
-        obj = list()
-        for elm in elements:
-            obj.append(elm.get_save_data())
-
-        dfs['sequence_line_types'] = pd.DataFrame(data=obj, columns=headers)
-    else:
-        dfs['sequence_line_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    # transformer types ############################################################################################
-
-    elements = circuit.transformer_types
-    headers = TransformerType().editable_headers.keys()
-
-    if len(elements) > 0:
-        obj = list()
-        hdr = list()
-        for elm in elements:
-            obj.append(elm.get_save_data())
-
-        dfs['transformer_types'] = pd.DataFrame(data=obj, columns=headers)
-    else:
-        dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
-
-    return dfs
-
-
 def get_objects_dictionary(circuit=MultiCircuit()):
     """
 
@@ -1332,6 +1052,7 @@ def get_allowed_sheets(circuit=MultiCircuit()):
                            'underground_cable_types': None,
                            'sequence_line_types': None,
                            'transformer_types': None,
+                           'time': None,
                            'load_Sprof': complex,
                            'load_Iprof': complex,
                            'load_Zprof': complex,
@@ -1523,6 +1244,12 @@ def create_data_frames(circuit: MultiCircuit):
         dfs['transformer_types'] = pd.DataFrame(data=obj, columns=headers)
     else:
         dfs['transformer_types'] = pd.DataFrame(data=np.zeros((0, len(headers))), columns=headers)
+
+    # Time #########################################################################################################
+
+    if circuit.time_profile is not None:
+        time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
+        dfs['time'] = time_df
 
     return dfs
 

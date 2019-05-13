@@ -15,7 +15,7 @@
    height="192"
    viewBox="0 0 192 192"
    sodipodi:docname="multiply.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+   inkscape:version="0.92.4 (unknown)">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -39,14 +39,14 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1851"
-     inkscape:window-height="998"
+     inkscape:window-width="1863"
+     inkscape:window-height="1025"
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.7383042"
-     inkscape:cx="-74.178672"
+     inkscape:cx="-179.74132"
      inkscape:cy="209.44504"
-     inkscape:window-x="69"
+     inkscape:window-x="57"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="g831" />
@@ -58,12 +58,12 @@
        inkscape:connector-curvature="0"
        id="path812-3"
        d="M 128.27157,122.07037 71.060637,66.445036"
-       style="fill:none;fill-rule:evenodd;stroke:#b3b3b3;stroke-width:16;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       style="fill:none;fill-rule:evenodd;stroke:#37c8ab;stroke-width:16;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path812-3-3"
        d="M 71.065141,122.075 128.26707,66.440407"
-       style="fill:none;fill-rule:evenodd;stroke:#b3b3b3;stroke-width:16;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       style="fill:none;fill-rule:evenodd;stroke:#37c8ab;stroke-width:16;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

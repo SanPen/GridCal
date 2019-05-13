@@ -9,14 +9,12 @@ find simulation examples and interesting information in the author's
 `simulation guide <https://github.com/SanPen/PracticalGridModeling/raw/master/practical_grid_modeling.pdf>`_.
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
     about
     getting_started
-    api
-    models
-    power_flow
-    short_circuit
+    api/api
+    theory/models
     gui
     development
-    examples
+    change_log

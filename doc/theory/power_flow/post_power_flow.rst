@@ -48,7 +48,7 @@ And also the branches loading in per unit as:
 
 The variables are:
 
-- :math:`\textbf{Y}_f, \textbf{Y}_t`: *From* and *To* bus-branch admittance matrices, see section :ref:`admittance_matrices`.
+- :math:`\textbf{Y}_f, \textbf{Y}_t`: *From* and *To* bus-branch admittance matrices
 - :math:`\textbf{I}_f`: Array of currents at the *from* buses in p.u.
 - :math:`\textbf{I}_t`: Array of currents at the *to* buses in p.u.
 - :math:`\textbf{S}_f`: Array of powers at the *from* buses in p.u.

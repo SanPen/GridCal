@@ -138,7 +138,7 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Cascading
     ####################################################################################################################
-
+    print('Running Cascading...')
     cascade = Cascading(main_circuit.copy(), options,
                         max_additional_islands=5,
                         cascade_type_=CascadeType.LatinHypercube,

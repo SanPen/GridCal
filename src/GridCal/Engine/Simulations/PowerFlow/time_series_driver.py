@@ -47,6 +47,8 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.time = time
 
+        self.bus_types = zeros(n, dtype=int)
+
         if nt > 0:
             self.voltage = zeros((nt, n), dtype=complex)
 
@@ -117,13 +119,14 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.buses_useful_for_storage = None
 
-            self.available_results = [ResultTypes.BusVoltage,
-                                      ResultTypes.BusActivePower,
-                                      ResultTypes.BusReactivePower,
-                                      ResultTypes.BranchPower,
-                                      ResultTypes.BranchCurrent,
-                                      ResultTypes.BranchLoading,
-                                      ResultTypes.BranchLosses]
+        self.available_results = [ResultTypes.BusVoltage,
+                                  ResultTypes.BusActivePower,
+                                  ResultTypes.BusReactivePower,
+                                  ResultTypes.BranchPower,
+                                  ResultTypes.BranchCurrent,
+                                  ResultTypes.BranchLoading,
+                                  ResultTypes.BranchLosses,
+                                  ResultTypes.SimulationError]
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -208,7 +211,7 @@ class TimeSeriesResults(PowerFlowResults):
         self.flow_direction[:, br_idx] = results.flow_direction
 
         if (results.error > self.error).any():
-            self.error = results.error
+            self.error += results.error
 
         self.converged = self.converged * results.converged
 
@@ -248,7 +251,8 @@ class TimeSeriesResults(PowerFlowResults):
             bus_overvoltage_frequency[self.overvoltage_idx[i]] += 1
             buses_selected_for_storage_frequency[self.buses_useful_for_storage[i]] += 1
 
-        return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, buses_selected_for_storage_frequency
+        return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
+                buses_selected_for_storage_frequency
 
     def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
         """
@@ -277,12 +281,12 @@ class TimeSeriesResults(PowerFlowResults):
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusActivePower:
-                data = self.Sbus[:, indices].real
+                data = self.S[:, indices].real
                 y_label = '(MW)'
                 title = 'Bus active power '
 
             elif result_type == ResultTypes.BusReactivePower:
-                data = self.Sbus[:, indices].imag
+                data = self.S[:, indices].imag
                 y_label = '(MVAr)'
                 title = 'Bus reactive power '
 
@@ -311,10 +315,15 @@ class TimeSeriesResults(PowerFlowResults):
                 y_label = '$\Delta$ (MVA)'
                 title = 'Battery power'
 
+            elif result_type == ResultTypes.SimulationError:
+                data = self.error
+                y_label = 'Per unit power'
+                labels = [y_label]
+                title = 'Error'
+
             else:
                 raise Exception('Result type not understood:' + str(result_type))
 
-            # df.columns = labels
             if self.time is not None:
                 df = pd.DataFrame(data=data, columns=labels, index=self.time)
             else:
@@ -396,6 +405,8 @@ class TimeSeries(QThread):
         calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=
                                                         self.options.branch_impedance_tolerance_mode)
 
+        time_series_results.bus_types = numerical_circuit.bus_types
+
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():
 
@@ -449,7 +460,7 @@ class TimeSeries(QThread):
                             # add the controlled storage power if we are controlling the storage devices
                             if self.options.dispatch_storage:
 
-                                if it < len(calculation_input.original_time_idx):
+                                if (it+1) < len(calculation_input.original_time_idx):
                                     # compute the time delta: the time values come in nanoseconds
                                     dt = (calculation_input.time_array[it + 1]
                                           - calculation_input.time_array[it]).value * 1e-9 / 3600.0

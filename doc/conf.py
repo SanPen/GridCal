@@ -16,6 +16,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../src'))
 
+from GridCal.__version__ import __GridCal_VERSION__
 
 # -- Project information -----------------------------------------------------
 
@@ -24,9 +25,9 @@ copyright = '2019, Santiago Peñate Vera'
 author = 'Santiago Peñate Vera'
 
 # The short X.Y version
-version = '3.1'
+version = __GridCal_VERSION__
 # The full version, including alpha/beta/rc tags
-release = '3.1.5'
+release = __GridCal_VERSION__
 
 
 # -- General configuration ---------------------------------------------------

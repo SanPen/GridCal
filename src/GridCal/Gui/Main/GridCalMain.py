@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+
 # GUI imports
 from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
@@ -25,12 +26,7 @@ from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 
 # Engine imports
-from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-from GridCal.Engine.Simulations.OPF.opf_driver import *
-from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 # from GridCal.Engine.OptimizationDriver import *
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
-from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 # from GridCal.Engine.StateEstimationDriver import *
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
@@ -43,6 +39,12 @@ from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Engine.IO.file_handler import *
 import GridCal.Engine.plot_config as plot_config
+from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
+from GridCal.Engine.Simulations.OPF.opf_driver import *
+from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
+from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
+
 
 import gc
 import os.path
@@ -780,7 +782,7 @@ class MainGUI(QMainWindow):
         vmin = 0
         vmax = 1.2
         vrng = vmax - vmin
-        vabs = abs(voltages)
+        vabs = np.abs(voltages)
         vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
         Sbase = self.circuit.Sbase
@@ -1155,7 +1157,7 @@ class MainGUI(QMainWindow):
             if filename != '':
 
                 # if the user did not enter the extension, add it automatically
-                name, file_extension = os.path.splitext(self.file_name)
+                name, file_extension = os.path.splitext(filename)
 
                 extension = dict()
                 extension['Excel (*.xlsx)'] = '.xlsx'
@@ -2037,7 +2039,7 @@ class MainGUI(QMainWindow):
                                    s_branch=self.power_flow.results.Sbranch,
                                    voltages=self.power_flow.results.voltage,
                                    loadings=self.power_flow.results.loading,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.power_flow.results.bus_types,
                                    losses=self.power_flow.results.losses)
             self.update_available_results()
 
@@ -2134,7 +2136,7 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
                                    s_branch=self.short_circuit.results.Sbranch,
                                    voltages=self.short_circuit.results.voltage,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.short_circuit.results.bus_types,
                                    loadings=self.short_circuit.results.loading)
             self.update_available_results()
         else:
@@ -2274,7 +2276,7 @@ class MainGUI(QMainWindow):
                                        s_branch=self.voltage_stability.results.Sbranch,
                                        voltages=V,
                                        loadings=self.voltage_stability.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types)
+                                       types=self.voltage_stability.results.bus_types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
@@ -2351,7 +2353,7 @@ class MainGUI(QMainWindow):
             Sbranch = self.time_series.results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.circuit.numerical_circuit.bus_types)
+                                   types=self.time_series.results.bus_types)
 
             self.update_available_results()
 
@@ -2414,7 +2416,7 @@ class MainGUI(QMainWindow):
             self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
                                    loadings=self.monte_carlo.results.loading,
                                    s_branch=self.monte_carlo.results.sbranch,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.monte_carlo.results.bus_types,
                                    s_bus=None)
             self.update_available_results()
 
@@ -2473,7 +2475,7 @@ class MainGUI(QMainWindow):
         if not self.latin_hypercube_sampling.__cancel__:
             self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
                                    loadings=self.latin_hypercube_sampling.results.loading,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=self.latin_hypercube_sampling.results.bus_types,
                                    s_branch=self.latin_hypercube_sampling.results.sbranch,
                                    s_bus=None)
             self.update_available_results()
@@ -2586,7 +2588,7 @@ class MainGUI(QMainWindow):
             # print grid
             self.color_based_of_pf(voltages=results.voltage,
                                    loadings=results.loading,
-                                   types=self.circuit.numerical_circuit.bus_types,
+                                   types=results.bus_types,
                                    s_branch=results.sbranch,
                                    s_bus=None,
                                    failed_br_idx=br_idx)
@@ -2673,7 +2675,7 @@ class MainGUI(QMainWindow):
 
                 self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
                                        loadings=self.optimal_power_flow.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types,
+                                       types=self.optimal_power_flow.results.bus_types,
                                        s_branch=self.optimal_power_flow.results.Sbranch,
                                        s_bus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
@@ -2765,7 +2767,7 @@ class MainGUI(QMainWindow):
             Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
 
             self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.circuit.numerical_circuit.bus_types)
+                                   types=self.optimal_power_flow_time_series.results.bus_types)
 
             self.update_available_results()
 
@@ -2935,7 +2937,6 @@ class MainGUI(QMainWindow):
     def post_reduce_grid(self):
         """
         Actions after reducing
-        :return:
         """
 
         self.remove_simulation(SimulationTypes.TopologyReduction_run)
@@ -2951,8 +2952,6 @@ class MainGUI(QMainWindow):
 
         """
         Add storage markers to the schematic
-        Returns:
-
         """
 
         if len(self.circuit.buses) > 0:

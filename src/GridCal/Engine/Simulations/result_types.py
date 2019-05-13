@@ -56,3 +56,5 @@ class ResultTypes(Enum):
 
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
+
+    SimulationError = 'Error', DeviceType.BusDevice

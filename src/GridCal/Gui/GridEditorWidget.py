@@ -20,11 +20,11 @@ from PySide2.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+
 from GridCal.Engine.Devices import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
-
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 '''
 Dependencies:
 
@@ -668,7 +668,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
                                 parent=self.diagramScene.parent().object_editor_table,
                                 editable=True, transposed=True,
-                                non_editable_attributes=self.api_object.non_editable_indices)
+                                non_editable_attributes=self.api_object.non_editable_attributes)
 
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -679,7 +679,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         :return:
         """
 
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line ]:
+        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
             # trigger the editor
             self.edit()
         elif self.api_object.branch_type is BranchType.Switch:

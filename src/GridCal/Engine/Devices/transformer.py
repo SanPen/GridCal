@@ -46,7 +46,7 @@ class TransformerType(EditableDevice):
 
     """
 
-    def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0, copper_losses=0, iron_losses=0,
+    def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0.001, copper_losses=0, iron_losses=0,
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
                  name='TransformerType', tpe=BranchType.Transformer):
         """

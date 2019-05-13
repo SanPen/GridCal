@@ -64,7 +64,7 @@ class PowerFlowResults:
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, tap_module=None,
                  flow_direction=None, error=None, converged=None, Qpv=None, battery_power_inc=None, inner_it=None,
-                 outer_it=None, elapsed=None, methods=None):
+                 outer_it=None, elapsed=None, methods=None, bus_types=None):
 
         self.Sbus = Sbus
 
@@ -83,6 +83,8 @@ class PowerFlowResults:
         self.tap_module = tap_module
 
         self.error = error
+
+        self.bus_types = bus_types
 
         self.converged = converged
 
@@ -390,7 +392,10 @@ class PowerFlowResults:
                 polar = False
 
             elif result_type == ResultTypes.BatteryPower:
-                y = self.battery_power_inc[indices]
+                if self.battery_power_inc is not None:
+                    y = self.battery_power_inc[indices]
+                else:
+                    y = np.zeros(len(indices))
                 y_label = '(MVA)'
                 title = 'Battery power'
                 polar = False

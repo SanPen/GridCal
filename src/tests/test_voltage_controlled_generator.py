@@ -146,7 +146,7 @@ def test_pv_1():
 
     print("Transformer types:")
     for t in grid.transformer_types:
-        print(f" - {t}: Copper losses={int(t.Copper_losses)}kW, Iron losses={int(t.Iron_losses)}kW, SC voltage={t.Short_circuit_voltage}%")
+        print(f" - {t}: Copper losses={int(t.Pcu)}kW, Iron losses={int(t.Pfe)}kW, SC voltage={t.Vsc}%")
     print()
 
     print("Losses:")
@@ -297,7 +297,7 @@ def test_pv_2():
 
     print("Transformer types:")
     for t in grid.transformer_types:
-        print(f" - {t}: Copper losses={int(t.Copper_losses)}kW, Iron losses={int(t.Iron_losses)}kW, SC voltage={t.Short_circuit_voltage}%")
+        print(f" - {t}: Copper losses={int(t.Pcu)}kW, Iron losses={int(t.Pfe)}kW, SC voltage={t.Vsc}%")
     print()
 
     print("Losses:")
@@ -451,7 +451,7 @@ def test_pv_3():
 
     print("Transformer types:")
     for t in grid.transformer_types:
-        print(f" - {t}: Copper losses={int(t.Copper_losses)}kW, Iron losses={int(t.Iron_losses)}kW, SC voltage={t.Short_circuit_voltage}%")
+        print(f" - {t}: Copper losses={int(t.Pcu)}kW, Iron losses={int(t.Pfe)}kW, SC voltage={t.Vsc}%")
     print()
 
     print("Losses:")

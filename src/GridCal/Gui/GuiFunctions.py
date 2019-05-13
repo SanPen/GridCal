@@ -20,9 +20,9 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
 from warnings import warn
 
-from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType
+from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Devices import Bus
+from GridCal.Engine.Core import MultiCircuit
 
 
 class TreeDelegate(QItemDelegate):
@@ -1170,7 +1170,12 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
 
 class EnumModel(QtCore.QAbstractListModel):
+
     def __init__(self, list_of_enums):
+        """
+        Enumeration model
+        :param list_of_enums: list of enumeration values to show
+        """
         QtCore.QAbstractListModel.__init__(self)
         self.items = list_of_enums
 
@@ -1184,6 +1189,28 @@ class EnumModel(QtCore.QAbstractListModel):
             elif role == QtCore.Qt.ItemDataRole:
                 return QtCore.QVariant(self.items[index.row()].value[0])
         return ""  # QtCore.QVariant()
+
+
+class MeasurementsModel(QtCore.QAbstractListModel):
+
+    def __init__(self, circuit: MultiCircuit):
+        """
+        Enumeration model
+        :param circuit: MultiCircuit instance
+        """
+        QtCore.QAbstractListModel.__init__(self)
+        self.circuit = circuit
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self.items)
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid() is True:
+            if role == QtCore.Qt.DisplayRole:
+                return QtCore.QVariant(self.items[index.row()].value[0])
+            elif role == QtCore.Qt.ItemDataRole:
+                return QtCore.QVariant(self.items[index.row()].value[0])
+        return QtCore.QVariant()
 
 
 def get_list_model(lst, checks=False):

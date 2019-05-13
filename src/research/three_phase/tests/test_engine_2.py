@@ -26,6 +26,13 @@ if __name__ == "__main__":
                         Y=np.array([0]),
                         conn=[0]))
 
+    # b3 = Bus("B3", number_of_phases=3, Vnom=10.0)
+    # b3.add_load(LoadSIY("",
+    #                     S=np.array([1.2, 1, 1.3]) / 100,
+    #                     I=np.array([0, 0, 0]),
+    #                     Y=np.array([0, 0, 0]),
+    #                     conn=[0, 1, 2]))
+
     b4 = Bus("B4", number_of_phases=2, Vnom=10.0)
     b4.add_load(LoadSIY("",
                         S=np.array([2.2 + 1.2j, 2.2 + 1.2j]) / 100,

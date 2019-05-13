@@ -21,7 +21,7 @@ import numpy as np
 # from timeit import default_timer as timer
 from PySide2.QtCore import QRunnable
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+
 from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class SolverType(Enum):
@@ -1473,15 +1474,15 @@ class PowerFlowMP:
         results = PowerFlowResults()
         results.initialize(n, m)
 
-        if len(numerical_circuit.islands) > 1:
+        if len(calculation_inputs) > 1:
 
             # simulate each island and merge the results
             for i, calculation_input in enumerate(calculation_inputs):
 
                 if len(calculation_input.ref) > 0:
 
-                    bus_original_idx = numerical_circuit.islands[i]
-                    branch_original_idx = numerical_circuit.island_branches[i]
+                    bus_original_idx = calculation_input.original_bus_idx
+                    branch_original_idx = calculation_input.original_branch_idx
 
                     # run circuit power flow
                     res = self.run_pf(calculation_input,
@@ -1526,6 +1527,8 @@ class PowerFlowMP:
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction,
                                                        branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+
+        results.bus_types = numerical_circuit.bus_types
 
         if len(calculation_inputs) > 1:
 

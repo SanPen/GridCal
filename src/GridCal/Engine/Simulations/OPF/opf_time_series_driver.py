@@ -64,6 +64,8 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbranch = zeros((nt, m), dtype=complex)
 
+        self.bus_types = zeros(n, dtype=int)
+
         # self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
         #                           'Branch loading', 'Branch overloads', 'Load shedding',
         #                           'Controlled generators power', 'Batteries power']
@@ -272,6 +274,9 @@ class OptimalPowerFlowTimeSeries(QThread):
         @return:
         """
 
+        numerical_circuit = self.grid.compile()
+        islands = numerical_circuit.compute()
+
         if self.grid.time_profile is not None:
 
             # declare the results
@@ -282,6 +287,8 @@ class OptimalPowerFlowTimeSeries(QThread):
                                                              nbat=len(self.grid.get_batteries()),
                                                              nload=len(self.grid.get_loads()),
                                                              time=self.grid.time_profile)
+
+            self.results.bus_types = numerical_circuit.bus_types
 
             # declare LP problem
             if self.options.solver == SolverType.DC_OPF:

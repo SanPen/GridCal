@@ -84,6 +84,8 @@ class LatinHypercubeSampling(QThread):
         numerical_circuit = self.circuit.compile()
         numerical_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
+        lhs_results.bus_types = numerical_circuit.bus_types
+
         max_iter = batch_size * len(numerical_islands)
         Sbase = self.circuit.Sbase
         it = 0
@@ -257,6 +259,8 @@ class LatinHypercubeSampling(QThread):
 
         # lhs_results the averaged branch magnitudes
         lhs_results.sbranch = avg_res.Sbranch
+
+        lhs_results.bus_types = numerical_circuit.bus_types
         # Ibranch = avg_res.Ibranch
         # loading = avg_res.loading
         # lhs_results.losses = avg_res.losses

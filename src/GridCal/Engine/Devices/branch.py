@@ -515,6 +515,8 @@ class Branch(EditableDevice):
 
         b.measurements = self.measurements
 
+        b.active_prof = self.active_prof.copy()
+
         return b
 
     def tap_up(self):
@@ -610,7 +612,10 @@ class Branch(EditableDevice):
                 zsh *= base_change
 
                 # compute the shunt admittance
-                y_shunt = 1.0 / zsh
+                if zsh.real != 0.0 or zsh.imag != 0.0:
+                    y_shunt = 1.0 / zsh
+                else:
+                    y_shunt = complex(0, 0)
 
                 self.R = np.round(z_series.real, 6)
                 self.X = np.round(z_series.imag, 6)
