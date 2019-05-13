@@ -116,7 +116,7 @@ class ComboDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        val = index.model().data(index)
+        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
         idx = self.object_names.index(val)
         editor.setCurrentIndex(idx)
         editor.blockSignals(False)
@@ -133,7 +133,7 @@ class TextDelegate(QItemDelegate):
     """
     def __init__(self, parent):
         """
-        Constructoe
+        Constructor
         :param parent: QTableView parent object
         """
         QItemDelegate.__init__(self, parent)
@@ -149,7 +149,7 @@ class TextDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        val = index.model().data(index)
+        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
         editor.setText(val)
         editor.blockSignals(False)
 
@@ -186,7 +186,7 @@ class FloatDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        val = float(index.model().data(index))
+        val = float(index.model().data(index, role=QtCore.Qt.DisplayRole))
         editor.setValue(val)
         editor.blockSignals(False)
 
@@ -255,7 +255,7 @@ class ComplexDelegate(QItemDelegate):
         :return:
         """
         editor.blockSignals(True)
-        val = complex(index.model().data(index))
+        val = complex(index.model().data(index, role=QtCore.Qt.DisplayRole))
         editor.children()[1].setValue(val.real)
         editor.children()[2].setValue(val.imag)
         editor.blockSignals(False)
@@ -510,8 +510,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 F(i, delegate)
 
             if tpe is BranchTemplate:
-                delegate = ComboDelegate(self.parent, conv.values, conv.options)
-                F(i, delegate)
+                F(i, None)
 
             elif tpe is float:
                 delegate = FloatDelegate(self.parent)
@@ -530,13 +529,11 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 if len(self.non_editable_attributes) == 0:
                     self.non_editable_attributes.append(self.attributes[i])
             else:
-                pass
+                F(i, None)
 
     def update(self):
         """
-        Add wire
-        :param wire:
-        :return:
+        update table
         """
         row = self.rowCount()
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
@@ -606,7 +603,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             return getattr(self.objects[obj_idx], attr)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=None):
         """
         Get the data to display
         :param index:
@@ -619,7 +616,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=None):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -801,7 +798,7 @@ class BranchObjectModel(ObjectsModel):
                 if len(self.non_editable_attributes) == 0:
                     self.non_editable_attributes.append(self.attributes[i])
             else:
-                pass
+                F(i, None)
 
 
 class ObjectHistory:
@@ -1188,7 +1185,7 @@ class EnumModel(QtCore.QAbstractListModel):
                 return QtCore.QVariant(self.items[index.row()].value[0])
             elif role == QtCore.Qt.ItemDataRole:
                 return QtCore.QVariant(self.items[index.row()].value[0])
-        return ""  # QtCore.QVariant()
+        return QtCore.QVariant()
 
 
 class MeasurementsModel(QtCore.QAbstractListModel):

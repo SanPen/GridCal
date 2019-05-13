@@ -1471,7 +1471,7 @@ class MainGUI(QMainWindow):
         """
         On click, display the objects properties
         """
-        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
+        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
         self.view_template_controls(False)
 
@@ -1511,8 +1511,15 @@ class MainGUI(QMainWindow):
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
-        mdl = ObjectsModel(elements, elm.editable_headers,
-                           parent=self.ui.dataStructureTableView, editable=True, non_editable_attributes=[1])
+        if elm_type == 'Branches':
+            mdl = BranchObjectModel(elements, elm.editable_headers,
+                                    parent=self.ui.dataStructureTableView, editable=True,
+                                    non_editable_attributes=elm.non_editable_attributes)
+        else:
+
+            mdl = ObjectsModel(elements, elm.editable_headers,
+                               parent=self.ui.dataStructureTableView, editable=True,
+                               non_editable_attributes=elm.non_editable_attributes)
 
         self.ui.dataStructureTableView.setModel(mdl)
         self.view_templates(False)
@@ -1555,7 +1562,7 @@ class MainGUI(QMainWindow):
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1 and len(self.circuit.buses) > 0:
-            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
+            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
@@ -3322,7 +3329,7 @@ class MainGUI(QMainWindow):
         """
         Update the available results
         """
-        elm = self.ui.result_listView.selectedIndexes()[0].data()
+        elm = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
         lst = self.available_results_dict[elm]
         # mdl = get_list_model(lst)
         mdl = EnumModel(lst)
@@ -3339,7 +3346,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.result_listView.selectedIndexes()) > 0 and \
                 len(self.ui.result_type_listView.selectedIndexes()) > 0:
 
-            study = self.ui.result_listView.selectedIndexes()[0].data()
+            study = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
             study_type = self.ui.result_type_listView.model().items[self.ui.result_type_listView.selectedIndexes()[0].row()]
 
             if study_type.value[1] == DeviceType.BusDevice:
@@ -3595,7 +3602,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             if tpe == 'Overhead lines':
 
@@ -3652,7 +3659,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             # get the selected index
             idx = self.ui.catalogueTableView.currentIndex().row()
@@ -3697,7 +3704,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             # get the selected index
             idx = self.ui.catalogueTableView.currentIndex().row()
@@ -3746,7 +3753,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the clicked type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             if tpe == 'Overhead lines':
                 elm = Tower()
@@ -3807,12 +3814,12 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueTreeView.selectedIndexes()) > 0:
 
             # tree parent (category, i.e. Transformers)
-            type_class = self.ui.catalogueTreeView.selectedIndexes()[0].parent().data()
+            type_class = self.ui.catalogueTreeView.selectedIndexes()[0].parent().data(role=QtCore.Qt.DisplayRole)
 
             if type_class is not None:
 
                 # template object name
-                tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data()
+                tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
                 # get the compatible BRanch Type that matches the type class
                 compatible_types = {'Wires': None,
