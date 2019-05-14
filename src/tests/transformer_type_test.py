@@ -1,4 +1,4 @@
-from GridCal.Engine.device_types import TransformerType
+from GridCal.Engine import *
 
 
 Vhv = 24  # primary voltage in kV

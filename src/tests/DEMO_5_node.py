@@ -14,7 +14,6 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine import *
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 
 np.set_printoptions(precision=4)
 grid = MultiCircuit()
@@ -23,25 +22,26 @@ grid = MultiCircuit()
 # Add buses
 bus1 = Bus('Bus 1', vnom=20)
 # bus1.is_slack = True
-bus1.controlled_generators.append(Generator('Slack Generator', voltage_module=1.0))
 grid.add_bus(bus1)
 
+gen1 = Generator('Slack Generator', voltage_module=1.0)
+grid.add_generator(bus1, gen1)
+
 bus2 = Bus('Bus 2', vnom=20)
-bus2.loads.append(Load('load 2', P=40, Q=20))
 grid.add_bus(bus2)
+grid.add_load(bus2, Load('load 2', P=40, Q=20))
 
 bus3 = Bus('Bus 3', vnom=20)
-bus3.loads.append(Load('load 3', P=25, Q=15))
 grid.add_bus(bus3)
+grid.add_load(bus3, Load('load 3', P=25, Q=15))
 
 bus4 = Bus('Bus 4', vnom=20)
-bus4.loads.append(Load('load 4', P=40, Q=20))
 grid.add_bus(bus4)
+grid.add_load(bus4, Load('load 4', P=40, Q=20))
 
 bus5 = Bus('Bus 5', vnom=20)
-bus5.loads.append(Load('load 5', P=50, Q=20))
 grid.add_bus(bus5)
-
+grid.add_load(bus5, Load('load 5', P=50, Q=20))
 
 # add branches (Lines in this case)
 grid.add_branch(Branch(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
