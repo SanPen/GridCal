@@ -19,7 +19,7 @@ equivalent currents in all the nodes. The equivalent admittance matrix
 to the slack nodes. Likewise the removed elements conform the
 (:math:`\textbf{Y}_{slack}`) matrix.
 
-.. figure:: ../figures/matrix-reduction.png
+.. figure:: ../../figures/matrix-reduction.png
     :alt: Matrix reduction (VD: Slack, PV: Voltage controlled, PQ: Power controlled)
 
     Matrix reduction (VD: Slack, PV: Voltage controlled, PQ: Power controlled)

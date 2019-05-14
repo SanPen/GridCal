@@ -218,7 +218,7 @@ structures are depicted in the figure
 
 .. _coefficients_structure:
 
-.. figure:: ../figures/coefficients_structure.png
+.. figure:: ../../figures/coefficients_structure.png
     :alt: Coefficients Structure
 
     Coefficients Structure
