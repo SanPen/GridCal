@@ -276,14 +276,22 @@ class PandasModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with a pandas data frame
     """
-    def __init__(self, data, parent=None, editable=False, editable_min_idx=-1, decimals=6):
+    def __init__(self, data: pd.DataFrame, parent=None, editable=False, editable_min_idx=-1, decimals=6):
+        """
+
+        :param data:
+        :param parent:
+        :param editable:
+        :param editable_min_idx:
+        :param decimals:
+        """
         QtCore.QAbstractTableModel.__init__(self, parent)
-        self.data = np.array(data.values)
+        self.data = data.values
         self._cols = data.columns
         self.index = data.index.values
         self.editable = editable
         self.editable_min_idx = editable_min_idx
-        self.r, self.c = np.shape(self.data)
+        self.r, self.c = self.data.shape
         self.isDate = False
         if self.r > 0 and self.c > 0:
             if isinstance(self.index[0], np.datetime64):
@@ -301,18 +309,34 @@ class PandasModel(QtCore.QAbstractTableModel):
             return QtCore.Qt.ItemIsEnabled
 
     def rowCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return self.r
 
     def columnCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return self.c
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 val = self.data[index.row(), index.column()]
                 if isinstance(val, str):
                     return val
-                if isinstance(val, complex):
+                elif isinstance(val, complex):
                     if val.real != 0 or val.imag != 0:
                         return val.__format__(self.format_string)
                     else:
@@ -325,10 +349,24 @@ class PandasModel(QtCore.QAbstractTableModel):
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
         self.data[index.row(), index.column()] = value
-        # print("setData", index.row(), index.column(), value)
+        return None
 
     def headerData(self, p_int, orientation, role):
+        """
+
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 return self._cols[p_int]
@@ -1182,10 +1220,8 @@ class EnumModel(QtCore.QAbstractListModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid() is True:
             if role == QtCore.Qt.DisplayRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-            elif role == QtCore.Qt.ItemDataRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-        return QtCore.QVariant()
+                return self.items[index.row()].value[0]
+        return None
 
 
 class MeasurementsModel(QtCore.QAbstractListModel):
@@ -1204,10 +1240,8 @@ class MeasurementsModel(QtCore.QAbstractListModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid() is True:
             if role == QtCore.Qt.DisplayRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-            elif role == QtCore.Qt.ItemDataRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-        return QtCore.QVariant()
+                return self.items[index.row()].value[0]
+        return None
 
 
 def get_list_model(lst, checks=False):
