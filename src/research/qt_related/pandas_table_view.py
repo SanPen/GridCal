@@ -20,16 +20,16 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param decimals:
         """
         QtCore.QAbstractTableModel.__init__(self, parent)
-        self.data = data.values
-        self._cols = data.columns
-        self.index = data.index.values
+        self.data_c = data.values
+        self.cols_c = data.columns
+        self.index_c = data.index.values
         self.editable = editable
         self.editable_min_idx = editable_min_idx
-        self.r, self.c = self.data.shape
+        self.r, self.c = self.data_c.shape
         self.isDate = False
         if self.r > 0 and self.c > 0:
-            if isinstance(self.index[0], np.datetime64):
-                self.index = pd.to_datetime(self.index)
+            if isinstance(self.index_c[0], np.datetime64):
+                self.index_c = pd.to_datetime(self.index_c)
                 self.isDate = True
 
         self.format_string = '.' + str(decimals) + 'f'
@@ -67,7 +67,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = self.data[index.row(), index.column()]
+                val = self.data_c[index.row(), index.column()]
                 if isinstance(val, str):
                     return val
                 elif isinstance(val, complex):
@@ -90,7 +90,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        self.data[index.row(), index.column()] = value
+        self.data_c[index.row(), index.column()] = value
         return None
 
     def headerData(self, p_int, orientation, role):
@@ -103,15 +103,15 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                return self._cols[p_int]
+                return self.cols_c[p_int]
             elif orientation == QtCore.Qt.Vertical:
-                if self.index is None:
+                if self.index_c is None:
                     return p_int
                 else:
                     if self.isDate:
-                        return self.index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index[p_int])
+                        return str(self.index_c[p_int])
         return None
 
     def copy_to_column(self, row, col):
@@ -121,7 +121,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         @param col: Column of the value
         @return: Nothing
         """
-        self.data[:, col] = self.data[row, col]
+        self.data_c[:, col] = self.data_c[row, col]
 
 
 if __name__ == '__main__':

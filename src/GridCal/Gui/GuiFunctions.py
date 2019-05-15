@@ -286,16 +286,16 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param decimals:
         """
         QtCore.QAbstractTableModel.__init__(self, parent)
-        self.data = data.values
-        self._cols = data.columns
-        self.index = data.index.values
+        self.data_c = data.values
+        self.cols_c = data.columns
+        self.index_c = data.index.values
         self.editable = editable
         self.editable_min_idx = editable_min_idx
-        self.r, self.c = self.data.shape
+        self.r, self.c = self.data_c.shape
         self.isDate = False
         if self.r > 0 and self.c > 0:
-            if isinstance(self.index[0], np.datetime64):
-                self.index = pd.to_datetime(self.index)
+            if isinstance(self.index_c[0], np.datetime64):
+                self.index_c = pd.to_datetime(self.index_c)
                 self.isDate = True
 
         self.format_string = '.' + str(decimals) + 'f'
@@ -333,7 +333,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = self.data[index.row(), index.column()]
+                val = self.data_c[index.row(), index.column()]
                 if isinstance(val, str):
                     return val
                 elif isinstance(val, complex):
@@ -356,7 +356,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        self.data[index.row(), index.column()] = value
+        self.data_c[index.row(), index.column()] = value
         return None
 
     def headerData(self, p_int, orientation, role):
@@ -369,15 +369,15 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                return self._cols[p_int]
+                return self.cols_c[p_int]
             elif orientation == QtCore.Qt.Vertical:
-                if self.index is None:
+                if self.index_c is None:
                     return p_int
                 else:
                     if self.isDate:
-                        return self.index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index[p_int])
+                        return str(self.index_c[p_int])
         return None
 
     def copy_to_column(self, row, col):
@@ -387,7 +387,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         @param col: Column of the value
         @return: Nothing
         """
-        self.data[:, col] = self.data[row, col]
+        self.data_c[:, col] = self.data_c[row, col]
 
     def get_data(self, mode=None):
         """
@@ -398,37 +398,37 @@ class PandasModel(QtCore.QAbstractTableModel):
         Returns: index, columns, data
 
         """
-        n = len(self._cols)
+        n = len(self.cols_c)
 
         if n > 0:
             # gather values
-            if type(self._cols) == pd.Index:
-                names = self._cols.values
+            if type(self.cols_c) == pd.Index:
+                names = self.cols_c.values
 
                 if len(names) > 0:
                     if type(names[0]) == ResultTypes:
                         names = [val.name for val in names]
 
-            elif type(self._cols) == ResultTypes:
-                names = [val.name for val in self._cols]
+            elif type(self.cols_c) == ResultTypes:
+                names = [val.name for val in self.cols_c]
             else:
-                names = [val.name for val in self._cols]
+                names = [val.name for val in self.cols_c]
 
-            if self.data.dtype == complex:
+            if self.data_c.dtype == complex:
 
                 if mode == 'real':
-                    values = self.data.real
+                    values = self.data_c.real
                 elif mode == 'imag':
-                    values = self.data.imag
+                    values = self.data_c.imag
                 elif mode == 'abs':
-                    values = np.abs(self.data)
+                    values = np.abs(self.data_c)
                 else:
-                    values = np.abs(self.data)
+                    values = np.abs(self.data_c)
 
             else:
-                values = self.data
+                values = self.data_c
 
-            return self.index, names, values
+            return self.index_c, names, values
         else:
             # there are no elements
             return list(), list(), list()
@@ -454,7 +454,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         Args:
             mode: 'real', 'imag', 'abs'
         """
-        n = len(self._cols)
+        n = len(self.cols_c)
 
         if n > 0:
 
