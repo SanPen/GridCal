@@ -85,7 +85,7 @@ class ReactivePowerControlMode(Enum):
         1) Bus i is a PQ bus in the previous iteration and its
            reactive power was fixed at its lower limit:
 
-            If its voltage magnitude Vi ≥ Viset, then
+            If its voltage magnitude Vi >= Viset, then
 
                 it is still a PQ bus at current iteration and set Qi = Qimin .
 
@@ -93,9 +93,9 @@ class ReactivePowerControlMode(Enum):
 
                     compare Qi with the upper and lower limits.
 
-                    If Qi ≥ Qimax , then
+                    If Qi >= Qimax , then
                         it is still a PQ bus but set Qi = Qimax .
-                    If Qi ≤ Qimin , then
+                    If Qi <= Qimin , then
                         it is still a PQ bus and set Qi = Qimin .
                     If Qimin < Qi < Qi max , then
                         it is switched to PV bus, set Vinew = Viset.
@@ -103,16 +103,16 @@ class ReactivePowerControlMode(Enum):
         2) Bus i is a PQ bus in the previous iteration and
            its reactive power was fixed at its upper limit:
 
-            If its voltage magnitude Vi ≤ Viset , then:
+            If its voltage magnitude Vi <= Viset , then:
                 bus i still a PQ bus and set Q i = Q i max.
 
                 If Vi > Viset , then
 
                     Compare between Qi and its upper/lower limits
 
-                    If Qi ≥ Qimax , then
+                    If Qi >= Qimax , then
                         it is still a PQ bus and set Q i = Qimax .
-                    If Qi ≤ Qimin , then
+                    If Qi <= Qimin , then
                         it is still a PQ bus but let Qi = Qimin in current iteration.
                     If Qimin < Qi < Qimax , then
                         it is switched to PV bus and set Vinew = Viset
@@ -121,9 +121,9 @@ class ReactivePowerControlMode(Enum):
 
             Compare Q i with its upper and lower limits.
 
-            If Qi ≥ Qimax , then
+            If Qi >= Qimax , then
                 it is switched to PQ and set Qi = Qimax .
-            If Qi ≤ Qimin , then
+            If Qi <= Qimin , then
                 it is switched to PQ and set Qi = Qimin .
             If Qi min < Qi < Qimax , then
                 it is still a PV bus.

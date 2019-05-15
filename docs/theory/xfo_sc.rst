@@ -3,7 +3,9 @@
 Transformer definition from SC test values
 ==========================================
 
-The transformers are modeled as π branches too. In order to get the series impedance and shunt admittance of the transformer to match the branch model, it is advised to transform the specification sheet values of the device into the desired values. The values to take from the specs sheet are:
+The transformers are modeled as π branches too. In order to get the series impedance and shunt admittance of
+the transformer to match the branch model, it is advised to transform the specification sheet values of the device
+into the desired values. The values to take from the specs sheet are:
 
 - :math:`S_n`: Nominal power in MVA.
 - :math:`U_{hv}`: Voltage at the high-voltage side in kV.
