@@ -22,7 +22,6 @@ from warnings import warn
 
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Core import MultiCircuit
 
 
 class TreeDelegate(QItemDelegate):
@@ -1226,7 +1225,7 @@ class EnumModel(QtCore.QAbstractListModel):
 
 class MeasurementsModel(QtCore.QAbstractListModel):
 
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit):
         """
         Enumeration model
         :param circuit: MultiCircuit instance

@@ -58,3 +58,17 @@ class ResultTypes(Enum):
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
 
     SimulationError = 'Error', DeviceType.BusDevice
+
+
+class SimulationTypes(Enum):
+    PowerFlow_run = 'power flow'
+    ShortCircuit_run = 'Short circuit'
+    MonteCarlo_run = 'Monte Carlo'
+    TimeSeries_run = 'Time series power flow'
+    VoltageCollapse_run = 'Voltage collapse'
+    LatinHypercube_run = 'Latin Hypercube'
+    Cascade_run = 'Cascade'
+    OPF_run = 'Optimal power flow'
+    OPFTimeSeries_run = 'OPF Time series'
+    TransientStability_run = 'Transient stability'
+    TopologyReduction_run = 'Topology reduction'
