@@ -16,7 +16,6 @@ if __name__ == '__main':
     # update ui handler file
     call(['pyuic5', '-x', filename_ui, '-o', filename])
 
-
     # replace annoying text import
     # Read in the file
     with open(filename, 'r') as file:

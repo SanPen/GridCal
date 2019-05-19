@@ -2,6 +2,11 @@
 Change log
 ==========
 
+version 3.3.1
+_____________
+- The tower names are displayed correctly now
+
+
 version 3.3.0
 _____________
 
