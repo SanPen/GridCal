@@ -110,6 +110,9 @@ htmlhelp_basename = 'GridCaldoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
+fh = open('latex_preamble.tex', 'r+')
+PREAMBLE = fh.read()
+fh.close()
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
@@ -126,7 +129,11 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+
+    # Additional stuff for the LaTeX preamble.
+    'preamble': PREAMBLE,
 }
+
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,

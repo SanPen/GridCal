@@ -1,5 +1,17 @@
+Using GridCal as a library
+==========================
+
+You can use the calculation engine directly or from other applications:
+
+.. code:: ipython3
+
+    from GridCal.Engine import *
+
+This will provide access to all the objects in the internal engine of **GridCal**.
+Refer to the :ref:`API Reference<api>` and the :ref:`examples` for more details.
+
 Power systems scripting
-=======================
+-----------------------
 
 GridCal is a Python library for power systems simulation. As such you can seamlessly use
 the graphical user interface (GUI) or use GridCal as a library to program your
@@ -7,7 +19,7 @@ own software. Using GridCal as a library might be useful when automatizing tasks
 you need to build a custom study or new tool.
 
 5-node grid creation script
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example creates the five-node grid from the fantastic book
 "Power System Load Flow Analysis" and runs a power flow. After the power flow is executed,
@@ -79,7 +91,7 @@ the results are printed on the console.
 
 
 Other examples
---------------
+^^^^^^^^^^^^^^
 
 Examples are included in **Tutorials** folder of the GitHub repository. In addition,
 the tests under **src/tests** may serve as valuable examples.

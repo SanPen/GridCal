@@ -1,7 +1,7 @@
 .. _run_with_interface:
 
-Running GridCal with a GUI
-==========================
+Running GridCal
+===============
 
 You must have Python 3.6 or higher installed to work with the GUI. From a Python
 console:
@@ -10,6 +10,8 @@ console:
 
     from GridCal.ExecuteGridCal import run
     run()
+
+To see a walk through the user interface go to Graphical User Interface.
 
 Windows
 -------
@@ -31,3 +33,5 @@ To run **GridCal** with GUI directly from a system console, type:
 .. code::
 
     python3 -c "from GridCal.ExecuteGridCal import run; run()"
+
+
