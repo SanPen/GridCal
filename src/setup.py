@@ -6,7 +6,6 @@ import platform
 sys.path.insert(0, os.path.abspath('src'))
 from GridCal.__version__ import __GridCal_VERSION__
 
-
 def make_linux_desktop_file(version_, comment):
     """
     Makes the linux desktop entry
@@ -94,12 +93,12 @@ install_requires = ["numpy>=1.14.0",
                     "scikit-learn>=0.18",
                     "geopy>=1.16",
                     "pytest>=3.8",
-                    "PIL>=5.1.0"
                     ]
 
 if platform.system() == 'Windows':
     # list the packages (On windows anaconda is assumed)
-    install_requires.pop(6)  # remove PyQt5 since it may conflict with anaconda's installation
+    # install_requires.pop(6)  # remove PyQt5 since it may conflict with anaconda's installation
+    pass
 else:
     # make the desktop entry
     make_linux_desktop_file(version_=version, comment=description)
@@ -108,8 +107,8 @@ else:
     pass
 
 # Read the license
-data_files.append('src/LICENSE.txt')
-with open('src/LICENSE.txt', 'r') as f:
+data_files.append('LICENSE.txt')
+with open('LICENSE.txt', 'r') as f:
     license_text = f.read()
 
 setup(

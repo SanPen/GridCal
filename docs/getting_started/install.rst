@@ -62,3 +62,18 @@ hash:
     python -m pip install -e 'git+git://github.com/SanPen/GridCal.git@5c4dcb96998ae882412b5fee977cf0cff7a40d3c#egg=GridCal&subdirectory=UnderDevelopment'
 
 Here :code:`5c4dcb96998ae882412b5fee977cf0cff7a40d3c` is the **git** version.
+
+PySide2 vs. PyQt5
+------------------
+
+Now GridCal has been completely ported to PySide2.
+The reason for this is because PySide2 has been endorsed by Qt as the main python
+wrapper for the Qt Library and therefore it is expected to have the best support.
+
+However there are plenty of other libraries that depend of PyQt5 which is an alternative wrapper for the Qt
+framework (and used to be the best one though)
+
+After some test, I can tell you that if GridCal does not work and you installed Python via the
+Anaconda distribution, go to your anaconda main folder and remove the file `qt.conf`. No other real solution out
+is there really.
+

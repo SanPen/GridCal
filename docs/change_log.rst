@@ -2,7 +2,12 @@
 Change log
 ==========
 
-version 3.3.1
+Notice that some versions skip numbers. This is not an error,
+this is because the stupid policy of pypi to not allow to correct packages.
+Hence if something goes wrong, you need to re-upload with a new version number.
+
+
+version 3.3.4
 _____________
 
 - The tower names are displayed correctly now.
