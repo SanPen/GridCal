@@ -907,6 +907,9 @@ class MainGUI(QMainWindow):
         self.ui.resultsPlot.clear()
         self.ui.resultsTableView.setModel(None)
 
+        # clear the comments
+        self.ui.comments_textEdit.setText("")
+
         # clear the simulation objects
         self.power_flow = None
         self.short_circuit = None
@@ -3394,8 +3397,8 @@ class MainGUI(QMainWindow):
                 else:
                     f = file[0]
 
-            mdl.save_to_excel(f, mode=mode)
-            print('Copied!')
+                mdl.save_to_excel(f, mode=mode)
+                print('Saved!')
         else:
             self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 

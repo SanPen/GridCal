@@ -4,7 +4,14 @@ Change log
 
 version 3.3.1
 _____________
-- The tower names are displayed correctly now
+
+- The tower names are displayed correctly now.
+
+- Completely switched from PyQt5 to PySide2.
+
+- Added support for PSS/e RAW file format version 29.
+
+- Overall bug fix.
 
 
 version 3.3.0
