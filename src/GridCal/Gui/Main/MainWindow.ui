@@ -581,7 +581,27 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_15">
-                <item row="2" column="0">
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_15">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>Object types</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
                  <widget class="QPushButton" name="analyze_objects_pushButton">
                   <property name="toolTip">
                    <string>Launch the grid analysis interface</string>
@@ -595,28 +615,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="1">
-                 <spacer name="horizontalSpacer_15">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="1" column="0" colspan="2">
+                <item row="1" column="0" colspan="4">
                  <widget class="QListView" name="dataStructuresListView"/>
-                </item>
-                <item row="0" column="0" colspan="2">
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Object types</string>
-                  </property>
-                 </widget>
                 </item>
                </layout>
               </widget>
@@ -638,21 +638,7 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="2" column="0">
-                  <widget class="QPushButton" name="setValueToColumnButton">
-                   <property name="toolTip">
-                    <string>Set value to column</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="2">
+                 <item row="0" column="2">
                   <spacer name="horizontalSpacer_3">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -665,7 +651,7 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="2" column="3">
+                 <item row="0" column="4">
                   <widget class="QPushButton" name="processTemplatesPushButton">
                    <property name="toolTip">
                     <string>Process templates</string>
@@ -679,7 +665,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="4">
+                 <item row="1" column="0" colspan="6">
+                  <widget class="QTableView" name="dataStructureTableView"/>
+                 </item>
+                 <item row="0" column="5">
                   <widget class="QPushButton" name="viewTemplatesButton">
                    <property name="toolTip">
                     <string>View templates catalogue</string>
@@ -693,19 +682,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" colspan="5">
-                  <widget class="QTableView" name="dataStructureTableView"/>
-                 </item>
-                 <item row="0" column="0" colspan="5">
-                  <widget class="QLabel" name="label_4">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
+                 <item row="0" column="0">
+                  <widget class="QPushButton" name="setValueToColumnButton">
+                   <property name="toolTip">
+                    <string>Set value to column</string>
                    </property>
                    <property name="text">
-                    <string>Data</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
                    </property>
                   </widget>
                  </item>
@@ -718,66 +705,42 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QVBoxLayout" name="verticalLayout_33">
-                 <item>
+                <layout class="QGridLayout" name="gridLayout_2">
+                 <item row="0" column="2">
+                  <spacer name="horizontalSpacer_17">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>278</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QPushButton" name="assignTemplateButton">
+                   <property name="toolTip">
+                    <string>Assign template to selected element</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="4">
+                  <widget class="QTreeView" name="catalogueTreeView"/>
+                 </item>
+                 <item row="0" column="3">
                   <widget class="QLabel" name="label_53">
                    <property name="text">
                     <string>Templates</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QTreeView" name="catalogueTreeView"/>
-                 </item>
-                 <item>
-                  <widget class="QFrame" name="frame_37">
-                   <property name="frameShape">
-                    <enum>QFrame::NoFrame</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Raised</enum>
-                   </property>
-                   <layout class="QHBoxLayout" name="horizontalLayout_10">
-                    <property name="leftMargin">
-                     <number>1</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>1</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>1</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>1</number>
-                    </property>
-                    <item>
-                     <widget class="QPushButton" name="assignTemplateButton">
-                      <property name="toolTip">
-                       <string>Assign template to selected element</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <spacer name="horizontalSpacer_17">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>278</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                   </layout>
                   </widget>
                  </item>
                 </layout>
@@ -811,6 +774,12 @@
                <layout class="QVBoxLayout" name="verticalLayout_19">
                 <item>
                  <widget class="QLabel" name="label_51">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>24</height>
+                   </size>
+                  </property>
                   <property name="text">
                    <string>Data structures</string>
                   </property>
@@ -836,21 +805,20 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="2">
-                 <widget class="QPushButton" name="catalogue_edit_pushButton">
-                  <property name="toolTip">
-                   <string>Edit</string>
+                <item row="0" column="1">
+                 <spacer name="horizontalSpacer_16">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
                   </property>
-                  <property name="icon">
-                   <iconset resource="icons.qrc">
-                    <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
-                  </property>
-                 </widget>
+                 </spacer>
                 </item>
-                <item row="2" column="1">
+                <item row="0" column="2">
                  <widget class="QPushButton" name="catalogue_add_pushButton">
                   <property name="toolTip">
                    <string>Add</string>
@@ -864,7 +832,21 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="3">
+                <item row="0" column="3">
+                 <widget class="QPushButton" name="catalogue_edit_pushButton">
+                  <property name="toolTip">
+                   <string>Edit</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
                  <widget class="QPushButton" name="catalogue_delete_pushButton">
                   <property name="toolTip">
                    <string>Delete</string>
@@ -878,20 +860,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <spacer name="horizontalSpacer_16">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="1" column="0" colspan="4">
+                <item row="1" column="0" rowspan="2" colspan="5">
                  <widget class="QTableView" name="catalogueTableView"/>
                 </item>
                </layout>
@@ -1351,35 +1320,14 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_19">
-                <item row="4" column="1">
-                 <spacer name="horizontalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QPushButton" name="exportSimulationDataButton">
-                  <property name="toolTip">
-                   <string>Export simulation data</string>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="icons.qrc">
-                    <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
-                  </property>
-                 </widget>
-                </item>
                 <item row="1" column="0">
                  <widget class="QPushButton" name="compute_simulation_data_pushButton">
+                  <property name="maximumSize">
+                   <size>
+                    <width>32</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>Update the islands dispayed</string>
                   </property>
@@ -1392,20 +1340,40 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QComboBox" name="simulation_data_island_comboBox"/>
-                </item>
-                <item row="3" column="0" colspan="2">
+                <item row="3" column="0" colspan="4">
                  <widget class="QListView" name="simulationDataStructuresListView"/>
                 </item>
-                <item row="0" column="0" colspan="2">
+                <item row="1" column="1">
+                 <widget class="QPushButton" name="exportSimulationDataButton">
+                  <property name="maximumSize">
+                   <size>
+                    <width>32</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Export simulation data</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2" colspan="2">
+                 <widget class="QComboBox" name="simulation_data_island_comboBox"/>
+                </item>
+                <item row="0" column="0" colspan="4">
                  <widget class="QLabel" name="label_23">
                   <property name="text">
                    <string>Island</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0" colspan="2">
+                <item row="2" column="0" colspan="4">
                  <widget class="QLabel" name="label_30">
                   <property name="text">
                    <string>Data structures</string>

@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QTreeView, QFileSystemModel, QApplication
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PySide2.QtWidgets import QTreeView, QFileSystemModel, QApplication
+from PySide2 import QtCore, QtWidgets, QtGui
 import os
 
 

@@ -15,18 +15,17 @@
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
-from PyQt5.QtGui import *
+from PySide2.QtWidgets import *
+from PySide2 import QtCore, QtWidgets, QtGui
+from PySide2.QtGui import *
 from warnings import warn
 
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Core import MultiCircuit
 
 
 class TreeDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
@@ -43,7 +42,7 @@ class TreeDelegate(QItemDelegate):
         # dictionary of lists
         self.data = data
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def double_click(self):
         print('double clicked!')
         self.commitData.emit(self.sender())
@@ -84,7 +83,7 @@ class TreeDelegate(QItemDelegate):
 
 
 class ComboDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
@@ -104,7 +103,7 @@ class ComboDelegate(QItemDelegate):
         # object description to display in the combobox. i.e. ['True', 'False']
         self.object_names = object_names
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def currentIndexChanged(self):
         self.commitData.emit(self.sender())
 
@@ -116,7 +115,7 @@ class ComboDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        val = index.model().data(index)
+        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
         idx = self.object_names.index(val)
         editor.setCurrentIndex(idx)
         editor.blockSignals(False)
@@ -126,19 +125,19 @@ class ComboDelegate(QItemDelegate):
 
 
 class TextDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QLineEdit in every
     cell of the column to which it's applied
     """
     def __init__(self, parent):
         """
-        Constructoe
+        Constructor
         :param parent: QTableView parent object
         """
         QItemDelegate.__init__(self, parent)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def returnPressed(self):
         self.commitData.emit(self.sender())
 
@@ -149,7 +148,7 @@ class TextDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        val = index.model().data(index)
+        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
         editor.setText(val)
         editor.blockSignals(False)
 
@@ -158,7 +157,7 @@ class TextDelegate(QItemDelegate):
 
 
 class FloatDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QDoubleSpinBox in every
     cell of the column to which it's applied
@@ -172,7 +171,7 @@ class FloatDelegate(QItemDelegate):
         self.min = min_
         self.max = max_
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def returnPressed(self):
         self.commitData.emit(self.sender())
 
@@ -186,7 +185,7 @@ class FloatDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        val = float(index.model().data(index))
+        val = float(index.model().data(index, role=QtCore.Qt.DisplayRole))
         editor.setValue(val)
         editor.blockSignals(False)
 
@@ -195,7 +194,7 @@ class FloatDelegate(QItemDelegate):
 
 
 class ComplexDelegate(QItemDelegate):
-    commitData = QtCore.pyqtSignal(object)
+    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning Complex Editor in every
     cell of the column to which it's applied
@@ -207,7 +206,7 @@ class ComplexDelegate(QItemDelegate):
         """
         QItemDelegate.__init__(self, parent)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def returnPressed(self):
         """
 
@@ -255,7 +254,7 @@ class ComplexDelegate(QItemDelegate):
         :return:
         """
         editor.blockSignals(True)
-        val = complex(index.model().data(index))
+        val = complex(index.model().data(index, role=QtCore.Qt.DisplayRole))
         editor.children()[1].setValue(val.real)
         editor.children()[2].setValue(val.imag)
         editor.blockSignals(False)
@@ -276,18 +275,26 @@ class PandasModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with a pandas data frame
     """
-    def __init__(self, data, parent=None, editable=False, editable_min_idx=-1, decimals=6):
+    def __init__(self, data: pd.DataFrame, parent=None, editable=False, editable_min_idx=-1, decimals=6):
+        """
+
+        :param data:
+        :param parent:
+        :param editable:
+        :param editable_min_idx:
+        :param decimals:
+        """
         QtCore.QAbstractTableModel.__init__(self, parent)
-        self.data = np.array(data.values)
-        self._cols = data.columns
-        self.index = data.index.values
+        self.data_c = data.values
+        self.cols_c = data.columns
+        self.index_c = data.index.values
         self.editable = editable
         self.editable_min_idx = editable_min_idx
-        self.r, self.c = np.shape(self.data)
+        self.r, self.c = self.data_c.shape
         self.isDate = False
         if self.r > 0 and self.c > 0:
-            if isinstance(self.index[0], np.datetime64):
-                self.index = pd.to_datetime(self.index)
+            if isinstance(self.index_c[0], np.datetime64):
+                self.index_c = pd.to_datetime(self.index_c)
                 self.isDate = True
 
         self.format_string = '.' + str(decimals) + 'f'
@@ -301,18 +308,34 @@ class PandasModel(QtCore.QAbstractTableModel):
             return QtCore.Qt.ItemIsEnabled
 
     def rowCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return self.r
 
     def columnCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return self.c
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = self.data[index.row(), index.column()]
+                val = self.data_c[index.row(), index.column()]
                 if isinstance(val, str):
                     return val
-                if isinstance(val, complex):
+                elif isinstance(val, complex):
                     if val.real != 0 or val.imag != 0:
                         return val.__format__(self.format_string)
                     else:
@@ -325,21 +348,35 @@ class PandasModel(QtCore.QAbstractTableModel):
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
-        self.data[index.row(), index.column()] = value
-        # print("setData", index.row(), index.column(), value)
+        """
+
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+        self.data_c[index.row(), index.column()] = value
+        return None
 
     def headerData(self, p_int, orientation, role):
+        """
+
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                return self._cols[p_int]
+                return self.cols_c[p_int]
             elif orientation == QtCore.Qt.Vertical:
-                if self.index is None:
+                if self.index_c is None:
                     return p_int
                 else:
                     if self.isDate:
-                        return self.index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index[p_int])
+                        return str(self.index_c[p_int])
         return None
 
     def copy_to_column(self, row, col):
@@ -349,7 +386,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         @param col: Column of the value
         @return: Nothing
         """
-        self.data[:, col] = self.data[row, col]
+        self.data_c[:, col] = self.data_c[row, col]
 
     def get_data(self, mode=None):
         """
@@ -360,37 +397,37 @@ class PandasModel(QtCore.QAbstractTableModel):
         Returns: index, columns, data
 
         """
-        n = len(self._cols)
+        n = len(self.cols_c)
 
         if n > 0:
             # gather values
-            if type(self._cols) == pd.Index:
-                names = self._cols.values
+            if type(self.cols_c) == pd.Index:
+                names = self.cols_c.values
 
                 if len(names) > 0:
                     if type(names[0]) == ResultTypes:
                         names = [val.name for val in names]
 
-            elif type(self._cols) == ResultTypes:
-                names = [val.name for val in self._cols]
+            elif type(self.cols_c) == ResultTypes:
+                names = [val.name for val in self.cols_c]
             else:
-                names = [val.name for val in self._cols]
+                names = [val.name for val in self.cols_c]
 
-            if self.data.dtype == complex:
+            if self.data_c.dtype == complex:
 
                 if mode == 'real':
-                    values = self.data.real
+                    values = self.data_c.real
                 elif mode == 'imag':
-                    values = self.data.imag
+                    values = self.data_c.imag
                 elif mode == 'abs':
-                    values = np.abs(self.data)
+                    values = np.abs(self.data_c)
                 else:
-                    values = np.abs(self.data)
+                    values = np.abs(self.data_c)
 
             else:
-                values = self.data
+                values = self.data_c
 
-            return self.index, names, values
+            return self.index_c, names, values
         else:
             # there are no elements
             return list(), list(), list()
@@ -416,7 +453,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         Args:
             mode: 'real', 'imag', 'abs'
         """
-        n = len(self._cols)
+        n = len(self.cols_c)
 
         if n > 0:
 
@@ -510,8 +547,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 F(i, delegate)
 
             if tpe is BranchTemplate:
-                delegate = ComboDelegate(self.parent, conv.values, conv.options)
-                F(i, delegate)
+                F(i, None)
 
             elif tpe is float:
                 delegate = FloatDelegate(self.parent)
@@ -530,13 +566,11 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 if len(self.non_editable_attributes) == 0:
                     self.non_editable_attributes.append(self.attributes[i])
             else:
-                pass
+                F(i, None)
 
     def update(self):
         """
-        Add wire
-        :param wire:
-        :return:
+        update table
         """
         row = self.rowCount()
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
@@ -606,7 +640,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             return getattr(self.objects[obj_idx], attr)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=None):
         """
         Get the data to display
         :param index:
@@ -619,7 +653,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=None):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -801,7 +835,7 @@ class BranchObjectModel(ObjectsModel):
                 if len(self.non_editable_attributes) == 0:
                     self.non_editable_attributes.append(self.attributes[i])
             else:
-                pass
+                F(i, None)
 
 
 class ObjectHistory:
@@ -1046,7 +1080,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             formatter = self.elements[0].editable_headers[self.magnitude].tpe
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             text = cb.text(mode=cb.Clipboard)
 
             rows = text.split('\n')
@@ -1107,7 +1141,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                 data += str(date) + '\t' + '\t'.join(values[t, :]) + '\n'
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(data, mode=cb.Clipboard)
 
@@ -1185,15 +1219,13 @@ class EnumModel(QtCore.QAbstractListModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid() is True:
             if role == QtCore.Qt.DisplayRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-            elif role == QtCore.Qt.ItemDataRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-        return QtCore.QVariant()
+                return self.items[index.row()].value[0]
+        return None
 
 
 class MeasurementsModel(QtCore.QAbstractListModel):
 
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit):
         """
         Enumeration model
         :param circuit: MultiCircuit instance
@@ -1207,28 +1239,26 @@ class MeasurementsModel(QtCore.QAbstractListModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid() is True:
             if role == QtCore.Qt.DisplayRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-            elif role == QtCore.Qt.ItemDataRole:
-                return QtCore.QVariant(self.items[index.row()].value[0])
-        return QtCore.QVariant()
+                return self.items[index.row()].value[0]
+        return None
 
 
 def get_list_model(lst, checks=False):
     """
     Pass a list to a list model
     """
-    list_model = QStandardItemModel()
+    list_model = QtGui.QStandardItemModel()
     if lst is not None:
         if not checks:
             for val in lst:
                 # for the list model
-                item = QStandardItem(str(val))
+                item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 list_model.appendRow(item)
         else:
             for val in lst:
                 # for the list model
-                item = QStandardItem(str(val))
+                item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 item.setCheckable(True)
                 item.setCheckState(QtCore.Qt.Checked)
@@ -1237,7 +1267,7 @@ def get_list_model(lst, checks=False):
     return list_model
 
 
-def get_checked_indices(mdl: QStandardItemModel()):
+def get_checked_indices(mdl: QtGui.QStandardItemModel()):
     """
     Get a list of the selected indices in a QStandardItemModel
     :param mdl:

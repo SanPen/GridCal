@@ -44,7 +44,7 @@ from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
-
+from GridCal.Engine.Simulations.result_types import SimulationTypes
 
 import gc
 import os.path
@@ -52,11 +52,10 @@ import platform
 import sys
 import datetime
 from collections import OrderedDict
-from enum import Enum
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
-from PyQt5 import QtWidgets
+from PySide2 import QtWidgets
 
 try:
     from pandas.plotting import register_matplotlib_converters
@@ -76,81 +75,6 @@ This class is the handler of the main gui of GridCal.
 ########################################################################################################################
 
 
-class ResultTypes(Enum):
-    bus_voltage_per_unit = 1,
-    bus_voltage = 2,
-    bus_s_v_curve = 3,
-    bus_QV_curve = 4,
-    bus_active_power = 5,
-    bus_reactive_power = 6,
-    bus_active_and_reactive_power = 7,
-    bus_apparent_power = 8,
-    branch_current_per_unit = 9,
-    branch_current = 10,
-    branch_power_flow_per_unit = 11,
-    branch_power_flow = 12,
-    branch_losses = 13,
-    branches_loading = 14,
-    gen_reactive_power_pu = 15,
-    gen_reactive_power = 16
-
-
-class SimulationTypes(Enum):
-    PowerFlow_run = 'power flow'
-    ShortCircuit_run = 'Short circuit'
-    MonteCarlo_run = 'Monte Carlo'
-    TimeSeries_run = 'Time series power flow'
-    VoltageCollapse_run = 'Voltage collapse'
-    LatinHypercube_run = 'Latin Hypercube'
-    Cascade_run = 'Cascade'
-    OPF_run = 'Optimal power flow'
-    OPFTimeSeries_run = 'OPF Time series'
-    TransientStability_run = 'Transient stability'
-    TopologyReduction_run = 'Topology reduction'
-
-
-class ElementsDialogue(QtWidgets.QDialog):
-    """
-    Selected elements dialogue window
-    """
-
-    def __init__(self, name, elements: list()):
-        super(ElementsDialogue, self).__init__()
-        self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.layout = QtWidgets.QVBoxLayout(self)
-
-        # build elements list
-        self.objects_table = QtWidgets.QTableView()
-
-        if len(elements) > 0:
-            model = ObjectsModel(elements, elements[0].editable_headers,
-                                 parent=self.objects_table, editable=False, non_editable_attributes=[1, 2, 14])
-
-            self.objects_table.setModel(model)
-
-        # accept button
-        self.accept_btn = QtWidgets.QPushButton()
-        self.accept_btn.setText('Proceed')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # add all to the GUI
-        self.layout.addWidget(QtWidgets.QLabel("Logs"))
-        self.layout.addWidget(self.objects_table)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle(name)
-
-        self.accepted = False
-
-    def accept_click(self):
-        self.accepted = True
-        self.accept()
-
-
 class MainGUI(QMainWindow):
 
     def __init__(self, parent=None):
@@ -160,7 +84,7 @@ class MainGUI(QMainWindow):
         """
 
         # create main window
-        QWidget.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         self.ui = Ui_mainWindow()
         self.ui.setupUi(self)
 
@@ -293,6 +217,7 @@ class MainGUI(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
+        # threads
         self.power_flow = None
         self.short_circuit = None
         self.monte_carlo = None
@@ -304,11 +229,10 @@ class MainGUI(QMainWindow):
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
         self.topology_reduction = None
-
-        self.stuff_running_now = list()
-
         self.open_file_thread_object = None
         self.save_file_thread_object = None
+
+        self.stuff_running_now = list()
 
         self.file_name = ''
 
@@ -985,10 +909,20 @@ class MainGUI(QMainWindow):
 
         # clear the simulation objects
         self.power_flow = None
+        self.short_circuit = None
         self.monte_carlo = None
         self.time_series = None
         self.voltage_stability = None
-        self.results_df = None
+        self.latin_hypercube_sampling = None
+        self.cascade = None
+        self.optimal_power_flow = None
+        self.optimal_power_flow_time_series = None
+        self.transient_stability = None
+        self.topology_reduction = None
+        self.open_file_thread_object = None
+        self.save_file_thread_object = None
+
+        self.stuff_running_now = list()
 
         self.clear_results()
 
@@ -1014,20 +948,23 @@ class MainGUI(QMainWindow):
         Open GridCal file
         @return:
         """
+        if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
+            if len(self.circuit.buses) > 0:
+                quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
+                           "\n If the process is cancelled the grid will remain."
+                reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
-        if len(self.circuit.buses) > 0:
-            quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
-                       "\n If the process is cancelled the grid will remain."
-            reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
-
-            if reply == QMessageBox.Yes:
-                self.new_project_now()
-                self.open_file_threaded()
+                if reply == QMessageBox.Yes:
+                    self.new_project_now()
+                    self.open_file_threaded()
+                else:
+                    pass
             else:
-                pass
+                # Just open the file
+                self.open_file_threaded()
+
         else:
-            # Just open the file
-            self.open_file_threaded()
+            self.msg('THere is a file being processed now.')
 
     def open_file_threaded(self):
         """
@@ -1065,10 +1002,15 @@ class MainGUI(QMainWindow):
             # thread start
             self.open_file_thread_object.start()
 
+            self.stuff_running_now.append('file_open')
+
     def post_open_file(self):
         """
         Actions to perform after a file has been loaded
         """
+
+        self.stuff_running_now.remove('file_open')
+
         if self.open_file_thread_object is not None:
 
             if len(self.open_file_thread_object.logger) > 0:
@@ -1181,19 +1123,26 @@ class MainGUI(QMainWindow):
         Save the file right now, without questions
         :param filename: filename to save to
         """
-        # lock the ui
-        self.LOCK()
 
-        self.save_file_thread_object = FileSaveThread(self.circuit, filename)
+        if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
+            # lock the ui
+            self.LOCK()
 
-        # make connections
-        self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
-        self.save_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
-        self.save_file_thread_object.done_signal.connect(self.UNLOCK)
-        self.save_file_thread_object.done_signal.connect(self.post_file_save)
+            self.save_file_thread_object = FileSaveThread(self.circuit, filename)
 
-        # thread start
-        self.save_file_thread_object.start()
+            # make connections
+            self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+            self.save_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+            self.save_file_thread_object.done_signal.connect(self.UNLOCK)
+            self.save_file_thread_object.done_signal.connect(self.post_file_save)
+
+            # thread start
+            self.save_file_thread_object.start()
+
+            self.stuff_running_now.append('file_save')
+
+        else:
+            self.msg('There is a file being processed..')
 
     def post_file_save(self):
         """
@@ -1202,6 +1151,8 @@ class MainGUI(QMainWindow):
         if len(self.save_file_thread_object.logger) > 0:
             dlg = LogsDialogue('Save file logger', self.save_file_thread_object.logger)
             dlg.exec_()
+
+        self.stuff_running_now.remove('file_save')
 
         # call the garbage collector to free memory
         gc.collect()
@@ -1471,7 +1422,7 @@ class MainGUI(QMainWindow):
         """
         On click, display the objects properties
         """
-        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data()
+        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
         self.view_template_controls(False)
 
@@ -1511,8 +1462,15 @@ class MainGUI(QMainWindow):
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
-        mdl = ObjectsModel(elements, elm.editable_headers,
-                           parent=self.ui.dataStructureTableView, editable=True, non_editable_attributes=[1])
+        if elm_type == 'Branches':
+            mdl = BranchObjectModel(elements, elm.editable_headers,
+                                    parent=self.ui.dataStructureTableView, editable=True,
+                                    non_editable_attributes=elm.non_editable_attributes)
+        else:
+
+            mdl = ObjectsModel(elements, elm.editable_headers,
+                               parent=self.ui.dataStructureTableView, editable=True,
+                               non_editable_attributes=elm.non_editable_attributes)
 
         self.ui.dataStructureTableView.setModel(mdl)
         self.view_templates(False)
@@ -1555,7 +1513,7 @@ class MainGUI(QMainWindow):
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1 and len(self.circuit.buses) > 0:
-            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data()
+            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
@@ -3163,7 +3121,7 @@ class MainGUI(QMainWindow):
         self.ui.result_listView.setModel(None)
         self.ui.resultsTableView.setModel(None)
         self.ui.result_type_listView.setModel(None)
-        self.ui.available_results_to_color_comboBox.setModel(None)
+        self.ui.available_results_to_color_comboBox.model().clear()
         self.ui.result_element_selection_listView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
@@ -3322,7 +3280,7 @@ class MainGUI(QMainWindow):
         """
         Update the available results
         """
-        elm = self.ui.result_listView.selectedIndexes()[0].data()
+        elm = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
         lst = self.available_results_dict[elm]
         # mdl = get_list_model(lst)
         mdl = EnumModel(lst)
@@ -3339,7 +3297,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.result_listView.selectedIndexes()) > 0 and \
                 len(self.ui.result_type_listView.selectedIndexes()) > 0:
 
-            study = self.ui.result_listView.selectedIndexes()[0].data()
+            study = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
             study_type = self.ui.result_type_listView.model().items[self.ui.result_type_listView.selectedIndexes()[0].row()]
 
             if study_type.value[1] == DeviceType.BusDevice:
@@ -3595,7 +3553,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             if tpe == 'Overhead lines':
 
@@ -3652,7 +3610,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             # get the selected index
             idx = self.ui.catalogueTableView.currentIndex().row()
@@ -3697,7 +3655,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             # get the selected index
             idx = self.ui.catalogueTableView.currentIndex().row()
@@ -3746,7 +3704,7 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the clicked type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data()
+            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             if tpe == 'Overhead lines':
                 elm = Tower()
@@ -3807,12 +3765,12 @@ class MainGUI(QMainWindow):
         if len(self.ui.catalogueTreeView.selectedIndexes()) > 0:
 
             # tree parent (category, i.e. Transformers)
-            type_class = self.ui.catalogueTreeView.selectedIndexes()[0].parent().data()
+            type_class = self.ui.catalogueTreeView.selectedIndexes()[0].parent().data(role=QtCore.Qt.DisplayRole)
 
             if type_class is not None:
 
                 # template object name
-                tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data()
+                tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
                 # get the compatible BRanch Type that matches the type class
                 compatible_types = {'Wires': None,

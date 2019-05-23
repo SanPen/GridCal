@@ -15,7 +15,7 @@
 
 import numpy as np
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -150,9 +150,9 @@ def run_events(nc: NumericalCircuit, events_list: list):
 
 
 class ReliabilityStudy(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
         """

@@ -17,7 +17,7 @@ import pandas as pd
 from numpy import complex, zeros, conj, maximum, array
 from scipy.sparse.linalg import inv
 from matplotlib import pyplot as plt
-from PyQt5.QtCore import QRunnable
+from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_3p
 from GridCal.Engine.Core.multi_circuit import MultiCircuit

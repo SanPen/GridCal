@@ -15,8 +15,8 @@
 import os
 import sys
 import networkx as nx
-from PyQt5.QtCore import *
-from PyQt5.QtSvg import QSvgGenerator
+from PySide2.QtCore import *
+from PySide2.QtSvg import QSvgGenerator
 import smopy
 from PIL.ImageQt import ImageQt
 
@@ -547,7 +547,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         w = h
         d = w/2
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(Qt.transparent)
+        self.symbol.setPen(QtGui.QPen(Qt.transparent))
 
         self.c0 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
         self.c1 = QGraphicsEllipseItem(0, 0, d, d, parent=self.symbol)
@@ -557,8 +557,8 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c2.setPen(QPen(self.color, self.width, self.style))
         self.c1.setPen(QPen(self.color, self.width, self.style))
 
-        self.c0.setBrush(Qt.white)
-        self.c2.setBrush(Qt.white)
+        self.c0.setBrush(QtGui.QBrush(Qt.white))
+        self.c2.setBrush(QtGui.QBrush(Qt.white))
 
         self.c0.setPos(w * 0.35 - d / 2, h * 0.5 - d / 2)
         self.c1.setPos(w * 0.35 - d / 2, h * 0.5 - d / 2)
@@ -580,7 +580,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         if self.api_object.active:
             self.symbol.setBrush(self.color)
         else:
-            self.symbol.setBrush(Qt.white)
+            self.symbol.setBrush(QtGui.QBrush(Qt.white))
 
     def make_reactance_symbol(self):
         """
@@ -2486,15 +2486,15 @@ class MapWidget(QGraphicsRectItem):
         # print('map:', lat0, lon0, zoom)
 
         # get map
-        try:
-            map = smopy.Map((lat0, lon0), z=zoom)
-
-            # w, h = map.img.size
-            self.img = ImageQt(map.img)
-            self.image = QPixmap.fromImage(self.img)
-            self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        except:
-            print('Could not load the map')
+        # try:
+        #     map = smopy.Map((lat0, lon0), z=zoom)
+        #
+        #     # w, h = map.img.size
+        #     self.img = ImageQt(map.img)
+        #     self.image = QPixmap.fromImage(self.img)
+        #     self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        # except:
+        #     print('Could not load the map')
 
     def repaint(self):
         """

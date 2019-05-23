@@ -231,6 +231,10 @@ class AcOpf_old:
         # Add the matrix multiplication as constraints
         # See: https://math.stackexchange.com/questions/1727572/solving-a-feasible-system-of-linear-equations-
         #      using-linear-programming
+        #
+        #  | A11   A12 | |incVa|   |P|   ...for pqpv
+        #  |           |x|     | = | |
+        #  | A21   A22 | |incVm|   |Q|   ...for pq
         ################################################################################################################
 
         # Matrix product

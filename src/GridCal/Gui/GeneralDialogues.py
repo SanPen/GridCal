@@ -15,8 +15,9 @@
 
 from enum import Enum
 from datetime import datetime, timedelta
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
+from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
 def get_list_model(lst, checks=False):
@@ -172,4 +173,44 @@ class LogsDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+class ElementsDialogue(QtWidgets.QDialog):
+    """
+    Selected elements dialogue window
+    """
+
+    def __init__(self, name, elements: list()):
+        super(ElementsDialogue, self).__init__()
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+        # build elements list
+        self.objects_table = QtWidgets.QTableView()
+
+        if len(elements) > 0:
+            model = ObjectsModel(elements, elements[0].editable_headers,
+                                 parent=self.objects_table, editable=False, non_editable_attributes=[1, 2, 14])
+
+            self.objects_table.setModel(model)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Proceed')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.layout.addWidget(QtWidgets.QLabel("Logs"))
+        self.layout.addWidget(self.objects_table)
+
+        self.layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.layout)
+
+        self.setWindowTitle(name)
+
+        self.accepted = False
+
+    def accept_click(self):
+        self.accepted = True
+        self.accept()
 

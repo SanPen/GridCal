@@ -15,7 +15,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
-from PyQt5 import QtCore
+from PySide2 import QtCore
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.wire import Wire
 from GridCal.Engine.Devices.tower import Tower, calc_y_matrix, calc_z_matrix

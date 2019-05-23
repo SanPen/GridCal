@@ -448,7 +448,7 @@ class Branch(EditableDevice):
         self.bus_to_regulated = bus_to_regulated
         self.vset = vset
 
-        self.non_editable_indices = [1, 2, 19]
+        # self.non_editable_indices = [1, 2, 19]
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
 
-from PyQt5.QtCore import QThread, QRunnable, pyqtSignal
+from PySide2.QtCore import QThread, QRunnable, Signal
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -163,9 +163,9 @@ class TopologyReductionOptions:
 
 
 class TopologyReduction(QThread):
-    progress_signal = pyqtSignal(float)
-    progress_text = pyqtSignal(str)
-    done_signal = pyqtSignal()
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
     def __init__(self, grid: MultiCircuit, branch_indices):
         """

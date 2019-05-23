@@ -1,7 +1,7 @@
 
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2.QtWidgets import *
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class Wire:

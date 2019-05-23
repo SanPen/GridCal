@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui.ui'
+# Form implementation generated from reading ui file 'gui.ui',
+# licensing of 'gui.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.12
+# Created: Mon May 13 19:15:05 2019
+#      by: pyside2-uic  running on PySide2 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -180,26 +181,23 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.open_button.setToolTip(_translate("Dialog", "Import file"))
-        self.label_5.setText(_translate("Dialog", "Units"))
-        self.autolink_button.setToolTip(_translate("Dialog", "Automatic link profiles to objects based on their name"))
-        self.rnd_link_pushButton.setToolTip(_translate("Dialog", "Random-link profiles and objects"))
-        self.assign_to_all_pushButton.setToolTip(_translate("Dialog", "Assign profile to all objects"))
-        self.assign_to_selection_pushButton.setToolTip(_translate("Dialog", "Assign profile to object selection"))
-        self.clear_selection_button.setToolTip(_translate("Dialog", "Clear selection"))
-        self.set_multiplier_button.setToolTip(_translate("Dialog", "Set multiplier"))
-        self.doit_button.setToolTip(_translate("Dialog", "Do it!"))
-        self.normalized_checkBox.setToolTip(_translate("Dialog", "Check if you want the profiles to be normalized on the base object property"))
-        self.normalized_checkBox.setText(_translate("Dialog", "normalized"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Assignation"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Plot"))
-
+        Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "Dialog", None, -1))
+        self.open_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Import file", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "Units", None, -1))
+        self.autolink_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Automatic link profiles to objects based on their name", None, -1))
+        self.rnd_link_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Random-link profiles and objects", None, -1))
+        self.assign_to_all_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Assign profile to all objects", None, -1))
+        self.assign_to_selection_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Assign profile to object selection", None, -1))
+        self.clear_selection_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Clear selection", None, -1))
+        self.set_multiplier_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Set multiplier", None, -1))
+        self.doit_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Do it!", None, -1))
+        self.normalized_checkBox.setToolTip(QtWidgets.QApplication.translate("Dialog", "Check if you want the profiles to be normalized on the base object property", None, -1))
+        self.normalized_checkBox.setText(QtWidgets.QApplication.translate("Dialog", "normalized", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("Dialog", "Assignation", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtWidgets.QApplication.translate("Dialog", "Plot", None, -1))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
-
 
 if __name__ == "__main__":
     import sys
@@ -209,3 +207,4 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
+
