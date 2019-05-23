@@ -15,11 +15,14 @@
 
 import math
 import chardet
+import os
+import re
 import numpy as np
 import pandas as pd
 from numpy import array
 from pandas import DataFrame as df
 from warnings import warn
+from typing import List, AnyStr
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
@@ -216,10 +219,12 @@ class PSSeBus:
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True, area=self.AREA, zone=self.ZONE)
 
-        elif version == 30:
-
+        elif version in [29, 30]:
+            # I, ’NAME’, BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
             self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
+
+            # print(self.NAME, self.I)
 
             # create bus
             name = self.NAME
@@ -228,7 +233,7 @@ class PSSeBus:
                            active=True, area=self.AREA, zone=self.ZONE)
 
             if self.GL > 0 or self.BL > 0:
-                sh = Shunt(name='Shunt_' + self.ID,
+                sh = Shunt(name='Shunt_' + str(self.I),
                            G=self.GL, B=self.BL,
                            active=True)
 
@@ -299,10 +304,10 @@ class PSSeLoad:
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
              self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE = data[0]
 
-        elif version == 30:
-
-            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, \
-             self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
+        elif version in [29, 30]:
+            # I, ID, STATUS, AREA, ZONE, PL, QL, IP, IQ, YP, YQ, OWNER
+            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
+             self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
     def get_object(self, bus: Bus, logger:list):
         """
@@ -492,6 +497,36 @@ class PSSeGenerator:
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
                  self.WMOD, self.WPF = data[0]
 
+        elif version in [29]:
+            """
+            I,ID,PG,QG,QT,QB,VS,IREG,MBASE,
+            ZR,ZX,RT,XT,GTAP,STAT,RMPCT,PT,PB,
+            O1,F1,...,O4,F4
+            """
+            if length == 26:
+                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
+                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+
+            elif length == 24:
+                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
+                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+
+            elif length == 22:
+                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
+                 self.O1, self.F1, self.O2, self.F2 = data[0]
+
+            elif length == 20:
+                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
+                 self.O1, self.F1 = data[0]
+
+            elif length == 18:
+                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB = data[0]
+
             else:
                 raise Exception('Wrong data length in generator' + str(length))
 
@@ -601,33 +636,34 @@ class PSSeBranch:
                 logger.append('Wrong data length in branch' + str(length))
                 return
 
-        elif version == 30:
+        elif version in [29, 30]:
             """
-            I,J,CKT,R,X,B,RATEA,RATEB,RATEC,GI,BI,GJ,BJ,ST,LEN,01,F1, ,04,F4
+            v29, v30
+            I,J,CKT,R,X,B,RATEA,RATEB,RATEC,GI,BI,GJ,BJ,ST,LEN,01,F1,...,04,F4
             """
-            if length == 24:
+            if length == 23:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
-            elif length == 22:
+            elif length == 21:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            elif length == 20:
+            elif length == 19:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2 = data[0]
-            elif length == 18:
+            elif length == 17:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1 = data[0]
-            elif length == 16:
+            elif length == 15:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN = data[0]
 
             else:
                 logger.append('Wrong data length in branch' + str(length))
-                return
+                raise Exception('Wrong data length in branch' + str(length))
 
         else:
 
@@ -642,8 +678,8 @@ class PSSeBranch:
         Returns:
             Gridcal Branch object
         """
-        bus_from = psse_bus_dict[self.I]
-        bus_to = psse_bus_dict[self.J]
+        bus_from = psse_bus_dict[abs(self.I)]
+        bus_to = psse_bus_dict[abs(self.J)]
 
         if self.LEN > 0:
             r = self.R * self.LEN
@@ -1228,7 +1264,7 @@ class PSSeTransformer:
 
             # line 3: for both types
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-            self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
 
             # line 4
             if len(data[3]) == 2:
@@ -1237,10 +1273,97 @@ class PSSeTransformer:
             else:
                 # 3 - windings
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, \
-                self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
-                self.CR3, self.CX3 = data[3]
+                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, \
+                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
+                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
+                 self.CR3, self.CX3 = data[3]
+
+        elif version == 29:
+
+            '''
+            In this version 
+            
+                2 windings -> 4 lines
+                
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                R1-2,X1-2,SBASE1-2
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
+                WINDV2,NOMV2
+                
+                3 windings -> 5 lines
+                
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
+                WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2
+                WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3
+                 
+            '''
+
+            # Line 1: for both types
+            if len(data[0]) == 20:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+            elif len(data[0]) == 18:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            elif len(data[0]) == 16:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
+            elif len(data[0]) == 14:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                self.NAME, self.STAT, self.O1, self.F1 = data[0]
+            elif len(data[0]) == 12:
+                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+                self.NAME, self.STAT = data[0]
+
+            # line 2
+            if len(data[1]) == 3:
+
+                '''
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                R1-2,X1-2,SBASE1-2
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
+                WINDV2,NOMV2
+                '''
+
+                # 2-windings
+                self.windings = 2
+                self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
+
+                self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
+                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+
+                self.WINDV2, self.NOMV2 = data[3]
+
+            else:
+
+                '''
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
+                
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
+                
+                WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2
+                
+                WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3
+                '''
+
+                # 3-windings
+                self.windings = 3
+
+                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
+                 self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+
+                self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, \
+                self.CONT1, self.RMA1,  self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, \
+                self.CR1, self.CX1 = data[2]
+
+                self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2 = data[3]
+
+                self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3 = data[4]
+
+            pass
 
     def get_object(self, psse_bus_dict, logger: list):
         """
@@ -1306,9 +1429,9 @@ class PSSeTransformer:
 
         elif self.windings == 3:
 
-            bus_1 = psse_bus_dict[self.I]
-            bus_2 = psse_bus_dict[self.J]
-            bus_3 = psse_bus_dict[self.k]
+            bus_1 = psse_bus_dict[abs(self.I)]
+            bus_2 = psse_bus_dict[abs(self.J)]
+            bus_3 = psse_bus_dict[abs(self.K)]
 
             r = self.R1_2
             x = self.X1_2
@@ -1369,6 +1492,9 @@ class PSSeTransformer:
 
             return [object1, object2, object3]
 
+        else:
+            raise Exception(str(self.windings) + ' number of windings!')
+
 
 def interpret_line(line, splitter=','):
     """
@@ -1405,11 +1531,13 @@ class PSSeParser:
             file_name: file name or path
         """
         self.parsers = dict()
-        self.versions = [33, 32, 30]
+        self.versions = [33, 32, 30, 29]
 
         self.logger = list()
 
-        self.pss_grid, logs = self.parse_psse(file_name)
+        self.file_name = file_name
+
+        self.pss_grid, logs = self.parse_psse()
 
         self.logger += logs
 
@@ -1422,31 +1550,61 @@ class PSSeParser:
         # check buses names
         # for bus in self.circuit.buses:
 
-    def parse_psse(self, file_name):
+    def read_and_split(self):
+        """
+        Read the text file and split it into sections
+        :return:
+        """
+        logger = list()
+
+        # make a guess of the file encoding
+        detection = chardet.detect(open(self.file_name, "rb").read())
+
+        # open the text file into a variable
+        with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
+            txt = my_file.read()
+
+        # split the text file into sections
+        sections = txt.split(' /')
+
+        sections_dict = dict()
+
+        str_a = 'End of'
+        str_b = 'data'
+
+        for i, sec in enumerate(sections):
+            data = sec.split('\n')
+            first = data.pop(0)
+            if str_a in first:
+                if ',' in first:
+                    srch = first.split(',')[0]
+                else:
+                    srch = first
+                name = re.search(str_a + '(.*)' + str_b, srch).group(1).strip()
+                data2 = sections[i-1].split('\n')[1:]
+
+                if name == 'Bus':
+                    data2.pop(0)
+                    data2.pop(0)
+
+                sections_dict[name] = data2
+
+        return sections, sections_dict
+
+    def parse_psse(self) -> (MultiCircuit, List[AnyStr]):
         """
         Parser implemented according to:
-            - POM section 5.2.1 (v.33)
-            - POM section 5.2.1 (v.32)
+            - POM section 4.1.1 Power Flow Raw Data File Contents (v.29)
+            - POM section 5.2.1                                   (v.33)
+            - POM section 5.2.1                                   (v.32)
 
-        Args:
-            file_name:
-
-        Returns:
-
+        Returns: MultiCircuit, List[str]
         """
         # print('Parsing ', file_name)
 
         logger = list()
 
-        # make a guess of the file encoding
-        detection = chardet.detect(open(file_name, "rb").read())
-
-        # open the text file into a variable
-        with open(file_name, 'r', encoding=detection['encoding']) as my_file:
-            txt = my_file.read()
-
-        # split the text file into sections
-        sections = txt.split(' /')
+        sections, sections_dict = self.read_and_split()
 
         # header -> new grid
         grid = PSSeGrid(interpret_line(sections[0]))
@@ -1457,7 +1615,6 @@ class PSSeParser:
         else:
             version = grid.REV
 
-        meta_data = list()
         # declare contents:
         # section_idx, objects_list, expected_data_length, ObjectT, lines per objects
 
@@ -1484,45 +1641,88 @@ class PSSeParser:
         # 19: Induction Machine Data
         # 20: Q Record
 
-        meta_data.append([1, grid.buses, PSSeBus, 1])
-        meta_data.append([2, grid.loads, PSSeLoad, 1])
-        meta_data.append([3, grid.shunts, PSSeShunt, 1])
-        meta_data.append([4, grid.generators, PSSeGenerator, 1])
-        meta_data.append([5, grid.branches, PSSeBranch, 1])
-        meta_data.append([6, grid.transformers, PSSeTransformer, 4])
+        '''
+        'Bus', 
+        'Load', 
+        'Generator', 
+        'Branch', 
+        'Transformer', 
+        'Area interchange', 
+        'Two-terminal dc line', 
+        'VSC dc line', 
+        'Switched shunt', 
+        'Impedance correction table', 
+        'Multi-terminal dc line', 
+        'Multi-section line', 
+        'Zone', 
+        'Inter-area transfer', 
+        'Owner', 
+        'FACTS device'
+        '''
+        meta_data = dict()
+        meta_data['Bus'] = [1, grid.buses, PSSeBus, 1]
+        meta_data['Load'] = [2, grid.loads, PSSeLoad, 1]
+        meta_data['Shunt'] = [3, grid.shunts, PSSeShunt, 1]
+        meta_data['Generator'] = [4, grid.generators, PSSeGenerator, 1]
+        meta_data['Branch'] = [5, grid.branches, PSSeBranch, 1]
+        meta_data['Transformer'] = [6, grid.transformers, PSSeTransformer, 4]
 
-        for section_idx, objects_list, ObjectT, lines_per_object in meta_data:
+        for key, values in meta_data.items():
 
-            # split the section lines by object declaration: '\n  ' delimits each object start.
-            # lines = sections[section_idx].split('\n  ')
-            lines = sections[section_idx].split('\n')
+            # get the parsers for the declared object type
+            section_idx, objects_list, ObjectT, lines_per_object = values
 
-            # this removes the useless header
-            lines.pop(0)
+            if key in sections_dict.keys():
+                lines = sections_dict[key]
 
-            # iterate ove the object's lines
-            for l in range(0, len(lines), lines_per_object):
+                # iterate ove the object's lines to pack them as expected (normally 1 per object except transformers...)
+                l = 0
+                while l < len(lines):
 
-                if ',' in lines[l]:
+                    lines_per_object2 = lines_per_object
 
-                    data = list()
-                    for k in range(lines_per_object):
-                        data.append(interpret_line(lines[l + k]))
+                    if version == 29 and key == 'Transformer':
+                        # as you know the PSS/e raw format is nuts, that is why for v29
+                        # the transformers may have 4 or 5 lines to define them
+                        if (l + 1) < len(lines):
+                            dta = lines[l+1].split(',')
+                            if len(dta) == 3:
+                                # 4 - windings
+                                lines_per_object2 = 4
+                            else:
+                                # 3-windings
+                                lines_per_object2 = 5
 
-                    # pick the line that matches the object and split it by line returns \n
-                    # object_lines = line.split('\n')
+                    if ',' in lines[l]:
+                        data = list()
+                        for k in range(lines_per_object2):
+                            data.append(interpret_line(lines[l + k]))
 
-                    # interpret each line of the object and store into data
-                    # data is a vector of vectors with data definitions
-                    # for the buses, branches, loads etc. data contains 1 vector,
-                    # for the transformers data contains 4 vectors
-                    # data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
+                        # pick the line that matches the object and split it by line returns \n
+                        # object_lines = line.split('\n')
 
-                    # pass the data to the according object to assign it to the matching variables
-                    objects_list.append(ObjectT(data, version, logger))
+                        # interpret each line of the object and store into data
+                        # data is a vector of vectors with data definitions
+                        # for the buses, branches, loads etc. data contains 1 vector,
+                        # for the transformers data contains 4 vectors
+                        # data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
 
-                else:
-                    logger.append('SKIP:' + lines[l])
+                        # pass the data to the according object to assign it to the matching variables
+                        objects_list.append(ObjectT(data, version, logger))
+
+                    else:
+                        logger.append('Skipped:' + lines[l])
+
+                    # add lines
+                    l += lines_per_object2
+
+            else:
+                logger.append(key + 'is not in the data')
+
+        # add logs for the non parsed objects
+        for key in sections_dict.keys():
+            if key not in meta_data.keys():
+                logger.append(key + ' is not implemented in the parser.')
 
         return grid, logger
 
@@ -1530,10 +1730,11 @@ class PSSeParser:
 if __name__ == '__main__':
     # file
     # fname = 'IEEE57.RAW'
-    fname = 'nordpool.raw'
+    import os
+    folder = 'C:\\Users\\A487516\\Desktop'
+    fname = 'SAPP 2013CF POST Peak -18 DEC 2013_VERSION29.raw'
 
-    parser = PSSeParser(fname)
-
+    parser = PSSeParser(os.path.join(folder, fname))
 
     print('Logs')
     for l in parser.logger:

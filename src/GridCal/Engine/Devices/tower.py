@@ -302,6 +302,9 @@ class Tower(EditableDevice):
             if self.wires[i].wire_name == wire.wire_name:
                 return True
 
+    def __str__(self):
+        return self.tower_name
+
 
 def get_d_ij(xi, yi, xj, yj):
     """
