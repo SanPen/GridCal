@@ -252,6 +252,9 @@ class PSSeBus:
 
                 self.bus.shunts.append(sh)
 
+        else:
+            logger.append('Bus not implemented for version ' + str(version))
+
         # set type
         if self.IDE in bustype.keys():
             self.bus.type = bustype[self.IDE]
@@ -322,7 +325,10 @@ class PSSeLoad:
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
              self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
-    def get_object(self, bus: Bus, logger:list):
+        else:
+            logger.append('Load not implemented for version ' + str(version))
+
+    def get_object(self, bus: Bus, logger: list):
         """
         Return GridCal Load object
         Returns:
@@ -371,12 +377,10 @@ class PSSeShunt:
         Args:
             data:
         """
-        if version == 33:
+        if version in [33, 32]:
             self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
-
-        elif version == 32:
-
-            self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
+        else:
+            logger.append('Shunt not implemented for the version ' + str(version))
 
     def get_object(self, bus: Bus, logger: list):
         """
@@ -543,6 +547,9 @@ class PSSeGenerator:
             else:
                 raise Exception('Wrong data length in generator' + str(length))
 
+        else:
+            logger.append('Generator not implemented for version ' + str(version))
+
     def get_object(self, logger: list):
         """
         Return GridCal Load object
@@ -558,6 +565,48 @@ class PSSeGenerator:
                            Snom=self.MBASE,
                            power_prof=None,
                            vset_prof=None,
+                           active=bool(self.STAT))
+
+        return object
+
+
+class PSSeInductionMachine:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        if version in [30, 32, 33]:
+            '''
+            I,ID,STAT,SCODE,DCODE,AREA,ZONE,OWNER,TCODE,BCODE,MBASE,RATEKV,
+            PCODE,PSET,H,A,B,D,E,RA,XA,XM,R1,X1,R2,X2,X3,E1,SE1,E2,SE2,IA1,IA2,
+            XAMULT
+            '''
+            self.I, self.ID, self.STAT, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER, \
+            self.TCODE, self.BCODE, self.MBASE, self.RATEKV = data[0]
+
+            self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E, self.RA, self.XA, self.XM, self.R1, \
+            self.X1, self.R2, self.X2, self.X3, self.E1, self.SE1, self.E2, self.SE2, self.IA1, self.IA2 = data[1]
+
+            self.XAMULT = data[2]
+        else:
+            logger.append('Induction machine not implemented for version ' + str(version))
+
+    def get_object(self, logger: list):
+        """
+        Return GridCal Load object
+        Returns:
+            Gridcal Load object
+        """
+
+        object = Generator(name='Gen_' + str(self.ID),
+                           active_power=self.PSET,
+                           voltage_module=self.RATEKV,
+                           Snom=self.MBASE,
                            active=bool(self.STAT))
 
         return object
@@ -629,18 +678,22 @@ class PSSeBranch:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+
             elif length == 22:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+
             elif length == 20:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2 = data[0]
+
             elif length == 18:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
                  self.O1, self.F1 = data[0]
+
             elif length == 16:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN = data[0]
@@ -658,18 +711,22 @@ class PSSeBranch:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+
             elif length == 21:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+
             elif length == 19:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1, self.O2, self.F2 = data[0]
+
             elif length == 17:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
                  self.O1, self.F1 = data[0]
+
             elif length == 15:
                 self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
                  self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN = data[0]
@@ -680,7 +737,7 @@ class PSSeBranch:
 
         else:
 
-            logger.append('Invalid Branch version')
+            logger.append('Branch not implemented for version ' + str(version))
 
     def get_object(self, psse_bus_dict, logger: list):
         """
@@ -865,10 +922,13 @@ class PSSeTwoTerminalDCLine:
         bus2 = psse_bus_dict[abs(self.IPI)]
 
         if self.MDC == 1:
+            # SETVL is in MW
             rate = self.SETVL
         elif self.MDC == 2:
+            # SETVL is in A
             rate = self.SETVL * self.VSCHD / 1000.0
         else:
+            # doesn't say, so I expect it to be MW
             rate = self.SETVL
 
         obj = Branch(bus_from=bus1,
@@ -923,9 +983,6 @@ class PSSeVscDCLine:
 
 
         """
-
-
-
         if version == 33:
 
             '''
@@ -1666,6 +1723,9 @@ class PSSeTransformer:
 
             pass
 
+        else:
+            logger.append('Transformer not implemented for version ' + str(version))
+
     def get_object(self, psse_bus_dict, logger: list):
         """
         Return GridCal branch object
@@ -1811,8 +1871,7 @@ class PSSeArea:
 
         self.ARNAME = ''
 
-
-        if version == 33:
+        if version in [29, 33]:
             # I, ISW, PDES, PTOL, 'ARNAME'
             self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
 
@@ -1835,7 +1894,7 @@ class PSSeZone:
 
         self.ZONAME = ''
 
-        if version == 33:
+        if version in [29, 33]:
             # I, 'ZONAME'
             self.I, self.ZONAME = data[0]
 
@@ -1891,13 +1950,6 @@ class PSSeParser:
 
         self.circuit = self.pss_grid.get_circuit(self.logger)
 
-        self.check_grid()
-
-    def check_grid(self):
-        pass
-        # check buses names
-        # for bus in self.circuit.buses:
-
     def read_and_split(self):
         """
         Read the text file and split it into sections
@@ -1948,7 +2000,6 @@ class PSSeParser:
 
         Returns: MultiCircuit, List[str]
         """
-        # print('Parsing ', file_name)
 
         logger = list()
 
@@ -1992,14 +2043,16 @@ class PSSeParser:
         meta_data = dict()
         meta_data['bus'] = [1, grid.buses, PSSeBus, 1]
         meta_data['load'] = [2, grid.loads, PSSeLoad, 1]
-        meta_data['shunt'] = [3, grid.shunts, PSSeShunt, 1]
+        meta_data['fixed shunt'] = [3, grid.shunts, PSSeShunt, 1]
+        # meta_data['shunt'] = [3, grid.shunts, PSSeShunt, 1]
         meta_data['generator'] = [4, grid.generators, PSSeGenerator, 1]
-        meta_data['branch'] = [5, grid.branches, PSSeBranch, 1]
-        meta_data['transformer'] = [6, grid.transformers, PSSeTransformer, 4]
-        meta_data['two-terminal dc'] = [7, grid.branches, PSSeTwoTerminalDCLine, 3]
-        meta_data['vsc dc line'] = [8, grid.branches, PSSeVscDCLine, 3]
-        meta_data['area'] = [9, grid.areas, PSSeArea, 1]
-        meta_data['zone'] = [10, grid.zones, PSSeZone, 1]
+        meta_data['induction machine'] = [5, grid.generators, PSSeInductionMachine, 3]
+        meta_data['branch'] = [6, grid.branches, PSSeBranch, 1]
+        meta_data['transformer'] = [7, grid.transformers, PSSeTransformer, 4]
+        meta_data['two-terminal dc'] = [8, grid.branches, PSSeTwoTerminalDCLine, 3]
+        meta_data['vsc dc line'] = [9, grid.branches, PSSeVscDCLine, 3]
+        meta_data['area'] = [10, grid.areas, PSSeArea, 1]
+        meta_data['zone'] = [11, grid.zones, PSSeZone, 1]
 
         for key, values in meta_data.items():
 
@@ -2107,6 +2160,3 @@ if __name__ == '__main__':
     transmission_per_zone.to_excel(xls2, sheet_name='transmission_per_zone')
     xls2.save()
     print('Saved 2!')
-
-    print()
-
