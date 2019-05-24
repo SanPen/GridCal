@@ -93,6 +93,8 @@ class PSSeGrid:
         self.generators = list()
         self.branches = list()
         self.transformers = list()
+        self.areas = list()
+        self.zones = list()
 
     def get_circuit(self, logger: list):
         """
@@ -104,6 +106,10 @@ class PSSeGrid:
         circuit = MultiCircuit()
         circuit.Sbase = self.SBASE
 
+        area_dict = {elm.I: elm.ARNAME for elm in self.areas}
+
+        zones_dict = {elm.I: elm.ZONAME for elm in self.zones}
+
         # ---------------------------------------------------------------------
         # Bus related
         # ---------------------------------------------------------------------
@@ -112,6 +118,13 @@ class PSSeGrid:
 
             # relate each PSS bus index with a GridCal bus object
             psse_bus_dict[psse_bus.I] = psse_bus.bus
+
+            # replace area idx by area name if available
+            if abs(psse_bus.bus.area) in area_dict.keys():
+                psse_bus.bus.area = area_dict[abs(psse_bus.bus.area)]
+
+            if abs(psse_bus.bus.zone) in zones_dict.keys():
+                psse_bus.bus.zone = zones_dict[abs(psse_bus.bus.zone)]
 
             # add the bus to the circuit
             circuit.add_bus(psse_bus.bus)
@@ -704,6 +717,282 @@ class PSSeBranch:
                         mttr=0,
                         branch_type=BranchType.Line)
         return object
+
+
+class PSSeTwoTerminalDCLine:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+
+
+
+        NAME	The non-blank alphanumeric identifier assigned to this dc line. Each two-terminal dc line must have a
+        unique NAME. NAME may be up to twelve characters and may contain any combination of blanks, uppercase letters,
+        numbers and special characters. NAME must be enclosed in single or double quotes if it contains any blanks or
+        special characters. No default allowed.
+
+        MDC	Control mode: 0 for blocked, 1 for power, 2 for current. MDC = 0 by default.
+
+        RDC	The dc line resistance; entered in ohms. No default allowed.
+
+        SETVL	Current (amps) or power (MW) demand. When MDC is one, a positive value of SETVL specifies desired power
+        at the rectifier and a negative value specifies desired inverter power. No default allowed.
+
+        VSCHD	Scheduled compounded dc voltage; entered in kV. No default allowed.
+
+        VCMOD	Mode switch dc voltage; entered in kV. When the inverter dc voltage falls below this value and the
+        line is in power control mode (i.e., MDC = 1), the line switches to current control mode with a desired
+        current corresponding to the desired power at scheduled dc voltage. VCMOD = 0.0 by default.
+
+        RCOMP	Compounding resistance; entered in ohms. Gamma and/or TAPI is used to attempt to hold the compounded
+        voltage (VDCI + DCCURRCOMP) at VSCHD. To control the inverter end dc voltage VDCI, set RCOMP to zero;
+        to control the rectifier end dc voltage VDCR, set RCOMP to the dc line resistance, RDC; otherwise,
+        set RCOMP to the appropriate fraction of RDC. RCOMP = 0.0 by default.
+
+        DELTI	Margin entered in per unit of desired dc power or current. This is the fraction by which the order is
+        reduced when ALPHA is at its minimum and the inverter is controlling the line current. DELTI = 0.0 by default.
+
+        METER	Metered end code of either R (for rectifier) or I (for inverter). METER = I by default.
+
+        DCVMIN	Minimum compounded dc voltage; entered in kV. Only used in constant gamma operation
+        (i.e., when ANMXI = ANMNI) when TAPI is held constant and an ac transformer tap is adjusted to control
+        dc voltage (i.e., when IFI, ITI, and IDI specify a twowinding transformer). DCVMIN = 0.0 by default.
+
+        CCCITMX	Iteration limit for capacitor commutated two-terminal dc line Newton solution procedure.
+        CCCITMX = 20 by default.
+
+        CCCACC	Acceleration factor for capacitor commutated two-terminal dc line Newton solution procedure.
+        CCCACC = 1.0 by default.
+
+        IPR	Rectifier converter bus number, or extended bus name enclosed in single quotes (refer to Extended Bus
+        Names). No default allowed.
+
+        NBR	Number of bridges in series (rectifier). No default allowed.
+
+        ANMXR	Nominal maximum rectifier firing angle; entered in degrees. No default allowed.
+
+        ANMNR	Minimum steady-state rectifier firing angle; entered in degrees. No default allowed.
+
+        RCR	Rectifier commutating transformer resistance per bridge; entered in ohms. No default allowed.
+
+        XCR	Rectifier commutating transformer reactance per bridge; entered in ohms. No default allowed.
+
+        EBASR	Rectifier primary base ac voltage; entered in kV. No default allowed.
+
+        TRR	Rectifier transformer ratio. TRR = 1.0 by default.
+
+        TAPR	Rectifier tap setting. TAPR = 1.0 by default.
+
+        If no two-winding transformer is specified by IFR, ITR, and IDR, TAPR is adjusted to keep alpha within limits;
+        otherwise, TAPR is held fixed and this transformer’s tap ratio is adjusted. The adjustment logic assumes that
+        the rectifier converter bus is on the Winding 2 side of the transformer. The limits TMXR and TMNR specified
+        here are used; except for the transformer control mode flag (COD1 of Transformer Data), the ac tap adjustment
+        data is ignored.
+
+        TMXR	Maximum rectifier tap setting. TMXR = 1.5 by default.
+
+        TMNR	Minimum rectifier tap setting. TMNR = 0.51 by default.
+
+        STPR	Rectifier tap step; must be positive. STPR = 0.00625 by default.
+
+        ICR	Rectifier firing angle measuring bus number, or extended bus name enclosed in single quotes
+        (refer to Extended Bus Names). The firing angle and angle limits used inside the dc model are adjusted by
+        the difference between the phase angles at this bus and the ac/dc interface (i.e., the converter bus, IPR).
+        ICR = 0 by default.
+
+        IFR	Winding 1 side from bus number, or extended bus name enclosed in single quotes, of a two-winding
+        transformer. IFR = 0 by default.
+
+        ITR	Winding 2 side to bus number, or extended bus name enclosed in single quotes, of a two-winding
+        transformer. ITR = 0 by default.
+
+        IDR	Circuit identifier; the branch described by IFR, ITR, and IDR must have been entered as a two-winding
+        transformer; an ac transformer may control at most only one dc converter. IDR = '1' by default.
+
+        XCAPR	Commutating capacitor reactance magnitude per bridge; entered in ohms. XCAPR = 0.0 by default.
+
+
+        """
+
+        if version == 33:
+            '''
+            'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
+            IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
+            IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI 
+            '''
+
+            self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
+            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+
+            self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
+            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+
+            self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
+            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+
+        elif version == 29:
+            '''
+            I,MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
+            IPR,NBR,ALFMX,ALFMN,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
+            IPI,NBI,GAMMX,GAMMN,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
+            '''
+
+            self.I, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
+            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+
+            self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
+            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+
+            self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
+            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+
+            self.NAME = str(self.I)
+        else:
+            logger.append('Version ' + str(version) + ' not implemented for DC Lines')
+
+    def get_object(self, psse_bus_dict, logger: list):
+        """
+        GEt equivalent object
+        :param psse_bus_dict:
+        :param logger:
+        :return:
+        """
+        bus1 = psse_bus_dict[abs(self.IPR)]
+        bus2 = psse_bus_dict[abs(self.IPI)]
+
+        if self.MDC == 1:
+            rate = self.SETVL
+        elif self.MDC == 2:
+            rate = self.SETVL * self.VSCHD / 1000.0
+        else:
+            rate = self.SETVL
+
+        obj = Branch(bus_from=bus1,
+                     bus_to=bus2,
+                     name=self.NAME + '_DC_2_terminals',
+                     r=self.RDC,
+                     rate=rate)
+        return obj
+
+
+class PSSeVscDCLine:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+
+        NAME	The non-blank alphanumeric identifier assigned to this dc line. Each VSC dc line must have a unique NAME. NAME may be up to twelve characters and may contain any combination of blanks, uppercase letters, numbers and special characters. NAME must be enclosed in single or double quotes if it contains any blanks or special characters. No default allowed.
+        MDC	Control mode: 0 for out-of-service, 1 for in-service. MDC = 1 by default.
+        RDC	The dc line resistance; entered in ohms. RDC must be positive. No default allowed.
+        Oi An owner number (1 through 9999). Each VSC dc line may have up to four owners. By default, O1 is 1, and O2, O3 and O4 are zero.
+        Fi	The fraction of total ownership assigned to owner Oi; each Fi must be positive. The Fi values are normalized such that they sum to 1.0 before they are placed in the working case. By default, each Fi is 1.0.
+
+        IBUS	Converter bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names). No default allowed.
+
+        TYPE	Code for the type of converter dc control:
+        0	 for converter out-of-service 1	 for dc voltage control 2	 for MW control.
+        When both converters are in-service, exactly one converter of each VSC dc line must be TYPE 1. No default allowed.
+        MODE	Converter ac control mode:
+        1	for ac voltage control
+        2	for fixed ac power factor.
+        MODE = 1 by default.
+        DCSET	Converter dc setpoint. For TYPE = 1, DCSET is the scheduled dc voltage on the dc side of the converter bus; entered in kV. For TYPE = 2, DCSET is the power demand, where a positive value specifies that the converter is feeding active power into the ac network at bus IBUS, and a negative value specifies that the converter is withdrawing active power from the ac network at bus IBUS; entered in MW. No default allowed.
+        ACSET	Converter ac setpoint. For MODE = 1, ACSET is the regulated ac voltage setpoint; entered in pu. For MODE = 2, ACSET is the power factor setpoint. ACSET = 1.0 by default.
+        Aloss,
+        Bloss	Coefficients of the linear equation used to calculate converter losses:
+        KWconv loss = Aloss + (Idc * Bloss)
+        Aloss is entered in kW. Bloss is entered in kW/amp. Aloss = Bloss = 0.0 by default.
+        MINloss	Minimum converter losses; entered in kW. MINloss = 0.0 by default.
+        SMAX	Converter MVA rating; entered in MVA. SMAX = 0.0 to allow unlimited converter MVA loading. SMAX = 0.0 by default.
+        IMAX	Converter ac current rating; entered in amps. IMAX = 0.0 to allow unlimited converter current loading. If a positive IMAX is specified, the base voltage assigned to bus IBUS must be positive. IMAX = 0.0 by default.
+        PWF	Power weighting factor fraction (0.0 < PWF < 1.0) used in reducing the active power order and either the reactive power order (when MODE is 2) or the reactive power limits (when MODE is 1) when the converter MVA or current rating is violated. When PWF is 0.0, only the active power is reduced; when PWF is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. PWF = 1.0 by default.
+        MAXQ	Reactive power upper limit; entered in Mvar. A positive value of reactive power indicates reactive power flowing into the ac network from the converter; a negative value of reactive power indicates reactive power withdrawn from the ac network.
+        Not used if MODE = 2. MAXQ = 9999.0 by default.
+        MINQ	Reactive power lower limit; entered in Mvar. A positive value of reactive power indicates reactive power flowing into the ac network from the converter; a negative value of reactive power indicates reactive power withdrawn from the ac network.
+        Not used if MODE = 2. MINQ = -9999.0 by default.
+        REMOT	Bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names), of a remote Type 1 or 2 bus for which voltage is to be regulated by this converter to the value specified by ACSET. If bus REMOT is other than a Type 1 or 2 bus, bus IBUS regulates its own voltage to the value specified by ACSET.
+        REMOT is entered as zero if the converter is to regulate its own voltage. Not used if MODE = 2. REMOT = 0 by default.
+        RMPCT	Percent of the total Mvar required to hold the voltage at the bus controlled by bus IBUS that is to be contributed by this VSC; RMPCT must be positive. RMPCT is needed only if REMOT specifies a valid remote bus and there is more than one local or remote voltage controlling device (plant, switched shunt, FACTS device shunt element, or VSC dc line converter) controlling the voltage at bus REMOT to a setpoint, or REMOT is zero but bus IBUS is the controlled bus, local or remote, of one or more other setpoint mode voltage controlling devices. Not used if MODE = 2. RMPCT = 100.0 by default.
+
+
+        """
+
+
+
+        if version == 33:
+
+            '''
+            NAME, MDC, RDC, O1, F1, ... O4, F4
+            IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
+            IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
+            '''
+
+            if len(data[0]) == 11:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, \
+                 self.O3, self.F3, self.O4, self.F4 = data[0]
+            elif len(data[0]) == 9:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            elif len(data[0]) == 7:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2 = data[0]
+            elif len(data[0]) == 5:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1 = data[0]
+
+            self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1, self.BLOSS1, self.MINLOSS1, \
+             self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
+
+            self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2, self.BLOSS2, self.MINLOSS2, \
+             self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
+
+        elif version == 29:
+
+            '''
+            ’NAME’, MDC, RDC, O1, F1, ... O4, F4
+            IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
+            IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
+            '''
+
+            if len(data[0]) == 11:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, \
+                 self.O3, self.F3, self.O4, self.F4 = data[0]
+            elif len(data[0]) == 9:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
+            elif len(data[0]) == 7:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2 = data[0]
+            elif len(data[0]) == 5:
+                self.NAME, self.MDC, self.RDC,  self.O1, self.F1 = data[0]
+
+            self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1, self.BLOSS1, self.MINLOSS1, \
+             self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
+
+            self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2, self.BLOSS2, self.MINLOSS2, \
+             self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
+
+        else:
+            logger.append('Version ' + str(version) + ' not implemented for DC Lines')
+
+    def get_object(self, psse_bus_dict, logger: list):
+        """
+        GEt equivalent object
+        :param psse_bus_dict:
+        :param logger:
+        :return:
+        """
+        bus1 = psse_bus_dict[abs(self.IBUS1)]
+        bus2 = psse_bus_dict[abs(self.IBUS2)]
+
+        obj = Branch(bus_from=bus1,
+                     bus_to=bus2,
+                     name=self.NAME + '_DC_2_terminals',
+                     r=self.RDC,
+                     rate=max(self.SMAX1, self.SMAX2))
+        return obj
 
 
 class PSSeTransformer:
@@ -1508,6 +1797,53 @@ class PSSeTransformer:
             raise Exception(str(self.windings) + ' number of windings!')
 
 
+class PSSeArea:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        self.I = -1
+
+        self.ARNAME = ''
+
+
+        if version == 33:
+            # I, ISW, PDES, PTOL, 'ARNAME'
+            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+
+            self.ARNAME = self.ARNAME.replace("'", "").strip()
+        else:
+            logger.append('Areas not defined for version ' + str(version))
+
+
+class PSSeZone:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        self.I = -1
+
+        self.ZONAME = ''
+
+        if version == 33:
+            # I, 'ZONAME'
+            self.I, self.ZONAME = data[0]
+
+            self.ZONAME = self.ZONAME.replace("'", "").strip()
+        else:
+            logger.append('Zones not defined for version ' + str(version))
+
+
 def interpret_line(line, splitter=','):
     """
     Split text into arguments and parse each of them to an appropriate format (int, float or string)
@@ -1653,24 +1989,6 @@ class PSSeParser:
         # 19: Induction Machine Data
         # 20: Q Record
 
-        '''
-        'Bus', 
-        'Load', 
-        'Generator', 
-        'Branch', 
-        'Transformer', 
-        'Area interchange', 
-        'Two-terminal dc line', 
-        'VSC dc line', 
-        'Switched shunt', 
-        'Impedance correction table', 
-        'Multi-terminal dc line', 
-        'Multi-section line', 
-        'Zone', 
-        'Inter-area transfer', 
-        'Owner', 
-        'FACTS device'
-        '''
         meta_data = dict()
         meta_data['bus'] = [1, grid.buses, PSSeBus, 1]
         meta_data['load'] = [2, grid.loads, PSSeLoad, 1]
@@ -1678,6 +1996,10 @@ class PSSeParser:
         meta_data['generator'] = [4, grid.generators, PSSeGenerator, 1]
         meta_data['branch'] = [5, grid.branches, PSSeBranch, 1]
         meta_data['transformer'] = [6, grid.transformers, PSSeTransformer, 4]
+        meta_data['two-terminal dc'] = [7, grid.branches, PSSeTwoTerminalDCLine, 3]
+        meta_data['vsc dc line'] = [8, grid.branches, PSSeVscDCLine, 3]
+        meta_data['area'] = [9, grid.areas, PSSeArea, 1]
+        meta_data['zone'] = [10, grid.zones, PSSeZone, 1]
 
         for key, values in meta_data.items():
 
@@ -1740,16 +2062,51 @@ class PSSeParser:
 
 
 if __name__ == '__main__':
-    # file
-    # fname = 'IEEE57.RAW'
     import os
+    from GridCal.Engine.IO.file_handler import FileSave
+
     folder = 'C:\\Users\\A487516\\Desktop\\Mozambique-Zambia\\Network files\\2022\\Study cases\\ACCC_1'
     fname = 'ALL_MAX.raw'
-
-    parser = PSSeParser(os.path.join(folder, fname))
+    input_file = os.path.join(folder, fname)
+    parser = PSSeParser(input_file)
 
     print('Logs')
     for l in parser.logger:
         print(l)
 
-    pass
+    xlsx_file = input_file + '.xlsx'
+    FileSave(circuit=parser.circuit,
+             file_name=xlsx_file).save()
+
+    print('Saved!')
+
+    # post process to get capacity by zone
+    import pandas as pd
+
+    xls = pd.ExcelFile(xlsx_file)
+    bus = pd.read_excel(xls, 'bus')
+    br = pd.read_excel(xls, 'branch')
+    gen = pd.read_excel(xls, 'generator')
+    xls.close()
+
+    gen_bus = pd.merge(bus, gen, left_on='name', right_on='bus')
+    power_per_area_and_zone = gen_bus.groupby(['area', 'zone']).sum()['Snom']
+
+    br['area_from'] = br['bus_from'].map(bus.set_index('name')['area'].drop_duplicates())
+    br['area_to'] = br['bus_to'].map(bus.set_index('name')['area'].drop_duplicates())
+
+    br['zone_from'] = br['bus_from'].map(bus.set_index('name')['zone'].drop_duplicates())
+    br['zone_to'] = br['bus_to'].map(bus.set_index('name')['zone'].drop_duplicates())
+
+    transmission_per_area = br.groupby(['area_from', 'area_to']).sum()['rate']
+    transmission_per_zone = br.groupby(['zone_from', 'zone_to']).sum()['rate']
+
+    xls2 = pd.ExcelWriter(input_file + '_process.xlsx')
+    power_per_area_and_zone.to_excel(xls2, sheet_name='power_per_ar_zo')
+    transmission_per_area.to_excel(xls2, sheet_name='transmission_per_area')
+    transmission_per_zone.to_excel(xls2, sheet_name='transmission_per_zone')
+    xls2.save()
+    print('Saved 2!')
+
+    print()
+
