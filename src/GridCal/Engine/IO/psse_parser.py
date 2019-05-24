@@ -1092,14 +1092,13 @@ class PSSeTransformer:
             # Line 1: for both types
 
             if len(data[0]) == 21:
-
                 n = len(data[0])
                 dta = np.zeros(21, dtype=object)
                 dta[0:n] = data[0]
 
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
-                 self.VECGRP = dta
+                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
+                self.VECGRP = dta
 
             if len(data[0]) == 20:
 
@@ -1109,7 +1108,7 @@ class PSSeTransformer:
 
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
                  self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
-                 self.VECGRP = dta
+                  self.VECGRP = dta
 
             elif len(data[0]) == 18:
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
@@ -1124,36 +1123,49 @@ class PSSeTransformer:
                 self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
                  self.NAME, self.STAT, self.VECGRP = data[0]
 
-            # line 2
-            if len(data[1]) == 3:
-                # 2-windings
+            if len(data) == 4:
                 self.windings = 2
+
+                '''
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4,VECGRP
+                R1-2,X1-2,SBASE1-2
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
+                WINDV2,NOMV2
+                '''
+
                 self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
-            else:
-                # 3-windings
-                self.windings = 3
-                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                 self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
-            # line 3: for both types
-            n = len(data[2])
-            dta = np.zeros(17, dtype=object)
-            dta[0:n] = data[2]
+                n = len(data[2])
+                dta = np.zeros(17, dtype=object)
+                dta[0:n] = data[2]
 
-            self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-             self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
+                self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
+                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
 
-            # line 4
-            if len(data[3]) == 2:
-                # 2-windings
                 self.WINDV2, self.NOMV2 = data[3]
+
             else:
-                # 3 - windings
+                self.windings = 3
+
+                '''
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4,VECGRP
+                R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
+                WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2,COD2,CONT2,RMA2,RMI2,VMA2,VMI2,NTP2,TAB2,CR2,CX2,CNXA2
+                WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3,COD3,CONT3,RMA3,RMI3,VMA3,VMI3,NTP3,TAB3,CR3,CX3,CNXA3
+                '''
+
+                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1, \
+                self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+
+                self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, \
+                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2, \
-                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
-                 self.CR3, self.CX3, self.CNXA3 = data[3]
+                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[3]
+
+                self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
+                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[4]
 
         elif version == 32:
 
@@ -1569,12 +1581,12 @@ class PSSeParser:
 
         sections_dict = dict()
 
-        str_a = 'End of'
-        str_b = 'data'
+        str_a = 'End of'.lower()
+        str_b = 'data'.lower()
 
         for i, sec in enumerate(sections):
             data = sec.split('\n')
-            first = data.pop(0)
+            first = data.pop(0).lower()
             if str_a in first:
                 if ',' in first:
                     srch = first.split(',')[0]
@@ -1583,7 +1595,7 @@ class PSSeParser:
                 name = re.search(str_a + '(.*)' + str_b, srch).group(1).strip()
                 data2 = sections[i-1].split('\n')[1:]
 
-                if name == 'Bus':
+                if name.lower() == 'bus':
                     data2.pop(0)
                     data2.pop(0)
 
@@ -1660,12 +1672,12 @@ class PSSeParser:
         'FACTS device'
         '''
         meta_data = dict()
-        meta_data['Bus'] = [1, grid.buses, PSSeBus, 1]
-        meta_data['Load'] = [2, grid.loads, PSSeLoad, 1]
-        meta_data['Shunt'] = [3, grid.shunts, PSSeShunt, 1]
-        meta_data['Generator'] = [4, grid.generators, PSSeGenerator, 1]
-        meta_data['Branch'] = [5, grid.branches, PSSeBranch, 1]
-        meta_data['Transformer'] = [6, grid.transformers, PSSeTransformer, 4]
+        meta_data['bus'] = [1, grid.buses, PSSeBus, 1]
+        meta_data['load'] = [2, grid.loads, PSSeLoad, 1]
+        meta_data['shunt'] = [3, grid.shunts, PSSeShunt, 1]
+        meta_data['generator'] = [4, grid.generators, PSSeGenerator, 1]
+        meta_data['branch'] = [5, grid.branches, PSSeBranch, 1]
+        meta_data['transformer'] = [6, grid.transformers, PSSeTransformer, 4]
 
         for key, values in meta_data.items():
 
@@ -1681,17 +1693,17 @@ class PSSeParser:
 
                     lines_per_object2 = lines_per_object
 
-                    if version == 29 and key == 'Transformer':
+                    if version in [29, 33] and key == 'transformer':
                         # as you know the PSS/e raw format is nuts, that is why for v29
                         # the transformers may have 4 or 5 lines to define them
                         if (l + 1) < len(lines):
                             dta = lines[l+1].split(',')
-                            if len(dta) == 3:
-                                # 4 - windings
-                                lines_per_object2 = 4
-                            else:
-                                # 3-windings
+                            if len(dta) > 3:
+                                # 3 - windings
                                 lines_per_object2 = 5
+                            else:
+                                # 2-windings
+                                lines_per_object2 = 4
 
                     if ',' in lines[l]:
                         data = list()
@@ -1717,7 +1729,7 @@ class PSSeParser:
                     l += lines_per_object2
 
             else:
-                logger.append(key + 'is not in the data')
+                logger.append('"' + key + '" is not in the data')
 
         # add logs for the non parsed objects
         for key in sections_dict.keys():
@@ -1731,8 +1743,8 @@ if __name__ == '__main__':
     # file
     # fname = 'IEEE57.RAW'
     import os
-    folder = 'C:\\Users\\A487516\\Desktop'
-    fname = 'SAPP 2013CF POST Peak -18 DEC 2013_VERSION29.raw'
+    folder = 'C:\\Users\\A487516\\Desktop\\Mozambique-Zambia\\Network files\\2022\\Study cases\\ACCC_1'
+    fname = 'ALL_MAX.raw'
 
     parser = PSSeParser(os.path.join(folder, fname))
 

@@ -13,7 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import PySide2
+import matplotlib
+matplotlib.use('Qt5Agg')
+matplotlib.rcParams['backend.qt5'] = 'PySide2'
 from matplotlib import pyplot as plt
 
 
