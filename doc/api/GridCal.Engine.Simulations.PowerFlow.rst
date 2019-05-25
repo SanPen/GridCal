@@ -1,3 +1,5 @@
+.. _GridCal.Engine.Simulations.PowerFlow:
+
 GridCal.Engine.Simulations.PowerFlow package
 ============================================
 

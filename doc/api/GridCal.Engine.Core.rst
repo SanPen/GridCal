@@ -1,3 +1,5 @@
+.. _GridCal.Engine.Core:
+
 GridCal.Engine.Core package
 ===========================
 

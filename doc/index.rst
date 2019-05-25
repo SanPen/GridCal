@@ -21,7 +21,7 @@ the author's
 
     about
     getting_started
-    api/api
+    api
     theory/models
     gui
     development

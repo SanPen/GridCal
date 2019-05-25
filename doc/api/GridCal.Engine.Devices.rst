@@ -1,3 +1,5 @@
+.. _GridCal.Engine.Devices:
+
 GridCal.Engine.Devices package
 ==============================
 

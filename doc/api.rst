@@ -20,5 +20,25 @@ modules*
 .. toctree::
     :maxdepth: 4
 
-    auto/GridCal
-
+    api/GridCal.Engine
+    api/GridCal.Engine.Core
+    api/GridCal.Engine.Devices
+    api/GridCal.Engine.IO
+    api/GridCal.Engine.Replacements
+    api/GridCal.Engine.Simulations
+    api/GridCal.Engine.Simulations.ContinuationPowerFlow
+    api/GridCal.Engine.Simulations.Dynamics
+    api/GridCal.Engine.Simulations.OPF
+    api/GridCal.Engine.Simulations.Optimization
+    api/GridCal.Engine.Simulations.PowerFlow
+    api/GridCal.Engine.Simulations.ShortCircuit
+    api/GridCal.Engine.Simulations.StateEstimation
+    api/GridCal.Engine.Simulations.Stochastic
+    api/GridCal.Engine.Simulations.Topology
+    api/GridCal.Gui
+    api/GridCal.Gui.Main
+    api/GridCal.Gui.Analysis
+    api/GridCal.Gui.ProfilesInput
+    api/GridCal.Gui.TowerBuilder
+    api/GridCal
+    api/modules

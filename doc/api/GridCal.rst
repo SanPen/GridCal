@@ -1,3 +1,5 @@
+.. _GridCal:
+
 GridCal package
 ===============
 

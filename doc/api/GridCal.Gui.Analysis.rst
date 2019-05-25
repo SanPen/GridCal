@@ -1,3 +1,5 @@
+.. _GridCal.Gui.Analysis:
+
 GridCal.Gui.Analysis package
 ============================
 

@@ -1,3 +1,5 @@
+.. _GridCal.Gui.TowerBuilder:
+
 GridCal.Gui.TowerBuilder package
 ================================
 

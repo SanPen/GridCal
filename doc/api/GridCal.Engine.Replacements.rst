@@ -1,3 +1,5 @@
+.. _GridCal.Engine.Replacements:
+
 GridCal.Engine.Replacements package
 ===================================
 

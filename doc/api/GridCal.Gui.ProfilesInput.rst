@@ -1,3 +1,5 @@
+.. _GridCal.Gui.ProfilesInput:
+
 GridCal.Gui.ProfilesInput package
 =================================
 

@@ -1,3 +1,5 @@
+.. _GridCal.Gui.Main:
+
 GridCal.Gui.Main package
 ========================
 
