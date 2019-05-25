@@ -7,6 +7,11 @@ this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
 
 
+version 3.3.5
+_____________
+
+- Greatly improved PSS/e .raw file import support.
+
 version 3.3.4
 _____________
 
