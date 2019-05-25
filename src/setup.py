@@ -93,6 +93,7 @@ install_requires = ["numpy>=1.14.0",
                     "scikit-learn>=0.18",
                     "geopy>=1.16",
                     "pytest>=3.8",
+                    "h5py>=2.9.0",
                     ]
 
 if platform.system() == 'Windows':
