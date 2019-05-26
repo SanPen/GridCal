@@ -14,7 +14,7 @@ import os
 # Python 3 only projects can skip this import
 from io import open
 
-from GridCal.__version__ import __GridCal_VERSION__
+from src.GridCal.__version__ import __GridCal_VERSION__
 
 here = os.path.abspath(os.path.dirname(__file__))
 
