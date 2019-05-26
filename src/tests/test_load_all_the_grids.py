@@ -1,3 +1,4 @@
+import PySide2
 from GridCal.Engine import *
 
 import os

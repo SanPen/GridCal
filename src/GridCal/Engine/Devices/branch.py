@@ -22,8 +22,9 @@ from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.sequence_line import SequenceLineType
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
-from GridCal.Engine.Devices.tower import Tower
+
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.tower import Tower
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
