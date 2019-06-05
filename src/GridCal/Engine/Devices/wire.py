@@ -12,9 +12,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import PySide2
 
-from PySide2 import QtCore
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from PySide2 import QtCore
 
 
 class Wire(EditableDevice):

@@ -14,15 +14,15 @@ import os
 # Python 3 only projects can skip this import
 from io import open
 
-from GridCal.__version__ import __GridCal_VERSION__
+from src.GridCal.__version__ import __GridCal_VERSION__
 
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(os.path.join(here, '..', 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(os.path.join(here, '..', 'doc', 'about.rst'), encoding='utf-8') as f:
+with open(os.path.join(here, 'doc', 'about.rst'), encoding='utf-8') as f:
     description = f.read()
 
 # create the file MANIFEST.in
@@ -36,7 +36,7 @@ with open(os.path.join(here, '..', 'doc', 'about.rst'), encoding='utf-8') as f:
 #             f.write(line + '\n')
 # f.close()
 
-base_path = os.path.join('GridCal')
+base_path = os.path.join('src', 'GridCal')
 
 packages = find_packages(where=base_path, exclude=['docs', 'test'])
 packages = [os.path.join(base_path, p) for p in packages]

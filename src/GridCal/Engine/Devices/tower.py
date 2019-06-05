@@ -12,13 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import PySide2
 import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.wire import Wire
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+# from GridCal.Engine.Devices.wire import Wire
+
 
 """
 Equations source:
@@ -291,7 +292,7 @@ class Tower(EditableDevice):
         else:
             pass
 
-    def is_used(self, wire: Wire):
+    def is_used(self, wire):
         """
 
         :param wire:
