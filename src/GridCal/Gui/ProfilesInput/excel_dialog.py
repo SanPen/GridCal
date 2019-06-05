@@ -23,14 +23,17 @@ class ExcelDialog(QtWidgets.QDialog):
         # click
         self.ui.buttonBox.accepted.connect(self.accepted_action)
         self.ui.buttonBox.rejected.connect(self.rejected_action)
+        self.ui.sheets_list.doubleClicked.connect(self.accepted_action)
 
     def accepted_action(self):
         if len(self.ui.sheets_list.selectedIndexes()):
             self.excel_sheet = self.ui.sheets_list.selectedIndexes()[0].row()
         print('Accepted: self.excel_sheet: ', self.excel_sheet)
+        self.close()
 
     def rejected_action(self):
         print('Rejected: self.excel_sheet: ', self.excel_sheet)
+        self.close()
 
 
 if __name__ == "__main__":
