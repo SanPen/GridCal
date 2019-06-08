@@ -14,5 +14,4 @@ such that you can extend on them.
     from_objects_to_matrices
     branch_model
     xfo_sc
-    power_flow
-    short_circuit
+    simulations
