@@ -1,4 +1,4 @@
-.. _GridCal.Engine.Simulations.Stochastic:
+.. _gridcal_engine_simulations_Stochastic:
 
 GridCal.Engine.Simulations.Stochastic package
 =============================================

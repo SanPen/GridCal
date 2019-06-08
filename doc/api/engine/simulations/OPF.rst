@@ -1,4 +1,4 @@
-.. _GridCal.Engine.Simulations.OPF:
+.. _gridcal_engine_simulations_OPF:
 
 GridCal.Engine.Simulations.OPF package
 ======================================

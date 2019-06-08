@@ -1,4 +1,4 @@
-.. _GridCal.Engine.Replacements:
+.. _gridcal_engine_replacements:
 
 GridCal.Engine.Replacements package
 ===================================
@@ -8,11 +8,13 @@ GridCal.Engine.Replacements package
     :undoc-members:
     :show-inheritance:
 
+.. _gridcal_engine_replacements_submodules:
+
 Submodules
 ----------
 
 GridCal.Engine.Replacements.mpiserve module
--------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.Replacements.mpiserve
     :members:
@@ -20,7 +22,7 @@ GridCal.Engine.Replacements.mpiserve module
     :show-inheritance:
 
 GridCal.Engine.Replacements.poap\_controller module
----------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.Replacements.poap_controller
     :members:
@@ -28,7 +30,7 @@ GridCal.Engine.Replacements.poap\_controller module
     :show-inheritance:
 
 GridCal.Engine.Replacements.strategy module
--------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.Replacements.strategy
     :members:
@@ -36,11 +38,9 @@ GridCal.Engine.Replacements.strategy module
     :show-inheritance:
 
 GridCal.Engine.Replacements.tcpserve module
--------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.Replacements.tcpserve
     :members:
     :undoc-members:
     :show-inheritance:
-
-

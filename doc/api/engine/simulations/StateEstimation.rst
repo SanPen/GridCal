@@ -1,4 +1,4 @@
-.. _GridCal.Engine.Simulations.StateEstimation:
+.. _gridcal_engine_simulations_StateEstimation:
 
 GridCal.Engine.Simulations.StateEstimation package
 ==================================================

@@ -17,7 +17,7 @@ the author's
 `simulation guide <https://github.com/SanPen/PracticalGridModeling/raw/master/practical_grid_modeling.pdf>`_.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     about
     getting_started

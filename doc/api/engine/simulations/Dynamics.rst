@@ -1,4 +1,4 @@
-.. _GridCal.Engine.Simulations.Dynamics:
+.. _gridcal_engine_simulations_Dynamics:
 
 GridCal.Engine.Simulations.Dynamics package
 ===========================================

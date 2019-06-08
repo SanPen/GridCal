@@ -405,10 +405,16 @@ class CalculationInputs:
 
     def get_structure(self, structure_type):
         """
-        Get a DataFrame with the input
-        Args:
-            structure_type: 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', 'Types'
-        Returns: Pandas DataFrame
+        Get a DataFrame with the input.
+
+        Arguments:
+
+            **structure_type** (str): 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries' or 'Types'
+
+        Returns:
+
+            pandas DataFrame
+
         """
 
         if structure_type == 'Vbus':

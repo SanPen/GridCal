@@ -1,4 +1,4 @@
-.. _GridCal.Engine.Simulations.Topology:
+.. _gridcal_engine_simulations_Topology:
 
 GridCal.Engine.Simulations.Topology package
 ===========================================

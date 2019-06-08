@@ -1,4 +1,4 @@
-.. _GridCal.Gui:
+.. _gridcal_gui:
 
 GridCal.Gui package
 ===================
@@ -8,21 +8,26 @@ GridCal.Gui package
     :undoc-members:
     :show-inheritance:
 
+.. _gridcal_gui_subpackages:
+
 Subpackages
 -----------
 
 .. toctree::
+    :maxdepth: 3
 
-    GridCal.Gui.Analysis
-    GridCal.Gui.Main
-    GridCal.Gui.ProfilesInput
-    GridCal.Gui.TowerBuilder
+    gui/Analysis
+    gui/Main
+    gui/ProfilesInput
+    gui/TowerBuilder
+
+.. _gridcal_gui_submodules:
 
 Submodules
 ----------
 
 GridCal.Gui.ConsoleWidget module
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ConsoleWidget
     :members:
@@ -30,7 +35,7 @@ GridCal.Gui.ConsoleWidget module
     :show-inheritance:
 
 GridCal.Gui.GeneralDialogues module
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.GeneralDialogues
     :members:
@@ -38,7 +43,7 @@ GridCal.Gui.GeneralDialogues module
     :show-inheritance:
 
 GridCal.Gui.GridEditorWidget module
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.GridEditorWidget
     :members:
@@ -46,11 +51,9 @@ GridCal.Gui.GridEditorWidget module
     :show-inheritance:
 
 GridCal.Gui.GuiFunctions module
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.GuiFunctions
     :members:
     :undoc-members:
     :show-inheritance:
-
-

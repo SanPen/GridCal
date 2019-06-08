@@ -162,13 +162,13 @@ class ReactivePowerControlMode(Enum):
 class TapsControlMode(Enum):
     """
     The :ref:`TapsControlMode<taps_control>` offers 3 modes to control how
-    :ref:`transformers<transformer_type>`' :ref:`tap changer<tap_changer>` regulate
+    :ref:`transformers<transformer>`' :ref:`tap changer<tap_changer>` regulate
     voltage on their regulated :ref:`bus<bus>`:
 
-    **NoControl**: In this mode, the :ref:`transformers<transformer_type>` don't try to
+    **NoControl**: In this mode, the :ref:`transformers<transformer>` don't try to
     regulate the voltage at their :ref:`bus<bus>`.
 
-    **Direct**: In this mode, the :ref:`transformers<transformer_type>` try to regulate
+    **Direct**: In this mode, the :ref:`transformers<transformer>` try to regulate
     the voltage at their bus. **GridCal** does so by jumping straight to the tap that
     corresponds to the desired transformation ratio, or the highest or lowest tap if
     the desired ratio is outside of the tap range.
@@ -183,12 +183,12 @@ class TapsControlMode(Enum):
     **Iterative**: As mentioned above, the **Direct** control mode may not yield
     satisfying results in some isolated cases. The **Direct** control mode tries to
     jump to the final solution in a single or few iterations, but in grids where a
-    significant change of tap at one :ref:`transformer<transformer_type>` has a
-    significant impact on other :ref:`transformers<transformer_type>`, additional
+    significant change of tap at one :ref:`transformer<transformer>` has a
+    significant impact on other :ref:`transformers<transformer>`, additional
     iterations may be required to reach a satisfying solution.
 
     Instead of trying to jump to the final solution, the **Iterative** mode raises or
-    lowers each :ref:`transformer's<transformer_type>` tap incrementally.
+    lowers each :ref:`transformer's<transformer>` tap incrementally.
     """
 
     NoControl = "NoControl"
@@ -1363,7 +1363,7 @@ class PowerFlowMP:
 
         Arguments:
 
-            **circuit** (:ref:`CalculationInputs<calc_inputs>`): CalculationInputs
+            **circuit** (:ref:`CalculationInputs<calculation_inputs>`): CalculationInputs
             instance
 
             **Vbus** (list): Initial voltage at each bus in complex per unit
@@ -1374,7 +1374,7 @@ class PowerFlowMP:
 
         Returns:
 
-            :ref:`PowerFlowResults<pf_results>` instance
+            :ref:`PowerFlowResults<power_flow_results>` instance
         """
 
         # Retry with another solver

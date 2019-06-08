@@ -222,7 +222,7 @@ class Branch(EditableDevice):
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
     transformer, etc.) with an electrical impedance. The basic **Branch** class
     includes basic electrical attributes for most passive elements, but other
-    :ref:`device types<device_types>` may be passed to the **Branch** constructor to
+    :ref:`device types<types>` may be passed to the **Branch** constructor to
     configure it as a specific type.
 
     For example, a transformer may be created with the following code:
@@ -230,8 +230,8 @@ class Branch(EditableDevice):
     .. code:: ipython3
 
         from GridCal.Engine.Core.multi_circuit import MultiCircuit
-        from GridCal.Engine.devices import *
-        from GridCal.Engine.device_types import *
+        from GridCal.Engine.Devices import *
+        from GridCal.Engine.Devices.types import *
 
         # Create grid
         grid = MultiCircuit()
