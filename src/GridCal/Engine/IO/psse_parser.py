@@ -2114,36 +2114,45 @@ class PSSeParser:
         return grid, logger
 
 
-if __name__ == '__main__':
-    import os
-    from GridCal.Engine.IO.file_handler import FileSave
+def process_raw_file(root_folder, fname):
+    """
+    process a .raw file
+    :param root_folder: folder
+    :param fname: file name (in the folder)
+    :return: nothing
+    """
 
-    folder = 'C:\\Users\\A487516\\Desktop\\Mozambique-Zambia\\Network files\\2022\\Study cases\\ACCC_1'
-    fname = 'ALL_MAX.raw'
-    input_file = os.path.join(folder, fname)
+    input_file = os.path.join(root_folder, fname)
+    output_file = os.path.join(destination_folder, fname)
+    log_file = os.path.join(destination_folder, fname + '_log.txt')
+
+    print('Processing', input_file)
     parser = PSSeParser(input_file)
 
-    print('Logs')
+    # print('Logs')
+    pointer = open(log_file, "w")
     for l in parser.logger:
-        print(l)
+        pointer.write(l + '\n')
+    pointer.close()
 
-    xlsx_file = input_file + '.xlsx'
+    # open xlsx file for saving
+    xlsx_file = output_file + '.xlsx'
     FileSave(circuit=parser.circuit,
              file_name=xlsx_file).save()
 
-    print('Saved!')
-
     # post process to get capacity by zone
-    import pandas as pd
-
     xls = pd.ExcelFile(xlsx_file)
     bus = pd.read_excel(xls, 'bus')
     br = pd.read_excel(xls, 'branch')
     gen = pd.read_excel(xls, 'generator')
+    lod = pd.read_excel(xls, 'load')
     xls.close()
 
     gen_bus = pd.merge(bus, gen, left_on='name', right_on='bus')
-    power_per_area_and_zone = gen_bus.groupby(['area', 'zone']).sum()['Snom']
+    power_generation_per_area_and_zone = gen_bus.groupby(['area', 'zone']).sum()['Snom']
+
+    load_bus = pd.merge(bus, lod, left_on='name', right_on='bus')
+    power_load_per_area_and_zone = load_bus.groupby(['area', 'zone']).sum()['P']
 
     br['area_from'] = br['bus_from'].map(bus.set_index('name')['area'].drop_duplicates())
     br['area_to'] = br['bus_to'].map(bus.set_index('name')['area'].drop_duplicates())
@@ -2154,9 +2163,37 @@ if __name__ == '__main__':
     transmission_per_area = br.groupby(['area_from', 'area_to']).sum()['rate']
     transmission_per_zone = br.groupby(['zone_from', 'zone_to']).sum()['rate']
 
-    xls2 = pd.ExcelWriter(input_file + '_process.xlsx')
-    power_per_area_and_zone.to_excel(xls2, sheet_name='power_per_ar_zo')
+    xls2 = pd.ExcelWriter(output_file + '_process.xlsx')
+    gen_bus[['area', 'zone', 'substation', 'name_y', 'bus', 'active_y',
+             'is_controlled', 'P', 'Pf', 'Vset', 'Snom', 'Qmin', 'Qmax']].to_excel(xls2, sheet_name='generation')
+    load_bus[['area', 'zone', 'substation', 'name_y', 'bus', 'active_y', 'P', 'Q']].to_excel(xls2, sheet_name='load')
+    power_generation_per_area_and_zone.to_excel(xls2, sheet_name='generation_processed')
+    power_load_per_area_and_zone.to_excel(xls2, sheet_name='load_processed')
     transmission_per_area.to_excel(xls2, sheet_name='transmission_per_area')
     transmission_per_zone.to_excel(xls2, sheet_name='transmission_per_zone')
     xls2.save()
-    print('Saved 2!')
+    print('Saved!')
+
+
+if __name__ == '__main__':
+    import os
+    import pandas as pd
+    from GridCal.Engine.IO.file_handler import FileSave
+
+    origin_folder = 'C:\\Users\\A487516\\Desktop\\Mozambique-Zambia\\Network files'
+    destination_folder = r'C:\Users\A487516\Desktop\Mozambique-Zambia\Network files'
+
+    for root, dirs, files in os.walk(origin_folder):
+
+        path = root.split(os.sep)
+
+        print((len(path) - 1) * '---', os.path.basename(root))
+
+        for fname in files:
+
+            if fname.lower().endswith('.raw'):
+
+                process_raw_file(root, fname)
+
+            else:
+                print('Skipping', fname)

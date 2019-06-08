@@ -22,13 +22,13 @@ class PandasModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self._data = np.array(data.values)
         self._cols = data.columns
-        self.index = data.index.values
+        self._index = data.index.values
         self.r, self.c = np.shape(self._data)
         self.isDate = False
 
-        if len(self.index) > 0:
-            if isinstance(self.index[0], np.datetime64):
-                self.index = pd.to_datetime(self.index)
+        if len(self._index) > 0:
+            if isinstance(self._index[0], np.datetime64):
+                self._index = pd.to_datetime(self._index)
                 self.isDate = True
 
         self.formatter = lambda x: "%.2f" % x
@@ -51,13 +51,13 @@ class PandasModel(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Horizontal:
                 return self._cols[p_int]
             elif orientation == QtCore.Qt.Vertical:
-                if self.index is None:
+                if self._index is None:
                     return p_int
                 else:
                     if self.isDate:
-                        return self.index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self._index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index[p_int])
+                        return str(self._index[p_int])
         return None
 
 

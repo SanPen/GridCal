@@ -6,6 +6,12 @@ Notice that some versions skip numbers. This is not an error,
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
 
+version 3.3.6
+_____________
+
+- Continued to improved PSS/e .raw support
+- Fixed the bug caused by PySide2 with the excel sheet selection window
+
 
 version 3.3.5
 _____________
