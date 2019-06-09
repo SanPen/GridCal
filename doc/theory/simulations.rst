@@ -1,4 +1,4 @@
-.. _power_flow:
+
 
 Power Flow
 ==========
@@ -18,3 +18,23 @@ The following subsections include theory about the power flow algorithms support
     power_flow/holomorphic_embedding
     power_flow/post_power_flow
     power_flow/continuation_power_flow
+
+
+Optimal power flow
+===================
+
+.. toctree::
+    :maxdepth: 3
+
+    opf/opf
+
+
+Short Circuit
+=============
+
+.. toctree::
+    :maxdepth: 3
+
+    short_circuit/3_phase_sc
+
+
