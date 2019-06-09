@@ -37,8 +37,4 @@ def test_all_grids():
         circuit = file_handler.open()
         circuit.compile()
 
-    return len(failed) == 0
-
-
-if __name__ == '__main__':
-    test_all_grids()
+    assert len(failed) == 0
