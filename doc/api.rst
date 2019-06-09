@@ -18,6 +18,6 @@ The whole idea can be summarized as:
 modules*
 
 .. toctree::
-    :maxdepth: 5
+    :maxdepth: 7
 
     api/gridcal_package

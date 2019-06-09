@@ -221,9 +221,9 @@ class Branch(EditableDevice):
     The **Branch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
     transformer, etc.) with an electrical impedance. The basic **Branch** class
-    includes basic electrical attributes for most passive elements, but other
-    :ref:`device types<types>` may be passed to the **Branch** constructor to
-    configure it as a specific type.
+    includes basic electrical attributes for most passive elements, but other device
+    types may be passed to the **Branch** constructor to configure it as a specific
+    type.
 
     For example, a transformer may be created with the following code:
 
@@ -268,8 +268,8 @@ class Branch(EditableDevice):
         # Add transformer to grid
         grid.add_branch(X_C3)
 
-    Refer to the :ref:`TapChanger<tap_changer>` class for an example using a
-    voltage regulator.
+    Refer to the :class:`GridCal.Engine.Devices.branch.TapChanger` class for an example
+    using a voltage regulator.
 
     Arguments:
 
@@ -307,7 +307,7 @@ class Branch(EditableDevice):
 
         **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
 
-        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :ref:`BranchType.Transformer<transformer_type>`)
+        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :class:`GridCal.Engine.Devices.transformer.TransformerType`)
 
         **length** (float, 0.0): Length of the branch in km
 
@@ -540,7 +540,7 @@ class Branch(EditableDevice):
 
         Argument:
 
-            **tap_changer** (:ref:`TapChanger<tap_changer>`): Tap changer object
+            **tap_changer** (:class:`GridCal.Engine.Devices.branch.TapChanger`): Tap changer object
 
         """
         self.tap_changer = tap_changer
@@ -554,7 +554,8 @@ class Branch(EditableDevice):
         """
         Get the branch virtual taps
 
-        The virtual taps generate when a transformer nominal winding voltage differs from the bus nominal voltage
+        The virtual taps generate when a transformer nominal winding voltage differs
+        from the bus nominal voltage.
 
         Returns:
 

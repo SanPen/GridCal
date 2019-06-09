@@ -14,7 +14,7 @@ Subpackages
 -----------
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 6
 
     gridcal_engine
     gridcal_gui
