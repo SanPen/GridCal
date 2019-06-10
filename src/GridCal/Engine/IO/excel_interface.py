@@ -570,7 +570,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             template_name = str(obj.template)
             if template_name in branch_types.keys():
                 obj.template = branch_types[template_name]
-                print(template_name, 'updtaed!')
+                print(template_name, 'updated!')
 
             # set the branch
             circuit.add_branch(obj)

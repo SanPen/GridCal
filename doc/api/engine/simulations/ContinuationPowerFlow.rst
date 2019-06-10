@@ -1,3 +1,5 @@
+.. _gridcal_engine_simulations_ContinuationPowerFlow:
+
 GridCal.Engine.Simulations.ContinuationPowerFlow package
 ========================================================
 

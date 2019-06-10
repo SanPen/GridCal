@@ -1,3 +1,5 @@
+.. _gridcal_gui_TowerBuilder:
+
 GridCal.Gui.TowerBuilder package
 ================================
 
@@ -6,11 +8,13 @@ GridCal.Gui.TowerBuilder package
     :undoc-members:
     :show-inheritance:
 
+.. _gridcal_gui_towerbuilder_submodules:
+
 Submodules
 ----------
 
 GridCal.Gui.TowerBuilder.LineBuilderDialogue module
----------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.LineBuilderDialogue
     :members:
@@ -18,7 +22,7 @@ GridCal.Gui.TowerBuilder.LineBuilderDialogue module
     :show-inheritance:
 
 GridCal.Gui.TowerBuilder.gui module
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.gui
     :members:
@@ -26,7 +30,7 @@ GridCal.Gui.TowerBuilder.gui module
     :show-inheritance:
 
 GridCal.Gui.TowerBuilder.icons\_rc module
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.icons_rc
     :members:
@@ -34,7 +38,7 @@ GridCal.Gui.TowerBuilder.icons\_rc module
     :show-inheritance:
 
 GridCal.Gui.TowerBuilder.matplotlibwidget module
-------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.matplotlibwidget
     :members:
@@ -42,7 +46,7 @@ GridCal.Gui.TowerBuilder.matplotlibwidget module
     :show-inheritance:
 
 GridCal.Gui.TowerBuilder.test\_ module
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.test_
     :members:
@@ -50,7 +54,7 @@ GridCal.Gui.TowerBuilder.test\_ module
     :show-inheritance:
 
 GridCal.Gui.TowerBuilder.tower\_model module
---------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.tower_model
     :members:
@@ -58,11 +62,9 @@ GridCal.Gui.TowerBuilder.tower\_model module
     :show-inheritance:
 
 GridCal.Gui.TowerBuilder.update\_gui\_file module
--------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.TowerBuilder.update_gui_file
     :members:
     :undoc-members:
     :show-inheritance:
-
-

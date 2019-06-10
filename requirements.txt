@@ -17,3 +17,4 @@ scikit-learn>=0.18
 geopy>=1.16
 pytest>=3.8
 PySide2>=5.11
+h5py>=2.9.0

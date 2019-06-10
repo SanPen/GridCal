@@ -1,3 +1,5 @@
+.. _gridcal_engine_simulations_ShortCircuit:
+
 GridCal.Engine.Simulations.ShortCircuit package
 ===============================================
 

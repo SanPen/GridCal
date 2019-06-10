@@ -18,7 +18,6 @@ The whole idea can be summarized as:
 modules*
 
 .. toctree::
-    :maxdepth: 4
+    :maxdepth: 7
 
-    auto/GridCal
-
+    api/gridcal_package

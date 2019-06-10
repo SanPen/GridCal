@@ -794,9 +794,12 @@ class MainGUI(QMainWindow):
 
     def console_msg(self, msg_):
         """
-        Print in the console some message
-        Args:
-            msg_: Test message
+        Print some message in the console.
+
+        Arguments:
+
+            **msg_** (str): Message
+
         """
         dte = datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
         self.console.print_text('\n' + dte + '->' + msg_)

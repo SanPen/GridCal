@@ -1,3 +1,5 @@
+.. _gridcal_engine:
+
 GridCal.Engine package
 ======================
 
@@ -6,22 +8,27 @@ GridCal.Engine package
     :undoc-members:
     :show-inheritance:
 
+.. _gridcal_engine_subpackages:
+
 Subpackages
 -----------
 
 .. toctree::
+    :maxdepth: 4
 
-    GridCal.Engine.Core
-    GridCal.Engine.Devices
-    GridCal.Engine.IO
-    GridCal.Engine.Replacements
-    GridCal.Engine.Simulations
+    engine/core
+    engine/devices
+    engine/IO
+    engine/replacements
+    engine/simulations
+
+.. _gridcal_engine_submodules:
 
 Submodules
 ----------
 
 GridCal.Engine.basic\_structures module
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.basic_structures
     :members:
@@ -29,7 +36,7 @@ GridCal.Engine.basic\_structures module
     :show-inheritance:
 
 GridCal.Engine.grid\_analysis module
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.grid_analysis
     :members:
@@ -37,11 +44,9 @@ GridCal.Engine.grid\_analysis module
     :show-inheritance:
 
 GridCal.Engine.plot\_config module
-----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Engine.plot_config
     :members:
     :undoc-members:
     :show-inheritance:
-
-
