@@ -1,3 +1,5 @@
+.. _gridcal_gui_ProfilesInput:
+
 GridCal.Gui.ProfilesInput package
 =================================
 
@@ -6,11 +8,13 @@ GridCal.Gui.ProfilesInput package
     :undoc-members:
     :show-inheritance:
 
+.. _gridcal_gui_profilesinput_submodules:
+
 Submodules
 ----------
 
 GridCal.Gui.ProfilesInput.excel\_dialog module
-----------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.excel_dialog
     :members:
@@ -18,7 +22,7 @@ GridCal.Gui.ProfilesInput.excel\_dialog module
     :show-inheritance:
 
 GridCal.Gui.ProfilesInput.excel\_sheet\_selection module
---------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.excel_sheet_selection
     :members:
@@ -26,7 +30,7 @@ GridCal.Gui.ProfilesInput.excel\_sheet\_selection module
     :show-inheritance:
 
 GridCal.Gui.ProfilesInput.gui module
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.gui
     :members:
@@ -34,7 +38,7 @@ GridCal.Gui.ProfilesInput.gui module
     :show-inheritance:
 
 GridCal.Gui.ProfilesInput.icons\_rc module
-------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.icons_rc
     :members:
@@ -42,7 +46,7 @@ GridCal.Gui.ProfilesInput.icons\_rc module
     :show-inheritance:
 
 GridCal.Gui.ProfilesInput.matplotlibwidget module
--------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.matplotlibwidget
     :members:
@@ -50,7 +54,7 @@ GridCal.Gui.ProfilesInput.matplotlibwidget module
     :show-inheritance:
 
 GridCal.Gui.ProfilesInput.profile\_dialogue module
---------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.profile_dialogue
     :members:
@@ -58,11 +62,9 @@ GridCal.Gui.ProfilesInput.profile\_dialogue module
     :show-inheritance:
 
 GridCal.Gui.ProfilesInput.update\_gui\_file module
---------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: GridCal.Gui.ProfilesInput.update_gui_file
     :members:
     :undoc-members:
     :show-inheritance:
-
-

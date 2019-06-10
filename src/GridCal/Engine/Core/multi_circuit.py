@@ -546,7 +546,7 @@ class MultiCircuit:
         matrices and vectors for calculation. This method returns the numerical
         circuit, but it also assigns it to **self.numerical_circuit**, which is used
         when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
-        :ref:`driver<drivers>`, for example:
+        :ref:`simulation driver<gridcal_engine_simulations>`, for example:
 
         .. code:: ipython3
 

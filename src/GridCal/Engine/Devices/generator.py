@@ -21,9 +21,11 @@ from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCPr
 
 class Generator(EditableDevice):
     """
-    Voltage controlled generator. This generators supports several
-    :ref:`reactive power control modes<q_control>` to regulate the voltage on its
-    :ref:`bus` during :ref:`power flow simulations<pf_driver>`.
+    Voltage controlled generator. This generators supports several reactive power
+    control modes (see
+    :class:`GridCal.Engine.Simulations.PowerFlow.power_flow_driver.ReactivePowerControlMode`)
+    to regulate the voltage on its :ref:`bus` during
+    :ref:`power flow simulations<gridcal_engine_simulations_PowerFlow>`.
 
     Arguments:
 

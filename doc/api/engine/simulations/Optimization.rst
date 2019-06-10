@@ -1,3 +1,5 @@
+.. _gridcal_engine_simulations_Optimization:
+
 GridCal.Engine.Simulations.Optimization package
 ===============================================
 
