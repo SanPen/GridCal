@@ -1,6 +1,5 @@
-Linear optimal power flow
-==========================
-
+Linear optimal power flow time series
+=====================================
 
 General indices and dimensions
 
@@ -26,6 +25,9 @@ General indices and dimensions
   * - nl
     - Number of loads
 
+  * - nt
+    - Number of time steps
+
   * - pqpv
     - Vector of node indices of the the PQ and PV buses.
 
@@ -40,10 +42,10 @@ The objective function minimizes the cost of generation plus all the slack varia
 
 .. math::
 
-    min: \quad f = \sum_g cost_g \cdot Pg_g \\
-                 + \sum_b cost_b \cdot Pb_b  \\
-                 + \sum_l cost_l \cdot LSlack_l \\
-                 + \sum_b Fslack1_b + Fslack2_b \\
+    min: \quad f = \sum_t^{nt}  \sum_g^{ng} cost_g \cdot Pg_{g,t} \\
+                 + \sum_t^{nt}  \sum_b^{nb} cost_b \cdot Pb_{b, t}  \\
+                 + \sum_t^{nt}  \sum_l^{nl} cost_l \cdot LSlack_{l, t} \\
+                 + \sum_t^{nt}  \sum_i^{m} Fslack1_{i,t} + Fslack2_{i,t} \\
 
 
 Power injections
@@ -55,8 +57,8 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
 .. math::
 
     P = C\_bus\_gen \times Pg  \\
-      + C\_bus\_bat \times Pb  \\
-      - C\_bus\_load \times (LSlack + Load)
+        + C\_bus\_bat \times Pb  \\
+        - C\_bus\_load \times (LSlack + Load)
 
 
 .. list-table::
@@ -70,8 +72,8 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
     - Units
 
   * - :math:`P`
-    - Vector of active power per node.
-    - n
+    - Matrix of active power per node and time step.
+    - n, nt
     - Float + LP
     - p.u.
 
@@ -82,8 +84,8 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
     - 1/0
 
   * - :math:`Pg`
-    - Vector of generators active power.
-    - ng
+    - Matrix of generators active power per time step.
+    - ng, nt
     - LP
     - p.u.
 
@@ -94,8 +96,8 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
     - 1/0
 
   * - :math:`Pb`
-    - Vector of batteries active power.
-    - nb
+    - Matrix of batteries active power per time step.
+    - nb, nt
     - LP
     - p.u.
 
@@ -106,14 +108,14 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
     - 1/0
 
   * - :math:`Load`
-    - Vector of active power loads.
-    - nl
+    - Matrix of active power loads per time step.
+    - nl, nt
     - Float
     - p.u.
 
   * - :math:`LSlack`
-    - Vector of active power load slack variables.
-    - nl
+    - Matrix of active power load slack variables per time step.
+    - nl, nt
     - LP
     - p.u.
 
@@ -131,14 +133,14 @@ Equilibrium at the non slack nodes.
 
 .. math::
 
-    B_{pqpv, pqpv} \times \theta_{pqpv} = P_{pqpv}
+    B_{(pqpv, pqpv)} \times \theta_{(pqpv, :)} = P_{(pqpv, :)}
 
 
 Equilibrium at the slack nodes.
 
 .. math::
 
-    B_{vd, :} \times \theta = P_{vd}
+    B_{(vd, :)} \times \theta = P_{(vd, :)}
 
 
 
@@ -159,14 +161,14 @@ Equilibrium at the slack nodes.
     - p.u.
 
   * - :math:`P`
-    - Vector of active power per node.
-    - n
+    - Matrix of active power per node and per time step.
+    - n, nt
     - Float + LP
     - p.u.
 
   * - :math:`\theta`
-    - Vector of generators voltage angles.
-    - n
+    - Matrix of generators voltage angles per node and per time step.
+    - n, nt
     - LP
     - radians.
 
@@ -236,37 +238,122 @@ extra line capacity required to transport the power in both senses of the transp
     - 1/0
 
   * - :math:`\theta_{from}`
-    - Vector of bus voltage angles at the "from" end of the branches.
-    - m
+    - Matrix of bus voltage angles at the "from" end of the branches per bus and time step.
+    - m, nt
     - LP
     - radians.
 
   * - :math:`\theta_{to}`
-    - Vector of bus voltage angles at the "to" end of the branches.
-    - m
+    - Matrix of bus voltage angles at the "to" end of the branches per bus and time step.
+    - m, nt
     - LP
     - radians.
 
   * - :math:`\theta`
-    - Vector of bus voltage angles.
-    - n
+    - Matrix of bus voltage angles per bus and time step.
+    - n, nt
     - LP
     - radians.
 
   * - :math:`F_{max}`
-    - Vector of branch ratings.
-    - m
+    - Matrix of branch ratings per branch and time step.
+    - m, nt
     - Float
     - p.u.
 
   * - :math:`F_{slack1}`
-    - Vector of branch rating slacks in the from->to sense.
-    - m
+    - Matrix of branch rating slacks in the from->to sense per branch and time step.
+    - m, nt
     - LP
     - p.u.
 
   * - :math:`F_{slack2}`
-    - Vector of branch rating slacks in the to->from sense.
-    - m
+    - Matrix of branch rating slacks in the to->from sense per branch and time step.
+    - m, nt
     - LP
+    - p.u.
+
+
+Battery discharge restrictions
+------------------------------
+
+The first value of the batteries' energy is the initial state of charge (:math:`SoC_0`) times the battery capacity.
+
+.. math::
+
+    E_0 = SoC_0 \cdot Capacity
+
+
+The capacity in the subsequent time steps is the previous capacity minus the power dispatched.
+Note that the convention is that the positive power is discharged by the battery and the negative power
+values represent the power charged by the battery.
+
+.. math::
+
+    E_t = E_{t-1} - \frac{\Delta_t \cdot Pb}{Efficiency} \quad \quad \forall t \in \{ 1, nt-1 \}
+
+
+The batteries' energy has to be kept within the batteries' operative ranges.
+
+.. math::
+
+    SoC_{min} \cdot Capacity \leq E_t \leq SoC_{max} \cdot Capacity \quad \forall t \in \{ 0, nt-1 \}
+
+
+.. list-table::
+  :widths: 5 60 25 25 15
+  :header-rows: 1
+
+  * - Variable
+    - Description
+    - Dimensions
+    - Type
+    - Units
+
+  * - :math:`E`
+    - Matrix of energy stored in the batteries.
+    - nb, nt
+    - LP
+    - p.u.
+
+  * - :math:`SoC_0`
+    - Vector of initial states of charge.
+    - nb
+    - Float
+    - p.u.
+
+  * - :math:`SoC_{max}`
+    - Vector of maximum states of charge.
+    - nb
+    - Float
+    - p.u.
+
+  * - :math:`SoC_{min}`
+    - Vector of minimum states of charge.
+    - nb
+    - Float
+    - p.u.
+
+  * - :math:`Capacity`
+    - Vector of battery capacities.
+    - nb
+    - Float
+    - h :math:`\left(\frac{MWh}{MW \quad base} \right)`
+
+  * - :math:`\Delta_t`
+    - Time increment in the interval [t-1, t].
+    - 1
+    - Float
+    - h.
+
+  * - :math:`Pb`
+    - Vector of battery power injections.
+    - nb
+    - LP
+    - p.u.
+
+  * - :math:`Efficiency`
+    - Vector of Battery efficiency for charge and discharge.
+    - nb
+    - Float
     - p.u.

@@ -638,7 +638,7 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="0" column="2">
+                 <item row="0" column="3">
                   <spacer name="horizontalSpacer_3">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -651,7 +651,7 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="0" column="4">
+                 <item row="0" column="5">
                   <widget class="QPushButton" name="processTemplatesPushButton">
                    <property name="toolTip">
                     <string>Process templates</string>
@@ -665,10 +665,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" colspan="6">
+                 <item row="1" column="0" colspan="7">
                   <widget class="QTableView" name="dataStructureTableView"/>
                  </item>
-                 <item row="0" column="5">
+                 <item row="0" column="6">
                   <widget class="QPushButton" name="viewTemplatesButton">
                    <property name="toolTip">
                     <string>View templates catalogue</string>
@@ -693,6 +693,34 @@
                    <property name="icon">
                     <iconset resource="icons.qrc">
                      <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QPushButton" name="smart_search_pushButton">
+                   <property name="toolTip">
+                    <string>Delete on condition</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/magnifying_glass2.svg</normaloff>:/Icons/icons/magnifying_glass2.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="delete_selected_objects_pushButton">
+                   <property name="toolTip">
+                    <string>Delete selection</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
                    </property>
                   </widget>
                  </item>

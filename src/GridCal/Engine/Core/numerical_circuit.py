@@ -278,6 +278,8 @@ class NumericalCircuit:
 
         self.n_ctrl_gen = n_gen
 
+        self.n_ld = n_ld
+
         # base power
         self.Sbase = Sbase
 
@@ -365,10 +367,8 @@ class NumericalCircuit:
         self.battery_max_soc = np.zeros(n_batt, dtype=float)
 
         self.battery_dispatchable = np.zeros(n_batt, dtype=bool)
-
         self.battery_active = np.zeros(n_batt, dtype=bool)
         self.battery_active_prof = np.zeros((n_time, n_batt), dtype=bool)
-
         self.battery_mttf = np.zeros(n_batt, dtype=float)
         self.battery_mttr = np.zeros(n_batt, dtype=float)
 

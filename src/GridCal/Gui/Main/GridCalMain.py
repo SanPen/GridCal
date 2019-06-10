@@ -24,6 +24,7 @@ from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
+from GridCal.Gui.Main.smart_search_dialogue import *
 
 # Engine imports
 # from GridCal.Engine.OptimizationDriver import *
@@ -361,6 +362,8 @@ class MainGUI(QMainWindow):
 
         self.ui.view_map_pushButton.clicked.connect(self.update_map)
 
+        self.ui.smart_search_pushButton.clicked.connect(self.smart_search)
+
         self.ui.location_search_pushButton.clicked.connect(self.search_location)
 
         self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
@@ -430,6 +433,8 @@ class MainGUI(QMainWindow):
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
+
+        self.ui.delete_selected_objects_pushButton.clicked.connect(self.object_selection_delete)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -3918,6 +3923,37 @@ class MainGUI(QMainWindow):
             model.redo()
         else:
             pass
+
+    def smart_search(self):
+        """
+        Display smart search dialogue
+        """
+
+        model = self.ui.dataStructureTableView.model()
+
+        if model is not None:
+            dialogue = SmartSearchDialogue(model.objects, model.attributes)
+            dialogue.setModal(True)
+            dialogue.show()
+            dialogue.exec_()
+        else:
+            self.msg('No data selected :(')
+
+    def object_selection_delete(self):
+        """
+        Delete selection
+        """
+        print('not implemented :( !!')
+
+        sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+
+        if len(sel_idx) > 0:
+            for idx in sel_idx:
+                r = idx.row()
+                # TODO: Delete logic ...
+            self.ui.dataStructureTableView.model().update()
+        else:
+            self.msg('Select some cells')
 
 
 def run():
