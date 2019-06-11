@@ -950,7 +950,9 @@ class MultiCircuit:
                 self.branches.pop(i)
 
         # remove the bus itself
-        self.buses.remove(obj)
+        if obj in self.buses:
+            print('Deleted', obj.name)
+            self.buses.remove(obj)
 
     def add_branch(self, obj: Branch):
         """

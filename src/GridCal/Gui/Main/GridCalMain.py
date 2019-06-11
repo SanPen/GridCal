@@ -24,7 +24,7 @@ from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
-from GridCal.Gui.Main.smart_search_dialogue import *
+# from GridCal.Gui.Main.smart_search_dialogue import *
 
 # Engine imports
 # from GridCal.Engine.OptimizationDriver import *
@@ -34,7 +34,7 @@ from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
-from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions
+from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, reduce_buses
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
@@ -239,6 +239,9 @@ class MainGUI(QMainWindow):
 
         self.results_df = None
 
+        # list of all the objects of the selected type under the Objects tab
+        self.type_objects_list = list()
+
         self.buses_for_storage = None
 
         self.available_results_dict = None
@@ -362,7 +365,7 @@ class MainGUI(QMainWindow):
 
         self.ui.view_map_pushButton.clicked.connect(self.update_map)
 
-        self.ui.smart_search_pushButton.clicked.connect(self.smart_search)
+        self.ui.filter_pushButton.clicked.connect(self.smart_search)
 
         self.ui.location_search_pushButton.clicked.connect(self.search_location)
 
@@ -414,6 +417,10 @@ class MainGUI(QMainWindow):
 
         self.ui.redo_pushButton.clicked.connect(self.redo)
 
+        self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
+
+        self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -434,8 +441,6 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
-        self.ui.delete_selected_objects_pushButton.clicked.connect(self.object_selection_delete)
-
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
 
@@ -455,6 +460,9 @@ class MainGUI(QMainWindow):
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
+
+        # line edit enter
+        self.ui.smart_search_lineEdit.returnPressed.connect(self.smart_search)
 
         ################################################################################################################
         # Color maps
@@ -1482,8 +1490,10 @@ class MainGUI(QMainWindow):
             mdl = ObjectsModel(elements, elm.editable_headers,
                                parent=self.ui.dataStructureTableView, editable=True,
                                non_editable_attributes=elm.non_editable_attributes)
-
+        self.type_objects_list = elements
         self.ui.dataStructureTableView.setModel(mdl)
+        self.ui.property_comboBox.clear()
+        self.ui.property_comboBox.addItems(mdl.attributes)
         self.view_templates(False)
 
     def fill_catalogue_tree_view(self):
@@ -3927,34 +3937,238 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def display_filter(self, elements):
+        """
+        Display a list of elements that comes from a filter
+        :param elements:
+        :return:
+        """
+        if len(elements) > 0:
+
+            elm = elements[0]
+
+            if elm.device_type in [DeviceType.BranchDevice, DeviceType.SequenceLineDevice,
+                                   DeviceType.UnderGroundLineDevice]:
+
+                mdl = BranchObjectModel(elements, elm.editable_headers,
+                                        parent=self.ui.dataStructureTableView, editable=True,
+                                        non_editable_attributes=elm.non_editable_attributes)
+            else:
+
+                mdl = ObjectsModel(elements, elm.editable_headers,
+                                   parent=self.ui.dataStructureTableView, editable=True,
+                                   non_editable_attributes=elm.non_editable_attributes)
+
+            self.ui.dataStructureTableView.setModel(mdl)
+
+        else:
+
+            self.ui.dataStructureTableView.setModel(None)
+
     def smart_search(self):
         """
-        Display smart search dialogue
+        Filter
         """
 
-        model = self.ui.dataStructureTableView.model()
+        if len(self.type_objects_list) > 0:
+            command = self.ui.smart_search_lineEdit.text().lower()
+            attr = self.ui.property_comboBox.currentText()
 
-        if model is not None:
-            dialogue = SmartSearchDialogue(model.objects, model.attributes)
-            dialogue.setModal(True)
-            dialogue.show()
-            dialogue.exec_()
+            elm = self.type_objects_list[0]
+            tpe = elm.editable_headers[attr].tpe
+
+            filtered_objects = list()
+
+            if command.startswith('>'):
+                # greater than selection
+                args = command.replace('>', '').strip()
+
+                try:
+                    args = tpe(args)
+                except:
+                    self.msg('Could not parse the argument for the data type')
+                    return
+
+                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) > args]
+
+            elif command.startswith('<'):
+                # "less than" selection
+                args = command.replace('<', '').strip()
+
+                try:
+                    args = tpe(args)
+                except:
+                    self.msg('Could not parse the argument for the data type')
+                    return
+
+                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) < args]
+
+            elif command.startswith('>='):
+                # greater or equal than selection
+                args = command.replace('>=', '').strip()
+
+                try:
+                    args = tpe(args)
+                except:
+                    self.msg('Could not parse the argument for the data type')
+                    return
+
+                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) >= args]
+
+            elif command.startswith('<='):
+                # "less or equal than" selection
+                args = command.replace('<=', '').strip()
+
+                try:
+                    args = tpe(args)
+                except:
+                    self.msg('Could not parse the argument for the data type')
+                    return
+
+                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) <= args]
+
+            elif command.startswith('*'):
+                # "like" selection
+
+                if tpe == str:
+                    args = command.replace('*', '').strip()
+
+                    try:
+                        args = tpe(args)
+                    except:
+                        self.msg('Could not parse the argument for the data type')
+                        return
+
+                    filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
+                else:
+                    self.msg('This filter type is only valid for strings')
+
+            elif command.startswith('=='):
+                # Exact match
+                args = command.replace('==', '').strip()
+
+                try:
+                    args = tpe(args)
+                except:
+                    self.msg('Could not parse the argument for the data type')
+                    return
+
+                if tpe == str:
+                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
+                else:
+                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
+
+            elif command.startswith('!='):
+                # Exact match
+                args = command.replace('==', '').strip()
+
+                try:
+                    args = tpe(args)
+                except:
+                    self.msg('Could not parse the argument for the data type')
+                    return
+
+                if tpe == str:
+                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
+                else:
+                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) != args]
+
+            else:
+                filtered_objects = self.type_objects_list
+
+            self.display_filter(filtered_objects)
+
         else:
-            self.msg('No data selected :(')
+            # nothing to search
+            pass
 
-    def object_selection_delete(self):
+    def delete_and_reduce_selected_objects(self):
+        """
+        Delete and reduce the buses
+        This function removes the buses but whenever a bus is removed, the devices connected to it
+        are inherited by the bus of higher voltage that is connected.
+        If the bus is isolated, those devices are lost.
+        """
+
+        sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+        objects = self.ui.dataStructureTableView.model().objects
+
+        if len(objects) > 0:
+
+            if objects[0].device_type == DeviceType.BusDevice:
+
+                if len(sel_idx) > 0:
+
+                    reply = QMessageBox.question(self, 'Message',
+                                                 'Are you sure that you want to delete and reduce the selected elements?',
+                                                 QMessageBox.Yes, QMessageBox.No)
+
+                    if reply == QMessageBox.Yes:
+
+                        # get the selected buses
+                        buses = list()
+                        for idx in sel_idx:
+                            buses.append(objects[idx.row()])
+
+                        buses_merged = reduce_buses(circuit=self.circuit, buses_to_reduce=buses)
+
+                        for bus in buses_merged:
+                            bus.graphic_obj.create_children_icons()
+                            bus.graphic_obj.arrange_children()
+
+                        self.create_schematic_from_api(explode_factor=1)
+
+                        self.clear_results()
+                    else:
+                        # selected QMessageBox.No
+                        pass
+
+                else:
+                    # no selection
+                    pass
+
+            else:
+                self.msg('This function is only applicable to buses')
+
+        else:
+            # no objects
+            pass
+
+    def delete_selected_objects(self):
         """
         Delete selection
         """
-        print('not implemented :( !!')
 
         sel_idx = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(sel_idx) > 0:
-            for idx in sel_idx:
-                r = idx.row()
-                # TODO: Delete logic ...
-            self.ui.dataStructureTableView.model().update()
+
+            reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to delete the selected elements?',
+                                         QMessageBox.Yes, QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+
+                objects = self.ui.dataStructureTableView.model().objects
+
+                # get the unique rows
+                unique = set()
+                for idx in sel_idx:
+                    unique.add(idx.row())
+
+                unique = list(unique)
+                unique.sort(reverse=True)
+                for r in unique:
+                    obj = objects.pop(r)
+
+                    if obj.graphic_obj is not None:
+                        # this is a more complete function than the circuit one because it removes the
+                        # graphical items too, and for loads and generators it deletes them properly
+                        obj.graphic_obj.remove()
+
+                # update the view
+                self.display_filter(objects)
+            else:
+                pass
         else:
             self.msg('Select some cells')
 

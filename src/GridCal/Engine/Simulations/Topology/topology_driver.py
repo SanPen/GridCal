@@ -1,13 +1,14 @@
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import BranchType
+from GridCal.Engine.Devices.bus import Bus
 
 from networkx import DiGraph, all_simple_paths
 import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
-
 from PySide2.QtCore import QThread, QRunnable, Signal
+from typing import List
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -146,6 +147,76 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     # return the removed branch and the possible removed bus
     return removed_branch, removed_bus, updated_bus, updated_branches
 
+
+def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus]):
+    """
+    Reduce the uses in the grid
+    This function removes the buses but whenever a bus is removed, the devices connected to it
+    are inherited by the bus of higher voltage that is connected.
+    If the bus is isolated, those devices are lost.
+    :param circuit: MultiCircuit instance
+    :param buses_to_reduce: list of Bus objects
+    :return: Nothing
+    """
+
+    # create dictionary of bus relationships
+    bus_bus = dict()
+    for branch in circuit.branches:
+        f = branch.bus_from
+        t = branch.bus_to
+
+        # add that "t" is related to "f"
+        if f in bus_bus.keys():
+            bus_bus[f].append(t)
+        else:
+            bus_bus[f] = [t]
+
+        # add that "f" is related to "t"
+        if t in bus_bus.keys():
+            bus_bus[t].append(f)
+        else:
+            bus_bus[t] = [f]
+
+    # sort on voltage
+    for bus, related in bus_bus.items():
+        related.sort(key=lambda x: x.Vnom, reverse=True)
+
+    buses_merged = list()
+
+    # remove
+    for bus in buses_to_reduce:
+
+        if bus in bus_bus.keys():
+            related_buses = bus_bus[bus]
+
+            if len(related_buses) > 0:
+                selected = related_buses.pop(0)
+                while selected not in circuit.buses and len(related_buses) > 0:
+                    selected = related_buses.pop(0)
+
+                # merge the bus with the selected one
+                print('Assigning', bus.name, 'to', selected.name)
+                selected.merge(bus)
+
+                # merge the graphics
+                if selected.graphic_obj is not None and bus.graphic_obj is not None:
+                    selected.graphic_obj.merge(bus.graphic_obj)
+
+                # remember the buses that keep the devices
+                buses_merged.append(selected)
+
+                # delete the bus from the circuit and the dictionary
+                circuit.delete_bus(bus)
+                bus_bus.__delitem__(bus)
+            else:
+                # the bus is isolated, so delete it
+                circuit.delete_bus(bus)
+
+        else:
+            # the bus is isolated, so delete it
+            circuit.delete_bus(bus)
+
+    return buses_merged
 
 class TopologyReductionOptions:
 

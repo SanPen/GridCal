@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'SmartSearch.ui',
 # licensing of 'SmartSearch.ui' applies.
 #
-# Created: Mon Jun 10 21:53:16 2019
+# Created: Tue Jun 11 10:51:06 2019
 #      by: pyside2-uic  running on PySide2 5.12.3
 #
 # WARNING! All changes made in this file will be lost!

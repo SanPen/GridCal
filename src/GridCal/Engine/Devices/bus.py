@@ -217,8 +217,8 @@ class Bus(EditableDevice):
 
     def initialize_lp_profiles(self):
         """
-        Dimention the LP var profiles
-        :return:
+        Dimension the LP var profiles
+        :return: Nothing
         """
         for elm in (self.controlled_generators + self.batteries):
             elm.initialize_lp_vars()
@@ -273,8 +273,8 @@ class Bus(EditableDevice):
 
     def copy(self):
         """
-
-        :return:
+        Deep copy of this object
+        :return: New instance of this object
         """
         bus = Bus()
         bus.name = self.name
@@ -349,7 +349,7 @@ class Bus(EditableDevice):
     def get_json_dict(self, id):
         """
         Return Json-like dictionary
-        :return:
+        :return: Dictionary
         """
         return {'id': id,
                 'type': 'bus',
@@ -374,7 +374,7 @@ class Bus(EditableDevice):
         """
         Set the profiles state of the objects in this bus to the value given in the profiles at the index t
         :param t: index of the profile
-        :return:
+        :return: Nothing
         """
         for elm in self.loads:
             elm.P = elm.P_prof.values[t, 0]
@@ -402,8 +402,8 @@ class Bus(EditableDevice):
 
     def retrieve_graphic_position(self):
         """
-        Get the position set by the graphic object
-        :return:
+        Get the position set by the graphic object into this object's variables
+        :return: Nothing
         """
         if self.graphic_obj is not None:
             self.x = self.graphic_obj.pos().x()
@@ -413,7 +413,6 @@ class Bus(EditableDevice):
     def delete_profiles(self):
         """
         Delete all profiles
-        :return:
         """
         for elm in self.loads:
             elm.delete_profiles()
@@ -433,7 +432,6 @@ class Bus(EditableDevice):
     def create_profiles(self, index):
         """
         Delete all profiles
-        :return:
         """
         for elm in self.loads:
             elm.create_profiles(index)
@@ -474,31 +472,37 @@ class Bus(EditableDevice):
     def apply_lp_profiles(self, Sbase):
         """
         Sets the lp solution to the regular generators profile
-        :return:
         """
         for elm in self.batteries + self.controlled_generators:
             elm.apply_lp_profile(Sbase)
 
     def merge(self, other_bus):
-
+        """
+        Add the elements of the "Other bus" to this bus
+        :param other_bus: Another instance of Bus
+        """
         # List of load s attached to this bus
-        self.loads += other_bus.loads
+        self.loads += other_bus.loads.copy()
 
         # List of Controlled generators attached to this bus
-        self.controlled_generators += other_bus.controlled_generators
+        self.controlled_generators += other_bus.controlled_generators.copy()
 
         # List of shunt s attached to this bus
-        self.shunts += other_bus.shunts
+        self.shunts += other_bus.shunts.copy()
 
         # List of batteries attached to this bus
-        self.batteries += other_bus.batteries
+        self.batteries += other_bus.batteries.copy()
 
         # List of static generators attached tot this bus
-        self.static_generators += other_bus.static_generators
+        self.static_generators += other_bus.static_generators.copy()
 
         # List of measurements
-        self.measurements += other_bus.measurements
+        self.measurements += other_bus.measurements.copy()
 
     def get_fault_impedance(self):
+        """
+        Get the fault impedance
+        :return: complex value of fault impedance
+        """
         return complex(self.r_fault, self.x_fault)
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1194</width>
+    <width>1231</width>
     <height>799</height>
    </rect>
   </property>
@@ -638,8 +638,8 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="0" column="3">
-                  <spacer name="horizontalSpacer_3">
+                 <item row="0" column="8">
+                  <spacer name="horizontalSpacer_6">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -651,7 +651,7 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="0" column="5">
+                 <item row="0" column="9">
                   <widget class="QPushButton" name="processTemplatesPushButton">
                    <property name="toolTip">
                     <string>Process templates</string>
@@ -665,10 +665,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" colspan="7">
+                 <item row="1" column="0" colspan="11">
                   <widget class="QTableView" name="dataStructureTableView"/>
                  </item>
-                 <item row="0" column="6">
+                 <item row="0" column="10">
                   <widget class="QPushButton" name="viewTemplatesButton">
                    <property name="toolTip">
                     <string>View templates catalogue</string>
@@ -679,6 +679,33 @@
                    <property name="icon">
                     <iconset resource="icons.qrc">
                      <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="7">
+                  <spacer name="horizontalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QPushButton" name="delete_selected_objects_pushButton">
+                   <property name="toolTip">
+                    <string>Delete selection</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
                    </property>
                   </widget>
                  </item>
@@ -696,31 +723,63 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QPushButton" name="smart_search_pushButton">
+                 <item row="0" column="4">
+                  <widget class="QPushButton" name="filter_pushButton">
                    <property name="toolTip">
-                    <string>Delete on condition</string>
+                    <string>Smart filter</string>
                    </property>
                    <property name="text">
                     <string/>
                    </property>
                    <property name="icon">
                     <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/magnifying_glass2.svg</normaloff>:/Icons/icons/magnifying_glass2.svg</iconset>
+                     <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QPushButton" name="delete_selected_objects_pushButton">
+                 <item row="0" column="3">
+                  <widget class="QLineEdit" name="smart_search_lineEdit">
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>0</height>
+                    </size>
+                   </property>
                    <property name="toolTip">
-                    <string>Delete selection</string>
+                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Write search criteria. i.e.:&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;gt;=20: Is greater or equal to 20&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;==bus1: Is exacty equal to bus1&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;gt;Bus2: Is greater than Bus2&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;== 30: Is equal to 30&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;*bus : Contains the word bus&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1" colspan="2">
+                  <widget class="QComboBox" name="property_comboBox">
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="6">
+                  <widget class="QPushButton" name="delete_and_reduce_pushButton">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string/>
                    </property>
                    <property name="icon">
                     <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+                     <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
                    </property>
                   </widget>
                  </item>
@@ -4352,8 +4411,8 @@ points from time series</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1194</width>
-     <height>22</height>
+     <width>1231</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
