@@ -2063,9 +2063,10 @@ class BusGraphicItem(QGraphicsRectItem):
         Args:
             color: Qt Color ot the marker
         """
-        self.big_marker = QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
-        self.big_marker.setBrush(color)
-        self.big_marker.setOpacity(0.5)
+        if self.big_marker is None:
+            self.big_marker = QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+            self.big_marker.setBrush(color)
+            self.big_marker.setOpacity(0.5)
 
     def delete_big_marker(self):
         """

@@ -638,105 +638,6 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="0" column="8">
-                  <spacer name="horizontalSpacer_6">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="0" column="9">
-                  <widget class="QPushButton" name="processTemplatesPushButton">
-                   <property name="toolTip">
-                    <string>Process templates</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0" colspan="11">
-                  <widget class="QTableView" name="dataStructureTableView"/>
-                 </item>
-                 <item row="0" column="10">
-                  <widget class="QPushButton" name="viewTemplatesButton">
-                   <property name="toolTip">
-                    <string>View templates catalogue</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="7">
-                  <spacer name="horizontalSpacer_3">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="0" column="5">
-                  <widget class="QPushButton" name="delete_selected_objects_pushButton">
-                   <property name="toolTip">
-                    <string>Delete selection</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QPushButton" name="setValueToColumnButton">
-                   <property name="toolTip">
-                    <string>Set value to column</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4">
-                  <widget class="QPushButton" name="filter_pushButton">
-                   <property name="toolTip">
-                    <string>Smart filter</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="3">
                   <widget class="QLineEdit" name="smart_search_lineEdit">
                    <property name="minimumSize">
@@ -759,6 +660,78 @@ p, li { white-space: pre-wrap; }
                    </property>
                   </widget>
                  </item>
+                 <item row="0" column="10">
+                  <spacer name="horizontalSpacer_6">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="0" column="9">
+                  <widget class="QPushButton" name="setValueToColumnButton">
+                   <property name="toolTip">
+                    <string>Set value to column</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="11">
+                  <widget class="QPushButton" name="processTemplatesPushButton">
+                   <property name="toolTip">
+                    <string>Process templates</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="13">
+                  <widget class="QTableView" name="dataStructureTableView"/>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QPushButton" name="delete_selected_objects_pushButton">
+                   <property name="toolTip">
+                    <string>Delete selection</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="12">
+                  <widget class="QPushButton" name="viewTemplatesButton">
+                   <property name="toolTip">
+                    <string>View templates catalogue</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="1" colspan="2">
                   <widget class="QComboBox" name="property_comboBox">
                    <property name="minimumSize">
@@ -766,6 +739,20 @@ p, li { white-space: pre-wrap; }
                      <width>120</width>
                      <height>0</height>
                     </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QPushButton" name="filter_pushButton">
+                   <property name="toolTip">
+                    <string>Smart filter</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
                    </property>
                   </widget>
                  </item>
@@ -780,6 +767,34 @@ p, li { white-space: pre-wrap; }
                    <property name="icon">
                     <iconset resource="icons.qrc">
                      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="7">
+                  <widget class="QPushButton" name="highlight_selection_buses_pushButton">
+                   <property name="toolTip">
+                    <string>Highlight the buses of the selected elements</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/highlight.svg</normaloff>:/Icons/icons/highlight.svg</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="8">
+                  <widget class="QPushButton" name="clear_highlight_pushButton">
+                   <property name="toolTip">
+                    <string>Clear the bus highlight</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="icons.qrc">
+                     <normaloff>:/Icons/icons/unhighlight.svg</normaloff>:/Icons/icons/unhighlight.svg</iconset>
                    </property>
                   </widget>
                  </item>
@@ -4412,7 +4427,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1231</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

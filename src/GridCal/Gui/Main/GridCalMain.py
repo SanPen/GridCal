@@ -421,6 +421,10 @@ class MainGUI(QMainWindow):
 
         self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
 
+        self.ui.highlight_selection_buses_pushButton.clicked.connect(self.highlight_selection_buses)
+
+        self.ui.clear_highlight_pushButton.clicked.connect(self.clear_big_bus_markers)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -4089,49 +4093,53 @@ class MainGUI(QMainWindow):
         are inherited by the bus of higher voltage that is connected.
         If the bus is isolated, those devices are lost.
         """
+        model = self.ui.dataStructureTableView.model()
 
-        sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-        objects = self.ui.dataStructureTableView.model().objects
+        if model is not None:
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
 
-        if len(objects) > 0:
+            if len(objects) > 0:
 
-            if objects[0].device_type == DeviceType.BusDevice:
+                if objects[0].device_type == DeviceType.BusDevice:
 
-                if len(sel_idx) > 0:
+                    if len(sel_idx) > 0:
 
-                    reply = QMessageBox.question(self, 'Message',
-                                                 'Are you sure that you want to delete and reduce the selected elements?',
-                                                 QMessageBox.Yes, QMessageBox.No)
+                        reply = QMessageBox.question(self, 'Message',
+                                                     'Are you sure that you want to delete and reduce the selected elements?',
+                                                     QMessageBox.Yes, QMessageBox.No)
 
-                    if reply == QMessageBox.Yes:
+                        if reply == QMessageBox.Yes:
 
-                        # get the selected buses
-                        buses = list()
-                        for idx in sel_idx:
-                            buses.append(objects[idx.row()])
+                            # get the selected buses
+                            buses = list()
+                            for idx in sel_idx:
+                                buses.append(objects[idx.row()])
 
-                        buses_merged = reduce_buses(circuit=self.circuit, buses_to_reduce=buses)
+                            buses_merged = reduce_buses(circuit=self.circuit, buses_to_reduce=buses)
 
-                        for bus in buses_merged:
-                            bus.graphic_obj.create_children_icons()
-                            bus.graphic_obj.arrange_children()
+                            for bus in buses_merged:
+                                bus.graphic_obj.create_children_icons()
+                                bus.graphic_obj.arrange_children()
 
-                        self.create_schematic_from_api(explode_factor=1)
+                            self.create_schematic_from_api(explode_factor=1)
 
-                        self.clear_results()
+                            self.clear_results()
+                        else:
+                            # selected QMessageBox.No
+                            pass
+
                     else:
-                        # selected QMessageBox.No
+                        # no selection
                         pass
 
                 else:
-                    # no selection
-                    pass
+                    self.msg('This function is only applicable to buses')
 
             else:
-                self.msg('This function is only applicable to buses')
-
+                # no objects
+                pass
         else:
-            # no objects
             pass
 
     def delete_selected_objects(self):
@@ -4139,38 +4147,112 @@ class MainGUI(QMainWindow):
         Delete selection
         """
 
-        sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+        model = self.ui.dataStructureTableView.model()
 
-        if len(sel_idx) > 0:
+        if model is not None:
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
 
-            reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to delete the selected elements?',
-                                         QMessageBox.Yes, QMessageBox.No)
+            if len(sel_idx) > 0:
 
-            if reply == QMessageBox.Yes:
+                reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to delete the selected elements?',
+                                             QMessageBox.Yes, QMessageBox.No)
 
-                objects = self.ui.dataStructureTableView.model().objects
+                if reply == QMessageBox.Yes:
 
-                # get the unique rows
-                unique = set()
-                for idx in sel_idx:
-                    unique.add(idx.row())
+                    # get the unique rows
+                    unique = set()
+                    for idx in sel_idx:
+                        unique.add(idx.row())
 
-                unique = list(unique)
-                unique.sort(reverse=True)
-                for r in unique:
-                    obj = objects.pop(r)
+                    unique = list(unique)
+                    unique.sort(reverse=True)
+                    for r in unique:
+                        obj = objects.pop(r)
 
-                    if obj.graphic_obj is not None:
-                        # this is a more complete function than the circuit one because it removes the
-                        # graphical items too, and for loads and generators it deletes them properly
-                        obj.graphic_obj.remove()
+                        if obj.graphic_obj is not None:
+                            # this is a more complete function than the circuit one because it removes the
+                            # graphical items too, and for loads and generators it deletes them properly
+                            obj.graphic_obj.remove()
 
-                # update the view
-                self.display_filter(objects)
+                    # update the view
+                    self.display_filter(objects)
+                else:
+                    pass
+            else:
+                self.msg('Select some cells')
+        else:
+            pass
+
+    def clear_big_bus_markers(self):
+        """
+        clears all the buses "big marker"
+        """
+        for bus in self.circuit.buses:
+            bus.graphic_obj.delete_big_marker()
+
+    def set_big_bus_marker(self, buses, color: QColor):
+        """
+        Set a big marker at the selected buses
+        :param buses:
+        :param color:
+        """
+        for bus in buses:
+            bus.graphic_obj.add_big_marker(color=color)
+
+    def highlight_selection_buses(self):
+        """
+
+        :return:
+        """
+
+        model = self.ui.dataStructureTableView.model()
+
+        if model is not None:
+
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                if len(sel_idx) > 0:
+
+                    unique = set()
+                    for idx in sel_idx:
+                        unique.add(idx.row())
+                    sel_obj = list()
+                    for idx in unique:
+                        sel_obj.append(objects[idx])
+
+                    elm = objects[0]
+
+                    self.clear_big_bus_markers()
+                    color = QColor(55, 200, 171, 180)
+
+                    if elm.device_type == DeviceType.BusDevice:
+
+                        self.set_big_bus_marker(buses=sel_obj, color=color)
+
+                    elif elm.device_type == DeviceType.BranchDevice:
+                        buses = list()
+                        for br in sel_obj:
+                            buses.append(br.bus_from)
+                            buses.append(br.bus_to)
+                        self.set_big_bus_marker(buses=buses, color=color)
+
+                    else:
+                        buses = list()
+                        for elm in sel_obj:
+                            buses.append(elm.bus)
+                        self.set_big_bus_marker(buses=buses, color=color)
+
+                else:
+                    self.msg('Select some elements to highlight', 'Highlight')
             else:
                 pass
-        else:
-            self.msg('Select some cells')
+
+
+
 
 
 def run():

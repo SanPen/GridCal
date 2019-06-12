@@ -6,6 +6,13 @@ Notice that some versions skip numbers. This is not an error,
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
 
+version 3.3.7
+_____________
+
+- Added filtering capabilities to the object browser
+- Added Bus reduction
+- Added bus highlight based on the object filtering
+
 version 3.3.6
 _____________
 
