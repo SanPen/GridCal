@@ -3983,7 +3983,7 @@ class MainGUI(QMainWindow):
 
             filtered_objects = list()
 
-            if command.startswith('>'):
+            if command.startswith('>') and not command.startswith('>='):
                 # greater than selection
                 args = command.replace('>', '').strip()
 
@@ -3995,7 +3995,7 @@ class MainGUI(QMainWindow):
 
                 filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) > args]
 
-            elif command.startswith('<'):
+            elif command.startswith('<') and not command.startswith('<='):
                 # "less than" selection
                 args = command.replace('<', '').strip()
 
@@ -4033,9 +4033,9 @@ class MainGUI(QMainWindow):
 
             elif command.startswith('*'):
                 # "like" selection
+                args = command.replace('*', '').strip()
 
                 if tpe == str:
-                    args = command.replace('*', '').strip()
 
                     try:
                         args = tpe(args)
@@ -4044,21 +4044,30 @@ class MainGUI(QMainWindow):
                         return
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
+
+                elif tpe == Bus:
+                    filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
+
                 else:
                     self.msg('This filter type is only valid for strings')
 
-            elif command.startswith('=='):
+            elif command.startswith('='):
                 # Exact match
-                args = command.replace('==', '').strip()
-
-                try:
-                    args = tpe(args)
-                except:
-                    self.msg('Could not parse the argument for the data type')
-                    return
+                args = command.replace('=', '').strip()
 
                 if tpe == str:
+
+                    try:
+                        args = tpe(args)
+                    except:
+                        self.msg('Could not parse the argument for the data type')
+                        return
+
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
+
+                elif tpe == Bus:
+                    filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
+
                 else:
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
 
@@ -4066,14 +4075,19 @@ class MainGUI(QMainWindow):
                 # Exact match
                 args = command.replace('==', '').strip()
 
-                try:
-                    args = tpe(args)
-                except:
-                    self.msg('Could not parse the argument for the data type')
-                    return
-
                 if tpe == str:
+
+                    try:
+                        args = tpe(args)
+                    except:
+                        self.msg('Could not parse the argument for the data type')
+                        return
+
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
+
+                elif tpe == Bus:
+                    filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
+
                 else:
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) != args]
 

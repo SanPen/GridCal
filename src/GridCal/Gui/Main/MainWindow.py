@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Wed Jun 12 19:34:25 2019
+# Created: Thu Jun 13 20:38:04 2019
 #      by: pyside2-uic  running on PySide2 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -304,10 +304,6 @@ class Ui_mainWindow(object):
         self.viewTemplatesButton.setIcon(icon13)
         self.viewTemplatesButton.setObjectName("viewTemplatesButton")
         self.gridLayout_16.addWidget(self.viewTemplatesButton, 0, 12, 1, 1)
-        self.property_comboBox = QtWidgets.QComboBox(self.frame_38)
-        self.property_comboBox.setMinimumSize(QtCore.QSize(120, 0))
-        self.property_comboBox.setObjectName("property_comboBox")
-        self.gridLayout_16.addWidget(self.property_comboBox, 0, 1, 1, 2)
         self.filter_pushButton = QtWidgets.QPushButton(self.frame_38)
         self.filter_pushButton.setText("")
         icon14 = QtGui.QIcon()
@@ -334,6 +330,10 @@ class Ui_mainWindow(object):
         self.clear_highlight_pushButton.setIcon(icon16)
         self.clear_highlight_pushButton.setObjectName("clear_highlight_pushButton")
         self.gridLayout_16.addWidget(self.clear_highlight_pushButton, 0, 8, 1, 1)
+        self.property_comboBox = QtWidgets.QComboBox(self.frame_38)
+        self.property_comboBox.setMinimumSize(QtCore.QSize(120, 0))
+        self.property_comboBox.setObjectName("property_comboBox")
+        self.gridLayout_16.addWidget(self.property_comboBox, 0, 0, 1, 3)
         self.templatesFrame = QtWidgets.QFrame(self.templatesSplitter)
         self.templatesFrame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.templatesFrame.setFrameShadow(QtWidgets.QFrame.Raised)

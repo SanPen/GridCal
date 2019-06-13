@@ -68,6 +68,48 @@ we have the "time events" tab.
     :alt: GridCal objects tabular editor.
     :scale: 50 %
 
+There are some filtering options that can be performed; The first thing is to set the property to filter by in the
+drop down menu. Then in the text box you can type a filter criteria. The available criteria area the following:
+
+.. list-table::
+   :widths: 15 50 15
+   :header-rows: 1
+
+   * - Symbol
+     - Description
+     - Example
+
+   * - <
+     - Less than
+     - <200, <foo
+
+   * - >
+     - Greater than
+     - >200, >bar
+
+   * - <=
+     - Less or equal to
+     - <=200, <=foo
+
+   * - >=
+     - Greater or equal to
+     - >=200, >=bar
+
+   * - =
+     - Exactly equal.
+     - =node or =600
+
+   * - !=
+     - Different from.
+     - !=node or !=600
+
+   * - \*
+     - The field contains this.
+       This command is only available for strings.
+     - \*bus
+
+For strings the comparison does not take into account the case.
+
 
 If the branch objects are selected, then it is possible to extend the view with the catalogue of template elements
 available to assign to each branch. When a template is assigned to a branch, some properties are affected by  the
@@ -82,7 +124,7 @@ and the branch rating (Rate).
 Grid analysis and diagnostic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-GridCal features an analysis and diagnostics tool that allows to inspect at a glance the main magnitudes
+GridCal features an analysis and diagnostics tool (F8) that allows to inspect at a glance the main magnitudes
 of the grid objects. For instance if there were outliers in the branches resistance, it would be evident
 from the histogram charts.
 
