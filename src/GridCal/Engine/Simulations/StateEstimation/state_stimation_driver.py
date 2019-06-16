@@ -245,3 +245,7 @@ class StateEstimation(QRunnable):
             self.se_results.apply_from_island(results,
                                               island.original_bus_idx,
                                               island.original_branch_idx)
+
+
+if __name__ == '__main__':
+    pass

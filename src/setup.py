@@ -19,28 +19,26 @@ from GridCal.__version__ import __GridCal_VERSION__
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(os.path.join(here, '..', 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+if os.path.exists(os.path.join(here, '..', 'README.md')):
+    with open(os.path.join(here, '..', 'README.md'), encoding='utf-8') as f:
+        long_description = f.read()
+else:
+    long_description = ''
 
-with open(os.path.join(here, '..', 'doc', 'about.rst'), encoding='utf-8') as f:
-    description = f.read()
+if os.path.exists(os.path.join(here, '..', 'doc', 'about.rst')):
+    with open(os.path.join(here, '..', 'doc', 'about.rst'), encoding='utf-8') as f:
+        description = f.read()
+else:
+    description = ''
 
-# create the file MANIFEST.in
-# f = open("MANIFEST.in", "w")
-# for root, dirs, files in os.walk(os.path.join('src', 'GridCal')):
-#     # path = root.split(os.sep)
-#     for file in files:
-#         print(len(root) * '---', file)
-#         if file.endswith('.bim') or 'docs_build' in root:
-#             line = 'include ' + os.path.join(root, file)
-#             f.write(line + '\n')
-# f.close()
 
 base_path = os.path.join('GridCal')
 
-packages = find_packages(where=base_path, exclude=['docs', 'test'])
-packages = [os.path.join(base_path, p) for p in packages]
+# packages = find_packages(where=base_path, exclude=['docs', 'test'])
+packages = find_packages(exclude=['docs', 'test', 'research', 'tests'])
+# packages = [os.path.join(p) for p in packages]
 
+package_data = {'GridCal': ['*.md']}
 
 dependencies = ["numpy>=1.14.0",
                 "scipy>=1.0.0",
@@ -205,7 +203,7 @@ setup(
     #
     # If using Python 2.6 or earlier, then these have to be included in
     # MANIFEST.in as well.
-    # package_data=package_data,
+    package_data=package_data,
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

@@ -9,29 +9,18 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="128"
-   height="128"
-   viewBox="0 0 128 128"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.1 r15371"
-   sodipodi:docname="GridCal_icon.svg">
+   inkscape:version="0.92.4 (unknown)"
+   sodipodi:docname="GridCal_icon.svg"
+   inkscape:export-filename="/home/santi/Documentos/GitHub/GridCal/src/GridCal/Gui/Main/GridCal_icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
-     id="defs4">
-    <filter
-       inkscape:collect="always"
-       style="color-interpolation-filters:sRGB"
-       id="filter4838-2"
-       x="-0.0045394213"
-       width="1.0090787"
-       y="-0.0088463528"
-       height="1.0176927">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.23482845"
-         id="feGaussianBlur4840-2" />
-    </filter>
-  </defs>
+     id="defs4" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -39,17 +28,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0688398"
-     inkscape:cx="18.917494"
-     inkscape:cy="75.467923"
+     inkscape:zoom="0.73144533"
+     inkscape:cx="-76.464441"
+     inkscape:cy="128.50884"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g863"
      showgrid="false"
      units="px"
-     inkscape:window-width="1280"
-     inkscape:window-height="972"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-width="1863"
+     inkscape:window-height="1025"
+     inkscape:window-x="57"
+     inkscape:window-y="27"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -59,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,20 +56,39 @@
      inkscape:label="Capa 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-924.36216)">
+     transform="translate(0,-540.36216)">
+    <g
+       id="g863"
+       transform="matrix(4.0912642,0,0,4.0912642,-5.6597364,-3247.4697)"
+       style="stroke:#005544;fill:#37c8ab">
+      <rect
+         ry="4.8336272"
+         y="928.19305"
+         x="3.8308809"
+         height="120.33824"
+         width="120.33823"
+         id="rect4862-9"
+         style="opacity:1;fill:#37c8ab;fill-opacity:1;stroke:#005544;stroke-width:4;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cssssssssssssaacc"
+         inkscape:connector-curvature="0"
+         id="path4166-1"
+         d="m 4.2956247,1009.6703 c 0,0 2.5602683,-54.66171 7.2180573,-54.74234 4.821267,-0.0836 3.877848,65.27504 8.997093,65.28624 3.792915,0.01 4.255115,-51.71963 8.348537,-51.85585 2.882679,-0.0958 4.684901,42.03085 8.541251,41.95495 2.710371,-0.053 5.323236,-33.37205 9.395735,-33.42386 2.923159,-0.0372 5.058893,30.24096 8.766489,30.15016 3.11314,-0.077 6.401293,-24.87772 9.51415,-24.76807 2.705632,0.0953 3.967114,19.92827 7.301342,19.95427 2.551346,0.02 5.090379,-15.87092 8.289327,-15.96199 2.309536,-0.066 3.187171,11.08254 5.624897,11.0213 1.707972,-0.0424 3.187851,-7.06898 5.743325,-6.96753 1.800728,0.0717 2.964839,2.75317 4.736759,2.78708 2.31072,0.0447 4.558773,-0.92123 6.868283,-1.01353 2.52944,-0.10069 5.04885,0.42223 7.57881,0.50671 2.05159,0.0682 6.15778,0 6.15778,0 l 6.69069,-0.0638"
+         style="fill:#37c8ab;fill-rule:evenodd;stroke:#005544;stroke-width:2.98802471;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
     <rect
-       style="opacity:1;fill:#00aa88;fill-opacity:1;stroke:#00574f;stroke-width:7.66176176;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4862-9"
-       width="120.33823"
-       height="120.33824"
-       x="3.8308809"
-       y="928.19305" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#00574f;stroke-width:3.99300051;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4838-2)"
-       d="m 4.0231658,1008.0454 c 0,0 2.6412394,-52.71272 7.4463362,-52.79047 4.973745,-0.0806 4.000488,62.94767 9.281635,62.95847 3.91287,0.01 4.389689,-49.87558 8.612569,-50.00695 2.973847,-0.0924 4.833066,40.53225 8.811378,40.45905 2.796089,-0.051 5.491588,-32.18217 9.692884,-32.23214 3.015607,-0.0359 5.218886,29.16274 9.043738,29.07514 3.211597,-0.074 6.603742,-23.99069 9.815046,-23.88495 2.7912,0.0919 4.092578,19.21775 7.532255,19.24275 2.632035,0.019 5.251367,-15.30499 8.551487,-15.39281 2.382577,-0.0636 3.287968,10.68738 5.802789,10.62833 1.761988,-0.0409 3.28867,-6.81693 5.924964,-6.7191 1.857678,0.0691 3.058605,2.655 4.886564,2.6877 2.383799,0.0431 4.702959,-0.88838 7.085499,-0.97739 2.60944,-0.0971 5.20852,0.40718 7.8185,0.48864 2.11647,0.0658 6.35253,0 6.35253,0 l 6.90229,-0.0615"
-       id="path4166-1"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cssssssssssssaacc"
-       transform="matrix(0.97737381,0,0,1.0367138,1.175922,-35.389836)" />
+       style="opacity:1;fill:#00aa88;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect865"
+       width="77.338036"
+       height="75.404579"
+       x="-562.63422"
+       y="306.05014" />
+    <rect
+       style="opacity:1;fill:#165044;fill-opacity:1;stroke:none;stroke-width:2.61818194;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect867"
+       width="70.869766"
+       height="69.604233"
+       x="-518.16486"
+       y="342.78571" />
   </g>
 </svg>

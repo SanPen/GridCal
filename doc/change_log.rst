@@ -2,22 +2,29 @@
 Change log
 ==========
 
-Notice that some versions skip numbers. This is not an error,
+This section describes the changes introduced at each version.
+
+\* Notice that some versions skip numbers. This is not an error,
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
+
+version 3.3.9
+_____________
+
+- Improved object filtering.
 
 version 3.3.7
 _____________
 
-- Added filtering capabilities to the object browser
-- Added Bus reduction
-- Added bus highlight based on the object filtering
+- Added filtering capabilities to the object browser.
+- Added Bus reduction.
+- Added bus highlight based on the object filtering.
 
 version 3.3.6
 _____________
 
-- Continued to improved PSS/e .raw support
-- Fixed the bug caused by PySide2 with the excel sheet selection window
+- Continued to improved PSS/e .raw support.
+- Fixed the bug caused by PySide2 with the excel sheet selection window.
 
 
 version 3.3.5
