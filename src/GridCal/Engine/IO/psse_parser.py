@@ -2114,7 +2114,7 @@ class PSSeParser:
         return grid, logger
 
 
-def process_raw_file(root_folder, fname):
+def process_raw_file(root_folder, destination_folder, fname):
     """
     process a .raw file
     :param root_folder: folder
@@ -2180,8 +2180,8 @@ if __name__ == '__main__':
     import pandas as pd
     from GridCal.Engine.IO.file_handler import FileSave
 
-    origin_folder = 'C:\\Users\\A487516\\Desktop\\Mozambique-Zambia\\Network files'
-    destination_folder = r'C:\Users\A487516\Desktop\Mozambique-Zambia\Network files'
+    origin_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
+    destination_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
 
     for root, dirs, files in os.walk(origin_folder):
 
@@ -2193,7 +2193,7 @@ if __name__ == '__main__':
 
             if fname.lower().endswith('.raw'):
 
-                process_raw_file(root, fname)
+                process_raw_file(root, root, fname)
 
             else:
                 print('Skipping', fname)

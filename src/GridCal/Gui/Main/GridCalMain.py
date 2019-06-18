@@ -4208,16 +4208,16 @@ class MainGUI(QMainWindow):
     def set_big_bus_marker(self, buses, color: QColor):
         """
         Set a big marker at the selected buses
-        :param buses:
-        :param color:
+        :param buses: list of Bus objects
+        :param color: colour to use
         """
         for bus in buses:
             bus.graphic_obj.add_big_marker(color=color)
+            bus.graphic_obj.setSelected(True)
 
     def highlight_selection_buses(self):
         """
-
-        :return:
+        Highlight and select the buses of the selected objects
         """
 
         model = self.ui.dataStructureTableView.model()
