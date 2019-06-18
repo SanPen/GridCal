@@ -8,6 +8,13 @@ This section describes the changes introduced at each version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
 
+version 3.4.0
+_____________
+
+- Now when highlighting the selection, the buses on the schematic are selected. This feature allows to move
+  buses in bulk after any selection kind.
+- Added feature to highlight buses based on any numeric property from the grid objects.
+
 version 3.3.9
 _____________
 
