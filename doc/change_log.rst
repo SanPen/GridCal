@@ -14,6 +14,7 @@ _____________
 - Now when highlighting the selection, the buses on the schematic are selected. This feature allows to move
   buses in bulk after any selection kind.
 - Added feature to highlight buses based on any numeric property from the grid objects.
+- Added "master" delete from the schematic. Now any selection of buses from the schematic can be deleted at once.
 
 version 3.3.9
 _____________
