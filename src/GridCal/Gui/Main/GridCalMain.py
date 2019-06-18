@@ -427,6 +427,8 @@ class MainGUI(QMainWindow):
 
         self.ui.clear_highlight_pushButton.clicked.connect(self.clear_big_bus_markers)
 
+        self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -4267,30 +4269,93 @@ class MainGUI(QMainWindow):
             else:
                 pass
 
+    def highlight_based_on_property(self):
+        """
+        Highlight and select the buses of the selected objects
+        """
+
+        model = self.ui.dataStructureTableView.model()
+
+        if model is not None:
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                elm = objects[0]
+                attr = self.ui.property_comboBox.currentText()
+                tpe = elm.editable_headers[attr].tpe
+
+                if tpe in [float, int]:
+
+                    self.clear_big_bus_markers()
+
+                    if elm.device_type == DeviceType.BusDevice:
+                        # buses
+                        buses = objects
+                        values = [getattr(elm, attr) for elm in objects]
+
+                    elif elm.device_type == DeviceType.BranchDevice:
+                        # branches
+                        buses = list()
+                        values = list()
+                        for br in objects:
+                            buses.append(br.bus_from)
+                            buses.append(br.bus_to)
+                            val = getattr(br, attr)
+                            values.append(val)
+                            values.append(val)
+
+                    else:
+                        # loads, generators, etc...
+                        buses = [elm.bus for elm in objects]
+                        values = [getattr(elm, attr) for elm in objects]
+
+                    # build the color map
+                    seq = [(0.0, 'gray'),
+                           (0.5, 'orange'),
+                           (1, 'red')]
+                    cmap = LinearSegmentedColormap.from_list('lcolors', seq)
+                    mx = max(values)
+
+                    # color based on the value
+                    for bus, value in zip(buses, values):
+                        r, g, b, a = cmap(value / mx)
+                        color = QColor(r * 255, g * 255, b * 255, a * 255)
+                        bus.graphic_obj.add_big_marker(color=color)
+                else:
+                    self.msg('The selected property must be of a numeric type', 'Highlight based on property')
+
+            else:
+                pass
+
     def delete_selected_from_the_schematic(self):
         """
         Prompt to delete the selected buses from the schematic
         """
-        selected = [bus for bus in self.circuit.buses if bus.graphic_obj.isSelected()]
-        for bus in self.circuit.buses:
-            if bus.graphic_obj.isSelected():
-                selected.append(bus)
+        if len(self.circuit.buses) > 0:
 
-        if len(selected) > 0:
-            reply = QMessageBox.question(self, 'Delete', 'Are you sure that you want to delete the selected elements?',
-                                         QMessageBox.Yes, QMessageBox.No)
+            # get the selected buses
+            selected = [bus for bus in self.circuit.buses if bus.graphic_obj.isSelected()]
 
-            if reply == QMessageBox.Yes:
+            if len(selected) > 0:
+                reply = QMessageBox.question(self, 'Delete',
+                                             'Are you sure that you want to delete the selected elements?',
+                                             QMessageBox.Yes, QMessageBox.No)
 
-                for bus in selected:
-                    if bus.graphic_obj is not None:
-                        # this is a more complete function than the circuit one because it removes the
-                        # graphical items too, and for loads and generators it deletes them properly
-                        bus.graphic_obj.remove()
+                if reply == QMessageBox.Yes:
+
+                    # remove the buses (from the schematic and the circuit)
+                    for bus in selected:
+                        if bus.graphic_obj is not None:
+                            # this is a more complete function than the circuit one because it removes the
+                            # graphical items too, and for loads and generators it deletes them properly
+                            bus.graphic_obj.remove()
+                else:
+                    pass
             else:
-                pass
+                self.msg('Select some elements from the schematic', 'Delete buses')
         else:
-            self.msg('Select some elements from the schematic', 'Delete buses')
+            pass
 
 
 def run():

@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/delete3.svg</file>
+    <file>icons/highlight2.svg</file>
     <file>icons/unhighlight.svg</file>
     <file>icons/highlight.svg</file>
     <file>icons/magnifying_glass2.svg</file>
