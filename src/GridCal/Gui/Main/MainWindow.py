@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sat Jun 15 13:27:59 2019
+# Created: Tue Jun 18 19:16:14 2019
 #      by: pyside2-uic  running on PySide2 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1982,6 +1982,9 @@ class Ui_mainWindow(object):
         self.actionSave_as = QtWidgets.QAction(mainWindow)
         self.actionSave_as.setIcon(icon33)
         self.actionSave_as.setObjectName("actionSave_as")
+        self.actionDelete_selected = QtWidgets.QAction(mainWindow)
+        self.actionDelete_selected.setIcon(icon4)
+        self.actionDelete_selected.setObjectName("actionDelete_selected")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2041,6 +2044,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionCenter_view)
         self.toolBar.addAction(self.actionAutoatic_layout)
         self.toolBar.addAction(self.actionShow_map)
+        self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionDetect_transformers)
         self.toolBar.addAction(self.actionAuto_rate_branches)
@@ -2335,6 +2339,9 @@ class Ui_mainWindow(object):
         self.actionExport_all_results.setText(QtWidgets.QApplication.translate("mainWindow", "Export all results", None, -1))
         self.actionExport_all_results.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Export all the results", None, -1))
         self.actionSave_as.setText(QtWidgets.QApplication.translate("mainWindow", "Save as", None, -1))
+        self.actionDelete_selected.setText(QtWidgets.QApplication.translate("mainWindow", "Delete selected", None, -1))
+        self.actionDelete_selected.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Delete selected objects", None, -1))
+        self.actionDelete_selected.setShortcut(QtWidgets.QApplication.translate("mainWindow", "Del", None, -1))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *

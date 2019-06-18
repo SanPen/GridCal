@@ -329,6 +329,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
+        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -4265,8 +4267,30 @@ class MainGUI(QMainWindow):
             else:
                 pass
 
+    def delete_selected_from_the_schematic(self):
+        """
+        Prompt to delete the selected buses from the schematic
+        """
+        selected = [bus for bus in self.circuit.buses if bus.graphic_obj.isSelected()]
+        for bus in self.circuit.buses:
+            if bus.graphic_obj.isSelected():
+                selected.append(bus)
 
+        if len(selected) > 0:
+            reply = QMessageBox.question(self, 'Delete', 'Are you sure that you want to delete the selected elements?',
+                                         QMessageBox.Yes, QMessageBox.No)
 
+            if reply == QMessageBox.Yes:
+
+                for bus in selected:
+                    if bus.graphic_obj is not None:
+                        # this is a more complete function than the circuit one because it removes the
+                        # graphical items too, and for loads and generators it deletes them properly
+                        bus.graphic_obj.remove()
+            else:
+                pass
+        else:
+            self.msg('Select some elements from the schematic', 'Delete buses')
 
 
 def run():

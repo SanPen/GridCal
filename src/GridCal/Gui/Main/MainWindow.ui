@@ -4515,6 +4515,7 @@ points from time series</string>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
    <addaction name="actionShow_map"/>
+   <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
    <addaction name="actionDetect_transformers"/>
    <addaction name="actionAuto_rate_branches"/>
@@ -5086,6 +5087,21 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionDelete_selected">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete selected</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete selected objects</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
    </property>
   </action>
  </widget>
