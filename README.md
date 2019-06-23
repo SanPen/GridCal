@@ -107,6 +107,7 @@ Some of the features you'll find already are:
 # Citing GridCal
 
 If you need to cite GridCal, we now provide a DOI reference:
+
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 
 # Contact
