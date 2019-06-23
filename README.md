@@ -102,8 +102,15 @@ Some of the features you'll find already are:
 
 - Export the schematic in SVG and PNG formats.
 
-Visit the [Wiki](https://github.com/SanPen/GridCal/wiki) and the
-[check out the documentation](https://gridcal.readthedocs.io) to learn more and to
-get started.
+[Check out the documentation](https://gridcal.readthedocs.io) to learn more and to get started.
+
+# Citing GridCal
+
+If you need to cite GridCal, we now provide a DOI reference:
+[![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
+
+# Contact
 
 Send feedback and requests to santiago.penate.vera@gmail.com.
+
+

@@ -4,9 +4,16 @@ Change log
 
 This section describes the changes introduced at each version.
 
+\* Short releases indicate the fix of a critical bug.
+
 \* Notice that some versions skip numbers. This is not an error,
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
+
+version 3.4.1
+_____________
+
+- Added branch voltage and angle drops in the power flow and power flow time series simulations.
 
 version 3.4.0
 _____________
@@ -20,6 +27,7 @@ version 3.3.9
 _____________
 
 - Improved object filtering.
+- Fixed critical bug involving the change to setuptools.
 
 version 3.3.7
 _____________

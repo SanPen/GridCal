@@ -46,6 +46,8 @@ class PowerFlowResults:
 
         **flow_direction** (list): Flow direction at each branch
 
+        **Vbranch** (list): Voltage increment at each branch
+
         **error** (float): Power flow computed error
 
         **converged** (bool): Did the power flow converge?
@@ -63,8 +65,8 @@ class PowerFlowResults:
     """
 
     def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, tap_module=None,
-                 flow_direction=None, error=None, converged=None, Qpv=None, battery_power_inc=None, inner_it=None,
-                 outer_it=None, elapsed=None, methods=None, bus_types=None):
+                 flow_direction=None, Vbranch=None, error=None, converged=None, Qpv=None, battery_power_inc=None,
+                 inner_it=None,  outer_it=None, elapsed=None, methods=None, bus_types=None):
 
         self.Sbus = Sbus
 
@@ -73,6 +75,8 @@ class PowerFlowResults:
         self.Sbranch = Sbranch
 
         self.Ibranch = Ibranch
+
+        self.Vbranch = Vbranch
 
         self.loading = loading
 
@@ -112,6 +116,8 @@ class PowerFlowResults:
                                   ResultTypes.BranchCurrent,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchLosses,
+                                  ResultTypes.BranchVoltage,
+                                  ResultTypes.BranchAngles,
                                   ResultTypes.BatteryPower]
 
         self.plot_bars_limit = 100
@@ -153,6 +159,8 @@ class PowerFlowResults:
         self.Sbranch = np.zeros(m, dtype=complex)
 
         self.Ibranch = np.zeros(m, dtype=complex)
+
+        self.Vbranch = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
 
@@ -202,6 +210,8 @@ class PowerFlowResults:
         self.Sbranch[br_idx] = results.Sbranch
 
         self.Ibranch[br_idx] = results.Ibranch
+
+        self.Vbranch[br_idx] = results.Vbranch
 
         self.loading[br_idx] = results.loading
 
@@ -391,6 +401,18 @@ class PowerFlowResults:
                 title = 'Branch losses '
                 polar = False
 
+            elif result_type == ResultTypes.BranchVoltage:
+                y = np.abs(self.Vbranch[indices])
+                y_label = '(p.u.)'
+                title = 'Branch voltage drop '
+                polar = False
+
+            elif result_type == ResultTypes.BranchAngles:
+                y = np.angle(self.Vbranch[indices], deg=True)
+                y_label = '(deg)'
+                title = 'Branch voltage angle '
+                polar = False
+
             elif result_type == ResultTypes.BatteryPower:
                 if self.battery_power_inc is not None:
                     y = self.battery_power_inc[indices]
@@ -407,7 +429,7 @@ class PowerFlowResults:
                 title = ''
 
             # plot
-            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
+            df = pd.DataFrame(data=y, index=labels, columns=[result_type.value[0]])
             if len(df.columns) < self.plot_bars_limit:
                 df.abs().plot(ax=ax, kind='bar')
             else:

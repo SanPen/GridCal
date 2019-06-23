@@ -672,7 +672,7 @@ class AcOpf_old:
 
             if realistic:
                 # run a full power flow
-                res.Sbranch, res.Ibranch, res.loading, \
+                res.Sbranch, res.Ibranch, res.Vbranch, res.loading, \
                 res.losses, res.flow_direction, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input,
                                                                                                self.V)
                 res.voltage = self.V
@@ -707,7 +707,7 @@ class AcOpf_old:
                         res.load_shedding[i] = self.load_shed[i].value()
 
                 # Set the values
-                res.Sbranch, res.Ibranch, res.loading, \
+                res.Sbranch, res.Ibranch, res.Vbranch, res.loading, \
                 res.losses, res.flow_direction, res.Sbus = PowerFlowMP.power_flow_post_process(self.calculation_input,
                                                                                                self.V, only_power=True)
                 res.voltage = self.V

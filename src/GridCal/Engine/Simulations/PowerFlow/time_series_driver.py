@@ -16,6 +16,7 @@
 import pickle as pkl
 import pandas as pd
 from numpy import complex, zeros, ones, array, zeros_like
+import numpy as np
 import multiprocessing
 from matplotlib import pyplot as plt
 
@@ -58,6 +59,8 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.Ibranch = zeros((nt, m), dtype=complex)
 
+            self.Vbranch = zeros((nt, m), dtype=complex)
+
             self.loading = zeros((nt, m), dtype=complex)
 
             self.losses = zeros((nt, m), dtype=complex)
@@ -93,6 +96,8 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.Ibranch = None
 
+            self.Vbranch = None
+
             self.loading = None
 
             self.losses = None
@@ -126,6 +131,8 @@ class TimeSeriesResults(PowerFlowResults):
                                   ResultTypes.BranchCurrent,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchLosses,
+                                  ResultTypes.BranchVoltage,
+                                  ResultTypes.BranchAngles,
                                   ResultTypes.SimulationError]
 
     def set_at(self, t, results: PowerFlowResults):
@@ -142,6 +149,8 @@ class TimeSeriesResults(PowerFlowResults):
         self.Sbranch[t, :] = results.Sbranch
 
         self.Ibranch[t, :] = results.Ibranch
+
+        self.Vbranch[t, :] = results.Vbranch
 
         self.loading[t, :] = results.loading
 
@@ -203,6 +212,8 @@ class TimeSeriesResults(PowerFlowResults):
         self.Sbranch[:, br_idx] = results.Sbranch
 
         self.Ibranch[:, br_idx] = results.Ibranch
+
+        self.Vbranch[:, br_idx] = results.Ibranch
 
         self.loading[:, br_idx] = results.loading
 
@@ -309,6 +320,16 @@ class TimeSeriesResults(PowerFlowResults):
                 data = self.losses[:, indices]
                 y_label = '(MVA)'
                 title = 'Branch losses'
+
+            elif result_type == ResultTypes.BranchVoltage:
+                data = np.abs(self.Vbranch[:, indices])
+                y_label = '(p.u.)'
+                title = result_type.value[0]
+
+            elif result_type == ResultTypes.BranchAngles:
+                data = np.angle(self.Vbranch[:, indices], deg=True)
+                y_label = '(deg)'
+                title = result_type.value[0]
 
             elif result_type == ResultTypes.BatteryPower:
                 data = zeros_like(self.losses[:, indices])
@@ -579,6 +600,8 @@ class TimeSeries(QThread):
                             Ysh = calculation_input.Ysh_prof[:, t]
                             I = calculation_input.Ibus_prof[:, t]
                             S = calculation_input.Sbus_prof[:, t]
+
+                            self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
 
                             # run power flow at the circuit
                             p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options,

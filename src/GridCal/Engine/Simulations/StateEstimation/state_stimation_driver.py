@@ -227,7 +227,7 @@ class StateEstimation(QRunnable):
                                                 pv=island.pv)
 
             # Compute the branches power and the slack buses power
-            Sbranch, Ibranch, loading, \
+            Sbranch, Ibranch, Vbrnach, loading, \
              losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=island,
                                                                                 V=v_sol)
 

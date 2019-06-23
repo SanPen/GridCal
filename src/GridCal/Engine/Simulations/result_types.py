@@ -26,6 +26,8 @@ class ResultTypes(Enum):
     BranchPower = 'Branch power', DeviceType.BranchDevice
     BranchCurrent = 'Branch current', DeviceType.BranchDevice
     BranchLoading = 'Branch loading', DeviceType.BranchDevice
+    BranchVoltage = 'Branch voltage drop', DeviceType.BranchDevice
+    BranchAngles = 'Branch voltage angles', DeviceType.BranchDevice
     BranchLosses = 'Branch losses', DeviceType.BranchDevice
     BatteryPower = 'Battery power', DeviceType.BatteryDevice
     BatteryEnergy = 'Battery energy', DeviceType.BatteryDevice

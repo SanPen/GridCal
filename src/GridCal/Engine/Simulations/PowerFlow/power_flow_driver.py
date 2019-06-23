@@ -722,7 +722,7 @@ class PowerFlowMP:
             print("Stabilized in {} iteration(s) (outer control loop)".format(outer_it))
 
         # Compute the branches power and the slack buses power
-        Sbranch, Ibranch, loading, losses, \
+        Sbranch, Ibranch, Vbranch, loading, losses, \
             flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
@@ -730,6 +730,7 @@ class PowerFlowMP:
                                    voltage=voltage_solution,
                                    Sbranch=Sbranch,
                                    Ibranch=Ibranch,
+                                   Vbranch=Vbranch,
                                    loading=loading,
                                    losses=losses,
                                    flow_direction=flow_direction,
@@ -964,15 +965,20 @@ class PowerFlowMP:
 
         if not only_power:
             # Branches current, loading, etc
+            Vf = calculation_inputs.C_branch_bus_f * V
+            Vt = calculation_inputs.C_branch_bus_t * V
             If = calculation_inputs.Yf * V
             It = calculation_inputs.Yt * V
-            Sf = (calculation_inputs.C_branch_bus_f * V) * np.conj(If)
-            St = (calculation_inputs.C_branch_bus_t * V) * np.conj(It)
+            Sf = Vf * np.conj(If)
+            St = Vt * np.conj(It)
 
             # Branch losses in MVA
             losses = (Sf + St) * calculation_inputs.Sbase
 
             flow_direction = Sf.real / np.abs(Sf + 1e-20)
+
+            # branch voltage increment
+            Vbranch = Vf - Vt
 
             # Branch current in p.u.
             Ibranch = np.maximum(If, It)
@@ -983,12 +989,12 @@ class PowerFlowMP:
             # Branch loading in p.u.
             loading = Sbranch / (calculation_inputs.branch_rates + 1e-9)
 
-            return Sbranch, Ibranch, loading, losses, flow_direction, Sbus
+            return Sbranch, Ibranch, Vbranch, loading, losses, flow_direction, Sbus
 
         else:
             no_val = np.zeros(calculation_inputs.nbr, dtype=complex)
             flow_direction = np.ones(calculation_inputs.nbr, dtype=complex)
-            return no_val, no_val, no_val, no_val, flow_direction, Sbus
+            return no_val, no_val, no_val, no_val, no_val, flow_direction, Sbus
 
     @staticmethod
     def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
