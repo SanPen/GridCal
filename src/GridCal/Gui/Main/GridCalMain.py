@@ -4317,13 +4317,18 @@ class MainGUI(QMainWindow):
                     cmap = LinearSegmentedColormap.from_list('lcolors', seq)
                     mx = max(values)
 
-                    # color based on the value
-                    for bus, value in zip(buses, values):
-                        r, g, b, a = cmap(value / mx)
-                        color = QColor(r * 255, g * 255, b * 255, a * 255)
-                        bus.graphic_obj.add_big_marker(color=color)
+                    if mx != 0:
+                        # color based on the value
+                        for bus, value in zip(buses, values):
+                            r, g, b, a = cmap(value / mx)
+                            color = QColor(r * 255, g * 255, b * 255, a * 255)
+                            bus.graphic_obj.add_big_marker(color=color)
+                    else:
+                        self.msg('The maximum value is 0, so the coloring cannot be applied',
+                                 'Highlight based on property')
                 else:
-                    self.msg('The selected property must be of a numeric type', 'Highlight based on property')
+                    self.msg('The selected property must be of a numeric type',
+                             'Highlight based on property')
 
             else:
                 pass

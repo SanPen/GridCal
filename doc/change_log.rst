@@ -14,6 +14,7 @@ version 3.4.1
 _____________
 
 - Added branch voltage and angle drops in the power flow and power flow time series simulations.
+- Fixed critical bug when applying profile to snapshot
 
 version 3.4.0
 _____________

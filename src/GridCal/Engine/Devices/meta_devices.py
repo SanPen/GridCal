@@ -214,6 +214,6 @@ class EditableDevice:
         :param t: time index (integer)
         """
         for magnitude in self.properties_with_profile.keys():
-            df = getattr(self, self.properties_with_profile[magnitude])
-            setattr(self, magnitude, df.values[t])
+            profile = getattr(self, self.properties_with_profile[magnitude])
+            setattr(self, magnitude, profile[t])
 

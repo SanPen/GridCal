@@ -377,28 +377,28 @@ class Bus(EditableDevice):
         :return: Nothing
         """
         for elm in self.loads:
-            elm.P = elm.P_prof.values[t, 0]
-            elm.Q = elm.Q_prof.values[t, 0]
-            elm.Ir = elm.Ir_prof.values[t, 0]
-            elm.Ii = elm.Ii_prof.values[t, 0]
-            elm.G = elm.G_prof.values[t, 0]
-            elm.B = elm.B_prof.values[t, 0]
+            elm.P = elm.P_prof[t]
+            elm.Q = elm.Q_prof[t]
+            elm.Ir = elm.Ir_prof[t]
+            elm.Ii = elm.Ii_prof[t]
+            elm.G = elm.G_prof[t]
+            elm.B = elm.B_prof[t]
 
         for elm in self.static_generators:
-            elm.P = elm.P_prof.values[t, 0]
-            elm.Q = elm.Q_prof.values[t, 0]
+            elm.P = elm.P_prof[t]
+            elm.Q = elm.Q_prof[t]
 
         for elm in self.batteries:
-            elm.P = elm.P_prof.values[t, 0]
-            elm.Vset = elm.Vset_prof.values[t, 0]
+            elm.P = elm.P_prof[t]
+            elm.Vset = elm.Vset_prof[t]
 
         for elm in self.controlled_generators:
-            elm.P = elm.P_prof.values[t, 0]
-            elm.Vset = elm.Vset_prof.values[t, 0]
+            elm.P = elm.P_prof[t]
+            elm.Vset = elm.Vset_prof[t]
 
         for elm in self.shunts:
-            elm.G = elm.G_prof.values[t, 0]
-            elm.B = elm.B_prof.values[t, 0]
+            elm.G = elm.G_prof[t]
+            elm.B = elm.B_prof[t]
 
     def retrieve_graphic_position(self):
         """
