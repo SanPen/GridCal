@@ -14,7 +14,10 @@ version 3.4.1
 _____________
 
 - Added branch voltage and angle drops in the power flow and power flow time series simulations.
-- Fixed critical bug when applying profile to snapshot
+- Added cost profiles for the use in the OPF programs.
+- Fixed critical bug when applying profile to snapshot.
+- Fixed pySide related bug when converting dates.
+- Fixed ui bug when setting values in the profiles manually.
 
 version 3.4.0
 _____________

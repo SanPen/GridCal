@@ -1033,9 +1033,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         c = index.column()
+        r = index.row()
         if c not in self.non_editable_indices:
             profile_property = self.elements[c].properties_with_profile[self.magnitude]
-            getattr(self.elements[c], profile_property)[c] = value
+            getattr(self.elements[c], profile_property)[r] = value
 
             self.add_state(columns=[c], action_name='')
         else:

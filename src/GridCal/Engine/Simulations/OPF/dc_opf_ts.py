@@ -76,23 +76,23 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def add_nodal_power_balance(grid, problem: LpProblem, theta, P):
+def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, start_=0, end_=-1):
     """
     Add the nodal power balance
+    :param numerical_circuit: NumericalCircuit instance
     :param problem: LpProblem instance
-    :param B: Susceptance matrix (n, n)
     :param theta: Voltage angles LpVars (n, nt)
     :param P: Power injection at the buses LpVars (n, nt)
-    :param pqpv: list of indices of the pq and pv nodes
-    :param vd: list of indices of the slack nodes
     :return: Nothing, the restrictions are added to the problem
     """
 
-    # compile the multi-circuit
-    numerical_circuit = grid.compile()
-
     # do the topological computation
     calc_inputs_dict = numerical_circuit.compute_ts()
+
+    # generate the time indices to simulate
+    if end_ == -1:
+        end_ = len(numerical_circuit.time_array)
+    t = np.arange(start_, end_, 1)
 
     # for each partition of the profiles...
     for t_key, calc_inputs in calc_inputs_dict.items():
@@ -104,48 +104,27 @@ def add_nodal_power_balance(grid, problem: LpProblem, theta, P):
             bus_original_idx = calculation_input.original_bus_idx
             branch_original_idx = calculation_input.original_branch_idx
 
-            # if there are valid profiles...
-            if grid.time_profile is not None:
+            # re-pack the variables for the island and time interval
+            P_island = P[island_index, :][:, t]
+            theta_island = theta[island_index, :][:, t]
+            B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx]
 
-                # declare a results object for the partition
-                # nt = calculation_input.ntime
-                # n = calculation_input.nbus
-                # m = calculation_input.nbr
-                #
-                # # default value in case of single-valued profile
-                # dt = 1.0
+            pqpv = calculation_input.pqpv
+            vd = calculation_input.ref
 
-                P_island = P[island_index, :]
-                theta_island = theta[island_index, :]
-                B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx]
+            # Add nodal power balance for the non slack nodes
+            lpAddRestrictions2(problem=problem,
+                               lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv, :]),
+                               rhs=P_island[pqpv, :],
+                               name='Nodal_power_balance_pqpv',
+                               op='=')
 
-                pqpv = calculation_input.pqpv
-                vd = calculation_input.vd
-
-                # traverse the time profiles of the partition and simulate each time step
-                for it, t in enumerate(calculation_input.original_time_idx):
-
-                    if (t >= start_) and (t < end_):
-                        # set the power values
-                        # if the storage dispatch option is active, the batteries power is not included
-                        # therefore, it shall be included after processing
-                        # Ysh = calculation_input.Ysh_prof[:, it]
-                        # I = calculation_input.Ibus_prof[:, it]
-                        # S = calculation_input.Sbus_prof[:, it]
-
-                        # Nodal power balance for the non slack nodes
-                        lpAddRestrictions2(problem=problem,
-                                           lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv, :]),
-                                           rhs=P_island[pqpv, :],
-                                           name='Nodal_power_balance_pqpv',
-                                           op='=')
-
-                        # nodal power balance for the slack nodes
-                        lpAddRestrictions2(problem=problem,
-                                           lhs=lpDot(B_island[vd, :], theta_island),
-                                           rhs=P_island[vd, :],
-                                           name='Nodal_power_balance_vd',
-                                           op='=')
+            # Add nodal power balance for the slack nodes
+            lpAddRestrictions2(problem=problem,
+                               lhs=lpDot(B_island[vd, :], theta_island),
+                               rhs=P_island[vd, :],
+                               name='Nodal_power_balance_vd',
+                               op='=')
 
 
 def add_branch_loading_restriction(problem: LpProblem,
@@ -225,7 +204,6 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 def solve_opf_ts(grid: MultiCircuit):
 
     numerical_circuit = grid.compile()
-    islands = numerical_circuit.compute()
 
     # general indices
     n = numerical_circuit.nbus
@@ -244,17 +222,21 @@ def solve_opf_ts(grid: MultiCircuit):
     Pb_max = numerical_circuit.battery_pmax / Sbase
     Pb_min = numerical_circuit.battery_pmin / Sbase
     Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
+    cost_b = numerical_circuit.battery_cost_profile.transpose()
 
     # generator
     Pg_max = numerical_circuit.generator_pmax
     Pg_min = numerical_circuit.generator_pmin
+    cost_g = numerical_circuit.generator_cost_profile.transpose()
 
     # load
     Pl = (numerical_circuit.load_active_prof * numerical_circuit.load_power_profile).transpose() / Sbase
+    cost_l = numerical_circuit.load_cost_prof.transpose()
 
     # branch
     Fmax = numerical_circuit.br_rates / Sbase
     Bseries = numerical_circuit.branch_active_prof * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))
+    cost_br = numerical_circuit.branch_cost_profile.transpose()
 
     # time
     dt = np.zeros(nt)
@@ -287,7 +269,7 @@ def solve_opf_ts(grid: MultiCircuit):
                              LSlack=LSlack,
                              Pl=Pl)
 
-    add_nodal_power_balance(grid, problem, theta, P)
+    add_nodal_power_balance(numerical_circuit, problem, theta, P)
 
     add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
 

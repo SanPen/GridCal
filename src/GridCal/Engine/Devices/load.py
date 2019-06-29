@@ -60,9 +60,9 @@ class Load(EditableDevice):
 
     """
 
-    def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0,
+    def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
                   G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                  active=True, mttf=0.0, mttr=0.0):
+                  cost_prof=None ,active=True, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -82,20 +82,27 @@ class Load(EditableDevice):
                                                    'B': GCProp('MVAr', float,
                                                                'Reactive power of the impedance component at V=1.0 p.u.'),
                                                    'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
+                                                   'Cost': GCProp('e/MWh', float,
+                                                                  'Cost of not served energy. Used in OPF.')},
                                 non_editable_attributes=list(),
                                 properties_with_profile={'P': 'P_prof',
                                                          'Q': 'Q_prof',
                                                          'Ir': 'Ir_prof',
                                                          'Ii': 'Ii_prof',
                                                          'G': 'G_prof',
-                                                         'B': 'B_prof'})
+                                                         'B': 'B_prof',
+                                                         'Cost': 'Cost_prof'})
 
         self.bus = None
 
         self.mttf = mttf
 
         self.mttr = mttr
+
+        self.Cost = cost
+
+        self.Cost_prof = cost_prof
 
         # Impedance in equivalent MVA
         self.G = G

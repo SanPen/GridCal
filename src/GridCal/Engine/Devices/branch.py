@@ -325,7 +325,7 @@ class Branch(EditableDevice):
     """
 
     def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0,
+                 rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
                  temp_base=20, temp_oper=20, alpha=0.00330,
@@ -374,6 +374,8 @@ class Branch(EditableDevice):
                                                                   'Annealed copper @ 20ºC: 0.00393,\n'
                                                                   'Aluminum @ 20ºC: 0.004308,\n'
                                                                   'Aluminum @ 75ºC: 0.00330'),
+                                                  'Cost': GCProp('e/MWh', float,
+                                                                 'Cost of overloads. Used in OPF.'),
                                                   'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
                                                                     'Used in short circuit studies.'),
                                                   'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
@@ -386,7 +388,8 @@ class Branch(EditableDevice):
                                                   'template': GCProp('', BranchTemplate, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
-                                                         'temp_oper': 'temp_oper_prof'})
+                                                         'temp_oper': 'temp_oper_prof',
+                                                         'Cost': 'Cost_prof'})
 
         # connectivity
         self.bus_from = bus_from
@@ -415,6 +418,10 @@ class Branch(EditableDevice):
         self.mttf = mttf
 
         self.mttr = mttr
+
+        self.Cost = cost
+
+        self.Cost_prof = None
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base

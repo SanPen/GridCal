@@ -126,7 +126,7 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
 
         # a = QDateTime(2011, 4, 22, 00, 00, 00)
         # a
-        return steps, step_length, step_unit, time_base.toPyDateTime()
+        return steps, step_length, step_unit, time_base.toPython()
 
 
 class LogsDialogue(QtWidgets.QDialog):

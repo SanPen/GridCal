@@ -643,6 +643,7 @@ class MultiCircuit:
                     circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
                     circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
                     circuit.load_active_prof[:, i_ld] = elm.active_prof
+                    circuit.load_cost_prof[:, i_ld] = elm.Cost_prof
 
                     if use_opf_vals:
                         # subtract the load shedding from the generation
@@ -696,6 +697,8 @@ class MultiCircuit:
                     # Voltage profile
                     circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
 
+                    circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
+
                 circuit.C_gen_bus[i_gen, i] = 1
                 circuit.V0[i] *= elm.Vset
                 i_gen += 1
@@ -734,6 +737,8 @@ class MultiCircuit:
                     circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
 
                 circuit.battery_active_prof[:, i_batt] = elm.active_prof
+
+                circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
 
                 circuit.C_batt_bus[i_batt, i] = 1
                 circuit.V0[i] *= elm.Vset
@@ -800,6 +805,7 @@ class MultiCircuit:
             if n_time > 0:
                 circuit.branch_active_prof[:, i] = branch.active_prof
                 circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
+                circuit.branch_cost_profile[:, i] = branch.Cost_prof
 
             # switches
             if branch.branch_type == BranchType.Switch:

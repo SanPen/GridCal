@@ -314,6 +314,8 @@ class NumericalCircuit:
         self.branch_active_prof = np.zeros((n_time, n_br), dtype=int)
         self.temp_oper_prof = np.zeros((n_time, n_br), dtype=float)
 
+        self.branch_cost_profile = np.zeros((n_time, n_br), dtype=float)
+
         self.br_mttf = np.zeros(n_br, dtype=float)
         self.br_mttr = np.zeros(n_br, dtype=float)
 
@@ -341,6 +343,8 @@ class NumericalCircuit:
         self.load_admittance = np.zeros(n_ld, dtype=complex)
         self.load_active = np.zeros(n_ld, dtype=bool)
         self.load_active_prof = np.zeros((n_time, n_ld), dtype=bool)
+
+        self.load_cost_prof = np.zeros((n_time, n_ld), dtype=bool)
 
         self.load_mttf = np.zeros(n_ld, dtype=float)
         self.load_mttr = np.zeros(n_ld, dtype=float)
@@ -375,6 +379,8 @@ class NumericalCircuit:
         self.battery_power_profile = np.zeros((n_time, n_batt), dtype=float)
         self.battery_voltage_profile = np.zeros((n_time, n_batt), dtype=float)
 
+        self.battery_cost_profile = np.zeros((n_time, n_batt), dtype=float)
+
         self.C_batt_bus = lil_matrix((n_batt, n_bus), dtype=int)
 
         # static generator
@@ -406,6 +412,7 @@ class NumericalCircuit:
 
         self.generator_active = np.zeros(n_gen, dtype=bool)
         self.generator_active_prof = np.zeros((n_time, n_gen), dtype=bool)
+        self.generator_cost_profile = np.zeros((n_time, n_gen), dtype=bool)
 
         self.generator_mttf = np.zeros(n_gen, dtype=float)
         self.generator_mttr = np.zeros(n_gen, dtype=float)
