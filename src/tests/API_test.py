@@ -92,7 +92,7 @@ if __name__ == '__main__':
     print('Running OPF-TS...', '')
     opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
                                           control_batteries=True, solver=SolverType.NELDER_MEAD_OPF, realistic_results=False)
-    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
+    opf_ts = SequentialOptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
     opf_ts.run()
 
     ####################################################################################################################

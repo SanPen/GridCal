@@ -20,7 +20,7 @@ That means that solves the OPF problem for a complete time series at once
 
 from pulp import *
 import numpy as np
-
+from itertools import product
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, make_vars, lpAddRestrictions2
 
@@ -71,7 +71,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
 
     P += lpDot(C_bus_bat.transpose(), Pb)
 
-    P -= lpDot(C_bus_load.transpose(), LSlack + Pl)
+    P -= lpDot(C_bus_load.transpose(), Pl - LSlack)
 
     return P
 
@@ -142,19 +142,24 @@ def add_branch_loading_restriction(problem: LpProblem,
     :return: Nothing
     """
 
+    load_f = Bseries * (theta_f - theta_t)
+    load_t = Bseries * (theta_t - theta_f)
+
     # from-to branch power restriction
     lpAddRestrictions2(problem=problem,
-                       lhs=Bseries * (theta_f - theta_t),
+                       lhs=load_f,
                        rhs=np.array([Fmax + FSlack1[:, i] for i in range(FSlack1.shape[1])]).transpose(),  # Fmax + FSlack1
                        name='from_to_branch_rate',
                        op='<=')
 
     # to-from branch power restriction
     lpAddRestrictions2(problem=problem,
-                       lhs=Bseries * (theta_t - theta_f),
+                       lhs=load_t,
                        rhs=np.array([Fmax + FSlack2[:, i] for i in range(FSlack2.shape[1])]).transpose(),  # Fmax + FSlack2
                        name='to_from_branch_rate',
                        op='<=')
+
+    return load_f, load_t
 
 
 def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
@@ -195,86 +200,189 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
                            op='=')
 
 
-def solve_opf_ts(grid: MultiCircuit):
+class OpfAcNonSequentialTimeSeries:
 
-    numerical_circuit = grid.compile()
+    def __init__(self, grid):
 
-    # general indices
-    n = numerical_circuit.nbus
-    m = numerical_circuit.nbr
-    ng = numerical_circuit.n_ctrl_gen
-    nb = numerical_circuit.n_batt
-    nl = numerical_circuit.n_ld
-    nt = numerical_circuit.ntime
-    Sbase = numerical_circuit.Sbase
+        self.grid = grid
 
-    # battery
-    Capacity = numerical_circuit.battery_Enom / Sbase
-    minSoC = numerical_circuit.battery_min_soc
-    maxSoC = numerical_circuit.battery_max_soc
-    SoC0 = numerical_circuit.battery_soc_0
-    Pb_max = numerical_circuit.battery_pmax / Sbase
-    Pb_min = numerical_circuit.battery_pmin / Sbase
-    Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
-    cost_b = numerical_circuit.battery_cost_profile.transpose()
+        self.theta = None
+        self.Pg = None
+        self.Pb = None
+        self.Pl = None
+        self.s_from = None
+        self.s_to = None
+        self.overloads = None
+        self.rating = None
+        self.load_shedding = None
 
-    # generator
-    Pg_max = numerical_circuit.generator_pmax
-    Pg_min = numerical_circuit.generator_pmin
-    cost_g = numerical_circuit.generator_cost_profile.transpose()
+        self.problem = self.formulate()
 
-    # load
-    Pl = (numerical_circuit.load_active_prof * numerical_circuit.load_power_profile.real).transpose() / Sbase
-    cost_l = numerical_circuit.load_cost_prof.transpose()
+    def formulate(self):
+        """
+        Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        :return: PuLP Problem instance
+        """
+        numerical_circuit = self.grid.compile()
 
-    # branch
-    Fmax = numerical_circuit.br_rates / Sbase
-    Bseries = (numerical_circuit.branch_active_prof * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
-    cost_br = numerical_circuit.branch_cost_profile.transpose()
+        # general indices
+        n = numerical_circuit.nbus
+        m = numerical_circuit.nbr
+        ng = numerical_circuit.n_ctrl_gen
+        nb = numerical_circuit.n_batt
+        nl = numerical_circuit.n_ld
+        nt = numerical_circuit.ntime
+        Sbase = numerical_circuit.Sbase
 
-    # time
-    dt = np.zeros(nt)
-    for t in range(1, nt):
-        # time delta in hours
-        dt[t-1] = (numerical_circuit.time_array[t] - numerical_circuit.time_array[t-1]).seconds / 3600
+        # battery
+        Capacity = numerical_circuit.battery_Enom / Sbase
+        minSoC = numerical_circuit.battery_min_soc
+        maxSoC = numerical_circuit.battery_max_soc
+        SoC0 = numerical_circuit.battery_soc_0
+        Pb_max = numerical_circuit.battery_pmax / Sbase
+        Pb_min = numerical_circuit.battery_pmin / Sbase
+        Efficiency = (
+                                 numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
+        cost_b = numerical_circuit.battery_cost_profile.transpose()
 
-    # create LP variables
-    Pg = make_vars(name='Pg', shape=(ng, nt), Lb=Pg_min, Ub=Pg_max)
-    Pb = make_vars(name='Pb', shape=(nb, nt), Lb=Pb_min, Ub=Pb_max)
-    E = make_vars(name='E', shape=(nb, nt), Lb=Capacity * minSoC, Ub=Capacity * maxSoC)
-    LSlack = make_vars(name='LSlack', shape=(nl, nt), Lb=0, Ub=None)
-    theta = make_vars(name='theta', shape=(n, nt), Lb=-0.5, Ub=0.5)
-    theta_f = theta[numerical_circuit.F, :]
-    theta_t = theta[numerical_circuit.T, :]
-    FSlack1 = make_vars(name='FSlack1', shape=(m, nt), Lb=0, Ub=None)
-    FSlack2 = make_vars(name='FSlack2', shape=(m, nt), Lb=0, Ub=None)
+        # generator
+        Pg_max = numerical_circuit.generator_pmax
+        Pg_min = numerical_circuit.generator_pmin
+        cost_g = numerical_circuit.generator_cost_profile.transpose()
 
-    # declare problem
-    problem = LpProblem(name='DC_OPF_Time_Series')
+        # load
+        Pl = (numerical_circuit.load_active_prof * numerical_circuit.load_power_profile.real).transpose() / Sbase
+        cost_l = numerical_circuit.load_cost_prof.transpose()
 
-    # add the objective function
-    add_objective_function(problem, Pg, Pb, LSlack, FSlack1, FSlack2, cost_g, cost_b, cost_l, cost_br)
+        # branch
+        Fmax = numerical_circuit.br_rates / Sbase
+        Bseries = (numerical_circuit.branch_active_prof * (
+                    1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
+        cost_br = numerical_circuit.branch_cost_profile.transpose()
 
-    P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus,
-                             Pg=Pg,
-                             C_bus_bat=numerical_circuit.C_batt_bus,
-                             Pb=Pb,
-                             C_bus_load=numerical_circuit.C_load_bus,
-                             LSlack=LSlack,
-                             Pl=Pl)
+        # time
+        dt = np.zeros(nt)
+        for t in range(1, nt):
+            # time delta in hours
+            dt[t - 1] = (numerical_circuit.time_array[t] - numerical_circuit.time_array[t - 1]).seconds / 3600
 
-    add_nodal_power_balance(numerical_circuit, problem, theta, P)
+        # create LP variables
+        Pg = make_vars(name='Pg', shape=(ng, nt), Lb=Pg_min, Ub=Pg_max)
+        Pb = make_vars(name='Pb', shape=(nb, nt), Lb=Pb_min, Ub=Pb_max)
+        E = make_vars(name='E', shape=(nb, nt), Lb=Capacity * minSoC, Ub=Capacity * maxSoC)
+        LSlack = make_vars(name='LSlack', shape=(nl, nt), Lb=0, Ub=None)
+        theta = make_vars(name='theta', shape=(n, nt), Lb=-0.5, Ub=0.5)
+        theta_f = theta[numerical_circuit.F, :]
+        theta_t = theta[numerical_circuit.T, :]
+        FSlack1 = make_vars(name='FSlack1', shape=(m, nt), Lb=0, Ub=None)
+        FSlack2 = make_vars(name='FSlack2', shape=(m, nt), Lb=0, Ub=None)
 
-    add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
+        # declare problem
+        problem = LpProblem(name='DC_OPF_Time_Series')
 
-    if nb > 0:
-        add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
+        # add the objective function
+        add_objective_function(problem, Pg, Pb, LSlack, FSlack1, FSlack2, cost_g, cost_b, cost_l, cost_br)
 
-    problem.solve()
+        P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus,
+                                 Pg=Pg,
+                                 C_bus_bat=numerical_circuit.C_batt_bus,
+                                 Pb=Pb,
+                                 C_bus_load=numerical_circuit.C_load_bus,
+                                 LSlack=LSlack,
+                                 Pl=Pl)
 
-    print("Status:", LpStatus[problem.status])
+        add_nodal_power_balance(numerical_circuit, problem, theta, P)
 
-    return problem
+        load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
+
+        if nb > 0:
+            add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
+
+        # Assign variables to keep
+        # transpose them to be in the format of GridCal: time, device
+        self.theta = theta.transpose()
+        self.Pg = Pg.transpose()
+        self.Pb = Pb.transpose()
+        self.Pl = (Pl - LSlack).transpose()
+        self.load_shedding = LSlack.transpose()
+        self.s_from = load_f.transpose()
+        self.s_to = load_t.transpose()
+        self.overloads = FSlack1 - FSlack2
+        self.rating = Fmax
+
+        return problem
+
+    def solve(self):
+        """
+        Call PuLP to solve the problem
+        """
+        self.problem.solve()
+
+        return LpStatus[self.problem.status]
+
+    def extract2D(self, arr, make_abs=False):
+        """
+        Extract values fro the 2D array of LP variables
+        :param arr: 2D array of LP variables
+        :return: 2D numpy array
+        """
+        val = np.zeros(arr.shape)
+        for i, j in product(range(val.shape[0]), range(val.shape[1])):
+            val[i, j] = arr[i, j].value()
+        if make_abs:
+            val = np.abs(val)
+
+        return val
+
+    def get_voltage(self):
+        """
+        return the complex voltages (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.theta)
+
+    def get_overloads(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.overloads)
+
+    def get_loading(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        l = self.get_branch_power()
+        return l / self.rating
+
+    def get_branch_power(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.s_from, make_abs=True) * self.grid.Sbase
+
+    def get_battery_power(self):
+        """
+        return the battery dispatch (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.Pb)
+
+    def get_generator_power(self):
+        """
+        return the generator dispatch (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.Pg)
+
+    def get_load_shedding(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.load_shedding)
 
 
 if __name__ == '__main__':
@@ -285,7 +393,16 @@ if __name__ == '__main__':
 
         main_circuit = FileOpen(fname).open()
 
-        problem = solve_opf_ts(main_circuit)
+        problem = OpfAcNonSequentialTimeSeries(main_circuit)
 
+        status = problem.solve()
+
+        print("Status:", status)
+
+        v = problem.get_voltage()
+        print(v)
+
+        l = problem.get_loading()
+        print(l)
 
         pass

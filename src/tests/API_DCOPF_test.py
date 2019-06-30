@@ -39,7 +39,7 @@ opf = OptimalPowerFlow(grid, opf_options)
 # opf.run()
 
 print('Running ts...')
-opf_ts = OptimalPowerFlowTimeSeries(grid, opf_options)
+opf_ts = SequentialOptimalPowerFlowTimeSeries(grid, opf_options)
 opf_ts.run()
 
 # opf.results

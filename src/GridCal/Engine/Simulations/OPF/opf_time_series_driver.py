@@ -24,9 +24,9 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
+from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfAcNonSequentialTimeSeries, LpStatus
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
 from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
-# from research.DYCORS_OPF import AcOpfDYCORS
 from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -229,7 +229,7 @@ class OptimalPowerFlowTimeSeriesResults:
             return None
 
 
-class OptimalPowerFlowTimeSeries(QThread):
+class SequentialOptimalPowerFlowTimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
@@ -251,6 +251,8 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.start_ = start_
 
         self.end_ = end_
+
+        self.logger = list()
 
         self.__cancel__ = False
 
@@ -319,7 +321,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                                 allow_generation_shedding=self.options.generation_shedding)
 
             else:
-                raise Exception('Not implemented method ' + str(self.options.solver))
+                self.logger.append('Not implemented method ' + str(self.options.solver))
 
             # build
             problem.build_solvers()
@@ -426,3 +428,102 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
 
+
+class NonSequentialOptimalPowerFlow(QThread):
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
+
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
+        """
+        PowerFlow class constructor
+        @param grid: MultiCircuit Object
+        @param options: OPF options
+        """
+        QThread.__init__(self)
+
+        # Grid to run a power flow in
+        self.grid = grid
+
+        # Options to use
+        self.options = options
+
+        # OPF results
+        self.results = None
+
+        self.start_ = start_
+
+        self.end_ = end_
+
+        self.logger = list()
+
+        # set cancel state
+        self.__cancel__ = False
+
+        self.all_solved = True
+
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
+
+    def opf(self):
+        """
+        Run a power flow for every circuit
+        @return: OptimalPowerFlowResults object
+        """
+        # print('PowerFlow at ', self.grid.name)
+
+        self.progress_signal.emit(0.0)
+
+        if self.options.solver == SolverType.DC_OPF:
+
+            # DC optimal power flow
+            problem = OpfAcNonSequentialTimeSeries(self.grid)
+
+        else:
+            self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
+            return
+
+        self.progress_text.emit('Running all in an external solver, this may take a while...')
+        status = problem.solve()
+        print("Status:", status)
+
+        # pack the results
+        self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
+                                                         m=len(self.grid.branches),
+                                                         nt=len(self.grid.time_profile),
+                                                         ngen=len(self.grid.get_generators()),
+                                                         nbat=len(self.grid.get_batteries()),
+                                                         nload=len(self.grid.get_loads()),
+                                                         time=self.grid.time_profile)
+
+        self.results.voltage = problem.get_voltage()
+        self.results.load_shedding = problem.get_load_shedding()
+        # self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
+        self.results.battery_power = problem.get_battery_power()
+        self.results.controlled_generator_power = problem.get_generator_power()
+        self.results.Sbranch = problem.get_branch_power()
+        self.results.overloads = problem.get_overloads()
+        self.results.loading = problem.get_loading()
+        # self.results.converged[t] = bool(problem.converged)
+
+        return self.results
+
+    def run(self):
+        """
+
+        :return:
+        """
+        self.opf()
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def cancel(self):
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled!')
+        self.done_signal.emit()

@@ -2704,6 +2704,7 @@ class MainGUI(QMainWindow):
                     load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
                     gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
                     pf_options = self.get_selected_power_flow_options()
+                    non_sequential = self.ui.non_sequential_opf_checkBox.isChecked()
                     options = OptimalPowerFlowOptions(load_shedding=load_shedding,
                                                       generation_shedding=generation_shedding,
                                                       solver=solver,
@@ -2711,16 +2712,24 @@ class MainGUI(QMainWindow):
                                                       control_batteries=control_batteries,
                                                       load_shedding_weight=load_shedding_w,
                                                       generation_shedding_weight=gen_shedding_w,
-                                                      power_flow_options=pf_options)
+                                                      power_flow_options=pf_options,
+                                                      non_sequential=non_sequential)
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
 
                     # create the OPF time series instance
-                    self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                                                     options=options,
-                                                                                     start_=start,
-                                                                                     end_=end)
+                    if non_sequential:
+                        self.optimal_power_flow_time_series = NonSequentialOptimalPowerFlow(grid=self.circuit,
+                                                                                            options=options,
+                                                                                            start_=start,
+                                                                                            end_=end)
+
+                    else:
+                        self.optimal_power_flow_time_series = SequentialOptimalPowerFlowTimeSeries(grid=self.circuit,
+                                                                                                   options=options,
+                                                                                                   start_=start,
+                                                                                                   end_=end)
 
                     # make the thread connections to the GUI
                     self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2747,16 +2756,22 @@ class MainGUI(QMainWindow):
         """
         if self.optimal_power_flow_time_series is not None:
 
+            if len(self.optimal_power_flow_time_series.logger) > 0:
+                dlg = LogsDialogue('logger', self.optimal_power_flow_time_series.logger)
+                dlg.exec_()
+
+            # remove from the current simulations
             self.remove_simulation(SimulationTypes.OPFTimeSeries_run)
 
-            voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
-            loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
-            Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
+            if self.optimal_power_flow_time_series.results is not None:
+                voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
+                loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
+                Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
 
-            self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.optimal_power_flow_time_series.results.bus_types)
+                self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                       types=self.optimal_power_flow_time_series.results.bus_types)
 
-            self.update_available_results()
+                self.update_available_results()
 
         else:
             pass

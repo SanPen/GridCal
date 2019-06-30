@@ -33,16 +33,21 @@ class OptimalPowerFlowOptions:
     def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
                  solver=SolverType.DC_OPF, realistic_results=False, control_batteries=True,
                  faster_less_accurate=False, generation_shedding_weight=10000, load_shedding_weight=10000,
-                 power_flow_options=None, bus_types=None):
+                 power_flow_options=None, bus_types=None, non_sequential=False):
         """
-        OPF options constructor
+
         :param verbose:
         :param load_shedding:
         :param generation_shedding:
         :param solver:
         :param realistic_results:
+        :param control_batteries:
         :param faster_less_accurate:
+        :param generation_shedding_weight:
+        :param load_shedding_weight:
+        :param power_flow_options:
         :param bus_types:
+        :param non_sequential:
         """
         self.verbose = verbose
 
@@ -65,6 +70,8 @@ class OptimalPowerFlowOptions:
         self.power_flow_options = power_flow_options
 
         self.bus_types = bus_types
+
+        self.non_sequential = non_sequential
 
 
 class OptimalPowerFlow(QRunnable):

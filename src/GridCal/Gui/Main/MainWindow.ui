@@ -2485,6 +2485,16 @@ p, li { white-space: pre-wrap; }
                 <widget class="QComboBox" name="lpf_solver_comboBox"/>
                </item>
                <item>
+                <widget class="QCheckBox" name="non_sequential_opf_checkBox">
+                 <property name="toolTip">
+                  <string>When active selects a version of the solver that formulates a time-complete MIP and sends it to the solver at once.</string>
+                 </property>
+                 <property name="text">
+                  <string>non sequential</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QFrame" name="frame_41">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
