@@ -40,13 +40,13 @@ packages = find_packages(exclude=['docs', 'test', 'research', 'tests'])
 
 package_data = {'GridCal': ['*.md']}
 
-dependencies = ["numpy>=1.14.0",
+dependencies = ["PySide2>=5.11",
+                "numpy>=1.14.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
                 "pandas>=0.22",
                 "xlwt>=1.3.0",
                 "xlrd>=1.1.0",
-                "PySide2>=5.11",
                 "matplotlib>=2.1.1",
                 "qtconsole>=4.3.1",
                 "pyDOE>=0.3.8",

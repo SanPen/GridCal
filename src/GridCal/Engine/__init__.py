@@ -23,6 +23,3 @@ from GridCal.Engine.Simulations import *
 from GridCal.Engine.IO import *
 from GridCal.Engine.Core import *
 
-import PySide2
-import matplotlib
-matplotlib.use('Qt5Agg')
