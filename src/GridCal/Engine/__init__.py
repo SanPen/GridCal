@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
 from GridCal.Engine.Replacements import *
 from GridCal.Engine.basic_structures import *
 from GridCal.Engine.Devices import *
@@ -23,3 +22,7 @@ from GridCal.Engine.plot_config import *
 from GridCal.Engine.Simulations import *
 from GridCal.Engine.IO import *
 from GridCal.Engine.Core import *
+
+import PySide2
+import matplotlib
+matplotlib.use('Qt5Agg')
