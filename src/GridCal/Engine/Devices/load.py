@@ -62,7 +62,7 @@ class Load(EditableDevice):
 
     def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
                   G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                  cost_prof=None ,active=True, mttf=0.0, mttr=0.0):
+                  active=True, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -102,7 +102,7 @@ class Load(EditableDevice):
 
         self.Cost = cost
 
-        self.Cost_prof = cost_prof
+        self.Cost_prof = None
 
         # Impedance in equivalent MVA
         self.G = G

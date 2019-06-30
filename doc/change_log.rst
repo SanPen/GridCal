@@ -10,6 +10,12 @@ This section describes the changes introduced at each version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new version number.
 
+version 3.4.2
+_____________
+
+- Fixed branch saving code (forever hopefully)
+
+
 version 3.4.1
 _____________
 
@@ -22,10 +28,11 @@ _____________
 version 3.4.0
 _____________
 
-- Now when highlighting the selection, the buses on the schematic are selected. This feature allows to move
-  buses in bulk after any selection kind.
+- Now when highlighting the selection, the buses on the schematic are selected.
+  This feature allows to move buses in bulk after any selection kind.
 - Added feature to highlight buses based on any numeric property from the grid objects.
-- Added "master" delete from the schematic. Now any selection of buses from the schematic can be deleted at once.
+- Added "master" delete from the schematic.
+  Now any selection of buses from the schematic can be deleted at once.
 
 version 3.3.9
 _____________
@@ -70,17 +77,19 @@ _____________
 - Now the branches and the buses have activation profiles. This allows to run time series
   where the topology changes. Only available for time series for the moment.
 
-- The branches now allow to profile their temperature. This allows to change the resistance to explore heat effects.
+- The branches now allow to profile their temperature.
+  This allows to change the resistance to explore heat effects.
 
 - Added undo / redo to the profiles editor. This improves usability quite a bit.
 
 - Added csv files into zip files as the GridCal default format. This allows to use the same logic
-  as with the excel files but with much faster saving and loading times. Especially suited for
-  large grids with large profiles.
+  as with the excel files but with much faster saving and loading times.
+  Especially suited for large grids with large profiles.
 
 - Added error logging for the power flow time series.
 
-- Massive refactoring of the the files in the program structure, hoping to provide a more intuitive interface.
+- Massive refactoring of the the files in the program structure,
+  hoping to provide a more intuitive interface.
 
 - Replace the internal profiles from Pandas DataFrames to numpy arrays.
   This makes the processing simpler and more robust.

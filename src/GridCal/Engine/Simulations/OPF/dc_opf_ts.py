@@ -67,11 +67,11 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     :return: Power injection at the buses (n, nt)
     """
 
-    P = lpDot(C_bus_gen, Pg)
+    P = lpDot(C_bus_gen.transpose(), Pg)
 
-    P += lpDot(C_bus_bat, Pb)
+    P += lpDot(C_bus_bat.transpose(), Pb)
 
-    P -= lpDot(C_bus_load, LSlack + Pl)
+    P -= lpDot(C_bus_load.transpose(), LSlack + Pl)
 
     return P
 
@@ -105,9 +105,9 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, sta
             branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
-            P_island = P[island_index, :][:, t]
-            theta_island = theta[island_index, :][:, t]
-            B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx]
+            P_island = P[bus_original_idx, :][:, t]
+            theta_island = theta[bus_original_idx, :][:, t]
+            B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].imag
 
             pqpv = calculation_input.pqpv
             vd = calculation_input.ref
@@ -144,23 +144,17 @@ def add_branch_loading_restriction(problem: LpProblem,
 
     # from-to branch power restriction
     lpAddRestrictions2(problem=problem,
-                       lhs=lpDot(Bseries, (theta_f - theta_t)),
-                       rhs=Fmax + FSlack1,
+                       lhs=Bseries * (theta_f - theta_t),
+                       rhs=np.array([Fmax + FSlack1[:, i] for i in range(FSlack1.shape[1])]).transpose(),  # Fmax + FSlack1
                        name='from_to_branch_rate',
                        op='<=')
 
     # to-from branch power restriction
     lpAddRestrictions2(problem=problem,
-                       lhs=lpDot(Bseries, (theta_t - theta_f)),
-                       rhs=Fmax + FSlack2,
+                       lhs=Bseries * (theta_t - theta_f),
+                       rhs=np.array([Fmax + FSlack2[:, i] for i in range(FSlack2.shape[1])]).transpose(),  # Fmax + FSlack2
                        name='to_from_branch_rate',
                        op='<=')
-
-    # lpAddRestrictions2(problem=problem,
-    #                    lhs=FSlack1,
-    #                    rhs=FSlack2,
-    #                    name='rate_slack_eq',
-    #                    op='<=')
 
 
 def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
@@ -230,12 +224,12 @@ def solve_opf_ts(grid: MultiCircuit):
     cost_g = numerical_circuit.generator_cost_profile.transpose()
 
     # load
-    Pl = (numerical_circuit.load_active_prof * numerical_circuit.load_power_profile).transpose() / Sbase
+    Pl = (numerical_circuit.load_active_prof * numerical_circuit.load_power_profile.real).transpose() / Sbase
     cost_l = numerical_circuit.load_cost_prof.transpose()
 
     # branch
     Fmax = numerical_circuit.br_rates / Sbase
-    Bseries = numerical_circuit.branch_active_prof * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))
+    Bseries = (numerical_circuit.branch_active_prof * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
     cost_br = numerical_circuit.branch_cost_profile.transpose()
 
     # time
@@ -273,8 +267,25 @@ def solve_opf_ts(grid: MultiCircuit):
 
     add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
 
-    add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
+    if nb > 0:
+        add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
 
     problem.solve()
 
+    print("Status:", LpStatus[problem.status])
+
     return problem
+
+
+if __name__ == '__main__':
+
+        from GridCal.Engine.IO.file_handler import FileOpen
+
+        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+
+        main_circuit = FileOpen(fname).open()
+
+        problem = solve_opf_ts(main_circuit)
+
+
+        pass

@@ -713,15 +713,31 @@ class Branch(EditableDevice):
         """
         conv = BranchTypeConverter(None)
 
-        if self.template is None:
-            template = ''
-        else:
-            template = str(self.template)
+        # if self.template is None:
+        #     template = ''
+        # else:
+        #     template = str(self.template)
+        #
+        # return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
+        #         self.R, self.X, self.G, self.B, self.tolerance, self.length, self.tap_module, self.angle,
+        #         self.bus_to_regulated, self.vset, self.temp_base, self.temp_oper, self.alpha, self.r_fault,
+        #         self.x_fault, self.fault_pos, conv.inv_conv[self.branch_type], template]
 
-        return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-                self.R, self.X, self.G, self.B, self.tolerance, self.length, self.tap_module, self.angle,
-                self.bus_to_regulated,  self.vset, self.temp_base, self.temp_oper, self.alpha, self.r_fault,
-                self.x_fault, self.fault_pos, conv.inv_conv[self.branch_type], template]
+        data = list()
+        for name, properties in self.editable_headers.items():
+            obj = getattr(self, name)
+
+            if properties.tpe == BranchType:
+                obj = conv.inv_conv[self.branch_type]
+            elif properties.tpe == BranchTemplate:
+                if obj is None:
+                    obj = ''
+                else:
+                    obj = str(obj)
+            elif properties.tpe not in [str, float, int, bool]:
+                obj = str(obj)
+            data.append(obj)
+        return data
 
     def get_json_dict(self, id, bus_dict):
         """
