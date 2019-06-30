@@ -476,6 +476,7 @@ class NonSequentialOptimalPowerFlow(QThread):
         # print('PowerFlow at ', self.grid.name)
 
         self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         if self.options.solver == SolverType.DC_OPF:
 
@@ -486,7 +487,7 @@ class NonSequentialOptimalPowerFlow(QThread):
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
             return
 
-        self.progress_text.emit('Running all in an external solver, this may take a while...')
+
         status = problem.solve()
         print("Status:", status)
 

@@ -307,7 +307,7 @@ class OpfAcNonSequentialTimeSeries:
         self.load_shedding = LSlack.transpose()
         self.s_from = load_f.transpose()
         self.s_to = load_t.transpose()
-        self.overloads = FSlack1 - FSlack2
+        self.overloads = (FSlack1 + FSlack2).transpose()
         self.rating = Fmax
 
         return problem
@@ -339,7 +339,8 @@ class OpfAcNonSequentialTimeSeries:
         return the complex voltages (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.theta)
+        angles = self.extract2D(self.theta)
+        return np.ones_like(angles) * np.exp(-1j * angles)
 
     def get_overloads(self):
         """
