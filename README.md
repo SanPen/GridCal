@@ -1,5 +1,7 @@
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
 
+[![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
+
 # What is this?
 
 This software aims to be a complete platform for power systems research and simulation.
