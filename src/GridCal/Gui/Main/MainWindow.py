@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Mon Jul  1 12:56:47 2019
+# Created: Mon Jul  1 19:32:44 2019
 #      by: pyside2-uic  running on PySide2 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -777,13 +777,14 @@ class Ui_mainWindow(object):
         self.verticalLayout_24.addWidget(self.tabWidget_5)
         self.verticalLayout_27.addWidget(self.splitter)
         self.tabWidget.addTab(self.ResultsTab, icon29, "")
-        self.console_tab = QtWidgets.QWidget()
-        self.console_tab.setObjectName("console_tab")
-        self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.console_tab)
+        self.main_console_tab = QtWidgets.QWidget()
+        self.main_console_tab.setObjectName("main_console_tab")
+        self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.main_console_tab)
+        self.verticalLayout_22.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_22.setObjectName("verticalLayout_22")
         icon39 = QtGui.QIcon()
         icon39.addPixmap(QtGui.QPixmap(":/Icons/icons/console.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tabWidget.addTab(self.console_tab, icon39, "")
+        self.tabWidget.addTab(self.main_console_tab, icon39, "")
         self.SettingsTab = QtWidgets.QWidget()
         self.SettingsTab.setObjectName("SettingsTab")
         self.gridLayout_8 = QtWidgets.QGridLayout(self.SettingsTab)
@@ -1770,7 +1771,7 @@ class Ui_mainWindow(object):
         self.progressBar.setProperty("value", 0)
         self.progressBar.setInvertedAppearance(False)
         self.progressBar.setObjectName("progressBar")
-        self.gridLayout_7.addWidget(self.progressBar, 1, 2, 1, 1)
+        self.gridLayout_7.addWidget(self.progressBar, 1, 1, 1, 1)
         self.cancelButton = QtWidgets.QPushButton(self.progress_frame)
         self.cancelButton.setText("")
         self.cancelButton.setIcon(icon4)
@@ -1779,7 +1780,7 @@ class Ui_mainWindow(object):
         self.progress_label = QtWidgets.QLabel(self.progress_frame)
         self.progress_label.setText("")
         self.progress_label.setObjectName("progress_label")
-        self.gridLayout_7.addWidget(self.progress_label, 0, 2, 1, 1)
+        self.gridLayout_7.addWidget(self.progress_label, 0, 1, 1, 1)
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
@@ -2165,7 +2166,7 @@ class Ui_mainWindow(object):
         self.saveResultsButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Export data", None, -1))
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_9), QtWidgets.QApplication.translate("mainWindow", "Data", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.ResultsTab), QtWidgets.QApplication.translate("mainWindow", "Results", None, -1))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.console_tab), QtWidgets.QApplication.translate("mainWindow", "Console", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QtWidgets.QApplication.translate("mainWindow", "Console", None, -1))
         self.auto_precision_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Automatic precision", None, -1))
         self.label_17.setText(QtWidgets.QApplication.translate("mainWindow", "Power flow", None, -1))
         self.tolerance_spinBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>Exponent of the precission to use.</p><p>precision = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>precision = 1e-3</p></body></html>", None, -1))

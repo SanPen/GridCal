@@ -262,7 +262,8 @@ class MainGUI(QMainWindow):
                                                   "plt: matplotlib\n"
                                                   "app: This instance of GridCal\n\n")
         # add the console widget to the user interface
-        self.ui.console_tab.layout().addWidget(self.console)
+        self.ui.main_console_tab.layout().addWidget(self.console)
+
 
         # push some variables to the console
         self.console.push_vars({"hlp": self.print_console_help,

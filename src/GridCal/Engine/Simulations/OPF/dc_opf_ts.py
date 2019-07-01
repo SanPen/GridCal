@@ -316,7 +316,8 @@ class OpfAcNonSequentialTimeSeries:
         """
         Call PuLP to solve the problem
         """
-        self.problem.solve()
+        params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+        self.problem.solve(params)
 
         return LpStatus[self.problem.status]
 
@@ -324,6 +325,7 @@ class OpfAcNonSequentialTimeSeries:
         """
         Extract values fro the 2D array of LP variables
         :param arr: 2D array of LP variables
+        :param make_abs: substitute the result by its abs value
         :return: 2D numpy array
         """
         val = np.zeros(arr.shape)
