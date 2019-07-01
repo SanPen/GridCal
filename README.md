@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
+
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
 
 
@@ -18,7 +20,6 @@ For more options, follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
 from the project's documentation.
 
-[![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
 
 # Execution
 
