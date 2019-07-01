@@ -7,8 +7,8 @@ if __name__ == '__main__':
     # pyrcc5 icons.qrc -o icons_rc.py
     # pyuic5 -x MainWindow.ui -o MainWindow.py
 
-    file_names = ['MainWindow.py']
-    file_names_ui = ['MainWindow.ui']
+    file_names = ['MainWindow.py', 'ConsoleLog.py']
+    file_names_ui = ['MainWindow.ui', 'ConsoleLog.ui']
 
     for filename, filename_ui in zip(file_names, file_names_ui):
 
