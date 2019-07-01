@@ -1,6 +1,6 @@
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
 
-[![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
+
 
 # What is this?
 
@@ -17,6 +17,8 @@ Try: `pip install GridCal`
 For more options, follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
 from the project's documentation.
+
+[![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
 
 # Execution
 
