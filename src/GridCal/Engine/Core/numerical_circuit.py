@@ -344,7 +344,7 @@ class NumericalCircuit:
         self.load_active = np.zeros(n_ld, dtype=bool)
         self.load_active_prof = np.zeros((n_time, n_ld), dtype=bool)
 
-        self.load_cost_prof = np.zeros((n_time, n_ld), dtype=bool)
+        self.load_cost_prof = np.zeros((n_time, n_ld), dtype=float)
 
         self.load_mttf = np.zeros(n_ld, dtype=float)
         self.load_mttr = np.zeros(n_ld, dtype=float)
@@ -412,7 +412,7 @@ class NumericalCircuit:
 
         self.generator_active = np.zeros(n_gen, dtype=bool)
         self.generator_active_prof = np.zeros((n_time, n_gen), dtype=bool)
-        self.generator_cost_profile = np.zeros((n_time, n_gen), dtype=bool)
+        self.generator_cost_profile = np.zeros((n_time, n_gen), dtype=float)
 
         self.generator_mttf = np.zeros(n_gen, dtype=float)
         self.generator_mttr = np.zeros(n_gen, dtype=float)

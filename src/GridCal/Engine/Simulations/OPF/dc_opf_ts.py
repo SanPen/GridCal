@@ -203,7 +203,10 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 class OpfAcNonSequentialTimeSeries:
 
     def __init__(self, grid):
+        """
 
+        :param grid:
+        """
         self.grid = grid
 
         self.theta = None
@@ -246,8 +249,8 @@ class OpfAcNonSequentialTimeSeries:
         cost_b = numerical_circuit.battery_cost_profile.transpose()
 
         # generator
-        Pg_max = numerical_circuit.generator_pmax
-        Pg_min = numerical_circuit.generator_pmin
+        Pg_max = numerical_circuit.generator_pmax / Sbase
+        Pg_min = numerical_circuit.generator_pmin / Sbase
         cost_g = numerical_circuit.generator_cost_profile.transpose()
 
         # load
@@ -392,8 +395,8 @@ if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-
+        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+        fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\Lynn 5 Bus pv.gridcal'
         main_circuit = FileOpen(fname).open()
 
         problem = OpfAcNonSequentialTimeSeries(main_circuit)
@@ -407,5 +410,8 @@ if __name__ == '__main__':
 
         l = problem.get_loading()
         print(l)
+
+        g = problem.get_generator_power()
+        print(g)
 
         pass
