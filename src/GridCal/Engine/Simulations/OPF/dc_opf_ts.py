@@ -244,8 +244,7 @@ class OpfAcNonSequentialTimeSeries:
         SoC0 = numerical_circuit.battery_soc_0
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
-        Efficiency = (
-                                 numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
+        Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
         cost_b = numerical_circuit.battery_cost_profile.transpose()
 
         # generator
@@ -306,7 +305,7 @@ class OpfAcNonSequentialTimeSeries:
         self.theta = theta.transpose()
         self.Pg = Pg.transpose()
         self.Pb = Pb.transpose()
-        self.Pl = (Pl - LSlack).transpose()
+        self.Pl = Pl.transpose()
         self.load_shedding = LSlack.transpose()
         self.s_from = load_f.transpose()
         self.s_to = load_t.transpose()
@@ -406,7 +405,7 @@ if __name__ == '__main__':
         print("Status:", status)
 
         v = problem.get_voltage()
-        print(v)
+        print(np.angle(v))
 
         l = problem.get_loading()
         print(l)

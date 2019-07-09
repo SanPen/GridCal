@@ -123,7 +123,6 @@ def lpAddRestrictions2(problem: LpProblem, lhs, rhs, name, op='='):
             elif op == '>=':
                 arr[i, j] = lhs[i, j] >= rhs[i, j]
 
-
     lpAddRestrictions(problem=problem, arr=arr, name=name)
 
 
