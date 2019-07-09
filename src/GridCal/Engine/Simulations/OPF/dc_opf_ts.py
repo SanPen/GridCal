@@ -22,11 +22,10 @@ from pulp import *
 import numpy as np
 from itertools import product
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, make_vars, lpAddRestrictions2
+from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, lpMakeVars, lpAddRestrictions2, lpGet2D
 
 
-def add_objective_function(problem: LpProblem,
-                           Pg, Pb, LSlack, FSlack1, FSlack2,
+def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -51,7 +50,7 @@ def add_objective_function(problem: LpProblem,
 
     f_obj += (cost_br * (FSlack1 + FSlack2)).sum()
 
-    problem += f_obj
+    return f_obj
 
 
 def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
@@ -259,8 +258,8 @@ class OpfAcNonSequentialTimeSeries:
 
         # branch
         Fmax = numerical_circuit.br_rates / Sbase
-        Bseries = (numerical_circuit.branch_active_prof * (
-                    1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
+        Bseries = (numerical_circuit.branch_active_prof
+                   * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
         cost_br = numerical_circuit.branch_cost_profile.transpose()
 
         # time
@@ -270,47 +269,51 @@ class OpfAcNonSequentialTimeSeries:
             dt[t - 1] = (numerical_circuit.time_array[t] - numerical_circuit.time_array[t - 1]).seconds / 3600
 
         # create LP variables
-        Pg = make_vars(name='Pg', shape=(ng, nt), Lb=Pg_min, Ub=Pg_max)
-        Pb = make_vars(name='Pb', shape=(nb, nt), Lb=Pb_min, Ub=Pb_max)
-        E = make_vars(name='E', shape=(nb, nt), Lb=Capacity * minSoC, Ub=Capacity * maxSoC)
-        LSlack = make_vars(name='LSlack', shape=(nl, nt), Lb=0, Ub=None)
-        theta = make_vars(name='theta', shape=(n, nt), Lb=-0.5, Ub=0.5)
+        Pg = lpMakeVars(name='Pg', shape=(ng, nt), lower=Pg_min, upper=Pg_max)
+        Pb = lpMakeVars(name='Pb', shape=(nb, nt), lower=Pb_min, upper=Pb_max)
+        energy = lpMakeVars(name='E', shape=(nb, nt), lower=Capacity * minSoC, upper=Capacity * maxSoC)
+        load_slack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
+        theta = lpMakeVars(name='theta', shape=(n, nt), lower=-3.10, upper=3.10)
         theta_f = theta[numerical_circuit.F, :]
         theta_t = theta[numerical_circuit.T, :]
-        FSlack1 = make_vars(name='FSlack1', shape=(m, nt), Lb=0, Ub=None)
-        FSlack2 = make_vars(name='FSlack2', shape=(m, nt), Lb=0, Ub=None)
+        loading_slack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
+        loading_slack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
         # declare problem
         problem = LpProblem(name='DC_OPF_Time_Series')
 
-        # add the objective function
-        add_objective_function(problem, Pg, Pb, LSlack, FSlack1, FSlack2, cost_g, cost_b, cost_l, cost_br)
-
+        # compute the nodal power injections
         P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus,
                                  Pg=Pg,
                                  C_bus_bat=numerical_circuit.C_batt_bus,
                                  Pb=Pb,
                                  C_bus_load=numerical_circuit.C_load_bus,
-                                 LSlack=LSlack,
+                                 LSlack=load_slack,
                                  Pl=Pl)
 
+        # add the nodal power balance equations
         add_nodal_power_balance(numerical_circuit, problem, theta, P)
 
-        load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
+        # add the branch loading restrictions
+        load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, loading_slack1, loading_slack2)
 
         if nb > 0:
-            add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
+            add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, energy, dt)
+
+        # add the objective function
+        f = add_objective_function(Pg, Pb, load_slack, loading_slack1, loading_slack2, cost_g, cost_b, cost_l+1, cost_br+1)
+        problem += f
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
         self.theta = theta.transpose()
         self.Pg = Pg.transpose()
         self.Pb = Pb.transpose()
-        self.Pl = (Pl - LSlack).transpose()
-        self.load_shedding = LSlack.transpose()
+        self.Pl = (Pl - load_slack).transpose()
+        self.load_shedding = load_slack.transpose()
         self.s_from = load_f.transpose()
         self.s_to = load_t.transpose()
-        self.overloads = (FSlack1 + FSlack2).transpose()
+        self.overloads = (loading_slack1 + loading_slack2).transpose()
         self.rating = Fmax
 
         return problem
@@ -324,27 +327,12 @@ class OpfAcNonSequentialTimeSeries:
 
         return LpStatus[self.problem.status]
 
-    def extract2D(self, arr, make_abs=False):
-        """
-        Extract values fro the 2D array of LP variables
-        :param arr: 2D array of LP variables
-        :param make_abs: substitute the result by its abs value
-        :return: 2D numpy array
-        """
-        val = np.zeros(arr.shape)
-        for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            val[i, j] = arr[i, j].value()
-        if make_abs:
-            val = np.abs(val)
-
-        return val
-
     def get_voltage(self):
         """
         return the complex voltages (time, device)
         :return: 2D array
         """
-        angles = self.extract2D(self.theta)
+        angles = lpGet2D(self.theta)
         return np.ones_like(angles) * np.exp(-1j * angles)
 
     def get_overloads(self):
@@ -352,7 +340,7 @@ class OpfAcNonSequentialTimeSeries:
         return the branch overloads (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.overloads)
+        return lpGet2D(self.overloads)
 
     def get_loading(self):
         """
@@ -367,28 +355,28 @@ class OpfAcNonSequentialTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=True) * self.grid.Sbase
+        return lpGet2D(self.s_from, make_abs=True) * self.grid.Sbase
 
     def get_battery_power(self):
         """
         return the battery dispatch (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pb)
+        return lpGet2D(self.Pb)
 
     def get_generator_power(self):
         """
         return the generator dispatch (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pg)
+        return lpGet2D(self.Pg)
 
     def get_load_shedding(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.load_shedding)
+        return lpGet2D(self.load_shedding)
 
 
 if __name__ == '__main__':
@@ -400,6 +388,8 @@ if __name__ == '__main__':
         main_circuit = FileOpen(fname).open()
 
         problem = OpfAcNonSequentialTimeSeries(main_circuit)
+
+        problem.problem.writeLP('problem_opf_ts.lp')
 
         status = problem.solve()
 

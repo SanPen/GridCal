@@ -127,73 +127,89 @@ def lpAddRestrictions2(problem: LpProblem, lhs, rhs, name, op='='):
     lpAddRestrictions(problem=problem, arr=arr, name=name)
 
 
-def make_vars(name, shape, Lb=None, Ub=None):
+def lpMakeVars(name, shape, lower=None, upper=None):
     """
     Declares 1D of 2D array of LpVars
     :param name: name of the variable
     :param shape: tuple with the shape (i.e. (3), or (4, 6))
-    :param Lb: Lower bound array. Must meet the shape
-    :param Ub: Upper bound array. must meet the shape
+    :param lower: Lower bound array. Must meet the shape
+    :param upper: Upper bound array. must meet the shape
     :return: array of LpVars
     """
 
     var = np.empty(shape, dtype=object)
 
     if len(shape) == 1:
-        if Lb is None and Ub is not None:
+        if lower is None and upper is not None:
 
             for i in range(shape[0]):
-                var[i] = LpVariable(name + '_' + str(i), lowBound=None, upBound=Ub[i])
+                var[i] = LpVariable(name + '_' + str(i), lowBound=None, upBound=upper[i])
 
-        elif Lb is not None and Ub is None:
+        elif lower is not None and upper is None:
 
             for i in range(shape[0]):
-                var[i] = LpVariable(name + '_' + str(i), lowBound=Lb[i], upBound=None)
+                var[i] = LpVariable(name + '_' + str(i), lowBound=lower[i], upBound=None)
 
         else:
 
             for i in range(shape[0]):
-                var[i] = LpVariable(name + '_' + str(i), lowBound=Lb[i], upBound=Ub[i])
+                var[i] = LpVariable(name + '_' + str(i), lowBound=lower[i], upBound=upper[i])
 
     elif len(shape) == 2:
 
-        if Lb is None and Ub is not None:
+        if lower is None and upper is not None:
 
-            if type(Ub) in [float, int]:
+            if type(upper) in [float, int]:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=None, upBound=Ub)
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=None, upBound=upper)
             else:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=None, upBound=Ub[i])
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=None, upBound=upper[i])
 
-        elif Lb is not None and Ub is None:
+        elif lower is not None and upper is None:
 
-            if type(Lb) in [float, int]:
+            if type(lower) in [float, int]:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb, upBound=None)
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower, upBound=None)
             else:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb[i], upBound=None)
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=None)
 
         else:
 
-            if type(Lb) in [float, int] and type(Ub) in [float, int]:
+            if type(lower) in [float, int] and type(upper) in [float, int]:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb, upBound=Ub)
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower, upBound=upper)
 
-            elif len(Lb.shape) == 2 and len(Lb.shape) == 2:
+            elif len(lower.shape) == 2 and len(lower.shape) == 2:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb[i, j], upBound=Ub[i, j])
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i, j], upBound=upper[i, j])
 
-            elif len(Lb.shape) == 1 and len(Lb.shape) == 2:
+            elif len(lower.shape) == 1 and len(lower.shape) == 2:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb[i], upBound=Ub[i, j])
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=upper[i, j])
 
-            elif len(Lb.shape) == 2 and len(Lb.shape) == 1:
+            elif len(lower.shape) == 2 and len(lower.shape) == 1:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb[i, j], upBound=Ub[i])
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i, j], upBound=upper[i])
 
-            elif len(Lb.shape) == 1 and len(Lb.shape) == 1:
+            elif len(lower.shape) == 1 and len(lower.shape) == 1:
                 for i, j in product(range(shape[0]), range(shape[1])):
-                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=Lb[i], upBound=Ub[i])
+                    var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=upper[i])
     return var
+
+
+def lpGet2D(arr, make_abs=False):
+    """
+    Extract values fro the 2D array of LP variables
+    :param arr: 2D array of LP variables
+    :param make_abs: substitute the result by its abs value
+    :return: 2D numpy array
+    """
+    val = np.zeros(arr.shape)
+    for i, j in product(range(val.shape[0]), range(val.shape[1])):
+        val[i, j] = arr[i, j].value()
+    if make_abs:
+        val = np.abs(val)
+
+    return val

@@ -94,7 +94,7 @@ class Bus:
         n_poly = 0
         for elm in self.loads:
             if elm.type == LoadTypes.ZIP:
-                s_, i_, y_ = elm.get_values()
+                s_, i_, y_ = elm.getLP2d()
                 S[elm.phases] -= s_[elm.phases]
                 Y[elm.phases] -= y_[elm.phases]
                 I[elm.phases] -= i_[elm.phases]
@@ -103,14 +103,14 @@ class Bus:
                 if n_exp >= 1:
                     raise Exception('Only one exponential load is allowed per node')
 
-                P0, Q0, exp_p, exp_q, V0 = elm.get_values()
+                P0, Q0, exp_p, exp_q, V0 = elm.getLP2d()
                 n_exp += 1
 
             elif elm.type == LoadTypes.Polynomial:
                 if n_poly >= 1:
                     raise Exception('Only one polynomial load is allowed per node')
 
-                A[elm.phases], B[elm.phases], C[elm.phases] = elm.get_values()
+                A[elm.phases], B[elm.phases], C[elm.phases] = elm.getLP2d()
                 n_poly += 1
 
             else:
@@ -118,7 +118,7 @@ class Bus:
 
         # traverse the connected generators
         for elm in self.generators:
-            p_, v_ = elm.get_values()
+            p_, v_ = elm.getLP2d()
             S[elm.phases] += p_[elm.phases]
             vm *= v_
 
