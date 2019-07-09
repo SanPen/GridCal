@@ -264,7 +264,6 @@ class MainGUI(QMainWindow):
         # add the console widget to the user interface
         self.ui.main_console_tab.layout().addWidget(self.console)
 
-
         # push some variables to the console
         self.console.push_vars({"hlp": self.print_console_help,
                                 "np": np,

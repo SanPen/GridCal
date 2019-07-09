@@ -395,8 +395,8 @@ if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\Lynn 5 Bus pv.gridcal'
+        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+        # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\Lynn 5 Bus pv.gridcal'
         main_circuit = FileOpen(fname).open()
 
         problem = OpfAcNonSequentialTimeSeries(main_circuit)
