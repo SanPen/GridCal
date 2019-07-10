@@ -126,6 +126,14 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, sta
                                name='Nodal_power_balance_vd',
                                op='=')
 
+            # slack angles equal to zero
+            lpAddRestrictions2(problem=problem,
+                               lhs=theta_island[vd, :],
+                               rhs=np.zeros_like(theta_island[vd, :]),
+                               name='Theta_vd_zero',
+                               op='=')
+
+
 
 def add_branch_loading_restriction(problem: LpProblem,
                                    theta_f, theta_t, Bseries,

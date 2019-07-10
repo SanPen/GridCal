@@ -143,6 +143,14 @@ Equilibrium at the slack nodes.
     B_{(vd, :)} \times \theta = P_{(vd, :)}
 
 
+Remember to set the slack-node voltage angles to zero!
+Otherwise the generator power will no be used by the solver to provide voltage values.
+
+.. math::
+
+    \theta_{(vd, :)} = 0
+
+
 
 .. list-table::
   :widths: 5 60 25 25 15

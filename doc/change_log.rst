@@ -14,8 +14,8 @@ version 3.4.2
 _____________
 
 - Fixed branch saving code (hopefully forever)
-- Fixed the loading of some properties that were missing
-
+- Fixed the loading of some properties that were missing.
+- Fixed the non-sequential OPF.
 
 version 3.4.1
 _____________
