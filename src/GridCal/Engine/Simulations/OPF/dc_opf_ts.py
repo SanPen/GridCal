@@ -270,46 +270,48 @@ class OpfAcNonSequentialTimeSeries:
         cost_l = numerical_circuit.load_cost_prof[a:b, :].transpose()
 
         # branch
-        Fmax = numerical_circuit.br_rates / Sbase
+        branch_ratings = numerical_circuit.br_rates / Sbase
         Bseries = (numerical_circuit.branch_active_prof[a:b, :] * (
                     1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
         cost_br = numerical_circuit.branch_cost_profile[a:b, :].transpose()
 
-        # time
+        # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
         for t in range(1, nt):
-            # time delta in hours
-            dt[t - 1] = (numerical_circuit.time_array[t] - numerical_circuit.time_array[t - 1]).seconds / 3600
+            dt[t - 1] = (numerical_circuit.time_array[a + t] - numerical_circuit.time_array[a + t - 1]).seconds / 3600
 
         # create LP variables
         Pg = lpMakeVars(name='Pg', shape=(ng, nt), lower=Pg_min, upper=Pg_max)
         Pb = lpMakeVars(name='Pb', shape=(nb, nt), lower=Pb_min, upper=Pb_max)
         E = lpMakeVars(name='E', shape=(nb, nt), lower=Capacity * minSoC, upper=Capacity * maxSoC)
-        LSlack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
+        load_slack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
         theta = lpMakeVars(name='theta', shape=(n, nt), lower=-3.14, upper=3.14)
         theta_f = theta[numerical_circuit.F, :]
         theta_t = theta[numerical_circuit.T, :]
-        FSlack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
-        FSlack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
+        branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
+        branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
         # declare problem
         problem = LpProblem(name='DC_OPF_Time_Series')
 
         # add the objective function
-        add_objective_function(problem, Pg, Pb, LSlack, FSlack1, FSlack2, cost_g, cost_b, cost_l, cost_br)
+        add_objective_function(problem, Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
+                               cost_g, cost_b, cost_l, cost_br)
 
         P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus,
                                  Pg=Pg,
                                  C_bus_bat=numerical_circuit.C_batt_bus,
                                  Pb=Pb,
                                  C_bus_load=numerical_circuit.C_load_bus,
-                                 LSlack=LSlack,
+                                 LSlack=load_slack,
                                  Pl=Pl)
 
         add_nodal_power_balance(numerical_circuit, problem, theta, P, start_=self.start_idx, end_=self.end_idx)
 
-        load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
+        load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
+                                                        branch_rating_slack1, branch_rating_slack2)
 
+        # if there are batteries, add the batteries
         if nb > 0:
             add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
 
@@ -319,11 +321,11 @@ class OpfAcNonSequentialTimeSeries:
         self.Pg = Pg.transpose()
         self.Pb = Pb.transpose()
         self.Pl = Pl.transpose()
-        self.load_shedding = LSlack.transpose()
+        self.load_shedding = load_slack.transpose()
         self.s_from = load_f.transpose()
         self.s_to = load_t.transpose()
-        self.overloads = (FSlack1 + FSlack2).transpose()
-        self.rating = Fmax
+        self.overloads = (branch_rating_slack1 + branch_rating_slack2).transpose()
+        self.rating = branch_ratings
 
         return problem
 
