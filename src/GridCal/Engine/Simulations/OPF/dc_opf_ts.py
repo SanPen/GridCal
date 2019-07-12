@@ -18,11 +18,10 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 
-from pulp import *
+from GridCal.Engine.Simulations.OPF.pulp import *
+from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, lpMakeVars, lpAddRestrictions2
 import numpy as np
 from itertools import product
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, lpMakeVars, lpAddRestrictions2
 
 
 def add_objective_function(problem: LpProblem,
@@ -404,6 +403,13 @@ class OpfAcNonSequentialTimeSeries:
         """
         return self.extract2D(self.load_shedding)
 
+    def get_load_power(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.Pl)
+
 
 if __name__ == '__main__':
 
@@ -411,7 +417,8 @@ if __name__ == '__main__':
 
         # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
         # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\Lynn 5 Bus pv.gridcal'
-        fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
+        # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
+        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
         main_circuit = FileOpen(fname).open()
 
         problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=0, end_idx=5*24)

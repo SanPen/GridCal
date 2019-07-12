@@ -18,7 +18,7 @@ This file includes extensions to the PuLP library
 """
 
 import numpy as np
-from pulp import LpProblem, LpVariable
+from GridCal.Engine.Simulations.OPF.pulp import LpProblem, LpVariable, LpConstraint
 from itertools import product
 from scipy.sparse import csc_matrix
 
@@ -195,6 +195,9 @@ def lpMakeVars(name, shape, lower=None, upper=None):
             elif len(lower.shape) == 1 and len(lower.shape) == 1:
                 for i, j in product(range(shape[0]), range(shape[1])):
                     var[i, j] = LpVariable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=upper[i])
+    else:
+        pass
+
     return var
 
 

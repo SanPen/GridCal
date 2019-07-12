@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from warnings import warn
-import pulp
+from GridCal.Engine.Simulations.OPF.pulp import *
 import numpy as np
 from scipy.sparse import csc_matrix
 import pandas as pd
