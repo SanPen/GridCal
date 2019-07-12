@@ -194,7 +194,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
     eff_inv = 1 / Efficiency
 
     # set the Energy values for t=1:nt
-    for i in range(len(dt)):
+    for i in range(len(dt) - 1):
 
         t = i + 1
 
@@ -202,7 +202,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
         lpAddRestrictions2(problem=problem,
                            lhs=E[:, t],
                            rhs=E[:, t-1] - dt[i] * Pb[:, t] * eff_inv,
-                           name='initial_soc',
+                           name='initial_soc_t' + str(t) + '_',
                            op='=')
 
 
@@ -223,6 +223,7 @@ class OpfAcNonSequentialTimeSeries:
         self.Pg = None
         self.Pb = None
         self.Pl = None
+        self.E = None
         self.s_from = None
         self.s_to = None
         self.overloads = None
@@ -320,6 +321,7 @@ class OpfAcNonSequentialTimeSeries:
         self.Pg = Pg.transpose()
         self.Pb = Pb.transpose()
         self.Pl = Pl.transpose()
+        self.E = E.transpose()
         self.load_shedding = load_slack.transpose()
         self.s_from = load_f.transpose()
         self.s_to = load_t.transpose()
@@ -372,7 +374,7 @@ class OpfAcNonSequentialTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        l = self.get_branch_power()
+        l = self.extract2D(self.s_from, make_abs=True)
         return l / self.rating
 
     def get_branch_power(self):
@@ -387,28 +389,35 @@ class OpfAcNonSequentialTimeSeries:
         return the battery dispatch (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pb)
+        return self.extract2D(self.Pb) * self.grid.Sbase
+
+    def get_battery_energy(self):
+        """
+        return the battery energy (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.E) * self.grid.Sbase
 
     def get_generator_power(self):
         """
         return the generator dispatch (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pg)
+        return self.extract2D(self.Pg) * self.grid.Sbase
 
     def get_load_shedding(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.load_shedding)
+        return self.extract2D(self.load_shedding) * self.grid.Sbase
 
     def get_load_power(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pl)
+        return self.extract2D(self.Pl) * self.grid.Sbase
 
 
 if __name__ == '__main__':

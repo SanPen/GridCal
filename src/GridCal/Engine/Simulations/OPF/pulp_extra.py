@@ -101,7 +101,7 @@ def lpAddRestrictions2(problem: LpProblem, lhs, rhs, name, op='='):
 
     if len(lhs.shape) == 1:
 
-        for i in range(lhs.shape):
+        for i in range(lhs.shape[0]):
             if op == '=':
                 arr[i] = lhs[i] == rhs[i]
 

@@ -504,6 +504,7 @@ class NonSequentialOptimalPowerFlow(QThread):
         self.results.load_shedding[a:b, :] = problem.get_load_shedding()
         # self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
         self.results.battery_power[a:b, :] = problem.get_battery_power()
+        self.results.battery_energy[a:b, :] = problem.get_battery_energy()
         self.results.controlled_generator_power[a:b, :] = problem.get_generator_power()
         self.results.Sbranch[a:b, :] = problem.get_branch_power()
         self.results.overloads[a:b, :] = problem.get_overloads()
