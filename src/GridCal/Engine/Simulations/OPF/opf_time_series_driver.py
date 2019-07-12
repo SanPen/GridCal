@@ -481,12 +481,11 @@ class NonSequentialOptimalPowerFlow(QThread):
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
-            problem = OpfAcNonSequentialTimeSeries(self.grid)
+            problem = OpfAcNonSequentialTimeSeries(grid=self.grid, start_idx=self.start_, end_idx=self.end_)
 
         else:
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
             return
-
 
         status = problem.solve()
         print("Status:", status)
@@ -499,15 +498,16 @@ class NonSequentialOptimalPowerFlow(QThread):
                                                          nbat=len(self.grid.get_batteries()),
                                                          nload=len(self.grid.get_loads()),
                                                          time=self.grid.time_profile)
-
-        self.results.voltage = problem.get_voltage()
-        self.results.load_shedding = problem.get_load_shedding()
+        a = self.start_
+        b = self.end_
+        self.results.voltage[a:b, :] = problem.get_voltage()
+        self.results.load_shedding[a:b, :] = problem.get_load_shedding()
         # self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
-        self.results.battery_power = problem.get_battery_power()
-        self.results.controlled_generator_power = problem.get_generator_power()
-        self.results.Sbranch = problem.get_branch_power()
-        self.results.overloads = problem.get_overloads()
-        self.results.loading = problem.get_loading()
+        self.results.battery_power[a:b, :] = problem.get_battery_power()
+        self.results.controlled_generator_power[a:b, :] = problem.get_generator_power()
+        self.results.Sbranch[a:b, :] = problem.get_branch_power()
+        self.results.overloads[a:b, :] = problem.get_overloads()
+        self.results.loading[a:b, :] = problem.get_loading()
         # self.results.converged[t] = bool(problem.converged)
 
         return self.results

@@ -22,7 +22,7 @@ from pulp import *
 import numpy as np
 from itertools import product
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, make_vars, lpAddRestrictions2
+from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, lpMakeVars, lpAddRestrictions2
 
 
 def add_objective_function(problem: LpProblem,
@@ -76,7 +76,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, start_=0, end_=-1):
+def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -132,7 +132,6 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, sta
                                rhs=np.zeros_like(theta_island[vd, :]),
                                name='Theta_vd_zero',
                                op='=')
-
 
 
 def add_branch_loading_restriction(problem: LpProblem,
@@ -210,12 +209,16 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcNonSequentialTimeSeries:
 
-    def __init__(self, grid):
+    def __init__(self, grid, start_idx, end_idx):
         """
 
         :param grid:
+        :param start_idx:
+        :param end_idx:
         """
         self.grid = grid
+        self.start_idx = start_idx
+        self.end_idx = end_idx
 
         self.theta = None
         self.Pg = None
@@ -242,7 +245,9 @@ class OpfAcNonSequentialTimeSeries:
         ng = numerical_circuit.n_ctrl_gen
         nb = numerical_circuit.n_batt
         nl = numerical_circuit.n_ld
-        nt = numerical_circuit.ntime
+        nt = self.end_idx - self.start_idx  # numerical_circuit.ntime
+        a = self.start_idx
+        b = self.end_idx
         Sbase = numerical_circuit.Sbase
 
         # battery
@@ -253,39 +258,39 @@ class OpfAcNonSequentialTimeSeries:
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
         Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
-        cost_b = numerical_circuit.battery_cost_profile.transpose()
+        cost_b = numerical_circuit.battery_cost_profile[a:b, :].transpose()
 
         # generator
         Pg_max = numerical_circuit.generator_pmax / Sbase
         Pg_min = numerical_circuit.generator_pmin / Sbase
-        cost_g = numerical_circuit.generator_cost_profile.transpose()
+        cost_g = numerical_circuit.generator_cost_profile[a:b, :].transpose()
 
         # load
-        Pl = (numerical_circuit.load_active_prof * numerical_circuit.load_power_profile.real).transpose() / Sbase
-        cost_l = numerical_circuit.load_cost_prof.transpose()
+        Pl = (numerical_circuit.load_active_prof[a:b, :] * numerical_circuit.load_power_profile.real[a:b, :]).transpose() / Sbase
+        cost_l = numerical_circuit.load_cost_prof[a:b, :].transpose()
 
         # branch
         Fmax = numerical_circuit.br_rates / Sbase
-        Bseries = (numerical_circuit.branch_active_prof * (
+        Bseries = (numerical_circuit.branch_active_prof[a:b, :] * (
                     1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
-        cost_br = numerical_circuit.branch_cost_profile.transpose()
+        cost_br = numerical_circuit.branch_cost_profile[a:b, :].transpose()
 
         # time
-        dt = np.zeros(nt)
+        dt = np.zeros(nt)  # here nt = end_idx - start_idx
         for t in range(1, nt):
             # time delta in hours
             dt[t - 1] = (numerical_circuit.time_array[t] - numerical_circuit.time_array[t - 1]).seconds / 3600
 
         # create LP variables
-        Pg = make_vars(name='Pg', shape=(ng, nt), Lb=Pg_min, Ub=Pg_max)
-        Pb = make_vars(name='Pb', shape=(nb, nt), Lb=Pb_min, Ub=Pb_max)
-        E = make_vars(name='E', shape=(nb, nt), Lb=Capacity * minSoC, Ub=Capacity * maxSoC)
-        LSlack = make_vars(name='LSlack', shape=(nl, nt), Lb=0, Ub=None)
-        theta = make_vars(name='theta', shape=(n, nt), Lb=-0.5, Ub=0.5)
+        Pg = lpMakeVars(name='Pg', shape=(ng, nt), lower=Pg_min, upper=Pg_max)
+        Pb = lpMakeVars(name='Pb', shape=(nb, nt), lower=Pb_min, upper=Pb_max)
+        E = lpMakeVars(name='E', shape=(nb, nt), lower=Capacity * minSoC, upper=Capacity * maxSoC)
+        LSlack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
+        theta = lpMakeVars(name='theta', shape=(n, nt), lower=-3.14, upper=3.14)
         theta_f = theta[numerical_circuit.F, :]
         theta_t = theta[numerical_circuit.T, :]
-        FSlack1 = make_vars(name='FSlack1', shape=(m, nt), Lb=0, Ub=None)
-        FSlack2 = make_vars(name='FSlack2', shape=(m, nt), Lb=0, Ub=None)
+        FSlack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
+        FSlack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
         # declare problem
         problem = LpProblem(name='DC_OPF_Time_Series')
@@ -301,7 +306,7 @@ class OpfAcNonSequentialTimeSeries:
                                  LSlack=LSlack,
                                  Pl=Pl)
 
-        add_nodal_power_balance(numerical_circuit, problem, theta, P)
+        add_nodal_power_balance(numerical_circuit, problem, theta, P, start_=self.start_idx, end_=self.end_idx)
 
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, Fmax, FSlack1, FSlack2)
 
@@ -402,23 +407,24 @@ if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
         # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\Lynn 5 Bus pv.gridcal'
+        fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
         main_circuit = FileOpen(fname).open()
 
-        problem = OpfAcNonSequentialTimeSeries(main_circuit)
+        problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=0, end_idx=5*24)
 
         status = problem.solve()
 
         print("Status:", status)
 
         v = problem.get_voltage()
-        print(np.angle(v))
+        print('Angles\n', np.angle(v))
 
         l = problem.get_loading()
-        print(l)
+        print('Branch loading\n', l)
 
         g = problem.get_generator_power()
-        print(g)
+        print('Gen power\n', g)
 
         pass

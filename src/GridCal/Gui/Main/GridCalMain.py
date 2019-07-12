@@ -3370,40 +3370,69 @@ class MainGUI(QMainWindow):
             self.results_df = None
 
             if study == 'Power Flow':
-                self.results_df = self.power_flow.results.plot(result_type=study_type,
-                                                               ax=ax, indices=indices, names=names)
+                if self.power_flow.results is not None:
+                    self.results_df = self.power_flow.results.plot(result_type=study_type,
+                                                                   ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Time Series':
-                self.results_df = self.time_series.results.plot(result_type=study_type,
-                                                                ax=ax, indices=indices, names=names)
+                if self.time_series.results is not None:
+                    self.results_df = self.time_series.results.plot(result_type=study_type,
+                                                                    ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Voltage Stability':
-                self.results_df = self.voltage_stability.results.plot(result_type=study_type,
-                                                                      ax=ax, indices=indices, names=names)
+                if self.voltage_stability.results is not None:
+                    self.results_df = self.voltage_stability.results.plot(result_type=study_type,
+                                                                          ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Monte Carlo':
-                self.results_df = self.monte_carlo.results.plot(result_type=study_type,
-                                                                ax=ax, indices=indices, names=names)
+                if self.monte_carlo.results is not None:
+                    self.results_df = self.monte_carlo.results.plot(result_type=study_type,
+                                                                    ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Latin Hypercube':
-                self.results_df = self.latin_hypercube_sampling.results.plot(result_type=study_type,
-                                                                             ax=ax, indices=indices, names=names)
+                if self.latin_hypercube_sampling.results is not None:
+                    self.results_df = self.latin_hypercube_sampling.results.plot(result_type=study_type,
+                                                                                 ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Short Circuit':
-                self.results_df = self.short_circuit.results.plot(result_type=study_type,
-                                                                  ax=ax, indices=indices, names=names)
+                if self.short_circuit.results is not None:
+                    self.results_df = self.short_circuit.results.plot(result_type=study_type,
+                                                                      ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Optimal power flow':
-                self.results_df = self.optimal_power_flow.results.plot(result_type=study_type,
-                                                                       ax=ax, indices=indices, names=names)
+                if self.optimal_power_flow.results is not None:
+                    self.results_df = self.optimal_power_flow.results.plot(result_type=study_type,
+                                                                           ax=ax, indices=indices, names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Optimal power flow time series':
-                self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type,
-                                                                                   ax=ax, indices=indices, names=names)
+                if self.optimal_power_flow_time_series.results is not None:
+                    self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type,
+                                                                                       ax=ax, indices=indices,
+                                                                                       names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             elif study == 'Transient stability':
-                self.results_df = self.transient_stability.results.plot(result_type=study_type,
-                                                                        ax=ax, indices=indices, names=names)
+                if self.transient_stability.results is not None:
+                    self.results_df = self.transient_stability.results.plot(result_type=study_type,
+                                                                            ax=ax, indices=indices,
+                                                                            names=names)
+                else:
+                    self.msg('There seem to be no results :(')
 
             if self.results_df is not None:
                 # set the table model
