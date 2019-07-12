@@ -13,8 +13,9 @@ Hence if something goes wrong, you need to re-upload with a new version number.
 version 3.4.2
 _____________
 
-- Fixed branch saving code (forever hopefully)
-
+- Fixed branch saving code (hopefully forever)
+- Fixed the loading of some properties that were missing.
+- Fixed the non-sequential OPF.
 
 version 3.4.1
 _____________

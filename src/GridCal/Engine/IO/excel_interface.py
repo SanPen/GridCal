@@ -608,8 +608,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     # Set comments
     circuit.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
-
-
     circuit.logger = list()
 
     # common function
@@ -645,10 +643,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     # Add the buses ################################################################################################
     bus_dict = dict()
     if 'bus' in data.keys():
-        lst = data['bus']
-        hdr = lst.columns.values
-        vals = lst.values
-        for i in range(len(lst)):
+        df = data['bus']
+        hdr = df.columns.values
+        vals = df.values
+        for i in range(len(df)):
             obj = Bus()
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
@@ -658,11 +656,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # add the loads ################################################################################################
     if 'load' in data.keys():
-        lst = data['load']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
+        df = data['load']
+        bus_from = df['bus'].values
+        hdr = df.columns.values
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
+        vals = df[hdr].values
 
         profles_attr = {'load_P_prof': 'P_prof',
                         'load_Q_prof': 'Q_prof',
@@ -670,9 +668,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                         'load_Ii_prof': 'Ii_prof',
                         'load_G_prof': 'G_prof',
                         'load_B_prof': 'B_prof',
-                        'load_active_prof': 'active_prof'}
+                        'load_active_prof': 'active_prof',
+                        'load_Cost_prof': 'Cost_prof'}
 
-        for i in range(len(lst)):
+        for i in range(df.shape[0]):
             obj = Load()
             set_object_attributes(obj, hdr, vals[i, :])
 
@@ -703,12 +702,12 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # add the controlled generators ################################################################################
     if 'generator' in data.keys():
-        lst = data['generator']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
+        df = data['generator']
+        bus_from = df['bus'].values
+        hdr = df.columns.values
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
+        vals = df[hdr].values
+        for i in range(df.shape[0]):
             obj = Generator()
             set_object_attributes(obj, hdr, vals[i, :])
 
@@ -737,6 +736,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 idx = data['generator_active_prof'].index
                 obj.create_profile(magnitude='active', index=idx, arr=val)
 
+            if 'generator_Cost_prof' in data.keys():
+                val = data['generator_Cost_prof'].values[:, i]
+                idx = data['generator_Cost_prof'].index
+                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -753,12 +757,12 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # add the batteries ############################################################################################
     if 'battery' in data.keys():
-        lst = data['battery']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
+        df = data['battery']
+        bus_from = df['bus'].values
+        hdr = df.columns.values
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
+        vals = df[hdr].values
+        for i in range(df.shape[0]):
             obj = Battery()
             set_object_attributes(obj, hdr, vals[i, :])
 
@@ -779,6 +783,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 idx = data['battery_active_prof'].index
                 obj.create_profile(magnitude='active', index=idx, arr=val)
 
+            if 'battery_Cost_prof' in data.keys():
+                val = data['battery_Cost_prof'].values[:, i]
+                idx = data['battery_Cost_prof'].index
+                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -795,12 +804,12 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # add the static generators ####################################################################################
     if 'static_generator' in data.keys():
-        lst = data['static_generator']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
+        df = data['static_generator']
+        bus_from = df['bus'].values
+        hdr = df.columns.values
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
+        vals = df[hdr].values
+        for i in range(df.shape[0]):
             obj = StaticGenerator()
             set_object_attributes(obj, hdr, vals[i, :])
 
@@ -825,6 +834,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 idx = data['static_generator_active_prof'].index
                 obj.create_profile(magnitude='active', index=idx, arr=val)
 
+            if 'static_generator_Cost_prof' in data.keys():
+                val = data['static_generator_Cost_prof'].values[:, i]
+                idx = data['static_generator_Cost_prof'].index
+                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -841,12 +855,12 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # add the shunts ###############################################################################################
     if 'shunt' in data.keys():
-        lst = data['shunt']
-        bus_from = lst['bus'].values
-        hdr = lst.columns.values
+        df = data['shunt']
+        bus_from = df['bus'].values
+        hdr = df.columns.values
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
+        vals = df[hdr].values
+        for i in range(df.shape[0]):
             obj = Shunt()
             set_object_attributes(obj, hdr, vals[i, :])
 
@@ -871,6 +885,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 idx = data['shunt_active_prof'].index
                 obj.create_profile(magnitude='active', index=idx, arr=val)
 
+            if 'shunt_Cost_prof' in data.keys():
+                val = data['shunt_Cost_prof'].values[:, i]
+                idx = data['shunt_Cost_prof'].index
+                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
@@ -887,10 +906,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # Add the wires ################################################################################################
     if 'wires' in data.keys():
-        lst = data['wires']
-        hdr = lst.columns.values
-        vals = lst.values
-        for i in range(len(lst)):
+        df = data['wires']
+        hdr = df.columns.values
+        vals = df.values
+        for i in range(len(df)):
             obj = Wire()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_wire(obj)
@@ -899,11 +918,11 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # Add the overhead_line_types ##################################################################################
     if 'overhead_line_types' in data.keys():
-        lst = data['overhead_line_types']
+        df = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
-            for tower_name in lst['tower_name'].unique():
+            for tower_name in df['tower_name'].unique():
                 obj = Tower()
-                vals = lst[lst['tower_name'] == tower_name].values
+                vals = df[df['tower_name'] == tower_name].values
 
                 # set the tower values
                 set_object_attributes(obj, obj.editable_headers.keys(), vals[0, :])
@@ -923,9 +942,9 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # Add the wires ################################################################################################
     if 'underground_cable_types' in data.keys():
-        lst = data['underground_cable_types']
-        hdr = lst.columns.values
-        vals = lst.values
+        df = data['underground_cable_types']
+        hdr = df.columns.values
+        vals = df.values
         # for i in range(len(lst)):
         #     obj = UndergroundLineType()
         #     set_object_attributes(obj, hdr, vals[i, :])
@@ -936,10 +955,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # Add the sequence line types ##################################################################################
     if 'sequence_line_types' in data.keys():
-        lst = data['sequence_line_types']
-        hdr = lst.columns.values
-        vals = lst.values
-        for i in range(len(lst)):
+        df = data['sequence_line_types']
+        hdr = df.columns.values
+        vals = df.values
+        for i in range(len(df)):
             obj = SequenceLineType()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_sequence_line(obj)
@@ -949,10 +968,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # Add the transformer types ####################################################################################
     if 'transformer_types' in data.keys():
-        lst = data['transformer_types']
-        hdr = lst.columns.values
-        vals = lst.values
-        for i in range(len(lst)):
+        df = data['transformer_types']
+        hdr = df.columns.values
+        vals = df.values
+        for i in range(len(df)):
             obj = TransformerType()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_transformer_type(obj)
@@ -962,20 +981,20 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # Add the branches #############################################################################################
     if 'branch' in data.keys():
-        lst = data['branch']
+        df = data['branch']
 
         # fix the old 'is_transformer' property
-        if 'is_transformer' in lst.columns.values:
-            lst['is_transformer'] = lst['is_transformer'].map({True: 'transformer', False: 'line'})
-            lst.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
+        if 'is_transformer' in df.columns.values:
+            df['is_transformer'] = df['is_transformer'].map({True: 'transformer', False: 'line'})
+            df.rename(columns={'is_transformer': 'branch_type'}, inplace=True)
 
-        bus_from = lst['bus_from'].values
-        bus_to = lst['bus_to'].values
-        hdr = lst.columns.values
+        bus_from = df['bus_from'].values
+        bus_to = df['bus_to'].values
+        hdr = df.columns.values
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus_from'))
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus_to'))
-        vals = lst[hdr].values
-        for i in range(len(lst)):
+        vals = df[hdr].values
+        for i in range(df.shape[0]):
             try:
                 obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
             except KeyError as ex:
@@ -983,20 +1002,30 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             set_object_attributes(obj, hdr, vals[i, :])
 
+            # set the branch
+            circuit.add_branch(obj)
+            obj.ensure_profiles_exist(circuit.time_profile)
+
             if 'branch_active_prof' in data.keys():
                 val = data['branch_active_prof'].values[:, i]
                 idx = data['branch_active_prof'].index
                 obj.create_profile(magnitude='active', index=idx, arr=val)
+
+            if 'branch_Cost_prof' in data.keys():
+                val = data['branch_Cost_prof'].values[:, i]
+                idx = data['branch_Cost_prof'].index
+                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+
+            if 'branch_temp_oper_prof' in data.keys():
+                val = data['branch_temp_oper_prof'].values[:, i]
+                idx = data['branch_temp_oper_prof'].index
+                obj.create_profile(magnitude='temp_oper', index=idx, arr=val)
 
             # correct the branch template object
             template_name = str(obj.template)
             if template_name in branch_types.keys():
                 obj.template = branch_types[template_name]
                 print(template_name, 'updtaed!')
-
-            # set the branch
-            circuit.add_branch(obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
 
     else:
         circuit.logger.append('No branches in the file!')

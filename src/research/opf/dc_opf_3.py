@@ -204,8 +204,8 @@ class DcOpf:
 
 
 if __name__ == '__main__':
-
-    grid = FileOpen('lynn5buspv.xlsx').open()
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    grid = FileOpen(fname).open()
     # grid = FileOpen('IEEE30.xlsx').open()
     # grid = FileOpen('Illinois200Bus.xlsx').open()
 
