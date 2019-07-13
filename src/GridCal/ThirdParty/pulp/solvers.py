@@ -1331,6 +1331,7 @@ class XPRESS(LpSolver_CMD):
                     values[name] = value
         return status, values
 
+
 class COIN_CMD(LpSolver_CMD):
     """The COIN CLP/CBC LP solver
     now only uses cbc
@@ -1339,10 +1340,23 @@ class COIN_CMD(LpSolver_CMD):
     def defaultPath(self):
         return self.executableExtension(cbc_path)
 
-    def __init__(self, path = None, keepFiles = 0, mip = 1,
-            msg = 0, cuts = None, presolve = None, dual = None,
-            strong = None, options = [],
-            fracGap = None, maxSeconds = None, threads = None):
+    def __init__(self, path=None, keepFiles=0, mip=1, msg=0, cuts=None, presolve=None, dual=None,
+                 strong=None, options=[], fracGap=None, maxSeconds=None, threads=None):
+        """
+
+        :param path:
+        :param keepFiles:
+        :param mip:
+        :param msg:
+        :param cuts:
+        :param presolve:
+        :param dual:
+        :param strong:
+        :param options:
+        :param fracGap:
+        :param maxSeconds:
+        :param threads:
+        """
         LpSolver_CMD.__init__(self, path, keepFiles, mip, msg, options)
         self.cuts = cuts
         self.presolve = presolve
@@ -1351,12 +1365,14 @@ class COIN_CMD(LpSolver_CMD):
         self.fracGap = fracGap
         self.maxSeconds = maxSeconds
         self.threads = threads
-        #TODO hope this gets fixed in cbc as it does not like the c:\ in windows paths
+        # TODO hope this gets fixed in cbc as it does not like the c:\ in windows paths
         if os.name == 'nt':
             self.tmpDir = ''
 
     def copy(self):
-        """Make a copy of self"""
+        """
+        Make a copy of self
+        """
         aCopy = LpSolver_CMD.copy(self)
         aCopy.cuts = self.cuts
         aCopy.presolve = self.presolve
@@ -1373,10 +1389,16 @@ class COIN_CMD(LpSolver_CMD):
         return self.executable(self.path)
 
     def solve_CBC(self, lp, use_mps=True):
-        """Solve a MIP problem using CBC"""
+        """
+        Solve a MIP problem using CBC
+        :param lp:
+        :param use_mps:
+        :return:
+        """
+
         if not self.executable(self.path):
-            raise PulpSolverError("Pulp: cannot execute %s cwd: %s"%(self.path,
-                                   os.getcwd()))
+            raise PulpSolverError("Pulp: cannot execute %s cwd: %s" % (self.path, os.getcwd()))
+
         if not self.keepFiles:
             uuid = uuid4().hex
             tmpLp = os.path.join(self.tmpDir, "%s-pulp.lp" % uuid)
@@ -1387,27 +1409,26 @@ class COIN_CMD(LpSolver_CMD):
             tmpMps = lp.name+"-pulp.mps"
             tmpSol = lp.name+"-pulp.sol"
         if use_mps:
-            vs, variablesNames, constraintsNames, objectiveName = lp.writeMPS(
-                        tmpMps, rename = 1)
-            cmds = ' '+tmpMps+" "
+            vs, variablesNames, constraintsNames, objectiveName = lp.writeMPS(tmpMps, rename=1)
+            cmds = ' ' + tmpMps + " "
             if lp.sense == LpMaximize:
                 cmds += 'max '
         else:
             lp.writeLP(tmpLp)
-            cmds = ' '+tmpLp+" "
+            cmds = ' ' + tmpLp + " "
         if self.threads:
-            cmds += "threads %s "%self.threads
+            cmds += "threads %s " % self.threads
         if self.fracGap is not None:
-            cmds += "ratio %s "%self.fracGap
+            cmds += "ratio %s " % self.fracGap
         if self.maxSeconds is not None:
-            cmds += "sec %s "%self.maxSeconds
+            cmds += "sec %s " % self.maxSeconds
         if self.presolve:
             cmds += "presolve on "
         if self.strong:
             cmds += "strong %d " % self.strong
         if self.cuts:
             cmds += "gomory on "
-            #cbc.write("oddhole on "
+            # cbc.write("oddhole on "
             cmds += "knapsack on "
             cmds += "probing on "
         for option in self.options:
@@ -1423,24 +1444,26 @@ class COIN_CMD(LpSolver_CMD):
         else:
             pipe = open(os.devnull, 'w')
         log.debug(self.path + cmds)
-        args = []
+        args = list()
         args.append(self.path)
         args.extend(cmds[1:].split())
-        cbc = subprocess.Popen(args, stdout = pipe, stderr = pipe)
+        cbc = subprocess.Popen(args, stdout=pipe, stderr=pipe)
         if cbc.wait() != 0:
-            raise PulpSolverError("Pulp: Error while trying to execute " +  \
-                                    self.path)
+            raise PulpSolverError("Pulp: Error while trying to execute " + self.path)
         if pipe:
             pipe.close()
         if not os.path.exists(tmpSol):
-            raise PulpSolverError("Pulp: Error while executing "+self.path)
+            raise PulpSolverError("Pulp: Error while executing " + self.path)
+
         if use_mps:
-            lp.status, values, reducedCosts, shadowPrices, slacks = self.readsol_MPS(
-                        tmpSol, lp, lp.variables(),
-                        variablesNames, constraintsNames, objectiveName)
+            lp.status, values, reducedCosts, shadowPrices, slacks = self.readsol_MPS(tmpSol, lp,
+                                                                                     lp.variables(),
+                                                                                     variablesNames,
+                                                                                     constraintsNames,
+                                                                                     objectiveName)
         else:
-            lp.status, values, reducedCosts, shadowPrices, slacks = self.readsol_LP(
-                    tmpSol, lp, lp.variables())
+            lp.status, values, reducedCosts, shadowPrices, slacks = self.readsol_LP(tmpSol, lp, lp.variables())
+
         lp.assignVarsVals(values)
         lp.assignVarsDj(reducedCosts)
         lp.assignConsPi(shadowPrices)
@@ -1460,8 +1483,7 @@ class COIN_CMD(LpSolver_CMD):
                 pass
         return lp.status
 
-    def readsol_MPS(self, filename, lp, vs, variablesNames, constraintsNames,
-                objectiveName):
+    def readsol_MPS(self, filename, lp, vs, variablesNames, constraintsNames, objectiveName):
         """
         Read a CBC solution file generated from an mps file (different names)
         """
@@ -1474,7 +1496,6 @@ class COIN_CMD(LpSolver_CMD):
         for k, n in constraintsNames.items():
             reverseCn[n] = k
 
-
         for v in vs:
             values[v.name] = 0.0
 
@@ -1482,18 +1503,18 @@ class COIN_CMD(LpSolver_CMD):
         shadowPrices = {}
         slacks = {}
         cbcStatus = {'Optimal': LpStatusOptimal,
-                    'Infeasible': LpStatusInfeasible,
-                    'Integer': LpStatusInfeasible,
-                    'Unbounded': LpStatusUnbounded,
-                    'Stopped': LpStatusNotSolved}
+                     'Infeasible': LpStatusInfeasible,
+                     'Integer': LpStatusInfeasible,
+                     'Unbounded': LpStatusUnbounded,
+                     'Stopped': LpStatusNotSolved}
         with open(filename) as f:
             statusstr = f.readline().split()[0]
             status = cbcStatus.get(statusstr, LpStatusUndefined)
             for l in f:
-                if len(l)<=2:
+                if len(l) <= 2:
                     break
                 l = l.split()
-                #incase the solution is infeasible
+                # incase the solution is infeasible
                 if l[0] == '**':
                     l = l[1:]
                 vn = l[1]
@@ -1518,10 +1539,10 @@ class COIN_CMD(LpSolver_CMD):
         for v in vs:
             values[v.name] = 0.0
         cbcStatus = {'Optimal': LpStatusOptimal,
-                    'Infeasible': LpStatusInfeasible,
-                    'Integer': LpStatusInfeasible,
-                    'Unbounded': LpStatusUnbounded,
-                    'Stopped': LpStatusNotSolved}
+                     'Infeasible': LpStatusInfeasible,
+                     'Integer': LpStatusInfeasible,
+                     'Unbounded': LpStatusUnbounded,
+                     'Stopped': LpStatusNotSolved}
         with open(filename) as f:
             statusstr = f.readline().split()[0]
             status = cbcStatus.get(statusstr, LpStatusUndefined)
@@ -1542,7 +1563,9 @@ class COIN_CMD(LpSolver_CMD):
                     shadowPrices[vn] = float(dj)
         return status, values, reducedCosts, shadowPrices, slacks
 
+
 COIN = COIN_CMD
+
 
 class PULP_CBC_CMD(COIN_CMD):
     """
@@ -1554,10 +1577,11 @@ class PULP_CBC_CMD(COIN_CMD):
             if not os.access(pulp_cbc_path, os.X_OK):
                 import stat
                 os.chmod(pulp_cbc_path, stat.S_IXUSR + stat.S_IXOTH)
-    except: #probably due to incorrect permissions
+    except:  # probably due to incorrect permissions
         def available(self):
             """True if the solver is available"""
             return False
+
         def actualSolve(self, lp, callback = None):
             """Solve a well formulated lp problem"""
             raise PulpSolverError("PULP_CBC_CMD: Not Available (check permissions on %s)" % self.pulp_cbc_path)
@@ -1568,8 +1592,9 @@ class PULP_CBC_CMD(COIN_CMD):
             """
             if path is not None:
                 raise PulpSolverError('Use COIN_CMD if you want to set a path')
-            #check that the file is executable
+            # check that the file is executable
             COIN_CMD.__init__(self, path=self.pulp_cbc_path, *args, **kwargs)
+
 
 def COINMP_DLL_load_dll(path):
     """
@@ -1579,13 +1604,14 @@ def COINMP_DLL_load_dll(path):
     if os.name == 'nt':
         lib = ctypes.windll.LoadLibrary(str(path[-1]))
     else:
-        #linux hack to get working
+        # linux hack to get working
         mode = ctypes.RTLD_GLOBAL
         for libpath in path[:-1]:
-            #RTLD_LAZY = 0x00001
+            # RTLD_LAZY = 0x00001
             ctypes.CDLL(libpath, mode = mode)
         lib = ctypes.CDLL(path[-1], mode = mode)
     return lib
+
 
 class COINMP_DLL(LpSolver):
     """
@@ -1611,13 +1637,13 @@ class COINMP_DLL(LpSolver):
         COIN_REAL_MIPFRACGAP = 34
         lib.CoinGetInfinity.restype = ctypes.c_double
         lib.CoinGetVersionStr.restype = ctypes.c_char_p
-        lib.CoinGetSolutionText.restype=ctypes.c_char_p
-        lib.CoinGetObjectValue.restype=ctypes.c_double
-        lib.CoinGetMipBestBound.restype=ctypes.c_double
+        lib.CoinGetSolutionText.restype = ctypes.c_char_p
+        lib.CoinGetObjectValue.restype = ctypes.c_double
+        lib.CoinGetMipBestBound.restype = ctypes.c_double
 
-        def __init__(self, mip = 1, msg = 1, cuts = 1, presolve = 1, dual = 1,
-            crash = 0, scale = 1, rounding = 1, integerPresolve = 1, strong = 5,
-            timeLimit = None, epgap = None):
+        def __init__(self, mip=1, msg=1, cuts=1, presolve=1, dual=1, crash=0, scale=1, rounding=1,
+                     integerPresolve=1, strong=5, timeLimit=None, epgap=None):
+
             LpSolver.__init__(self, mip, msg)
             self.maxSeconds = None
             if timeLimit is not None:
@@ -1625,7 +1651,7 @@ class COINMP_DLL(LpSolver):
             self.fracGap = None
             if epgap is not None:
                 self.fracGap = float(epgap)
-            #Todo: these options are not yet implemented
+            # Todo: these options are not yet implemented
             self.cuts = cuts
             self.presolve = presolve
             self.dual = dual
@@ -1634,6 +1660,8 @@ class COINMP_DLL(LpSolver):
             self.rounding = rounding
             self.integerPresolve = integerPresolve
             self.strong = strong
+            self.debug = 0
+            self.hProb = None
 
         def copy(self):
             """Make a copy of self"""
@@ -1666,27 +1694,24 @@ class COINMP_DLL(LpSolver):
 
         def actualSolve(self, lp):
             """Solve a well formulated lp problem"""
-            #TODO alter so that msg parameter is handled correctly
+            # TODO alter so that msg parameter is handled correctly
             self.debug = 0
-            #initialise solver
+            # initialise solver
             self.lib.CoinInitSolver("")
-            #create problem
-            self.hProb = hProb = self.lib.CoinCreateProblem(lp.name);
-            #set problem options
+            # create problem
+            self.hProb = hProb = self.lib.CoinCreateProblem(lp.name)
+            # set problem options
             self.lib.CoinSetIntOption(hProb, self.COIN_INT_LOGLEVEL, ctypes.c_int(self.msg))
 
             if self.maxSeconds:
                 if self.mip:
-                    self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPMAXSEC,
-                                          ctypes.c_double(self.maxSeconds))
+                    self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPMAXSEC, ctypes.c_double(self.maxSeconds))
                 else:
-                    self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MAXSECONDS,
-                                          ctypes.c_double(self.maxSeconds))
+                    self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MAXSECONDS, ctypes.c_double(self.maxSeconds))
             if self.fracGap:
-               #Hopefully this is the bound gap tolerance
-               self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPFRACGAP,
-                                          ctypes.c_double(self.fracGap))
-            #CoinGetInfinity is needed for varibles with no bounds
+               # Hopefully this is the bound gap tolerance
+               self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPFRACGAP, ctypes.c_double(self.fracGap))
+            # CoinGetInfinity is needed for varibles with no bounds
             coinDblMax = self.lib.CoinGetInfinity()
             if self.debug: print("Before getCoinMPArrays")
             (numVars, numRows, numels, rangeCount,
@@ -1696,14 +1721,14 @@ class COINMP_DLL(LpSolver):
                 elemBase, lowerBounds, upperBounds, initValues, colNames,
                 rowNames, columnType, n2v, n2c) = self.getCplexStyleArrays(lp)
             self.lib.CoinLoadProblem(hProb,
-                                   numVars, numRows, numels, rangeCount,
-                                   objectSense, objectConst, objectCoeffs,
-                                   lowerBounds, upperBounds, rowType,
-                                   rhsValues, rangeValues, startsBase,
-                                   lenBase, indBase, elemBase,
-                                   colNames, rowNames, "Objective")
+                                     numVars, numRows, numels, rangeCount,
+                                     objectSense, objectConst, objectCoeffs,
+                                     lowerBounds, upperBounds, rowType,
+                                     rhsValues, rangeValues, startsBase,
+                                     lenBase, indBase, elemBase,
+                                     colNames, rowNames, "Objective")
             if lp.isMIP() and self.mip:
-                self.lib.CoinLoadInteger(hProb,columnType)
+                self.lib.CoinLoadInteger(hProb, columnType)
 
             if self.msg == 0:
                 self.lib.CoinRegisterMsgLogCallback(
@@ -1713,19 +1738,19 @@ class COINMP_DLL(LpSolver):
             self.lib.CoinOptimizeProblem(hProb, 0);
             self.coinTime += clock()
 
-            CoinLpStatus = {0:LpStatusOptimal,
-                            1:LpStatusInfeasible,
-                            2:LpStatusInfeasible,
-                            3:LpStatusNotSolved,
-                            4:LpStatusNotSolved,
-                            5:LpStatusNotSolved,
-                            -1:LpStatusUndefined
-                            }
+            CoinLpStatus = {0: LpStatusOptimal,
+                            1: LpStatusInfeasible,
+                            2: LpStatusInfeasible,
+                            3: LpStatusNotSolved,
+                            4: LpStatusNotSolved,
+                            5: LpStatusNotSolved,
+                            -1: LpStatusUndefined}
+
             solutionStatus = self.lib.CoinGetSolutionStatus(hProb)
             solutionText = self.lib.CoinGetSolutionText(hProb)
-            objectValue =  self.lib.CoinGetObjectValue(hProb)
+            objectValue = self.lib.CoinGetObjectValue(hProb)
 
-            #get the solution values
+            # get the solution values
             NumVarDoubleArray = ctypes.c_double * numVars
             NumRowsDoubleArray = ctypes.c_double * numRows
             cActivity = NumVarDoubleArray()
@@ -1748,7 +1773,7 @@ class COINMP_DLL(LpSolver):
                 variabledjvalues[self.n2v[i].name] = cReducedCost[i]
             lp.assignVarsVals(variablevalues)
             lp.assignVarsDj(variabledjvalues)
-            #put pi and slack variables against the constraints
+            # put pi and slack variables against the constraints
             for i in range(numRows):
                 constraintpivalues[self.n2c[i]] = cShadowPrices[i]
                 constraintslackvalues[self.n2c[i]] = cSlackValues[i]
@@ -1758,6 +1783,7 @@ class COINMP_DLL(LpSolver):
             self.lib.CoinFreeSolver()
             lp.status = CoinLpStatus[self.lib.CoinGetSolutionStatus(hProb)]
             return lp.status
+
 
 if COINMP_DLL.available():
     COIN = COINMP_DLL

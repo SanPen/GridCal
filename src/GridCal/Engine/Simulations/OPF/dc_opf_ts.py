@@ -431,9 +431,10 @@ if __name__ == '__main__':
 
         problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=0, end_idx=5*24)
 
+        print('Solving...')
         status = problem.solve()
 
-        print("Status:", status)
+        # print("Status:", status)
 
         v = problem.get_voltage()
         print('Angles\n', np.angle(v))
