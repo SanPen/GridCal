@@ -16,8 +16,7 @@
 from warnings import warn
 import pandas as pd
 
-import numpy as np
-from scipy.sparse import csc_matrix, hstack as hstack_s, vstack as vstack_s
+from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 
 # from GridCal.Engine.calculation_engine import MultiCircuit
 from GridCal.Engine.basic_structures import BusMode
@@ -25,7 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowMP, 
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.OPF.dc_opf import Cproduct
-from GridCal.Engine.Simulations.OPF.pulp import *
+from GridCal.ThirdParty.pulp import *
 
 
 class AcOpf_old:

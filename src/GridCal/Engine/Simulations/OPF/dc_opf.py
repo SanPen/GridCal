@@ -13,8 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from warnings import warn
-from GridCal.Engine.Simulations.OPF.pulp import *
+from GridCal.ThirdParty.pulp import *
 import numpy as np
 from scipy.sparse import csc_matrix
 import pandas as pd
@@ -157,7 +156,7 @@ class DcOpf:
             name = 'GEN_' + gen.name + '_' + str(i)
             pmin = gen.Pmin / Sbase
             pmax = gen.Pmax / Sbase
-            self.controlled_generators_P[i] = pulp.LpVariable(name + '_P',  pmin, pmax)
+            self.controlled_generators_P[i] = pulp.LpVariable(name + '_P', pmin, pmax)
             self.generation_shedding[i] = pulp.LpVariable(name + '_SHEDDING', 0.0, 1e20)
             self.controlled_generators_cost[i] = gen.Cost
 

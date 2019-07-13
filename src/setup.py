@@ -38,7 +38,21 @@ base_path = os.path.join('GridCal')
 packages = find_packages(exclude=['docs', 'test', 'research', 'tests'])
 # packages = [os.path.join(p) for p in packages]
 
-package_data = {'GridCal': ['*.md']}
+
+package_data = {'GridCal': ['*.md'],
+                'GridCal.ThirdParty.pulp': ["AUTHORS", "LICENSE",
+                                            "pulp.cfg.linux",
+                                            "pulp.cfg.win",
+                                            "pulp.cfg.osx",
+                                            "LICENSE.CoinMP.txt",
+                                            "AUTHORS.CoinMP.txt",
+                                            "README.CoinMP.txt"],
+                'GridCal.ThirdParty.pulp.solverdir.cbc.linux.32': ['*', '*.*'],
+                'GridCal.ThirdParty.pulp.solverdir.cbc.linux.64': ['*', '*.*'],
+                'GridCal.ThirdParty.pulp.solverdir.cbc.win.32': ['*', '*.*'],
+                'GridCal.ThirdParty.pulp.solverdir.cbc.win.64': ['*', '*.*'],
+                'GridCal.ThirdParty.pulp.solverdir.cbc.osx.64': ['*', '*.*'],
+                }
 
 dependencies = ["PySide2>=5.11",
                 "numpy>=1.14.0",
@@ -52,7 +66,7 @@ dependencies = ["PySide2>=5.11",
                 "pyDOE>=0.3.8",
                 "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",
-                "pulp>=1.6.8",
+                # "pulp>=1.6.8",
                 "smopy>=0.0.6",
                 "chardet>=3.0.4",
                 "scikit-learn>=0.18",

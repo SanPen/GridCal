@@ -46,7 +46,6 @@ try:
 except AttributeError:
     Parser = configparser.SafeConfigParser    
 from . import sparse
-import collections
 import warnings
 from tempfile import mktemp
 from .constants import *

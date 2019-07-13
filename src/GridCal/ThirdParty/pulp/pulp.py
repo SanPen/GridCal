@@ -93,12 +93,8 @@ References:
 [4] http://www.gurobi.com/
 """
 
-import types
-import string
 import itertools
-import warnings
 
-from .constants import *
 from .solvers import *
 from collections import Iterable
 
@@ -1092,9 +1088,10 @@ class LpConstraintVar(LpElement):
     def value(self):
         return self.constraint.value()
 
+
 class LpProblem(object):
     """An LP Problem"""
-    def __init__(self, name = "NoName", sense = LpMinimize):
+    def __init__(self, name="NoName", sense=LpMinimize):
         """
         Creates an LP Problem
 
@@ -1120,9 +1117,9 @@ class LpProblem(object):
         self.modifiedConstraints = []
         self.resolveOK = False
         self._variables = []
-        self._variable_ids = {}  #old school using dict.keys() for a set
+        self._variable_ids = {}  # old school using dict.keys() for a set
         self.dummyVar = None
-
+        self.solutionTime = 0
 
         # locals
         self.lastUnused = 0
@@ -1179,24 +1176,29 @@ class LpProblem(object):
         return lpcopy
 
     def normalisedNames(self):
-        constraintsNames = {}
+        """
+
+        :return:
+        """
+        constraints_names = {}
         i = 0
         for k in self.constraints:
-            constraintsNames[k] = "C%07d" % i
+            constraints_names[k] = "C%07d" % i
             i += 1
-        variablesNames = {}
+        variables_names = {}
         i = 0
         for k in self.variables():
-            variablesNames[k.name] = "X%07d" % i
+            variables_names[k.name] = "X%07d" % i
             i += 1
-        return constraintsNames, variablesNames, "OBJ"
+        return constraints_names, variables_names, "OBJ"
 
     def isMIP(self):
         for v in self.variables():
-            if v.cat == LpInteger: return 1
+            if v.cat == LpInteger:
+                return 1
         return 0
 
-    def roundSolution(self, epsInt = 1e-5, eps = 1e-7):
+    def roundSolution(self, epsInt=1e-5, eps=1e-7):
         """
         Rounds the lp variables
 
@@ -1210,22 +1212,29 @@ class LpProblem(object):
             v.round(epsInt, eps)
 
     def unusedConstraintName(self):
+        """
+
+        :return:
+        """
         self.lastUnused += 1
         while 1:
             s = "_C%d" % self.lastUnused
-            if s not in self.constraints: break
+            if s not in self.constraints:
+                break
             self.lastUnused += 1
         return s
 
-    def valid(self, eps = 0):
+    def valid(self, eps=0):
         for v in self.variables():
-            if not v.valid(eps): return False
+            if not v.valid(eps):
+                return False
         for c in self.constraints.values():
-            if not c.valid(eps): return False
+            if not c.valid(eps):
+                return False
         else:
             return True
 
-    def infeasibilityGap(self, mip = 1):
+    def infeasibilityGap(self, mip=1):
         gap = 0
         for v in self.variables():
             gap = max(abs(v.infeasibilityGap(mip)), gap)
@@ -1268,13 +1277,17 @@ class LpProblem(object):
         for c in self.constraints.values():
             self.addVariables(list(c.keys()))
         variables = self._variables
-        #sort the varibles DSU
+        # sort the varibles DSU
         variables = [[v.name, v] for v in variables]
         variables.sort()
         variables = [v for _, v in variables]
         return variables
 
     def variablesDict(self):
+        """
+
+        :return:
+        """
         variables = {}
         if self.objective:
             for v in self.objective:
@@ -1284,10 +1297,22 @@ class LpProblem(object):
                 variables[v.name] = v
         return variables
 
-    def add(self, constraint, name = None):
+    def add(self, constraint, name=None):
+        """
+
+        :param constraint:
+        :param name:
+        :return:
+        """
         self.addConstraint(constraint, name)
 
     def addConstraint(self, constraint, name = None):
+        """
+
+        :param constraint:
+        :param name:
+        :return:
+        """
         if not isinstance(constraint, LpConstraint):
             raise TypeError("Can only add LpConstraint objects")
         if name:
@@ -1299,7 +1324,7 @@ class LpProblem(object):
                 name = self.unusedConstraintName()
         except AttributeError:
             raise TypeError("Can only add LpConstraint objects")
-            #removed as this test fails for empty constraints
+            # removed as this test fails for empty constraints
 #        if len(constraint) == 0:
 #            if not constraint.valid():
 #                raise ValueError, "Cannot add false constraints"
@@ -1312,7 +1337,7 @@ class LpProblem(object):
         self.modifiedConstraints.append(constraint)
         self.addVariables(list(constraint.keys()))
 
-    def setObjective(self,obj):
+    def setObjective(self, obj):
         """
         Sets the input variable as the objective function. Used in Columnwise Modelling
 
@@ -1334,6 +1359,11 @@ class LpProblem(object):
         self.resolveOK = False
 
     def __iadd__(self, other):
+        """
+        + operator overload
+        :param other:
+        :return:
+        """
         if isinstance(other, tuple):
             other, name = other
         else:
@@ -1358,7 +1388,7 @@ class LpProblem(object):
             raise TypeError("Can only add LpConstraintVar, LpConstraint, LpAffineExpression or True objects")
         return self
 
-    def extend(self, other, use_objective = True):
+    def extend(self, other, use_objective=True):
         """
         extends an LpProblem by adding constraints either from a dictionary
         a tuple or another LpProblem object.
@@ -1377,25 +1407,32 @@ class LpProblem(object):
         elif isinstance(other, LpProblem):
             for v in set(other.variables()).difference(self.variables()):
                 v.name = other.name + v.name
-            for name,c in other.constraints.items():
+            for name, c in other.constraints.items():
                 c.name = other.name + name
                 self.addConstraint(c)
             if use_objective:
                 self.objective += other.objective
         else:
             for c in other:
-                if isinstance(c,tuple):
+                if isinstance(c, tuple):
                     name = c[0]
                     c = c[1]
                 else:
                     name = None
-                if not name: name = c.name
-                if not name: name = self.unusedConstraintName()
+                if not name:
+                    name = c.name
+                if not name:
+                    name = self.unusedConstraintName()
                 self.constraints[name] = c
 
-    def coefficients(self, translation = None):
+    def coefficients(self, translation=None):
+        """
+
+        :param translation:
+        :return:
+        """
         coefs = []
-        if translation == None:
+        if translation is None:
             for c in self.constraints:
                 cst = self.constraints[c]
                 coefs.extend([(v.name, c, cst[v]) for v in cst])
@@ -1406,89 +1443,116 @@ class LpProblem(object):
                 coefs.extend([(translation[v.name], ctr, cst[v]) for v in cst])
         return coefs
 
-    def writeMPS(self, filename, mpsSense = 0, rename = 0, mip = 1):
+    def writeMPS(self, filename, mpsSense=0, rename=0, mip=1):
+        """
+
+        :param filename:
+        :param mpsSense:
+        :param rename:
+        :param mip:
+        :return:
+        """
         wasNone, dummyVar = self.fixObjective()
+
         f = open(filename, "w")
-        if mpsSense == 0: mpsSense = self.sense
+
+        if mpsSense == 0:
+            mpsSense = self.sense
         cobj = self.objective
+
         if mpsSense != self.sense:
             n = cobj.name
             cobj = - cobj
             cobj.name = n
+
         if rename:
             constraintsNames, variablesNames, cobj.name = self.normalisedNames()
         f.write("*SENSE:"+LpSenses[mpsSense]+"\n")
         n = self.name
-        if rename: n = "MODEL"
+        if rename:
+            n = "MODEL"
         f.write("NAME          "+n+"\n")
         vs = self.variables()
+
         # constraints
         f.write("ROWS\n")
         objName = cobj.name
-        if not objName: objName = "OBJ"
+        if not objName:
+            objName = "OBJ"
         f.write(" N  %s\n" % objName)
-        mpsConstraintType = {LpConstraintLE:"L", LpConstraintEQ:"E", LpConstraintGE:"G"}
-        for k,c in self.constraints.items():
-            if rename: k = constraintsNames[k]
+
+        mpsConstraintType = {LpConstraintLE: "L", LpConstraintEQ: "E", LpConstraintGE: "G"}
+
+        for k, c in self.constraints.items():
+            if rename:
+                k = constraintsNames[k]
             f.write(" "+mpsConstraintType[c.sense]+"  "+k+"\n")
+
         # matrix
         f.write("COLUMNS\n")
         # Creation of a dict of dict:
         # coefs[nomVariable][nomContrainte] = coefficient
         coefs = {}
-        for k,c in self.constraints.items():
-            if rename: k = constraintsNames[k]
+        for k, c in self.constraints.items():
+            if rename:
+                k = constraintsNames[k]
             for v in c:
                 n = v.name
-                if rename: n = variablesNames[n]
+                if rename:
+                    n = variablesNames[n]
                 if n in coefs:
                     coefs[n][k] = c[v]
                 else:
-                    coefs[n] = {k:c[v]}
+                    coefs[n] = {k: c[v]}
 
         for v in vs:
             if mip and v.cat == LpInteger:
                 f.write("    MARK      'MARKER'                 'INTORG'\n")
             n = v.name
-            if rename: n = variablesNames[n]
+            if rename:
+                n = variablesNames[n]
             if n in coefs:
                 cv = coefs[n]
                 # Most of the work is done here
-                for k in cv: f.write("    %-8s  %-8s  % .12e\n" % (n,k,cv[k]))
+                for k in cv: f.write("    %-8s  %-8s  % .12e\n" % (n, k, cv[k]))
 
             # objective function
-            if v in cobj: f.write("    %-8s  %-8s  % .12e\n" % (n,objName,cobj[v]))
+            if v in cobj:
+                f.write("    %-8s  %-8s  % .12e\n" % (n, objName, cobj[v]))
             if mip and v.cat == LpInteger:
                 f.write("    MARK      'MARKER'                 'INTEND'\n")
         # right hand side
         f.write("RHS\n")
-        for k,c in self.constraints.items():
+        for k, c in self.constraints.items():
             c = -c.constant
-            if rename: k = constraintsNames[k]
-            if c == 0: c = 0
+            if rename:
+                k = constraintsNames[k]
+            if c == 0:
+                c = 0
             f.write("    RHS       %-8s  % .12e\n" % (k,c))
         # bounds
         f.write("BOUNDS\n")
         for v in vs:
             n = v.name
-            if rename: n = variablesNames[n]
-            if v.lowBound != None and v.lowBound == v.upBound:
+            if rename:
+                n = variablesNames[n]
+            if v.lowBound is not None and v.lowBound == v.upBound:
                 f.write(" FX BND       %-8s  % .12e\n" % (n, v.lowBound))
             elif v.lowBound == 0 and v.upBound == 1 and mip and v.cat == LpInteger:
                 f.write(" BV BND       %-8s\n" % n)
             else:
-                if v.lowBound != None:
+                if v.lowBound is not None:
                     # In MPS files, variables with no bounds (i.e. >= 0)
                     # are assumed BV by COIN and CPLEX.
                     # So we explicitly write a 0 lower bound in this case.
-                    if v.lowBound != 0 or (mip and v.cat == LpInteger and v.upBound == None):
+                    if v.lowBound != 0 or (mip and v.cat == LpInteger and v.upBound is None):
                         f.write(" LO BND       %-8s  % .12e\n" % (n, v.lowBound))
                 else:
-                    if v.upBound != None:
+                    if v.upBound is not None:
                         f.write(" MI BND       %-8s\n" % n)
                     else:
                         f.write(" FR BND       %-8s\n" % n)
-                if v.upBound != None:
+                if v.upBound is not None:
                     f.write(" UP BND       %-8s  % .12e\n" % (n, v.upBound))
         f.write("ENDATA\n")
         f.close()
@@ -1519,7 +1583,8 @@ class LpProblem(object):
             f.write("Maximize\n")
         wasNone, objectiveDummyVar = self.fixObjective()
         objName = self.objective.name
-        if not objName: objName = "OBJ"
+        if not objName:
+            objName = "OBJ"
         f.write(self.objective.asCplexLpAffineExpression(objName, constant = 0))
         f.write("Subject To\n")
         ks = list(self.constraints.keys())
@@ -1528,10 +1593,10 @@ class LpProblem(object):
         for k in ks:
             constraint = self.constraints[k]
             if not list(constraint.keys()):
-                #empty constraint add the dummyVar
+                # empty constraint add the dummyVar
                 dummyVar = self.get_dummyVar()
                 constraint += dummyVar
-                #set this dummyvar to zero so infeasible problems are not made feasible
+                # set this dummyvar to zero so infeasible problems are not made feasible
                 if not dummyWritten:
                     f.write((dummyVar == 0.0).asCplexLpConstraint("_dummy"))
                     dummyWritten = True
@@ -1549,14 +1614,12 @@ class LpProblem(object):
         repeated_names = [(key, value) for key, value in list(repeated_names.items())
                             if value >= 2]
         if repeated_names:
-            raise PulpError('Repeated variable names in Lp format\n'
-                                + str(repeated_names))
+            raise PulpError('Repeated variable names in Lp format\n' + str(repeated_names))
         # Bounds on non-"positive" variables
         # Note: XPRESS and CPLEX do not interpret integer variables without
         # explicit bounds
         if mip:
-            vg = [v for v in vs if not (v.isPositive() and v.cat == LpContinuous) \
-                and not v.isBinary()]
+            vg = [v for v in vs if not (v.isPositive() and v.cat == LpContinuous) and not v.isBinary()]
         else:
             vg = [v for v in vs if not v.isPositive()]
         if vg:
@@ -1568,24 +1631,26 @@ class LpProblem(object):
             vg = [v for v in vs if v.cat == LpInteger and not v.isBinary()]
             if vg:
                 f.write("Generals\n")
-                for v in vg: f.write("%s\n" % v.name)
+                for v in vg:
+                    f.write("%s\n" % v.name)
             # Binary variables
             vg = [v for v in vs if v.isBinary()]
             if vg:
                 f.write("Binaries\n")
-                for v in vg: f.write("%s\n" % v.name)
+                for v in vg:
+                    f.write("%s\n" % v.name)
         # Special Ordered Sets
         if writeSOS and (self.sos1 or self.sos2):
             f.write("SOS\n")
             if self.sos1:
                 for sos in self.sos1.values():
                     f.write("S1:: \n")
-                    for v,val in sos.items():
+                    for v, val in sos.items():
                         f.write(" %s: %.12g\n" % (v.name, val))
             if self.sos2:
                 for sos in self.sos2.values():
                     f.write("S2:: \n")
-                    for v,val in sos.items():
+                    for v, val in sos.items():
                         f.write(" %s: %.12g\n" % (v.name, val))
         f.write("End\n")
         f.close()
@@ -1597,7 +1662,7 @@ class LpProblem(object):
             if name != '__dummy':
                 variables[name].varValue = values[name]
 
-    def assignVarsDj(self,values):
+    def assignVarsDj(self, values):
         variables = self.variablesDict()
         for name in values:
             if name != '__dummy':
@@ -1614,7 +1679,7 @@ class LpProblem(object):
         for name in values:
             try:
                 if activity:
-                    #reports the activitynot the slack
+                    # reports the activitynot the slack
                     self.constraints[name].slack = -1 * (
                             self.constraints[name].constant + float(values[name]))
                 else:
@@ -1628,6 +1693,10 @@ class LpProblem(object):
         return self.dummyVar
 
     def fixObjective(self):
+        """
+
+        :return:
+        """
         if self.objective is None:
             self.objective = 0
             wasNone = 1
@@ -1648,7 +1717,7 @@ class LpProblem(object):
         elif not dummyVar is None:
             self.objective -= dummyVar
 
-    def solve(self, solver = None, **kwargs):
+    def solve(self, solver=None, **kwargs):
         """
         Solve the given Lp problem.
 
@@ -1663,10 +1732,12 @@ class LpProblem(object):
               :meth:`~pulp.solver.LpSolver.actualSolve()` to reflect the Lp solution
         """
 
-        if not(solver): solver = self.solver
-        if not(solver): solver = LpSolverDefault
+        if not solver:
+            solver = self.solver
+        if not solver:
+            solver = LpSolverDefault
         wasNone, dummyVar = self.fixObjective()
-        #time it
+        # time it
         self.solutionTime = -clock()
         status = solver.actualSolve(self, **kwargs)
         self.solutionTime += clock()
@@ -1674,8 +1745,7 @@ class LpProblem(object):
         self.solver = solver
         return status
 
-    def sequentialSolve(self, objectives, absoluteTols = None,
-                        relativeTols = None, solver = None, debug = False):
+    def sequentialSolve(self, objectives, absoluteTols=None, relativeTols=None, solver=None, debug=False):
         """
         Solve the given Lp problem with several objective functions.
 
@@ -1689,24 +1759,26 @@ class LpProblem(object):
         :param solver: the specific solver to be used, defaults to the default solver.
 
         """
-        #TODO Add a penalty variable to make problems elastic
-        #TODO add the ability to accept different status values i.e. infeasible etc
+        # TODO Add a penalty variable to make problems elastic
+        # TODO add the ability to accept different status values i.e. infeasible etc
 
-        if not(solver): solver = self.solver
-        if not(solver): solver = LpSolverDefault
-        if not(absoluteTols):
+        if not solver:
+            solver = self.solver
+        if not solver:
+            solver = LpSolverDefault
+        if not absoluteTols:
             absoluteTols = [0] * len(objectives)
-        if not(relativeTols):
-            relativeTols  = [1] * len(objectives)
-        #time it
+        if not relativeTols:
+            relativeTols = [1] * len(objectives)
+        # time it
         self.solutionTime = -clock()
         statuses = []
-        for i,(obj,absol,rel) in enumerate(zip(objectives,
-                                               absoluteTols, relativeTols)):
+        for i, (obj, absol, rel) in enumerate(zip(objectives, absoluteTols, relativeTols)):
             self.setObjective(obj)
             status = solver.actualSolve(self)
             statuses.append(status)
-            if debug: self.writeLP("%sSequence.lp"%i)
+            if debug:
+                self.writeLP("%sSequence.lp"%i)
             if self.sense == LpMinimize:
                 self += obj <= value(obj)*rel + absol,"%s_Sequence_Objective"%i
             elif self.sense == LpMaximize:
@@ -1719,19 +1791,20 @@ class LpProblem(object):
         """
         resolves an Problem using the same solver as previously
         """
-        if not(solver): solver = self.solver
+        if not solver:
+            solver = self.solver
         if self.resolveOK:
             return self.solver.actualResolve(self, **kwargs)
         else:
-            return self.solve(solver = solver, **kwargs)
+            return self.solve(solver=solver, **kwargs)
 
-    def setSolver(self,solver = LpSolverDefault):
+    def setSolver(self, solver=LpSolverDefault):
         """Sets the Solver for this problem useful if you are using
         resolve
         """
         self.solver = solver
 
-    def setInitial(self,values):
+    def setInitial(self, values):
         self.initialValues = values
 
     def numVariables(self):
@@ -1742,6 +1815,7 @@ class LpProblem(object):
 
     def getSense(self):
         return self.sense
+
 
 class FixedElasticSubProblem(LpProblem):
     """
@@ -1757,10 +1831,8 @@ class FixedElasticSubProblem(LpProblem):
         constraint violation that is free from penalty, expressed as a list\
         where [-ve, +ve]
     """
-    def __init__(self, constraint, penalty = None,
-                                        proportionFreeBound = None,
-                                        proportionFreeBoundList = None):
-        subProblemName =  "%s_elastic_SubProblem" % constraint.name
+    def __init__(self, constraint, penalty=None, proportionFreeBound=None, proportionFreeBoundList=None):
+        subProblemName = "%s_elastic_SubProblem" % constraint.name
         LpProblem.__init__(self, subProblemName, LpMinimize)
         self.objective = LpAffineExpression()
         self.constraint = constraint
@@ -1768,26 +1840,21 @@ class FixedElasticSubProblem(LpProblem):
         self.RHS = - constraint.constant
         self.objective = LpAffineExpression()
         self += constraint, "_Constraint"
-        #create and add these variables but disabled
-        self.freeVar = LpVariable("_free_bound",
-                                  upBound = 0, lowBound = 0)
-        self.upVar = LpVariable("_pos_penalty_var",
-                                upBound = 0, lowBound = 0)
-        self.lowVar = LpVariable("_neg_penalty_var",
-                                 upBound = 0, lowBound = 0)
+        # create and add these variables but disabled
+        self.freeVar = LpVariable("_free_bound", upBound=0, lowBound=0)
+        self.upVar = LpVariable("_pos_penalty_var", upBound=0, lowBound=0)
+        self.lowVar = LpVariable("_neg_penalty_var", upBound=0, lowBound=0)
         constraint.addInPlace(self.freeVar + self.lowVar + self.upVar)
         if proportionFreeBound:
             proportionFreeBoundList = [proportionFreeBound, proportionFreeBound]
         if proportionFreeBoundList:
-            #add a costless variable
-            self.freeVar.upBound = abs(constraint.constant *
-                                        proportionFreeBoundList[0])
-            self.freeVar.lowBound = -abs(constraint.constant *
-                                       proportionFreeBoundList[1])
+            # add a costless variable
+            self.freeVar.upBound = abs(constraint.constant * proportionFreeBoundList[0])
+            self.freeVar.lowBound = -abs(constraint.constant * proportionFreeBoundList[1])
             # Note the reversal of the upbound and lowbound due to the nature of the
             # variable
         if penalty is not None:
-            #activate these variables
+            # activate these variables
             self.upVar.upBound = None
             self.lowVar.lowBound = None
             self.objective = penalty*self.upVar - penalty*self.lowVar
@@ -1814,10 +1881,9 @@ class FixedElasticSubProblem(LpProblem):
         freeVar = self._findValue("freeVar")
         result = abs(upVar + lowVar) >= EPS
         if result:
-            log.debug("isViolated %s, upVar %s, lowVar %s, freeVar %s result %s"%(
-                        self.name, upVar, lowVar, freeVar, result))
-            log.debug("isViolated value lhs %s constant %s"%(
-                         self.findLHSValue(), self.RHS))
+            log.debug("isViolated %s, upVar %s, lowVar %s, freeVar %s result %s" %
+                      (self.name, upVar, lowVar, freeVar, result))
+            log.debug("isViolated value lhs %s constant %s" % (self.findLHSValue(), self.RHS))
         return result
 
     def findDifferenceFromRHS(self):
@@ -1825,7 +1891,6 @@ class FixedElasticSubProblem(LpProblem):
         The amount the actual value varies from the RHS (sense: LHS - RHS)
         """
         return self.findLHSValue() - self.RHS
-
 
     def findLHSValue(self):
         """
@@ -1836,8 +1901,7 @@ class FixedElasticSubProblem(LpProblem):
         upVar = self._findValue("upVar")
         lowVar = self._findValue("lowVar")
         freeVar = self._findValue("freeVar")
-        return self.constraint.value() - self.constant - \
-                upVar - lowVar - freeVar
+        return self.constraint.value() - self.constant - upVar - lowVar - freeVar
 
     def deElasticize(self):
         """ de-elasticize constraint """
@@ -1909,34 +1973,34 @@ class FractionElasticSubProblem(FixedElasticSubProblem):
         if proportionFreeBound:
             proportionFreeBoundList = [proportionFreeBound, proportionFreeBound]
         if proportionFreeBoundList:
-            upProportionFreeBound, lowProportionFreeBound = \
-                    proportionFreeBoundList
+            upProportionFreeBound, lowProportionFreeBound = proportionFreeBoundList
         else:
             upProportionFreeBound, lowProportionFreeBound = (0, 0)
-        #create an objective
+        # create an objective
         self += LpAffineExpression()
-        #There are three cases if the constraint.sense is ==, <=, >=
+        # There are three cases if the constraint.sense is ==, <=, >=
+
         if sense in [LpConstraintEQ, LpConstraintLE]:
-            #create a constraint the sets the upper bound of target
+            # create a constraint the sets the upper bound of target
             self.upTarget = RHS + upProportionFreeBound
             self.upConstraint = LpFractionConstraint(self.numerator,
-                                    self.complement,
-                                    LpConstraintLE,
-                                    self.upTarget,
-                                    denominator = self.denominator)
+                                                     self.complement,
+                                                     LpConstraintLE,
+                                                     self.upTarget,
+                                                     denominator=self.denominator)
             if penalty is not None:
                 self.lowVar.lowBound = None
                 self.objective += -1* penalty * self.lowVar
                 self.upConstraint += self.lowVar
             self += self.upConstraint, '_upper_constraint'
         if sense in [LpConstraintEQ, LpConstraintGE]:
-            #create a constraint the sets the lower bound of target
+            # create a constraint the sets the lower bound of target
             self.lowTarget = RHS - lowProportionFreeBound
             self.lowConstraint = LpFractionConstraint(self.numerator,
-                                                 self.complement,
-                                                LpConstraintGE,
-                                                self.lowTarget,
-                                                denominator = self.denominator)
+                                                      self.complement,
+                                                      LpConstraintGE,
+                                                      self.lowTarget,
+                                                      denominator=self.denominator)
             if penalty is not None:
                 self.upVar.upBound = None
                 self.objective += penalty * self.upVar
@@ -1950,11 +2014,11 @@ class FractionElasticSubProblem(FixedElasticSubProblem):
         rhs
         """
         # uses code from LpFractionConstraint
-        if abs(value(self.denominator))>= EPS:
+        if abs(value(self.denominator)) >= EPS:
             return value(self.numerator)/value(self.denominator)
         else:
-            if abs(value(self.numerator))<= EPS:
-                #zero divided by zero will return 1
+            if abs(value(self.numerator)) <= EPS:
+                # zero divided by zero will return 1
                 return 1.0
             else:
                 raise ZeroDivisionError
@@ -1971,12 +2035,13 @@ class FractionElasticSubProblem(FixedElasticSubProblem):
                 if self.findLHSValue() > self.upTarget:
                     return True
         else:
-            #if the denominator is zero the constraint is satisfied
+            # if the denominator is zero the constraint is satisfied
             return False
+
 
 class LpVariableDict(dict):
     """An LP variable generator"""
-    def __init__(self, name, data = {}, lowBound = None, upBound = None, cat = LpContinuous):
+    def __init__(self, name, data={}, lowBound = None, upBound = None, cat = LpContinuous):
         self.name = name
         dict.__init__(self, data)
 
@@ -1987,7 +2052,9 @@ class LpVariableDict(dict):
             self[key] = LpVariable(self.name % key, lowBound, upBound, cat)
             return self[key]
 
+
 # Utility functions
+
 
 def lpSum(vector):
     """
@@ -1996,6 +2063,7 @@ def lpSum(vector):
     :param vector: A list of linear expressions
     """
     return LpAffineExpression().addInPlace(vector)
+
 
 def lpDot(v1, v2):
     """Calculate the dot product of two lists of linear expressions"""
@@ -2008,23 +2076,31 @@ def lpDot(v1, v2):
     else:
         return lpSum([lpDot(e1,e2) for e1,e2 in zip(v1,v2)])
 
+
 def isNumber(x):
     """Returns true if x is an int or a float"""
     return isinstance(x, (int, float))
 
+
 def value(x):
     """Returns the value of the variable/expression x, or x if it is a number"""
-    if isNumber(x): return x
-    else: return x.value()
+    if isNumber(x):
+        return x
+    else:
+        return x.value()
+
 
 def valueOrDefault(x):
     """Returns the value of the variable/expression x, or x if it is a number
     Variable without value (None) are affected a possible value (within their
     bounds)."""
-    if isNumber(x): return x
-    else: return x.valueOrDefault()
+    if isNumber(x):
+        return x
+    else:
+        return x.valueOrDefault()
 
-def combination(orgset, k = None):
+
+def combination(orgset, k=None):
     """
     returns an iterator that lists the combinations of orgset of
     length k
@@ -2052,6 +2128,7 @@ def combination(orgset, k = None):
     except ImportError:
         return __combination(orgset,k)
 
+
 def __combination(orgset, k):
     """
     fall back if probstat is not installed note it is GPL so cannot
@@ -2060,13 +2137,14 @@ def __combination(orgset, k):
     if k == 1:
         for i in orgset:
             yield (i,)
-    elif k>1:
-        for i,x in enumerate(orgset):
-            #iterates though to near the end
-            for s in __combination(orgset[i+1:],k-1):
+    elif k > 1:
+        for i, x in enumerate(orgset):
+            # iterates though to near the end
+            for s in __combination(orgset[i+1:], k-1):
                 yield (x,) + s
 
-def permutation(orgset, k = None):
+
+def permutation(orgset, k=None):
     """
     returns an iterator that lists the permutations of orgset of
     length k
@@ -2100,6 +2178,7 @@ def permutation(orgset, k = None):
     except ImportError:
         return __permutation(orgset, k)
 
+
 def __permutation(orgset, k):
     """
     fall back if probstat is not installed note it is GPL so cannot
@@ -2108,11 +2187,12 @@ def __permutation(orgset, k):
     if k == 1:
         for i in orgset:
             yield (i,)
-    elif k>1:
-        for i,x in enumerate(orgset):
-            #iterates though to near the end
+    elif k > 1:
+        for i, x in enumerate(orgset):
+            # iterates though to near the end
             for s in __permutation(orgset[:i] + orgset[i+1:],k-1):
-                yield (x,)+ s
+                yield (x,) + s
+
 
 def allpermutations(orgset, k):
     """
@@ -2147,6 +2227,7 @@ def allpermutations(orgset, k):
     """
     return itertools.chain(*[permutation(orgset,i) for i in range(1,k+1)])
 
+
 def allcombinations(orgset, k):
     """
     returns all combinations of orgset with up to k items
@@ -2174,6 +2255,7 @@ def allcombinations(orgset, k):
     """
     return itertools.chain(*[combination(orgset,i) for i in range(1,k+1)])
 
+
 def makeDict(headers, array, default = None):
     """
     makes a list into a dictionary with the headings given in headings
@@ -2183,23 +2265,25 @@ def makeDict(headers, array, default = None):
     result, defdict = __makeDict(headers, array, default)
     return result
 
+
 def __makeDict(headers, array, default = None):
-    #this is a recursive function so end the recursion as follows
-    result ={}
+    # this is a recursive function so end the recursion as follows
+    result = {}
     returndefaultvalue = None
     if len(headers) == 1:
         result.update(dict(zip(headers[0],array)))
         defaultvalue = default
     else:
-        for i,h in enumerate(headers[0]):
-            result[h],defaultvalue = __makeDict(headers[1:],array[i],default)
-    if default != None:
+        for i, h in enumerate(headers[0]):
+            result[h], defaultvalue = __makeDict(headers[1:], array[i], default)
+    if default is not None:
         f = lambda :defaultvalue
         defresult = collections.defaultdict(f)
         defresult.update(result)
         result = defresult
         returndefaultvalue = collections.defaultdict(f)
     return result, returndefaultvalue
+
 
 def splitDict(Data):
     """
@@ -2218,6 +2302,7 @@ def splitDict(Data):
             output[i][key] = val
 
     return tuple(output)
+
 
 def read_table(data, coerce_type, transpose=False):
     '''
@@ -2259,6 +2344,7 @@ def read_table(data, coerce_type, transpose=False):
                 key = (items[0], headings[i])
             result[key] = coerce_type(item)
     return result
+
 
 def configSolvers():
     """
@@ -2309,6 +2395,7 @@ def pulpTestAll():
             print("Solver %s unavailable" % s)
     if failed:
         raise PulpError("Tests Failed")
+
 
 def pulpDoctest():
     """

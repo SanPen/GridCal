@@ -18,8 +18,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 
-from GridCal.Engine.Simulations.OPF.pulp import *
-from GridCal.Engine.Simulations.OPF.pulp_extra import lpDot, lpMakeVars, lpAddRestrictions2
+from GridCal.ThirdParty.pulp import *
 import numpy as np
 from itertools import product
 

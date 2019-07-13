@@ -18,7 +18,7 @@ This file includes extensions to the PuLP library
 """
 
 import numpy as np
-from GridCal.Engine.Simulations.OPF.pulp import LpProblem, LpVariable, LpConstraint
+from .pulp import LpProblem, LpVariable
 from itertools import product
 from scipy.sparse import csc_matrix
 
