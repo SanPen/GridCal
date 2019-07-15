@@ -90,7 +90,9 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, sta
     # generate the time indices to simulate
     if end_ == -1:
         end_ = len(numerical_circuit.time_array)
-    t = np.arange(start_, end_, 1)
+    # t = np.arange(start_, end_, 1)
+
+    nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
 
     # for each partition of the profiles...
     for t_key, calc_inputs in calc_inputs_dict.items():
@@ -103,26 +105,26 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, sta
             branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
-            P_island = P[bus_original_idx, :][:, t]
-            theta_island = theta[bus_original_idx, :][:, t]
+            P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
+            theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
             B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].imag
 
             pqpv = calculation_input.pqpv
             vd = calculation_input.ref
 
             # Add nodal power balance for the non slack nodes
-            lpAddRestrictions2(problem=problem,
-                               lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv, :]),
-                               rhs=P_island[pqpv, :],
-                               name='Nodal_power_balance_pqpv',
-                               op='=')
+            nodal_restrictions[pqpv] = lpAddRestrictions2(problem=problem,
+                                                          lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv, :]),
+                                                          rhs=P_island[pqpv, :],
+                                                          name='Nodal_power_balance_pqpv',
+                                                          op='=')
 
             # Add nodal power balance for the slack nodes
-            lpAddRestrictions2(problem=problem,
-                               lhs=lpDot(B_island[vd, :], theta_island),
-                               rhs=P_island[vd, :],
-                               name='Nodal_power_balance_vd',
-                               op='=')
+            nodal_restrictions[vd] = lpAddRestrictions2(problem=problem,
+                                                        lhs=lpDot(B_island[vd, :], theta_island),
+                                                        rhs=P_island[vd, :],
+                                                        name='Nodal_power_balance_vd',
+                                                        op='=')
 
             # slack angles equal to zero
             lpAddRestrictions2(problem=problem,
@@ -130,6 +132,8 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, sta
                                rhs=np.zeros_like(theta_island[vd, :]),
                                name='Theta_vd_zero',
                                op='=')
+
+    return nodal_restrictions
 
 
 def add_branch_loading_restriction(problem: LpProblem,
@@ -228,6 +232,7 @@ class OpfAcNonSequentialTimeSeries:
         self.overloads = None
         self.rating = None
         self.load_shedding = None
+        self.nodal_restrictions = None
 
         self.problem = self.formulate()
 
@@ -305,7 +310,8 @@ class OpfAcNonSequentialTimeSeries:
                                  LSlack=load_slack,
                                  Pl=Pl)
 
-        add_nodal_power_balance(numerical_circuit, problem, theta, P, start_=self.start_idx, end_=self.end_idx)
+        nodal_restrictions = add_nodal_power_balance(numerical_circuit, problem, theta, P,
+                                                     start_=self.start_idx, end_=self.end_idx)
 
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
                                                         branch_rating_slack1, branch_rating_slack2)
@@ -326,6 +332,7 @@ class OpfAcNonSequentialTimeSeries:
         self.s_to = load_t.transpose()
         self.overloads = (branch_rating_slack1 + branch_rating_slack2).transpose()
         self.rating = branch_ratings
+        self.nodal_restrictions = nodal_restrictions
 
         return problem
 
@@ -418,6 +425,18 @@ class OpfAcNonSequentialTimeSeries:
         """
         return self.extract2D(self.Pl) * self.grid.Sbase
 
+    def get_shadow_prices(self):
+        """
+        Extract values fro the 2D array of LP variables
+        :param arr: 2D array of LP variables
+        :param make_abs: substitute the result by its abs value
+        :return: 2D numpy array
+        """
+        val = np.zeros(self.nodal_restrictions.shape)
+        for i, j in product(range(val.shape[0]), range(val.shape[1])):
+            val[i, j] = - self.nodal_restrictions[i, j].pi
+        return val.transpose()
+
 
 if __name__ == '__main__':
 
@@ -429,7 +448,7 @@ if __name__ == '__main__':
         fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
         main_circuit = FileOpen(fname).open()
 
-        problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=0, end_idx=5*24)
+        problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=5, end_idx=5 + 5*24)
 
         print('Solving...')
         status = problem.solve()

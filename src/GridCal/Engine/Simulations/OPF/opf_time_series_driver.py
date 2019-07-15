@@ -62,6 +62,8 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbus = zeros((nt, n), dtype=complex)
 
+        self.shadow_prices = zeros((nt, n), dtype=float)
+
         self.Sbranch = zeros((nt, m), dtype=complex)
 
         self.bus_types = zeros(n, dtype=int)
@@ -72,6 +74,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
+                                  ResultTypes.ShadowPrices,
                                   ResultTypes.BranchPower,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchOverloads,
@@ -153,6 +156,11 @@ class OptimalPowerFlowTimeSeriesResults:
                 y = np.angle(self.voltage[:, indices])
                 y_label = '(Radians)'
                 title = 'Bus voltage angle'
+
+            elif result_type == ResultTypes.ShadowPrices:
+                y = self.shadow_prices[:, indices]
+                y_label = '(currency)'
+                title = 'Bus shadow prices'
 
             elif result_type == ResultTypes.BranchPower:
                 y = self.Sbranch[:, indices].real
@@ -509,7 +517,7 @@ class NonSequentialOptimalPowerFlow(QThread):
         self.results.Sbranch[a:b, :] = problem.get_branch_power()
         self.results.overloads[a:b, :] = problem.get_overloads()
         self.results.loading[a:b, :] = problem.get_loading()
-        # self.results.converged[t] = bool(problem.converged)
+        self.results.shadow_prices[a:b, :] = problem.get_shadow_prices()
 
         return self.results
 

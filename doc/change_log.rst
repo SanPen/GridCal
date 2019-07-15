@@ -10,6 +10,13 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.1
+_____________
+
+- Added shadow prices to the non-sequential OPF.
+- Fixed bug with the OPF offset when starting at a index other than 0.
+
+
 Version 3.5 (commemorating the 100 GitHub stars)
 _________________________________________________
 

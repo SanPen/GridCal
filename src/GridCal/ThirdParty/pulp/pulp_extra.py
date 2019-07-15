@@ -125,6 +125,8 @@ def lpAddRestrictions2(problem: LpProblem, lhs, rhs, name, op='='):
 
     lpAddRestrictions(problem=problem, arr=arr, name=name)
 
+    return arr
+
 
 def lpMakeVars(name, shape, lower=None, upper=None):
     """
