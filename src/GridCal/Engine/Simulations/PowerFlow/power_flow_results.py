@@ -30,7 +30,7 @@ class PowerFlowResults:
 
     Attributes:
 
-        **Sbus** (list): Power at each bus in complex MVA
+        **Sbus** (list): Power at each bus in complex per unit
 
         **voltage** (list): Voltage at each bus in complex per unit
 
