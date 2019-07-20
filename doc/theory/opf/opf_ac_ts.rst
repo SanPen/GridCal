@@ -173,8 +173,9 @@ not required for the power flow formulation but they are in the optimal power fl
 
     -Bs_{vd, :} \times  \Delta \theta +  G_{vd, :} \times \Delta Vm = P_{vd}
 
-Remember to set the slack-node voltage angles to zero!
-Otherwise the generator power will no be used by the solver to provide voltage values.
+Remember to set the slack-node voltage angles and module increments
+and the PV node voltage module increments to zero!
+Otherwise the generator's power will no be used by the solver to provide voltage values.
 
 .. math::
 

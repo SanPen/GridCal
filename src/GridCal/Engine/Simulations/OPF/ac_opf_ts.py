@@ -143,12 +143,12 @@ def add_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, P, 
                                                           op='=')
 
             # Add nodal real power balance for the slack nodes
-            nodal_restrictions_P[pqpv] = lpAddRestrictions2(problem=problem,
-                                                            lhs=-lpDot(Bs_island[vd, :], dva_island)
-                                                                + lpDot(G_island[vd, :], dvm_island),
-                                                            rhs=P_island[vd, :],
-                                                            name='Nodal_real_power_balance_vd',
-                                                            op='=')
+            nodal_restrictions_P[vd] = lpAddRestrictions2(problem=problem,
+                                                          lhs=-lpDot(Bs_island[vd, :], dva_island)
+                                                              + lpDot(G_island[vd, :], dvm_island),
+                                                          rhs=P_island[vd, :],
+                                                          name='Nodal_real_power_balance_vd',
+                                                          op='=')
 
             # delta of voltage angles equal to zero for the slack nodes (vd)
             lpAddRestrictions2(problem=problem,
