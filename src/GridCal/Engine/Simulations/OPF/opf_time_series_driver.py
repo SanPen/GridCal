@@ -24,7 +24,8 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfAcNonSequentialTimeSeries, LpStatus
+from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcNonSequentialTimeSeries
+from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcNonSequentialTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
 from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
 from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
@@ -487,6 +488,11 @@ class NonSequentialOptimalPowerFlow(QThread):
         self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         if self.options.solver == SolverType.DC_OPF:
+
+            # DC optimal power flow
+            problem = OpfDcNonSequentialTimeSeries(grid=self.grid, start_idx=self.start_, end_idx=self.end_)
+
+        elif self.options.solver == SolverType.AC_OPF:
 
             # DC optimal power flow
             problem = OpfAcNonSequentialTimeSeries(grid=self.grid, start_idx=self.start_, end_idx=self.end_)

@@ -27,7 +27,8 @@ Optimal power flow
     :maxdepth: 3
 
     opf/opf
-    opf/opf_ts
+    opf/opf_dc_ts
+    opf/opf_ac_ts
 
 
 Short Circuit

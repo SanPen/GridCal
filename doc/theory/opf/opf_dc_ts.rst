@@ -1,5 +1,5 @@
-Linear optimal power flow time series
-=====================================
+Linear DC optimal power flow time series
+=========================================
 
 General indices and dimensions
 
