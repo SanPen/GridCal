@@ -448,7 +448,7 @@ if __name__ == '__main__':
         fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
         main_circuit = FileOpen(fname).open()
 
-        problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=5, end_idx=5 + 5*24)
+        problem = OpfDcNonSequentialTimeSeries(grid=main_circuit, start_idx=5, end_idx=5 + 5*24)
 
         print('Solving...')
         status = problem.solve()
