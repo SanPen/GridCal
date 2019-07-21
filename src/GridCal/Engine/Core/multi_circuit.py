@@ -637,6 +637,7 @@ class MultiCircuit:
                 circuit.load_active[i_ld] = elm.active
                 circuit.load_mttf[i_ld] = elm.mttf
                 circuit.load_mttr[i_ld] = elm.mttr
+                circuit.load_cost[i_ld] = elm.Cost
 
                 if n_time > 0:
                     circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
@@ -680,6 +681,7 @@ class MultiCircuit:
                 circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
                 circuit.generator_mttf[i_gen] = elm.mttf
                 circuit.generator_mttr[i_gen] = elm.mttr
+                circuit.generator_cost[i_gen] = elm.Cost
 
                 if n_time > 0:
                     # power profile
@@ -716,6 +718,7 @@ class MultiCircuit:
                 circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
                 circuit.battery_mttf[i_batt] = elm.mttf
                 circuit.battery_mttr[i_batt] = elm.mttr
+                circuit.battery_cost[i_batt] = elm.Cost
 
                 circuit.battery_pmin[i_batt] = elm.Pmin
                 circuit.battery_pmax[i_batt] = elm.Pmax
@@ -777,6 +780,7 @@ class MultiCircuit:
             circuit.branch_active[i] = branch.active
             circuit.br_mttf[i] = branch.mttf
             circuit.br_mttr[i] = branch.mttr
+            circuit.branch_cost[i] = branch.Cost
 
             # impedance and tap
             circuit.R[i] = branch.R

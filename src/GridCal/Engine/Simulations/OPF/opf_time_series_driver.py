@@ -25,8 +25,8 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcNonSequentialTimeSeries
-from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcNonSequentialTimeSeries
+from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
+from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
 from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
 from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
@@ -512,14 +512,14 @@ class OptimalPowerFlowTimeSeries(QThread):
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
-            problem = OpfDcNonSequentialTimeSeries(numerical_circuit=self.numerical_circuit,
-                                                   start_idx=start_, end_idx=end_)
+            problem = OpfDcTimeSeries(numerical_circuit=self.numerical_circuit,
+                                      start_idx=start_, end_idx=end_)
 
         elif self.options.solver == SolverType.AC_OPF:
 
             # DC optimal power flow
-            problem = OpfAcNonSequentialTimeSeries(numerical_circuit=self.numerical_circuit,
-                                                   start_idx=start_, end_idx=end_)
+            problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
+                                      start_idx=start_, end_idx=end_)
 
         else:
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
@@ -550,11 +550,12 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Making groups...')
 
+        # get the partition points of the time series
         groups = get_time_groups(t_array=self.grid.time_profile, grouping=self.options.grouping)
 
         n = len(groups)
-
-        for i in range(1, n):
+        i = 1
+        while i < n and not self.__cancel__:
 
             start_ = groups[i-1]
             end_ = groups[i]
@@ -567,6 +568,8 @@ class OptimalPowerFlowTimeSeries(QThread):
             self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
             progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
             self.progress_signal.emit(progress)
+
+            i += 1
 
     def run(self):
         """

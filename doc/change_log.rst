@@ -13,7 +13,8 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 3.5.1
 _____________
 
-- Added AC-liner OPF time series as a non-sequential algorithm
+- Simplified and unified the OPF interfaces.
+- Added AC-liner OPF time series as a non-sequential algorithm.
 - Added shadow prices to the non-sequential OPF.
 - Fixed bug with the OPF offset when starting at a index other than 0.
 

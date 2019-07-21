@@ -99,14 +99,14 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
-        self.solvers_dict['Newton-Raphson in power'] = SolverType.NR
-        self.solvers_dict['Newton-Raphson in current'] = SolverType.NRI
-        self.solvers_dict['Newton-Raphson-Iwamoto'] = SolverType.IWAMOTO
-        self.solvers_dict['Levenberg-Marquardt'] = SolverType.LM
-        self.solvers_dict['Fast-Decoupled'] = SolverType.FASTDECOUPLED
-        self.solvers_dict['Holomorphic embedding [HELM]'] = SolverType.HELM
-        self.solvers_dict['Linear AC approximation'] = SolverType.LACPF
-        self.solvers_dict['DC approximation'] = SolverType.DC
+        self.solvers_dict[SolverType.NR.value] = SolverType.NR
+        self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
+        self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+        self.solvers_dict[SolverType.LM.value] = SolverType.LM
+        self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+        self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+        self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+        self.solvers_dict[SolverType.DC.value] = SolverType.DC
 
         lst = list(self.solvers_dict.keys())
         mdl = get_list_model(lst)
@@ -160,9 +160,9 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.lp_solvers_dict = OrderedDict()
-        self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
-        self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
-        self.lp_solvers_dict['Nelder-Mead feasibility dispatch'] = SolverType.NELDER_MEAD_OPF
+        self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
+        self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
+        # self.lp_solvers_dict['Nelder-Mead feasibility dispatch'] = SolverType.NELDER_MEAD_OPF
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
         self.opf_time_groups = OrderedDict()
@@ -2620,21 +2620,11 @@ class MainGUI(QMainWindow):
                 self.LOCK()
 
                 # get the power flow options from the GUI
-                load_shedding = self.ui.load_shedding_checkBox.isChecked()
                 realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
-                generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-                control_batteries = self.ui.control_batteries_checkBox.isChecked()
-                load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
-                gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
                 pf_options = self.get_selected_power_flow_options()
-                options = OptimalPowerFlowOptions(load_shedding=load_shedding,
-                                                  generation_shedding=generation_shedding,
-                                                  solver=solver,
+                options = OptimalPowerFlowOptions(solver=solver,
                                                   realistic_results=realistic_results,
-                                                  control_batteries=control_batteries,
-                                                  load_shedding_weight=load_shedding_w,
-                                                  generation_shedding_weight=gen_shedding_w,
                                                   power_flow_options=pf_options)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
@@ -2642,15 +2632,12 @@ class MainGUI(QMainWindow):
                 # set power flow object instance
                 self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
 
-                # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-                # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
-                # self.power_flow.done_signal.connect(self.UNLOCK)
-                # self.power_flow.done_signal.connect(self.post_power_flow)
+                self.optimal_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+                self.optimal_power_flow.progress_text.connect(self.ui.progress_label.setText)
+                self.optimal_power_flow.done_signal.connect(self.UNLOCK)
+                self.optimal_power_flow.done_signal.connect(self.post_opf)
 
-                # self.power_flow.run()
-                self.threadpool.start(self.optimal_power_flow)
-                self.threadpool.waitForDone()
-                self.post_opf()
+                self.optimal_power_flow.start()
 
             else:
                 self.msg('Another OPF is being run...')

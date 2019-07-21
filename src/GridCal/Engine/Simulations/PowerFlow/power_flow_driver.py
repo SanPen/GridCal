@@ -40,25 +40,25 @@ class SolverType(Enum):
     algorithms supported by **GridCal**.
     """
 
-    NR = 1
-    NRFD_XB = 2
-    NRFD_BX = 3
-    GAUSS = 4
-    DC = 5,
-    HELM = 6,
-    ZBUS = 7,
-    IWAMOTO = 8,
-    CONTINUATION_NR = 9,
-    HELMZ = 10,
-    LM = 11  # Levenberg-Marquardt
-    FASTDECOUPLED = 12,
-    LACPF = 13,
-    DC_OPF = 14,
-    AC_OPF = 15,
-    NRI = 16,
-    DYCORS_OPF = 17,
-    GA_OPF = 18,
-    NELDER_MEAD_OPF = 19
+    NR = 'Newton Raphson'
+    NRFD_XB = 'Fast decoupled XB'
+    NRFD_BX = 'Fast decoupled BX'
+    GAUSS = 'Gauss-Seidel'
+    DC = 'Linear DC'
+    HELM = 'Holomorphic Embedding'
+    ZBUS = 'Z-Gauss-Seidel'
+    IWAMOTO = 'Iwamoto-Newton-Raphson'
+    CONTINUATION_NR = 'Continuation-Newton-Raphson'
+    HELMZ = 'HELM-Z'
+    LM = 'Levenberg-Marquardt'
+    FASTDECOUPLED = 'Fast decoupled'
+    LACPF = 'Linear AC'
+    DC_OPF = 'Linear DC OPF'
+    AC_OPF = 'Linear AC OPF'
+    NRI = 'Newton-Raphson in current'
+    DYCORS_OPF = 'DYCORS OPF'
+    GA_OPF = 'Genetic Algorithm OPF'
+    NELDER_MEAD_OPF = 'Nelder Mead OPF'
 
 
 class ReactivePowerControlMode(Enum):
@@ -1454,13 +1454,11 @@ class PowerFlowMP:
 
             return results
 
-    def run_multi_island(self, numerical_circuit, calculation_inputs, Vbus, Sbus, Ibus):
+    def run_multi_island(self, calculation_inputs, Vbus, Sbus, Ibus):
         """
         Power flow execution for optimization purposes.
 
         Arguments:
-
-            **numerical_circuit**:
 
             **calculation_inputs**:
 

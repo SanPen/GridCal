@@ -17,11 +17,11 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.ThirdParty.pulp import *
 import numpy as np
 from itertools import product
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
+from GridCal.ThirdParty.pulp import *
 
 
 def add_objective_function(problem: LpProblem,
@@ -75,7 +75,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def add_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, start_, end_):
+def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -210,31 +210,18 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
                            op='=')
 
 
-class OpfDcNonSequentialTimeSeries:
+class OpfDcTimeSeries(OpfTimeSeries):
 
     def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx):
         """
-
-        :param grid:
-        :param start_idx:
-        :param end_idx:
+        DC time series linear optimal power flow
+        :param numerical_circuit: NumericalCircuit instance
+        :param start_idx: start index of the time series
+        :param end_idx: end index of the time series
         """
-        self.numerical_circuit = numerical_circuit
-        self.start_idx = start_idx
-        self.end_idx = end_idx
+        OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx)
 
-        self.theta = None
-        self.Pg = None
-        self.Pb = None
-        self.Pl = None
-        self.E = None
-        self.s_from = None
-        self.s_to = None
-        self.overloads = None
-        self.rating = None
-        self.load_shedding = None
-        self.nodal_restrictions = None
-
+        # build the formulation
         self.problem = self.formulate()
 
     def formulate(self):
@@ -250,7 +237,7 @@ class OpfDcNonSequentialTimeSeries:
         ng = numerical_circuit.n_ctrl_gen
         nb = numerical_circuit.n_batt
         nl = numerical_circuit.n_ld
-        nt = self.end_idx - self.start_idx  # numerical_circuit.ntime
+        nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
         Sbase = numerical_circuit.Sbase
@@ -311,8 +298,8 @@ class OpfDcNonSequentialTimeSeries:
                                  LSlack=load_slack,
                                  Pl=Pl)
 
-        nodal_restrictions = add_nodal_power_balance(numerical_circuit, problem, theta, P,
-                                                     start_=self.start_idx, end_=self.end_idx)
+        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit, problem, theta, P,
+                                                        start_=self.start_idx, end_=self.end_idx)
 
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
                                                         branch_rating_slack1, branch_rating_slack2)
@@ -337,119 +324,17 @@ class OpfDcNonSequentialTimeSeries:
 
         return problem
 
-    def solve(self):
-        """
-        Call PuLP to solve the problem
-        """
-        params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
-        self.problem.solve(params)
-
-        return LpStatus[self.problem.status]
-
-    def extract2D(self, arr, make_abs=False):
-        """
-        Extract values fro the 2D array of LP variables
-        :param arr: 2D array of LP variables
-        :param make_abs: substitute the result by its abs value
-        :return: 2D numpy array
-        """
-        val = np.zeros(arr.shape)
-        for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            val[i, j] = arr[i, j].value()
-        if make_abs:
-            val = np.abs(val)
-
-        return val
-
-    def get_voltage(self):
-        """
-        return the complex voltages (time, device)
-        :return: 2D array
-        """
-        angles = self.extract2D(self.theta)
-        return np.ones_like(angles) * np.exp(-1j * angles)
-
-    def get_overloads(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.overloads)
-
-    def get_loading(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        l = self.extract2D(self.s_from, make_abs=True)
-        return l / self.rating
-
-    def get_branch_power(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.s_from, make_abs=True) * self.numerical_circuit.Sbase
-
-    def get_battery_power(self):
-        """
-        return the battery dispatch (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pb) * self.numerical_circuit.Sbase
-
-    def get_battery_energy(self):
-        """
-        return the battery energy (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.E) * self.numerical_circuit.Sbase
-
-    def get_generator_power(self):
-        """
-        return the generator dispatch (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pg) * self.numerical_circuit.Sbase
-
-    def get_load_shedding(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.load_shedding) * self.numerical_circuit.Sbase
-
-    def get_load_power(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pl) * self.numerical_circuit.Sbase
-
-    def get_shadow_prices(self):
-        """
-        Extract values fro the 2D array of LP variables
-        :param arr: 2D array of LP variables
-        :param make_abs: substitute the result by its abs value
-        :return: 2D numpy array
-        """
-        val = np.zeros(self.nodal_restrictions.shape)
-        for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            val[i, j] = - self.nodal_restrictions[i, j].pi
-        return val.transpose()
-
 
 if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
         # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\Lynn 5 Bus pv.gridcal'
-        # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
         fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+
         main_circuit = FileOpen(fname).open()
-        numerical_circuit = main_circuit.compile()
-        problem = OpfDcNonSequentialTimeSeries(numerical_circuit=numerical_circuit, start_idx=5, end_idx=5 + 5*24)
+        numerical_circuit_ = main_circuit.compile()
+        problem = OpfDcTimeSeries(numerical_circuit=numerical_circuit_, start_idx=5, end_idx=5 + 5 * 24)
 
         print('Solving...')
         status = problem.solve()
@@ -464,5 +349,8 @@ if __name__ == '__main__':
 
         g = problem.get_generator_power()
         print('Gen power\n', g)
+
+        pr = problem.get_shadow_prices()
+        print('Nodal prices \n', pr)
 
         pass

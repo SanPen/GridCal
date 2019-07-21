@@ -453,7 +453,7 @@ class AcOpfNelderMead:
         penalty_x += (self.Emin[idx] - E[idx]).sum()
 
         # run a power flow
-        results = self.pf.run_multi_island(self.numerical_circuit, self.calculation_inputs, self.Vbus, S, self.Ibus)
+        results = self.pf.run_multi_island(self.calculation_inputs, self.Vbus, S, self.Ibus)
 
         loading = np.abs(results.loading)
 
@@ -491,8 +491,7 @@ class AcOpfNelderMead:
         S += (self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]).T * storage_power
 
         # run a power flow
-        pf_res = self.pf.run_multi_island(self.numerical_circuit, self.calculation_inputs,
-                                          self.Vbus, S, self.Ibus)
+        pf_res = self.pf.run_multi_island(self.calculation_inputs, self.Vbus, S, self.Ibus)
 
         # declare the results
         self.result = OptimalPowerFlowResults(Sbus=pf_res.Sbus,

@@ -314,6 +314,7 @@ class NumericalCircuit:
         self.branch_active_prof = np.zeros((n_time, n_br), dtype=int)
         self.temp_oper_prof = np.zeros((n_time, n_br), dtype=float)
 
+        self.branch_cost = np.zeros(n_br, dtype=float)
         self.branch_cost_profile = np.zeros((n_time, n_br), dtype=float)
 
         self.br_mttf = np.zeros(n_br, dtype=float)
@@ -344,6 +345,7 @@ class NumericalCircuit:
         self.load_active = np.zeros(n_ld, dtype=bool)
         self.load_active_prof = np.zeros((n_time, n_ld), dtype=bool)
 
+        self.load_cost = np.zeros(n_ld, dtype=float)
         self.load_cost_prof = np.zeros((n_time, n_ld), dtype=float)
 
         self.load_mttf = np.zeros(n_ld, dtype=float)
@@ -369,6 +371,7 @@ class NumericalCircuit:
         self.battery_charge_efficiency = np.zeros(n_batt, dtype=float)
         self.battery_min_soc = np.zeros(n_batt, dtype=float)
         self.battery_max_soc = np.zeros(n_batt, dtype=float)
+        self.battery_cost = np.zeros(n_batt, dtype=float)
 
         self.battery_dispatchable = np.zeros(n_batt, dtype=bool)
         self.battery_active = np.zeros(n_batt, dtype=bool)
@@ -409,6 +412,7 @@ class NumericalCircuit:
         self.generator_pmax = np.zeros(n_gen, dtype=float)
         self.generator_dispatchable = np.zeros(n_gen, dtype=bool)
         self.generator_controllable = np.zeros(n_gen, dtype=bool)
+        self.generator_cost = np.zeros(n_gen, dtype=float)
 
         self.generator_active = np.zeros(n_gen, dtype=bool)
         self.generator_active_prof = np.zeros((n_time, n_gen), dtype=bool)
