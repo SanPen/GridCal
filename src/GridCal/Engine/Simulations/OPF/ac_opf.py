@@ -53,7 +53,7 @@ def add_objective_function(problem: LpProblem,
     problem += f_obj
 
 
-def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
+def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSlack, Pl, Ql):
     """
     Create the power injections per bus
     :param C_bus_gen: Bus-Generators sparse connectivity matrix (n, ng)
@@ -61,7 +61,8 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     :param C_bus_bat: Bus-Batteries sparse connectivity matrix (n, nb)
     :param Pb: Batteries LpVars (nb, nt)
     :param C_bus_load: Bus-Load sparse connectivity matrix (n, nl)
-    :param LSlack: Load slack LpVars (nl, nt)
+    :param PlSlack: Load (real) slack LpVars (nl, nt)
+    :param QlSlack: Load (imag) slack LpVars (nl, nt)
     :param Pl: Load values (nl, nt)
     :return: Power injection at the buses (n, nt)
     """
@@ -70,17 +71,19 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
 
     P += lpDot(C_bus_bat.transpose(), Pb)
 
-    P -= lpDot(C_bus_load.transpose(), Pl - LSlack)
+    P -= lpDot(C_bus_load.transpose(), Pl - PlSlack)
 
-    return P
+    Q = - lpDot(C_bus_load.transpose(), Ql - QlSlack)
+
+    return P, Q
 
 
-def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
+def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, P, Q):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
     :param problem: LpProblem instance
-    :param theta: Voltage angles LpVars (n, nt)
+    :param dva: Voltage angles LpVars (n, nt)
     :param P: Power injection at the buses LpVars (n, nt)
     :return: Nothing, the restrictions are added to the problem
     """
@@ -88,48 +91,74 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
     # do the topological computation
     calculation_inputs = numerical_circuit.compute()
 
-    nodal_restrictions = np.empty(numerical_circuit.nbus, dtype=object)
+    nodal_restrictions_P = np.empty(numerical_circuit.nbus, dtype=object)
+    nodal_restrictions_Q = np.empty(numerical_circuit.nbus, dtype=object)
 
     # simulate each island and merge the results
     for i, calculation_input in enumerate(calculation_inputs):
 
         if len(calculation_input.ref) > 0:
-            Ybus = calculation_input.Ybus
-
             # find the original indices
             bus_original_idx = calculation_input.original_bus_idx
             branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx]  # the sizes already reflect the correct time span
-            theta_island = theta[bus_original_idx]  # the sizes already reflect the correct time span
-            B_island = Ybus[bus_original_idx, :][:, bus_original_idx].imag
+            Q_island = Q[bus_original_idx]  # the sizes already reflect the correct time span
+            dva_island = dva[bus_original_idx]  # the sizes already reflect the correct time span
+            dvm_island = dvm[bus_original_idx]  # the sizes already reflect the correct time span
+
+            B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].imag
+            G_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].real
+            Bs_island = calculation_input.Yseries[bus_original_idx, :][:, bus_original_idx].imag
+            Gs_island = calculation_input.Yseries[bus_original_idx, :][:, bus_original_idx].real
 
             pqpv = calculation_input.pqpv
+            pq = calculation_input.pq
+            pv = calculation_input.pv
             vd = calculation_input.ref
+            vdpv = np.r_[vd, pv]
+            vdpv.sort()
 
-            # Add nodal power balance for the non slack nodes
-            nodal_restrictions[pqpv] = lpAddRestrictions2(problem=problem,
-                                                          lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv]),
-                                                          rhs=P_island[pqpv],
-                                                          name='Nodal_power_balance_pqpv',
+            # Add nodal real power balance for the non slack nodes
+            nodal_restrictions_P[pqpv] = lpAddRestrictions2(problem=problem,
+                                                            lhs=-lpDot(Bs_island[pqpv, :][:, pqpv], dva_island[pqpv])
+                                                                + lpDot(G_island[pqpv, :][:, pq], dvm_island[pq]),
+                                                            rhs=P_island[pqpv],
+                                                            name='Nodal_real_power_balance_pqpv',
+                                                            op='=')
+
+            # Add nodal reactive power balance for the non slack nodes
+            nodal_restrictions_Q[pq] = lpAddRestrictions2(problem=problem,
+                                                          lhs=-lpDot(Gs_island[pq, :][:, pqpv], dva_island[pqpv])
+                                                              - lpDot(B_island[pq, :][:, pq], dvm_island[pq]),
+                                                          rhs=Q_island[pq],
+                                                          name='Nodal_imag_power_balance_pqpv',
                                                           op='=')
 
-            # Add nodal power balance for the slack nodes
-            nodal_restrictions[vd] = lpAddRestrictions2(problem=problem,
-                                                        lhs=lpDot(B_island[vd, :], theta_island),
-                                                        rhs=P_island[vd],
-                                                        name='Nodal_power_balance_vd',
-                                                        op='=')
+            # Add nodal real power balance for the slack nodes
+            nodal_restrictions_P[vd] = lpAddRestrictions2(problem=problem,
+                                                          lhs=-lpDot(Bs_island[vd, :], dva_island)
+                                                              + lpDot(G_island[vd, :], dvm_island),
+                                                          rhs=P_island[vd],
+                                                          name='Nodal_real_power_balance_vd',
+                                                          op='=')
 
-            # slack angles equal to zero
+            # delta of voltage angles equal to zero for the slack nodes (vd)
             lpAddRestrictions2(problem=problem,
-                               lhs=theta_island[vd],
-                               rhs=np.zeros_like(theta_island[vd]),
-                               name='Theta_vd_zero',
+                               lhs=dva_island[vd],
+                               rhs=np.zeros_like(dva_island[vd]),
+                               name='dVa_vd_zero',
                                op='=')
 
-    return nodal_restrictions
+            # delta of voltage module equal to zero for the slack and pv nodes (vdpv)
+            lpAddRestrictions2(problem=problem,
+                               lhs=dvm_island[vdpv],
+                               rhs=np.zeros_like(dva_island[vdpv]),
+                               name='dVm_vdpv_zero',
+                               op='=')
+
+    return nodal_restrictions_P, nodal_restrictions_Q
 
 
 def add_branch_loading_restriction(problem: LpProblem,
@@ -176,6 +205,11 @@ class AcOpf(Opf):
         """
         Opf.__init__(self, numerical_circuit=numerical_circuit)
 
+        self.v0 = None
+        self.dva = None
+        self.dvm = None
+        self.Ql = None
+
         # build the formulation
         self.problem = self.formulate()
 
@@ -205,7 +239,8 @@ class AcOpf(Opf):
         cost_g = numerical_circuit.generator_cost
 
         # load
-        Pl = (numerical_circuit.load_active * numerical_circuit.load_power.real)/ Sbase
+        Pl = (numerical_circuit.load_active * numerical_circuit.load_power.real) / Sbase
+        Ql = (numerical_circuit.load_active * numerical_circuit.load_power.imag) / Sbase
         cost_l = numerical_circuit.load_cost
 
         # branch
@@ -217,9 +252,10 @@ class AcOpf(Opf):
         Pg = lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
         Pb = lpMakeVars(name='Pb', shape=nb, lower=Pb_min, upper=Pb_max)
         load_slack = lpMakeVars(name='LSlack', shape=nl, lower=0, upper=None)
-        theta = lpMakeVars(name='theta', shape=n, lower=-3.14, upper=3.14)
-        theta_f = theta[numerical_circuit.F]
-        theta_t = theta[numerical_circuit.T]
+        dva = lpMakeVars(name='dva', shape=n, lower=-3.14, upper=3.14)
+        dvm = lpMakeVars(name='dvm', shape=n, lower=0, upper=2)
+        theta_f = dva[numerical_circuit.F]
+        theta_t = dva[numerical_circuit.T]
         branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=m, lower=0, upper=None)
         branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=m, lower=0, upper=None)
 
@@ -230,14 +266,17 @@ class AcOpf(Opf):
         add_objective_function(problem, Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
                                cost_g, cost_b, cost_l, cost_br)
 
-        # compute the nodal power injections
-        P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
-                                 C_bus_bat=numerical_circuit.C_batt_bus, Pb=Pb,
-                                 C_bus_load=numerical_circuit.C_load_bus,
-                                 LSlack=load_slack, Pl=Pl)
+        # compute the power injections per node
+        P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
+                                    C_bus_bat=numerical_circuit.C_batt_bus, Pb=Pb,
+                                    C_bus_load=numerical_circuit.C_load_bus,
+                                    PlSlack=load_slack, QlSlack=load_slack,
+                                    Pl=Pl, Ql=Ql)
 
-        # add the DC grid restrictions
-        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit, problem, theta, P)
+        # compute the nodal power balance restrictions
+        nodal_restrictions_P, nodal_restrictions_Q = add_ac_nodal_power_balance(numerical_circuit=numerical_circuit,
+                                                                                problem=problem,
+                                                                                dvm=dvm, dva=dva, P=P, Q=Q)
 
         # add the branch loading restriction
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
@@ -245,7 +284,9 @@ class AcOpf(Opf):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
-        self.theta = theta
+        self.v0 = np.abs(numerical_circuit.V0)
+        self.dva = dva
+        self.dvm = dvm
         self.Pg = Pg
         self.Pb = Pb
         self.Pl = Pl
@@ -254,17 +295,26 @@ class AcOpf(Opf):
         self.s_to = load_t
         self.overloads = branch_rating_slack1 + branch_rating_slack2
         self.rating = branch_ratings
-        self.nodal_restrictions = nodal_restrictions
+        self.nodal_restrictions = nodal_restrictions_P
 
         return problem
+
+    def get_voltage(self):
+        """
+        return the complex voltages (time, device)
+        :return: 2D array
+        """
+        angles = self.extract(self.dva)
+        modules = self.v0 + self.extract(self.dvm)
+        return modules * np.exp(-1j * angles)
 
 
 if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 
         main_circuit = FileOpen(fname).open()
         numerical_circuit_ = main_circuit.compile()
@@ -276,6 +326,7 @@ if __name__ == '__main__':
         # print("Status:", status)
 
         v = problem.get_voltage()
+        print('Modules\n', np.abs(v))
         print('Angles\n', np.angle(v))
 
         l = problem.get_loading()

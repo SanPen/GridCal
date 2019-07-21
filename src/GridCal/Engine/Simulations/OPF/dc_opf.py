@@ -125,26 +125,24 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
             # slack angles equal to zero
             lpAddRestrictions2(problem=problem,
                                lhs=theta_island[vd],
-                               rhs=np.zeros_like(theta_island[vd]),
+                               rhs=np.zeros(len(vd)),
                                name='Theta_vd_zero',
                                op='=')
 
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: LpProblem,
-                                   theta_f, theta_t, Bseries,
-                                   Fmax, FSlack1, FSlack2):
+def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries, rating, FSlack1, FSlack2):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
-    :param theta_f: voltage angles at the "from" side of the branches (m, nt)
-    :param theta_t: voltage angles at the "to" side of the branches (m, nt)
+    :param theta_f: voltage angles at the "from" side of the branches (m)
+    :param theta_t: voltage angles at the "to" side of the branches (m)
     :param Bseries: Array of branch susceptances (m)
-    :param Fmax: Array of branch ratings (m, nt)
+    :param rating: Array of branch ratings (m)
     :param FSlack1: Array of branch loading slack variables in the from-to sense
     :param FSlack2: Array of branch loading slack variables in the to-from sense
-    :return: Nothing
+    :return: load_f and load_t arrays (LP+float)
     """
 
     load_f = Bseries * (theta_f - theta_t)
@@ -153,14 +151,14 @@ def add_branch_loading_restriction(problem: LpProblem,
     # from-to branch power restriction
     lpAddRestrictions2(problem=problem,
                        lhs=load_f,
-                       rhs=np.array(Fmax + FSlack1),  # Fmax + FSlack1
+                       rhs=rating + FSlack1,  # rating + FSlack1
                        name='from_to_branch_rate',
                        op='<=')
 
     # to-from branch power restriction
     lpAddRestrictions2(problem=problem,
                        lhs=load_t,
-                       rhs=np.array(Fmax + FSlack2),  # Fmax + FSlack2
+                       rhs=rating + FSlack2,  # rating + FSlack2
                        name='to_from_branch_rate',
                        op='<=')
 
@@ -263,8 +261,8 @@ if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 
         main_circuit = FileOpen(fname).open()
         numerical_circuit_ = main_circuit.compile()

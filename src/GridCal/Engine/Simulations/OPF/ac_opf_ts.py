@@ -278,9 +278,6 @@ class OpfAcTimeSeries(OpfTimeSeries):
         b = self.end_idx
         Sbase = numerical_circuit.Sbase
 
-        # bus
-        self.v0 = np.abs(numerical_circuit.V0)
-
         # battery
         Capacity = numerical_circuit.battery_Enom / Sbase
         minSoC = numerical_circuit.battery_min_soc
@@ -352,6 +349,7 @@ class OpfAcTimeSeries(OpfTimeSeries):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
+        self.v0 = np.abs(numerical_circuit.V0)
         self.dva = dva.transpose()
         self.dvm = dvm.transpose()
         self.Pg = Pg.transpose()

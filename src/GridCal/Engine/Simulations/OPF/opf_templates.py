@@ -58,6 +58,7 @@ class Opf:
         """
         Call PuLP to solve the problem
         """
+        # self.problem.writeLP('OPF.lp')
         params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
         self.problem.solve(params)
 

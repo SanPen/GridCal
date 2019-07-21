@@ -1581,38 +1581,40 @@ class LpProblem(object):
             f.write("Minimize\n")
         else:
             f.write("Maximize\n")
-        wasNone, objectiveDummyVar = self.fixObjective()
-        objName = self.objective.name
-        if not objName:
-            objName = "OBJ"
-        f.write(self.objective.asCplexLpAffineExpression(objName, constant = 0))
+        was_none, objective_dummy_var = self.fixObjective()
+        obj_name = self.objective.name
+        if not obj_name:
+            obj_name = "OBJ"
+        f.write(self.objective.asCplexLpAffineExpression(obj_name, constant=0))
         f.write("Subject To\n")
         ks = list(self.constraints.keys())
         ks.sort()
-        dummyWritten = False
+        dummy_written = False
         for k in ks:
             constraint = self.constraints[k]
             if not list(constraint.keys()):
                 # empty constraint add the dummyVar
-                dummyVar = self.get_dummyVar()
-                constraint += dummyVar
-                # set this dummyvar to zero so infeasible problems are not made feasible
-                if not dummyWritten:
-                    f.write((dummyVar == 0.0).asCplexLpConstraint("_dummy"))
-                    dummyWritten = True
+                dummy_var = self.get_dummyVar()
+                constraint += dummy_var
+                # set this dummy_var to zero so infeasible problems are not made feasible
+                if not dummy_written:
+                    f.write((dummy_var == 0.0).asCplexLpConstraint("_dummy"))
+                    dummy_written = True
             f.write(constraint.asCplexLpConstraint(k))
         vs = self.variables()
+
         # check if any names are longer than 100 characters
         long_names = [v.name for v in vs if len(v.name) > 100]
         if long_names:
-            raise PulpError('Variable names too long for Lp format\n'
-                                + str(long_names))
+            raise PulpError('Variable names too long for Lp format\n' + str(long_names))
+
         # check for repeated names
         repeated_names = {}
         for v in vs:
             repeated_names[v.name] = repeated_names.get(v.name, 0) + 1
-        repeated_names = [(key, value) for key, value in list(repeated_names.items())
-                            if value >= 2]
+
+        repeated_names = [(key, val) for key, val in list(repeated_names.items()) if val >= 2]
+
         if repeated_names:
             raise PulpError('Repeated variable names in Lp format\n' + str(repeated_names))
         # Bounds on non-"positive" variables
@@ -1654,7 +1656,7 @@ class LpProblem(object):
                         f.write(" %s: %.12g\n" % (v.name, val))
         f.write("End\n")
         f.close()
-        self.restoreObjective(wasNone, objectiveDummyVar)
+        self.restoreObjective(was_none, objective_dummy_var)
 
     def assignVarsVals(self, values):
         variables = self.variablesDict()
