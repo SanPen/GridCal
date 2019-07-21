@@ -257,6 +257,14 @@ class StatisticalCharacterization(object):
         ax.set_ylabel('$x$')
 
 
+class TimeGrouping(Enum):
+    NoGrouping = 'No grouping'
+    Monthly = 'Monthly'
+    Weekly = 'Weekly'
+    Daily = 'Daily'
+    Hourly = 'Hourly'
+
+
 def classify_by_hour(t: pd.DatetimeIndex):
     """
     Passes an array of TimeStamps to an array of arrays of indices
@@ -303,3 +311,58 @@ def classify_by_day(t: pd.DatetimeIndex):
         arr[hourofyear - offset].append(i)
 
     return arr
+
+
+def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
+    """
+    Get the indices delimiting a number of groups
+    :param t_array: DatetimeIndex object containing dates
+    :param grouping: TimeGrouping value
+    :return: list of indices that determine the partitions
+    """
+    groups = list()
+
+    last = -1
+
+    for i, t in enumerate(t_array):
+
+        if grouping == TimeGrouping.Monthly:
+            if t.month != last:
+                last = t.month
+                groups.append(i)
+
+        elif grouping == TimeGrouping.Weekly:
+            if t.week != last:
+                last = t.week
+                groups.append(i)
+
+        elif grouping == TimeGrouping.Daily:
+            if t.day != last:
+                last = t.day
+                groups.append(i)
+
+        elif grouping == TimeGrouping.Hourly:
+            if t.hour != last:
+                last = t.hour
+                groups.append(i)
+
+    groups.append(i)
+
+    return groups
+
+
+if __name__ == '__main__':
+    from GridCal.Engine.IO.file_handler import FileOpen
+
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.gridcal'
+
+    main_circuit = FileOpen(fname).open()
+
+    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Monthly)
+
+    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Weekly)
+
+    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Daily)
+
+    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Hourly)

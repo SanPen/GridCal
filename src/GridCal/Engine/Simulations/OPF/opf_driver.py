@@ -12,9 +12,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+from enum import Enum
 from PySide2.QtCore import QRunnable
 
+from GridCal.Engine.basic_structures import TimeGrouping
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
@@ -28,50 +29,40 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOpti
 ########################################################################################################################
 
 
+
+
+
 class OptimalPowerFlowOptions:
 
-    def __init__(self, verbose=False, load_shedding=False, generation_shedding=False,
-                 solver=SolverType.DC_OPF, realistic_results=False, control_batteries=True,
-                 faster_less_accurate=False, generation_shedding_weight=10000, load_shedding_weight=10000,
-                 power_flow_options=None, bus_types=None, non_sequential=False):
+    def __init__(self, verbose=False,
+                 solver: SolverType = SolverType.DC_OPF,
+                 grouping: TimeGrouping = TimeGrouping.NoGrouping,
+                 realistic_results=False,
+                 faster_less_accurate=False,
+                 power_flow_options=None, bus_types=None):
         """
 
         :param verbose:
-        :param load_shedding:
-        :param generation_shedding:
         :param solver:
+        :param grouping:
         :param realistic_results:
-        :param control_batteries:
         :param faster_less_accurate:
-        :param generation_shedding_weight:
-        :param load_shedding_weight:
         :param power_flow_options:
         :param bus_types:
-        :param non_sequential:
         """
         self.verbose = verbose
 
-        self.load_shedding = load_shedding
-
-        self.generation_shedding = generation_shedding
-
-        self. control_batteries = control_batteries
-
         self.solver = solver
+
+        self.grouping = grouping
 
         self.realistic_results = realistic_results
 
         self.faster_less_accurate = faster_less_accurate
 
-        self.generation_shedding_weight = generation_shedding_weight
-
-        self.load_shedding_weight = load_shedding_weight
-
         self.power_flow_options = power_flow_options
 
         self.bus_types = bus_types
-
-        self.non_sequential = non_sequential
 
 
 class OptimalPowerFlow(QRunnable):

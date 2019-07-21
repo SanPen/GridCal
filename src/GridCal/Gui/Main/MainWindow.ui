@@ -2498,81 +2498,14 @@ p, li { white-space: pre-wrap; }
                 <widget class="QComboBox" name="lpf_solver_comboBox"/>
                </item>
                <item>
-                <widget class="QCheckBox" name="non_sequential_opf_checkBox">
-                 <property name="toolTip">
-                  <string>When active selects a version of the solver that formulates a time-complete MIP and sends it to the solver at once.</string>
-                 </property>
+                <widget class="QLabel" name="label_4">
                  <property name="text">
-                  <string>non sequential</string>
+                  <string>Grouping</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QFrame" name="frame_41">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_38">
-                  <item>
-                   <widget class="QCheckBox" name="load_shedding_checkBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When activated, the loading is always below 100%.&lt;/p&gt;&lt;p&gt;This is achieved by decreasing the load amount.&lt;/p&gt;&lt;p&gt;This is also called load shedding.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Load shedding</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QSpinBox" name="load_shedding_weight_spinBox">
-                    <property name="toolTip">
-                     <string>Load shedding weight in the optimization</string>
-                    </property>
-                    <property name="maximum">
-                     <number>999999999</number>
-                    </property>
-                    <property name="value">
-                     <number>10000</number>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QFrame" name="frame_42">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_39">
-                  <item>
-                   <widget class="QCheckBox" name="generation_shedding_CheckBox">
-                    <property name="text">
-                     <string>Generation shedding</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QSpinBox" name="generation_shedding_weight_spinBox">
-                    <property name="toolTip">
-                     <string>Generation shedding weight in the optimization</string>
-                    </property>
-                    <property name="maximum">
-                     <number>999999999</number>
-                    </property>
-                    <property name="value">
-                     <number>10000</number>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
+                <widget class="QComboBox" name="opf_time_grouping_comboBox"/>
                </item>
                <item>
                 <widget class="QCheckBox" name="show_real_values_for_lp_checkBox">
@@ -2581,16 +2514,6 @@ p, li { white-space: pre-wrap; }
                  </property>
                  <property name="text">
                   <string>Show the real associated values</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="control_batteries_checkBox">
-                 <property name="text">
-                  <string>Control batteries</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
                  </property>
                 </widget>
                </item>

@@ -29,6 +29,7 @@ from GridCal.Gui.GuiFunctions import *
 # Engine imports
 # from GridCal.Engine.OptimizationDriver import *
 # from GridCal.Engine.StateEstimationDriver import *
+from GridCal.Engine.basic_structures import TimeGrouping
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
@@ -161,10 +162,16 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict['DC OPF'] = SolverType.DC_OPF
         self.lp_solvers_dict['AC OPF'] = SolverType.AC_OPF
-        # self.lp_solvers_dict['DYCORS OPF'] = SolverType.DYCORS_OPF
         self.lp_solvers_dict['Nelder-Mead feasibility dispatch'] = SolverType.NELDER_MEAD_OPF
-
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
+        self.opf_time_groups = OrderedDict()
+        self.opf_time_groups[TimeGrouping.NoGrouping.value] = TimeGrouping.NoGrouping
+        self.opf_time_groups[TimeGrouping.Monthly.value] = TimeGrouping.Monthly
+        self.opf_time_groups[TimeGrouping.Weekly.value] = TimeGrouping.Weekly
+        self.opf_time_groups[TimeGrouping.Daily.value] = TimeGrouping.Daily
+        self.opf_time_groups[TimeGrouping.Hourly.value] = TimeGrouping.Hourly
+        self.ui.opf_time_grouping_comboBox.setModel(get_list_model(list(self.opf_time_groups.keys())))
 
         # voltage collapse mode (full, nose)
         self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
@@ -2696,40 +2703,25 @@ class MainGUI(QMainWindow):
                     QtGui.QGuiApplication.processEvents()
 
                     # get the power flow options from the GUI
-                    load_shedding = self.ui.load_shedding_checkBox.isChecked()
                     realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
-                    generation_shedding = self.ui.generation_shedding_CheckBox.isChecked()
                     solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-                    control_batteries = self.ui.control_batteries_checkBox.isChecked()
-                    load_shedding_w = self.ui.load_shedding_weight_spinBox.value()
-                    gen_shedding_w = self.ui.generation_shedding_weight_spinBox.value()
+                    grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
                     pf_options = self.get_selected_power_flow_options()
-                    non_sequential = self.ui.non_sequential_opf_checkBox.isChecked()
-                    options = OptimalPowerFlowOptions(load_shedding=load_shedding,
-                                                      generation_shedding=generation_shedding,
-                                                      solver=solver,
+
+                    options = OptimalPowerFlowOptions(solver=solver,
+                                                      grouping=grouping,
                                                       realistic_results=realistic_results,
-                                                      control_batteries=control_batteries,
-                                                      load_shedding_weight=load_shedding_w,
-                                                      generation_shedding_weight=gen_shedding_w,
-                                                      power_flow_options=pf_options,
-                                                      non_sequential=non_sequential)
+                                                      power_flow_options=pf_options)
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
 
                     # create the OPF time series instance
-                    if non_sequential:
-                        self.optimal_power_flow_time_series = NonSequentialOptimalPowerFlow(grid=self.circuit,
-                                                                                            options=options,
-                                                                                            start_=start,
-                                                                                            end_=end)
-
-                    else:
-                        self.optimal_power_flow_time_series = SequentialOptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                                                                   options=options,
-                                                                                                   start_=start,
-                                                                                                   end_=end)
+                    # if non_sequential:
+                    self.optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=self.circuit,
+                                                                                     options=options,
+                                                                                     start_=start,
+                                                                                     end_=end)
 
                     # make the thread connections to the GUI
                     self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2744,7 +2736,7 @@ class MainGUI(QMainWindow):
                     self.msg('There are no time series.\nLoad time series are needed for this simulation.')
 
             else:
-                self.msg('Another OPF time series is being run...')
+                self.msg('Another OPF time series is running already...')
 
         else:
             pass

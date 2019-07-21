@@ -18,7 +18,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.ThirdParty.pulp import *
 import numpy as np
 from itertools import product
@@ -242,14 +242,14 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcNonSequentialTimeSeries:
 
-    def __init__(self, grid: MultiCircuit, start_idx, end_idx):
+    def __init__(self, numerical_circuit: NumericalCircuit , start_idx, end_idx):
         """
 
         :param grid:
         :param start_idx:
         :param end_idx:
         """
-        self.grid = grid
+        self.numerical_circuit = numerical_circuit
         self.start_idx = start_idx
         self.end_idx = end_idx
 
@@ -275,7 +275,7 @@ class OpfAcNonSequentialTimeSeries:
         Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
         :return: PuLP Problem instance
         """
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.numerical_circuit
 
         # general indices
         n = numerical_circuit.nbus
@@ -432,42 +432,42 @@ class OpfAcNonSequentialTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=True) * self.grid.Sbase
+        return self.extract2D(self.s_from, make_abs=True) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """
         return the battery dispatch (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pb) * self.grid.Sbase
+        return self.extract2D(self.Pb) * self.numerical_circuit.Sbase
 
     def get_battery_energy(self):
         """
         return the battery energy (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.E) * self.grid.Sbase
+        return self.extract2D(self.E) * self.numerical_circuit.Sbase
 
     def get_generator_power(self):
         """
         return the generator dispatch (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pg) * self.grid.Sbase
+        return self.extract2D(self.Pg) * self.numerical_circuit.Sbase
 
     def get_load_shedding(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.load_shedding) * self.grid.Sbase
+        return self.extract2D(self.load_shedding) * self.numerical_circuit.Sbase
 
     def get_load_power(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.Pl) * self.grid.Sbase
+        return self.extract2D(self.Pl) * self.numerical_circuit.Sbase
 
     def get_shadow_prices(self):
         """
@@ -493,8 +493,8 @@ if __name__ == '__main__':
         # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
 
         main_circuit = FileOpen(fname).open()
-
-        problem = OpfAcNonSequentialTimeSeries(grid=main_circuit, start_idx=1, end_idx=24*5)
+        numerical_circuit = main_circuit.compile()
+        problem = OpfAcNonSequentialTimeSeries(numerical_circuit=numerical_circuit, start_idx=1, end_idx=24*5)
 
         print('Solving...')
         status = problem.solve()

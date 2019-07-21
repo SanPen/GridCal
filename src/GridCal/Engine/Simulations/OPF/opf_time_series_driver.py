@@ -20,6 +20,7 @@ import datetime
 from matplotlib import pyplot as plt
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
@@ -438,7 +439,7 @@ class SequentialOptimalPowerFlowTimeSeries(QThread):
         self.done_signal.emit()
 
 
-class NonSequentialOptimalPowerFlow(QThread):
+class OptimalPowerFlowTimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
@@ -454,11 +455,19 @@ class NonSequentialOptimalPowerFlow(QThread):
         # Grid to run a power flow in
         self.grid = grid
 
+        self.numerical_circuit = self.grid.compile()
+
         # Options to use
         self.options = options
 
         # OPF results
-        self.results = None
+        self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
+                                                         m=len(self.grid.branches),
+                                                         nt=len(self.grid.time_profile),
+                                                         ngen=len(self.grid.get_generators()),
+                                                         nbat=len(self.grid.get_batteries()),
+                                                         nload=len(self.grid.get_loads()),
+                                                         time=self.grid.time_profile)
 
         self.start_ = start_
 
@@ -471,31 +480,46 @@ class NonSequentialOptimalPowerFlow(QThread):
 
         self.all_solved = True
 
+    def reset_results(self):
+        """
+        Clears the results
+        """
+        # reinitialize
+        self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
+                                                         m=len(self.grid.branches),
+                                                         nt=len(self.grid.time_profile),
+                                                         ngen=len(self.grid.get_generators()),
+                                                         nbat=len(self.grid.get_batteries()),
+                                                         nload=len(self.grid.get_loads()),
+                                                         time=self.grid.time_profile)
+
     def get_steps(self):
         """
         Get time steps list of strings
         """
         return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
 
-    def opf(self):
+    def opf(self, start_, end_, remote=False):
         """
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
         """
-        # print('PowerFlow at ', self.grid.name)
 
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Running all in an external solver, this may take a while...')
+        if not remote:
+            self.progress_signal.emit(0.0)
+            self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
-            problem = OpfDcNonSequentialTimeSeries(grid=self.grid, start_idx=self.start_, end_idx=self.end_)
+            problem = OpfDcNonSequentialTimeSeries(numerical_circuit=self.numerical_circuit,
+                                                   start_idx=start_, end_idx=end_)
 
         elif self.options.solver == SolverType.AC_OPF:
 
             # DC optimal power flow
-            problem = OpfAcNonSequentialTimeSeries(grid=self.grid, start_idx=self.start_, end_idx=self.end_)
+            problem = OpfAcNonSequentialTimeSeries(numerical_circuit=self.numerical_circuit,
+                                                   start_idx=start_, end_idx=end_)
 
         else:
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
@@ -504,19 +528,10 @@ class NonSequentialOptimalPowerFlow(QThread):
         status = problem.solve()
         print("Status:", status)
 
-        # pack the results
-        self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
-                                                         m=len(self.grid.branches),
-                                                         nt=len(self.grid.time_profile),
-                                                         ngen=len(self.grid.get_generators()),
-                                                         nbat=len(self.grid.get_batteries()),
-                                                         nload=len(self.grid.get_loads()),
-                                                         time=self.grid.time_profile)
-        a = self.start_
-        b = self.end_
+        a = start_
+        b = end_
         self.results.voltage[a:b, :] = problem.get_voltage()
         self.results.load_shedding[a:b, :] = problem.get_load_shedding()
-        # self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
         self.results.battery_power[a:b, :] = problem.get_battery_power()
         self.results.battery_energy[a:b, :] = problem.get_battery_energy()
         self.results.controlled_generator_power[a:b, :] = problem.get_generator_power()
@@ -527,12 +542,41 @@ class NonSequentialOptimalPowerFlow(QThread):
 
         return self.results
 
+    def opf_by_groups(self):
+        """
+        Run the OPF by groups
+        """
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Making groups...')
+
+        groups = get_time_groups(t_array=self.grid.time_profile, grouping=self.options.grouping)
+
+        n = len(groups)
+
+        for i in range(1, n):
+
+            start_ = groups[i-1]
+            end_ = groups[i]
+
+            if start_ >= self.start_ and end_ <= self.end_:
+
+                # run an opf for the group interval only if the group is within the start:end boundaries
+                self.opf(start_=start_, end_=end_, remote=True)
+
+            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
+            progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
+            self.progress_signal.emit(progress)
+
     def run(self):
         """
 
         :return:
         """
-        self.opf()
+        if self.options.grouping == TimeGrouping.NoGrouping:
+            self.opf(start_=self.start_, end_=self.end_)
+        else:
+            self.opf_by_groups()
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')
