@@ -1,0 +1,49 @@
+image: python:3.7-slim
+
+stages:
+    -   test
+    -   build
+    -   docs
+
+python3.6:
+    image:
+        python:3.6-slim
+    before_script:
+        -   apt update
+        -   apt install --yes python-pyqt5
+        -   pip install -r requirements.txt
+    script:
+        -   pytest
+    stage:
+        test
+
+python3.7:
+    image:
+        python:3.7-slim
+    before_script:
+        -   apt update
+        -   apt install --yes python-pyqt5
+        -   pip install -r requirements.txt
+    script:
+        -   pytest
+    stage:
+        test
+
+bdist_wheel:
+    stage:
+        build
+    script:
+        -   python setup.py bdist_wheel
+    artifacts:
+        paths:
+            -   dist/*.whl
+
+sphinx_html:
+    stage:
+        docs
+    script:
+        -   pip install sphinx sphinx-rtd-theme
+        -   cd doc; make html
+    artifacts:
+        paths:
+            -   public
