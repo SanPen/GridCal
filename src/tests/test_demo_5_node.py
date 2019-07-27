@@ -23,6 +23,7 @@ from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
     PowerFlowOptions, SolverType, PowerFlow
+from GridCal.print_power_flow_results import print_power_flow_results
 from tests.conftest import ROOT_PATH
 
 
@@ -63,20 +64,16 @@ def test_demo_5_node(root_path):
     grid.add_branch(Branch(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
     grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
     grid.plot_graph()
+    print('\n\n', grid.name)
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
 
     power_flow = PowerFlow(grid, options)
     power_flow.run()
-    print('\n\n', grid.name)
-    print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
-    print('\t|loading|:', abs(power_flow.results.loading) * 100)
-    print('\terr:', power_flow.results.error)
-    print('\tConv:', power_flow.results.converged)
+
+    print_power_flow_results(power_flow=power_flow)
 
     fname = root_path / 'data' / 'output' / 'test_demo_5_node.png'
-    print(fname)
     plt.savefig(fname=fname)
 
 

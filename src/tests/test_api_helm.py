@@ -15,6 +15,7 @@
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.IO.file_handler import FileOpen
+from GridCal.print_power_flow_results import print_power_flow_results
 
 
 def test_api_helm():
@@ -32,11 +33,7 @@ def test_api_helm():
     power_flow = PowerFlow(grid, options)
     power_flow.run()
 
-    print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
-    print('\t|loading|:', abs(power_flow.results.loading) * 100)
-    print('\terr:', power_flow.results.error)
-    print('\tConv:', power_flow.results.converged)
+    print_power_flow_results(power_flow)
 
 
 if __name__ == '__main__':
