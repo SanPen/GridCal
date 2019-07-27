@@ -23,10 +23,12 @@ from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
     PowerFlowOptions, SolverType, PowerFlow
+from tests.conftest import ROOT_PATH
 
 
 def test_demo_5_node(root_path):
-    np.set_printoptions(precision=4)
+    np.core.arrayprint.set_printoptions(precision=4)
+
     grid = MultiCircuit()
 
     # Add buses
@@ -79,4 +81,4 @@ def test_demo_5_node(root_path):
 
 
 if __name__ == '__main__':
-    test_demo_5_node()
+    test_demo_5_node(root_path=ROOT_PATH)

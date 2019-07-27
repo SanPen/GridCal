@@ -4,7 +4,7 @@ from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlow
+    PowerFlowOptions, PowerFlow
 
 
 def test_line_losses_1():

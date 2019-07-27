@@ -7,7 +7,6 @@ from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
     PowerFlowOptions, ReactivePowerControlMode, PowerFlow
-
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
     SolverType
 

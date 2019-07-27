@@ -40,7 +40,7 @@ def _test_api_dcopf():
     grid = FileOpen(fname).open()
     grid.compile()
     opf_options = OptimalPowerFlowOptions()
-    opf = OptimalPowerFlow(grid, opf_options)
+    # opf = OptimalPowerFlow(grid, opf_options)
     # opf.run()
     print('Running ts...')
     opf_ts = OptimalPowerFlowTimeSeries(grid, opf_options)
