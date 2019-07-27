@@ -14,8 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions, \
-    OptimalPowerFlow
+from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import \
     OptimalPowerFlowTimeSeries
 
