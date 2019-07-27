@@ -3,7 +3,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOpti
 
 
 def test_power_flow():
-    fname = os.path.join('..', 'Grids_and_profiles', 'grids',
+    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids',
                          'IEEE 30 Bus with storage.xlsx')
     print('Reading...')
     main_circuit = FileOpen(fname).open()

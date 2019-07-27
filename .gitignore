@@ -9,7 +9,7 @@ __pycache__
 /dist
 /GridCal.egg-info
 
-/src/test/data/output/*.png
+/src/tests/data/output/*.png
 
 /venv
 /.tox/
