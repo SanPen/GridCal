@@ -7,7 +7,6 @@ Calculates the total number of downloads that a particular PyPI package has
 received across all versions tracked by PyPI
 """
 
-from datetime import datetime
 import locale
 import sys
 import xmlrpc.client
@@ -133,5 +132,8 @@ def main():
     pkg = 'GridCal'
     PyPIDownloadAggregator(pkg).stats()
 
+
 if __name__ == '__main__':
     main()
+
+# TODO This is not a test. So move to scripts or something.

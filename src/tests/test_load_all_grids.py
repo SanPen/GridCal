@@ -1,13 +1,14 @@
-import PySide2
-from GridCal.Engine import *
-
 import os
+
+from GridCal.Engine.IO.file_handler import FileOpen
 
 
 def test_all_grids():
+    # get the directory of this file
+    current_path = os.path.dirname(__file__)
 
-    curr_path = os.path.dirname(__file__)  # get the directory of this file
-    grids_path = os.path.join(curr_path, '..', '..', 'Grids_and_profiles', 'grids')  # navigate to the grids folder
+    # navigate to the grids folder
+    grids_path = os.path.join(current_path, '..', 'Grids_and_profiles', 'grids')
 
     files = os.listdir(grids_path)
     failed = list()

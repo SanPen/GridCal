@@ -12,40 +12,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import time
 
-from GridCal.Engine import *
+from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from multiprocessing import Pool
 
 
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
-# fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE_30_new.xlsx'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
-# fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
-grid = FileOpen(fname).open()
-grid.compile()
+def simulation_constructor(args):
+    """
+    function to create a copy of the grid and a power flow associated
 
-options = PowerFlowOptions(SolverType.NR, verbose=False)
-
-####################################################################################################################
-# PowerFlow
-####################################################################################################################
-print('\n\n')
-power_flow = PowerFlow(grid, options)
-power_flow.run()
-
-print('\n\n', grid.name)
-print('\t|V|:', abs(grid.power_flow_results.voltage))
-print('\t|Sbranch|:', abs(grid.power_flow_results.Sbranch))
-print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
-print('\terr:', grid.power_flow_results.error)
-print('\tConv:', grid.power_flow_results.converged)
-
-
-def simulation_constructor(args):  # function to create a copy of the grid and a power flow associated
+    :param args:
+    :return:
+    """
     # grd = grid.copy()
     # grd.name = 'grid ' + str(i)
     # grd.compile()
@@ -53,21 +33,42 @@ def simulation_constructor(args):  # function to create a copy of the grid and a
     return PowerFlowMP(args[0], args[1])
 
 
-def instance_executor(instance: PowerFlow):  # function to run the instance
+def instance_executor(instance: PowerFlow):
+    """
+    function to run the instance
+
+    :param instance:
+    :return:
+    """
     instance.run()
+
     return instance.grid
 
 
-def run():
-    pool = Pool()
+def test_api_multi_core():
+
     batch_size = 10000
+
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
+    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE_30_new.xlsx'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
+    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
+
+    grid = FileOpen(fname).open()
+    grid.compile()
+    print('\n\n', grid.name)
+
+    options = PowerFlowOptions(SolverType.NR, verbose=False)
+    power_flow = PowerFlow(grid, options)
+    power_flow.run()
 
     # create instances of the of the power flow simulation given the grid
     print('cloning...')
+    pool = Pool()
     instances = pool.map(simulation_constructor, [[grid, options]]*batch_size)
-
-    # instances = pool.map(simulation_constructor, range(batch_size))
-
     # run asynchronous power flows on the created instances
     print('running...')
     instances = pool.map_async(instance_executor, instances)
@@ -83,10 +84,16 @@ def run():
         time.sleep(0.5)
 
     # display the collected results
-    for instance in instances:
+    for instance in instances.get():
         print('\n\n' + instance.name)
-        print('\t|V|:', abs(instance.power_flow_results.voltage))
+        # print('\t|V|:', abs(instance.power_flow.results.voltage))
+
+    # print('\t|V|:', abs(grid.power_flow.results.voltage))
+    # print('\t|Sbranch|:', abs(grid.power_flow.results.Sbranch))
+    # print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
+    # print('\terr:', grid.power_flow_results.error)
+    # print('\tConv:', grid.power_flow_results.converged)
 
 
 if __name__ == '__main__':
-    run()
+    test_api_multi_core()
