@@ -1,10 +1,13 @@
+from pathlib import Path
+
 from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, SolverType
 
 
 def test_power_flow():
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids',
-                         'IEEE 30 Bus with storage.xlsx')
+    fname = Path(__file__).parent.parent.parent / \
+            'Grids_and_profiles' / 'grids' / 'IEEE 30 Bus with storage.xlsx'
+
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     options = PowerFlowOptions(SolverType.NR, verbose=False,
