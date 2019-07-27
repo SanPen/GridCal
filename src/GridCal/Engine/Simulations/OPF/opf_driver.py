@@ -16,7 +16,7 @@ from enum import Enum
 import numpy as np
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import TimeGrouping
+from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
@@ -35,15 +35,15 @@ class OptimalPowerFlowOptions:
     def __init__(self, verbose=False,
                  solver: SolverType = SolverType.DC_OPF,
                  grouping: TimeGrouping = TimeGrouping.NoGrouping,
-                 realistic_results=False,
+                 mip_solver=MIPSolvers.CBC,
                  faster_less_accurate=False,
                  power_flow_options=None, bus_types=None):
         """
-
+        Optimal power flow options
         :param verbose:
-        :param solver:
+        :param solver: OPF solver type
         :param grouping:
-        :param realistic_results:
+        :param mip_solver:
         :param faster_less_accurate:
         :param power_flow_options:
         :param bus_types:
@@ -54,7 +54,7 @@ class OptimalPowerFlowOptions:
 
         self.grouping = grouping
 
-        self.realistic_results = realistic_results
+        self.mip_solver = mip_solver
 
         self.faster_less_accurate = faster_less_accurate
 

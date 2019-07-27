@@ -81,8 +81,7 @@ if __name__ == '__main__':
     # OPF
     ####################################################################################################################
     print('Running OPF...', '')
-    opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=True, generation_shedding=True,
-                                          solver=SolverType.DC_OPF, realistic_results=False)
+    opf_options = OptimalPowerFlowOptions(verbose=False, solver=SolverType.DC_OPF, mip_solver=False)
     opf = OptimalPowerFlow(grid=main_circuit, options=opf_options)
     opf.run()
 
@@ -90,9 +89,8 @@ if __name__ == '__main__':
     # OPF Time Series
     ####################################################################################################################
     print('Running OPF-TS...', '')
-    opf_options = OptimalPowerFlowOptions(verbose=False, load_shedding=False, generation_shedding=True,
-                                          control_batteries=True, solver=SolverType.NELDER_MEAD_OPF, realistic_results=False)
-    opf_ts = SequentialOptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
+    opf_options = OptimalPowerFlowOptions(verbose=False, solver=SolverType.NELDER_MEAD_OPF, mip_solver=False)
+    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options, start_=0, end_=96)
     opf_ts.run()
 
     ####################################################################################################################
@@ -111,7 +109,6 @@ if __name__ == '__main__':
 
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
 
-    # unitary_vector = random.random(len(grid.buses))
     vc_inputs = VoltageCollapseInput(Sbase=Sbase,
                                      Vbase=Vbase,
                                      Starget=Sbase * (1+unitary_vector))

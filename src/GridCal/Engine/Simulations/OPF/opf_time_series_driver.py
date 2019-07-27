@@ -36,12 +36,15 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 
 class OptimalPowerFlowTimeSeriesResults:
 
-    def __init__(self, n, m, nt, ngen=0, nbat=0, nload=0, time=None, is_dc=False):
+    def __init__(self, n, m, nt, ngen=0, nbat=0, nload=0, time=None):
         """
         OPF Time Series results constructor
         :param n: number of buses
         :param m: number of branches
         :param nt: number of time steps
+        :param ngen:
+        :param nbat:
+        :param nload:
         :param time: Time array (optional)
         """
         self.n = n
@@ -70,10 +73,6 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.bus_types = zeros(n, dtype=int)
 
-        # self.available_results = ['Bus voltage', 'Bus power', 'Branch power',
-        #                           'Branch loading', 'Branch overloads', 'Load shedding',
-        #                           'Controlled generators power', 'Batteries power']
-
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.ShadowPrices,
@@ -85,8 +84,6 @@ class OptimalPowerFlowTimeSeriesResults:
                                   ResultTypes.ControlledGeneratorPower,
                                   ResultTypes.BatteryPower,
                                   ResultTypes.BatteryEnergy]
-
-        # self.generators_power = zeros((ng, nt), dtype=complex)
 
         self.controlled_generator_power = np.zeros((nt, ngen), dtype=float)
 
@@ -215,7 +212,7 @@ class OptimalPowerFlowTimeSeriesResults:
                 title = 'Battery energy'
 
             else:
-                pass
+                print(str(result_type) + ' not understood.')
 
             if self.time is not None:
                 df = pd.DataFrame(data=y, columns=labels, index=self.time)
@@ -237,206 +234,6 @@ class OptimalPowerFlowTimeSeriesResults:
 
         else:
             return None
-
-
-class SequentialOptimalPowerFlowTimeSeries(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
-
-    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
-        """
-        OPF time series constructor
-        :param grid: MultiCircuit instance
-        :param options: OPF options instance
-        """
-        QThread.__init__(self)
-
-        self.options = options
-
-        self.grid = grid
-
-        self.results = None
-
-        self.start_ = start_
-
-        self.end_ = end_
-
-        self.logger = list()
-
-        self.__cancel__ = False
-
-    def get_steps(self):
-        """
-        Get time steps list of strings
-        """
-        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
-
-    def initialize_lp_vars(self):
-        """
-        initialize all the bus LP profiles
-        :return:
-        """
-        for bus in self.grid.buses:
-            bus.initialize_lp_profiles()
-
-    def run(self):
-        """
-        Run the time series simulation
-        @return:
-        """
-
-        numerical_circuit = self.grid.compile()
-        islands = numerical_circuit.compute()
-
-        if self.grid.time_profile is not None:
-
-            # declare the results
-            self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
-                                                             m=len(self.grid.branches),
-                                                             nt=len(self.grid.time_profile),
-                                                             ngen=len(self.grid.get_generators()),
-                                                             nbat=len(self.grid.get_batteries()),
-                                                             nload=len(self.grid.get_loads()),
-                                                             time=self.grid.time_profile)
-
-            self.results.bus_types = numerical_circuit.bus_types
-
-            # declare LP problem
-            if self.options.solver == SolverType.DC_OPF:
-                # DC optimal power flow
-                problem = DcOpf(self.grid, verbose=False,
-                                allow_load_shedding=self.options.load_shedding,
-                                allow_generation_shedding=self.options.generation_shedding)
-
-            # elif self.options.solver == SolverType.DYCORS_OPF:
-            #
-            #     problem = AcOpfDYCORS(self.grid, verbose=False)
-
-            elif self.options.solver == SolverType.NELDER_MEAD_OPF:
-
-                if self.options.power_flow_options is None:
-                    options = PowerFlowOptions(SolverType.LACPF, verbose=False,
-                                               initialize_with_existing_solution=False,
-                                               multi_core=False, dispatch_storage=True, control_q=False, control_taps=False)
-                else:
-                    options = self.options.power_flow_options
-
-                problem = AcOpfNelderMead(self.grid, options, verbose=False)
-
-            elif self.options.solver == SolverType.AC_OPF:
-                # AC optimal power flow
-                problem = AcOpf(self.grid, verbose=False,
-                                allow_load_shedding=self.options.load_shedding,
-                                allow_generation_shedding=self.options.generation_shedding)
-
-            else:
-                self.logger.append('Not implemented method ' + str(self.options.solver))
-
-            # build
-            problem.build_solvers()
-
-            batteries = self.grid.get_batteries()
-            nbat = len(batteries)
-            E = np.zeros(nbat)
-            E0 = np.zeros(nbat)
-            minE = np.zeros(nbat)
-            maxE = np.zeros(nbat)
-
-            if self.options.control_batteries and (self.end_ - self.start_) > 1:
-                control_batteries = True
-                for i, bat in enumerate(batteries):
-                    E0[i] = bat.Enom * bat.soc_0
-                    minE[i] = bat.min_soc * bat.Enom
-                    maxE[i] = bat.max_soc * bat.Enom
-                E = E0.copy()
-            else:
-                control_batteries = False  # all vectors declared already
-
-            t = self.start_
-            bat_idx = []
-            force_batteries_to_charge = False
-            dt = 0
-
-            execution_avg_time = 0
-            time_summation = 0
-            alpha = 0.2
-            while t < self.end_ and not self.__cancel__:
-
-                start_time = datetime.datetime.now()
-
-                problem.set_state_at(t, force_batteries_to_charge=force_batteries_to_charge,
-                                     bat_idx=bat_idx, battery_loading_pu=0.01,
-                                     Emin=minE/self.grid.Sbase, Emax=maxE/self.grid.Sbase,
-                                     E=E/self.grid.Sbase, dt=dt)
-                problem.solve(verbose=False)
-
-                if problem.converged:
-                    # gather the results
-                    # get the branch flows (it is used more than one time)
-                    Sbr = problem.get_branch_flows()
-                    ld = problem.get_load_shedding().real
-                    ld[ld == None] = 0
-                    bt = problem.get_batteries_power()
-                    bt[bt == None] = 0
-                    gn = problem.get_controlled_generation()
-                    gn[gn==None] = 0
-                    gs = problem.get_generation_shedding()
-                    gs[gs == None] = 0
-
-                    self.results.voltage[t, :] = problem.get_voltage()
-                    self.results.load_shedding[t, :] = ld * self.grid.Sbase.real
-                    self.results.controlled_generator_shedding[t, :] = gs * self.grid.Sbase
-                    self.results.battery_power[t, :] = bt * self.grid.Sbase
-                    self.results.controlled_generator_power[t, :] = gn * self.grid.Sbase
-                    self.results.Sbranch[t, :] = Sbr
-                    self.results.overloads[t, :] = problem.get_overloads().real
-                    self.results.loading[t, :] = problem.get_loading().real
-                    self.results.converged[t] = bool(problem.converged)
-
-                    # control batteries energy
-                    if control_batteries and t > self.start_:
-                        dt = (self.grid.time_profile[t] - self.grid.time_profile[t - 1]).seconds / 3600  # time delta in hours
-                        dE = self.results.battery_power[t, :] * dt
-                        E -= dE  # negative power(charge) -> more energy
-                        too_low = E <= minE
-                        bat_idx = np.where(too_low == True)[0]  # check which energy values are less or equal to zero
-                        force_batteries_to_charge = bool(len(bat_idx))
-
-                    self.results.battery_energy[t, :] = E
-                else:
-                    print('\nDid not converge!\n')
-
-                end_time = datetime.datetime.now()
-                time_elapsed = end_time - start_time
-                time_summation += time_elapsed.microseconds * 1e-6
-                execution_avg_time = (int(time_summation) / (t - self.start_ + 1)) * alpha + execution_avg_time * (1-alpha)
-                remaining = (self.end_ - t) * execution_avg_time
-
-                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
-                self.progress_signal.emit(progress)
-                self.progress_text.emit('Solving OPF at ' + str(self.grid.time_profile[t]) +
-                                        '\t remaining: ' + str(datetime.timedelta(seconds=remaining)) +
-                                        '\tConverged:' + str(bool(problem.converged)))
-                t += 1
-
-        else:
-            print('There are no profiles')
-            self.progress_text.emit('There are no profiles')
-
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
-    def cancel(self):
-        """
-        Set the cancel state
-        """
-        self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()
 
 
 class OptimalPowerFlowTimeSeries(QThread):
@@ -499,10 +296,14 @@ class OptimalPowerFlowTimeSeries(QThread):
         """
         return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
 
-    def opf(self, start_, end_, remote=False):
+    def opf(self, start_, end_, remote=False, batteries_energy_0=None):
         """
         Run a power flow for every circuit
-        @return: OptimalPowerFlowResults object
+        :param start_: start index
+        :param end_: end index
+        :param remote: is this function being called from the time series?
+        :param batteries_energy_0: initial state of the batteries, if None the default values are taken
+        :return: OptimalPowerFlowResults object
         """
 
         if not remote:
@@ -513,18 +314,21 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             # DC optimal power flow
             problem = OpfDcTimeSeries(numerical_circuit=self.numerical_circuit,
-                                      start_idx=start_, end_idx=end_)
+                                      start_idx=start_, end_idx=end_,
+                                      solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0)
 
         elif self.options.solver == SolverType.AC_OPF:
 
-            # DC optimal power flow
+            # AC optimal power flow
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
-                                      start_idx=start_, end_idx=end_)
+                                      start_idx=start_, end_idx=end_,
+                                      solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0)
 
         else:
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
             return
 
+        # solve the problem
         status = problem.solve()
         print("Status:", status)
 
@@ -555,6 +359,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         n = len(groups)
         i = 1
+        energy_0 = None
         while i < n and not self.__cancel__:
 
             start_ = groups[i-1]
@@ -563,7 +368,9 @@ class OptimalPowerFlowTimeSeries(QThread):
             if start_ >= self.start_ and end_ <= self.end_:
 
                 # run an opf for the group interval only if the group is within the start:end boundaries
-                self.opf(start_=start_, end_=end_, remote=True)
+                self.opf(start_=start_, end_=end_, remote=True, batteries_energy_0=energy_0)
+
+            energy_0 = self.results.battery_energy[end_ - 1, :]
 
             self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
             progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100

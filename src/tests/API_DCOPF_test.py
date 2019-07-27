@@ -34,12 +34,12 @@ print('loading...')
 grid = FileOpen(fname).open()
 grid.compile()
 
-opf_options = OptimalPowerFlowOptions(load_shedding=False)
+opf_options = OptimalPowerFlowOptions()
 opf = OptimalPowerFlow(grid, opf_options)
 # opf.run()
 
 print('Running ts...')
-opf_ts = SequentialOptimalPowerFlowTimeSeries(grid, opf_options)
+opf_ts = OptimalPowerFlowTimeSeries(grid, opf_options)
 opf_ts.run()
 
 # opf.results

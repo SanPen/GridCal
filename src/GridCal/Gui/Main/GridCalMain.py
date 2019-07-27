@@ -29,7 +29,7 @@ from GridCal.Gui.GuiFunctions import *
 # Engine imports
 # from GridCal.Engine.OptimizationDriver import *
 # from GridCal.Engine.StateEstimationDriver import *
-from GridCal.Engine.basic_structures import TimeGrouping
+from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
@@ -158,11 +158,10 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(BranchTypeConverter(BranchType.Branch).options, checks=True)
         self.ui.removeByTypeListView.setModel(mdl)
 
-        # solvers dictionary
+        # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
         self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
-        # self.lp_solvers_dict['Nelder-Mead feasibility dispatch'] = SolverType.NELDER_MEAD_OPF
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
         self.opf_time_groups = OrderedDict()
@@ -172,6 +171,13 @@ class MainGUI(QMainWindow):
         self.opf_time_groups[TimeGrouping.Daily.value] = TimeGrouping.Daily
         self.opf_time_groups[TimeGrouping.Hourly.value] = TimeGrouping.Hourly
         self.ui.opf_time_grouping_comboBox.setModel(get_list_model(list(self.opf_time_groups.keys())))
+
+        self.mip_solvers_dict = OrderedDict()
+        self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
+        self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
+        self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
+        self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
+        self.ui.mip_solver_comboBox.setModel(get_list_model(list(self.mip_solvers_dict.keys())))
 
         # voltage collapse mode (full, nose)
         self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
@@ -2620,11 +2626,11 @@ class MainGUI(QMainWindow):
                 self.LOCK()
 
                 # get the power flow options from the GUI
-                realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
                 pf_options = self.get_selected_power_flow_options()
                 options = OptimalPowerFlowOptions(solver=solver,
-                                                  realistic_results=realistic_results,
+                                                  mip_solver=mip_solver,
                                                   power_flow_options=pf_options)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
@@ -2690,14 +2696,14 @@ class MainGUI(QMainWindow):
                     QtGui.QGuiApplication.processEvents()
 
                     # get the power flow options from the GUI
-                    realistic_results = self.ui.show_real_values_for_lp_checkBox.isChecked()
                     solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+                    mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
                     grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
                     pf_options = self.get_selected_power_flow_options()
 
                     options = OptimalPowerFlowOptions(solver=solver,
                                                       grouping=grouping,
-                                                      realistic_results=realistic_results,
+                                                      mip_solver=mip_solver,
                                                       power_flow_options=pf_options)
 
                     start = self.ui.profile_start_slider.value()

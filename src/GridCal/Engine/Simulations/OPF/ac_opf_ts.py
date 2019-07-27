@@ -20,6 +20,7 @@ That means that solves the OPF problem for a complete time series at once
 
 import numpy as np
 from itertools import product
+from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import *
@@ -95,7 +96,6 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     # generate the time indices to simulate
     if end_ == -1:
         end_ = len(numerical_circuit.time_array)
-    # t = np.arange(start_, end_, 1)
 
     nodal_restrictions_P = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
     nodal_restrictions_Q = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
@@ -108,7 +108,6 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
 
             # find the original indices
             bus_original_idx = calculation_input.original_bus_idx
-            branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
@@ -243,26 +242,31 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx):
+    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+                 batteries_energy_0=None):
         """
         AC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
+        :param solver: MIP solver to use
+        :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
 
-        OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx)
+        OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
+                               solver=solver)
 
         self.v0 = None
         self.dva = None
         self.dvm = None
         self.Ql = None
 
-        self.problem = self.formulate()
+        self.problem = self.formulate(batteries_energy_0=batteries_energy_0)
 
-    def formulate(self):
+    def formulate(self, batteries_energy_0=None):
         """
         Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """
         numerical_circuit = self.numerical_circuit
@@ -282,7 +286,12 @@ class OpfAcTimeSeries(OpfTimeSeries):
         Capacity = numerical_circuit.battery_Enom / Sbase
         minSoC = numerical_circuit.battery_min_soc
         maxSoC = numerical_circuit.battery_max_soc
-        SoC0 = numerical_circuit.battery_soc_0
+
+        if batteries_energy_0 is None:
+            SoC0 = numerical_circuit.battery_soc_0
+        else:
+            SoC0 = (batteries_energy_0 / Sbase) / Capacity
+
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
         Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0

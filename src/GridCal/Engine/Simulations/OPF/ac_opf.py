@@ -24,12 +24,10 @@ from GridCal.Engine.Simulations.OPF.opf_templates import Opf
 from GridCal.ThirdParty.pulp import *
 
 
-def add_objective_function(problem: LpProblem,
-                           Pg, Pb, LSlack, FSlack1, FSlack2,
+def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
-    :param problem: LpProblem instance
     :param Pg: generator LpVars (ng, nt)
     :param Pb: batteries LpVars (nb, nt)
     :param LSlack: Load slack LpVars (nl, nt)
@@ -50,7 +48,7 @@ def add_objective_function(problem: LpProblem,
 
     f_obj += (cost_br * (FSlack1 + FSlack2)).sum()
 
-    problem += f_obj
+    return f_obj
 
 
 def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSlack, Pl, Ql):
@@ -100,7 +98,6 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
         if len(calculation_input.ref) > 0:
             # find the original indices
             bus_original_idx = calculation_input.original_bus_idx
-            branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx]  # the sizes already reflect the correct time span
@@ -263,8 +260,8 @@ class AcOpf(Opf):
         problem = LpProblem(name='AC_OPF')
 
         # add the objective function
-        add_objective_function(problem, Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
-                               cost_g, cost_b, cost_l, cost_br)
+        problem += get_objective_function(Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
+                                          cost_g, cost_b, cost_l, cost_br)
 
         # compute the power injections per node
         P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
@@ -337,5 +334,3 @@ if __name__ == '__main__':
 
         pr = problem.get_shadow_prices()
         print('Nodal prices \n', pr)
-
-        pass

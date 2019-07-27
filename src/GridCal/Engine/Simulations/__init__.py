@@ -15,8 +15,8 @@
 
 from GridCal.Engine.Simulations.ContinuationPowerFlow import *
 from GridCal.Engine.Simulations.Dynamics import *
-from GridCal.Engine.Simulations.OPF import *
 from GridCal.Engine.Simulations.PowerFlow import *
 from GridCal.Engine.Simulations.ShortCircuit import *
 from GridCal.Engine.Simulations.StateEstimation import *
 from GridCal.Engine.Simulations.Stochastic import *
+from GridCal.Engine.Simulations.OPF import *

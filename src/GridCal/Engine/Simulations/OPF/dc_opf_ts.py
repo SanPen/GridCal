@@ -19,6 +19,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from itertools import product
+from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import *
@@ -91,7 +92,6 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
     # generate the time indices to simulate
     if end_ == -1:
         end_ = len(numerical_circuit.time_array)
-    # t = np.arange(start_, end_, 1)
 
     nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
 
@@ -103,7 +103,6 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
 
             # find the original indices
             bus_original_idx = calculation_input.original_bus_idx
-            branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
@@ -212,21 +211,26 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfDcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx):
+    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+                 batteries_energy_0=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
+        :param solver: MIP solver to use
+        :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
-        OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx)
+        OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
+                               solver=solver)
 
         # build the formulation
-        self.problem = self.formulate()
+        self.problem = self.formulate(batteries_energy_0=batteries_energy_0)
 
-    def formulate(self):
+    def formulate(self, batteries_energy_0=None):
         """
         Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """
         numerical_circuit = self.numerical_circuit
@@ -246,7 +250,10 @@ class OpfDcTimeSeries(OpfTimeSeries):
         Capacity = numerical_circuit.battery_Enom / Sbase
         minSoC = numerical_circuit.battery_min_soc
         maxSoC = numerical_circuit.battery_max_soc
-        SoC0 = numerical_circuit.battery_soc_0
+        if batteries_energy_0 is None:
+            SoC0 = numerical_circuit.battery_soc_0
+        else:
+            SoC0 = (batteries_energy_0 / Sbase) / Capacity
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
         Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
@@ -327,30 +334,53 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
 if __name__ == '__main__':
 
-        from GridCal.Engine.IO.file_handler import FileOpen
+        from GridCal.Engine import *
 
         # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
         fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 
         main_circuit = FileOpen(fname).open()
-        numerical_circuit_ = main_circuit.compile()
-        problem = OpfDcTimeSeries(numerical_circuit=numerical_circuit_, start_idx=5, end_idx=5 + 5 * 24)
+        # numerical_circuit_ = main_circuit.compile()
+        # problem = OpfDcTimeSeries(numerical_circuit=numerical_circuit_, start_idx=5, end_idx=5 + 5 * 24)
+        #
+        # print('Solving...')
+        # status = problem.solve()
 
-        print('Solving...')
-        status = problem.solve()
+        # get the power flow options from the GUI
+        solver = SolverType.DC_OPF
+        mip_solver = MIPSolvers.CBC
+        grouping = TimeGrouping.Daily
+        pf_options = PowerFlowOptions()
+
+        options = OptimalPowerFlowOptions(solver=solver,
+                                          grouping=grouping,
+                                          mip_solver=mip_solver,
+                                          power_flow_options=pf_options)
+
+        start = 0
+        end = len(main_circuit.time_profile)
+
+        # create the OPF time series instance
+        # if non_sequential:
+        optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=main_circuit,
+                                                                    options=options,
+                                                                    start_=start,
+                                                                    end_=end)
+
+        optimal_power_flow_time_series.run()
 
         # print("Status:", status)
 
-        v = problem.get_voltage()
-        print('Angles\n', np.angle(v))
-
-        l = problem.get_loading()
-        print('Branch loading\n', l)
-
-        g = problem.get_generator_power()
-        print('Gen power\n', g)
-
-        pr = problem.get_shadow_prices()
-        print('Nodal prices \n', pr)
-
-        pass
+        # v = problem.get_voltage()
+        # print('Angles\n', np.angle(v))
+        #
+        # l = problem.get_loading()
+        # print('Branch loading\n', l)
+        #
+        # g = problem.get_generator_power()
+        # print('Gen power\n', g)
+        #
+        # pr = problem.get_shadow_prices()
+        # print('Nodal prices \n', pr)
+        #
+        # pass

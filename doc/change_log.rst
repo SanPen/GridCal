@@ -17,10 +17,11 @@ _____________
 - Added AC-liner OPF time series as a non-sequential algorithm.
 - Added shadow prices to the non-sequential OPF.
 - Fixed bug with the OPF offset when starting at a index other than 0.
+- Fixed bug with time grouping that repeated the last index.
 
 
-Version 3.5 (commemorating the 100 GitHub stars)
-_________________________________________________
+Version 3.5.0 (commemorating the 100 GitHub stars)
+__________________________________________________
 
 - Added pulp as an embedded dependency, and updated its CBC solver with a custom compiled one from the latest sources.
 - Fixed some bug related to the OPF storage and results display in non-sequential mode.

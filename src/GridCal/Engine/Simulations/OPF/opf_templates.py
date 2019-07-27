@@ -16,13 +16,14 @@
 
 import numpy as np
 from itertools import product
+from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.ThirdParty.pulp import *
 
 
 class Opf:
 
-    def __init__(self, numerical_circuit: NumericalCircuit):
+    def __init__(self, numerical_circuit: NumericalCircuit, solver: MIPSolvers=MIPSolvers.CBC):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance
@@ -40,6 +41,8 @@ class Opf:
         self.rating = None
         self.load_shedding = None
         self.nodal_restrictions = None
+
+        self.solver = solver
 
         self.problem = self.formulate()
 
@@ -59,7 +62,17 @@ class Opf:
         Call PuLP to solve the problem
         """
         # self.problem.writeLP('OPF.lp')
-        params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+        if self.solver == MIPSolvers.CBC:
+            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+        elif self.solver == MIPSolvers.CPLEX:
+            params = CPLEX_CMD(msg=1)
+        elif self.solver == MIPSolvers.GUROBI:
+            params = GUROBI_CMD(msg=1)
+        elif self.solver == MIPSolvers.XPRESS:
+            params = XPRESS(msg=1)
+        else:
+            raise Exception('Solver not supported! ' + str(self.solver))
+
         self.problem.solve(params)
 
         return LpStatus[self.problem.status]
@@ -153,7 +166,7 @@ class Opf:
 
 class OpfTimeSeries:
 
-    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx):
+    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver:MIPSolvers=MIPSolvers.CBC):
         """
 
         :param numerical_circuit:
@@ -163,6 +176,7 @@ class OpfTimeSeries:
         self.numerical_circuit = numerical_circuit
         self.start_idx = start_idx
         self.end_idx = end_idx
+        self.solver = solver
 
         self.theta = None
         self.Pg = None
@@ -193,7 +207,18 @@ class OpfTimeSeries:
         """
         Call PuLP to solve the problem
         """
-        params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+
+        if self.solver == MIPSolvers.CBC:
+            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+        elif self.solver == MIPSolvers.CPLEX:
+            params = CPLEX_CMD(msg=1)
+        elif self.solver == MIPSolvers.GUROBI:
+            params = GUROBI_CMD(msg=1)
+        elif self.solver == MIPSolvers.XPRESS:
+            params = XPRESS(msg=1)
+        else:
+            raise Exception('Solver not supported! ' + str(self.solver))
+
         self.problem.solve(params)
 
         return LpStatus[self.problem.status]

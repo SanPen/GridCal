@@ -257,6 +257,13 @@ class StatisticalCharacterization(object):
         ax.set_ylabel('$x$')
 
 
+class MIPSolvers(Enum):
+    CBC = 'CBC'
+    CPLEX = 'CPLEX'
+    GUROBI = 'Gurobi'
+    XPRESS = 'Xpress'
+
+
 class TimeGrouping(Enum):
     NoGrouping = 'No grouping'
     Monthly = 'Monthly'
@@ -346,7 +353,9 @@ def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
                 last = t.hour
                 groups.append(i)
 
-    groups.append(i)
+    # add the last index if it is not already there
+    if i != groups[len(groups) - 1]:
+        groups.append(i)
 
     return groups
 
