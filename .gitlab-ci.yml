@@ -43,7 +43,7 @@ sphinx_html:
         docs
     script:
         -   apt update
-        -   apt install build-essential
+        -   apt install --yes build-essential
         -   pip install sphinx sphinx-rtd-theme
         -   cd doc; make html
     artifacts:
