@@ -2307,13 +2307,20 @@ class MainGUI(QMainWindow):
                     if self.optimal_power_flow_time_series is None:
                         if use_opf_vals:
                             use_opf_vals = False
-                            self.msg('There are not OPF time series, '
-                                     'therefore this operation will continue with the profile stored values.')
+                            self.msg('There are no OPF time series, '
+                                     'therefore this operation will not use OPF information.')
                             self.ui.actionUse_OPF_in_TS.setChecked(False)
 
                         opf_time_series_results = None
                     else:
-                        opf_time_series_results = self.optimal_power_flow_time_series.results
+                        if self.optimal_power_flow_time_series.results is not None:
+                            opf_time_series_results = self.optimal_power_flow_time_series.results
+                        else:
+                            self.msg('There are no OPF time series results, '
+                                     'therefore this operation will not use OPF information.')
+                            self.ui.actionUse_OPF_in_TS.setChecked(False)
+                            opf_time_series_results = None
+                            use_opf_vals = False
 
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()

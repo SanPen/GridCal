@@ -16,8 +16,10 @@ _____________
 - Simplified and unified the OPF interfaces.
 - Added AC-liner OPF time series as a non-sequential algorithm.
 - Added shadow prices to the non-sequential OPF.
+- Added the handling of dispatchable non dispatchable generators to the OPF.
 - Fixed bug with the OPF offset when starting at a index other than 0.
 - Fixed bug with time grouping that repeated the last index.
+- Fixed bug with the delegates setting for the boolean values
 
 
 Version 3.5.0 (commemorating the 100 GitHub stars)

@@ -26,8 +26,7 @@ from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import *
 
 
-def add_objective_function(problem: LpProblem,
-                           Pg, Pb, LSlack, FSlack1, FSlack2,
+def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -52,7 +51,27 @@ def add_objective_function(problem: LpProblem,
 
     f_obj += (cost_br * (FSlack1 + FSlack2)).sum()
 
-    problem += f_obj
+    return f_obj
+
+
+def set_fix_generation(problem, Pg, P_profile, enabled_for_dispatch):
+    """
+    Set the generatin fixed at the non dispatchabel generators
+    :param problem: LP problem instance
+    :param Pg: Array of generation variables
+    :param P_profile: Array of fixed generation values
+    :param enabled_for_dispatch: array of "enables" for dispatching generators
+    :return: Nothing
+    """
+
+    idx = np.where(enabled_for_dispatch == False)[0]
+
+    lpAddRestrictions2(problem=problem,
+                       lhs=Pg[idx, :],
+                       rhs=P_profile[idx, :],
+                       # Fmax + FSlack2
+                       name='fixed_generation',
+                       op='=')
 
 
 def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSlack, Pl, Ql):
@@ -300,7 +319,9 @@ class OpfAcTimeSeries(OpfTimeSeries):
         # generator
         Pg_max = numerical_circuit.generator_pmax / Sbase
         Pg_min = numerical_circuit.generator_pmin / Sbase
+        P_profile = numerical_circuit.generator_power_profile[a:b, :].transpose() / Sbase
         cost_g = numerical_circuit.generator_cost_profile[a:b, :].transpose()
+        enabled_for_dispatch = numerical_circuit.generator_dispatchable
 
         # load
         Pl = (numerical_circuit.load_active_prof[a:b, :] * numerical_circuit.load_power_profile.real[a:b, :]).transpose() / Sbase
@@ -333,8 +354,12 @@ class OpfAcTimeSeries(OpfTimeSeries):
         problem = LpProblem(name='AC_OPF_Time_Series')
 
         # add the objective function
-        add_objective_function(problem, Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
-                               cost_g, cost_b, cost_l, cost_br)
+        problem += add_objective_function(Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
+                                          cost_g, cost_b, cost_l, cost_br)
+
+        # set the fixed generation values
+        set_fix_generation(problem=problem, Pg=Pg, P_profile=P_profile,
+                           enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections per node
         P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
@@ -386,31 +411,46 @@ class OpfAcTimeSeries(OpfTimeSeries):
 
 if __name__ == '__main__':
 
-        from GridCal.Engine.IO.file_handler import FileOpen
+    from GridCal.Engine import *
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 
-        main_circuit = FileOpen(fname).open()
-        numerical_circuit_ = main_circuit.compile()
-        problem = OpfAcTimeSeries(numerical_circuit=numerical_circuit_, start_idx=1, end_idx=24 * 5)
+    main_circuit = FileOpen(fname).open()
 
-        print('Solving...')
-        status = problem.solve()
+    main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
-        # print("Status:", status)
+    # get the power flow options from the GUI
+    solver = SolverType.AC_OPF
+    mip_solver = MIPSolvers.CBC
+    grouping = TimeGrouping.NoGrouping
+    pf_options = PowerFlowOptions()
 
-        v = problem.get_voltage()
-        print('Modules\n', np.abs(v))
-        print('Angles\n', np.angle(v))
+    options = OptimalPowerFlowOptions(solver=solver,
+                                      grouping=grouping,
+                                      mip_solver=mip_solver,
+                                      power_flow_options=pf_options)
 
-        l = problem.get_loading()
-        print('Branch loading\n', l)
+    start = 0
+    end = len(main_circuit.time_profile)
 
-        g = problem.get_generator_power()
-        print('Gen power\n', g)
+    # create the OPF time series instance
+    # if non_sequential:
+    optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=main_circuit,
+                                                                options=options,
+                                                                start_=start,
+                                                                end_=end)
 
-        pr = problem.get_shadow_prices()
-        print('Nodal prices \n', pr)
+    optimal_power_flow_time_series.run()
 
-        pass
+    v = optimal_power_flow_time_series.results.voltage
+    print('Angles\n', np.angle(v))
+
+    l = optimal_power_flow_time_series.results.loading
+    print('Branch loading\n', l)
+
+    g = optimal_power_flow_time_series.results.controlled_generator_power
+    print('Gen power\n', g)
+
+    pr = optimal_power_flow_time_series.results.shadow_prices
+    print('Nodal prices \n', pr)

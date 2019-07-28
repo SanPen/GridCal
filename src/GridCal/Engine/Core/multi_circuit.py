@@ -686,8 +686,7 @@ class MultiCircuit:
                 if n_time > 0:
                     # power profile
                     if use_opf_vals:
-                        circuit.generator_power_profile[:, i_gen] = \
-                            opf_time_series_results.controlled_generator_power[:, i_gen]
+                        circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
                     else:
                         circuit.generator_power_profile[:, i_gen] = elm.P_prof
 
@@ -732,8 +731,7 @@ class MultiCircuit:
                 if n_time > 0:
                     # power profile
                     if use_opf_vals:
-                        circuit.battery_power_profile[:, i_batt] = \
-                            opf_time_series_results.battery_power[:, i_batt]
+                        circuit.battery_power_profile[:, i_batt] = opf_time_series_results.battery_power[:, i_batt]
                     else:
                         circuit.battery_power_profile[:, i_batt] = elm.P_prof
                     # Voltage profile

@@ -24,12 +24,10 @@ from GridCal.Engine.Simulations.OPF.opf_templates import Opf
 from GridCal.ThirdParty.pulp import *
 
 
-def add_objective_function(problem: LpProblem,
-                           Pg, Pb, LSlack, FSlack1, FSlack2,
+def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
-    :param problem: LpProblem instance
     :param Pg: generator LpVars (ng, nt)
     :param Pb: batteries LpVars (nb, nt)
     :param LSlack: Load slack LpVars (nl, nt)
@@ -50,7 +48,26 @@ def add_objective_function(problem: LpProblem,
 
     f_obj += (cost_br * (FSlack1 + FSlack2)).sum()
 
-    problem += f_obj
+    return f_obj
+
+
+def set_fix_generation(problem, Pg, P_fix, enabled_for_dispatch):
+    """
+    Set the generation fixed at the non dispatchable generators
+    :param problem: LP problem instance
+    :param Pg: Array of generation variables
+    :param P_fix: Array of fixed generation values
+    :param enabled_for_dispatch: array of "enables" for dispatching generators
+    :return: Nothing
+    """
+
+    idx = np.where(enabled_for_dispatch == False)[0]
+
+    lpAddRestrictions2(problem=problem,
+                       lhs=Pg[idx],
+                       rhs=P_fix[idx],
+                       name='fixed_generation',
+                       op='=')
 
 
 def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
@@ -98,7 +115,6 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
 
             # find the original indices
             bus_original_idx = calculation_input.original_bus_idx
-            branch_original_idx = calculation_input.original_branch_idx
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx]  # the sizes already reflect the correct time span
@@ -201,6 +217,8 @@ class DcOpf(Opf):
         Pg_max = numerical_circuit.generator_pmax / Sbase
         Pg_min = numerical_circuit.generator_pmin / Sbase
         cost_g = numerical_circuit.generator_cost
+        P_fix = numerical_circuit.generator_power / Sbase
+        enabled_for_dispatch = numerical_circuit.generator_dispatchable
 
         # load
         Pl = (numerical_circuit.load_active * numerical_circuit.load_power.real)/ Sbase
@@ -225,8 +243,11 @@ class DcOpf(Opf):
         problem = LpProblem(name='DC_OPF')
 
         # add the objective function
-        add_objective_function(problem, Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
-                               cost_g, cost_b, cost_l, cost_br)
+        problem += add_objective_function(Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
+                                          cost_g, cost_b, cost_l, cost_br)
+
+        # set the fixed generation values
+        set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the nodal power injections
         P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
@@ -265,6 +286,9 @@ if __name__ == '__main__':
         # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 
         main_circuit = FileOpen(fname).open()
+
+        main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
+
         numerical_circuit_ = main_circuit.compile()
         problem = DcOpf(numerical_circuit=numerical_circuit_)
 
