@@ -10,6 +10,12 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.2
+_____________
+
+- Removed pulp dependency in the generator objects (forced a critical update)
+- Added some icons in the GUI
+
 Version 3.5.1
 _____________
 

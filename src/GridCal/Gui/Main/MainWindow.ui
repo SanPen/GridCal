@@ -4785,6 +4785,10 @@ points from time series</string>
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Program icon/GridCal_icon.svg</normaloff>:/Program icon/GridCal_icon.svg</iconset>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -5045,6 +5049,10 @@ points from time series</string>
    </property>
   </action>
   <action name="actionOnline_documentation">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/new.svg</normaloff>:/Icons/icons/new.svg</iconset>
+   </property>
    <property name="text">
     <string>Online documentation</string>
    </property>

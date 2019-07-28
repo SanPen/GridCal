@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sat Jul 27 11:19:06 2019
+# Created: Sun Jul 28 11:52:16 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -1866,6 +1866,7 @@ class Ui_mainWindow(object):
         self.actionVoltage_stability.setIcon(icon42)
         self.actionVoltage_stability.setObjectName("actionVoltage_stability")
         self.actionAbout = QtWidgets.QAction(mainWindow)
+        self.actionAbout.setIcon(icon)
         self.actionAbout.setObjectName("actionAbout")
         self.actionCenter_view = QtWidgets.QAction(mainWindow)
         icon52 = QtGui.QIcon()
@@ -1963,6 +1964,7 @@ class Ui_mainWindow(object):
         self.actionLaunch_data_analysis_tool.setIcon(icon10)
         self.actionLaunch_data_analysis_tool.setObjectName("actionLaunch_data_analysis_tool")
         self.actionOnline_documentation = QtWidgets.QAction(mainWindow)
+        self.actionOnline_documentation.setIcon(icon23)
         self.actionOnline_documentation.setObjectName("actionOnline_documentation")
         self.actionExport_all_results = QtWidgets.QAction(mainWindow)
         icon66 = QtGui.QIcon()
