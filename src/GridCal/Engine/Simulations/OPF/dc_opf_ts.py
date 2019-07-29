@@ -362,8 +362,9 @@ if __name__ == '__main__':
 
     from GridCal.Engine import *
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
 
     main_circuit = FileOpen(fname).open()
 
@@ -371,8 +372,8 @@ if __name__ == '__main__':
 
     # get the power flow options from the GUI
     solver = SolverType.DC_OPF
-    mip_solver = MIPSolvers.CBC
-    grouping = TimeGrouping.NoGrouping
+    mip_solver = MIPSolvers.XPRESS
+    grouping = TimeGrouping.Daily
     pf_options = PowerFlowOptions()
 
     options = OptimalPowerFlowOptions(solver=solver,

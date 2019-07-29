@@ -1257,8 +1257,10 @@ class XPRESS(LpSolver_CMD):
             raise PulpSolverError("PuLP: cannot execute "+self.path)
         if not self.keepFiles:
             uuid = uuid4().hex
-            tmpLp = os.path.join(self.tmpDir, "%s-pulp.lp" % uuid)
-            tmpSol = os.path.join(self.tmpDir, "%s-pulp.prt" % uuid)
+            # tmpLp = os.path.join(self.tmpDir, "%s-pulp.lp" % uuid)
+            # tmpSol = os.path.join(self.tmpDir, "%s-pulp.prt" % uuid)
+            tmpLp = "%s-pulp.lp" % uuid
+            tmpSol = "%s-pulp.prt" % uuid
         else:
             tmpLp = lp.name+"-pulp.lp"
             tmpSol = lp.name+"-pulp.prt"

@@ -310,5 +310,6 @@ class OpfTimeSeries:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            val[i, j] = - self.nodal_restrictions[i, j].pi
+            if self.nodal_restrictions[i, j].pi is not None:
+                val[i, j] = - self.nodal_restrictions[i, j].pi
         return val.transpose()
