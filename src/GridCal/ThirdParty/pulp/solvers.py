@@ -1252,9 +1252,12 @@ class XPRESS(LpSolver_CMD):
         return self.executable(self.path)
 
     def actualSolve(self, lp):
-        """Solve a well formulated lp problem"""
+        """
+        Solve a well formulated lp problem
+        """
         if not self.executable(self.path):
-            raise PulpSolverError("PuLP: cannot execute "+self.path)
+            raise PulpSolverError("PuLP: cannot execute " + self.path)
+
         if not self.keepFiles:
             uuid = uuid4().hex
             # tmpLp = os.path.join(self.tmpDir, "%s-pulp.lp" % uuid)
@@ -1264,12 +1267,12 @@ class XPRESS(LpSolver_CMD):
         else:
             tmpLp = lp.name+"-pulp.lp"
             tmpSol = lp.name+"-pulp.prt"
-        lp.writeLP(tmpLp, writeSOS = 1, mip = self.mip)
+        lp.writeLP(tmpLp, writeSOS=1, mip=self.mip)
         if not self.msg:
-            xpress = os.popen(self.path+" "+lp.name+" > /dev/null 2> /dev/null", "w")
+            xpress = os.popen(self.path + " " + lp.name + " > /dev/null 2> /dev/null", "w")
         else:
-            xpress = os.popen(self.path+" "+lp.name, "w")
-        xpress.write("READPROB "+tmpLp+"\n")
+            xpress = os.popen(self.path + " " + lp.name, "w")
+        xpress.write("READPROB " + tmpLp + "\n")
         if self.maxSeconds:
             xpress.write("MAXTIME=%d\n" % self.maxSeconds)
         if self.targetGap:
@@ -1292,40 +1295,50 @@ class XPRESS(LpSolver_CMD):
             xpress.write("GLOBAL\n")
         xpress.write("WRITEPRTSOL "+tmpSol+"\n")
         xpress.write("QUIT\n")
-        if xpress.close() != None:
-            raise PulpSolverError("PuLP: Error while executing "+self.path)
+
+        if xpress.close() is not None:
+            raise PulpSolverError("PuLP: Error while executing " + self.path)
+
         status, values = self.readsol(tmpSol)
         if not self.keepFiles:
-            try: os.remove(tmpLp)
-            except: pass
-            try: os.remove(tmpSol)
-            except: pass
+            try:
+                os.remove(tmpLp)
+            except:
+                pass
+            try:
+                os.remove(tmpSol)
+            except:
+                pass
         lp.status = status
         lp.assignVarsVals(values)
-        if abs(lp.infeasibilityGap(self.mip)) > 1e-5: # Arbitrary
+        if abs(lp.infeasibilityGap(self.mip)) > 1e-5:  # Arbitrary
             lp.status = LpStatusInfeasible
+
         return lp.status
 
-    def readsol(self,filename):
-        """Read an XPRESS solution file"""
+    def readsol(self, filename):
+        """
+        Read an XPRESS solution file
+        """
         with open(filename) as f:
-            for i in range(6): f.readline()
+            for i in range(6):
+                f.readline()
             l = f.readline().split()
 
             rows = int(l[2])
             cols = int(l[5])
-            for i in range(3): f.readline()
-            statusString = f.readline().split()[0]
-            xpressStatus = {
-                "Optimal":LpStatusOptimal,
-                }
-            if statusString not in xpressStatus:
-                raise PulpSolverError("Unknown status returned by XPRESS: "+statusString)
-            status = xpressStatus[statusString]
+            for i in range(3):
+                f.readline()
+            status_string = f.readline().split()[0]
+            xpress_status = { "Optimal": LpStatusOptimal}
+            if status_string not in xpress_status:
+                raise PulpSolverError("Unknown status returned by XPRESS: "+status_string)
+            status = xpress_status[status_string]
             values = {}
             while 1:
                 l = f.readline()
-                if l == "": break
+                if l == "":
+                    break
                 line = l.split()
                 if len(line) and line[0] == 'C':
                     name = line[2]
@@ -1335,7 +1348,8 @@ class XPRESS(LpSolver_CMD):
 
 
 class COIN_CMD(LpSolver_CMD):
-    """The COIN CLP/CBC LP solver
+    """
+    The COIN CLP/CBC LP solver
     now only uses cbc
     """
 
@@ -2304,24 +2318,23 @@ class YAPOSIB(LpSolver):
     The Model is in prob.solverModel
     """
     try:
-        #import the model into the global scope
+        # import the model into the global scope
         global yaposib
         import yaposib
     except ImportError:
         def available(self):
-            """True if the solver is available"""
+            """
+            True if the solver is available
+            """
             return False
+
         def actualSolve(self, lp, callback = None):
-            """Solve a well formulated lp problem"""
+            """
+            Solve a well formulated lp problem
+            """
             raise PulpSolverError("YAPOSIB: Not Available")
     else:
-        def __init__(self,
-                    mip = True,
-                    msg = True,
-                    timeLimit = None,
-                    epgap = None,
-                    solverName = None,
-                    **solverParams):
+        def __init__(self, mip=True, msg=True, timeLimit=None, epgap=None, solverName=None, **solverParams):
             """
             Initializes the yaposib solver.
 
@@ -2343,16 +2356,17 @@ class YAPOSIB(LpSolver):
             model = lp.solverModel
             solutionStatus = model.status
             yaposibLpStatus = {"optimal": LpStatusOptimal,
-                                   "undefined": LpStatusUndefined,
-                                   "abandoned": LpStatusInfeasible,
-                                   "infeasible": LpStatusInfeasible,
-                                   "limitreached": LpStatusInfeasible
-                                   }
-            #populate pulp solution values
+                               "undefined": LpStatusUndefined,
+                               "abandoned": LpStatusInfeasible,
+                               "infeasible": LpStatusInfeasible,
+                               "limitreached": LpStatusInfeasible
+                               }
+            # populate pulp solution values
             for var in lp.variables():
                 var.varValue = var.solverVar.solution
                 var.dj = var.solverVar.reducedcost
-            #put pi and slack variables against the constraints
+
+            # put pi and slack variables against the constraints
             for constr in lp.constraints.values():
                 constr.pi = constr.solverConstraint.dual
                 constr.slack = -constr.constant - constr.solverConstraint.activity
@@ -2361,8 +2375,7 @@ class YAPOSIB(LpSolver):
             lp.resolveOK = True
             for var in lp.variables():
                 var.isModified = False
-            lp.status = yaposibLpStatus.get(solutionStatus,
-                    LpStatusUndefined)
+            lp.status = yaposibLpStatus.get(solutionStatus, LpStatusUndefined)
             return lp.status
 
         def available(self):
@@ -2373,7 +2386,7 @@ class YAPOSIB(LpSolver):
             """Solves the problem with yaposib
             """
             if self.msg == 0:
-                #close stdout to get rid of messages
+                # close stdout to get rid of messages
                 tempfile = open(mktemp(),'w')
                 savestdout = os.dup(1)
                 os.close(1)
