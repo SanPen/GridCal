@@ -63,7 +63,7 @@ def test_demo_5_node(root_path):
     grid.add_branch(Branch(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
     grid.add_branch(Branch(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
     grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
-    grid.plot_graph()
+    # grid.plot_graph()
     print('\n\n', grid.name)
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
@@ -73,8 +73,8 @@ def test_demo_5_node(root_path):
 
     print_power_flow_results(power_flow=power_flow)
 
-    fname = root_path / 'data' / 'output' / 'test_demo_5_node.png'
-    plt.savefig(fname=fname)
+    # fname = root_path / 'data' / 'output' / 'test_demo_5_node.png'
+    # plt.savefig(fname=fname)
 
 
 if __name__ == '__main__':
