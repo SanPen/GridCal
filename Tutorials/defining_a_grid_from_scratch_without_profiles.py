@@ -2,8 +2,6 @@
 This example is coming from the book:
 Power System Load Flow Analysis - Lynn Powell
 
-The added profile is just to demosntrate how to create load profiles properly
-
 Author: Santiago Peñate Vera (September 2018)
 """
 from GridCal.Engine import *
@@ -14,19 +12,7 @@ from GridCal.Engine import *
 # A circuit contains all the grid information regardless of the islands formed or the amount of devices
 ########################################################################################################################
 
-# create a circuit
 grid = MultiCircuit(name='lynn 5 bus')
-
-# let's create a master profile
-time_array = pd.DatetimeIndex(start='1/1/2018', end='1/2/2018', freq='H')
-x = np.linspace(-np.pi, np.pi, len(time_array))
-y = np.abs(np.sin(x))
-df_0 = pd.DataFrame(data=y.astype(complex), index=time_array)  # complex values
-df_0r = pd.DataFrame(data=y, index=time_array)  # only real values
-df_vset = pd.DataFrame(data=np.ones(len(time_array)), index=time_array)  # only real values
-
-# set the grid master time profile
-grid.time_profile = df_0.index
 
 ########################################################################################################################
 # Define the buses
@@ -63,14 +49,22 @@ grid.add_bus(bus5)
 ########################################################################################################################
 # Add the loads
 ########################################################################################################################
-
 # In GridCal, the loads, generators ect are stored within each bus object:
 
 # we'll define the first load completely
 l2 = Load(name='Load',
-          G=0, B=0,  # admittance of the ZIP model in MVA at the nominal voltage
-          Ir=0, Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
-          P=40, Q=20,  # Power of the ZIP model in MVA
+          G=0,  # Impedance of the ZIP model in MVA at the nominal voltage
+          B=0,
+          Ir=0,
+          Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
+          P=40,
+          Q=20,  # Power of the ZIP model in MVA
+          P_prof=None,  # Impedance profile
+          Q_prof=None,  # Current profile
+          Ir_prof=None,  # Power profile
+          Ii_prof=None,
+          G_prof=None,
+          B_prof=None,
           active=True,  # Is active?
           mttf=0.0,  # Mean time to failure
           mttr=0.0  # Mean time to recovery
@@ -129,21 +123,6 @@ grid.add_branch(Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate
 grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
 ########################################################################################################################
-# Overwrite the default profiles with the custom ones
-########################################################################################################################
-
-for load in grid.get_loads():
-    load.P_prof = load.P * df_0
-    load.Q_prof = load.Q * df_0
-
-for gen in grid.get_static_generators():
-    gen.P_prof = gen.Q * df_0
-    gen.Q_prof = gen.Q * df_0
-
-for gen in grid.get_generators():
-    gen.P_prof = gen.P * df_0
-
-########################################################################################################################
 # Run a power flow simulation
 ########################################################################################################################
 
@@ -189,28 +168,3 @@ from tabulate import tabulate
 print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
 print()
 print(tabulate(br_df, tablefmt="pipe", headers=br_df.columns.values))
-
-
-########################################################################################################################
-# Run a time series power flow simulation
-########################################################################################################################
-
-ts = TimeSeries(grid=grid,
-                options=pf_options,
-                use_opf_vals = False,
-                opf_time_series_results = None,
-                start_=0,
-                end_=None)
-
-ts.run()
-
-print()
-print('-' * 200)
-print('Time series')
-print('-' * 200)
-print('Voltage time series')
-df_voltage = pd.DataFrame(data=np.abs(ts.results.voltage), columns=grid.bus_names, index=grid.time_profile)
-print(df_voltage)
-
-df_voltage.plot()
-plt.show()
