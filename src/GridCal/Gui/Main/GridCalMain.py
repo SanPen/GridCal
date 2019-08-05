@@ -2049,12 +2049,12 @@ class MainGUI(QMainWindow):
                 self.console_msg(msg_)
 
         else:
-            if len(self.power_flow.pf.logger) > 0:
-                dlg = LogsDialogue('Power flow', self.power_flow.pf.logger)
-                dlg.exec_()
-
             self.msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
+
+        if len(self.power_flow.pf.logger) > 0:
+            dlg = LogsDialogue('Power flow', self.power_flow.pf.logger)
+            dlg.exec_()
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()

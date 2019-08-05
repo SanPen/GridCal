@@ -110,7 +110,8 @@ class PowerFlowResults:
 
         self.buses_useful_for_storage = None
 
-        self.available_results = [ResultTypes.BusVoltage,
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusVoltageAngle,
                                   # 'Bus voltage (polar)',
                                   ResultTypes.BranchPower,
                                   ResultTypes.BranchCurrent,
@@ -362,56 +363,51 @@ class PowerFlowResults:
 
         if len(indices) > 0:
             labels = names[indices]
-            y_label = ''
-            title = ''
-            polar = False
-            if result_type == ResultTypes.BusVoltage:
-                y = self.voltage[indices]
+
+            if result_type == ResultTypes.BusVoltageModule:
+                y = np.abs(self.voltage[indices])
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
-                polar = False
+
+            elif result_type == ResultTypes.BusVoltageAngle:
+                y = np.angle(self.voltage[indices], deg=True)
+                y_label = '(deg)'
+                title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusVoltagePolar:
                 y = self.voltage[indices]
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
-                polar = True
 
             elif result_type == ResultTypes.BranchPower:
                 y = self.Sbranch[indices]
                 y_label = '(MVA)'
                 title = 'Branch power '
-                polar = False
 
             elif result_type == ResultTypes.BranchCurrent:
                 y = self.Ibranch[indices]
                 y_label = '(p.u.)'
                 title = 'Branch current '
-                polar = False
 
             elif result_type == ResultTypes.BranchLoading:
                 y = self.loading[indices] * 100
                 y_label = '(%)'
                 title = 'Branch loading '
-                polar = False
 
             elif result_type == ResultTypes.BranchLosses:
                 y = self.losses[indices]
                 y_label = '(MVA)'
                 title = 'Branch losses '
-                polar = False
 
             elif result_type == ResultTypes.BranchVoltage:
                 y = np.abs(self.Vbranch[indices])
                 y_label = '(p.u.)'
                 title = 'Branch voltage drop '
-                polar = False
 
             elif result_type == ResultTypes.BranchAngles:
                 y = np.angle(self.Vbranch[indices], deg=True)
                 y_label = '(deg)'
                 title = 'Branch voltage angle '
-                polar = False
 
             elif result_type == ResultTypes.BatteryPower:
                 if self.battery_power_inc is not None:
@@ -420,11 +416,9 @@ class PowerFlowResults:
                     y = np.zeros(len(indices))
                 y_label = '(MVA)'
                 title = 'Battery power'
-                polar = False
             else:
                 n = len(labels)
                 y = np.zeros(n)
-                x_label = ''
                 y_label = ''
                 title = ''
 

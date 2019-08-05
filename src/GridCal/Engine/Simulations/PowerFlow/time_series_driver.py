@@ -71,8 +71,6 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.converged = ones(nt, dtype=bool)  # guilty assumption
 
-            # self.Qpv = Qpv
-
             self.overloads = [None] * nt
 
             self.overvoltage = [None] * nt
@@ -108,8 +106,6 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.converged = None
 
-            # self.Qpv = Qpv
-
             self.overloads = None
 
             self.overvoltage = None
@@ -124,7 +120,8 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.buses_useful_for_storage = None
 
-        self.available_results = [ResultTypes.BusVoltage,
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
                                   ResultTypes.BusReactivePower,
                                   ResultTypes.BranchPower,
@@ -161,8 +158,6 @@ class TimeSeriesResults(PowerFlowResults):
         self.error[t] = max(results.error)
 
         self.converged[t] = min(results.converged)
-
-        # self.Qpv = Qpv
 
         self.overloads[t] = results.overloads
 
@@ -286,9 +281,14 @@ class TimeSeriesResults(PowerFlowResults):
 
             labels = names[indices]
 
-            if result_type == ResultTypes.BusVoltage:
-                data = self.voltage[:, indices]
+            if result_type == ResultTypes.BusVoltageModule:
+                data = np.abs(self.voltage[:, indices])
                 y_label = '(p.u.)'
+                title = 'Bus voltage '
+
+            elif result_type == ResultTypes.BusVoltageAngle:
+                data = np.angle(self.voltage[:, indices], deg=True)
+                y_label = '(Deg)'
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusActivePower:

@@ -18,7 +18,6 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from itertools import product
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
@@ -363,8 +362,8 @@ if __name__ == '__main__':
     from GridCal.Engine import *
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
 
     main_circuit = FileOpen(fname).open()
 
@@ -372,7 +371,7 @@ if __name__ == '__main__':
 
     # get the power flow options from the GUI
     solver = SolverType.DC_OPF
-    mip_solver = MIPSolvers.XPRESS
+    mip_solver = MIPSolvers.CBC
     grouping = TimeGrouping.Daily
     pf_options = PowerFlowOptions()
 
@@ -404,3 +403,6 @@ if __name__ == '__main__':
 
     pr = optimal_power_flow_time_series.results.shadow_prices
     print('Nodal prices \n', pr)
+
+    import pandas as pd
+    pd.DataFrame(optimal_power_flow_time_series.results.loading).to_excel('opf_loading.xlsx')
