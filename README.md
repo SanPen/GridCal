@@ -55,6 +55,12 @@ In an effort to ease the simulation and construction of grids, We have included 
 Examples are included in [Tutorials](https://github.com/SanPen/GridCal/tree/master/Tutorials) folder of the GitHub repository. In addition, the
 tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as valuable examples.
 
+# Testing GridCal
+
+    python3 -m venv venv
+    venv/bin/python -m pip install --upgrade -r requirements_venv.txt
+    venv/bin/python -m tox
+
 # Features overview
 
 It is pure Python, it works for Windows, Linux and OSX.
