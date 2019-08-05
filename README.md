@@ -124,5 +124,3 @@ If you need to cite GridCal, we now provide a DOI reference:
 # Contact
 
 Send feedback and requests to santiago.penate.vera@gmail.com.
-
-
