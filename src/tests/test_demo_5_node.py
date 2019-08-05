@@ -14,7 +14,6 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from matplotlib import pyplot as plt
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch
