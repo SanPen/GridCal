@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import pickle as pkl
+import json
 import pandas as pd
 from numpy import complex, zeros, ones, array, zeros_like
 import numpy as np
@@ -226,21 +226,26 @@ class TimeSeriesResults(PowerFlowResults):
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'V': self.voltage,
-                'S': self.S,
-                'Sbr': self.Sbranch,
-                'Ibr': self.Ibranch,
-                'loading': self.loading,
-                'losses': self.losses}
+        data = {'Vm': np.abs(self.voltage).tolist(),
+                'Va': np.angle(self.voltage).tolist(),
+                'P': self.S.real.tolist(),
+                'Q': self.S.imag.tolist(),
+                'Sbr_real': self.Sbranch.real.tolist(),
+                'Sbr_imag': self.Sbranch.imag.tolist(),
+                'Ibr_real': self.Ibranch.real.tolist(),
+                'Ibr_imag': self.Ibranch.imag.tolist(),
+                'loading': np.abs(self.loading).tolist(),
+                'losses': np.abs(self.losses).tolist()}
         return data
 
     def save(self, fname):
         """
-        Export as pickle
+        Export as json
         """
 
         with open(fname, "wb") as output_file:
-            pkl.dump(self.get_results_dict(), output_file)
+            json_str = json.dumps(self.get_results_dict())
+            output_file.write(json_str)
 
     def analyze(self):
         """

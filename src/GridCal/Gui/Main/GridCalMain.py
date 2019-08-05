@@ -53,6 +53,7 @@ import os.path
 import platform
 import sys
 import datetime
+import codecs
 from collections import OrderedDict
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
@@ -1282,7 +1283,7 @@ class MainGUI(QMainWindow):
         # set grid name
         self.circuit.name = self.grid_editor.name_label.text()
 
-        files_types = "Python pickle (*.pkl)"
+        files_types = "Json (*.json)"
 
         fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
 
@@ -1304,10 +1305,10 @@ class MainGUI(QMainWindow):
                 if self.monte_carlo.results is not None:
                     data['mc'] = self.monte_carlo.results.get_results_dict()
 
-            with open(fname, "wb") as output_file:
-                pkl.dump(data, output_file)
+            json.dump(data, codecs.open(filename, 'w', encoding='utf-8'),
+                      separators=(',', ':'), sort_keys=True, indent=4)
 
-            print('Check the pickle at', output_file)
+            print('Check the json at', filename)
 
     def export_simulation_data(self):
         """

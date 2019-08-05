@@ -14,14 +14,13 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import pickle as pkl
+import json
 from warnings import warn
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 
-# from GridCal.Engine.NewEngine import NumericalCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -180,24 +179,29 @@ class MonteCarloResults:
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'S': self.S_points,
-                'V': self.V_points,
-                'Ibr': self.I_points,
-                'Sbr': self.Sbr_points,
-                'loading': self.loading_points,
-                'losses': self.losses_points}
+        data = {'P': self.S_points.real.tolist(),
+                'Q': self.S_points.imag.tolist(),
+                'Vm': np.abs(self.V_points).tolist(),
+                'Va': np.angle(self.V_points).tolist(),
+                'Ibr_real': self.I_points.real.tolist(),
+                'Ibr_imag': self.I_points.imag.tolist(),
+                'Sbr_real': self.Sbr_points.real.tolist(),
+                'Sbr_imag': self.Sbr_points.imag.tolist(),
+                'loading': np.abs(self.loading_points).tolist(),
+                'losses': np.abs(self.losses_points).tolist()}
         return data
 
     def save(self, fname):
         """
-        Export as pickle
+        Export as json
         """
         with open(fname, "wb") as output_file:
-            pkl.dump(self.get_results_dict(), output_file)
+            json_str = json.dumps(self.get_results_dict())
+            output_file.write(json_str)
 
     def open(self, fname):
         """
-        open pickle
+        open json
         Args:
             fname: file name
         Returns: true if succeeded, false otherwise
@@ -205,7 +209,10 @@ class MonteCarloResults:
         """
         if os.path.exists(fname):
             with open(fname, "rb") as input_file:
-                self.S_points, self.V_points, self.I_points = pkl.load(input_file)
+                data = json.load(input_file)
+            self.S_points = np.array(data['S'])
+            self.V_points = np.array(data['V'])
+            self.I_points = np.array(data['Ibr'])
             return True
         else:
             warn(fname + " not found")
