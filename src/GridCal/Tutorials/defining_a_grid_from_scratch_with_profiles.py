@@ -36,8 +36,8 @@ def main():
     x = np.linspace(-np.pi, np.pi, len(time_array))
     y = np.abs(np.sin(x))
     df_0 = pd.DataFrame(data=y.astype(complex), index=time_array)  # complex values
-    df_0r = pd.DataFrame(data=y, index=time_array)  # only real values
-    df_vset = pd.DataFrame(data=np.ones(len(time_array)), index=time_array)  # only real values
+    # df_0r = pd.DataFrame(data=y, index=time_array)  # only real values
+    # df_vset = pd.DataFrame(data=np.ones(len(time_array)), index=time_array)  # only real values
 
     # set the grid master time profile
     grid.time_profile = df_0.index
