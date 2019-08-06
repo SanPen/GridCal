@@ -15,8 +15,10 @@
 import time
 
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from multiprocessing import Pool
+
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlow, \
+    PowerFlowMP, SolverType, PowerFlowOptions
 
 
 def simulation_constructor(args):

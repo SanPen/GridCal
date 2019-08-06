@@ -1,6 +1,10 @@
-from GridCal.Engine.IO.file_handler import *
-from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
+import os
 
+import numpy as np
+
+from GridCal.Engine.IO.file_handler import FileOpen
+from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
+    VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
 from tests.conftest import ROOT_PATH
 
 
@@ -34,7 +38,7 @@ def test_voltage_collapse(root_path):
 
     fname = root_path / 'data' / 'output' / 'test_demo_5_node.png'
     print(fname)
-    plt.savefig(fname=fname)
+    # plt.savefig(fname=fname)
 
 
 if __name__ == '__main__':

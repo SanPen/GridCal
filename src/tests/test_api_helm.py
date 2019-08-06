@@ -13,9 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.IO.file_handler import FileOpen
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
+    PowerFlowOptions, SolverType, PowerFlow
 from GridCal.print_power_flow_results import print_power_flow_results
+import numpy as np
 
 
 def test_api_helm():
