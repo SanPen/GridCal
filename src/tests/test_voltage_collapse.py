@@ -1,6 +1,5 @@
 from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
-from matplotlib import pyplot as plt
 
 from tests.conftest import ROOT_PATH
 
@@ -31,7 +30,7 @@ def test_voltage_collapse(root_path):
     vc = VoltageCollapse(circuit=main_circuit, options=vc_options,
                          inputs=vc_inputs)
     vc.run()
-    vc.results.plot()
+    # vc.results.plot()
 
     fname = root_path / 'data' / 'output' / 'test_demo_5_node.png'
     print(fname)
