@@ -36,9 +36,6 @@ there is a careful equilibrium between usability and performance.
 
 .. figure:: ../figures/CompilationProcess.png
     :alt: Compilation process
-    :width: 1004px
-    :height: 562px
-    :scale: 70%
 
     Objects compilation process
 
