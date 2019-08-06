@@ -1,6 +1,10 @@
-from GridCal.Engine import *
-
-Sbase = 100  # MVA
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Devices.load import Load
+from GridCal.Engine.Devices.generator import Generator
+from GridCal.Engine.Devices.branch import Branch
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
+    PowerFlowOptions, PowerFlow
 
 
 def test_line_losses_1():
@@ -9,6 +13,7 @@ def test_line_losses_1():
     """
     test_name = "test_line_losses_1"
     grid = MultiCircuit(name=test_name)
+    Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
     grid.logger = list()
@@ -89,6 +94,7 @@ def test_line_losses_2():
     """
     test_name = "test_line_losses_2"
     grid = MultiCircuit(name=test_name)
+    Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
     grid.logger = list()
@@ -171,6 +177,7 @@ def test_line_losses_3():
     """
     test_name = "test_line_losses_3"
     grid = MultiCircuit(name=test_name)
+    Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
     grid.logger = list()
