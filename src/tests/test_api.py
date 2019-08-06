@@ -109,7 +109,7 @@ def _test_api():
     vc = VoltageCollapse(circuit=main_circuit, options=vc_options,
                          inputs=vc_inputs)
     vc.run()
-    vc.results.plot()
+    # vc.results.plot()
     ####################################################################################################################
     # Monte Carlo
     ####################################################################################################################
@@ -118,7 +118,7 @@ def _test_api():
                         max_mc_iter=1000000)
     mc_sim.run()
     lst = np.array(list(range(mc_sim.results.n)), dtype=int)
-    mc_sim.results.plot(ResultTypes.BusVoltageAverage, indices=lst, names=lst)
+    # mc_sim.results.plot(ResultTypes.BusVoltageAverage, indices=lst, names=lst)
     ####################################################################################################################
     # Latin Hypercube
     ####################################################################################################################
@@ -147,7 +147,7 @@ def _test_api():
                                initialize_with_existing_solution=False)
     opt = Optimize(main_circuit, options, max_iter=100)
     opt.run()
-    opt.plot()
+    # opt.plot()
     # plt.show()
     print('\nDone!')
 
