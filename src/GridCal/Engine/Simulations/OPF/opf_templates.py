@@ -203,19 +203,19 @@ class OpfTimeSeries:
 
         return problem
 
-    def solve(self):
+    def solve(self, msg=False):
         """
         Call PuLP to solve the problem
         """
 
         if self.solver == MIPSolvers.CBC:
-            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
         elif self.solver == MIPSolvers.CPLEX:
-            params = CPLEX_CMD(msg=1)
+            params = CPLEX_CMD(msg=msg)
         elif self.solver == MIPSolvers.GUROBI:
-            params = GUROBI_CMD(msg=1)
+            params = GUROBI_CMD(msg=msg)
         elif self.solver == MIPSolvers.XPRESS:
-            params = XPRESS(msg=1)
+            params = XPRESS(msg=msg)
         else:
             raise Exception('Solver not supported! ' + str(self.solver))
 

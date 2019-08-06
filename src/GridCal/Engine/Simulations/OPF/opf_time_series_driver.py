@@ -330,7 +330,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         # solve the problem
         status = problem.solve()
-        print("Status:", status)
+        # print("Status:", status)
 
         a = start_
         b = end_
@@ -362,8 +362,10 @@ class OptimalPowerFlowTimeSeries(QThread):
         energy_0 = None
         while i < n and not self.__cancel__:
 
-            start_ = groups[i-1]
+            start_ = groups[i - 1]
             end_ = groups[i]
+
+            print(start_, ':', end_, ' [', end_ - start_, ']')
 
             if start_ >= self.start_ and end_ <= self.end_:
 

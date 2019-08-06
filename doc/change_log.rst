@@ -10,6 +10,12 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.3
+_____________
+
+- Added voltage angle in the power flow results and time series power flow results. About time!
+- Removed warnings from the power flow driver. Now the warnings are stored in a log and displayed in the GUI.
+
 Version 3.5.2
 _____________
 

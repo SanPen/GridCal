@@ -14,11 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from warnings import warn
-# from numpy import complex, zeros, conj, ndarray, delete, where, r_, maximum, array
-# from numpy import exp
 import numpy as np
-# from timeit import default_timer as timer
 from PySide2.QtCore import QRunnable
 
 
@@ -346,7 +342,6 @@ class PowerFlowMP:
 
             if len(pv) == 0:  # there are no pv neither -> blackout grid
 
-                warn('There are no slack nodes selected')
                 logger.append('There are no slack nodes selected')
 
             else:  # select the first PV generator as the slack
@@ -449,15 +444,14 @@ class PowerFlowMP:
 
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
-            V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter)
+            V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=Ybus,
+                                                                       Sbus=Sbus,
+                                                                       V0=V0,
+                                                                       Ibus=Ibus,
+                                                                       pv=pv,
+                                                                       pq=pq,
+                                                                       tol=tolerance,
+                                                                       max_it=max_iter)
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
@@ -592,7 +586,6 @@ class PowerFlowMP:
                 Scalc = Sbus.copy()
                 any_q_control_issue = False
                 converged = True
-                warn('Not solving power flow because there is no slack bus')
                 self.logger.append('Not solving power flow because there is no slack bus')
             else:
 
@@ -1435,7 +1428,7 @@ class PowerFlowMP:
             solver_idx += 1
 
         if not worked:
-            warn('Did not converge, even after retry!, Error:', results.error)
+            self.logger.append('Did not converge, even after retry!, Error:' + str(results.error))
             return results
 
         else:
@@ -1498,7 +1491,6 @@ class PowerFlowMP:
                     results.apply_from_island(res, bus_original_idx, branch_original_idx)
 
                 else:
-                    warn('There are no slack nodes in the island ' + str(i))
                     self.logger.append('There are no slack nodes in the island ' + str(i))
         else:
 
@@ -1524,7 +1516,6 @@ class PowerFlowMP:
         # self.progress_signal.emit(0.0)
 
         # columns of the report
-        col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
         self.convergence_reports.clear()
 
         # print('Compiling...', end='')
@@ -1547,8 +1538,6 @@ class PowerFlowMP:
                     # run circuit power flow
                     res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
 
-                    # bus_original_idx = numerical_circuit.islands[i]
-                    # branch_original_idx = numerical_circuit.island_branches[i]
                     bus_original_idx = calculation_input.original_bus_idx
                     branch_original_idx = calculation_input.original_branch_idx
 
@@ -1560,7 +1549,6 @@ class PowerFlowMP:
                     # # build the report
                     self.convergence_reports.append(res.get_report_dataframe())
                 else:
-                    warn('There are no slack nodes in the island ' + str(i))
                     self.logger.append('There are no slack nodes in the island ' + str(i))
         else:
 
@@ -1576,15 +1564,14 @@ class PowerFlowMP:
                 # build the report
                 self.convergence_reports.append(results.get_report_dataframe())
             else:
-                warn('There are no slack nodes')
                 self.logger.append('There are no slack nodes')
 
         self.last_V = results.voltage  # done inside single_power_flow
 
         # check the limits
-        sum_dev = results.check_limits(F=numerical_circuit.F, T=numerical_circuit.T,
-                                       Vmax=numerical_circuit.Vmax, Vmin=numerical_circuit.Vmin,
-                                       wo=1, wv1=1, wv2=1)
+        results.check_limits(F=numerical_circuit.F, T=numerical_circuit.T,
+                             Vmax=numerical_circuit.Vmax, Vmin=numerical_circuit.Vmin,
+                             wo=1, wv1=1, wv2=1)
 
         self.results = results
 

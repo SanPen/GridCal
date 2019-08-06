@@ -15,7 +15,7 @@
 
 import pandas as pd
 import numpy as np
-import pickle as pkl
+import json
 from matplotlib import pyplot as plt
 
 from PySide2.QtCore import QThread, Signal
@@ -123,17 +123,19 @@ class VoltageCollapseResults:
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'lambda': self.lambdas,
-                'V': self.voltages,
-                'error': self.error}
+        data = {'lambda': self.lambdas.tolist(),
+                'Vm': np.abs(self.voltages).tolist(),
+                'Va': np.angle(self.voltages).tolist(),
+                'error': self.error.tolist()}
         return data
 
     def save(self, fname):
         """
-        Export as pickle
+        Export as json file
         """
         with open(fname, "wb") as output_file:
-            pkl.dump(self.get_results_dict(), output_file)
+            json_str = json.dumps(self.get_results_dict())
+            output_file.write(json_str)
 
     def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx,
                           branch_original_idx, nbus_full):
