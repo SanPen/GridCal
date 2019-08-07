@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from warnings import warn
+# from warnings import warn
 import numpy as np
 import pandas as pd
 from scipy.sparse import diags, hstack as hstack_s, vstack as vstack_s
@@ -158,7 +158,6 @@ class CalculationInputs:
 
             if len(self.pv) == 0:  # there are no pv neither -> blackout grid
 
-                warn('There are no slack nodes selected')
                 self.logger.append('There are no slack nodes selected')
 
             else:  # select the first PV generator as the slack

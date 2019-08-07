@@ -110,7 +110,10 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
     # simulate each island and merge the results
     for i, calculation_input in enumerate(calculation_inputs):
 
+        # if there is a slack it means that there is at least one generator,
+        # otherwise these equations do not make sense
         if len(calculation_input.ref) > 0:
+
             Ybus = calculation_input.Ybus
 
             # find the original indices
