@@ -123,64 +123,67 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     for t_key, calc_inputs in calc_inputs_dict.items():
 
         # For every island, run the time series
-        for island_index, calculation_input in enumerate(calc_inputs):
+        for i, calc_inpt in enumerate(calc_inputs):
 
             # find the original indices
-            bus_original_idx = calculation_input.original_bus_idx
+            bus_original_idx = np.array(calc_inpt.original_bus_idx)
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
             Q_island = Q[bus_original_idx, :]  # the sizes already reflect the correct time span
             dva_island = dva[bus_original_idx, :]  # the sizes already reflect the correct time span
             dvm_island = dvm[bus_original_idx, :]  # the sizes already reflect the correct time span
-            B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].imag
-            G_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].real
-            Bs_island = calculation_input.Yseries[bus_original_idx, :][:, bus_original_idx].imag
-            Gs_island = calculation_input.Yseries[bus_original_idx, :][:, bus_original_idx].real
+            B_island = calc_inpt.Ybus.imag
+            G_island = calc_inpt.Ybus.real
+            Bs_island = calc_inpt.Yseries.imag
+            Gs_island = calc_inpt.Yseries.real
 
-            pqpv = calculation_input.pqpv
-            pq = calculation_input.pq
-            pv = calculation_input.pv
-            vd = calculation_input.ref
+            pqpv = calc_inpt.pqpv
+            pq = calc_inpt.pq
+            pv = calc_inpt.pv
+            vd = calc_inpt.ref
             vdpv = np.r_[vd, pv]
             vdpv.sort()
 
             # Add nodal real power balance for the non slack nodes
-            nodal_restrictions_P[pqpv] = lpAddRestrictions2(problem=problem,
-                                                            lhs=-lpDot(Bs_island[pqpv, :][:, pqpv], dva_island[pqpv, :])
-                                                                + lpDot(G_island[pqpv, :][:, pq], dvm_island[pq, :]),
-                                                            rhs=P_island[pqpv, :],
-                                                            name='Nodal_real_power_balance_pqpv',
-                                                            op='=')
+            idx = bus_original_idx[pqpv]
+            nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
+                                                           lhs=-lpDot(Bs_island[pqpv, :][:, pqpv], dva_island[pqpv, :])
+                                                               + lpDot(G_island[pqpv, :][:, pq], dvm_island[pq, :]),
+                                                           rhs=P_island[pqpv, :],
+                                                           name='Nodal_real_power_balance_pqpv_is' + str(i),
+                                                           op='=')
 
             # Add nodal reactive power balance for the non slack nodes
-            nodal_restrictions_Q[pq] = lpAddRestrictions2(problem=problem,
-                                                          lhs=-lpDot(Gs_island[pq, :][:, pqpv], dva_island[pqpv, :])
-                                                              - lpDot(B_island[pq, :][:, pq], dvm_island[pq, :]),
-                                                          rhs=Q_island[pq, :],
-                                                          name='Nodal_imag_power_balance_pqpv',
-                                                          op='=')
+            idx = bus_original_idx[pq]
+            nodal_restrictions_Q[idx] = lpAddRestrictions2(problem=problem,
+                                                           lhs=-lpDot(Gs_island[pq, :][:, pqpv], dva_island[pqpv, :])
+                                                               - lpDot(B_island[pq, :][:, pq], dvm_island[pq, :]),
+                                                           rhs=Q_island[pq, :],
+                                                           name='Nodal_imag_power_balance_pqpv_is' + str(i),
+                                                           op='=')
 
             # Add nodal real power balance for the slack nodes
-            nodal_restrictions_P[vd] = lpAddRestrictions2(problem=problem,
-                                                          lhs=-lpDot(Bs_island[vd, :], dva_island)
-                                                              + lpDot(G_island[vd, :], dvm_island),
-                                                          rhs=P_island[vd, :],
-                                                          name='Nodal_real_power_balance_vd',
-                                                          op='=')
+            idx = bus_original_idx[vd]
+            nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
+                                                           lhs=-lpDot(Bs_island[vd, :], dva_island)
+                                                               + lpDot(G_island[vd, :], dvm_island),
+                                                           rhs=P_island[vd, :],
+                                                           name='Nodal_real_power_balance_vd_is' + str(i),
+                                                           op='=')
 
             # delta of voltage angles equal to zero for the slack nodes (vd)
             lpAddRestrictions2(problem=problem,
                                lhs=dva_island[vd, :],
                                rhs=np.zeros_like(dva_island[vd, :]),
-                               name='dVa_vd_zero',
+                               name='dVa_vd_zero_is' + str(i),
                                op='=')
 
             # delta of voltage module equal to zero for the slack and pv nodes (vdpv)
             lpAddRestrictions2(problem=problem,
                                lhs=dvm_island[vdpv, :],
                                rhs=np.zeros_like(dva_island[vdpv, :]),
-                               name='dVm_vdpv_zero',
+                               name='dVm_vdpv_zero_is' + str(i),
                                op='=')
 
     return nodal_restrictions_P, nodal_restrictions_Q
@@ -413,8 +416,9 @@ if __name__ == '__main__':
 
     from GridCal.Engine import *
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
 
     main_circuit = FileOpen(fname).open()
 

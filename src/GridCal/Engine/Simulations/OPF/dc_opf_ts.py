@@ -116,38 +116,40 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
     for t_key, calc_inputs in calc_inputs_dict.items():
 
         # For every island, run the time series
-        for island_index, calculation_input in enumerate(calc_inputs):
+        for i, calc_inpt in enumerate(calc_inputs):
 
             # find the original indices
-            bus_original_idx = calculation_input.original_bus_idx
+            bus_original_idx = np.array(calc_inpt.original_bus_idx)
 
             # re-pack the variables for the island and time interval
             P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
             theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
-            B_island = calculation_input.Ybus[bus_original_idx, :][:, bus_original_idx].imag
+            B_island = calc_inpt.Ybus.imag
 
-            pqpv = calculation_input.pqpv
-            vd = calculation_input.ref
+            pqpv = calc_inpt.pqpv
+            vd = calc_inpt.ref
 
             # Add nodal power balance for the non slack nodes
-            nodal_restrictions[pqpv] = lpAddRestrictions2(problem=problem,
-                                                          lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv, :]),
-                                                          rhs=P_island[pqpv, :],
-                                                          name='Nodal_power_balance_pqpv',
-                                                          op='=')
+            idx = bus_original_idx[pqpv]
+            nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+                                                         lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv, :]),
+                                                         rhs=P_island[pqpv, :],
+                                                         name='Nodal_power_balance_pqpv_is' + str(i),
+                                                         op='=')
 
             # Add nodal power balance for the slack nodes
-            nodal_restrictions[vd] = lpAddRestrictions2(problem=problem,
-                                                        lhs=lpDot(B_island[vd, :], theta_island),
-                                                        rhs=P_island[vd, :],
-                                                        name='Nodal_power_balance_vd',
-                                                        op='=')
+            idx = bus_original_idx[vd]
+            nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+                                                         lhs=lpDot(B_island[vd, :], theta_island),
+                                                         rhs=P_island[vd, :],
+                                                         name='Nodal_power_balance_vd_is' + str(i),
+                                                         op='=')
 
             # slack angles equal to zero
             lpAddRestrictions2(problem=problem,
                                lhs=theta_island[vd, :],
                                rhs=np.zeros_like(theta_island[vd, :]),
-                               name='Theta_vd_zero',
+                               name='Theta_vd_zero_is' + str(i),
                                op='=')
 
     return nodal_restrictions
@@ -362,8 +364,9 @@ if __name__ == '__main__':
     from GridCal.Engine import *
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = r'C:\Users\A487516\Documents\GitHub\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
 
     main_circuit = FileOpen(fname).open()
 

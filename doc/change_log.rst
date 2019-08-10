@@ -15,6 +15,9 @@ _____________
 
 - Added voltage angle in the power flow results and time series power flow results. About time!
 - Removed warnings from the power flow driver. Now the warnings are stored in a log and displayed in the GUI.
+- Fixed the rare bug of native open file dialogues not showing up. Native dialogues can be activated anytime via the
+  "use_native_dialogues" flag in the GUI module.
+- Fixed multi-island opf simulation in all the modes
 
 Version 3.5.2
 _____________

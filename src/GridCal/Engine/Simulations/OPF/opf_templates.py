@@ -157,7 +157,8 @@ class Opf:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i in range(val.shape[0]):
-            val[i] = - self.nodal_restrictions[i].pi
+            if self.nodal_restrictions[i].pi is not None:
+                val[i] = - self.nodal_restrictions[i].pi
         return val.transpose()
 
     def converged(self):

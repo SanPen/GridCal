@@ -20,8 +20,7 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 from GridCal.Gui.Main.GridCalMain import run
 
-# TODO: Review the overall quality of the power flow (check that the results are the same as before, etc...)
-# TODO: Integrate the OPF solvers (see if the PulpVar objects can operate vector-wise with numpy)
+
 # TODO: Fix the cascading with the new module
 
 
