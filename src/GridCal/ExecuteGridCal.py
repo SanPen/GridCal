@@ -33,4 +33,4 @@ if __name__ == "__main__":
           "This is free software, and you are welcome to \n" +
           "redistribute it under certain conditions;\n" +
           "See the license file for more details.\n\n")
-    run()
+    run(use_native_dialogues=True)
