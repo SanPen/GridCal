@@ -84,7 +84,7 @@ class MultiplierType(Enum):
 
 class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=list(), magnitudes=['']):
+    def __init__(self, parent=None, list_of_objects=None, magnitudes=(''), use_native_dialogues=True):
         """
 
         Args:
@@ -92,8 +92,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
             list_of_objects: List of objects to which set a profile to
             magnitudes: Property of the objects to which set the pandas DataFrame
             list_of_objects: list ob object to modify
+            use_native_dialogues: use the native file selection dialogues?
         """
         QtWidgets.QDialog.__init__(self, parent)
+        if list_of_objects is None:
+            list_of_objects = list()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Profiles import dialogue')
@@ -101,6 +104,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.project_directory = None
 
         self.magnitudes = magnitudes
+
+        self.use_native_dialogues = use_native_dialogues
 
         # results
         self.data = None
@@ -220,9 +225,14 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # call dialog to select the file
 
+        options = QFileDialog.Options()
+        if self.use_native_dialogues:
+            options |= QFileDialog.DontUseNativeDialog
+
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
                                                               directory=self.project_directory,
-                                                              filter=files_types)
+                                                              filter=files_types,
+                                                              options=options)
 
         if len(filename) > 0:
 

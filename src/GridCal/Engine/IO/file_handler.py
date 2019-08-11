@@ -15,7 +15,7 @@
 import os
 import json
 import sys
-from warnings import warn
+# from warnings import warn
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.json_parser import save_json_file
@@ -77,7 +77,7 @@ class FileOpen:
                     interpret_excel_v3(self.circuit, data_dictionary)
                     # return self.circuit
                 else:
-                    warn('The file could not be processed')
+                    self.logger.append('The file could not be processed')
                     # return self.circuit
 
             elif file_extension.lower() == '.gridcal':
@@ -144,7 +144,7 @@ class FileOpen:
                 logger = parser.logger
 
         else:
-            warn('The file does not exist.')
+            # warn('The file does not exist.')
             logger.append(self.file_name + ' does not exist.')
 
         self.logger = logger

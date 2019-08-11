@@ -1701,7 +1701,8 @@ class MainGUI(QMainWindow):
         if len(objects) > 0:
             dialogue = ProfileInputGUI(parent=self,
                                        list_of_objects=objects,
-                                       magnitudes=[magnitude])
+                                       magnitudes=[magnitude],
+                                       use_native_dialogues=self.use_native_dialogues)
             dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             dialogue.exec()  # exec leaves the parent on hold
 
