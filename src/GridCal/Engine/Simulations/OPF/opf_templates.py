@@ -113,7 +113,7 @@ class Opf:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.s_from, make_abs=True) / self.rating
+        return self.extract(self.s_from, make_abs=True) / (self.rating + 1e-12)
 
     def get_branch_power(self):
         """

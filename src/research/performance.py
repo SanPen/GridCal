@@ -2,6 +2,9 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 import numpy as np
 import time
+
+np.show_config()
+
 start = time.time()
 
 repetitions = 50
