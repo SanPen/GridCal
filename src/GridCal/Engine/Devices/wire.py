@@ -20,59 +20,52 @@ from PySide2 import QtCore
 
 class Wire(EditableDevice):
 
-    def __init__(self, name='', xpos=0, ypos=0, gmr=0.01, r=0.01, x=0.0, max_current=1, phase=0):
+    def __init__(self, name='', gmr=0.01, r=0.01, x=0.0, max_current=1):
         """
         Wire definition
         :param name: Name of the wire type
-        :param xpos: x position (m)
-        :param ypos: y position (m)
         :param gmr: Geometric Mean Radius (m)
         :param r: Resistance per unit length (Ohm / km)
         :param x: Reactance per unit length (Ohm / km)
         :param max_current: Maximum current of the conductor in (kA)
-        :param phase: 0->Neutral, 1->A, 2->B, 3->C
+
         """
 
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
                                 device_type=DeviceType.WireDevice,
-                                editable_headers={'wire_name': GCProp('', str, "Name of the conductor"),
+                                editable_headers={'name': GCProp('', str, "Name of the conductor"),
                                                   'r': GCProp('Ohm/km', float, "resistance of the conductor"),
                                                   'x': GCProp('Ohm/km', float, "reactance of the conductor"),
                                                   'gmr': GCProp('m', float, "Geometric Mean Radius of the conductor"),
-                                                  'max_current': GCProp('kA', float, "Maximum current of the conductor"),
-                                                  'xpos': GCProp('m', float, "Conductor x position within the tower"),
-                                                  'ypos': GCProp('m', float, "Conductor y position within the tower"),
-                                                  'phase': GCProp('', int, "Phase of the conductor (0, 1, 2)")},
+                                                  'max_current': GCProp('kA', float, "Maximum current of the conductor")
+                                                  },
                                 non_editable_attributes=list(),
                                 properties_with_profile={})
 
-        self.wire_name = name
-        self.xpos = xpos
-        self.ypos = ypos
+        # self.wire_name = name
         self.r = r
         self.x = x
         self.gmr = gmr
         self.max_current = max_current
-        self.phase = phase
 
     def copy(self):
         """
         Copy of the wire
         :return:
         """
-        return Wire(self.wire_name, self.xpos, self.ypos, self.gmr, self.r, self.x, self.max_current, self.phase)
+        return Wire(self.name, self.gmr, self.r, self.x, self.max_current)
 
 
-class WiresCollection(QtCore.QAbstractTableModel):
+class WiresTable(QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.header = ['Name', 'R (Ohm/km)', 'GMR (m)']
 
-        self.index_prop = {0: 'wire_name', 1: 'r', 2: 'gmr'}
+        self.index_prop = {0: 'name', 1: 'r', 2: 'gmr'}
 
         self.converter = {0: str, 1: float, 2: float}
 
@@ -108,7 +101,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
         """
         n = len(self.wires)
         for i in range(n-1, -1, -1):
-            if self.wires[i].wire_name == name:
+            if self.wires[i].name == name:
                 return True
         return False
 
@@ -159,4 +152,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
                 setattr(wire, attr, self.converter[index.column()](value))
 
         return True
+
+
+
 

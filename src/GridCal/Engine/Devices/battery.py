@@ -115,7 +115,7 @@ class Battery(Generator):
 
         # manually modify the editable headers
         self.editable_headers = {'name': GCProp('', str, 'Name of the battery'),
-                                 'bus': GCProp('', None, 'Connection bus name'),
+                                 'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                  'active': GCProp('', bool, 'Is the battery active?'),
                                  'is_controlled': GCProp('', bool, 'Is this battery voltage-controlled?'),
                                  'P': GCProp('MW', float, 'Active power'),
@@ -166,6 +166,7 @@ class Battery(Generator):
         self.energy_array = None
 
         self.power_array = None
+
 
     def copy(self):
         """

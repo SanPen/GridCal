@@ -45,7 +45,7 @@ class Shunt(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.ShuntDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
-                                                  'bus': GCProp('', None, 'Connection bus name'),
+                                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
                                                   'G': GCProp('MW', float,
                                                               'Active power of the impedance component at V=1.0 p.u.'),
@@ -54,11 +54,14 @@ class Shunt(EditableDevice):
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
                                 non_editable_attributes=list(),
-                                properties_with_profile={'G': 'G_prof',
+                                properties_with_profile={'active': 'active_prof',
+                                                         'G': 'G_prof',
                                                          'B': 'B_prof'})
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
+
+        self.active_prof = None
 
         self.mttf = mttf
 

@@ -16,9 +16,10 @@ import PySide2
 import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
+from PySide2 import QtCore
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
-# from GridCal.Engine.Devices.wire import Wire
+from GridCal.Engine.Devices.wire import Wire
 
 
 """
@@ -32,21 +33,141 @@ Typical values of earth
 """
 
 
-class Tower(EditableDevice):
+class WireInTower:
 
-    def __init__(self, parent=None, edit_callback=None, name='Tower', tpe=BranchType.Branch):
+    def __init__(self, wire: Wire, xpos=0, ypos=0, phase=1):
+        """
+        Wire in a tower
+        :param wire: Wire instance
+        :param xpos: x position in m
+        :param ypos: y position in m
+        :param phase: 0->Neutral, 1->A, 2->B, 3->C
+        """
+        self.wire = wire
+
+        self.name = wire.name
+
+        self.xpos = xpos
+
+        self.ypos = ypos
+
+        self.phase = phase
+
+
+class WiresCollection(QtCore.QAbstractTableModel):
+
+    def __init__(self, parent=None, wires_in_tower=list()):
         """
 
         :param parent:
-        :param edit_callback:
-        :param name:
-        :param tpe:
+        :param wires_in_tower:
+        """
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.header = ['name', 'X (m)', 'Y (m)', 'phase']
+
+        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase'}
+
+        self.converter = {0: str, 1: float, 2: float, 3: float}
+
+        self.editable = [False, True, True, True]
+
+        self.wires_in_tower = wires_in_tower
+
+    def add(self, wire: WireInTower):
+        """
+        Add wire
+        :param wire:
+        :return:
+        """
+        row = len(self.wires_in_tower)
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        self.wires_in_tower.append(wire)
+        self.endInsertRows()
+
+    def delete(self, index):
+        """
+        Delete wire
+        :param index: index of the wire
+        :return:
+        """
+        row = len(self.wires_in_tower)
+        self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
+        self.wires_in_tower.pop(index)
+        self.endRemoveRows()
+
+    def is_used(self, name):
+        """
+        checks if the name is used
+        """
+        n = len(self.wires_in_tower)
+        for i in range(n-1, -1, -1):
+            if self.wires_in_tower[i].name == name:
+                return True
+        return False
+
+    def flags(self, index):
+        if self.editable[index.column()]:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self.wires_in_tower)
+
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return len(self.header)
+
+    def parent(self, index=None):
+        return QtCore.QModelIndex()
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+                val = getattr(self.wires_in_tower[index.row()], self.index_prop[index.column()])
+                return str(val)
+        return None
+
+    def headerData(self, p_int, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.header[p_int]
+
+    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        """
+        if self.editable[index.column()]:
+            wire = self.wires_in_tower[index.row()]
+            attr = self.index_prop[index.column()]
+
+            if attr == 'tower_name':
+                if self.is_used(value):
+                    pass
+                else:
+                    setattr(wire, attr, self.converter[index.column()](value))
+            else:
+                setattr(wire, attr, self.converter[index.column()](value))
+
+        return True
+
+
+class Tower(EditableDevice):
+
+    def __init__(self,  name='Tower', tpe=BranchType.Branch):
+        """
+        Overhead line editor
+        :param name: name
+        :param tpe: type
         """
         EditableDevice.__init__(self,
                                 name=name,
                                 active=True,
                                 device_type=DeviceType.TowerDevice,
-                                editable_headers={'tower_name': GCProp('', str, "Tower name"),
+                                editable_headers={'name': GCProp('', str, "Tower name"),
                                                   'earth_resistivity': GCProp('Ohm/m3', float, "Earth resistivity"),
                                                   'frequency': GCProp('Hz', float, "Frequency"),
                                                   'R1': GCProp('Ohm/km', float, "Positive sequence resistance"),
@@ -64,10 +185,10 @@ class Tower(EditableDevice):
         self.tpe = tpe
 
         # list of wires in the tower
-        self.wires = list()
+        self.wires_in_tower = list()
 
         # properties
-        self.tower_name = name
+        # self.tower_name = name
         self.earth_resistivity = 100
         self.frequency = 50
 
@@ -104,26 +225,10 @@ class Tower(EditableDevice):
         self.y_seq = None
 
         # wire properties for edition (do not confuse with the properties of this very object...)
-        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', 'Ri (Ohm/km)', 'Xi (Ohm/km)', 'GMR (m)']
-        self.index_prop = {0: 'wire_name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'r', 5: 'x', 6: 'gmr'}
-        self.converter = {0: str, 1: float, 2: float, 3: int, 4: float, 5: float, 6: float}
-        self.editable_wire = [False, True, True, True, True, True, True]
-
-    def get_wire_properties(self):
-        """
-        Get the wire properties in a list
-        :return: list of properties (list of lists)
-        """
-        return [self.index_prop[i] for i in range(len(self.index_prop))]
-
-    def get_save_headers(self):
-        """
-        Return the tower header + wire header
-        :return:
-        """
-        wire_hdr = self.get_wire_properties()
-        hdr = list(self.editable_headers.keys()) + wire_hdr
-        return hdr
+        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase']
+        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase'}
+        self.converter = {0: str, 1: float, 2: float, 3: int}
+        self.editable_wire = [False, True, True, True]
 
     def z_series(self):
         """
@@ -137,41 +242,6 @@ class Tower(EditableDevice):
         """
         return self.Gsh1 + 1j * self.Bsh1
 
-    def get_save_data(self, dta_list=list()):
-        """
-        store the tower data into dta_list in a SQL-like fashion to avoid 3D like structures
-        :param dta_list: list to append the data to
-        :return: nothing
-        """
-        # generate the tower data
-        tower_dta = list()
-        for property in self.editable_headers:
-            tower_dta.append(getattr(self, property))
-
-        # add the wire data
-        wire_prop = [p for p in self.index_prop.values()]
-        for wire in self.wires:
-            wire_dta = list(tower_dta)
-            for property in wire_prop:
-                wire_dta.append(getattr(wire, property))
-            dta_list.append(wire_dta)
-
-    def get_wire_properties(self):
-        """
-        Get the wire properties in a list
-        :return: list of properties (list of lists)
-        """
-        return [self.index_prop[i] for i in range(len(self.index_prop))]
-
-    def get_save_headers(self):
-        """
-        Return the tower header + wire header
-        :return:
-        """
-        wire_hdr = self.get_wire_properties()
-        hdr = list(self.editable_headers.keys()) + wire_hdr
-        return hdr
-
     def plot(self, ax=None):
         """
         Plot wires position
@@ -181,12 +251,12 @@ class Tower(EditableDevice):
             fig = plt.Figure(figsize=(12, 6))
             ax = fig.add_subplot(1, 1, 1)
 
-        n = len(self.wires)
+        n = len(self.wires_in_tower)
 
         if n > 0:
             x = np.zeros(n)
             y = np.zeros(n)
-            for i, wire in enumerate(self.wires):
+            for i, wire in enumerate(self.wires_in_tower):
                 x[i] = wire.xpos
                 y[i] = wire.ypos
 
@@ -211,23 +281,23 @@ class Tower(EditableDevice):
 
         all_y_zero = True
         phases = set()
-        for i, wire_i in enumerate(self.wires):
+        for i, wire_i in enumerate(self.wires_in_tower):
 
             phases.add(wire_i.phase)
 
             if wire_i.ypos != 0.0:
                 all_y_zero = False
 
-            if wire_i.gmr < 0:
-                logger.append('The wires' + wire_i.wire_name + '(' + str(i) + ') has GRM=0 which is impossible.')
+            if wire_i.wire.gmr < 0:
+                logger.append('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
                 return False
 
-            for j, wire_j in enumerate(self.wires):
+            for j, wire_j in enumerate(self.wires_in_tower):
 
                 if i != j:
                     if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
-                        logger.append('The wires' + wire_i.wire_name + '(' + str(i) + ') and ' +
-                                      wire_j.wire_name + '(' + str(j) + ') have the same position which is impossible.')
+                        logger.append('The wires' + wire_i.name + '(' + str(i) + ') and ' +
+                                      wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
                         return False
                 else:
                     pass
@@ -249,8 +319,8 @@ class Tower(EditableDevice):
         :return: max current iof the tower in A
         """
         r = 0
-        for wire in self.wires:
-            r += wire.max_current
+        for wire in self.wires_in_tower:
+            r += wire.wire.max_current
 
         return r
 
@@ -268,14 +338,14 @@ class Tower(EditableDevice):
              self.z_phases_abcn, \
              self.z_abc, \
              self.z_phases_abc, \
-             self.z_seq = calc_z_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+             self.z_seq = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             self.y_abcn, \
              self.y_phases_abcn, \
              self.y_abc, \
              self.y_phases_abc, \
-             self.y_seq = calc_y_matrix(self.wires, f=self.frequency, rho=self.earth_resistivity)
+             self.y_seq = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.rating = self.compute_rating()
@@ -298,13 +368,13 @@ class Tower(EditableDevice):
         :param wire:
         :return:
         """
-        n = len(self.wires)
+        n = len(self.wires_in_tower)
         for i in range(n-1, -1, -1):
-            if self.wires[i].wire_name == wire.wire_name:
+            if self.wires_in_tower[i].wire.name == wire.name:
                 return True
 
     def __str__(self):
-        return self.tower_name
+        return self.name
 
 
 def get_d_ij(xi, yi, xj, yj):
@@ -483,7 +553,7 @@ def calc_z_matrix(wires: list, f=50, rho=100):
     for i, wire_i in enumerate(wires):
 
         # self impedance
-        z_prim[i, i] = z_ii(r_i=wire_i.r, x_i=wire_i.x, h_i=wire_i.ypos, gmr_i=wire_i.gmr, f=f, rho=rho)
+        z_prim[i, i] = z_ii(r_i=wire_i.wire.r, x_i=wire_i.wire.x, h_i=wire_i.ypos, gmr_i=wire_i.wire.gmr, f=f, rho=rho)
 
         # mutual impedances
         for j, wire_j in enumerate(wires):
@@ -491,8 +561,6 @@ def calc_z_matrix(wires: list, f=50, rho=100):
             if i != j:
                 #  mutual impedance
                 d_ij = get_d_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
-
-                # D_ij = get_D_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
 
                 z_prim[i, j] = z_ij(x_i=wire_i.xpos, x_j=wire_j.xpos,
                                     h_i=wire_i.ypos + 1e-12, h_j=wire_j.ypos + 1e-12,
@@ -558,10 +626,10 @@ def calc_y_matrix(wires: list, f=50, rho=100):
 
         # self impedance
         if wire_i.ypos > 0:
-            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / (wire_i.gmr + 1e-12))
+            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / (wire_i.wire.gmr + 1e-12))
         else:
             p_prim[i, i] = 0
-            print(wire_i.wire_name, 'has y=0 !')
+            print(wire_i.name, 'has y=0 !')
 
             # mutual impedances
         for j, wire_j in enumerate(wires):

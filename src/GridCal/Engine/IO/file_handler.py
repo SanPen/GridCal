@@ -20,8 +20,8 @@ import sys
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.json_parser import save_json_file
 from GridCal.Engine.IO.cim_parser import CIMExport
-from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2, \
-                                               create_data_frames
+from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
+from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
 from GridCal.Engine.IO.matpower_parser import interpret_data_v1
 from GridCal.Engine.IO.dgs_parser import dgs_to_circuit
 from GridCal.Engine.IO.matpower_parser import parse_matpower_file
@@ -87,7 +87,7 @@ class FileOpen:
                                                             text_func=text_func,
                                                             progress_func=progress_func)
                 # interpret file content
-                interpret_excel_v3(self.circuit, data_dictionary)
+                self.circuit = data_frames_to_circuit(data_dictionary)
 
             elif file_extension.lower() == '.dgs':
                 circ = dgs_to_circuit(self.file_name)
@@ -323,29 +323,29 @@ class FileSaveThread(QThread):
         @return:
         """
 
-        try:
-            path, fname = os.path.split(self.file_name)
+        # try:
+        path, fname = os.path.split(self.file_name)
 
-            self.progress_text.emit('Flushing ' + fname + ' into ' + fname + '...')
+        self.progress_text.emit('Flushing ' + fname + ' into ' + fname + '...')
 
-            self.logger = list()
+        self.logger = list()
 
-            file_handler = FileSave(self.circuit,
-                                    self.file_name,
-                                    text_func=self.progress_text.emit,
-                                    progress_func=self.progress_signal.emit)
+        file_handler = FileSave(self.circuit,
+                                self.file_name,
+                                text_func=self.progress_text.emit,
+                                progress_func=self.progress_signal.emit)
 
-            self.logger = file_handler.save()
+        self.logger = file_handler.save()
 
-            self.valid = True
+        self.valid = True
 
-            # post events
-            self.progress_text.emit('Done!')
+        # post events
+        self.progress_text.emit('Done!')
 
-        except:
-            self.valid = False
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
+        # except:
+        #     self.valid = False
+        #     exc_type, exc_value, exc_traceback = sys.exc_info()
+        #     self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
 
         self.done_signal.emit()
 

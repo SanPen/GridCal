@@ -79,7 +79,7 @@ class Generator(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.GeneratorDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the generator'),
-                                                  'bus': GCProp('', None, 'Connection bus name'),
+                                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the generator active?'),
                                                   'is_controlled': GCProp('', bool,
                                                                           'Is this generator voltage-controlled?'),
@@ -101,12 +101,15 @@ class Generator(EditableDevice):
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
                                 non_editable_attributes=list(),
-                                properties_with_profile={'P': 'P_prof',
+                                properties_with_profile={'active': 'active_prof',
+                                                         'P': 'P_prof',
                                                          'Pf': 'Pf_prof',
                                                          'Vset': 'Vset_prof',
                                                          'Cost': 'Cost_prof'})
 
         self.bus = None
+
+        self.active_prof = None
 
         self.mttf = mttf
 

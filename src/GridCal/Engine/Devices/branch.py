@@ -324,7 +324,7 @@ class Branch(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus, bus_to: Bus, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
@@ -336,9 +336,9 @@ class Branch(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.BranchDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'bus_from': GCProp('', Bus,
+                                                  'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
-                                                  'bus_to': GCProp('', Bus, 'Name of the bus at the "to" '
+                                                  'bus_to': GCProp('', DeviceType.BusDevice, 'Name of the bus at the "to" '
                                                                    'side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
@@ -422,6 +422,8 @@ class Branch(EditableDevice):
         self.Cost = cost
 
         self.Cost_prof = None
+
+        self.active_prof = None
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base

@@ -76,8 +76,6 @@ class EditableDevice:
 
         self.active = active
 
-        self.active_prof = None
-
         self.type_name = device_type.value
 
         self.device_type = device_type
@@ -90,8 +88,6 @@ class EditableDevice:
         self.non_editable_attributes = non_editable_attributes
 
         self.properties_with_profile = properties_with_profile
-
-        self.properties_with_profile['active'] = 'active_prof'
 
     def get_save_data(self):
         """
@@ -187,12 +183,12 @@ class EditableDevice:
 
                 if df is None:
                     # there is no profile, create a new one with the default values
-                    print(self.name, ': created profile for ' + prof_attr)
+                    # print(self.name, ': created profile for ' + prof_attr)
                     self.create_profile(magnitude=magnitude, index=index)
                 else:
                     if df.shape[0] != len(index):
                         # the length of the profile is different from the length of the master profile
-                        print(self.name, ': created profile for ' + prof_attr)
+                        # print(self.name, ': created profile for ' + prof_attr)
                         self.create_profile(magnitude=magnitude, index=index)
                     else:
                         # all ok

@@ -17,7 +17,10 @@ _____________
 - Removed warnings from the power flow driver. Now the warnings are stored in a log and displayed in the GUI.
 - Fixed the rare bug of native open file dialogues not showing up. Native dialogues can be activated anytime via the
   "use_native_dialogues" flag in the GUI module.
-- Fixed multi-island opf simulation in all the modes
+- Fixed multi-island opf simulation in all the modes.
+- Radically changed the way the file information is read. Now the function is much easier to maintain, so that changes
+  in the objects should not affect the ability to read/write.
+- Changed the way the overhead lines tower information is stored. Now should be more maintainable.
 
 Version 3.5.2
 _____________

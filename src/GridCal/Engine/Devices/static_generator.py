@@ -45,17 +45,20 @@ class StaticGenerator(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.StaticGeneratorDevice,
                                 editable_headers={'name': GCProp('', str, ''),
-                                                  'bus': GCProp('', None, ''),
+                                                  'bus': GCProp('', DeviceType.BusDevice, ''),
                                                   'active': GCProp('', bool, ''),
                                                   'P': GCProp('MW', float, 'Active power'),
                                                   'Q': GCProp('MVAr', float, 'Reactive power'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
                                 non_editable_attributes=list(),
-                                properties_with_profile={'P': 'P_prof',
+                                properties_with_profile={'active': 'active_prof',
+                                                         'P': 'P_prof',
                                                          'Q': 'Q_prof'})
 
         self.bus = None
+
+        self.active_prof = None
 
         self.mttf = mttf
 

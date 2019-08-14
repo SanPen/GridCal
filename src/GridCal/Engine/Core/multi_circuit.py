@@ -331,6 +331,21 @@ class MultiCircuit:
         elif element_type == DeviceType.BusDevice:
             return self.buses
 
+        elif element_type == DeviceType.TowerDevice:
+            return self.overhead_line_types
+
+        elif element_type == DeviceType.TransformerTypeDevice:
+            return self.transformer_types
+
+        elif element_type == DeviceType.UnderGroundLineDevice:
+            return self.underground_cable_types
+
+        elif element_type == DeviceType.SequenceLineDevice:
+            return self.sequence_line_types
+
+        elif element_type == DeviceType.WireDevice:
+            return self.wire_types
+
         else:
             raise Exception('Element type not understood' + str(element_type))
 
@@ -435,11 +450,11 @@ class MultiCircuit:
 
         elif type_class == 'Wires':
             tpes = self.wire_types
-            name_prop = 'wire_name'
+            name_prop = 'name'
 
         elif type_class == 'Overhead lines':
             tpes = self.overhead_line_types
-            name_prop = 'tower_name'
+            name_prop = 'name'
 
         elif type_class == 'Underground lines':
             tpes = self.underground_cable_types
@@ -1181,7 +1196,7 @@ class MultiCircuit:
 
     def delete_transformer_type(self, i):
         """
-        Delete transformer type from the colection
+        Delete transformer type from the collection
         :param i: index
         """
         self.transformer_types.pop(i)

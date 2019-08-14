@@ -8,9 +8,13 @@ from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver im
 from tests.conftest import ROOT_PATH
 
 
-def test_voltage_collapse(root_path):
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids',
-                         'grid_2_islands.xlsx')
+def test_voltage_collapse(root_path=ROOT_PATH):
+    """
+
+    :param root_path:
+    :return:
+    """
+    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'grid_2_islands.xlsx')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     ####################################################################################################################

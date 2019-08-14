@@ -35,7 +35,8 @@ from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
-from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, reduce_buses
+from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
+    reduce_buses
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
@@ -62,9 +63,11 @@ from PySide2 import QtWidgets
 
 try:
     from pandas.plotting import register_matplotlib_converters
+
     register_matplotlib_converters()
 except:
     from pandas.tseries import converter
+
     converter.register()
 
 __author__ = 'Santiago Peñate Vera'
@@ -72,6 +75,7 @@ __author__ = 'Santiago Peñate Vera'
 """
 This class is the handler of the main gui of GridCal.
 """
+
 
 ########################################################################################################################
 # Main Window
@@ -763,7 +767,7 @@ class MainGUI(QMainWindow):
                 r, g, b, a = self.voltage_cmap(vnorm[i])
                 # print(vnorm[i], '->', r*255, g*255, b*255, a)
                 # QColor(r, g, b, alpha)
-                bus.graphic_obj.set_tile_color(QColor(r*255, g*255, b*255, a*255))
+                bus.graphic_obj.set_tile_color(QColor(r * 255, g * 255, b * 255, a * 255))
 
                 tooltip = str(i) + ': ' + bus.name + '\n' \
                           + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
@@ -788,7 +792,7 @@ class MainGUI(QMainWindow):
                 if branch.active:
                     style = Qt.SolidLine
                     r, g, b, a = self.loading_cmap(lnorm[i])
-                    color = QColor(r*255, g*255, b*255, a*255)
+                    color = QColor(r * 255, g * 255, b * 255, a * 255)
                 else:
                     style = Qt.DashLine
                     color = Qt.gray
@@ -1029,7 +1033,6 @@ class MainGUI(QMainWindow):
                                                                         options=options)
 
         if len(filename) > 0:
-
             self.file_name = filename
 
             # store the working directory
@@ -1146,7 +1149,7 @@ class MainGUI(QMainWindow):
             if self.use_native_dialogues:
                 options |= QFileDialog.DontUseNativeDialog
 
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file',  fname, files_types,
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
 
             if filename != '':
@@ -1388,7 +1391,6 @@ class MainGUI(QMainWindow):
                                                                   options=options)
 
             if filename is not "":
-
                 # save in factor * K
                 factor = self.ui.resolution_factor_spinBox.value()
                 w = 1920 * factor
@@ -1485,13 +1487,13 @@ class MainGUI(QMainWindow):
                 v1 = branch.bus_from.Vnom
                 v2 = branch.bus_to.Vnom
 
-                if abs(v1-v2) > 1.0:
+                if abs(v1 - v2) > 1.0:
 
                     branch.branch_type = BranchType.Transformer
 
                 else:
 
-                    pass   # is a line
+                    pass  # is a line
 
         else:
             self.msg('There are no branches!')
@@ -1796,7 +1798,7 @@ class MainGUI(QMainWindow):
                 elif operation == 'set':
                     for i, elm in enumerate(objects):
                         arr = getattr(elm, attr)
-                        setattr(elm, attr,  np.ones(len(arr)) * value)
+                        setattr(elm, attr, np.ones(len(arr)) * value)
                         mod_cols.append(i)
 
                 else:
@@ -1856,7 +1858,7 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0 and magnitude_from != magnitude_to:
 
-            msg = "Are you sure that you want to overwrite the values " + magnitude_to +\
+            msg = "Are you sure that you want to overwrite the values " + magnitude_to + \
                   " with the values of " + magnitude_from + "?"
 
             reply = QMessageBox.question(self, 'Message', msg, QMessageBox.Yes, QMessageBox.No)
@@ -1961,12 +1963,13 @@ class MainGUI(QMainWindow):
         """
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        reactve_power_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
+        reactve_power_control_mode = self.q_control_modes_dict[
+            self.ui.reactive_power_control_mode_comboBox.currentText()]
         q_steepness_factor = self.ui.q_steepness_factor_spinBox.value()
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
         exponent = self.ui.tolerance_spinBox.value()
-        tolerance = 1.0 / (10.0**exponent)
+        tolerance = 1.0 / (10.0 ** exponent)
 
         max_iter = self.ui.max_iterations_spinBox.value()
 
@@ -2152,7 +2155,8 @@ class MainGUI(QMainWindow):
                             self.UNLOCK()
 
                 else:
-                    self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+                    self.msg(
+                        'Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
             else:
                 self.msg('Another short circuit is being executed now...')
         else:
@@ -2253,7 +2257,8 @@ class MainGUI(QMainWindow):
                                                          Starget=Sbase * alpha)
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
+                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options,
+                                                                 inputs=vc_inputs)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2279,12 +2284,14 @@ class MainGUI(QMainWindow):
 
                         self.power_flow.run_at(start_idx)
 
-                        vc_inputs = VoltageCollapseInput(Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
-                                                         Vbase=self.power_flow.results.voltage,
-                                                         Starget=self.circuit.time_series_input.Sprof.values[end_idx, :])
+                        vc_inputs = VoltageCollapseInput(
+                            Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
+                            Vbase=self.power_flow.results.voltage,
+                            Starget=self.circuit.time_series_input.Sprof.values[end_idx, :])
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options, inputs=vc_inputs)
+                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options,
+                                                                 inputs=vc_inputs)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2431,9 +2438,10 @@ class MainGUI(QMainWindow):
 
                     options = self.get_selected_power_flow_options()
 
-                    tol = 10**(-1*self.ui.tolerance_stochastic_spinBox.value())
+                    tol = 10 ** (-1 * self.ui.tolerance_stochastic_spinBox.value())
                     max_iter = self.ui.max_iterations_stochastic_spinBox.value()
-                    self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100, max_mc_iter=max_iter)
+                    self.monte_carlo = MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100,
+                                                  max_mc_iter=max_iter)
 
                     self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
                     self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
@@ -2621,7 +2629,7 @@ class MainGUI(QMainWindow):
 
             # display the last event, if none is selected
             if idx is None:
-                idx = n-1
+                idx = n - 1
 
             # Accumulate all the failed branches
             br_idx = zeros(0, dtype=int)
@@ -2907,7 +2915,7 @@ class MainGUI(QMainWindow):
                 # compute the options
                 rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
                 exponent = self.ui.rxThresholdSpinBox.value()
-                rx_threshold = 1.0 / (10.0**exponent)
+                rx_threshold = 1.0 / (10.0 ** exponent)
                 # type_criteria = self.ui.removeByTypeCheckBox.isChecked()
                 # selected_type_txt = self.ui.removeByTypeComboBox.currentText()
                 # selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
@@ -3155,7 +3163,8 @@ class MainGUI(QMainWindow):
         if self.optimal_power_flow_time_series is not None:
             if self.optimal_power_flow_time_series.results is not None:
                 lst.append("Optimal power flow time series")
-                self.available_results_dict["Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
+                self.available_results_dict[
+                    "Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
                 self.available_results_steps_dict[
                     "Optimal power flow time series"] = self.optimal_power_flow_time_series.get_steps()
 
@@ -3342,7 +3351,6 @@ class MainGUI(QMainWindow):
         Update the available simulation steps in the combo box
         """
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
-
             current_study = self.ui.available_results_to_color_comboBox.currentText()
 
             lst = self.available_results_steps_dict[current_study]
@@ -3373,7 +3381,8 @@ class MainGUI(QMainWindow):
                 len(self.ui.result_type_listView.selectedIndexes()) > 0:
 
             study = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-            study_type = self.ui.result_type_listView.model().items[self.ui.result_type_listView.selectedIndexes()[0].row()]
+            study_type = self.ui.result_type_listView.model().items[
+                self.ui.result_type_listView.selectedIndexes()[0].row()]
 
             if study_type.value[1] == DeviceType.BusDevice:
                 names = self.circuit.bus_names
@@ -3630,7 +3639,6 @@ class MainGUI(QMainWindow):
         Chenge the node explosion factor
         """
         if self.grid_editor is not None:
-
             self.grid_editor.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
 
             print('Explosion factor changed to:', self.grid_editor.expand_factor)
@@ -3698,7 +3706,8 @@ class MainGUI(QMainWindow):
 
                 name = 'XFormer_type_' + str(len(self.circuit.transformer_types))
                 obj = TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
-                                      copper_losses=0.8, iron_losses=0.1, no_load_current=0.1, short_circuit_voltage=0.1,
+                                      copper_losses=0.8, iron_losses=0.1, no_load_current=0.1,
+                                      short_circuit_voltage=0.1,
                                       gr_hv1=0.5, gx_hv1=0.5, name=name)
                 self.circuit.add_transformer_type(obj)
                 something_happened = True
@@ -3822,7 +3831,7 @@ class MainGUI(QMainWindow):
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['tower_name'])
+                                   check_unique=['name'])
 
             elif tpe == 'Underground lines':
                 elm = UndergroundLineType()
@@ -3840,12 +3849,12 @@ class MainGUI(QMainWindow):
                                    non_editable_attributes=elm.non_editable_attributes,
                                    check_unique=['name'])
             elif tpe == 'Wires':
-                elm = Wire(name='', xpos=0, ypos=0, gmr=0, r=0, x=0)
+                elm = Wire(name='', gmr=0, r=0, x=0)
                 mdl = ObjectsModel(self.circuit.wire_types,
                                    elm.editable_headers,
                                    parent=self.ui.catalogueTableView, editable=True,
                                    non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['wire_name'])
+                                   check_unique=['name'])
 
             elif tpe == 'Transformers':
                 elm = TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=10, nominal_power=10,
@@ -3958,7 +3967,8 @@ class MainGUI(QMainWindow):
         """
         self.recompile_circuits_for_display()
         self.ui.simulation_data_island_comboBox.clear()
-        self.ui.simulation_data_island_comboBox.addItems(['Island ' + str(i) for i, circuit in enumerate(self.calculation_inputs_to_display)])
+        self.ui.simulation_data_island_comboBox.addItems(
+            ['Island ' + str(i) for i, circuit in enumerate(self.calculation_inputs_to_display)])
         if len(self.calculation_inputs_to_display) > 0:
             self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
 
@@ -4130,7 +4140,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
 
-                elif tpe == Bus:
+                elif tpe == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
 
                 else:
@@ -4150,7 +4160,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
 
-                elif tpe == Bus:
+                elif tpe == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
                 else:
@@ -4170,7 +4180,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
 
-                elif tpe == Bus:
+                elif tpe == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
 
                 else:
@@ -4254,7 +4264,8 @@ class MainGUI(QMainWindow):
 
             if len(sel_idx) > 0:
 
-                reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to delete the selected elements?',
+                reply = QMessageBox.question(self, 'Message',
+                                             'Are you sure that you want to delete the selected elements?',
                                              QMessageBox.Yes, QMessageBox.No)
 
                 if reply == QMessageBox.Yes:

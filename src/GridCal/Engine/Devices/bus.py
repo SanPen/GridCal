@@ -111,7 +111,7 @@ class Bus(EditableDevice):
                                                   'zone': GCProp('', str, 'Zone of the bus'),
                                                   'substation': GCProp('', str, 'Substation of the bus.')},
                                 non_editable_attributes=list(),
-                                properties_with_profile=dict())
+                                properties_with_profile={'active': 'active_prof'})
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -134,6 +134,8 @@ class Bus(EditableDevice):
 
         # is the bus active?
         self.active = active
+
+        self.active_prof = None
 
         self.area = area
 
@@ -174,6 +176,31 @@ class Bus(EditableDevice):
         self.y = ypos
         self.h = height
         self.w = width
+
+    def add_device(self, device):
+        """
+        Add device to the bus in the corresponding list
+        :param device:
+        :return:
+        """
+        if device.device_type == DeviceType.BatteryDevice:
+            self.batteries.append(device)
+
+        elif device.device_type == DeviceType.ShuntDevice:
+            self.shunts.append(device)
+
+        elif device.device_type == DeviceType.StaticGeneratorDevice:
+            self.static_generators.append(device)
+
+        elif device.device_type == DeviceType.LoadDevice:
+            self.loads.append(device)
+
+        elif device.device_type == DeviceType.GeneratorDevice:
+            self.controlled_generators.append(device)
+
+        else:
+            pass
+            # raise Exception('Device type not understood:' + str(device.device_type))
 
     def determine_bus_type(self):
         """

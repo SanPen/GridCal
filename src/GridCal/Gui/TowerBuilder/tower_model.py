@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 from PySide2 import QtCore
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.wire import Wire
-from GridCal.Engine.Devices.tower import Tower, calc_y_matrix, calc_z_matrix
+from GridCal.Engine.Devices.tower import Tower, WireInTower
 
 """
 Equations source:
@@ -52,9 +52,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         self.edit_callback = edit_callback
 
     def __str__(self):
-        return self.tower.tower_name
+        return self.tower.name
 
-    def add(self, wire: Wire):
+    def add(self, wire: WireInTower):
         """
         Add wire
         :param wire:
@@ -62,7 +62,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         """
         row = self.rowCount()
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
-        self.tower.wires.append(wire)
+        self.tower.wires_in_tower.append(wire)
         self.endInsertRows()
 
     def delete(self, index):
@@ -73,7 +73,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         """
         row = self.rowCount()
         self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
-        self.tower.wires.pop(index)
+        self.tower.wires_in_tower.pop(index)
         self.endRemoveRows()
 
     def delete_by_name(self, wire: Wire):
@@ -81,9 +81,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         Delete wire by name
         :param wire: Wire object
         """
-        n = len(self.tower.wires)
+        n = len(self.tower.wires_in_tower)
         for i in range(n-1, -1, -1):
-            if self.tower.wires[i].wire_name == wire.wire_name:
+            if self.tower.wires_in_tower[i].name == wire.name:
                 self.delete(i)
 
     def is_used(self, wire: Wire):
@@ -92,9 +92,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param wire:
         :return:
         """
-        n = len(self.tower.wires)
+        n = len(self.tower.wires_in_tower)
         for i in range(n-1, -1, -1):
-            if self.tower.wires[i].wire_name == wire.wire_name:
+            if self.tower.wires_in_tower[i].name == wire.name:
                 return True
 
     def flags(self, index):
@@ -114,7 +114,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return len(self.tower.wires)
+        return len(self.tower.wires_in_tower)
 
     def columnCount(self, parent=None):
         """
@@ -133,7 +133,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                val = getattr(self.tower.wires[index.row()], self.tower.index_prop[index.column()])
+                val = getattr(self.tower.wires_in_tower[index.row()], self.tower.index_prop[index.column()])
                 return str(val)
         return None
 
@@ -157,7 +157,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param role:
         """
         if self.tower.editable_wire[index.column()]:
-            wire = self.tower.wires[index.row()]
+            wire = self.tower.wires_in_tower[index.row()]
             attr = self.tower.index_prop[index.column()]
 
             try:

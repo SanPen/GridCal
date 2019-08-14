@@ -42,9 +42,9 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.main_splitter.setStretchFactor(1, 2)
 
         # create wire collection from the catalogue
-        self.wire_collection = WiresCollection(self)
+        self.wires_table = WiresTable(self)
         for wire in wires_catalogue:
-            self.wire_collection.add(wire)
+            self.wires_table.add(wire)
 
         # was there a tower passed? else create one
         if tower is None:
@@ -52,11 +52,11 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         else:
             self.tower_driver = TowerModel(self, edit_callback=self.plot, tower=tower)
 
-        self.ui.name_lineEdit.setText(self.tower_driver.tower.tower_name)
+        self.ui.name_lineEdit.setText(self.tower_driver.tower.name)
         self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)
 
         # set models
-        self.ui.wires_tableView.setModel(self.wire_collection)
+        self.ui.wires_tableView.setModel(self.wires_table)
         self.ui.tower_tableView.setModel(self.tower_driver)
 
         # button clicks
@@ -95,9 +95,9 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         Add new wire to collection
         :return:
         """
-        name = 'Wire_' + str(len(self.wire_collection.wires) + 1)
+        name = 'Wire_' + str(len(self.wires_table.wires) + 1)
         wire = Wire(name, xpos=0, ypos=0, gmr=0.01, r=0.01, x=0, phase=1)
-        self.wire_collection.add(wire)
+        self.wires_table.add(wire)
 
     def delete_wire_from_collection(self):
         """
@@ -110,10 +110,10 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         if sel_idx > -1:
 
             # delete all the wires from the tower too
-            self.tower_driver.delete_by_name(self.wire_collection.wires[sel_idx])
+            self.tower_driver.delete_by_name(self.wires_table.wires[sel_idx])
 
             # delete from the catalogue
-            self.wire_collection.delete(sel_idx)
+            self.wires_table.delete(sel_idx)
 
             self.plot()
         else:
@@ -128,8 +128,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            selected_wire = self.wire_collection.wires[sel_idx].copy()
-            self.tower_driver.add(selected_wire)
+            selected_wire = self.wires_table.wires[sel_idx].copy()
+            self.tower_driver.add(WireInTower(selected_wire))
         else:
             self.msg('Select a wire in the wires catalogue')
 
@@ -226,7 +226,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.tower_driver.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
         self.tower_driver.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=3))
 
-        self.wire_collection.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
+        self.wires_table.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
 
     def example_2(self):
         name = '4/0 6/1 ACSR'
@@ -237,22 +237,24 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         incx = 0.1
         incy = 0.1
 
-        self.tower_driver.add(Wire(name, xpos=0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower_driver.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower_driver.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
-        self.tower_driver.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=0))
+        wire = Wire(name, gmr=gmr, r=r, x=x)
 
-        self.tower_driver.add(Wire(name, xpos=incx + 0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower_driver.add(Wire(name, xpos=incx + 0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower_driver.add(Wire(name, xpos=incx + 2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=3))
+        self.tower_driver.add(WireInTower(wire, xpos=0, ypos=8.8392, phase=1))
+        self.tower_driver.add(WireInTower(wire, xpos=0.762, ypos=8.8392, phase=2))
+        self.tower_driver.add(WireInTower(wire,  xpos=2.1336, ypos=8.8392, phase=3))
+        self.tower_driver.add(WireInTower(wire,  xpos=1.2192, ypos=7.62, phase=0))
+
+        self.tower_driver.add(WireInTower(wire,  xpos=incx + 0, ypos=8.8392, phase=1))
+        self.tower_driver.add(WireInTower(wire,  xpos=incx + 0.762, ypos=8.8392, phase=2))
+        self.tower_driver.add(WireInTower(wire,  xpos=incx + 2.1336, ypos=8.8392, phase=3))
         # self.tower.add(Wire(name, xpos=incx+1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=0))
 
-        self.tower_driver.add(Wire(name, xpos=incx / 2 + 0, ypos=incy + 8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower_driver.add(Wire(name, xpos=incx / 2 + 0.762, ypos=incy + 8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower_driver.add(Wire(name, xpos=incx / 2 + 2.1336, ypos=incy + 8.8392, gmr=gmr, r=r, x=x, phase=3))
+        self.tower_driver.add(WireInTower(wire,  xpos=incx / 2 + 0, ypos=incy + 8.8392, phase=1))
+        self.tower_driver.add(WireInTower(wire,  xpos=incx / 2 + 0.762, ypos=incy + 8.8392, phase=2))
+        self.tower_driver.add(WireInTower(wire,  xpos=incx / 2 + 2.1336, ypos=incy + 8.8392, phase=3))
         # self.tower.add(Wire(name, xpos=incx/2 + 1.2192, ypos=incy+7.62, gmr=gmr, r=r, x=x, phase=0))
 
-        self.wire_collection.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
+        self.wires_table.add(wire)
 
 
 if __name__ == "__main__":
