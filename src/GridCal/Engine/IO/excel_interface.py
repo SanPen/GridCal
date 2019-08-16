@@ -95,7 +95,8 @@ def get_allowed_sheets(circuit=MultiCircuit()):
                            'controlled_generator': None,
                            'CtrlGen_Vset_profiles': float,
                            'CtrlGen_P_profiles': float,
-                           'shunt_Y_profiles': complex}
+                           'shunt_Y_profiles': complex,
+                           'tower_wires': None}
 
     for object_type_name in object_types.keys():
 

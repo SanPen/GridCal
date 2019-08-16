@@ -69,13 +69,16 @@ class FileOpen:
                 if 'version' not in data_dictionary.keys():
 
                     interpret_data_v1(self.circuit, data_dictionary)
-                    # return self.circuit
+
                 elif data_dictionary['version'] == 2.0:
                     interprete_excel_v2(self.circuit, data_dictionary)
-                    # return self.circuit
+
                 elif data_dictionary['version'] == 3.0:
                     interpret_excel_v3(self.circuit, data_dictionary)
-                    # return self.circuit
+
+                elif data_dictionary['version'] == 4.0:
+                    self.circuit = data_frames_to_circuit(data_dictionary)
+
                 else:
                     self.logger.append('The file could not be processed')
                     # return self.circuit

@@ -63,7 +63,7 @@ def create_data_frames(circuit: MultiCircuit):
     # configuration ################################################################################################
     obj = list()
     obj.append(['BaseMVA', circuit.Sbase])
-    obj.append(['Version', 3])
+    obj.append(['Version', 4])
     obj.append(['Name', circuit.name])
     obj.append(['Comments', circuit.comments])
     obj.append(['program', 'GridCal'])
