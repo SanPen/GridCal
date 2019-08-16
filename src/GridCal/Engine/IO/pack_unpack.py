@@ -181,9 +181,6 @@ def data_frames_to_circuit(data: Dict):
     # set the base magnitudes
     circuit.Sbase = data['baseMVA']
 
-    # dictionary of branch types [name] -> type object
-    branch_types = dict()
-
     # Set comments
     circuit.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
@@ -253,7 +250,9 @@ def data_frames_to_circuit(data: Dict):
                                 setattr(devices[i], prop, val)
 
                             elif conv == DeviceType.BusDevice:
-                                try:
+                                # check if the bus is in the dictionary...
+                                if df[prop].values[i] in elements_dict[DeviceType.BusDevice].keys():
+
                                     parent_bus = elements_dict[DeviceType.BusDevice][df[prop].values[i]]
                                     setattr(devices[i], prop, parent_bus)
 
@@ -261,7 +260,7 @@ def data_frames_to_circuit(data: Dict):
                                     if template_elm.device_type != DeviceType.BranchDevice:
                                         parent_bus.add_device(devices[i])
 
-                                except:
+                                else:
                                     circuit.logger.append('Bus not found: ' + str(df[prop].values[i]))
 
                             elif conv is BranchType:

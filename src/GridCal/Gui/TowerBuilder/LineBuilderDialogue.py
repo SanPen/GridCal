@@ -96,7 +96,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :return:
         """
         name = 'Wire_' + str(len(self.wires_table.wires) + 1)
-        wire = Wire(name, xpos=0, ypos=0, gmr=0.01, r=0.01, x=0, phase=1)
+        wire = Wire(name, gmr=0.01, r=0.01, x=0)
         self.wires_table.add(wire)
 
     def delete_wire_from_collection(self):
@@ -221,12 +221,14 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         x = 0  # ohm / km
         gmr = 0.002481072  # m
 
-        self.tower_driver.add(Wire(name, xpos=0, ypos=8.8392, gmr=gmr, r=r, x=x, phase=0))
-        self.tower_driver.add(Wire(name, xpos=0.762, ypos=8.8392, gmr=gmr, r=r, x=x, phase=1))
-        self.tower_driver.add(Wire(name, xpos=2.1336, ypos=8.8392, gmr=gmr, r=r, x=x, phase=2))
-        self.tower_driver.add(Wire(name, xpos=1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=3))
+        wire = Wire(name, gmr=gmr, r=r, x=x)
 
-        self.wires_table.add(Wire(name, xpos=0, ypos=0, gmr=gmr, r=r, x=x, phase=1))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=0, ypos=8.8392, phase=0))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=0.762, ypos=8.8392, phase=1))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=2.1336, ypos=8.8392, phase=2))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=1.2192, ypos=7.62, phase=3))
+
+        self.wires_table.add(wire)
 
     def example_2(self):
         name = '4/0 6/1 ACSR'

@@ -56,7 +56,7 @@ class WireInTower:
 
 class WiresCollection(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent=None, wires_in_tower=list()):
+    def __init__(self, parent=None, wires_in_tower=()):
         """
 
         :param parent:
@@ -72,7 +72,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
 
         self.editable = [False, True, True, True]
 
-        self.wires_in_tower = wires_in_tower
+        self.wires_in_tower = list(wires_in_tower)
 
     def add(self, wire: WireInTower):
         """
