@@ -279,7 +279,7 @@ def data_frames_to_circuit(data: Dict):
                             prop_prof = template_elm.properties_with_profile[prop]
 
                             # build the profile property file-name to get it from the data
-                            profile_name = key + '_' + prop
+                            profile_name = key + '_' + prop_prof
 
                             if profile_name in data.keys():
 
@@ -287,8 +287,8 @@ def data_frames_to_circuit(data: Dict):
                                 dfp = data[profile_name]
 
                                 # for each object, set the profile
-                                for i in range(df.shape[0]):
-                                    profile = dfp[:, i]
+                                for i in range(dfp.shape[1]):
+                                    profile = dfp.values[:, i]
                                     setattr(devices[i], prop_prof, profile.astype(conv))
 
                             else:
@@ -355,8 +355,8 @@ def data_frames_to_circuit(data: Dict):
 if __name__ == '__main__':
     from GridCal.Engine.IO.file_handler import FileOpen, FileSave
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Some distribution grid.xlsx'
 
     main_circuit = FileOpen(fname).open()
