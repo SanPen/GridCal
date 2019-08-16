@@ -1,11 +1,10 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
 [![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
-
-![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
-
-
+[![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 
 # What is this?
+
+![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
 
 This software aims to be a complete platform for power systems research and simulation.
 [Watch the video](https://youtu.be/SY66WgLGo54) and
@@ -71,7 +70,7 @@ Some of the features you'll find already are:
 - Compatible with other formats:
   - Import
     - CIM (Common Information Model v16)
-    - PSS/e RAW versions 30, 32 and 33.
+    - PSS/e RAW versions 29, 30, 32 and 33.
     - Matpower (might not be fully compatible, notify me if not).
     - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
   - Export
@@ -116,12 +115,7 @@ Some of the features you'll find already are:
 
 [Check out the documentation](https://gridcal.readthedocs.io) to learn more and to get started.
 
-# Citing GridCal
-
-If you need to cite GridCal, we now provide a DOI reference:
-
-[![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 
 # Contact
 
-Send feedback and requests to santiago.penate.vera@gmail.com.
+Send feedback and requests to [santiago.penate.vera@gmail.com](santiago.penate.vera@gmail.com).
