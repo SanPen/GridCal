@@ -14,7 +14,6 @@ Abraham Lee.
 """
 
 import numpy as np
-from math import factorial
 
 __all__ = ['lhs']
 
@@ -95,9 +94,10 @@ def lhs(n, samples=None, criterion=None, iterations=None):
         samples = n
 
     if criterion is not None:
-        assert criterion.lower() in ('center', 'c', 'maximin', 'm',
+        if criterion.lower() not in ('center', 'c', 'maximin', 'm',
                                      'centermaximin', 'cm', 'correlation',
-                                     'corr'), 'Invalid value for "criterion": {}'.format(criterion)
+                                     'corr'):
+            raise Exception('Invalid value for "criterion": {}'.format(criterion))
     else:
         H = _lhsclassic(n, samples)
 
@@ -235,9 +235,10 @@ def _pdist(x):
     """
 
     x = np.atleast_2d(x)
-    assert len(x.shape) == 2, 'Input array must be 2d-dimensional'
+    if len(x.shape) != 2:
+        raise Exception('Input array must be 2d-dimensional')
 
-    m, n = x.shape
+    m = x.shape[0]
     if m < 2:
         return []
 

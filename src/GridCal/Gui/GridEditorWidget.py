@@ -67,13 +67,9 @@ class LineEditor(QDialog):
         self.Sbase = Sbase
 
         self.setObjectName("self")
-        # self.resize(200, 71)
-        # self.setMinimumSize(QtCore.QSize(200, 71))
-        # self.setMaximumSize(QtCore.QSize(200, 71))
+
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        # icon = QtGui.QIcon()
-        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # self.setWindowIcon(icon)
+
         self.layout = QVBoxLayout(self)
 
         # ------------------------------------------------------------------------------------------
@@ -81,8 +77,6 @@ class LineEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
-
-        # assert (Vf == Vt)
 
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1 / Zbase
@@ -187,8 +181,6 @@ class LineEditor(QDialog):
 
         Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
 
-        # assert (Vf == Vt)
-
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1.0 / Zbase
 
@@ -217,13 +209,9 @@ class TransformerEditor(QDialog):
         self.Sbase = Sbase
 
         self.setObjectName("self")
-        # self.resize(200, 71)
-        # self.setMinimumSize(QtCore.QSize(200, 71))
-        # self.setMaximumSize(QtCore.QSize(200, 71))
+
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        # icon = QtGui.QIcon()
-        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # self.setWindowIcon(icon)
+
         self.layout = QVBoxLayout(self)
 
         # ------------------------------------------------------------------------------------------
@@ -231,8 +219,6 @@ class TransformerEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
-
-        # assert (Vf == Vt)
 
         R = self.branch.R
         X = self.branch.X
@@ -339,8 +325,6 @@ class TransformerEditor(QDialog):
 
         eps = 1e-20
 
-        # Vsc = eps if Vsc == 0.0 else Vsc
-        # Pcu = eps if Pcu == 0.0 else Pcu
         Pfe = eps if Pfe == 0.0 else Pfe
         I0 = eps if I0 == 0.0 else I0
 
@@ -355,9 +339,6 @@ class TransformerEditor(QDialog):
                               gx_hv1=0.5)
 
         leakage_impedance, magnetizing_impedance = tpe.get_impedances()
-
-        # z_series = leakage_impedance
-        # y_shunt = 1 / magnetizing_impedance
 
         self.branch.apply_template(tpe, Sbase=self.Sbase)
 
@@ -407,11 +388,6 @@ class GeneralItem(object):
 
     def contextMenuEvent(self, event):
         menu = QMenu()
-
-        # ra1 = menu.addAction('Rotate +90')
-        # ra1.triggered.connect(self.rotate_clockwise)
-        # ra2 = menu.addAction('Rotate -90')
-        # ra2.triggered.connect(self.rotate_counterclockwise)
 
         ra3 = menu.addAction('Delete all the connections')
         ra3.triggered.connect(self.delete_all_connections)
@@ -1024,12 +1000,6 @@ class TerminalItem(QGraphicsRectItem):
         if change == self.ItemScenePositionHasChanged:
 
             self.process_callbacks(value)
-            # w = self.rect().width()
-            # h2 = self.rect().height() / 2.0
-            # n = len(self.posCallbacks)
-            # dx = w / (n+1)
-            # for i, call_back in enumerate(self.posCallbacks):
-            #     call_back(value + QPointF((i+1) * dx, h2))
 
             return value
 
@@ -1071,7 +1041,7 @@ class HandleItem(QGraphicsEllipseItem):
         @param parent:
         """
         QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
-        # super(HandleItem, self).__init__(QRectF(-4, -4, 8, 8), parent)
+
         self.posChangeCallbacks = []
         self.setBrush(Qt.red)
         self.setFlag(self.ItemIsMovable, True)
@@ -1122,7 +1092,6 @@ class LoadGraphicItem(QGraphicsItemGroup):
         # Properties of the container:
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        # self.installSceneEventFilter(self)
 
         self.width = 4
 
@@ -1280,8 +1249,6 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        # QGraphicsPolygonItem.__init__(self, parent=parent)
-        # QGraphicsItemGroup.__init__(self, parent=parent)
         super(ShuntGraphicItem, self).__init__(parent)
 
         self.w = 15.0
@@ -1311,7 +1278,6 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         # Properties of the container:
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        # self.installSceneEventFilter(self)
 
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
@@ -1450,13 +1416,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        # QGraphicsPolygonItem.__init__(self, parent=parent)
-        # QGraphicsItemGroup.__init__(self, parent=parent)
-
         super(GeneratorGraphicItem, self).__init__(parent)
-
-        # self.w = 60.0
-        # self.h = 60.0
 
         self.parent = parent
 
@@ -1470,7 +1430,6 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         # Properties of the container:
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        # self.installSceneEventFilter(self)
 
         self.width = 4
         if self.api_object is not None:
@@ -1618,8 +1577,6 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        # QGraphicsPolygonItem.__init__(self, parent=parent)
-        # QGraphicsItemGroup.__init__(self, parent=parent)
         super(StaticGeneratorGraphicItem, self).__init__(parent)
 
         self.parent = parent
@@ -1634,10 +1591,6 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         # Properties of the container:
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-
-        # l1 = QGraphicsLineItem(QLineF(QPointF(self.w/2, 0), QPointF(self.w/2, -10)))
-        # l1.setPen(pen)
-        # self.addToGroup(l1)
 
         self.width = 4
         if self.api_object is not None:
@@ -1785,8 +1738,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        # QGraphicsPolygonItem.__init__(self, parent=parent)
-        # QGraphicsItemGroup.__init__(self, parent=parent)
         super(BatteryGraphicItem, self).__init__(parent)
 
         self.parent = parent
@@ -2030,11 +1981,6 @@ class BusGraphicItem(QGraphicsRectItem):
         self.sizer.setFlag(self.ItemIsMovable)
         self.adapt()
 
-        # self.setBrush(QBrush(Qt.white))
-        # self.setOpacity(0.4)
-        # self.setPen(QPen(self.color, self.pen_width, self.style))
-        # self.setBrush(self.color)
-
         self.big_marker = None
 
         self.set_tile_color(self.color)
@@ -2104,8 +2050,6 @@ class BusGraphicItem(QGraphicsRectItem):
         @return:
         """
         # Limit the block size to the minimum size:
-        # if h < self.min_h:
-        #     h = self.min_h
         h = self.min_h
         if w < self.min_w:
             w = self.min_w
@@ -2183,19 +2127,12 @@ class BusGraphicItem(QGraphicsRectItem):
         @return:
         """
         menu = QMenu()
-        # pa = menu.addAction('Parameters')
-        # pa.triggered.connect(self.editParameters)
 
         pe = menu.addAction('Enable/Disable')
         pe.triggered.connect(self.enable_disable_toggle)
 
         pl = menu.addAction('Plot profiles')
         pl.triggered.connect(self.plot_profiles)
-
-        # ra1 = menu.addAction('Rotate +90')
-        # ra1.triggered.connect(self.rotate_clockwise)
-        # ra2 = menu.addAction('Rotate -90')
-        # ra2.triggered.connect(self.rotate_counterclockwise)
 
         menu.addSeparator()
 
@@ -2275,18 +2212,11 @@ class BusGraphicItem(QGraphicsRectItem):
             if self.api_object.active:
 
                 self.set_tile_color(QBrush(ACTIVE['color']))
-                # self.setPen(QPen(ACTIVE['style']))
-                # self.color = ACTIVE['color']
-                # self.style = ACTIVE['style']
 
                 for host in self.terminal.hosting_connections:
                     host.set_enable(val=True)
             else:
                 self.set_tile_color(QBrush(DEACTIVATED['color']))
-                # self.setPen(QPen(ACTIVE['style']))
-
-                # self.color = DEACTIVATED['color']
-                # self.style = DEACTIVATED['style']
 
                 for host in self.terminal.hosting_connections:
                     host.set_enable(val=False)
@@ -2435,8 +2365,6 @@ class MapWidget(QGraphicsRectItem):
         self.scene = scene
         self.view = view
 
-        # self.setRect(self.scene.sceneRect())
-        # self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setFlags(self.ItemIsMovable)
         self.image = None
         self.img = None
@@ -2496,19 +2424,6 @@ class MapWidget(QGraphicsRectItem):
         self.lon0 = lon0
         self.zoom = zoom
 
-        # print('map:', lat0, lon0, zoom)
-
-        # get map
-        # try:
-        #     map = smopy.Map((lat0, lon0), z=zoom)
-        #
-        #     # w, h = map.img.size
-        #     self.img = ImageQt(map.img)
-        #     self.image = QPixmap.fromImage(self.img)
-        #     self.image = self.image.scaled(QSize(self.w, self.h), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        # except:
-        #     print('Could not load the map')
-
     def repaint(self):
         """
         Reload with the last parameters
@@ -2538,7 +2453,6 @@ class EditorGraphicsView(QGraphicsView):
         """
         QGraphicsView.__init__(self, scene, parent)
 
-        # self.setBackgroundBrush(QColor(0,66,255,180))
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
         self.setMouseTracking(True)
@@ -2719,10 +2633,6 @@ class ObjectFactory(object):
         pixmap.fill()
         painter = QPainter(pixmap)
         painter.fillRect(0, 0, 40, 40, Qt.black)
-        # painter.setBrush(Qt.red)
-        # painter.drawEllipse(36, 2, 20, 20)
-        # painter.setBrush(Qt.yellow)
-        # painter.drawEllipse(20, 20, 20, 20)
         painter.end()
 
         return QIcon(pixmap)
@@ -2735,11 +2645,10 @@ class ObjectFactory(object):
         pixmap = QPixmap(40, 40)
         pixmap.fill()
         painter = QPainter(pixmap)
-        # painter.fillRect(10, 10, 80, 80, Qt.black)
+
         painter.setBrush(Qt.red)
         painter.drawEllipse(0, 0, 40, 40)
-        # painter.setBrush(Qt.yellow)
-        # painter.drawEllipse(20, 20, 20, 20)
+
         painter.end()
 
         return QIcon(pixmap)
@@ -3156,3 +3065,4 @@ class GridEditor(QSplitter):
 
         #  center the view
         self.center_nodes()
+

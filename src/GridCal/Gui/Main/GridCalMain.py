@@ -252,6 +252,7 @@ class MainGUI(QMainWindow):
         self.topology_reduction = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
+        self.painter = None
 
         self.stuff_running_now = list()
 
@@ -1406,6 +1407,10 @@ class MainGUI(QMainWindow):
         self.grid_editor.circuit = self.circuit
 
         self.grid_editor.schematic_from_api(explode_factor=explode_factor)
+
+    def post_create_schematic(self):
+
+        self.UNLOCK()
 
     def update_map(self):
         """
