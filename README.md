@@ -73,8 +73,10 @@ Some of the features you'll find already are:
     - PSS/e RAW versions 29, 30, 32 and 33.
     - Matpower (might not be fully compatible, notify me if not).
     - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
+    
   - Export
-    - Excel (normal GridCal format)
+    - Zip file `.gridcal` with CSV inside (fastest, normal GridCal format) 
+    - Excel
     - Custom JSON
     - CIM (Common Information Model v16)
 

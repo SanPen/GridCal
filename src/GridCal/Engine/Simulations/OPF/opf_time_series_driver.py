@@ -16,7 +16,7 @@
 import pandas as pd
 import numpy as np
 from numpy import complex, zeros,  array
-import datetime
+import time
 from matplotlib import pyplot as plt
 from PySide2.QtCore import QThread, Signal
 
@@ -277,6 +277,8 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         self.all_solved = True
 
+        self.elapsed = 0.0
+
     def reset_results(self):
         """
         Clears the results
@@ -385,10 +387,16 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         :return:
         """
+
+        start = time.time()
+
         if self.options.grouping == TimeGrouping.NoGrouping:
             self.opf(start_=self.start_, end_=self.end_)
         else:
             self.opf_by_groups()
+
+        end = time.time()
+        self.elapsed = end - start
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')

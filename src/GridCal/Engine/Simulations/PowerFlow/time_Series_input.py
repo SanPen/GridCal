@@ -114,28 +114,28 @@ class TimeSeriesInput:
         ts.valid = True
         return ts
 
-    def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):
-        """
-
-        :param res: TimeSeriesInput
-        :param bus_original_idx:
-        :param branch_original_idx:
-        :param nbus_full:
-        :param nbranch_full:
-        :return:
-        """
-
-        if res is not None:
-            if self.Sprof is None:
-                self.time_array = res.time_array
-                # t = len(self.time_array)
-                self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
-                self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
-                self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
-
-            self.Sprof[res.Sprof.columns.values] = res.Sprof
-            self.Iprof[res.Iprof.columns.values] = res.Iprof
-            self.Yprof[res.Yprof.columns.values] = res.Yprof
+    # def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):
+    #     """
+    #
+    #     :param res: TimeSeriesInput
+    #     :param bus_original_idx:
+    #     :param branch_original_idx:
+    #     :param nbus_full:
+    #     :param nbranch_full:
+    #     :return:
+    #     """
+    #
+    #     if res is not None:
+    #         if self.Sprof is None:
+    #             self.time_array = res.time_array
+    #             # t = len(self.time_array)
+    #             self.Sprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+    #             self.Iprof = pd.DataFrame()  # zeros((t, nbranch_full), dtype=complex)
+    #             self.Yprof = pd.DataFrame()  # zeros((t, nbus_full), dtype=complex)
+    #
+    #         self.Sprof[res.Sprof.columns.values] = res.Sprof
+    #         self.Iprof[res.Iprof.columns.values] = res.Iprof
+    #         self.Yprof[res.Yprof.columns.values] = res.Yprof
 
     def copy(self):
 

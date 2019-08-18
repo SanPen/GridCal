@@ -2812,6 +2812,9 @@ class MainGUI(QMainWindow):
 
                 self.update_available_results()
 
+                msg = 'OPF time series elapsed ' + str(self.optimal_power_flow_time_series.elapsed) + ' s'
+                self.console_msg(msg)
+
         else:
             pass
 

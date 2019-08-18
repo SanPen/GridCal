@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from enum import Enum
 import numpy as np
+import time
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
@@ -90,6 +91,8 @@ class OptimalPowerFlow(QThread):
 
         self.all_solved = True
 
+        self.elapsed = 0.0
+
     def get_steps(self):
         """
         Get time steps list of strings
@@ -148,8 +151,10 @@ class OptimalPowerFlow(QThread):
 
         :return:
         """
+        start = time.time()
         self.opf()
-
+        end = time.time()
+        self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 

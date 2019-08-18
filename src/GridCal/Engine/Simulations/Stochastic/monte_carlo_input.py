@@ -14,8 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from pyDOE import lhs
-
+from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Engine.Simulations.PowerFlow.time_Series_input import TimeSeriesInput
 
 
