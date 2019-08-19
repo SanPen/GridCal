@@ -102,7 +102,7 @@ def helm_z_pq(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
     """
 
     # reduced impedance matrix
-    Zred = inv(Ybus[pqpv, :][:, pqpv]).toarray()
+    Zred = np.linalg.inv(Ybus[pqpv, :][:, pqpv]).toarray()
 
     # slack currents
     Ivd = -Ybus[pqpv, :][:, ref].dot(Vbus[ref])

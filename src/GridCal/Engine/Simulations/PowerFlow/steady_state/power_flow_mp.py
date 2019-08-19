@@ -174,7 +174,7 @@ class PowerFlowMP:
                 pv=pv,
                 Ysh=None,  # TODO Get this from somewhere
                 Y=None,  # TODO Get this from somewhere
-                Ys=None,  # TODO Get this from somewhere
+                Ys=Yseries,
                 max_coefficient_count = None,  # TODO Get this from somewhere
                 S = None,  # TODO Get this from somewhere
                 voltage_set_points = None,  # TODO Get this from somewhere
@@ -185,41 +185,41 @@ class PowerFlowMP:
             V0, converged, normF, Scalc, it, el = helm_chengxi_2(
                 pq=pq,
                 pv=pv,
-                Vbus=None,  # TODO Get this from somewhere
-                Sbus=None,  # TODO Get this from somewhere
-                Ybus=None,  # TODO Get this from somewhere
-                ref=None,  # TODO Get this from somewhere
-                pqpv=None,  # TODO Get this from somewhere
+                Vbus=V0,
+                Sbus=Sbus,
+                Ybus=Ybus,
+                ref=ref,
+                pqpv=pqpv,
             )
 
         elif solver_type == SolverType.HELM_CHENGXI_CORRECTED:
             V0, converged, normF, Scalc, it, el = helm_chengxi_corrected(
                 pq=pq,
                 pv=pv,
-                Vbus=None,  # TODO Get this from somewhere
-                Sbus=None,  # TODO Get this from somewhere
-                Ybus=None,  # TODO Get this from somewhere
-                ref=None,  # TODO Get this from somewhere
-                pqpv=None,  # TODO Get this from somewhere
+                Vbus=V0,
+                Sbus=Sbus,
+                Ybus=Ybus,
+                ref=ref,
+                pqpv=pqpv,
             )
 
         elif solver_type == SolverType.HELM_CHENGXI_VANILLA:
             V0, converged, normF, Scalc, it, el = helm_chengxi_vanilla(
                 pq=pq,
                 pv=pv,
-                Vbus=None,  # TODO Get this from somewhere
-                Sbus=None,  # TODO Get this from somewhere
-                Ybus=None,  # TODO Get this from somewhere
-                ref=None,  # TODO Get this from somewhere
-                pqpv=None,  # TODO Get this from somewhere
+                Vbus=V0,
+                Sbus=Sbus,
+                Ybus=Ybus,
+                ref=ref,
+                pqpv=pqpv,
             )
 
         elif solver_type == SolverType.HELM_VECT_ASU:
             V0, converged, normF, Scalc, it, el = helm_vect_asu(
                 Y=None,  # TODO Get this from somewhere
-                Ys=None,  # TODO Get this from somewhere
+                Ys=Yseries,
                 Ysh=None,  # TODO Get this from somewhere
-                max_coefficient_count=None,  # TODO Get this from somewhere
+                max_coefficient_count=max_iter,
                 S=None,  # TODO Get this from somewhere
                 voltage_set_points=None,  # TODO Get this from somewhere
                 vd=None,  # TODO Get this from somewhere
@@ -233,9 +233,9 @@ class PowerFlowMP:
             V0, converged, normF, Scalc, it, el = helm_wallace(
                 pq=pq,
                 pv=pv,
-                Sbus=None,  # TODO Get this from somewhere
-                ref=None,  # TODO Get this from somewhere
-                pqpv=None,  # TODO Get this from somewhere
+                Sbus=Sbus,
+                ref=ref,
+                pqpv=pqpv,
                 Y_series=None,  # TODO Get this from somewhere
                 Y_shunt=None,  # TODO Get this from somewhere
                 voltageSetPoints=None,  # TODO Get this from somewhere
@@ -248,12 +248,12 @@ class PowerFlowMP:
             V0, converged, normF, Scalc, it, el = helm_z_pq(
                 pq=pq,
                 pv=pv,
-                Sbus=None,  # TODO Get this from somewhere
-                ref=None,  # TODO Get this from somewhere
-                pqpv=None,  # TODO Get this from somewhere
-                Vbus=None,  # TODO Get this from somewhere
-                Ibus=None,  # TODO Get this from somewhere
-                Ybus=None,  # TODO Get this from somewhere
+                Sbus=Sbus,
+                ref=ref,
+                pqpv=pqpv,
+                Vbus=V0,
+                Ibus=Ibus,
+                Ybus=Ybus,
             )
 
         elif solver_type == SolverType.HELM_Z_PV:

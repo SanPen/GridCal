@@ -295,7 +295,7 @@ def helm_chengxi_corrected(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
     W = zeros((1, nbus), dtype=complex_type)
 
     # Reactive power coefficients on the PV nodes: [order, pv bus index]
-    Q = zeros((1, npv), dtype=double)
+    Q = zeros((1, npv), dtype=np.double)
 
     # Assign the initial values
     V[0, :] = Vst
