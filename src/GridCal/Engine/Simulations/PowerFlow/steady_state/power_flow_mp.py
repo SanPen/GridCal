@@ -67,7 +67,6 @@ class PowerFlowMP:
         pq = np.where(types == BusMode.PQ.value[0])[0]
         pv = np.where(types == BusMode.PV.value[0])[0]
         ref = np.where(types == BusMode.REF.value[0])[0]
-        sto = np.where(types == BusMode.STO_DISPATCH.value)[0]
 
         if len(ref) == 0:  # there is no slack!
 
