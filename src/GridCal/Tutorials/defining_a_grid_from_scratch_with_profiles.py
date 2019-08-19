@@ -8,16 +8,22 @@ Author: Santiago Peñate Vera (September 2018)
 """
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
 from GridCal.Engine.Devices.branch import Branch, BranchTemplate
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable \
+    import PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
+    import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import \
+    SolverType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
+from GridCal.Engine.Simulations.PowerFlow.time_series.time_series_driver \
+    import TimeSeries
 
 
 def main():
@@ -116,23 +122,24 @@ def main():
     # Add the lines
     ########################################################################################################################
 
-    br1 = Branch(bus_from=bus1,
-                 bus_to=bus2,
-                 name='Line 1-2',
-                 r=0.05,  # resistance of the pi model in per unit
-                 x=0.11,  # reactance of the pi model in per unit
-                 g=1e-20,  # conductance of the pi model in per unit
-                 b=0.02,  # susceptance of the pi model in per unit
-                 rate=50,  # Rate in MVA
-                 tap=1.0,  # Tap value (value close to 1)
-                 shift_angle=0,  # Tap angle in radians
-                 active=True,  # is the branch active?
-                 mttf=0,  # Mean time to failure
-                 mttr=0,  # Mean time to recovery
-                 branch_type=BranchType.Line,  # Branch type tag
-                 length=1,  # Length in km (to be used with templates)
-                 template=BranchTemplate()  # Branch template (The default one is void)
-                 )
+    br1 = Branch(
+        bus_from=bus1,
+        bus_to=bus2,
+        name='Line 1-2',
+        r=0.05,  # resistance of the pi model in per unit
+        x=0.11,  # reactance of the pi model in per unit
+        g=1e-20,  # conductance of the pi model in per unit
+        b=0.02,  # susceptance of the pi model in per unit
+        rate=50,  # Rate in MVA
+        tap=1.0,  # Tap value (value close to 1)
+        shift_angle=0,  # Tap angle in radians
+        active=True,  # is the branch active?
+        mttf=0,  # Mean time to failure
+        mttr=0,  # Mean time to recovery
+        branch_type=BranchType.Line,  # Branch type tag
+        length=1,  # Length in km (to be used with templates)
+        template=BranchTemplate()  # Branch template (The default one is void)
+    )
     grid.add_branch(br1)
 
     grid.add_branch(Branch(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
@@ -162,15 +169,16 @@ def main():
     ########################################################################################################################
 
     # We need to specify power flow options
-    pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
-                                  verbose=False,  # Verbose option where available
-                                  tolerance=1e-6,  # power error in p.u.
-                                  max_iter=25,  # maximum iteration number
-                                  control_q=True  # if to control the reactive power
-                                  )
+    power_flow_options = PowerFlowOptions(
+        solver_type=SolverType.NR,  # Base method to use
+        verbose=False,  # Verbose option where available
+        tolerance=1e-6,  # power error in p.u.
+        max_iter=25,  # maximum iteration number
+        control_q=True  # if to control the reactive power
+    )
 
     # Declare and execute the power flow simulation
-    pf = PowerFlow(grid, pf_options)
+    pf = PowerFlow(grid, power_flow_options)
     pf.run()
 
     # now, let's compose a nice DataFrame with the voltage results
@@ -210,7 +218,7 @@ def main():
     ########################################################################################################################
 
     ts = TimeSeries(grid=grid,
-                    options=pf_options,
+                    options=power_flow_options,
                     use_opf_vals = False,
                     opf_time_series_results = None,
                     start_=0,

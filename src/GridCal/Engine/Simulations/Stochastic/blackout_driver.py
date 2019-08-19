@@ -18,7 +18,10 @@ import pandas as pd
 import numpy as np
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlow, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_mp import PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
+    PowerFlowOptions
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit

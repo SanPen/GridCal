@@ -15,6 +15,10 @@
 
 
 # GUI imports
+from GridCal.Engine.Simulations.PowerFlow.steady_state.reactive_control_mode import \
+    ReactivePowerControlMode
+from GridCal.Engine.Simulations.PowerFlow.steady_state.taps_control_mode import \
+    TapsControlMode
 from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
@@ -29,10 +33,8 @@ from GridCal.Gui.GuiFunctions import *
 # Engine imports
 # from GridCal.Engine.OptimizationDriver import *
 # from GridCal.Engine.StateEstimationDriver import *
-from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
-from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
+from GridCal.Engine.Simulations.PowerFlow.time_series.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
@@ -45,7 +47,6 @@ import GridCal.Engine.plot_config as plot_config
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 
@@ -2687,10 +2688,10 @@ class MainGUI(QMainWindow):
                 # get the power flow options from the GUI
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-                pf_options = self.get_selected_power_flow_options()
+                power_flow_options = self.get_selected_power_flow_options()
                 options = OptimalPowerFlowOptions(solver=solver,
                                                   mip_solver=mip_solver,
-                                                  power_flow_options=pf_options)
+                                                  power_flow_options=power_flow_options)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -2758,12 +2759,12 @@ class MainGUI(QMainWindow):
                     solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                     mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
                     grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
-                    pf_options = self.get_selected_power_flow_options()
+                    power_flow_options = self.get_selected_power_flow_options()
 
                     options = OptimalPowerFlowOptions(solver=solver,
                                                       grouping=grouping,
                                                       mip_solver=mip_solver,
-                                                      power_flow_options=pf_options)
+                                                      power_flow_options=power_flow_options)
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1

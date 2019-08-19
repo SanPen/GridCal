@@ -1,8 +1,9 @@
 # This file is a python port of the routines included in MATPOWER to perform continuation power flow.
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
-import numpy as np
 from numpy import angle, exp, r_, linalg, Inf, dot, zeros, conj
+import numpy as np
+
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
@@ -929,82 +930,3 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                 print('step ', cont_steps, ' : lambda = ', lam, ', corrector did not converge in ', i, ' iterations\n')
 
     return voltage_series, lambda_series, normF, success
-
-
-if __name__ == '__main__':
-
-    from GridCal.Engine.IO.file_handler import *
-    from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, \
-        SolverType
-    from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
-    from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
-    from GridCal.Engine.Simulations.OPF.opf_driver import *
-    from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
-    from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
-    from GridCal.Engine.Simulations.MonteCarlo.stochastic_driver import *
-    from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-    from GridCal.Engine.Simulations.Optimization.optimization_driver import *
-    from GridCal.Engine.io_structures import *
-    from GridCal.Engine.grid_analysis import *
-
-    # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
-    fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
-
-    print('Reading...')
-    main_circuit = FileOpen(fname).open()
-    options = PowerFlowOptions(SolverType.NR, verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True,
-                               control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True)
-
-    ####################################################################################################################
-    # PowerFlow
-    ####################################################################################################################
-    print('\n\n')
-    power_flow = PowerFlow(main_circuit, options)
-    power_flow.run()
-
-    print('\n\n', main_circuit.name)
-    print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
-    print('\t|loading|:', abs(power_flow.results.loading) * 100)
-    print('\tReport')
-    print(power_flow.results.get_report_dataframe())
-
-    ####################################################################################################################
-    # Voltage collapse
-    ####################################################################################################################
-    vc_options = VoltageCollapseOptions(step=0.001,
-                                        approximation_order=VCParametrization.ArcLength,
-                                        adapt_step=True,
-                                        step_min=0.00001,
-                                        step_max=0.2,
-                                        error_tol=1e-3,
-                                        tol=1e-6,
-                                        max_it=20,
-                                        stop_at=VCStopAt.Full,
-                                        verbose=False)
-
-    # just for this test
-    numeric_circuit = main_circuit.compile()
-    numeric_inputs = numeric_circuit.compute()
-    Sbase = zeros(len(main_circuit.buses), dtype=complex)
-    Vbase = zeros(len(main_circuit.buses), dtype=complex)
-    for c in numeric_inputs:
-        Sbase[c.original_bus_idx] = c.Sbus
-        Vbase[c.original_bus_idx] = c.Vbus
-
-    unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-
-    # unitary_vector = random.random(len(grid.buses))
-    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                     Vbase=Vbase,
-                                     Starget=Sbase * (1 + unitary_vector))
-    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
-    vc.run()
-    df = vc.results.plot()
-
-    print(df)
-
-    plt.show()

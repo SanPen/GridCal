@@ -20,9 +20,10 @@ from matplotlib import pyplot as plt
 
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import \
+    continuation_nr, VCParametrization, VCStopAt
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 

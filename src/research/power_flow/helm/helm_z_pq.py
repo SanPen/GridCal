@@ -1,6 +1,7 @@
 import numpy as np
+
 np.set_printoptions(precision=6, suppress=True, linewidth=320)
-from numpy import where, zeros, ones, mod, conj, array, dot, angle, complex128 #, complex256
+from numpy import zeros, ones, mod, conj, complex128 #, complex256
 from numpy.linalg import solve
 
 # Set the complex precision to use
@@ -149,63 +150,3 @@ def helmz(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
     print('V:\n', abs(Vcoeff.sum(axis=0)))
 
     return voltage, normF
-
-
-if __name__ == "__main__":
-    from GridCal.Engine.calculation_engine import *
-
-    grid = MultiCircuit()
-    grid.load_file('lynn5buspq.xlsx')
-
-    grid.compile()
-
-    circuit = grid.circuits[0]
-
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
-
-    import time
-    print('HELM-Z')
-    start_time = time.time()
-    cmax = 40
-    V1, err = helmz(Vbus=circuit.power_flow_input.Vbus,
-                    Sbus=circuit.power_flow_input.Sbus,
-                    Ibus=circuit.power_flow_input.Ibus,
-                    Ybus=circuit.power_flow_input.Yseries,
-                    pq=circuit.power_flow_input.pq,
-                    pv=circuit.power_flow_input.pv,
-                    ref=circuit.power_flow_input.ref,
-                    pqpv=circuit.power_flow_input.pqpv,
-                    max_ter=cmax)
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-    # print_coeffs(C, W, R, X, H)
-
-    print('V module:\t', abs(V1))
-    print('V angle: \t', angle(V1))
-    print('error: \t', err)
-
-    # check the HELM solution: v against the NR power flow
-    print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
-    power_flow = PowerFlow(grid, options)
-
-    start_time = time.time()
-    power_flow.run()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
-
-    print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
-    print('error: \t', circuit.power_flow_results.error)
-
-    # check
-    print('\ndiff:\t', V1 - vnr)

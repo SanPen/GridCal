@@ -1,300 +1,23 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
-from enum import Enum
 import numpy as np
-from PySide2.QtCore import QRunnable
 
-
-from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
-from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import LevenbergMarquardtPF
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS
-from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-
-
-class SolverType(Enum):
-    """
-    Refer to the :ref:`Power Flow section<power_flow>` for details about the different
-    algorithms supported by **GridCal**.
-    """
-
-    NR = 'Newton Raphson'
-    NRFD_XB = 'Fast decoupled XB'
-    NRFD_BX = 'Fast decoupled BX'
-    GAUSS = 'Gauss-Seidel'
-    DC = 'Linear DC'
-    HELM = 'Holomorphic Embedding'
-    ZBUS = 'Z-Gauss-Seidel'
-    IWAMOTO = 'Iwamoto-Newton-Raphson'
-    CONTINUATION_NR = 'Continuation-Newton-Raphson'
-    HELMZ = 'HELM-Z'
-    LM = 'Levenberg-Marquardt'
-    FASTDECOUPLED = 'Fast decoupled'
-    LACPF = 'Linear AC'
-    DC_OPF = 'Linear DC OPF'
-    AC_OPF = 'Linear AC OPF'
-    NRI = 'Newton-Raphson in current'
-    DYCORS_OPF = 'DYCORS OPF'
-    GA_OPF = 'Genetic Algorithm OPF'
-    NELDER_MEAD_OPF = 'Nelder Mead OPF'
-
-
-class ReactivePowerControlMode(Enum):
-    """
-    The :ref:`ReactivePowerControlMode<q_control>` offers 3 modes to control how
-    :ref:`Generator<generator>` objects supply reactive power:
-
-    **NoControl**: In this mode, the :ref:`generators<generator>` don't try to regulate
-    the voltage at their :ref:`bus<bus>`.
-
-    **Direct**: In this mode, the :ref:`generators<generator>` try to regulate the
-    voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
-    algorithm in an outer control loop. For grids with numerous
-    :ref:`generators<generator>` tied to the same system, for example wind farms, this
-    control method sometimes fails with some :ref:`generators<generator>` not trying
-    hard enough*. In this case, the simulation converges but the voltage controlled
-    :ref:`buses<bus>` do not reach their target voltage, while their
-    :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
-    case, the slower **Iterative** control mode may be used (see below).
-
-        ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
-        Jinquan Zhao
-
-        1) Bus i is a PQ bus in the previous iteration and its
-           reactive power was fixed at its lower limit:
-
-            If its voltage magnitude Vi >= Viset, then
-
-                it is still a PQ bus at current iteration and set Qi = Qimin .
-
-                If Vi < Viset , then
-
-                    compare Qi with the upper and lower limits.
-
-                    If Qi >= Qimax , then
-                        it is still a PQ bus but set Qi = Qimax .
-                    If Qi <= Qimin , then
-                        it is still a PQ bus and set Qi = Qimin .
-                    If Qimin < Qi < Qi max , then
-                        it is switched to PV bus, set Vinew = Viset.
-
-        2) Bus i is a PQ bus in the previous iteration and
-           its reactive power was fixed at its upper limit:
-
-            If its voltage magnitude Vi <= Viset , then:
-                bus i still a PQ bus and set Q i = Q i max.
-
-                If Vi > Viset , then
-
-                    Compare between Qi and its upper/lower limits
-
-                    If Qi >= Qimax , then
-                        it is still a PQ bus and set Q i = Qimax .
-                    If Qi <= Qimin , then
-                        it is still a PQ bus but let Qi = Qimin in current iteration.
-                    If Qimin < Qi < Qimax , then
-                        it is switched to PV bus and set Vinew = Viset
-
-        3) Bus i is a PV bus in the previous iteration.
-
-            Compare Q i with its upper and lower limits.
-
-            If Qi >= Qimax , then
-                it is switched to PQ and set Qi = Qimax .
-            If Qi <= Qimin , then
-                it is switched to PQ and set Qi = Qimin .
-            If Qi min < Qi < Qimax , then
-                it is still a PV bus.
-
-    **Iterative**: As mentioned above, the **Direct** control mode may not yield
-    satisfying results in some isolated cases. The **Direct** control mode tries to
-    jump to the final solution in a single or few iterations, but in grids where a
-    significant change in reactive power at one :ref:`generator<generator>` has a
-    significant impact on other :ref:`generators<generator>`, additional iterations may
-    be required to reach a satisfying solution.
-
-    Instead of trying to jump to the final solution, the **Iterative** mode raises or
-    lowers each :ref:`generator's<generator>` reactive power incrementally. The
-    increment is determined using a logistic function based on the difference between
-    the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
-    :code:`k` of the logistic function was determined through trial and error, with the
-    intent of reducing the number of iterations while avoiding instability. Other
-    values may be specified in :ref:`PowerFlowOptions<pf_options>`.
-
-    The :math:`Q_{Increment}` in per unit is determined by:
-
-    .. math::
-
-        Q_{Increment} = 2 * \\left[\\frac{1}{1 + e^{-k|V_2 - V_1|}}-0.5\\right]
-
-    Where:
-
-        k = 30 (by default)
-
-    """
-    NoControl = "NoControl"
-    Direct = "Direct"
-    Iterative = "Iterative"
-
-
-class TapsControlMode(Enum):
-    """
-    The :ref:`TapsControlMode<taps_control>` offers 3 modes to control how
-    :ref:`transformers<transformer>`' :ref:`tap changer<tap_changer>` regulate
-    voltage on their regulated :ref:`bus<bus>`:
-
-    **NoControl**: In this mode, the :ref:`transformers<transformer>` don't try to
-    regulate the voltage at their :ref:`bus<bus>`.
-
-    **Direct**: In this mode, the :ref:`transformers<transformer>` try to regulate
-    the voltage at their bus. **GridCal** does so by jumping straight to the tap that
-    corresponds to the desired transformation ratio, or the highest or lowest tap if
-    the desired ratio is outside of the tap range.
-
-    This behavior may fail in certain cases, especially if both the
-    :ref:`TapControlMode<taps_control>` and :ref:`ReactivePowerControlMode<q_control>`
-    are set to **Direct**. In this case, the simulation converges but the voltage
-    controlled :ref:`buses<bus>` do not reach their target voltage, while their
-    :ref:`generator(s)<generator>` haven't reached their reactive power limit. When
-    this happens, the slower **Iterative** control mode may be used (see below).
-
-    **Iterative**: As mentioned above, the **Direct** control mode may not yield
-    satisfying results in some isolated cases. The **Direct** control mode tries to
-    jump to the final solution in a single or few iterations, but in grids where a
-    significant change of tap at one :ref:`transformer<transformer>` has a
-    significant impact on other :ref:`transformers<transformer>`, additional
-    iterations may be required to reach a satisfying solution.
-
-    Instead of trying to jump to the final solution, the **Iterative** mode raises or
-    lowers each :ref:`transformer's<transformer>` tap incrementally.
-    """
-
-    NoControl = "NoControl"
-    Direct = "Direct"
-    Iterative = "Iterative"
-
-
-#######################################################################################
-# Power flow classes
-#######################################################################################
-
-
-class PowerFlowOptions:
-    """
-    Power flow options class; its object is used as an argument for the
-    :ref:`PowerFlowMP<pf_mp>` constructor.
-
-    Arguments:
-
-        **solver_type** (:ref:`SolverType<solver_type>`, SolverType.NR): Solver type
-
-        **retry_with_other_methods** (bool, True): Use a battery of methods to tackle
-        the problem if the main solver fails
-
-        **verbose** (bool, False): Print additional details in the logger
-
-        **initialize_with_existing_solution** (bool, True): *To be detailed*
-
-        **tolerance** (float, 1e-6): Solution tolerance for the power flow numerical
-        methods
-
-        **max_iter** (int, 25): Maximum number of iterations for the power flow
-        numerical method
-
-        **max_outer_loop_iter** (int, 100): Maximum number of iterations for the
-        controls outer loop
-
-        **control_q** (:ref:`ReactivePowerControlMode<q_control>`,
-        ReactivePowerControlMode.NoControl): Control mode for the PV nodes reactive
-        power limits
-
-        **control_taps** (:ref:`TapsControlMode<taps_control>`,
-        TapsControlMode.NoControl): Control mode for the transformer taps equipped with
-        a voltage regulator (as part of the outer loop)
-
-        **multi_core** (bool, False): Use multi-core processing? applicable for time
-        series
-
-        **dispatch_storage** (bool, False): Dispatch storage?
-
-        **control_p** (bool, False): Control active power (optimization dispatch)
-
-        **apply_temperature_correction** (bool, False): Apply the temperature
-        correction to the resistance of the branches?
-
-        **branch_impedance_tolerance_mode** (BranchImpedanceMode,
-        BranchImpedanceMode.Specified): Type of modification of the branches impedance
-
-        **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the
-        :ref:`ReactivePowerControlMode<q_control>` iterative control
-
-    """
-
-    def __init__(self,
-                 solver_type: SolverType = SolverType.NR,
-                 retry_with_other_methods=True,
-                 verbose=False,
-                 initialize_with_existing_solution=True,
-                 tolerance=1e-6,
-                 max_iter=25,
-                 max_outer_loop_iter=100,
-                 control_q=ReactivePowerControlMode.NoControl,
-                 control_taps=TapsControlMode.NoControl,
-                 multi_core=False,
-                 dispatch_storage=False,
-                 control_p=False,
-                 apply_temperature_correction=False,
-                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
-                 q_steepness_factor=30,
-                 ):
-
-        self.solver_type = solver_type
-
-        self.retry_with_other_methods = retry_with_other_methods
-
-        self.tolerance = tolerance
-
-        self.max_iter = max_iter
-
-        self.max_outer_loop_iter = max_outer_loop_iter
-
-        self.control_Q = control_q
-
-        self.control_P = control_p
-
-        self.verbose = verbose
-
-        self.initialize_with_existing_solution = initialize_with_existing_solution
-
-        self.multi_thread = multi_core
-
-        self.dispatch_storage = dispatch_storage
-
-        self.control_taps = control_taps
-
-        self.apply_temperature_correction = apply_temperature_correction
-
-        self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
-
-        self.q_steepness_factor = q_steepness_factor
+from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import \
+    LevenbergMarquardtPF, NR_LS, IwamotoNR, NR_I_LS
+from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, \
+    lacpf
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
+    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import \
+    PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.steady_state.reactive_control_mode import \
+    ReactivePowerControlMode
+from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
+from GridCal.Engine.Simulations.PowerFlow.steady_state.taps_control_mode import \
+    TapsControlMode
+from GridCal.Engine.basic_structures import BusMode
 
 
 class PowerFlowMP:
@@ -306,7 +29,7 @@ class PowerFlowMP:
         **grid** (:ref:`MultiCircuit<multicircuit>`): Electrical grid to run the power
         flow in
 
-        **options** (:ref:`PowerFlowOptions<pf_options>`): Power flow options to use
+        **options** (:ref:`PowerFlowOptions<power_flow_options>`): Power flow options to use
     """
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
@@ -747,7 +470,7 @@ class PowerFlowMP:
         The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
 
         The default steepness factor k was set through trial an error. Other values may
-        be specified as a :ref:`PowerFlowOptions<pf_options>`.
+        be specified as a :ref:`PowerFlowOptions<power_flow_options>`.
 
         Arguments:
 
@@ -1579,90 +1302,3 @@ class PowerFlowMP:
 
     def cancel(self):
         self.__cancel__ = True
-
-
-def power_flow_worker(t, options: PowerFlowOptions, circuit: CalculationInputs, Vbus, Sbus, Ibus, return_dict):
-    """
-    Power flow worker to schedule parallel power flows
-        **t: execution index
-        **options: power flow options
-        **circuit: circuit
-        **Vbus: Voltages to initialize
-        **Sbus: Power injections
-        **Ibus: Current injections
-        **return_dict: parallel module dictionary in wich to return the values
-    :return:
-    """
-
-    instance = PowerFlowMP(None, options)
-    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
-
-
-def power_flow_worker_args(args):
-    """
-    Power flow worker to schedule parallel power flows
-
-    args -> t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict
-
-
-        **t: execution index
-        **options: power flow options
-        **circuit: circuit
-        **Vbus: Voltages to initialize
-        **Sbus: Power injections
-        **Ibus: Current injections
-        **return_dict: parallel module dictionary in wich to return the values
-    :return:
-    """
-    t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
-    instance = PowerFlowMP(None, options)
-    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
-
-
-class PowerFlow(QRunnable):
-    """
-    Power flow wrapper to use with Qt
-    """
-
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
-        """
-        PowerFlow class constructor
-        **grid: MultiCircuit Object
-        """
-        QRunnable.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
-
-        # Options to use
-        self.options = options
-
-        self.results = None
-
-        self.pf = PowerFlowMP(grid, options)
-
-        self.__cancel__ = False
-
-    def get_steps(self):
-        return list()
-
-    def run(self):
-        """
-        Pack run_pf for the QThread
-        :return:
-        """
-
-        results = self.pf.run()
-        self.results = results
-
-    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
-        """
-        Run a power flow for every circuit
-        @return:
-        """
-
-        return self.pf.run_pf(circuit, Vbus, Sbus, Ibus)
-
-    def cancel(self):
-        self.__cancel__ = True
-

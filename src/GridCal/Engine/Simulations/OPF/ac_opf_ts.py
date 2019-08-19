@@ -428,12 +428,12 @@ if __name__ == '__main__':
     solver = SolverType.AC_OPF
     mip_solver = MIPSolvers.CBC
     grouping = TimeGrouping.NoGrouping
-    pf_options = PowerFlowOptions()
+    power_flow_options = PowerFlowOptions()
 
     options = OptimalPowerFlowOptions(solver=solver,
                                       grouping=grouping,
                                       mip_solver=mip_solver,
-                                      power_flow_options=pf_options)
+                                      power_flow_options=power_flow_options)
 
     start = 0
     end = len(main_circuit.time_profile)

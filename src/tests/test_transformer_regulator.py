@@ -5,9 +5,16 @@ from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.static_generator import StaticGenerator
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, ReactivePowerControlMode, TapsControlMode, \
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_mp import \
     PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
+    import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.taps_control_mode \
+    import TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.steady_state.reactive_control_mode \
+    import ReactivePowerControlMode
+from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import \
+    SolverType
 
 Sbase = 100  # MVA
 

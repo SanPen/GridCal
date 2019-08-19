@@ -19,11 +19,12 @@ from scipy.sparse.linalg import inv
 from matplotlib import pyplot as plt
 from PySide2.QtCore import QRunnable
 
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import \
+    PowerFlowResults
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_3p
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus

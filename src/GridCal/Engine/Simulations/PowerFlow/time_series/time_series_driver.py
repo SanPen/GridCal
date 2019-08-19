@@ -26,7 +26,11 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_worker import \
+    power_flow_worker
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_mp import PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
+    PowerFlowOptions
 
 
 class TimeSeriesResults(PowerFlowResults):

@@ -1,10 +1,12 @@
 
 import numpy as np
-from numpy import where, zeros, ones, mod, conj, array, dot, complex128, linspace, angle  # , complex256
+from numpy import zeros, ones, conj, array, \
+    complex128, linspace  # , complex256
 from scipy.linalg import solve
 from scipy.sparse import dia_matrix, coo_matrix, csc_matrix, hstack as sp_hstack, vstack as sp_vstack
 from scipy.sparse.linalg import factorized
 # Set the complex precision to use
+
 complex_type = complex128
 
 
@@ -337,73 +339,3 @@ def helmw(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, e
     err_df.plot(logy=True)
 
     return voltages, normF
-
-
-if __name__ == "__main__":
-    from GridCal.Engine.calculation_engine import *
-    from matplotlib import pyplot as plt
-    np.set_printoptions(suppress=True, linewidth=320, formatter={'float': '{: 0.4f}'.format})
-
-    grid = MultiCircuit()
-    grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('lynn5buspv.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
-
-    grid.compile()
-
-    circuit = grid.circuits[0]
-
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
-
-    import time
-    print('HELM model 4')
-    start_time = time.time()
-    cmax = 8
-    V1, err = helmw(Y_series=circuit.power_flow_input.Yseries,
-                    Y_shunt=circuit.power_flow_input.Yshunt,
-                    Sbus=circuit.power_flow_input.Sbus,
-                    voltageSetPoints=circuit.power_flow_input.Vbus,
-                    pq=circuit.power_flow_input.pq,
-                    pv=circuit.power_flow_input.pv,
-                    ref=circuit.power_flow_input.ref,
-                    pqpv=circuit.power_flow_input.pqpv,
-                    types=circuit.power_flow_input.types,
-                    eps=1e-9,
-                    maxcoefficientCount=cmax)
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-    print('V module:\t', abs(V1))
-    print('V angle: \t', angle(V1))
-    print('error: \t', err)
-
-    # check the HELM solution: v against the NR power flow
-    print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
-    power_flow = PowerFlow(grid, options)
-
-    start_time = time.time()
-    power_flow.run()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
-
-    print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
-    print('error: \t', circuit.power_flow_results.error)
-
-    # check
-    print('\ndiff:\t', V1 - vnr)
-
-    plt.show()

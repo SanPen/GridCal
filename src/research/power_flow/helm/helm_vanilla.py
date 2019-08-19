@@ -14,19 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import Desarrollos.power_flow_research.example_grids as grids
 import numpy as np
+
+from research.power_flow.helm.helm_vanilla_test import test_helm
+
 np.set_printoptions(linewidth=320)
 # np.set_printoptions(precision=6, suppress=True, linewidth=320)
-from numpy import where, zeros, ones, mod, conj, array, dot, complex128
-from numpy import poly1d, r_, eye, hstack, diag, linalg, Inf
+from numpy import zeros, ones, mod, conj, complex128
+from numpy import r_, linalg, Inf
 from enum import Enum
 from itertools import product
 
-from scipy import fftpack
 from scipy.linalg import solve
 
-from scipy.sparse.linalg import factorized, spsolve
+from scipy.sparse.linalg import factorized
 from scipy.sparse import issparse, csc_matrix as sparse
 
 # just in time compiler

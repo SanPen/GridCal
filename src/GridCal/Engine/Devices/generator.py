@@ -23,7 +23,7 @@ class Generator(EditableDevice):
     """
     Voltage controlled generator. This generators supports several reactive power
     control modes (see
-    :class:`GridCal.Engine.Simulations.PowerFlow.power_flow_driver.ReactivePowerControlMode`)
+    :class:`GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_driver.ReactivePowerControlMode`)
     to regulate the voltage on its :ref:`bus` during
     :ref:`power flow simulations<gridcal_engine_simulations_PowerFlow>`.
 
