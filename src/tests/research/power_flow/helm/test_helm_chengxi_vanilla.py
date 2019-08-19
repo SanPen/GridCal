@@ -1,58 +1,45 @@
-import time
+import numpy as np
+import pandas as pd
 
-from matplotlib import pyplot as plt
-
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import \
-    PowerFlow
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
+    import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable \
+    import PowerFlow
 from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import \
     SolverType
-from research.power_flow.helm.helm_chengxi_vanilla import helm_, res_2_df
 from tests.research.power_flow.helm.get_grid_lynn_5_bus_wiki import \
     get_grid_lynn_5_bus_wiki
 
 
-def test_helm_chengxi():
-
+def test_helm_chengxi_vanilla():
     grid = get_grid_lynn_5_bus_wiki()
 
-    # circuit = grid.circuits[0]
-    # print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    # print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    # print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    # print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    # print('\ntypes:\n', circuit.power_flow_input.types)
-    # print('\npq:\n', circuit.power_flow_input.pq)
-    # print('\npv:\n', circuit.power_flow_input.pv)
-    # print('\nvd:\n', circuit.power_flow_input.ref)
-
-    start_time = time.time()
-    v, err = helm_(Vbus=circuit.power_flow_input.Vbus,
-                   Sbus=circuit.power_flow_input.Sbus,
-                   Ibus=circuit.power_flow_input.Ibus,
-                   Ybus=circuit.power_flow_input.Ybus,
-                   pq=circuit.power_flow_input.pq,
-                   pv=circuit.power_flow_input.pv,
-                   ref=circuit.power_flow_input.ref,
-                   pqpv=circuit.power_flow_input.pqpv)
-    print('HELM:')
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print('Results:\n', res_2_df(v, circuit.power_flow_input.Sbus,
-                                 circuit.power_flow_input.types))
-    print('error: \t', err)
-    # check the HELM solution: v against the NR power flow
-    print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False,
-                               tolerance=1e-9, control_q=False)
-    power_flow = PowerFlow(grid, options)
-    start_time = time.time()
-    power_flow.run()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
-    print('Results:\n', res_2_df(vnr, circuit.power_flow_input.Sbus,
-                                 circuit.power_flow_input.types))
-    print('error: \t', circuit.power_flow_results.error)
-    # check
-    print('\ndiff:\t', v - vnr)
-    plt.show()
+    power_flow_options = PowerFlowOptions(
+        solver_type=SolverType.HELM_CHENGXI_VANILLA,
+        # Base method to use
+        verbose=False,
+        # Verbose option where available
+        tolerance=1e-6,  # power error in p.u.
+        max_iter=25,  # maximum iteration number
+        control_q=True
+        # if to control the reactive power
+    )
+    pf = PowerFlow(grid, power_flow_options)
+    pf.run()
+    headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
+    Vm = np.abs(pf.results.voltage)
+    Va = np.angle(pf.results.voltage, deg=True)
+    Vre = pf.results.voltage.real
+    Vim = pf.results.voltage.imag
+    data = np.c_[Vm, Va, Vre, Vim]
+    v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
+    print('\n', v_df)
+    headers = ['Loading (%)', 'Current(p.u.)', 'Power (MVA)']
+    loading = np.abs(pf.results.loading) * 100
+    current = np.abs(pf.results.Ibranch)
+    power = np.abs(pf.results.Sbranch)
+    data = np.c_[loading, current, power]
+    br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
+    print('\n', br_df)
+    print('\nError:', pf.results.error)
+    print('Elapsed time (s):', pf.results.elapsed)
