@@ -321,7 +321,7 @@ if __name__ == "__main__":
 
     # ##################################################################################################################
 
-    pf = PowerFlow(circuit)
+    power_flow = PowerFlow(circuit)
     results = pf.run(method=PowerFlowMethods.GaussSeidel, verbose=True, tol=1e-3, max_iter=200)
 
     print('\nVoltage solution')

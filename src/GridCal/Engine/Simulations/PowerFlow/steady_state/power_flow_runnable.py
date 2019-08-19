@@ -32,7 +32,7 @@ class PowerFlow(QRunnable):
 
         self.results = None
 
-        self.pf = PowerFlowMP(grid, options)
+        self.power_flow = PowerFlowMP(grid, options)
 
         self.__cancel__ = False
 
@@ -42,7 +42,7 @@ class PowerFlow(QRunnable):
         :return:
         """
 
-        results = self.pf.run()
+        results = self.power_flow.run()
         self.results = results
 
     def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
@@ -51,7 +51,7 @@ class PowerFlow(QRunnable):
         @return:
         """
 
-        return self.pf.run_pf(circuit, Vbus, Sbus, Ibus)
+        return self.power_flow.run_pf(circuit, Vbus, Sbus, Ibus)
 
     def cancel(self):
         self.__cancel__ = True

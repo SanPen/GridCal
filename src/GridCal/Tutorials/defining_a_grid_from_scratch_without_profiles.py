@@ -158,31 +158,31 @@ def main():
     )
 
     # Declare and execute the power flow simulation
-    pf = PowerFlow(grid, power_flow_options)
-    pf.run()
+    power_flow = PowerFlow(grid, power_flow_options)
+    power_flow.run()
 
     # now, let's compose a nice DataFrame with the voltage results
     headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
-    Vm = np.abs(pf.results.voltage)
-    Va = np.angle(pf.results.voltage, deg=True)
-    Vre = pf.results.voltage.real
-    Vim = pf.results.voltage.imag
+    Vm = np.abs(power_flow.results.voltage)
+    Va = np.angle(power_flow.results.voltage, deg=True)
+    Vre = power_flow.results.voltage.real
+    Vim = power_flow.results.voltage.imag
     data = np.c_[Vm, Va, Vre, Vim]
     v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
     print('\n', v_df)
 
     # Let's do the same for the branch results
     headers = ['Loading (%)', 'Current(p.u.)', 'Power (MVA)']
-    loading = np.abs(pf.results.loading) * 100
-    current = np.abs(pf.results.Ibranch)
-    power = np.abs(pf.results.Sbranch)
+    loading = np.abs(power_flow.results.loading) * 100
+    current = np.abs(power_flow.results.Ibranch)
+    power = np.abs(power_flow.results.Sbranch)
     data = np.c_[loading, current, power]
     br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
     print('\n', br_df)
 
     # Finally the execution metrics
-    print('\nError:', pf.results.error)
-    print('Elapsed time (s):', pf.results.elapsed, '\n')
+    print('\nError:', power_flow.results.error)
+    print('Elapsed time (s):', power_flow.results.elapsed, '\n')
 
     print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
     print()
