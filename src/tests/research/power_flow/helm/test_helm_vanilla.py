@@ -26,6 +26,7 @@ def test_helm_vanilla():
     )
     pf = PowerFlow(grid, power_flow_options)
     pf.run()
+
     headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
     Vm = np.abs(pf.results.voltage)
     Va = np.angle(pf.results.voltage, deg=True)

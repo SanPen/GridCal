@@ -3,7 +3,7 @@ import numpy as np
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_vanilla
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import \
     LevenbergMarquardtPF, NR_LS, IwamotoNR, NR_I_LS
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, \
@@ -135,15 +135,15 @@ class PowerFlowMP:
         """
         # type HELM
         if solver_type == SolverType.HELM:
-            V0, converged, normF, Scalc, it, el = helm(Vbus=V0,
-                                                       Sbus=Sbus,
-                                                       Ybus=Ybus,
-                                                       pq=pq,
-                                                       pv=pv,
-                                                       ref=ref,
-                                                       pqpv=pqpv,
-                                                       tol=tolerance,
-                                                       max_coefficient_count=max_iter)
+            V0, converged, normF, Scalc, it, el = helm_vanilla(Vbus=V0,
+                                                               Sbus=Sbus,
+                                                               Ybus=Ybus,
+                                                               pq=pq,
+                                                               pv=pv,
+                                                               ref=ref,
+                                                               pqpv=pqpv,
+                                                               tol=tolerance,
+                                                               max_coefficient_count=max_iter)
 
         elif solver_type == SolverType.HELM_PQ:
             V0, converged, normF, Scalc, it, el = helm_pq(
