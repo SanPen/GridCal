@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     v, err = helm_vanilla(Vbus=circuit.power_flow_input.Vbus,
                           Sbus=circuit.power_flow_input.Sbus,
-                          Ibus=circuit.power_flow_input.Ibus,
+                          # Ibus=circuit.power_flow_input.Ibus,
                           Ybus=circuit.power_flow_input.Ybus,
                           pq=circuit.power_flow_input.pq,
                           pv=circuit.power_flow_input.pv,
