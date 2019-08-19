@@ -1,18 +1,20 @@
+import time
+
+from matplotlib import pyplot as plt
+
 from GridCal.Engine.Core import MultiCircuit, NumericalCircuit
 from research.power_flow.helm.helm_chengxi_2 import helm_, res_2_df
 from tests.research.power_flow.helm.get_grid_lynn_5_bus_wiki import \
     get_grid_lynn_5_bus_wiki
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import \
+    PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
+    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import \
+    SolverType
 
 
 def test_chengxi_2():
-    import time
-    from matplotlib import pyplot as plt
-    from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import \
-        PowerFlow
-    from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-        PowerFlowOptions
-    from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
-
     grid: MultiCircuit = get_grid_lynn_5_bus_wiki()
     numerical_circuit: NumericalCircuit = grid.numerical_circuit
 
