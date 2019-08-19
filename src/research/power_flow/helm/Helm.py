@@ -694,4 +694,3 @@ def bifurcation_point(C, slackIndices):
             L[:, k] = lmda
 
     return V, L
-

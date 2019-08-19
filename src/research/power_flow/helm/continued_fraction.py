@@ -11,6 +11,7 @@
 from __future__ import print_function, division
 import sys
 
+
 def contfrac_to_frac(seq):
     ''' Convert the simple continued fraction in `seq`
         into a fraction, num / den
@@ -19,6 +20,7 @@ def contfrac_to_frac(seq):
     for u in reversed(seq):
         num, den = den + num*u, num
     return num, den
+
 
 def e_cont_frac(n):
     ''' Build `n` terms of the simple continued fraction expansion of e
@@ -45,6 +47,7 @@ def main():
     print('Continued fraction:', seq)
     print('Fraction: {0} / {1}'.format(num, den))
     print('Float {0:0.15f}'.format(num / den))
+
 
 if __name__ == '__main__':
     main()
