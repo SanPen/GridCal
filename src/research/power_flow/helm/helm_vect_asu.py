@@ -449,7 +449,7 @@ def interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_pv):
     return C, Q
 
 
-def helm(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, eps=1e-3, use_pade=False):
+def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, eps=1e-3, use_pade=False):
     """
     Run the holomorphic embedding power flow
     @param Y: Circuit complete admittance matrix

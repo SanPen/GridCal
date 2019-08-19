@@ -18,6 +18,8 @@ from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import Solver
 from GridCal.Engine.Simulations.PowerFlow.steady_state.taps_control_mode import \
     TapsControlMode
 from GridCal.Engine.basic_structures import BusMode
+from research.power_flow.helm.helm_pq import helm_pq
+from research.power_flow.helm.helm_vect_asu import helm_vect_asu
 
 
 class PowerFlowMP:
@@ -142,6 +144,34 @@ class PowerFlowMP:
                                                        pqpv=pqpv,
                                                        tol=tolerance,
                                                        max_coefficient_count=max_iter)
+
+        elif solver_type == SolverType.HELM_PQ:
+            V0, converged, normF, Scalc, it, el = helm_pq(
+                Vbus=V0,
+                Sbus=Sbus,
+                Ybus=Ybus,
+                pq=pq,
+                pv=pv,
+                ref=ref,
+                pqpv=pqpv,
+                tol=tolerance,
+                Ibus=Ibus,
+                Yserie=Yseries,
+                Ysh=None,  # TODO Get this from somewhere
+            )
+
+        elif solver_type == SolverType.HELM_VECT_ASU:
+            V0, converged, normF, Scalc, it, el = helm_vect_asu(
+                pq=pq,
+                pv=pv,
+                Ysh=None,  # TODO Get this from somewhere
+                Y=None,  # TODO Get this from somewhere
+                Ys=None,  # TODO Get this from somewhere
+                max_coefficient_count = None,  # TODO Get this from somewhere
+                S = None,  # TODO Get this from somewhere
+                voltage_set_points = None,  # TODO Get this from somewhere
+                vd = None,  # TODO Get this from somewhere
+            )
 
         # type DC
         elif solver_type == SolverType.DC:
