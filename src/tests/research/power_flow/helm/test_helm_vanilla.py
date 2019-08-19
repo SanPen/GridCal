@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
     import PowerFlowOptions
@@ -11,20 +12,18 @@ from tests.research.power_flow.helm.get_grid_lynn_5_bus_wiki import \
 
 
 def test_helm():
-
-    import pandas as pd
-
     grid = get_grid_lynn_5_bus_wiki()
 
-    power_flow_options = PowerFlowOptions(solver_type=SolverType.HELM,
-                                  # Base method to use
-                                  verbose=False,
-                                  # Verbose option where available
-                                  tolerance=1e-6,  # power error in p.u.
-                                  max_iter=25,  # maximum iteration number
-                                  control_q=True
-                                  # if to control the reactive power
-                                  )
+    power_flow_options = PowerFlowOptions(
+        solver_type=SolverType.HELM,
+        # Base method to use
+        verbose=False,
+        # Verbose option where available
+        tolerance=1e-6,  # power error in p.u.
+        max_iter=25,  # maximum iteration number
+        control_q=True
+        # if to control the reactive power
+    )
     pf = PowerFlow(grid, power_flow_options)
     pf.run()
     headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']

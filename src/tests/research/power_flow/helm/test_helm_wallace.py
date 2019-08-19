@@ -46,7 +46,7 @@ def test_helm_wallace():
                     maxcoefficientCount=cmax)
     print("--- %s seconds ---" % (time.time() - start_time))
     print('V module:\t', abs(V1))
-    print('V angle: \t', angle(V1))
+    print('V angle: \t', np.ma.angle(V1))
     print('error: \t', err)
     # check the HELM solution: v against the NR power flow
     print('\nNR')
@@ -58,7 +58,7 @@ def test_helm_wallace():
     print("--- %s seconds ---" % (time.time() - start_time))
     vnr = circuit.power_flow_results.voltage
     print('V module:\t', abs(vnr))
-    print('V angle: \t', angle(vnr))
+    print('V angle: \t', np.ma.angle(vnr))
     print('error: \t', circuit.power_flow_results.error)
     # check
     print('\ndiff:\t', V1 - vnr)
