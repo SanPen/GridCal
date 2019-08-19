@@ -2,10 +2,10 @@ import numpy as np
 
 from research.power_flow.helm.helm_z_pv import helmz
 from matplotlib import pyplot as plt
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import \
-    PowerFlow
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable \
+    import PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
+    import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import \
     SolverType
 from tests.research.power_flow.helm.get_grid_lynn_5_bus_wiki import \
