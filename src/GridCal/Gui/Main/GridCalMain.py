@@ -2092,7 +2092,7 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
             # print convergence reports on the console
-            for report in self.power_flow.pf.convergence_reports:
+            for report in self.power_flow.power_flow.convergence_reports:
                 msg_ = 'Power flow converged: \n' + report.__str__() + '\n\n'
                 self.console_msg(msg_)
 
@@ -2100,8 +2100,8 @@ class MainGUI(QMainWindow):
             self.msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
-        if len(self.power_flow.pf.logger) > 0:
-            dlg = LogsDialogue('Power flow', self.power_flow.pf.logger)
+        if len(self.power_flow.power_flow.logger) > 0:
+            dlg = LogsDialogue('Power flow', self.power_flow.power_flow.logger)
             dlg.exec_()
 
         if len(self.stuff_running_now) == 0:
