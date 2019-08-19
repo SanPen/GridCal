@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from research.power_flow.helm.helm_z_pv import helmz
@@ -26,7 +28,7 @@ def test_helm_z_pv():
     print('\npq:\n', circuit.power_flow_input.pq)
     print('\npv:\n', circuit.power_flow_input.pv)
     print('\nvd:\n', circuit.power_flow_input.ref)
-    import time
+
     print('HELM-Z')
     start_time = time.time()
     cmax = 25
