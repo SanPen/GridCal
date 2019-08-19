@@ -483,7 +483,6 @@ class TimeSeries(QThread):
                             # set the power values
                             # if the storage dispatch option is active, the batteries power is not included
                             # therefore, it shall be included after processing
-                            Ysh = calculation_input.Ysh_prof[:, it]
                             I = calculation_input.Ibus_prof[:, it]
                             S = calculation_input.Sbus_prof[:, it]
 
@@ -684,7 +683,6 @@ class TimeSeries(QThread):
                                 # set the power values
                                 # if the storage dispatch option is active, the batteries power is not included
                                 # therefore, it shall be included after processing
-                                Ysh = calculation_input.Ysh_prof[:, it]
                                 I = calculation_input.Ibus_prof[:, it]
                                 S = calculation_input.Sbus_prof[:, it]
 
