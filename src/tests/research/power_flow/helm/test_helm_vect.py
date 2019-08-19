@@ -11,11 +11,11 @@ from tests.research.power_flow.helm.get_grid_lynn_5_bus_wiki import \
     get_grid_lynn_5_bus_wiki
 
 
-def test_helm():
+def test_helm_vect():
     grid = get_grid_lynn_5_bus_wiki()
 
     power_flow_options = PowerFlowOptions(
-        solver_type=SolverType.HELM_VECT_ASU,
+        solver_type=SolverType.HELM_VECT,
         # Base method to use
         verbose=False,
         # Verbose option where available
