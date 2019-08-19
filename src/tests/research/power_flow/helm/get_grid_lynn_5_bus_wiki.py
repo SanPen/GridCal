@@ -8,7 +8,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 def get_grid_lynn_5_bus_wiki():
     grid = MultiCircuit(name='lynn 5 bus')
-    
+
     bus_1 = Bus(
         name='bus_1',
         vnom=10,  # Nominal voltage in kV
