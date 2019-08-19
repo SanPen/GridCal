@@ -27,20 +27,22 @@ def test_helm_vanilla():
     power_flow = PowerFlow(grid, power_flow_options)
     power_flow.run()
 
-    headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
-    Vm = np.abs(power_flow.results.voltage)
-    Va = np.angle(power_flow.results.voltage, deg=True)
-    Vre = power_flow.results.voltage.real
-    Vim = power_flow.results.voltage.imag
-    data = np.c_[Vm, Va, Vre, Vim]
-    v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
-    print('\n', v_df)
+    headers = ['voltage_per_unit (p.u.)', 'voltage_angle (Deg)', 'voltage_real', 'voltage_imaginary']
+    voltage_per_unit = np.abs(power_flow.results.voltage)
+    voltage_angle = np.angle(power_flow.results.voltage, deg=True)
+    voltage_real = power_flow.results.voltage.real
+    voltage_imaginary = power_flow.results.voltage.imag
+    voltage_data = np.c_[voltage_per_unit, voltage_angle, voltage_real, voltage_imaginary]
+    v_data_frame = pd.DataFrame(data=voltage_data, columns=headers, index=grid.bus_names)
+    print('\n', v_data_frame)
+
     headers = ['Loading (%)', 'Current(p.u.)', 'Power (MVA)']
-    loading = np.abs(power_flow.results.loading) * 100
-    current = np.abs(power_flow.results.Ibranch)
-    power = np.abs(power_flow.results.Sbranch)
-    data = np.c_[loading, current, power]
-    br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
-    print('\n', br_df)
+    branch_loading_per_cent = np.abs(power_flow.results.loading) * 100
+    branch_current = np.abs(power_flow.results.Ibranch)
+    branch_power_complex = np.abs(power_flow.results.Sbranch)
+    branch_data = np.c_[branch_loading_per_cent, branch_current, branch_power_complex]
+    branch_data_frame = pd.DataFrame(data=branch_data, columns=headers, index=grid.branch_names)
+    print('\n', branch_data_frame)
+
     print('\nError:', power_flow.results.error)
     print('Elapsed time (s):', power_flow.results.elapsed)
