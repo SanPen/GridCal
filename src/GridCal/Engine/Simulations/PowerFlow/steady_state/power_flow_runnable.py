@@ -8,6 +8,10 @@ from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
     import PowerFlowOptions
 
 
+def get_steps():
+    return list()
+
+
 class PowerFlow(QRunnable):
     """
     Power flow wrapper to use with Qt
@@ -31,9 +35,6 @@ class PowerFlow(QRunnable):
         self.pf = PowerFlowMP(grid, options)
 
         self.__cancel__ = False
-
-    def get_steps(self):
-        return list()
 
     def run(self):
         """
