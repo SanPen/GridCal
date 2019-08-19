@@ -16,8 +16,6 @@
 
 import numpy as np
 
-from research.power_flow.helm.helm_vanilla_test import test_helm
-
 np.set_printoptions(linewidth=320)
 # np.set_printoptions(precision=6, suppress=True, linewidth=320)
 from numpy import zeros, ones, mod, conj, complex128
