@@ -120,7 +120,7 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     nodal_restrictions_Q = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
 
     # for each partition of the profiles...
-    for t_key, calc_inputs in calc_inputs_dict.items():
+    for _, calc_inputs in calc_inputs_dict.items():
 
         # For every island, run the time series
         for i, calc_inpt in enumerate(calc_inputs):
