@@ -404,8 +404,8 @@ def calc_error(admittances, V, powerInjections):
 
 
 # @jit(cache=True)
-def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types,
-          eps=1e-3, usePade=True, inherited_pv=None):
+def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types,
+              eps=1e-3, usePade=True, inherited_pv=None):
     """
 
     Args:

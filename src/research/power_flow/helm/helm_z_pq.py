@@ -81,7 +81,7 @@ def pade_approximation(n, an, s=1):
 
 
 # @jit(cache=True)
-def helmz(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
+def helm_z_pq(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
     """
 
     Args:

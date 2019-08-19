@@ -11,7 +11,7 @@ from tests.research.power_flow.helm.get_grid_lynn_5_bus_wiki import \
     get_grid_lynn_5_bus_wiki
 
 
-def test_helm_chengxi_corrected():
+def test_helm_chengxi_2():
     grid = get_grid_lynn_5_bus_wiki()
 
     power_flow_options = PowerFlowOptions(

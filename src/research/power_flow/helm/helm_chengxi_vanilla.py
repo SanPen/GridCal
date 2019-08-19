@@ -255,18 +255,16 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
+def helm_chengxi_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
     """
     Helm Method
     :param Vbus: voltages array
     :param Sbus: Power injections array
-    :param Ibus: Currents injection array
     :param Ybus: System admittance matrix
     :param pq: list of pq node indices
     :param pv: list of pv node indices
     :param ref: list of slack node indices
     :param pqpv: list of pq and pv node indices sorted
-    :param tol: tolerance
     :return: Voltage array and the power mismatch
     """
 

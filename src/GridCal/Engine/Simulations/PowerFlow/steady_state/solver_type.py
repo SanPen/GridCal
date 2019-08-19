@@ -13,7 +13,7 @@ class SolverType(Enum):
     GAUSS = 'Gauss-Seidel'
     DC = 'Linear DC'
     HELM = 'Holomorphic Embedding'
-    HELMZ = 'HELM-Z'  # TODO make this helm-z-pv?
+    HELM_Z_PV = 'HELM-Z'  # TODO make this helm-z-pv?
     HELM_Z_PQ = 'HELM-Z-PQ'
     HELM_CHENGXI_VANILLA = 'HELM-Chengxi-Vanilla'
     HELM_CHENGXI_2 = 'HELM-Chengxi-2'

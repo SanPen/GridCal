@@ -15,7 +15,7 @@ def test_helm_z_pv():
     grid = get_grid_lynn_5_bus_wiki()
 
     power_flow_options = PowerFlowOptions(
-        solver_type=SolverType.HELMZ,  # TODO make this HELM_Z_PV
+        solver_type=SolverType.HELM_Z_PV,  # TODO make this HELM_Z_PV
         # Base method to use
         verbose=False,
         # Verbose option where available

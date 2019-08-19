@@ -18,8 +18,14 @@ from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import Solver
 from GridCal.Engine.Simulations.PowerFlow.steady_state.taps_control_mode import \
     TapsControlMode
 from GridCal.Engine.basic_structures import BusMode
+from research.power_flow.helm.helm_chengxi_2 import helm_chengxi_2
+from research.power_flow.helm.helm_chengxi_corrected import helm_chengxi_corrected
+from research.power_flow.helm.helm_chengxi_vanilla import helm_chengxi_vanilla
 from research.power_flow.helm.helm_pq import helm_pq
 from research.power_flow.helm.helm_vect_asu import helm_vect_asu
+from research.power_flow.helm.helm_wallace import helm_wallace
+from research.power_flow.helm.helm_z_pq import helm_z_pq
+from research.power_flow.helm.helm_z_pv import helm_z_pv
 
 
 class PowerFlowMP:
@@ -175,6 +181,94 @@ class PowerFlowMP:
                 vd = None,  # TODO Get this from somewhere
             )
 
+        elif solver_type == SolverType.HELM_CHENGXI_2:
+            V0, converged, normF, Scalc, it, el = helm_chengxi_2(
+                pq=pq,
+                pv=pv,
+                Vbus=None,  # TODO Get this from somewhere
+                Sbus=None,  # TODO Get this from somewhere
+                Ybus=None,  # TODO Get this from somewhere
+                ref=None,  # TODO Get this from somewhere
+                pqpv=None,  # TODO Get this from somewhere
+            )
+
+        elif solver_type == SolverType.HELM_CHENGXI_CORRECTED:
+            V0, converged, normF, Scalc, it, el = helm_chengxi_corrected(
+                pq=pq,
+                pv=pv,
+                Vbus=None,  # TODO Get this from somewhere
+                Sbus=None,  # TODO Get this from somewhere
+                Ybus=None,  # TODO Get this from somewhere
+                ref=None,  # TODO Get this from somewhere
+                pqpv=None,  # TODO Get this from somewhere
+            )
+
+        elif solver_type == SolverType.HELM_CHENGXI_VANILLA:
+            V0, converged, normF, Scalc, it, el = helm_chengxi_vanilla(
+                pq=pq,
+                pv=pv,
+                Vbus=None,  # TODO Get this from somewhere
+                Sbus=None,  # TODO Get this from somewhere
+                Ybus=None,  # TODO Get this from somewhere
+                ref=None,  # TODO Get this from somewhere
+                pqpv=None,  # TODO Get this from somewhere
+            )
+
+        elif solver_type == SolverType.HELM_VECT_ASU:
+            V0, converged, normF, Scalc, it, el = helm_vect_asu(
+                Y=None,  # TODO Get this from somewhere
+                Ys=None,  # TODO Get this from somewhere
+                Ysh=None,  # TODO Get this from somewhere
+                max_coefficient_count=None,  # TODO Get this from somewhere
+                S=None,  # TODO Get this from somewhere
+                voltage_set_points=None,  # TODO Get this from somewhere
+                vd=None,  # TODO Get this from somewhere
+                eps=1e-3,  # TODO Get this from somewhere
+                use_pade=False,  # TODO Get this from somewhere
+                pv=pv,
+                pq=pq,
+            )
+
+        elif solver_type == SolverType.HELM_WALLACE:
+            V0, converged, normF, Scalc, it, el = helm_wallace(
+                pq=pq,
+                pv=pv,
+                Sbus=None,  # TODO Get this from somewhere
+                ref=None,  # TODO Get this from somewhere
+                pqpv=None,  # TODO Get this from somewhere
+                Y_series=None,  # TODO Get this from somewhere
+                Y_shunt=None,  # TODO Get this from somewhere
+                voltageSetPoints=None,  # TODO Get this from somewhere
+                types=None,  # TODO Get this from somewhere
+                eps=1e-3,  # TODO Get this from somewhere
+                maxcoefficientCount=50,  # TODO Get this from somewhere
+            )
+
+        elif solver_type == SolverType.HELM_Z_PQ:
+            V0, converged, normF, Scalc, it, el = helm_z_pq(
+                pq=pq,
+                pv=pv,
+                Sbus=None,  # TODO Get this from somewhere
+                ref=None,  # TODO Get this from somewhere
+                pqpv=None,  # TODO Get this from somewhere
+                Vbus=None,  # TODO Get this from somewhere
+                Ibus=None,  # TODO Get this from somewhere
+                Ybus=None,  # TODO Get this from somewhere
+            )
+
+        elif solver_type == SolverType.HELM_Z_PV:
+            V0, converged, normF, Scalc, it, el = helm_z_pv(
+                admittances=None,  # TODO Get this from somewhere
+                slackIndices=None,  # TODO Get this from somewhere
+                maxcoefficientCount=None,  # TODO Get this from somewhere
+                powerInjections=None,  # TODO Get this from somewhere
+                voltageSetPoints=None,  # TODO Get this from somewhere
+                types=None,  # TODO Get this from somewhere
+                eps=1e-3,  # TODO Get this from somewhere
+                usePade=True,  # TODO Get this from somewhere
+                inherited_pv=None,  # TODO Get this from somewhere
+            )
+
         # type DC
         elif solver_type == SolverType.DC:
             V0, converged, normF, Scalc, it, el = dcpf(
@@ -190,7 +284,6 @@ class PowerFlowMP:
 
         # LAC PF
         elif solver_type == SolverType.LACPF:
-
             V0, converged, normF, Scalc, it, el = lacpf(
                 Y=Ybus,
                 Ys=Yseries,
@@ -1189,11 +1282,13 @@ class PowerFlowMP:
             V0 = Vbus.copy()
 
             # solve the power flow
-            results = self.single_power_flow(circuit=circuit,
-                                             solver_type=solver,
-                                             voltage_solution=V0,
-                                             Sbus=Sbus,
-                                             Ibus=Ibus)
+            results = self.single_power_flow(
+                circuit=circuit,
+                solver_type=solver,
+                voltage_solution=V0,
+                Sbus=Sbus,
+                Ibus=Ibus,
+            )
 
             # did it worked?
             worked = np.all(results.converged)
