@@ -60,20 +60,20 @@ def test_corr_line_losses():
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=10, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=10)
+    bus_1 = Bus(name="bus_1", vnom=10)
 
     grid.add_bus(Bus0)
-    grid.add_bus(Bus1)
+    grid.add_bus(bus_1)
 
     # Create load
-    grid.add_load(Bus1, Load(name="Load0", P=1.0, Q=0.4))
+    grid.add_load(bus_1, Load(name="Load0", P=1.0, Q=0.4))
 
     # Create slack bus
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable
     cable = Branch(bus_from=Bus0,
-                   bus_to=Bus1,
+                   bus_to=bus_1,
                    name="Cable0",
                    r=0.784,
                    x=0.174,

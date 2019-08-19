@@ -8,8 +8,9 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 def get_grid_lynn_5_bus_wiki():
     grid = MultiCircuit(name='lynn 5 bus')
-    bus1 = Bus(
-        name='Bus1',
+    
+    bus_1 = Bus(
+        name='bus_1',
         vnom=10,  # Nominal voltage in kV
         vmin=0.9,  # Bus minimum voltage in per unit
         vmax=1.1,  # Bus maximum voltage in per unit
@@ -23,16 +24,16 @@ def get_grid_lynn_5_bus_wiki():
         zone='Default',  # Zone (for grouping purposes only)
         substation='Default'  # Substation (for grouping purposes only)
     )
-    bus2 = Bus(name='Bus2')
-    bus3 = Bus(name='Bus3')
-    bus4 = Bus(name='Bus4')
-    bus5 = Bus(name='Bus5')
-    grid.add_bus(bus1)
-    grid.add_bus(bus2)
-    grid.add_bus(bus3)
-    grid.add_bus(bus4)
-    grid.add_bus(bus5)
-    l2 = Load(
+    bus_2 = Bus(name='bus_2')
+    bus_3 = Bus(name='bus_3')
+    bus_4 = Bus(name='bus_4')
+    bus_5 = Bus(name='bus_5')
+    grid.add_bus(bus_1)
+    grid.add_bus(bus_2)
+    grid.add_bus(bus_3)
+    grid.add_bus(bus_4)
+    grid.add_bus(bus_5)
+    load_2 = Load(
         name='Load',
         # impedance=complex(0, 0),
         # Impedance of the ZIP model in MVA at the nominal voltage
@@ -46,17 +47,17 @@ def get_grid_lynn_5_bus_wiki():
         mttf=0.0,  # Mean time to failure
         mttr=0.0  # Mean time to recovery
     )
-    grid.add_load(bus2, l2)
-    grid.add_load(bus3, Load(
+    grid.add_load(bus_2, load_2)
+    grid.add_load(bus_3, Load(
         # power=complex(25, 15)
     ))
-    grid.add_load(bus4, Load(
+    grid.add_load(bus_4, Load(
         # power=complex(40, 20)
     ))
-    grid.add_load(bus5, Load(
+    grid.add_load(bus_5, Load(
         # power=complex(50, 20)
     ))
-    g1 = Generator(
+    generator_1 = Generator(
         name='gen',
         active_power=0.0,
         # Active power in MW, since this generator is used to set the slack , is 0
@@ -68,10 +69,10 @@ def get_grid_lynn_5_bus_wiki():
         vset_prof=None,  # voltage set point profile
         active=True  # Is active?
     )
-    grid.add_generator(bus1, g1)
+    grid.add_generator(bus_1, generator_1)
     branch_1 = Branch(
-        bus_from=bus1,
-        bus_to=bus2,
+        bus_from=bus_1,
+        bus_to=bus_2,
         name='Line 1-2',
         r=0.05,  # resistance of the pi model in per unit
         x=0.11,  # reactance of the pi model in per unit
@@ -90,17 +91,17 @@ def get_grid_lynn_5_bus_wiki():
     )
     grid.add_branch(branch_1)
     grid.add_branch(
-        Branch(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
+        Branch(bus_1, bus_3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
     grid.add_branch(
-        Branch(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
+        Branch(bus_1, bus_5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
     grid.add_branch(
-        Branch(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
+        Branch(bus_2, bus_3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
     grid.add_branch(
-        Branch(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
+        Branch(bus_2, bus_5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
     grid.add_branch(
-        Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
+        Branch(bus_3, bus_4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
     grid.add_branch(
-        Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
+        Branch(bus_4, bus_5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
     grid.compile()
 

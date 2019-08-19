@@ -21,19 +21,19 @@ def test_line_losses_1():
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    bus_1 = Bus(name="bus_1", vnom=25)
 
     grid.add_bus(Bus0)
-    grid.add_bus(Bus1)
+    grid.add_bus(bus_1)
 
     # Create load
-    grid.add_load(Bus1, Load(name="Load0", P=1.0, Q=0.4))
+    grid.add_load(bus_1, Load(name="Load0", P=1.0, Q=0.4))
 
     # Create slack bus
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Branch(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.01, x=0.05))
+    grid.add_branch(Branch(bus_from=Bus0, bus_to=bus_1, name="Cable1", r=0.01, x=0.05))
 
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
@@ -102,21 +102,21 @@ def test_line_losses_2():
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
-    Bus2 = Bus(name="Bus1", vnom=25)
+    bus_1 = Bus(name="bus_1", vnom=25)
+    bus_2 = Bus(name="bus_1", vnom=25)
 
-    for b in Bus0, Bus1, Bus2:
+    for b in Bus0, bus_1, bus_2:
         grid.add_bus(b)
 
     # Create load
-    grid.add_load(Bus2, Load(name="Load0", P=1.0, Q=0.4))
+    grid.add_load(bus_2, Load(name="Load0", P=1.0, Q=0.4))
 
     # Create slack bus
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Branch(bus_from=Bus0, bus_to=Bus1, name="Cable0", r=0.005, x=0.025))
-    grid.add_branch(Branch(bus_from=Bus1, bus_to=Bus2, name="Cable1", r=0.005, x=0.025))
+    grid.add_branch(Branch(bus_from=Bus0, bus_to=bus_1, name="Cable0", r=0.005, x=0.025))
+    grid.add_branch(Branch(bus_from=bus_1, bus_to=bus_2, name="Cable1", r=0.005, x=0.025))
 
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
@@ -185,20 +185,20 @@ def test_line_losses_3():
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    bus_1 = Bus(name="bus_1", vnom=25)
 
-    for b in Bus0, Bus1:
+    for b in Bus0, bus_1:
         grid.add_bus(b)
 
     # Create load
-    grid.add_load(Bus1, Load(name="Load0", P=1.0, Q=0.4))
+    grid.add_load(bus_1, Load(name="Load0", P=1.0, Q=0.4))
 
     # Create slack bus
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Branch(bus_from=Bus0, bus_to=Bus1, name="Cable0", r=0.02, x=0.1))
-    grid.add_branch(Branch(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.02, x=0.1))
+    grid.add_branch(Branch(bus_from=Bus0, bus_to=bus_1, name="Cable0", r=0.02, x=0.1))
+    grid.add_branch(Branch(bus_from=Bus0, bus_to=bus_1, name="Cable1", r=0.02, x=0.1))
 
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
