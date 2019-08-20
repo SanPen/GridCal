@@ -244,8 +244,8 @@ if __name__ == "__main__":
     from scipy.sparse.linalg import spsolve
     # ##################################################################################################################
     np.set_printoptions(suppress=True)
-    pf = PowerFlow(circuit)
-    results = pf.run(method=PowerFlowMethods.ZMatrix, verbose=False, max_iter=10)
+    power_flow = PowerFlow(circuit)
+    results = power_flow.run(method=PowerFlowMethods.ZMatrix, verbose=False, max_iter=10)
 
     print('\nVoltage solution')
     print('converged', results.converged, ', err:', results.error)

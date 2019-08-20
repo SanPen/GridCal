@@ -20,8 +20,10 @@ from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import PowerFlow
+from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
+    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
 from GridCal.print_power_flow_results import print_power_flow_results
 from tests.conftest import ROOT_PATH
 
@@ -32,36 +34,36 @@ def test_demo_5_node(root_path):
     grid = MultiCircuit()
 
     # Add buses
-    bus1 = Bus('Bus 1', vnom=20)
-    # bus1.is_slack = True
-    grid.add_bus(bus1)
+    bus_1 = Bus('Bus 1', vnom=20)
+    # bus_1.is_slack = True
+    grid.add_bus(bus_1)
     gen1 = Generator('Slack Generator', voltage_module=1.0)
-    grid.add_generator(bus1, gen1)
+    grid.add_generator(bus_1, gen1)
 
-    bus2 = Bus('Bus 2', vnom=20)
-    grid.add_bus(bus2)
-    grid.add_load(bus2, Load('load 2', P=40, Q=20))
+    bus_2 = Bus('Bus 2', vnom=20)
+    grid.add_bus(bus_2)
+    grid.add_load(bus_2, Load('load 2', P=40, Q=20))
 
-    bus3 = Bus('Bus 3', vnom=20)
-    grid.add_bus(bus3)
-    grid.add_load(bus3, Load('load 3', P=25, Q=15))
+    bus_3 = Bus('Bus 3', vnom=20)
+    grid.add_bus(bus_3)
+    grid.add_load(bus_3, Load('load 3', P=25, Q=15))
 
-    bus4 = Bus('Bus 4', vnom=20)
-    grid.add_bus(bus4)
-    grid.add_load(bus4, Load('load 4', P=40, Q=20))
+    bus_4 = Bus('Bus 4', vnom=20)
+    grid.add_bus(bus_4)
+    grid.add_load(bus_4, Load('load 4', P=40, Q=20))
 
-    bus5 = Bus('Bus 5', vnom=20)
-    grid.add_bus(bus5)
-    grid.add_load(bus5, Load('load 5', P=50, Q=20))
+    bus_5 = Bus('Bus 5', vnom=20)
+    grid.add_bus(bus_5)
+    grid.add_load(bus_5, Load('load 5', P=50, Q=20))
 
     # add branches (Lines in this case)
-    grid.add_branch(Branch(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
-    grid.add_branch(Branch(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
-    grid.add_branch(Branch(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
-    grid.add_branch(Branch(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
-    grid.add_branch(Branch(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
-    grid.add_branch(Branch(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
-    grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
+    grid.add_branch(Branch(bus_1, bus_2, 'line 1-2', r=0.05, x=0.11, b=0.02))
+    grid.add_branch(Branch(bus_1, bus_3, 'line 1-3', r=0.05, x=0.11, b=0.02))
+    grid.add_branch(Branch(bus_1, bus_5, 'line 1-5', r=0.03, x=0.08, b=0.02))
+    grid.add_branch(Branch(bus_2, bus_3, 'line 2-3', r=0.04, x=0.09, b=0.02))
+    grid.add_branch(Branch(bus_2, bus_5, 'line 2-5', r=0.04, x=0.09, b=0.02))
+    grid.add_branch(Branch(bus_3, bus_4, 'line 3-4', r=0.06, x=0.13, b=0.03))
+    grid.add_branch(Branch(bus_4, bus_5, 'line 4-5', r=0.04, x=0.09, b=0.02))
     # grid.plot_graph()
     print('\n\n', grid.name)
 

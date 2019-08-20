@@ -23,14 +23,10 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
+from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
-from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
-from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
-from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
 

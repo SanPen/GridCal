@@ -7,8 +7,10 @@ Implemented by Santiago Peñate Vera 2018
 This implementation computes W[n] for all the buses outside the system matrix leading to better results
 """
 import numpy as np
+import pandas as pd
+
 np.set_printoptions(linewidth=32000, suppress=False)
-from numpy import zeros, ones, mod, angle, conj, array, c_, r_, linalg, Inf, complex128
+from numpy import zeros, mod, angle, conj, array, c_, r_, linalg, Inf, complex128
 from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
 from scipy.sparse import lil_matrix
@@ -256,18 +258,17 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
+def helm_chengxi_corrected(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
     """
     Helm Method
+
     :param Vbus: voltages array
     :param Sbus: Power injections array
-    :param Ibus: Currents injection array
     :param Ybus: System admittance matrix
     :param pq: list of pq node indices
     :param pv: list of pv node indices
     :param ref: list of slack node indices
     :param pqpv: list of pq and pv node indices sorted
-    :param tol: tolerance
     :return: Voltage array and the power mismatch
     """
 
@@ -295,7 +296,7 @@ def helm_(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9):
     W = zeros((1, nbus), dtype=complex_type)
 
     # Reactive power coefficients on the PV nodes: [order, pv bus index]
-    Q = zeros((1, npv), dtype=double)
+    Q = zeros((1, npv), dtype=np.double)
 
     # Assign the initial values
     V[0, :] = Vst
@@ -397,63 +398,3 @@ def res_2_df(V, Sbus, tpe):
     df = pd.DataFrame(data=data, columns=cols)
 
     return df
-
-
-if __name__ == '__main__':
-    from GridCal.Engine.calculation_engine import *
-    from matplotlib import pyplot as plt
-
-    grid = MultiCircuit()
-    # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('lynn5buspv.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx')
-
-    grid.compile()
-
-    circuit = grid.circuits[0]
-
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
-
-    start_time = time.time()
-
-    v, err = helm_(Vbus=circuit.power_flow_input.Vbus,
-                   Sbus=circuit.power_flow_input.Sbus,
-                   Ibus=circuit.power_flow_input.Ibus,
-                   Ybus=circuit.power_flow_input.Ybus,
-                   pq=circuit.power_flow_input.pq,
-                   pv=circuit.power_flow_input.pv,
-                   ref=circuit.power_flow_input.ref,
-                   pqpv=circuit.power_flow_input.pqpv)
-
-    print('HEM:')
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print('Results:\n', res_2_df(v, circuit.power_flow_input.Sbus, circuit.power_flow_input.types))
-    print('error: \t', err)
-
-    # check the HELM solution: v against the NR power flow
-    print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9, control_q=False)
-    power_flow = PowerFlow(grid, options)
-
-    start_time = time.time()
-    power_flow.run()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
-
-    print('Results:\n', res_2_df(vnr, circuit.power_flow_input.Sbus, circuit.power_flow_input.types))
-    print('error: \t', circuit.power_flow_results.error)
-
-    # check
-    print('\ndiff:\t', v - vnr)
-
-    plt.show()
