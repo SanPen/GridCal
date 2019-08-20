@@ -22,9 +22,7 @@ from pySOT.optimization_problems import OptimizationProblem
 from poap.controller import ThreadController, BasicWorkerThread
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_runnable import PowerFlow
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlow, PowerFlowOptions
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 

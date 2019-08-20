@@ -1,31 +1,300 @@
-import numpy as np
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
+import numpy as np
+from PySide2.QtCore import QRunnable
+
+
+from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode
+from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import LevenbergMarquardtPF
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS
+from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_vanilla
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import \
-    LevenbergMarquardtPF, NR_LS, IwamotoNR, NR_I_LS
-from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, \
-    lacpf
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import \
-    PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.steady_state.reactive_control_mode import \
-    ReactivePowerControlMode
-from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
-from GridCal.Engine.Simulations.PowerFlow.steady_state.taps_control_mode import \
-    TapsControlMode
-from GridCal.Engine.basic_structures import BusMode
-from research.power_flow.helm.helm_chengxi_2 import helm_chengxi_2
-from research.power_flow.helm.helm_chengxi_corrected import helm_chengxi_corrected
-from research.power_flow.helm.helm_chengxi_vanilla import helm_chengxi_vanilla
-from research.power_flow.helm.helm_pq import helm_pq
-from research.power_flow.helm.helm_vect_asu import helm_vect_asu
-from research.power_flow.helm.helm_wallace import helm_wallace
-from research.power_flow.helm.helm_z_pq import helm_z_pq
-from research.power_flow.helm.helm_z_pv import helm_z_pv
+
+
+class SolverType(Enum):
+    """
+    Refer to the :ref:`Power Flow section<power_flow>` for details about the different
+    algorithms supported by **GridCal**.
+    """
+
+    NR = 'Newton Raphson'
+    NRFD_XB = 'Fast decoupled XB'
+    NRFD_BX = 'Fast decoupled BX'
+    GAUSS = 'Gauss-Seidel'
+    DC = 'Linear DC'
+    HELM = 'Holomorphic Embedding'
+    ZBUS = 'Z-Gauss-Seidel'
+    IWAMOTO = 'Iwamoto-Newton-Raphson'
+    CONTINUATION_NR = 'Continuation-Newton-Raphson'
+    HELMZ = 'HELM-Z'
+    LM = 'Levenberg-Marquardt'
+    FASTDECOUPLED = 'Fast decoupled'
+    LACPF = 'Linear AC'
+    DC_OPF = 'Linear DC OPF'
+    AC_OPF = 'Linear AC OPF'
+    NRI = 'Newton-Raphson in current'
+    DYCORS_OPF = 'DYCORS OPF'
+    GA_OPF = 'Genetic Algorithm OPF'
+    NELDER_MEAD_OPF = 'Nelder Mead OPF'
+
+
+class ReactivePowerControlMode(Enum):
+    """
+    The :ref:`ReactivePowerControlMode<q_control>` offers 3 modes to control how
+    :ref:`Generator<generator>` objects supply reactive power:
+
+    **NoControl**: In this mode, the :ref:`generators<generator>` don't try to regulate
+    the voltage at their :ref:`bus<bus>`.
+
+    **Direct**: In this mode, the :ref:`generators<generator>` try to regulate the
+    voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
+    algorithm in an outer control loop. For grids with numerous
+    :ref:`generators<generator>` tied to the same system, for example wind farms, this
+    control method sometimes fails with some :ref:`generators<generator>` not trying
+    hard enough*. In this case, the simulation converges but the voltage controlled
+    :ref:`buses<bus>` do not reach their target voltage, while their
+    :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
+    case, the slower **Iterative** control mode may be used (see below).
+
+        ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
+        Jinquan Zhao
+
+        1) Bus i is a PQ bus in the previous iteration and its
+           reactive power was fixed at its lower limit:
+
+            If its voltage magnitude Vi >= Viset, then
+
+                it is still a PQ bus at current iteration and set Qi = Qimin .
+
+                If Vi < Viset , then
+
+                    compare Qi with the upper and lower limits.
+
+                    If Qi >= Qimax , then
+                        it is still a PQ bus but set Qi = Qimax .
+                    If Qi <= Qimin , then
+                        it is still a PQ bus and set Qi = Qimin .
+                    If Qimin < Qi < Qi max , then
+                        it is switched to PV bus, set Vinew = Viset.
+
+        2) Bus i is a PQ bus in the previous iteration and
+           its reactive power was fixed at its upper limit:
+
+            If its voltage magnitude Vi <= Viset , then:
+                bus i still a PQ bus and set Q i = Q i max.
+
+                If Vi > Viset , then
+
+                    Compare between Qi and its upper/lower limits
+
+                    If Qi >= Qimax , then
+                        it is still a PQ bus and set Q i = Qimax .
+                    If Qi <= Qimin , then
+                        it is still a PQ bus but let Qi = Qimin in current iteration.
+                    If Qimin < Qi < Qimax , then
+                        it is switched to PV bus and set Vinew = Viset
+
+        3) Bus i is a PV bus in the previous iteration.
+
+            Compare Q i with its upper and lower limits.
+
+            If Qi >= Qimax , then
+                it is switched to PQ and set Qi = Qimax .
+            If Qi <= Qimin , then
+                it is switched to PQ and set Qi = Qimin .
+            If Qi min < Qi < Qimax , then
+                it is still a PV bus.
+
+    **Iterative**: As mentioned above, the **Direct** control mode may not yield
+    satisfying results in some isolated cases. The **Direct** control mode tries to
+    jump to the final solution in a single or few iterations, but in grids where a
+    significant change in reactive power at one :ref:`generator<generator>` has a
+    significant impact on other :ref:`generators<generator>`, additional iterations may
+    be required to reach a satisfying solution.
+
+    Instead of trying to jump to the final solution, the **Iterative** mode raises or
+    lowers each :ref:`generator's<generator>` reactive power incrementally. The
+    increment is determined using a logistic function based on the difference between
+    the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
+    :code:`k` of the logistic function was determined through trial and error, with the
+    intent of reducing the number of iterations while avoiding instability. Other
+    values may be specified in :ref:`PowerFlowOptions<pf_options>`.
+
+    The :math:`Q_{Increment}` in per unit is determined by:
+
+    .. math::
+
+        Q_{Increment} = 2 * \\left[\\frac{1}{1 + e^{-k|V_2 - V_1|}}-0.5\\right]
+
+    Where:
+
+        k = 30 (by default)
+
+    """
+    NoControl = "NoControl"
+    Direct = "Direct"
+    Iterative = "Iterative"
+
+
+class TapsControlMode(Enum):
+    """
+    The :ref:`TapsControlMode<taps_control>` offers 3 modes to control how
+    :ref:`transformers<transformer>`' :ref:`tap changer<tap_changer>` regulate
+    voltage on their regulated :ref:`bus<bus>`:
+
+    **NoControl**: In this mode, the :ref:`transformers<transformer>` don't try to
+    regulate the voltage at their :ref:`bus<bus>`.
+
+    **Direct**: In this mode, the :ref:`transformers<transformer>` try to regulate
+    the voltage at their bus. **GridCal** does so by jumping straight to the tap that
+    corresponds to the desired transformation ratio, or the highest or lowest tap if
+    the desired ratio is outside of the tap range.
+
+    This behavior may fail in certain cases, especially if both the
+    :ref:`TapControlMode<taps_control>` and :ref:`ReactivePowerControlMode<q_control>`
+    are set to **Direct**. In this case, the simulation converges but the voltage
+    controlled :ref:`buses<bus>` do not reach their target voltage, while their
+    :ref:`generator(s)<generator>` haven't reached their reactive power limit. When
+    this happens, the slower **Iterative** control mode may be used (see below).
+
+    **Iterative**: As mentioned above, the **Direct** control mode may not yield
+    satisfying results in some isolated cases. The **Direct** control mode tries to
+    jump to the final solution in a single or few iterations, but in grids where a
+    significant change of tap at one :ref:`transformer<transformer>` has a
+    significant impact on other :ref:`transformers<transformer>`, additional
+    iterations may be required to reach a satisfying solution.
+
+    Instead of trying to jump to the final solution, the **Iterative** mode raises or
+    lowers each :ref:`transformer's<transformer>` tap incrementally.
+    """
+
+    NoControl = "NoControl"
+    Direct = "Direct"
+    Iterative = "Iterative"
+
+
+#######################################################################################
+# Power flow classes
+#######################################################################################
+
+
+class PowerFlowOptions:
+    """
+    Power flow options class; its object is used as an argument for the
+    :ref:`PowerFlowMP<pf_mp>` constructor.
+
+    Arguments:
+
+        **solver_type** (:ref:`SolverType<solver_type>`, SolverType.NR): Solver type
+
+        **retry_with_other_methods** (bool, True): Use a battery of methods to tackle
+        the problem if the main solver fails
+
+        **verbose** (bool, False): Print additional details in the logger
+
+        **initialize_with_existing_solution** (bool, True): *To be detailed*
+
+        **tolerance** (float, 1e-6): Solution tolerance for the power flow numerical
+        methods
+
+        **max_iter** (int, 25): Maximum number of iterations for the power flow
+        numerical method
+
+        **max_outer_loop_iter** (int, 100): Maximum number of iterations for the
+        controls outer loop
+
+        **control_q** (:ref:`ReactivePowerControlMode<q_control>`,
+        ReactivePowerControlMode.NoControl): Control mode for the PV nodes reactive
+        power limits
+
+        **control_taps** (:ref:`TapsControlMode<taps_control>`,
+        TapsControlMode.NoControl): Control mode for the transformer taps equipped with
+        a voltage regulator (as part of the outer loop)
+
+        **multi_core** (bool, False): Use multi-core processing? applicable for time
+        series
+
+        **dispatch_storage** (bool, False): Dispatch storage?
+
+        **control_p** (bool, False): Control active power (optimization dispatch)
+
+        **apply_temperature_correction** (bool, False): Apply the temperature
+        correction to the resistance of the branches?
+
+        **branch_impedance_tolerance_mode** (BranchImpedanceMode,
+        BranchImpedanceMode.Specified): Type of modification of the branches impedance
+
+        **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the
+        :ref:`ReactivePowerControlMode<q_control>` iterative control
+
+    """
+
+    def __init__(self,
+                 solver_type: SolverType = SolverType.NR,
+                 retry_with_other_methods=True,
+                 verbose=False,
+                 initialize_with_existing_solution=True,
+                 tolerance=1e-6,
+                 max_iter=25,
+                 max_outer_loop_iter=100,
+                 control_q=ReactivePowerControlMode.NoControl,
+                 control_taps=TapsControlMode.NoControl,
+                 multi_core=False,
+                 dispatch_storage=False,
+                 control_p=False,
+                 apply_temperature_correction=False,
+                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+                 q_steepness_factor=30,
+                 ):
+
+        self.solver_type = solver_type
+
+        self.retry_with_other_methods = retry_with_other_methods
+
+        self.tolerance = tolerance
+
+        self.max_iter = max_iter
+
+        self.max_outer_loop_iter = max_outer_loop_iter
+
+        self.control_Q = control_q
+
+        self.control_P = control_p
+
+        self.verbose = verbose
+
+        self.initialize_with_existing_solution = initialize_with_existing_solution
+
+        self.multi_thread = multi_core
+
+        self.dispatch_storage = dispatch_storage
+
+        self.control_taps = control_taps
+
+        self.apply_temperature_correction = apply_temperature_correction
+
+        self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
+
+        self.q_steepness_factor = q_steepness_factor
 
 
 class PowerFlowMP:
@@ -37,7 +306,7 @@ class PowerFlowMP:
         **grid** (:ref:`MultiCircuit<multicircuit>`): Electrical grid to run the power
         flow in
 
-        **options** (:ref:`PowerFlowOptions<power_flow_options>`): Power flow options to use
+        **options** (:ref:`PowerFlowOptions<pf_options>`): Power flow options to use
     """
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
@@ -67,6 +336,7 @@ class PowerFlowMP:
         pq = np.where(types == BusMode.PQ.value[0])[0]
         pv = np.where(types == BusMode.PV.value[0])[0]
         ref = np.where(types == BusMode.REF.value[0])[0]
+        sto = np.where(types == BusMode.STO_DISPATCH.value)[0]
 
         if len(ref) == 0:  # there is no slack!
 
@@ -140,243 +410,110 @@ class PowerFlowMP:
         """
         # type HELM
         if solver_type == SolverType.HELM:
-            V0, converged, normF, Scalc, it, el = helm_vanilla(
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                pq=pq,
-                pv=pv,
-                ref=ref,
-                pqpv=pqpv,
-                tol=tolerance,
-                max_coefficient_count=max_iter,
-            )
-
-        elif solver_type == SolverType.HELM_PQ:
-            V0, converged, normF, Scalc, it, el = helm_pq(
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                pq=pq,
-                pv=pv,
-                ref=ref,
-                pqpv=pqpv,
-                tol=tolerance,
-                Ibus=Ibus,
-                Yserie=Yseries,
-                Ysh=None,  # TODO Get this from somewhere
-            )
-
-        elif solver_type == SolverType.HELM_VECT_ASU:
-            V0, converged, normF, Scalc, it, el = helm_vect_asu(
-                pq=pq,
-                pv=pv,
-                Ysh=None,  # TODO Get this from somewhere
-                Y=None,  # TODO Get this from somewhere
-                Ys=Yseries,
-                max_coefficient_count = None,  # TODO Get this from somewhere
-                S = None,  # TODO Get this from somewhere
-                voltage_set_points = None,  # TODO Get this from somewhere
-                vd = None,  # TODO Get this from somewhere
-            )
-
-        elif solver_type == SolverType.HELM_CHENGXI_2:
-            V0, converged, normF, Scalc, it, el = helm_chengxi_2(
-                pq=pq,
-                pv=pv,
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                ref=ref,
-                pqpv=pqpv,
-            )
-
-        elif solver_type == SolverType.HELM_CHENGXI_CORRECTED:
-            V0, converged, normF, Scalc, it, el = helm_chengxi_corrected(
-                pq=pq,
-                pv=pv,
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                ref=ref,
-                pqpv=pqpv,
-            )
-
-        elif solver_type == SolverType.HELM_CHENGXI_VANILLA:
-            V0, converged, normF, Scalc, it, el = helm_chengxi_vanilla(
-                pq=pq,
-                pv=pv,
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                ref=ref,
-                pqpv=pqpv,
-            )
-
-        elif solver_type == SolverType.HELM_VECT_ASU:
-            V0, converged, normF, Scalc, it, el = helm_vect_asu(
-                Y=None,  # TODO Get this from somewhere
-                Ys=Yseries,
-                Ysh=None,  # TODO Get this from somewhere
-                max_coefficient_count=max_iter,
-                S=None,  # TODO Get this from somewhere
-                voltage_set_points=None,  # TODO Get this from somewhere
-                vd=None,  # TODO Get this from somewhere
-                eps=1e-3,  # TODO Get this from somewhere
-                use_pade=False,  # TODO Get this from somewhere
-                pv=pv,
-                pq=pq,
-            )
-
-        elif solver_type == SolverType.HELM_WALLACE:
-            V0, converged, normF, Scalc, it, el = helm_wallace(
-                pq=pq,
-                pv=pv,
-                Sbus=Sbus,
-                ref=ref,
-                pqpv=pqpv,
-                Y_series=None,  # TODO Get this from somewhere
-                Y_shunt=None,  # TODO Get this from somewhere
-                voltageSetPoints=None,  # TODO Get this from somewhere
-                types=None,  # TODO Get this from somewhere
-                eps=1e-3,  # TODO Get this from somewhere
-                maxcoefficientCount=50,  # TODO Get this from somewhere
-            )
-
-        elif solver_type == SolverType.HELM_Z_PQ:
-            V0, converged, normF, Scalc, it, el = helm_z_pq(
-                pq=pq,
-                pv=pv,
-                Sbus=Sbus,
-                ref=ref,
-                pqpv=pqpv,
-                Vbus=V0,
-                Ibus=Ibus,
-                Ybus=Ybus,
-            )
-
-        elif solver_type == SolverType.HELM_Z_PV:
-            V0, converged, normF, Scalc, it, el = helm_z_pv(
-                admittances=None,  # TODO Get this from somewhere
-                slackIndices=None,  # TODO Get this from somewhere
-                maxcoefficientCount=None,  # TODO Get this from somewhere
-                powerInjections=None,  # TODO Get this from somewhere
-                voltageSetPoints=None,  # TODO Get this from somewhere
-                types=None,  # TODO Get this from somewhere
-                eps=1e-3,  # TODO Get this from somewhere
-                usePade=True,  # TODO Get this from somewhere
-                inherited_pv=None,  # TODO Get this from somewhere
-            )
+            V0, converged, normF, Scalc, it, el = helm(Vbus=V0,
+                                                       Sbus=Sbus,
+                                                       Ybus=Ybus,
+                                                       pq=pq,
+                                                       pv=pv,
+                                                       ref=ref,
+                                                       pqpv=pqpv,
+                                                       tol=tolerance,
+                                                       max_coefficient_count=max_iter)
 
         # type DC
         elif solver_type == SolverType.DC:
-            V0, converged, normF, Scalc, it, el = dcpf(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                Ibus=Ibus,
-                V0=V0,
-                ref=ref,
-                pvpq=pqpv,
-                pq=pq,
-                pv=pv,
-            )
+            V0, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
+                                                       Sbus=Sbus,
+                                                       Ibus=Ibus,
+                                                       V0=V0,
+                                                       ref=ref,
+                                                       pvpq=pqpv,
+                                                       pq=pq,
+                                                       pv=pv)
 
         # LAC PF
         elif solver_type == SolverType.LACPF:
-            V0, converged, normF, Scalc, it, el = lacpf(
-                Y=Ybus,
-                Ys=Yseries,
-                S=Sbus,
-                I=Ibus,
-                Vset=V0,
-                pq=pq,
-                pv=pv,
-            )
+
+            V0, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
+                                                        Ys=Yseries,
+                                                        S=Sbus,
+                                                        I=Ibus,
+                                                        Vset=V0,
+                                                        pq=pq,
+                                                        pv=pv)
 
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
-            V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=Ybus,
+                                                                       Sbus=Sbus,
+                                                                       V0=V0,
+                                                                       Ibus=Ibus,
+                                                                       pv=pv,
+                                                                       pq=pq,
+                                                                       tol=tolerance,
+                                                                       max_it=max_iter)
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
-            V0, converged, normF, Scalc, it, el = FDPF(
-                Vbus=V0,
-                Sbus=Sbus,
-                Ibus=Ibus,
-                Ybus=Ybus,
-                B1=B1,
-                B2=B2,
-                pq=pq,
-                pv=pv,
-                pqpv=pqpv,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            V0, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
+                                                       Sbus=Sbus,
+                                                       Ibus=Ibus,
+                                                       Ybus=Ybus,
+                                                       B1=B1,
+                                                       B2=B2,
+                                                       pq=pq,
+                                                       pv=pv,
+                                                       pqpv=pqpv,
+                                                       tol=tolerance,
+                                                       max_it=max_iter)
 
         # Newton-Raphson
         elif solver_type == SolverType.NR:
             # Solve NR with the linear AC solution
-            V0, converged, normF, Scalc, it, el = NR_LS(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            V0, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
+                                                        Sbus=Sbus,
+                                                        V0=V0,
+                                                        Ibus=Ibus,
+                                                        pv=pv,
+                                                        pq=pq,
+                                                        tol=tolerance,
+                                                        max_it=max_iter)
 
         # Newton-Raphson-Iwamoto
         elif solver_type == SolverType.IWAMOTO:
-            V0, converged, normF, Scalc, it, el = IwamotoNR(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-                robust=True,
-            )
+            V0, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
+                                                            Sbus=Sbus,
+                                                            V0=V0,
+                                                            Ibus=Ibus,
+                                                            pv=pv,
+                                                            pq=pq,
+                                                            tol=tolerance,
+                                                            max_it=max_iter,
+                                                            robust=True)
 
         # Newton-Raphson in current equations
         elif solver_type == SolverType.NRI:
             # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
-            V0, converged, normF, Scalc, it, el = NR_I_LS(
-                Ybus=Ybus,
-                Sbus_sp=Sbus,
-                V0=V0,
-                Ibus_sp=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            V0, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
+                                                          Sbus_sp=Sbus,
+                                                          V0=V0,
+                                                          Ibus_sp=Ibus,
+                                                          pv=pv,
+                                                          pq=pq,
+                                                          tol=tolerance,
+                                                          max_it=max_iter)
 
         # for any other method, for now, do a LM
         else:
             V0, converged, \
-            normF, Scalc, it, el = LevenbergMarquardtPF(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=Ybus,
+                                                        Sbus=Sbus,
+                                                        V0=V0,
+                                                        Ibus=Ibus,
+                                                        pv=pv,
+                                                        pq=pq,
+                                                        tol=tolerance,
+                                                        max_it=max_iter)
 
         return V0, converged, normF, Scalc, it, el
 
@@ -453,22 +590,20 @@ class PowerFlowMP:
             else:
 
                 # run the power flow method that shall be run
-                voltage_solution, converged, normF, Scalc, it, el = self.solve(
-                    solver_type=solver_type,
-                    V0=voltage_solution,
-                    Sbus=Sbus,
-                    Ibus=Ibus,
-                    Ybus=circuit.Ybus,
-                    Yseries=circuit.Yseries,
-                    B1=circuit.B1,
-                    B2=circuit.B2,
-                    pq=pq,
-                    pv=pv,
-                    ref=ref,
-                    pqpv=pqpv,
-                    tolerance=self.options.tolerance,
-                    max_iter=self.options.max_iter,
-                )
+                voltage_solution, converged, normF, Scalc, it, el = self.solve(solver_type=solver_type,
+                                                                               V0=voltage_solution,
+                                                                               Sbus=Sbus,
+                                                                               Ibus=Ibus,
+                                                                               Ybus=circuit.Ybus,
+                                                                               Yseries=circuit.Yseries,
+                                                                               B1=circuit.B1,
+                                                                               B2=circuit.B2,
+                                                                               pq=pq,
+                                                                               pv=pv,
+                                                                               ref=ref,
+                                                                               pqpv=pqpv,
+                                                                               tolerance=self.options.tolerance,
+                                                                               max_iter=self.options.max_iter)
                 # record the method used
                 methods.append(solver_type)
 
@@ -480,32 +615,30 @@ class PowerFlowMP:
                         voltage_solution, \
                         Qnew, \
                         types_new, \
-                        any_q_control_issue = self.control_q_direct(
-                            V=voltage_solution,
-                            Vset=np.abs(voltage_solution),
-                            Q=Scalc.imag,
-                            Qmax=circuit.Qmax,
-                            Qmin=circuit.Qmin,
-                            types=circuit.types,
-                            original_types=original_types,
-                            verbose=self.options.verbose,
-                        )
+                        any_q_control_issue = self.control_q_direct(V=voltage_solution,
+                                                                    Vset=np.abs(voltage_solution),
+                                                                    Q=Scalc.imag,
+                                                                    Qmax=circuit.Qmax,
+                                                                    Qmin=circuit.Qmin,
+                                                                    types=circuit.types,
+                                                                    original_types=original_types,
+                                                                    verbose=self.options.verbose,
+                                                                    )
 
                     elif self.options.control_Q == ReactivePowerControlMode.Iterative:
 
                         Qnew, \
                         types_new, \
-                        any_q_control_issue = self.control_q_iterative(
-                            V=voltage_solution,
-                            Vset=Vset,
-                            Q=Scalc.imag,
-                            Qmax=circuit.Qmax,
-                            Qmin=circuit.Qmin,
-                            types=circuit.types,
-                            original_types=original_types,
-                            verbose=self.options.verbose,
-                            k=self.options.q_steepness_factor,
-                        )
+                        any_q_control_issue = self.control_q_iterative(V=voltage_solution,
+                                                                       Vset=Vset,
+                                                                       Q=Scalc.imag,
+                                                                       Qmax=circuit.Qmax,
+                                                                       Qmin=circuit.Qmin,
+                                                                       types=circuit.types,
+                                                                       original_types=original_types,
+                                                                       verbose=self.options.verbose,
+                                                                       k=self.options.q_steepness_factor,
+                                                                       )
 
                     else:
                         # did not check Q limits
@@ -527,36 +660,32 @@ class PowerFlowMP:
                     if self.options.control_taps == TapsControlMode.Direct:
 
                         stable, tap_module, \
-                        tap_positions = self.control_taps_direct(
-                            voltage=voltage_solution,
-                            T=circuit.T,
-                            bus_to_regulated_idx=circuit.bus_to_regulated_idx,
-                            tap_position=tap_positions,
-                            tap_module=tap_module,
-                            min_tap=circuit.min_tap,
-                            max_tap=circuit.max_tap,
-                            tap_inc_reg_up=circuit.tap_inc_reg_up,
-                            tap_inc_reg_down=circuit.tap_inc_reg_down,
-                            vset=circuit.vset,
-                            verbose=self.options.verbose,
-                        )
+                        tap_positions = self.control_taps_direct(voltage=voltage_solution,
+                                                                 T=circuit.T,
+                                                                 bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                 tap_position=tap_positions,
+                                                                 tap_module=tap_module,
+                                                                 min_tap=circuit.min_tap,
+                                                                 max_tap=circuit.max_tap,
+                                                                 tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                 tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                 vset=circuit.vset,
+                                                                 verbose=self.options.verbose)
 
                     elif self.options.control_taps == TapsControlMode.Iterative:
 
                         stable, tap_module, \
-                        tap_positions = self.control_taps_iterative(
-                            voltage=voltage_solution,
-                            T=circuit.T,
-                            bus_to_regulated_idx=circuit.bus_to_regulated_idx,
-                            tap_position=tap_positions,
-                            tap_module=tap_module,
-                            min_tap=circuit.min_tap,
-                            max_tap=circuit.max_tap,
-                            tap_inc_reg_up=circuit.tap_inc_reg_up,
-                            tap_inc_reg_down=circuit.tap_inc_reg_down,
-                            vset=circuit.vset,
-                            verbose=self.options.verbose,
-                        )
+                        tap_positions = self.control_taps_iterative(voltage=voltage_solution,
+                                                                    T=circuit.T,
+                                                                    bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                                    tap_position=tap_positions,
+                                                                    tap_module=tap_module,
+                                                                    min_tap=circuit.min_tap,
+                                                                    max_tap=circuit.max_tap,
+                                                                    tap_inc_reg_up=circuit.tap_inc_reg_up,
+                                                                    tap_inc_reg_down=circuit.tap_inc_reg_down,
+                                                                    vset=circuit.vset,
+                                                                    verbose=self.options.verbose)
 
                     if not stable:
                         # recompute the admittance matrices based on the tap changes
@@ -590,24 +719,22 @@ class PowerFlowMP:
             flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
-        results = PowerFlowResults(
-            Sbus=Sbus,
-            voltage=voltage_solution,
-            Sbranch=Sbranch,
-            Ibranch=Ibranch,
-            Vbranch=Vbranch,
-            loading=loading,
-            losses=losses,
-            flow_direction=flow_direction,
-            tap_module=tap_module,
-            error=errors,
-            converged=converged_lst,
-            Qpv=Sbus.imag[pv],
-            inner_it=inner_it,
-            outer_it=outer_it,
-            elapsed=elapsed,
-            methods=methods,
-        )
+        results = PowerFlowResults(Sbus=Sbus,
+                                   voltage=voltage_solution,
+                                   Sbranch=Sbranch,
+                                   Ibranch=Ibranch,
+                                   Vbranch=Vbranch,
+                                   loading=loading,
+                                   losses=losses,
+                                   flow_direction=flow_direction,
+                                   tap_module=tap_module,
+                                   error=errors,
+                                   converged=converged_lst,
+                                   Qpv=Sbus.imag[pv],
+                                   inner_it=inner_it,
+                                   outer_it=outer_it,
+                                   elapsed=elapsed,
+                                   methods=methods)
 
         return results
 
@@ -620,7 +747,7 @@ class PowerFlowMP:
         The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
 
         The default steepness factor k was set through trial an error. Other values may
-        be specified as a :ref:`PowerFlowOptions<power_flow_options>`.
+        be specified as a :ref:`PowerFlowOptions<pf_options>`.
 
         Arguments:
 
@@ -1281,13 +1408,11 @@ class PowerFlowMP:
             V0 = Vbus.copy()
 
             # solve the power flow
-            results = self.single_power_flow(
-                circuit=circuit,
-                solver_type=solver,
-                voltage_solution=V0,
-                Sbus=Sbus,
-                Ibus=Ibus,
-            )
+            results = self.single_power_flow(circuit=circuit,
+                                             solver_type=solver,
+                                             voltage_solution=V0,
+                                             Sbus=Sbus,
+                                             Ibus=Ibus)
 
             # did it worked?
             worked = np.all(results.converged)
@@ -1454,3 +1579,90 @@ class PowerFlowMP:
 
     def cancel(self):
         self.__cancel__ = True
+
+
+def power_flow_worker(t, options: PowerFlowOptions, circuit: CalculationInputs, Vbus, Sbus, Ibus, return_dict):
+    """
+    Power flow worker to schedule parallel power flows
+        **t: execution index
+        **options: power flow options
+        **circuit: circuit
+        **Vbus: Voltages to initialize
+        **Sbus: Power injections
+        **Ibus: Current injections
+        **return_dict: parallel module dictionary in wich to return the values
+    :return:
+    """
+
+    instance = PowerFlowMP(None, options)
+    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
+
+
+def power_flow_worker_args(args):
+    """
+    Power flow worker to schedule parallel power flows
+
+    args -> t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict
+
+
+        **t: execution index
+        **options: power flow options
+        **circuit: circuit
+        **Vbus: Voltages to initialize
+        **Sbus: Power injections
+        **Ibus: Current injections
+        **return_dict: parallel module dictionary in wich to return the values
+    :return:
+    """
+    t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
+    instance = PowerFlowMP(None, options)
+    return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
+
+
+class PowerFlow(QRunnable):
+    """
+    Power flow wrapper to use with Qt
+    """
+
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+        """
+        PowerFlow class constructor
+        **grid: MultiCircuit Object
+        """
+        QRunnable.__init__(self)
+
+        # Grid to run a power flow in
+        self.grid = grid
+
+        # Options to use
+        self.options = options
+
+        self.results = None
+
+        self.pf = PowerFlowMP(grid, options)
+
+        self.__cancel__ = False
+
+    def get_steps(self):
+        return list()
+
+    def run(self):
+        """
+        Pack run_pf for the QThread
+        :return:
+        """
+
+        results = self.pf.run()
+        self.results = results
+
+    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
+        """
+        Run a power flow for every circuit
+        @return:
+        """
+
+        return self.pf.run_pf(circuit, Vbus, Sbus, Ibus)
+
+    def cancel(self):
+        self.__cancel__ = True
+

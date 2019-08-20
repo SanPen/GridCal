@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+from enum import Enum
 import numpy as np
 import time
 from PySide2.QtCore import QThread, Signal
@@ -21,8 +22,9 @@ from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
 from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
-from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
-
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
+from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 
 ########################################################################################################################
 # Optimal Power flow classes

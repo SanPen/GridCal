@@ -17,8 +17,7 @@ import numpy as np
 
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Devices import DeviceType
@@ -155,11 +154,11 @@ class ReliabilityStudy(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, power_flow_options: PowerFlowOptions):
+    def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
         """
         VoltageCollapse constructor
         @param circuit: NumericalCircuit instance
-        @param power_flow_options: power flow options instance
+        @param pf_options: power flow options instance
         """
         QThread.__init__(self)
 
@@ -167,7 +166,7 @@ class ReliabilityStudy(QThread):
         self.circuit = circuit
 
         # voltage stability options
-        self.power_flow_options = power_flow_options
+        self.pf_options = pf_options
 
         self.results = list()
 
@@ -211,6 +210,6 @@ if __name__ == '__main__':
     circuit_ = MultiCircuit()
     circuit_.load_file(fname)
 
-    study = ReliabilityStudy(circuit=circuit_, power_flow_options=PowerFlowOptions())
+    study = ReliabilityStudy(circuit=circuit_, pf_options=PowerFlowOptions())
 
     study.run()

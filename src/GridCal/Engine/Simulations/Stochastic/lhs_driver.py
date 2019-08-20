@@ -22,12 +22,8 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_worker import \
-    power_flow_worker
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_mp import PowerFlowMP
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.time_series.time_series_driver import TimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowMP, PowerFlowOptions, power_flow_worker
+from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
 
 
 class LatinHypercubeSampling(QThread):

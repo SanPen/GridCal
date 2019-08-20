@@ -44,8 +44,8 @@ if __name__ == "__main__":
     print("Vbus")
     print(data.Vbus)
 
-    power_flow = PowerFlow(circuit_)
-    results = power_flow.run(method=PowerFlowMethods.NewtonRaphson, verbose=True)
+    pf = PowerFlow(circuit_)
+    results = pf.run(method=PowerFlowMethods.NewtonRaphson, verbose=True)
 
     print('\nVoltage solution')
     print('converged', results.converged, ', err:', results.error)

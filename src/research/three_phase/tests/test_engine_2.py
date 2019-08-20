@@ -80,8 +80,8 @@ if __name__ == "__main__":
 
     data = circuit_.compile()
 
-    power_flow = PowerFlow(circuit_)
-    results = power_flow.run(method=PowerFlowMethods.NewtonRaphson, verbose=True, max_iter=10)
+    pf = PowerFlow(circuit_)
+    results = pf.run(method=PowerFlowMethods.NewtonRaphson, verbose=True, max_iter=10)
 
     print('\nVoltage solution')
     print('converged', results.converged, ', err:', results.error)

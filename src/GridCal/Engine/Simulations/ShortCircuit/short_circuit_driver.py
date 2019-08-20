@@ -14,18 +14,16 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
-import numpy as np
-
+from numpy import complex, zeros, conj, maximum, array
 from scipy.sparse.linalg import inv
 from matplotlib import pyplot as plt
 from PySide2.QtCore import QRunnable
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import \
-    PowerFlowResults
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_3p
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.plot_config import LINEWIDTH
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
@@ -114,25 +112,25 @@ class ShortCircuitResults(PowerFlowResults):
         @param m: number of branches
         @return:
         """
-        self.Sbus = np.zeros(n, dtype=np.complex)
+        self.Sbus = zeros(n, dtype=complex)
 
-        self.voltage = np.zeros(n, dtype=np.complex)
+        self.voltage = zeros(n, dtype=complex)
 
-        self.short_circuit_power = np.zeros(n, dtype=np.complex)
+        self.short_circuit_power = zeros(n, dtype=complex)
 
-        self.overvoltage = np.zeros(n, dtype=np.complex)
+        self.overvoltage = zeros(n, dtype=complex)
 
-        self.undervoltage = np.zeros(n, dtype=np.complex)
+        self.undervoltage = zeros(n, dtype=complex)
 
-        self.Sbranch = np.zeros(m, dtype=np.complex)
+        self.Sbranch = zeros(m, dtype=complex)
 
-        self.Ibranch = np.zeros(m, dtype=np.complex)
+        self.Ibranch = zeros(m, dtype=complex)
 
-        self.loading = np.zeros(m, dtype=np.complex)
+        self.loading = zeros(m, dtype=complex)
 
-        self.losses = np.zeros(m, dtype=np.complex)
+        self.losses = zeros(m, dtype=complex)
 
-        self.overloads = np.zeros(m, dtype=np.complex)
+        self.overloads = zeros(m, dtype=complex)
 
         self.error = 0
 
@@ -194,7 +192,7 @@ class ShortCircuitResults(PowerFlowResults):
             ax = fig.add_subplot(111)
 
         if indices is None:
-            indices = np.array(range(len(names)))
+            indices = array(range(len(names)))
 
         if len(indices) > 0:
             labels = names[indices]
@@ -279,7 +277,7 @@ class ShortCircuit(QRunnable):
 
         # compile the buses short circuit impedance array
         n = len(grid.buses)
-        Zf = np.zeros(n, dtype=np.complex)
+        Zf = zeros(n, dtype=complex)
         for i in range(n):
             Zf[i] = grid.buses[i].get_fault_impedance()
 
@@ -313,7 +311,7 @@ class ShortCircuit(QRunnable):
         middle_bus = Bus()
 
         # set the bus fault impedance
-        middle_bus.Zf = np.complex(r_fault, x_fault)
+        middle_bus.Zf = complex(r_fault, x_fault)
 
         br1 = Branch(bus_from=branch.bus_from,
                      bus_to=middle_bus,
@@ -371,12 +369,12 @@ class ShortCircuit(QRunnable):
 
             # voltage, Sbranch, loading, losses, error, converged, Qpv
             results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
-                                          voltage=np.zeros(nbus, dtype=np.complex),
-                                          Sbranch=np.zeros(nbr, dtype=np.complex),
-                                          Ibranch=np.zeros(nbr, dtype=np.complex),
-                                          loading=np.zeros(nbr, dtype=np.complex),
-                                          losses=np.zeros(nbr, dtype=np.complex),
-                                          SCpower=np.zeros(nbus, dtype=np.complex),
+                                          voltage=zeros(nbus, dtype=complex),
+                                          Sbranch=zeros(nbr, dtype=complex),
+                                          Ibranch=zeros(nbr, dtype=complex),
+                                          loading=zeros(nbr, dtype=complex),
+                                          losses=zeros(nbr, dtype=complex),
+                                          SCpower=zeros(nbus, dtype=complex),
                                           error=0,
                                           converged=True,
                                           Qpv=None)
@@ -393,11 +391,11 @@ class ShortCircuit(QRunnable):
         """
         If = calculation_inputs.Yf * V
         It = calculation_inputs.Yt * V
-        Sf = (calculation_inputs.C_branch_bus_f * V) * np.conj(If)
-        St = (calculation_inputs.C_branch_bus_t * V) * np.conj(It)
+        Sf = (calculation_inputs.C_branch_bus_f * V) * conj(If)
+        St = (calculation_inputs.C_branch_bus_t * V) * conj(It)
         losses = Sf - St
-        Ibranch = np.maximum(If, It)
-        Sbranch = np.maximum(Sf, St)
+        Ibranch = maximum(If, It)
+        Sbranch = maximum(Sf, St)
         loading = Sbranch * calculation_inputs.Sbase / calculation_inputs.branch_rates
 
         # idx = where(abs(loading) == inf)[0]
