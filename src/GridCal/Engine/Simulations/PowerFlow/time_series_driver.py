@@ -15,24 +15,18 @@
 
 import json
 import pandas as pd
+from numpy import complex, zeros, ones, array, zeros_like
 import numpy as np
-
 import multiprocessing
 from matplotlib import pyplot as plt
 
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import \
-    PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_worker \
-    import power_flow_worker
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_mp import \
-    PowerFlowMP
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options \
-    import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -54,28 +48,28 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.time = time
 
-        self.bus_types = np.zeros(n, dtype=int)
+        self.bus_types = zeros(n, dtype=int)
 
         if nt > 0:
-            self.voltage = np.zeros((nt, n), dtype=np.complex)
+            self.voltage = zeros((nt, n), dtype=complex)
 
-            self.S = np.zeros((nt, n), dtype=np.complex)
+            self.S = zeros((nt, n), dtype=complex)
 
-            self.Sbranch = np.zeros((nt, m), dtype=np.complex)
+            self.Sbranch = zeros((nt, m), dtype=complex)
 
-            self.Ibranch = np.zeros((nt, m), dtype=np.complex)
+            self.Ibranch = zeros((nt, m), dtype=complex)
 
-            self.Vbranch = np.zeros((nt, m), dtype=np.complex)
+            self.Vbranch = zeros((nt, m), dtype=complex)
 
-            self.loading = np.zeros((nt, m), dtype=np.complex)
+            self.loading = zeros((nt, m), dtype=complex)
 
-            self.losses = np.zeros((nt, m), dtype=np.complex)
+            self.losses = zeros((nt, m), dtype=complex)
 
-            self.flow_direction = np.zeros((nt, m), dtype=float)
+            self.flow_direction = zeros((nt, m), dtype=float)
 
-            self.error = np.zeros(nt)
+            self.error = zeros(nt)
 
-            self.converged = np.ones(nt, dtype=bool)  # guilty assumption
+            self.converged = ones(nt, dtype=bool)  # guilty assumption
 
             self.overloads = [None] * nt
 
@@ -258,10 +252,10 @@ class TimeSeriesResults(PowerFlowResults):
         Analyze the results
         @return:
         """
-        branch_overload_frequency = np.zeros(self.m)
-        bus_undervoltage_frequency = np.zeros(self.n)
-        bus_overvoltage_frequency = np.zeros(self.n)
-        buses_selected_for_storage_frequency = np.zeros(self.n)
+        branch_overload_frequency = zeros(self.m)
+        bus_undervoltage_frequency = zeros(self.n)
+        bus_overvoltage_frequency = zeros(self.n)
+        buses_selected_for_storage_frequency = zeros(self.n)
         for i in range(self.nt):
             branch_overload_frequency[self.overloads_idx[i]] += 1
             bus_undervoltage_frequency[self.undervoltage_idx[i]] += 1
@@ -286,7 +280,7 @@ class TimeSeriesResults(PowerFlowResults):
             ax = fig.add_subplot(111)
 
         if indices is None:
-            indices = np.array(range(len(names)))
+            indices = array(range(len(names)))
 
         if len(indices) > 0:
 
@@ -343,7 +337,7 @@ class TimeSeriesResults(PowerFlowResults):
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BatteryPower:
-                data = np.zeros_like(self.losses[:, indices])
+                data = zeros_like(self.losses[:, indices])
                 y_label = '$\Delta$ (MVA)'
                 title = 'Battery power'
 
@@ -440,7 +434,7 @@ class TimeSeries(QThread):
         time_series_results.bus_types = numerical_circuit.bus_types
 
         # for each partition of the profiles...
-        for _, calc_inputs in calc_inputs_dict.items():
+        for t_key, calc_inputs in calc_inputs_dict.items():
 
             # For every island, run the time series
             for island_index, calculation_input in enumerate(calc_inputs):
@@ -485,6 +479,7 @@ class TimeSeries(QThread):
                             # set the power values
                             # if the storage dispatch option is active, the batteries power is not included
                             # therefore, it shall be included after processing
+                            Ysh = calculation_input.Ysh_prof[:, it]
                             I = calculation_input.Ibus_prof[:, it]
                             S = calculation_input.Sbus_prof[:, it]
 
@@ -650,7 +645,7 @@ class TimeSeries(QThread):
             # there are more than one partition
 
             # for each partition of the profiles...
-            for _, calc_inputs in calc_inputs_dict.items():
+            for t_key, calc_inputs in calc_inputs_dict.items():
 
                 # For every island, run the time series
                 for island_index, calculation_input in enumerate(calc_inputs):
@@ -685,22 +680,15 @@ class TimeSeries(QThread):
                                 # set the power values
                                 # if the storage dispatch option is active, the batteries power is not included
                                 # therefore, it shall be included after processing
+                                Ysh = calculation_input.Ysh_prof[:, it]
                                 I = calculation_input.Ibus_prof[:, it]
                                 S = calculation_input.Sbus_prof[:, it]
 
                                 # run power flow at the circuit
-                                p = multiprocessing.Process(
-                                    target=power_flow_worker,
-                                    args=(
-                                        t,
-                                        self.options,
-                                        calculation_input,
-                                        last_voltage,
-                                        S,
-                                        I,
-                                        return_dict
-                                    )
-                                )
+                                p = multiprocessing.Process(target=power_flow_worker, args=(t, self.options,
+                                                                                            calculation_input,
+                                                                                            last_voltage, S,
+                                                                                            I, return_dict))
                                 jobs.append(p)
                                 p.start()
 
@@ -729,13 +717,11 @@ class TimeSeries(QThread):
                                     results.set_at(t, return_dict[t])
 
                                 # merge the circuit's results
-                                time_series_results.apply_from_island(
-                                    results,
-                                    bus_original_idx,
-                                    branch_original_idx,
-                                    calculation_input.time_array,
-                                    'TS',
-                                )
+                                time_series_results.apply_from_island(results,
+                                                                      bus_original_idx,
+                                                                      branch_original_idx,
+                                                                      calculation_input.time_array,
+                                                                      'TS')
                                 # abort by returning at this point
                                 return time_series_results
 
@@ -750,13 +736,11 @@ class TimeSeries(QThread):
                             results.set_at(t, return_dict[t])
 
                         # merge the circuit's results
-                        time_series_results.apply_from_island(
-                            results,
-                            bus_original_idx,
-                            branch_original_idx,
-                            calculation_input.time_array,
-                            'TS',
-                        )
+                        time_series_results.apply_from_island(results,
+                                                              bus_original_idx,
+                                                              branch_original_idx,
+                                                              calculation_input.time_array,
+                                                              'TS')
 
                     else:
                         print('There are no profiles')
@@ -788,3 +772,5 @@ class TimeSeries(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
+
+

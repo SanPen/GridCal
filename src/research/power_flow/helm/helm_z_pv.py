@@ -2,7 +2,7 @@
 import numpy as np
 
 np.set_printoptions(precision=6, suppress=True, linewidth=320)
-from numpy import where, zeros, mod, conj, array, dot, complex128  # , complex256
+from numpy import where, zeros, ones, mod, conj, array, dot, complex128  # , complex256
 from scipy.linalg import solve
 
 from scipy.sparse.linalg import factorized
@@ -404,8 +404,8 @@ def calc_error(admittances, V, powerInjections):
 
 
 # @jit(cache=True)
-def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types,
-              eps=1e-3, usePade=True, inherited_pv=None):
+def helmz(admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types,
+          eps=1e-3, usePade=True, inherited_pv=None):
     """
 
     Args:
@@ -710,3 +710,68 @@ def plot_full_convergence(err, powerInjections, S, title, ext='.eps', save=True)
     #     plt.savefig(replace_non_ascii(title).replace(" ", "_") + ext)
     # else:
     #     plt.show()
+
+
+if __name__ == "__main__":
+    from GridCal.Engine.calculation_engine import *
+    from matplotlib import pyplot as plt
+
+    grid = MultiCircuit()
+    grid.load_file('lynn5buspv.xlsx')
+    # grid.load_file('IEEE30.xlsx')
+
+    grid.compile()
+
+    circuit = grid.circuits[0]
+
+    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
+    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
+    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
+    print('\nSbus:\n', circuit.power_flow_input.Sbus)
+    print('\nIbus:\n', circuit.power_flow_input.Ibus)
+    print('\nVbus:\n', circuit.power_flow_input.Vbus)
+    print('\ntypes:\n', circuit.power_flow_input.types)
+    print('\npq:\n', circuit.power_flow_input.pq)
+    print('\npv:\n', circuit.power_flow_input.pv)
+    print('\nvd:\n', circuit.power_flow_input.ref)
+
+    import time
+    print('HELM-Z')
+    start_time = time.time()
+    cmax = 25
+    V1, C, W, X, R, H, Yred, err, converged_, \
+    best_err, S, Vlst = helmz(admittances=circuit.power_flow_input.Ybus,
+                              slackIndices=circuit.power_flow_input.ref,
+                              maxcoefficientCount=cmax,
+                              powerInjections=circuit.power_flow_input.Sbus,
+                              voltageSetPoints=circuit.power_flow_input.Vbus,
+                              types=circuit.power_flow_input.types,
+                              eps=1e-9,
+                              usePade=True,
+                              inherited_pv=None)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+    # print_coeffs(C, W, R, X, H)
+
+    print('V module:\t', abs(V1))
+    print('V angle: \t', np.angle(V1))
+    print('error: \t', best_err)
+
+    # check the HELM solution: v against the NR power flow
+    print('\nNR')
+    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
+    power_flow = PowerFlow(grid, options)
+
+    start_time = time.time()
+    power_flow.run()
+    print("--- %s seconds ---" % (time.time() - start_time))
+    vnr = circuit.power_flow_results.voltage
+
+    print('V module:\t', abs(vnr))
+    print('V angle: \t', np.angle(vnr))
+    print('error: \t', circuit.power_flow_results.error)
+
+    # check
+    print('\ndiff:\t', V1 - vnr)
+
+    plt.show()

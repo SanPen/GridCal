@@ -113,7 +113,7 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
     nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
 
     # for each partition of the profiles...
-    for _, calc_inputs in calc_inputs_dict.items():
+    for t_key, calc_inputs in calc_inputs_dict.items():
 
         # For every island, run the time series
         for i, calc_inpt in enumerate(calc_inputs):
@@ -376,12 +376,12 @@ if __name__ == '__main__':
     solver = SolverType.DC_OPF
     mip_solver = MIPSolvers.CBC
     grouping = TimeGrouping.Daily
-    power_flow_options = PowerFlowOptions()
+    pf_options = PowerFlowOptions()
 
     options = OptimalPowerFlowOptions(solver=solver,
                                       grouping=grouping,
                                       mip_solver=mip_solver,
-                                      power_flow_options=power_flow_options)
+                                      power_flow_options=pf_options)
 
     start = 0
     end = len(main_circuit.time_profile)

@@ -1,10 +1,7 @@
 import copy
 import numpy as np
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_mp import PowerFlowMP
-from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
-    PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowMP, PowerFlowOptions, SolverType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 """
@@ -284,7 +281,7 @@ class AcOpfNelderMead:
 
         self.calculation_inputs = self.numerical_circuit.compute(add_storage=False, add_generation=True)
 
-        self.power_flow = PowerFlowMP(self.multi_circuit, options)
+        self.pf = PowerFlowMP(self.multi_circuit, options)
 
         # indices of generators that contribute to the static power vector 'S'
         self.gen_s_idx = np.where((np.logical_not(self.numerical_circuit.generator_dispatchable)
@@ -456,7 +453,7 @@ class AcOpfNelderMead:
         penalty_x += (self.Emin[idx] - E[idx]).sum()
 
         # run a power flow
-        results = self.power_flow.run_multi_island(self.calculation_inputs, self.Vbus, S, self.Ibus)
+        results = self.pf.run_multi_island(self.calculation_inputs, self.Vbus, S, self.Ibus)
 
         loading = np.abs(results.loading)
 
@@ -494,7 +491,7 @@ class AcOpfNelderMead:
         S += (self.numerical_circuit.C_batt_bus[self.bat_x_idx, :]).T * storage_power
 
         # run a power flow
-        pf_res = self.power_flow.run_multi_island(self.calculation_inputs, self.Vbus, S, self.Ibus)
+        pf_res = self.pf.run_multi_island(self.calculation_inputs, self.Vbus, S, self.Ibus)
 
         # declare the results
         self.result = OptimalPowerFlowResults(Sbus=pf_res.Sbus,

@@ -321,8 +321,8 @@ if __name__ == "__main__":
 
     # ##################################################################################################################
 
-    power_flow = PowerFlow(circuit)
-    results = power_flow.run(method=PowerFlowMethods.GaussSeidel, verbose=True, tol=1e-3, max_iter=200)
+    pf = PowerFlow(circuit)
+    results = pf.run(method=PowerFlowMethods.GaussSeidel, verbose=True, tol=1e-3, max_iter=200)
 
     print('\nVoltage solution')
     print('converged', results.converged, ', err:', results.error)
