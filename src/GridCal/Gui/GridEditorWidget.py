@@ -919,7 +919,7 @@ class BranchGraphicItem(QGraphicsLineItem):
 
             if self.api_object.template is not None:
                 # automatically pick the template
-                if type(self.api_object.template) == TransformerType:
+                if isinstance(self.api_object.template, TransformerType):
                     self.diagramScene.circuit.add_transformer_type(self.api_object.template)
                 else:
                     # raise dialogue to set the template
