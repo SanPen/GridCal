@@ -3706,7 +3706,7 @@ class MainGUI(QMainWindow):
             elif tpe == 'Wires':
 
                 name = 'Wire_' + str(len(self.circuit.wire_types))
-                obj = Wire(name=name, xpos=0, ypos=0, gmr=0.01, r=0.01, x=0, phase=1)
+                obj = Wire(name=name, gmr=0.01, r=0.01, x=0)
                 self.circuit.add_wire(obj)
                 something_happened = True
 

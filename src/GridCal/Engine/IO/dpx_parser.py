@@ -451,7 +451,7 @@ def load_dpx(file_name,contraction_factor=1000):
                     name = 'GENSTAT' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
-                    gen = StaticGenerator(name=name, power=complex(p, q))
+                    gen = StaticGenerator(name=name, P=p, Q=q)
                     circuit.add_static_generator(bus, gen)
 
         # Transformation station
@@ -550,7 +550,6 @@ def load_dpx(file_name,contraction_factor=1000):
 
                 br = Branch(bus_from=b1, bus_to=b2, name=name, x=x,  branch_type=BranchType.Branch)
                 circuit.add_branch(br)
-
 
         # Estimator
         # __headers__['Branches']['ESTIM'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT']
@@ -808,7 +807,6 @@ def load_dpx(file_name,contraction_factor=1000):
 if __name__ == '__main__':
 
     fname = 'example.dpx'
-    # fname = '/media/santi/Pincho/grids sensible/Sensible/Portugueses/evora.dpx'
 
     circuit_, logger = load_dpx(file_name=fname)
 

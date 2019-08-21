@@ -111,8 +111,7 @@ def parse_json_data(data):
 
                 # create a load in the bus
                 elm = StaticGenerator(name=element['name'],
-                                      power=complex(element['P'], element['Q']),
-                                      power_prof=None,
+                                      P=element['P'], Q=element['Q'],
                                       active=element['active'])
                 bus.static_generators.append(elm)
 
@@ -141,8 +140,7 @@ def parse_json_data(data):
 
                 # create a load in the bus
                 elm = Shunt(name=element['name'],
-                            admittance=complex(element["g"], element["b"]),
-                            admittance_prof=None,
+                            G=element["g"], B=element["b"],
                             active=element['active'])
                 bus.shunts.append(elm)
 

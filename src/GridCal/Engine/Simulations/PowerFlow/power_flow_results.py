@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-# from GridCal.Engine.NewEngine import NumericalCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
@@ -204,10 +203,6 @@ class PowerFlowResults:
 
         self.voltage[b_idx] = results.voltage
 
-        # self.overvoltage[b_idx] = results.overvoltage
-
-        # self.undervoltage[b_idx] = results.undervoltage
-
         self.Sbranch[br_idx] = results.Sbranch
 
         self.Ibranch[br_idx] = results.Ibranch
@@ -219,8 +214,6 @@ class PowerFlowResults:
         self.losses[br_idx] = results.losses
 
         self.flow_direction[br_idx] = results.flow_direction
-
-        # self.overloads[br_idx] = results.overloads
 
         # if results.error > self.error:
         self.error.append(results.error)
@@ -234,11 +227,6 @@ class PowerFlowResults:
         self.elapsed.append(results.elapsed)
 
         self.methods.append(results.methods)
-
-        # self.converged = self.converged and results.converged
-
-        # if results.buses_useful_for_storage is not None:
-        #     self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
     def check_limits(self, F, T, Vmax, Vmin, wo=1, wv1=1, wv2=1):
         """
@@ -465,7 +453,8 @@ class PowerFlowResults:
         tm = self.tap_module
 
         branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
-        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)', 'Losses (MW)', 'Losses (MVAr)', 'Losses (MVA)', 'Tap module']
+        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)',
+                       'Losses (MW)', 'Losses (MVAr)', 'Losses (MVA)', 'Tap module']
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
         return df_bus, df_branch

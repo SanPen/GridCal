@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 from GridCal.Engine import *
 
 
-class DcOpf:
+class DcOpf3:
 
     def __init__(self, multi_circuit: MultiCircuit):
         """
@@ -210,6 +210,6 @@ if __name__ == '__main__':
     # grid = FileOpen('Illinois200Bus.xlsx').open()
 
     # declare and solve problem
-    problem = DcOpf(grid)
+    problem = DcOpf3(grid)
     problem.solve()
     problem.print()

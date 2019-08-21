@@ -127,8 +127,13 @@ class TransformerType(EditableDevice):
 
             rfe = Sn / (Pfe / 1000.0)
             zm = 1.0 / (I0 / 100.0)
-            xm = 1.0 / sqrt((1.0 / (zm ** 2)) - (1.0 / (rfe ** 2)))
-            rm = sqrt(xm * xm - zm * zm)
+            val = (1.0 / (zm ** 2)) - (1.0 / (rfe ** 2))
+            if val > 0:
+                xm = 1.0 / sqrt(val)
+                rm = sqrt(xm * xm - zm * zm)
+            else:
+                xm = 0.0
+                rm = 0.0
 
         else:
 

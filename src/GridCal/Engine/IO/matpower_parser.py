@@ -376,18 +376,11 @@ def interpret_data_v1(circuit, data):
         if table[i, e.PD] != 0 or table[i, e.QD] != 0:
             load = Load(P=table[i, e.PD], Q=table[i, e.QD])
             load.bus = bus
-            if are_load_prfiles:  # set the profile
-                load.P_prof = pd.DataFrame(data=Pprof[:, i],
-                                           index=master_time_array,
-                                           columns=['Load@' + names[i]])
-                load.Q_prof = pd.DataFrame(data=Qprof[:, i],
-                                           index=master_time_array,
-                                           columns=['Load@' + names[i]])
             bus.loads.append(load)
 
         # Add the shunt
         if table[i, e.GS] != 0 or table[i, e.BS] != 0:
-            shunt = Shunt(admittance=table[i, e.GS] + 1j * table[i, e.BS])
+            shunt = Shunt(G=table[i, e.GS], B=table[i, e.BS])
             shunt.bus = bus
             bus.shunts.append(shunt)
 
@@ -417,11 +410,6 @@ def interpret_data_v1(circuit, data):
                         voltage_module=table[i, e.VG],
                         Qmax=table[i, e.QMAX],
                         Qmin=table[i, e.QMIN])
-        if are_gen_prfiles:
-            gen.create_P_profile(index=master_time_array, arr=Gprof[:, i])
-            # gen.Pprof = pd.DataFrame(data=Gprof[:, i],
-            #                          index=master_time_array,
-            #                          columns=['Gen@' + names[i]])
 
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]
@@ -456,24 +444,6 @@ def interpret_data_v1(circuit, data):
     if master_time_array is not None:
 
         circuit.format_profiles(master_time_array)
-
-        table = data['bus']
-        for i in range(len(table)):
-            if are_load_prfiles and len(circuit.buses[i].loads) > 0:  # set the profile
-                circuit.buses[i].loads[0].P_prof = pd.DataFrame(data=Pprof[:, i],
-                                                                index=master_time_array,
-                                                                columns=['Load@' + names[i]])
-                circuit.buses[i].loads[0].Q_prof = pd.DataFrame(data=Qprof[:, i],
-                                                                index=master_time_array,
-                                                                columns=['Load@' + names[i]])
-        import GridCal.Engine.IO.matpower_gen_definitions as e
-        table = data['gen']
-        for i in range(len(table)):
-            bus_idx = int(table[i, e.GEN_BUS]) - 1
-            if are_gen_prfiles:
-                circuit.buses[bus_idx].generators[0].P_prof = pd.DataFrame(data=Gprof[:, i],
-                                                                           index=master_time_array,
-                                                                           columns=['Gen@' + names[i]])
     print('Interpreted.')
     return circuit
 

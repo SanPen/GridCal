@@ -353,7 +353,7 @@
      </widget>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Z</string>
+       <string>Z series</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -390,7 +390,7 @@
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>Y</string>
+       <string>Y shunt</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>

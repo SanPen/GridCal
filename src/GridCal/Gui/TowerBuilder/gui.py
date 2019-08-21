@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Mon May 13 19:15:10 2019
-#      by: pyside2-uic  running on PySide2 5.12.3
+# Created: Tue Aug 20 18:54:58 2019
+#      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -236,11 +236,11 @@ class Ui_Dialog(object):
         self.label.setText(QtWidgets.QApplication.translate("Dialog", "   Z series (Ohm / km) for ABCN", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("Dialog", "   Z series (Ohm / km) for ABC", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("Dialog", "   Z series (Ohm / km) in sequence components", None, -1))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("Dialog", "Z", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("Dialog", "Z series", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("Dialog", "   Y shunt (uS / km) for ABCN", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("Dialog", "   Y shunt (uS / km) for ABC", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "   Y shunt (uS / km) for the sequence components", None, -1))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtWidgets.QApplication.translate("Dialog", "Y", None, -1))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtWidgets.QApplication.translate("Dialog", "Y shunt", None, -1))
 
 from .matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
