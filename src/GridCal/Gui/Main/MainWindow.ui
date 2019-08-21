@@ -1708,7 +1708,7 @@ p, li { white-space: pre-wrap; }
               <item row="1" column="0" colspan="4">
                <widget class="QListView" name="result_element_selection_listView"/>
               </item>
-              <item row="0" column="0" colspan="3">
+              <item row="0" column="0" colspan="4">
                <widget class="QLabel" name="label_15">
                 <property name="text">
                  <string>Devices</string>

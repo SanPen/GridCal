@@ -3,13 +3,12 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Jul 28 11:52:16 2019
+# Created: Tue Aug 20 18:55:29 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide2 import QtCore, QtGui, QtWidgets
-
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
@@ -735,7 +734,7 @@ class Ui_mainWindow(object):
         self.gridLayout.addWidget(self.result_element_selection_listView, 1, 0, 1, 4)
         self.label_15 = QtWidgets.QLabel(self.frame_9)
         self.label_15.setObjectName("label_15")
-        self.gridLayout.addWidget(self.label_15, 0, 0, 1, 3)
+        self.gridLayout.addWidget(self.label_15, 0, 0, 1, 4)
         self.frame_5 = QtWidgets.QFrame(self.splitter)
         self.frame_5.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)

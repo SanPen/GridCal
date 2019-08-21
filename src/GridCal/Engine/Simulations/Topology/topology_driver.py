@@ -218,6 +218,7 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus]):
 
     return buses_merged
 
+
 class TopologyReductionOptions:
 
     def __init__(self, rx_criteria=False, rx_threshold=1e-5, selected_types=BranchType.Branch):
@@ -292,18 +293,3 @@ class TopologyReduction(QThread):
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
 
-
-if __name__ == '__main__':
-    from matplotlib import pyplot as plt
-    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 3.xlsx'
-    fname = 'D:\\GitHub\\GridCal\\UnderDevelopment\\GridCal\\Engine\\IO\\Export_sensible_v15_modif.json.xlsx'
-
-    circuit_ = MultiCircuit()
-    circuit_.load_file(fname)
-    # circuit.compile()
-    top = TopologyReduction(grid=circuit_, rx_criteria=False, rx_threshold=1e-5,
-                            type_criteria=True, selected_type=BranchType.Branch)
-    top.run()
-    # circuit_.compile()
-    # circuit_.plot_graph()
-    # plt.show()

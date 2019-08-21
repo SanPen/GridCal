@@ -195,7 +195,7 @@ class LineEditor(QDialog):
 
 class TransformerEditor(QDialog):
 
-    def __init__(self, branch: Branch, Sbase=100):
+    def __init__(self, branch: Branch, Sbase=100, modify_on_accept=True):
         """
         Transformer
         :param branch:
@@ -208,6 +208,8 @@ class TransformerEditor(QDialog):
 
         self.Sbase = Sbase
 
+        self.modify_on_accept = modify_on_accept
+
         self.setObjectName("self")
 
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
@@ -217,8 +219,8 @@ class TransformerEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         # Set the object values
         # ------------------------------------------------------------------------------------------
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
+        self.Vf = self.branch.bus_from.Vnom
+        self.Vt = self.branch.bus_to.Vnom
 
         R = self.branch.R
         X = self.branch.X
@@ -226,7 +228,7 @@ class TransformerEditor(QDialog):
         B = self.branch.B
         Sn = self.branch.rate
 
-        zsc = np.sqrt(R * R + 1 / (X * X))
+        zsc = np.sqrt(R * R + X * X)
         Vsc = 100.0 * zsc
         Pcu = R * Sn * 1000.0
 
@@ -309,21 +311,19 @@ class TransformerEditor(QDialog):
 
         self.setWindowTitle('Transformer editor')
 
-    def accept_click(self):
+    def get_template(self):
         """
-        Create transformer type and get the impedances
-        :return:
+        Fabricate template values from the branch values
+        :return: TransformerType instance
         """
-
+        eps = 1e-20
         Vf = self.branch.bus_from.Vnom  # kV
         Vt = self.branch.bus_to.Vnom  # kV
-        Sn = self.sn_spinner.value()  # MVA
-        Pcu = self.pcu_spinner.value()  # kW
-        Pfe = self.pfe_spinner.value()  # kW
-        I0 = self.I0_spinner.value()  # %
+        Sn = self.sn_spinner.value() + eps  # MVA
+        Pcu = self.pcu_spinner.value() + eps  # kW
+        Pfe = self.pfe_spinner.value() + eps  # kW
+        I0 = self.I0_spinner.value() + eps  # %
         Vsc = self.vsc_spinner.value()  # %
-
-        eps = 1e-20
 
         Pfe = eps if Pfe == 0.0 else Pfe
         I0 = eps if I0 == 0.0 else I0
@@ -338,9 +338,17 @@ class TransformerEditor(QDialog):
                               gr_hv1=0.5,
                               gx_hv1=0.5)
 
-        leakage_impedance, magnetizing_impedance = tpe.get_impedances()
+        return tpe
 
-        self.branch.apply_template(tpe, Sbase=self.Sbase)
+    def accept_click(self):
+        """
+        Create transformer type and get the impedances
+        :return:
+        """
+
+        if self.modify_on_accept:
+            tpe = self.get_template()
+            self.branch.apply_template(tpe, Sbase=self.Sbase)
 
         self.accept()
 
@@ -891,7 +899,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         Sbase = self.diagramScene.circuit.Sbase
 
         if self.api_object.branch_type == BranchType.Transformer:
-            dlg = TransformerEditor(self.api_object, Sbase)
+            dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=True)
             if dlg.exec_():
                 pass
 
@@ -910,10 +918,21 @@ class BranchGraphicItem(QGraphicsLineItem):
         if self.api_object.branch_type == BranchType.Transformer:
 
             if self.api_object.template is not None:
-                self.diagramScene.circuit.add_transformer_type(self.api_object.template)
+                # automatically pick the template
+                if type(self.api_object.template) == TransformerType:
+                    self.diagramScene.circuit.add_transformer_type(self.api_object.template)
+                else:
+                    # raise dialogue to set the template
+                    dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
+                    if dlg.exec_():
+                        tpe = dlg.get_template()
+                        self.diagramScene.circuit.add_transformer_type(tpe)
             else:
-                print('The transformer does not have a template!')
-                pass
+                # raise dialogue to set the template
+                dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
+                if dlg.exec_():
+                    tpe = dlg.get_template()
+                    self.diagramScene.circuit.add_transformer_type(tpe)
 
         elif self.api_object.branch_type == BranchType.Line:
             dlg = LineEditor(self.api_object, Sbase)

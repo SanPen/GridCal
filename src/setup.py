@@ -34,10 +34,7 @@ else:
 
 base_path = os.path.join('GridCal')
 
-# packages = find_packages(where=base_path, exclude=['docs', 'test'])
 packages = find_packages(exclude=['docs', 'test', 'research', 'tests'])
-# packages = [os.path.join(p) for p in packages]
-
 
 package_data = {'GridCal': ['*.md'],
                 'GridCal.ThirdParty.pulp': ["AUTHORS", "LICENSE",
