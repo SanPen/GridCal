@@ -1,5 +1,5 @@
 from GridCal.Engine.Devices.transformer import TransformerType
-from math import sqrt
+# from math import sqrt
 
 
 def test_transformer_type():
