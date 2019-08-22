@@ -16,25 +16,7 @@ import numpy as np
 from warnings import warn
 from enum import Enum
 from typing import List, Dict, AnyStr, Any, Optional
-
-
-class TimeFrame(Enum):
-    Continuous = 'Continuous'
-
-
-class DeviceType(Enum):
-    BusDevice = 'Bus'
-    BranchDevice = 'Branch'
-    BatteryDevice = 'Battery'
-    LoadDevice = 'Load'
-    GeneratorDevice = 'Generator'
-    StaticGeneratorDevice = 'Static Generator'
-    ShuntDevice = 'Shunt'
-    WireDevice = 'Wire'
-    SequenceLineDevice = 'Sequence line'
-    UnderGroundLineDevice = 'Underground line'
-    TowerDevice = 'Tower'
-    TransformerTypeDevice = 'Transformer type'
+from GridCal.Engine.Devices.types import DeviceType, TimeFrame
 
 
 class GCProp:

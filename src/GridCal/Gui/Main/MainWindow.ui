@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1231</width>
+    <width>1178</width>
     <height>799</height>
    </rect>
   </property>
@@ -3392,6 +3392,157 @@ points from time series</string>
               </property>
              </spacer>
             </item>
+            <item row="3" column="0">
+             <widget class="QFrame" name="frame_32">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_23">
+               <item>
+                <widget class="QLabel" name="label_40">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>PTDF</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="Line" name="line_22">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_56">
+                 <property name="text">
+                  <string>Aditional islands until stop</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="ptdf_power_delta_doubleSpinBox">
+                 <property name="minimum">
+                  <double>-1000000000000000000000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10000000000000000000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>100.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="group_by_gen_technology_checkBox">
+                 <property name="text">
+                  <string>Group by generation technology</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="tab_13">
@@ -4410,7 +4561,7 @@ points from time series</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1231</width>
+     <width>1178</width>
      <height>22</height>
     </rect>
    </property>
@@ -4450,6 +4601,7 @@ points from time series</string>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionLatin_Hypercube_Sampling"/>
+    <addaction name="actionPTDF"/>
     <addaction name="separator"/>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
@@ -4493,6 +4645,7 @@ points from time series</string>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionLatin_Hypercube_Sampling"/>
    <addaction name="actionBlackout_cascade"/>
+   <addaction name="actionPTDF"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -5094,6 +5247,18 @@ points from time series</string>
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionPTDF">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ptdf.svg</normaloff>:/Icons/icons/ptdf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Power Transfer Distribution Factors</string>
+   </property>
+   <property name="toolTip">
+    <string>Power Transfer Distribution Factors</string>
    </property>
   </action>
  </widget>

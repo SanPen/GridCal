@@ -10,6 +10,16 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.5
+_____________
+
+- Added generator technology property
+- Refactored code to make it simpler:
+    - The enum's behave like types and are able to parse text into types.
+    - The objects editor is now agnostic of complex types, and so are the load and save functions.
+- Added Power Transfer Distribution Factors (PTDF) analysis
+
+
 Version 3.5.4
 _____________
 

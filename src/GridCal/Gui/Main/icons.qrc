@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/ptdf.svg</file>
     <file>icons/delete3.svg</file>
     <file>icons/highlight2.svg</file>
     <file>icons/unhighlight.svg</file>

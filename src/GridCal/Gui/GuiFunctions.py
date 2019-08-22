@@ -19,9 +19,10 @@ from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
 from warnings import warn
-
+from enum import Enum, EnumMeta
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from collections import defaultdict
 
 
 class TreeDelegate(QItemDelegate):
@@ -541,9 +542,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
                 F(i, delegate)
 
-            elif tpe is BranchType:
-                conv = BranchTypeConverter(None)
-                delegate = ComboDelegate(self.parent, conv.values, conv.options)
+            elif tpe is BranchTemplate or tpe is str:
+                delegate = TextDelegate(self.parent)
                 F(i, delegate)
 
             elif tpe is BranchTemplate:
@@ -551,10 +551,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
             elif tpe is float:
                 delegate = FloatDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is str:
-                delegate = TextDelegate(self.parent)
                 F(i, delegate)
 
             elif tpe is complex:
@@ -565,6 +561,13 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 F(i, None)
                 if len(self.non_editable_attributes) == 0:
                     self.non_editable_attributes.append(self.attributes[i])
+
+            elif isinstance(tpe, EnumMeta):
+                objects = list(tpe)
+                values = [x.value for x in objects]
+                delegate = ComboDelegate(self.parent, objects, values)
+                F(i, delegate)
+
             else:
                 F(i, None)
 
@@ -744,12 +747,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 # somehow the index is out of range
                 return ""
 
-        # if role == QtCore.Qt.DecorationRole:
-        #     pixmap = QPixmap(26, 26)
-        #     # pixmap.fill(value)
-        #     icon = QIcon(pixmap)
-        #     return icon
-
         return None
 
     def copy_to_column(self, index):
@@ -779,65 +776,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 class BranchObjectModel(ObjectsModel):
 
     def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=dict()):
+                 non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=defaultdict()):
 
         # type templates catalogue
         self.catalogue_dict = catalogue_dict
 
-        # ObjectsModel.__init__(self, objects, attributes, attr_units, attr_types, parent=parent,
-        #                       editable=editable, non_editable_indices=non_editable_indices,
-        #                       transposed=transposed, check_unique=check_unique)
-
         super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
                                                 editable=editable, non_editable_attributes=non_editable_attributes,
                                                 transposed=transposed, check_unique=check_unique)
-
-    def set_delegates(self):
-        """
-        Set the cell editor types depending on the attribute_types array
-        :return:
-        """
-
-        if self.transposed:
-            F = self.parent.setItemDelegateForRow
-        else:
-            F = self.parent.setItemDelegateForColumn
-
-        for i in range(self.c):
-            tpe = self.attribute_types[i]
-
-            if tpe is bool:
-                delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
-                F(i, delegate)
-
-            if tpe is BranchType:
-                conv = BranchTypeConverter(None)
-                delegate = ComboDelegate(self.parent, conv.values, conv.options)
-                F(i, delegate)
-
-            elif tpe is BranchTemplate:
-                # delegate = TreeDelegate(parent=self.parent, data=self.catalogue_dict)
-                delegate = TextDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is float:
-                delegate = FloatDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is str:
-                delegate = TextDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is complex:
-                delegate = ComplexDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is None:
-                F(i, None)
-                if len(self.non_editable_attributes) == 0:
-                    self.non_editable_attributes.append(self.attributes[i])
-            else:
-                F(i, None)
 
 
 class ObjectHistory:

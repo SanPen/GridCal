@@ -46,6 +46,7 @@ from GridCal.Engine.IO.file_handler import *
 import GridCal.Engine.plot_config as plot_config
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
+from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 from GridCal.Engine.Simulations.result_types import SimulationTypes
@@ -253,6 +254,7 @@ class MainGUI(QMainWindow):
         self.topology_reduction = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
+        self.ptdf_analysis = None
         self.painter = None
 
         self.stuff_running_now = list()
@@ -352,6 +354,8 @@ class MainGUI(QMainWindow):
         self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
+
+        self.ui.actionPTDF.triggered.connect(self.run_ptdf)
 
         # Buttons
 
@@ -733,7 +737,8 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def color_based_of_pf(self, s_bus, s_branch, voltages, loadings, types, losses=None, failed_br_idx=None):
+    def color_based_of_pf(self, s_bus, s_branch, voltages, loadings, types, losses=None, failed_br_idx=None,
+                          loading_label='loading'):
         """
         Color the grid based on the results passed
         Args:
@@ -800,7 +805,7 @@ class MainGUI(QMainWindow):
                     color = Qt.gray
 
                 tooltip = str(i) + ': ' + branch.name
-                tooltip += '\nloading: ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
                 if s_branch is not None:
                     tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
                 if losses is not None:
@@ -2194,6 +2199,67 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
+    def run_ptdf(self):
+        """
+        Run a Power Transfer Distribution Factors analysis
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            if SimulationTypes.PTDF_run not in self.stuff_running_now:
+
+                self.add_simulation(SimulationTypes.PTDF_run)
+
+                if len(self.circuit.buses) > 0:
+                    self.LOCK()
+
+                    pf_options = self.get_selected_power_flow_options()
+
+                    options = PTDFOptions(group_by_technology=self.ui.group_by_gen_technology_checkBox.isChecked(),
+                                          use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked(),
+                                          power_increment=self.ui.ptdf_power_delta_doubleSpinBox.value())
+
+                    self.ptdf_analysis = PTDF(grid=self.circuit, options=options, pf_options=pf_options)
+
+                    self.ui.progress_label.setText('Running optimal power flow...')
+                    QtGui.QGuiApplication.processEvents()
+
+                    self.ptdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.ptdf_analysis.progress_text.connect(self.ui.progress_label.setText)
+                    self.ptdf_analysis.done_signal.connect(self.UNLOCK)
+                    self.ptdf_analysis.done_signal.connect(self.post_ptdf)
+
+                    self.ptdf_analysis.start()
+            else:
+                self.msg('Another PTDF is being executed now...')
+        else:
+            pass
+
+    def post_ptdf(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        # update the results in the circuit structures
+        if self.ptdf_analysis.results is not None:
+
+            self.remove_simulation(SimulationTypes.PTDF_run)
+
+            self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+            QtGui.QGuiApplication.processEvents()
+
+            # self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
+            #                        s_branch=self.short_circuit.results.Sbranch,
+            #                        voltages=self.short_circuit.results.voltage,
+            #                        types=self.short_circuit.results.bus_types,
+            #                        loadings=self.short_circuit.results.loading)
+            self.update_available_results()
+        else:
+            self.msg('Something went wrong, There are no PTDF results.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def get_selected_voltage_stability(self):
         """
         Gather the voltage stability options
@@ -3183,6 +3249,12 @@ class MainGUI(QMainWindow):
                 self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
                 self.available_results_steps_dict["Transient stability"] = self.transient_stability.get_steps()
 
+        if self.ptdf_analysis is not None:
+            if self.ptdf_analysis.results is not None:
+                lst.append("PTDF")
+                self.available_results_dict["PTDF"] = self.ptdf_analysis.results.available_results
+                self.available_results_steps_dict["PTDF"] = self.ptdf_analysis.get_steps()
+
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
@@ -3204,6 +3276,7 @@ class MainGUI(QMainWindow):
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
+        self.ptdf_analysis = None
 
         self.buses_for_storage = None
 
@@ -3317,6 +3390,19 @@ class MainGUI(QMainWindow):
                                        voltages=voltage,
                                        loadings=loading,
                                        types=self.circuit.numerical_circuit.bus_types)
+
+            elif current_study == 'PTDF':
+
+                voltage = self.ptdf_analysis.results.pf_results[current_step].voltage
+                loading = self.ptdf_analysis.results.sensitivity_matrix[current_step, :]
+                Sbranch = self.ptdf_analysis.results.pf_results[current_step].Sbranch
+
+                self.color_based_of_pf(s_bus=None,
+                                       s_branch=Sbranch,
+                                       voltages=voltage,
+                                       loadings=loading,
+                                       types=self.circuit.numerical_circuit.bus_types,
+                                       loading_label='Sensitivity')
 
             elif current_study == 'Transient stability':
                 pass
@@ -3480,6 +3566,14 @@ class MainGUI(QMainWindow):
                     self.results_df = self.transient_stability.results.plot(result_type=study_type,
                                                                             ax=ax, indices=indices,
                                                                             names=names)
+                else:
+                    self.msg('There seem to be no results :(')
+
+            elif study == 'PTDF':
+                if self.ptdf_analysis.results is not None:
+                    self.results_df = self.ptdf_analysis.results.plot(result_type=study_type,
+                                                                      ax=ax, indices=indices,
+                                                                      names=names)
                 else:
                     self.msg('There seem to be no results :(')
 

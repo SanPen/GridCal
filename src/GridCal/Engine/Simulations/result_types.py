@@ -60,6 +60,9 @@ class ResultTypes(Enum):
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
 
+    # PTDF
+    PTDFBranchesSensitivity = 'Branch sensitivity', DeviceType.BranchDevice
+
     SimulationError = 'Error', DeviceType.BusDevice
 
 
@@ -75,3 +78,4 @@ class SimulationTypes(Enum):
     OPFTimeSeries_run = 'OPF Time series'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
+    PTDF_run = 'PTDF'
