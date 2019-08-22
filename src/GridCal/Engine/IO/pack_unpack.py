@@ -20,9 +20,8 @@ from GridCal.Engine.Devices import *
 
 def get_objects_dictionary():
     """
-
-    :param circuit:
-    :return:
+    creates a dictionary with the types and the circuit objects
+    :return: Dictionary instance
     """
     object_types = {'bus': Bus(),
 
@@ -239,17 +238,17 @@ def data_frames_to_circuit(data: Dict):
                     if prop in df.columns.values:
 
                         # get the type converter
-                        conv = gc_prop.tpe
+                        dtype = gc_prop.tpe
 
                         # for each object, set the property
                         for i in range(df.shape[0]):
 
                             # convert and assign the data
-                            if conv is None:
+                            if dtype is None:
                                 val = df[prop].values[i]
                                 setattr(devices[i], prop, val)
 
-                            elif conv == DeviceType.BusDevice:
+                            elif dtype == DeviceType.BusDevice:
                                 # check if the bus is in the dictionary...
                                 if df[prop].values[i] in elements_dict[DeviceType.BusDevice].keys():
 
@@ -263,13 +262,8 @@ def data_frames_to_circuit(data: Dict):
                                 else:
                                     circuit.logger.append('Bus not found: ' + str(df[prop].values[i]))
 
-                            elif conv is BranchType:
-                                cbr = BranchTypeConverter(None)
-                                val = cbr(df[prop].values[i])
-                                setattr(devices[i], prop, val)
-
                             else:
-                                val = conv(df[prop].values[i])
+                                val = dtype(df[prop].values[i])
                                 setattr(devices[i], prop, val)
 
                         # search the profiles in the data and assign them
@@ -289,7 +283,7 @@ def data_frames_to_circuit(data: Dict):
                                 # for each object, set the profile
                                 for i in range(dfp.shape[1]):
                                     profile = dfp.values[:, i]
-                                    setattr(devices[i], prop_prof, profile.astype(conv))
+                                    setattr(devices[i], prop_prof, profile.astype(dtype))
 
                             else:
                                 circuit.logger.append(prop + ' profile was not found in the data')
@@ -356,9 +350,9 @@ if __name__ == '__main__':
     from GridCal.Engine.IO.file_handler import FileOpen, FileSave
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Some distribution grid.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Some distribution grid.gridcal'
 
     main_circuit = FileOpen(fname).open()
 
-    FileSave(main_circuit, 'file.gridcal').save()
+    # FileSave(main_circuit, 'file.gridcal').save()

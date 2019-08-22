@@ -14,9 +14,9 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
-
 import numpy as np
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.meta_devices import EditableDevice, GCProp
+from GridCal.Engine.Devices.types import DeviceType, GeneratorTechnologyType
 
 
 class Generator(EditableDevice):
@@ -71,8 +71,8 @@ class Generator(EditableDevice):
 
     def __init__(self, name='gen', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None,
-                 Cost_prof=None, active=True,
-                 p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True, mttf=0.0, mttr=0.0):
+                 Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
+                 mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -99,7 +99,8 @@ class Generator(EditableDevice):
                                                   'enabled_dispatch': GCProp('', bool,
                                                                              'Enabled for dispatch? Used in OPF.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
+                                                  'technology': GCProp('', GeneratorTechnologyType, 'Generator technology')},
                                 non_editable_attributes=list(),
                                 properties_with_profile={'active': 'active_prof',
                                                          'P': 'P_prof',
@@ -114,6 +115,8 @@ class Generator(EditableDevice):
         self.mttf = mttf
 
         self.mttr = mttr
+
+        self.technology = technology
 
         # is the device active active power dispatch?
         self.enabled_dispatch = enabled_dispatch
@@ -190,8 +193,7 @@ class Generator(EditableDevice):
 
         gen.name = self.name
 
-        # Power (MVA)
-        # MVA = kV * kA
+        # Power (MVA), MVA = kV * kA
         gen.P = self.P
 
         # is the generator active?
@@ -224,6 +226,8 @@ class Generator(EditableDevice):
         gen.mttf = self.mttf
 
         gen.mttr = self.mttr
+
+        gen.technology = self.technology
 
         return gen
 

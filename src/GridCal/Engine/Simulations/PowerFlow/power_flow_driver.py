@@ -1544,8 +1544,6 @@ class PowerFlowMP:
                     # merge the results from this island
                     results.apply_from_island(res, bus_original_idx, branch_original_idx)
 
-                    res.get_report_dataframe()
-
                     # # build the report
                     self.convergence_reports.append(res.get_report_dataframe())
                 else:
@@ -1565,8 +1563,6 @@ class PowerFlowMP:
                 self.convergence_reports.append(results.get_report_dataframe())
             else:
                 self.logger.append('There are no slack nodes')
-
-        self.last_V = results.voltage  # done inside single_power_flow
 
         # check the limits
         results.check_limits(F=numerical_circuit.F, T=numerical_circuit.T,

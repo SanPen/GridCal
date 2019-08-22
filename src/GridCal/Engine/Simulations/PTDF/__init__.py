@@ -13,11 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.Simulations.ContinuationPowerFlow import *
-from GridCal.Engine.Simulations.Dynamics import *
-from GridCal.Engine.Simulations.PowerFlow import *
-from GridCal.Engine.Simulations.ShortCircuit import *
-from GridCal.Engine.Simulations.StateEstimation import *
-from GridCal.Engine.Simulations.Stochastic import *
-from GridCal.Engine.Simulations.OPF import *
-from GridCal.Engine.Simulations.PTDF import *
+from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
+from GridCal.Engine.Simulations.PTDF.ptdf_analysis import *
+from GridCal.Engine.Simulations.PTDF.ptdf_results import *
