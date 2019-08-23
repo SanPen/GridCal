@@ -277,7 +277,6 @@ def helm_chengxi_corrected(
     :return: Voltage array and the power mismatch
     """
     converged = None  # TODO Get this from algorithm
-    complex_power_calculated = None  # TODO Get this from algorithm
     it = None  # TODO Get this from algorithm
     el = None  # TODO Get this from algorithm
     normF = None  # TODO Get this from algorithm
@@ -285,7 +284,7 @@ def helm_chengxi_corrected(
     bus_count = len(bus_voltages)
     pv_bus_count = len(pv_bus_indices)
     bus_indices = array(range(bus_count), dtype=int)
-    pv_bus_indices = array(range(pv_bus_count))  # TODO Really?!
+    pv_bus_indices = array(range(pv_bus_count), dtype=int)
 
     # Prepare system matrices
     Asys, Vst, Wst = prepare_system_matrices(bus_admittances, bus_voltages, bus_indices, pq_and_pv_bus_indices, pq_bus_indices, pv_bus_indices, slack_bus_indices)
