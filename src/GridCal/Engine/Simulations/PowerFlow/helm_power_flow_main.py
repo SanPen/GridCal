@@ -13,7 +13,7 @@ from numpy import complex128
 
 from GridCal.Engine.IO import FileOpen
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import res_2_df, \
-    helm_vanilla
+    helm_stable
 from GridCal.Engine.Simulations.PowerFlow.steady_state.power_flow_options import \
     PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.steady_state.solver_type import \
@@ -46,14 +46,14 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    v, err = helm_vanilla(Vbus=circuit.power_flow_input.Vbus,
-                          Sbus=circuit.power_flow_input.Sbus,
-                          # Ibus=circuit.power_flow_input.Ibus,
-                          Ybus=circuit.power_flow_input.Ybus,
-                          pq=circuit.power_flow_input.pq,
-                          pv=circuit.power_flow_input.pv,
-                          ref=circuit.power_flow_input.ref,
-                          pqpv=circuit.power_flow_input.pqpv)
+    v, err = helm_stable(bus_voltages=circuit.power_flow_input.Vbus,
+                         complex_bus_powers=circuit.power_flow_input.Sbus,
+                         # Ibus=circuit.power_flow_input.Ibus,
+                         bus_admittances=circuit.power_flow_input.Ybus,
+                         pq_bus_indices=circuit.power_flow_input.pq,
+                         pv_bus_indices=circuit.power_flow_input.pv,
+                         slack_bus_indices=circuit.power_flow_input.ref,
+                         pq_and_pv_bus_indices=circuit.power_flow_input.pqpv)
 
     print('HEM:')
     print("--- %s seconds ---" % (time.time() - start_time))

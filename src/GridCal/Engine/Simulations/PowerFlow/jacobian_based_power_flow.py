@@ -173,18 +173,18 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return J
 
 
-def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def NR_LS(bus_admittances, complex_bus_powers, bus_voltages, current_injections_and_extractions, pv_bus_indices, pq_bus_indices, tolerance, max_iterations=15):
     """
     Solves the power flow using a full Newton's method with the backtrack improvement algorithm
     Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
+        bus_admittances: Admittance matrix
+        complex_bus_powers: Array of nodal power injections
+        bus_voltages: Array of nodal voltages (initial solution)
+        current_injections_and_extractions: Array of nodal current injections
+        pv_bus_indices: Array with the indices of the PV buses
+        pq_bus_indices: Array with the indices of the PQ buses
+        tolerance: Tolerance
+        max_iterations: Maximum number of iterations
         robust: Boolean variable for the use of the Iwamoto optimal step factor.
     Returns:
         Voltage solution, converged?, error, calculated power injections
@@ -200,16 +200,16 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     alpha = 1e-4
     converged = 0
     iter_ = 0
-    V = V0
+    V = bus_voltages
     Va = angle(V)
     Vm = np.abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
+    pvpq = r_[pv_bus_indices, pq_bus_indices]
+    npv = len(pv_bus_indices)
+    npq = len(pq_bus_indices)
 
     # j1:j2 - V angle of pv buses
     j1 = 0
@@ -222,34 +222,34 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Scalc = V * conj(Ybus * V - Ibus)
-    dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+    Scalc = V * conj(bus_admittances * V - current_injections_and_extractions)
+    dS = Scalc - complex_bus_powers  # compute the mismatch
+    F = r_[dS[pv_bus_indices].real, dS[pq_bus_indices].real, dS[pq_bus_indices].imag]
 
     if (npq + npv) > 0:
         # check tolerance
         normF = linalg.norm(F, Inf)
 
-        if normF < tol:
+        if normF < tolerance:
             converged = 1
 
         # do Newton iterations
-        while not converged and iter_ < max_it:
+        while not converged and iter_ < max_iterations:
             # update iteration counter
             iter_ += 1
 
             # evaluate Jacobian
-            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            J = Jacobian(bus_admittances, V, current_injections_and_extractions, pq_bus_indices, pvpq)
 
             # compute update step
             dx = spsolve(J, F)
 
             # reassign the solution vector
             if npv:
-                dVa[pv] = dx[j1:j2]
+                dVa[pv_bus_indices] = dx[j1:j2]
             if npq:
-                dVa[pq] = dx[j3:j4]
-                dVm[pq] = dx[j5:j6]
+                dVa[pq_bus_indices] = dx[j3:j4]
+                dVm[pq_bus_indices] = dx[j5:j6]
 
             # update voltage the Newton way (mu=1)
             mu_ = 1.0
@@ -258,8 +258,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             Vnew = Vm * exp(1j * Va)
 
             # compute the mismatch function f(x_new)
-            dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+            dS = Vnew * conj(bus_admittances * Vnew - current_injections_and_extractions) - complex_bus_powers  # complex power mismatch
+            Fnew = r_[dS[pv_bus_indices].real, dS[pq_bus_indices].real, dS[pq_bus_indices].imag]  # concatenate to form the mismatch function
             Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
             cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
 
@@ -280,8 +280,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
                 Vnew = Vm * exp(1j * Va)
 
                 # compute the mismatch function f(x_new)
-                dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-                Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                dS = Vnew * conj(bus_admittances * Vnew - current_injections_and_extractions) - complex_bus_powers  # complex power mismatch
+                Fnew = r_[dS[pv_bus_indices].real, dS[pq_bus_indices].real, dS[pq_bus_indices].imag]  # concatenate to form the mismatch function
                 Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
                 cond = (Fnew < Fnew_prev).any()
 
@@ -295,7 +295,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             # check for convergence
             normF = linalg.norm(F, Inf)
 
-            if normF < tol:
+            if normF < tolerance:
                 converged = 1
 
     else:
@@ -309,18 +309,18 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     return V, converged, normF, Scalc, iter_, elapsed
 
 
-def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
+def IwamotoNR(bus_admittances, complex_bus_powers, bus_voltages, current_injections_and_extractions, pv_bus_indices, pq_bus_indices, tolerance, max_iterations=15, robust=False):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
+        bus_admittances: Admittance matrix
+        complex_bus_powers: Array of nodal power injections
+        bus_voltages: Array of nodal voltages (initial solution)
+        current_injections_and_extractions: Array of nodal current injections
+        pv_bus_indices: Array with the indices of the PV buses
+        pq_bus_indices: Array with the indices of the PQ buses
+        tolerance: Tolerance
+        max_iterations: Maximum number of iterations
         robust: Boolean variable for the use of the Iwamoto optimal step factor.
     Returns:
         Voltage solution, converged?, error, calculated power injections
@@ -333,16 +333,16 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     # initialize
     converged = 0
     iter_ = 0
-    V = V0
+    V = bus_voltages
     Va = angle(V)
     Vm = abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
+    pvpq = r_[pv_bus_indices, pq_bus_indices]
+    npv = len(pv_bus_indices)
+    npq = len(pq_bus_indices)
 
     # j1:j2 - V angle of pv buses
     j1 = 0
@@ -355,37 +355,37 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Scalc = V * conj(Ybus * V - Ibus)
-    mis = Scalc - Sbus  # compute the mismatch
-    F = r_[mis[pv].real,
-           mis[pq].real,
-           mis[pq].imag]
+    Scalc = V * conj(bus_admittances * V - current_injections_and_extractions)
+    mis = Scalc - complex_bus_powers  # compute the mismatch
+    F = r_[mis[pv_bus_indices].real,
+           mis[pq_bus_indices].real,
+           mis[pq_bus_indices].imag]
 
     if (npq + npv) > 0:
 
         # check tolerance
         normF = linalg.norm(F, Inf)
 
-        if normF < tol:
+        if normF < tolerance:
             converged = 1
 
         # do Newton iterations
-        while not converged and iter_ < max_it:
+        while not converged and iter_ < max_iterations:
             # update iteration counter
             iter_ += 1
 
             # evaluate Jacobian
-            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            J = Jacobian(bus_admittances, V, current_injections_and_extractions, pq_bus_indices, pvpq)
 
             # compute update step
             dx = spsolve(J, F)
 
             # reassign the solution vector
             if npv:
-                dVa[pv] = dx[j1:j2]
+                dVa[pv_bus_indices] = dx[j1:j2]
             if npq:
-                dVa[pq] = dx[j3:j4]
-                dVm[pq] = dx[j5:j6]
+                dVa[pq_bus_indices] = dx[j3:j4]
+                dVm[pq_bus_indices] = dx[j5:j6]
             dV = dVm * exp(1j * dVa)  # voltage mismatch
 
             # update voltage
@@ -393,7 +393,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)
+                    mu_ = mu(bus_admittances, current_injections_and_extractions, J, F, dV, dx, pvpq, pq_bus_indices)
                 else:
                     mu_ = 1.0
             else:
@@ -408,14 +408,14 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             Va = angle(V)  # we wrapped around with a negative Vm
 
             # evaluate F(x)
-            Scalc = V * conj(Ybus * V - Ibus)
-            mis = Scalc - Sbus  # complex power mismatch
-            F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+            Scalc = V * conj(bus_admittances * V - current_injections_and_extractions)
+            mis = Scalc - complex_bus_powers  # complex power mismatch
+            F = r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag]  # concatenate again
 
             # check for convergence
             normF = linalg.norm(F, Inf)
 
-            if normF < tol:
+            if normF < tolerance:
                 converged = 1
     else:
         normF = 0
@@ -427,19 +427,19 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     return V, converged, normF, Scalc, iter_, elapsed
 
 
-def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
+def LevenbergMarquardtPF(bus_admittances, complex_bus_powers, bus_voltages, current_injections_and_extractions, pv_bus_indices, pq_bus_indices, tolerance, max_iterations=50):
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
     Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
+        bus_admittances: Admittance matrix
+        complex_bus_powers: Array of nodal power injections
+        bus_voltages: Array of nodal voltages (initial solution)
+        current_injections_and_extractions: Array of nodal current injections
+        pv_bus_indices: Array with the indices of the PV buses
+        pq_bus_indices: Array with the indices of the PQ buses
+        tolerance: Tolerance
+        max_iterations: Maximum number of iterations
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
@@ -448,15 +448,15 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     start = time.time()
 
     # initialize
-    V = V0
+    V = bus_voltages
     Va = angle(V)
     Vm = np.abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
+    pvpq = r_[pv_bus_indices, pq_bus_indices]
+    npv = len(pv_bus_indices)
+    npq = len(pq_bus_indices)
 
     # j1:j2 - V angle of pv buses
     j1 = 0
@@ -479,16 +479,16 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         ii = np.linspace(0, nn-1, nn)
         Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
 
-        while not converged and iter_ < max_it:
+        while not converged and iter_ < max_iterations:
 
             # evaluate Jacobian
             if update_jacobian:
-                H = Jacobian(Ybus, V, Ibus, pq, pvpq)
+                H = Jacobian(bus_admittances, V, current_injections_and_extractions, pq_bus_indices, pvpq)
 
             # evaluate the solution error F(x0)
-            Scalc = V * conj(Ybus * V - Ibus)
-            mis = Scalc - Sbus  # compute the mismatch
-            dz = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+            Scalc = V * conj(bus_admittances * V - current_injections_and_extractions)
+            mis = Scalc - complex_bus_powers  # compute the mismatch
+            dz = r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag]  # mismatch in the Jacobian order
 
             # system matrix
             # H1 = H^t
@@ -529,10 +529,10 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
                 # reassign the solution vector
                 if npv:
-                    dVa[pv] = dx[j1:j2]
+                    dVa[pv_bus_indices] = dx[j1:j2]
                 if npq:
-                    dVa[pq] = dx[j3:j4]
-                    dVm[pq] = dx[j5:j6]
+                    dVa[pq_bus_indices] = dx[j3:j4]
+                    dVm[pq_bus_indices] = dx[j5:j6]
 
                 Vm -= dVm
                 Va -= dVa
@@ -547,8 +547,8 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
             # check convergence
             # normF = np.linalg.norm(dx, np.Inf)
-            normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
-            converged = normF < tol
+            normF = np.linalg.norm(complex_bus_powers - V * conj(bus_admittances.dot(V)), np.Inf)
+            converged = normF < tolerance
             f_prev = f
 
             # update iteration counter
@@ -556,7 +556,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     else:
         normF = 0
         converged = True
-        Scalc = V * conj(Ybus * V - Ibus)
+        Scalc = V * conj(bus_admittances * V - current_injections_and_extractions)
         iter_ = 0
 
     end = time.time()
@@ -591,18 +591,18 @@ def Jacobian_I(Ybus, V, pq, pvpq):
     return J
 
 
-def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
+def NR_I_LS(bus_admittances, complex_bus_powers, bus_voltages, current_injections_and_extractions, pv_bus_indices, pq_bus_indices, tolerance, max_iterations=15):
     """
     Solves the power flow using a full Newton's method in current equations with current mismatch with line search
     Args:
-        Ybus: Admittance matrix
-        Sbus_sp: Array of nodal specified power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus_sp: Array of nodal specified current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
+        bus_admittances: Admittance matrix
+        complex_bus_powers: Array of nodal specified power injections
+        bus_voltages: Array of nodal voltages (initial solution)
+        current_injections_and_extractions: Array of nodal specified current injections
+        pv_bus_indices: Array with the indices of the PV buses
+        pq_bus_indices: Array with the indices of the PQ buses
+        tolerance: Tolerance
+        max_iterations: Maximum number of iterations
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
@@ -616,16 +616,16 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
     alpha = 1e-4
     converged = 0
     iter_ = 0
-    V = V0
+    V = bus_voltages
     Va = angle(V)
     Vm = abs(V)
     dVa = zeros_like(Va)
     dVm = zeros_like(Vm)
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
+    pvpq = r_[pv_bus_indices, pq_bus_indices]
+    npv = len(pv_bus_indices)
+    npq = len(pq_bus_indices)
 
     # j1:j2 - V angle of pv buses
     j1 = 0
@@ -638,31 +638,31 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Icalc = Ybus * V - Ibus_sp
-    dI = conj(Sbus_sp / V) - Icalc  # compute the mismatch
-    F = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+    Icalc = bus_admittances * V - current_injections_and_extractions
+    dI = conj(complex_bus_powers / V) - Icalc  # compute the mismatch
+    F = r_[dI[pv_bus_indices].real, dI[pq_bus_indices].real, dI[pq_bus_indices].imag]
     normF = linalg.norm(F, Inf)  # check tolerance
 
-    if normF < tol:
+    if normF < tolerance:
         converged = 1
 
     # do Newton iterations
-    while not converged and iter_ < max_it:
+    while not converged and iter_ < max_iterations:
         # update iteration counter
         iter_ += 1
 
         # evaluate Jacobian
-        J = Jacobian_I(Ybus, V, pq, pvpq)
+        J = Jacobian_I(bus_admittances, V, pq_bus_indices, pvpq)
 
         # compute update step
         dx = spsolve(J, F)
 
         # reassign the solution vector
         if npv:
-            dVa[pv] = dx[j1:j2]
+            dVa[pv_bus_indices] = dx[j1:j2]
         if npq:
-            dVa[pq] = dx[j3:j4]
-            dVm[pq] = dx[j5:j6]
+            dVa[pq_bus_indices] = dx[j3:j4]
+            dVm[pq_bus_indices] = dx[j5:j6]
 
         # update voltage the Newton way (mu=1)
         mu_ = 1.0
@@ -671,9 +671,9 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         Vnew = Vm * exp(1j * Va)
 
         # compute the mismatch function f(x_new)
-        Icalc = Ybus * Vnew - Ibus_sp
-        dI = conj(Sbus_sp / Vnew) - Icalc
-        Fnew = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+        Icalc = bus_admittances * Vnew - current_injections_and_extractions
+        dI = conj(complex_bus_powers / Vnew) - Icalc
+        Fnew = r_[dI[pv_bus_indices].real, dI[pq_bus_indices].real, dI[pq_bus_indices].imag]
 
         normFprev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
 
@@ -696,9 +696,9 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
             Vnew = Vm * exp(1j * Va)
 
             # compute the mismatch function f(x_new)
-            Icalc = Ybus * Vnew - Ibus_sp
-            dI = conj(Sbus_sp / Vnew) - Icalc
-            Fnew = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+            Icalc = bus_admittances * Vnew - current_injections_and_extractions
+            dI = conj(complex_bus_powers / Vnew) - Icalc
+            Fnew = r_[dI[pv_bus_indices].real, dI[pq_bus_indices].real, dI[pq_bus_indices].imag]
 
             normFnew = linalg.norm(Fnew, Inf)
             normFnew_prev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
@@ -715,7 +715,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         # check for convergence
         normF = linalg.norm(F, Inf)
 
-        if normF < tol:
+        if normF < tolerance:
             converged = 1
 
     end = time.time()

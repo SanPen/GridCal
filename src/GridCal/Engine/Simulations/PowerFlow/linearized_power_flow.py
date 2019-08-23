@@ -21,17 +21,17 @@ from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 from numpy import linalg, Inf, exp, r_, conj, angle, matrix, empty, ones, abs as npabs
 
 
-def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
+def dcpf(bus_admittances, complex_bus_powers, current_injections_and_extractions, bus_voltages, slack_bus_indices, pq_and_pv_bus_indices, pq_bus_indices, pv_bus_indices):
     """
     Solves a DC power flow.
-    :param Ybus: Normal circuit admittance matrix
-    :param Sbus: Complex power injections at all the nodes
-    :param Ibus: Complex current injections at all the nodes
-    :param V0: Array of complex seed voltage (it contains the ref voltages)
-    :param ref: array of the indices of the slack nodes
-    :param pvpq: array of the indices of the non-slack nodes
-    :param pq: array of the indices of the pq nodes
-    :param pv: array of the indices of the pv nodes
+    :param bus_admittances: Normal circuit admittance matrix
+    :param complex_bus_powers: Complex power injections at all the nodes
+    :param current_injections_and_extractions: Complex current injections at all the nodes
+    :param bus_voltages: Array of complex seed voltage (it contains the ref voltages)
+    :param slack_bus_indices: array of the indices of the slack nodes
+    :param pq_and_pv_bus_indices: array of the indices of the non-slack nodes
+    :param pq_bus_indices: array of the indices of the pq nodes
+    :param pv_bus_indices: array of the indices of the pv nodes
     :return:
         Complex voltage solution
         Converged: Always true
@@ -42,36 +42,36 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     start = time.time()
 
     # Decompose the voltage in angle and magnitude
-    Va_ref = angle(V0[ref])  # we only need the angles at the slack nodes
-    Vm = npabs(V0)
+    Va_ref = angle(bus_voltages[slack_bus_indices])  # we only need the angles at the slack nodes
+    Vm = npabs(bus_voltages)
 
     # initialize result vector
-    Va = empty(len(V0))
+    Va = empty(len(bus_voltages))
 
     # reconvert the pqpv vector to a matrix so that we can call numpy directly with it
-    pvpq_ = matrix(pvpq)
+    pvpq_ = matrix(pq_and_pv_bus_indices)
 
     # Compile the reduced imaginary impedance matrix
-    Bpqpv = Ybus.imag[pvpq_.T, pvpq_]
-    Bref = Ybus.imag[pvpq_.T, ref]
+    Bpqpv = bus_admittances.imag[pvpq_.T, pvpq_]
+    Bref = bus_admittances.imag[pvpq_.T, slack_bus_indices]
 
     # compose the reduced power injections
     # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
-    Pinj = Sbus[pvpq].real + (- Bref * Va_ref + Ibus[pvpq].real) * Vm[pvpq]
+    Pinj = complex_bus_powers[pq_and_pv_bus_indices].real + (- Bref * Va_ref + current_injections_and_extractions[pq_and_pv_bus_indices].real) * Vm[pq_and_pv_bus_indices]
 
     # update angles for non-reference buses
-    Va[pvpq] = spsolve(Bpqpv, Pinj)
-    Va[ref] = Va_ref
+    Va[pq_and_pv_bus_indices] = spsolve(Bpqpv, Pinj)
+    Va[slack_bus_indices] = Va_ref
 
     # re assemble the voltage
     V = Vm * exp(1j * Va)
 
     # compute the calculated power injection and the error of the voltage solution
-    Scalc = V * conj(Ybus * V - Ibus)
+    Scalc = V * conj(bus_admittances * V - current_injections_and_extractions)
 
     # compute the power mismatch between the specified power Sbus and the calculated power Scalc
-    mis = Scalc - Sbus  # complex power mismatch
-    F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+    mis = Scalc - complex_bus_powers  # complex power mismatch
+    F = r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag]  # concatenate again
 
     # check for convergence
     normF = linalg.norm(F, Inf)
@@ -82,7 +82,7 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     return V, True, normF, Scalc, 1, elapsed
 
 
-def lacpf(Y, Ys, S, I, Vset, pq, pv):
+def lacpf(bus_admittances, series_admittances, complex_bus_powers, current_injections_and_extractions, bus_voltages, pq_bus_indices, pv_bus_indices):
     """
     Linearized AC Load Flow
 
@@ -91,21 +91,21 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     Linearized AC Load Flow Applied to Analysis in Electric Power Systems
         by: P. Rossoni, W. M da Rosa and E. A. Belati
     Args:
-        Y: Admittance matrix
-        Ys: Admittance matrix of the series elements
-        S: Power injections vector of all the nodes
-        Vset: Set voltages of all the nodes (used for the slack and PV nodes)
-        pq: list of indices of the pq nodes
-        pv: list of indices of the pv nodes
+        bus_admittances: Admittance matrix
+        series_admittances: Admittance matrix of the series elements
+        complex_bus_powers: Power injections vector of all the nodes
+        bus_voltages: Set voltages of all the nodes (used for the slack and PV nodes)
+        pq_bus_indices: list of indices of the pq nodes
+        pv_bus_indices: list of indices of the pv nodes
 
     Returns: Voltage vector, converged?, error, calculated power and elapsed time
     """
 
     start = time.time()
 
-    pvpq = r_[pv, pq]
-    npq = len(pq)
-    npv = len(pv)
+    pvpq = r_[pv_bus_indices, pq_bus_indices]
+    npq = len(pq_bus_indices)
+    npv = len(pv_bus_indices)
 
     # compose the system matrix
     # G = Y.real
@@ -113,28 +113,28 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     # Gp = Ys.real
     # Bp = Ys.imag
 
-    A11 = -Ys.imag[pvpq, :][:, pvpq]
-    A12 = Y.real[pvpq, :][:, pq]
-    A21 = -Ys.real[pq, :][:, pvpq]
-    A22 = -Y.imag[pq, :][:, pq]
+    A11 = -series_admittances.imag[pvpq, :][:, pvpq]
+    A12 = bus_admittances.real[pvpq, :][:, pq_bus_indices]
+    A21 = -series_admittances.real[pq_bus_indices, :][:, pvpq]
+    A22 = -bus_admittances.imag[pq_bus_indices, :][:, pq_bus_indices]
 
     Asys = vstack_s([hstack_s([A11, A12]),
                      hstack_s([A21, A22])], format="csc")
 
     # compose the right hand side (power vectors)
-    rhs = r_[S.real[pvpq], S.imag[pq]]
+    rhs = r_[complex_bus_powers.real[pvpq], complex_bus_powers.imag[pq_bus_indices]]
 
     # solve the linear system
     try:
         x = spsolve(Asys, rhs)
     except Exception as e:
-        voltages_vector = Vset
+        voltages_vector = bus_voltages
         # Calculate the error and check the convergence
-        s_calc = voltages_vector * conj(Y * voltages_vector)
+        s_calc = voltages_vector * conj(bus_admittances * voltages_vector)
         # complex power mismatch
-        power_mismatch = s_calc - S
+        power_mismatch = s_calc - complex_bus_powers
         # concatenate error by type
-        mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+        mismatch = r_[power_mismatch[pv_bus_indices].real, power_mismatch[pq_bus_indices].real, power_mismatch[pq_bus_indices].imag]
         # check for convergence
         norm_f = linalg.norm(mismatch, Inf)
         end = time.time()
@@ -142,24 +142,24 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
         return voltages_vector, False, norm_f, s_calc, 1, elapsed
 
     # compose the results vector
-    voltages_vector = Vset.copy()
+    voltages_vector = bus_voltages.copy()
 
     #  set the pv voltages
     va_pv = x[0:npv]
-    vm_pv = npabs(Vset[pv])
-    voltages_vector[pv] = vm_pv * exp(1j * va_pv)
+    vm_pv = npabs(bus_voltages[pv_bus_indices])
+    voltages_vector[pv_bus_indices] = vm_pv * exp(1j * va_pv)
 
     # set the PQ voltages
     va_pq = x[npv:npv+npq]
     vm_pq = ones(npq) + x[npv+npq::]
-    voltages_vector[pq] = vm_pq * exp(1j * va_pq)
+    voltages_vector[pq_bus_indices] = vm_pq * exp(1j * va_pq)
 
     # Calculate the error and check the convergence
-    s_calc = voltages_vector * conj(Y * voltages_vector)
+    s_calc = voltages_vector * conj(bus_admittances * voltages_vector)
     # complex power mismatch
-    power_mismatch = s_calc - S
+    power_mismatch = s_calc - complex_bus_powers
     # concatenate error by type
-    mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+    mismatch = r_[power_mismatch[pv_bus_indices].real, power_mismatch[pq_bus_indices].real, power_mismatch[pq_bus_indices].imag]
 
     # check for convergence
     norm_f = linalg.norm(mismatch, Inf)

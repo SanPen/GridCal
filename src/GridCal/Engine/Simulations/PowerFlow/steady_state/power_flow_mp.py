@@ -3,7 +3,7 @@ import numpy as np
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_vanilla
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_stable
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import \
     LevenbergMarquardtPF, NR_LS, IwamotoNR, NR_I_LS
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, \
@@ -22,6 +22,7 @@ from research.power_flow.helm.helm_chengxi_2 import helm_chengxi_2
 from research.power_flow.helm.helm_chengxi_corrected import helm_chengxi_corrected
 from research.power_flow.helm.helm_chengxi_vanilla import helm_chengxi_vanilla
 from research.power_flow.helm.helm_pq import helm_pq
+from research.power_flow.helm.helm_vanilla import helm_vanilla
 from research.power_flow.helm.helm_vect_asu import helm_vect_asu
 from research.power_flow.helm.helm_wallace import helm_wallace
 from research.power_flow.helm.helm_z_pq import helm_z_pq
@@ -101,284 +102,310 @@ class PowerFlowMP:
         return ref, pq, pv, pqpv
 
     @staticmethod
-    def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, pq, pv, ref, pqpv, tolerance, max_iter):
+    def solve(
+        solver_type, bus_voltages, complex_bus_powers,
+        current_injections_and_extractions, bus_admittances,
+        series_admittances, B1, B2, pq_bus_indices, pv_bus_indices,
+        slack_bus_indices, pq_and_pv_bus_indices, tolerance,
+        max_iterations
+    ):
         """
         Run a power flow simulation using the selected method (no outer loop controls).
 
-            **solver_type**:
+        :param solver_type: Type of the solver to use for this calculation.
+        :param bus_voltages: Voltage solution vector
+        :param complex_bus_powers: Power injections vector
+        :param current_injections_and_extractions: Current injections/extractions vector
+        :param bus_admittances: Admittance matrix
+        :param series_admittances: Series elements' Admittance matrix
+        :param B1: B' for the fast decoupled method
+        :param B2: B'' for the fast decoupled method
+        :param pq_bus_indices: list of pq nodes
+        :param pv_bus_indices: list of pv nodes
+        :param slack_bus_indices: list of slack nodes
+        :param pq_and_pv_bus_indices: list of pq and pv nodes
+        :param tolerance: power error tolerance
+        :param max_iterations: maximum iterations
 
-            **V0**: Voltage solution vector
-
-            **Sbus**: Power injections vector
-
-            **Ibus**: Current injections vector
-
-            **Ybus**: Admittance matrix
-
-            **Yseries**: Series elements' Admittance matrix
-
-            **B1**: B' for the fast decoupled method
-
-            **B2**: B'' for the fast decoupled method
-
-            **pq**: list of pq nodes
-
-            **pv**: list of pv nodes
-
-            **ref**: list of slack nodes
-
-            **pqpv**: list of pq and pv nodes
-
-            **tolerance**: power error tolerance
-
-            **max_iter**: maximum iterations
-
-        Returns:
+        :returns:
 
             V0 (Voltage solution), converged (converged?), normF (error in power),
             Scalc (Computed bus power), iterations, elapsed
         """
         # type HELM
-        if solver_type == SolverType.HELM:
-            V0, converged, normF, Scalc, it, el = helm_vanilla(
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                pq=pq,
-                pv=pv,
-                ref=ref,
-                pqpv=pqpv,
-                tol=tolerance,
-                max_coefficient_count=max_iter,
-            )
+        if solver_type == SolverType.HELM_STABLE:
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_stable(
+                    bus_voltages=bus_voltages,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_admittances=bus_admittances,
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                    tolerance=tolerance,
+                    max_coefficient_count=max_iterations,
+                )
+
+        if solver_type == SolverType.HELM_EXPERIMENTAL:
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_vanilla(
+                    complex_bus_powers=complex_bus_powers,
+                    bus_admittances=bus_admittances,
+                    tolerance=tolerance,
+                    max_coefficient_count=max_iterations,
+                    series_admittances=series_admittances,
+                    shunt_admittances=None,  # TODO Get this from somewhere
+                    voltage_set_points=bus_voltages,
+                    pq_indices=pq_bus_indices,
+                    pv_indices=pv_bus_indices,
+                    slack_node_indices=slack_bus_indices,
+                    use_pade_approximation=True
+                )
 
         elif solver_type == SolverType.HELM_PQ:
-            V0, converged, normF, Scalc, it, el = helm_pq(
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                pq=pq,
-                pv=pv,
-                ref=ref,
-                pqpv=pqpv,
-                tol=tolerance,
-                Ibus=Ibus,
-                Yserie=Yseries,
-                Ysh=None,  # TODO Get this from somewhere
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_pq(
+                    bus_voltages=bus_voltages,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_admittances=bus_admittances,
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                    tolerance=tolerance,
+                    Ibus=current_injections_and_extractions,
+                    series_admittances=series_admittances,
+                    shunt_admittances=None,  # TODO Get this from somewhere
+                )
 
         elif solver_type == SolverType.HELM_VECT_ASU:
-            V0, converged, normF, Scalc, it, el = helm_vect_asu(
-                pq=pq,
-                pv=pv,
-                Ysh=None,  # TODO Get this from somewhere
-                Y=None,  # TODO Get this from somewhere
-                Ys=Yseries,
-                max_coefficient_count = None,  # TODO Get this from somewhere
-                S = None,  # TODO Get this from somewhere
-                voltage_set_points = None,  # TODO Get this from somewhere
-                vd = None,  # TODO Get this from somewhere
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_vect_asu(
+                    pq=pq_bus_indices,
+                    pv=pv_bus_indices,
+                    shunt_admittances=None,  # TODO Get this from somewhere
+                    bus_admittances=bus_admittances,
+                    series_admittances=series_admittances,
+                    max_coefficient_count=max_iterations,
+                    complex_bus_powers=complex_bus_powers,
+                    voltage_set_points=bus_voltages,
+                    vd=None,  # TODO Get this from somewhere
+                )
 
         elif solver_type == SolverType.HELM_CHENGXI_2:
-            V0, converged, normF, Scalc, it, el = helm_chengxi_2(
-                pq=pq,
-                pv=pv,
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                ref=ref,
-                pqpv=pqpv,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_chengxi_2(
+                    pq_node_indices=pq_bus_indices,
+                    pv_node_indices=pv_bus_indices,
+                    bus_voltages=bus_voltages,
+                    complex_power_injections=complex_bus_powers,
+                    bus_admittances=bus_admittances,
+                    slack_node_indices=slack_bus_indices,
+                    pq_and_pv_node_indices=pq_and_pv_bus_indices,
+                )
 
         elif solver_type == SolverType.HELM_CHENGXI_CORRECTED:
-            V0, converged, normF, Scalc, it, el = helm_chengxi_corrected(
-                pq=pq,
-                pv=pv,
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                ref=ref,
-                pqpv=pqpv,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_chengxi_corrected(
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    bus_voltages=bus_voltages,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_admittances=bus_admittances,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                )
 
         elif solver_type == SolverType.HELM_CHENGXI_VANILLA:
-            V0, converged, normF, Scalc, it, el = helm_chengxi_vanilla(
-                pq=pq,
-                pv=pv,
-                Vbus=V0,
-                Sbus=Sbus,
-                Ybus=Ybus,
-                ref=ref,
-                pqpv=pqpv,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_chengxi_vanilla(
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    bus_voltages=bus_voltages,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_admittances=bus_admittances,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                )
 
         elif solver_type == SolverType.HELM_VECT_ASU:
-            V0, converged, normF, Scalc, it, el = helm_vect_asu(
-                Y=None,  # TODO Get this from somewhere
-                Ys=Yseries,
-                Ysh=None,  # TODO Get this from somewhere
-                max_coefficient_count=max_iter,
-                S=None,  # TODO Get this from somewhere
-                voltage_set_points=None,  # TODO Get this from somewhere
-                vd=None,  # TODO Get this from somewhere
-                eps=1e-3,  # TODO Get this from somewhere
-                use_pade=False,  # TODO Get this from somewhere
-                pv=pv,
-                pq=pq,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_vect_asu(
+                    bus_admittances=bus_admittances,
+                    series_admittances=series_admittances,
+                    shunt_admittances=None,  # TODO Get this from somewhere
+                    max_coefficient_count=max_iterations,
+                    complex_bus_powers=complex_bus_powers,
+                    voltage_set_points=bus_voltages,
+                    vd=None,  # TODO Get this from somewhere
+                    tolerance=tolerance,
+                    use_pade=False,  # TODO Get this from somewhere
+                    pv=pv_bus_indices,
+                    pq=pq_bus_indices,
+                )
 
         elif solver_type == SolverType.HELM_WALLACE:
-            V0, converged, normF, Scalc, it, el = helm_wallace(
-                pq=pq,
-                pv=pv,
-                Sbus=Sbus,
-                ref=ref,
-                pqpv=pqpv,
-                Y_series=None,  # TODO Get this from somewhere
-                Y_shunt=None,  # TODO Get this from somewhere
-                voltageSetPoints=None,  # TODO Get this from somewhere
-                types=None,  # TODO Get this from somewhere
-                eps=1e-3,  # TODO Get this from somewhere
-                maxcoefficientCount=50,  # TODO Get this from somewhere
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_wallace(
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    complex_bus_powers=complex_bus_powers,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                    series_admittances=series_admittances,
+                    shunt_admittances=None,  # TODO Get this from somewhere
+                    voltageSetPoints=bus_voltages,
+                    types=None,  # TODO Get this from somewhere
+                    tolerance=tolerance,
+                    maxcoefficientCount=max_iterations,
+                )
 
         elif solver_type == SolverType.HELM_Z_PQ:
-            V0, converged, normF, Scalc, it, el = helm_z_pq(
-                pq=pq,
-                pv=pv,
-                Sbus=Sbus,
-                ref=ref,
-                pqpv=pqpv,
-                Vbus=V0,
-                Ibus=Ibus,
-                Ybus=Ybus,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_z_pq(
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    complex_bus_powers=complex_bus_powers,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                    bus_voltages=bus_voltages,
+                    Ibus=current_injections_and_extractions,
+                    Ybus=bus_admittances,
+                )
 
         elif solver_type == SolverType.HELM_Z_PV:
-            V0, converged, normF, Scalc, it, el = helm_z_pv(
-                admittances=None,  # TODO Get this from somewhere
-                slackIndices=None,  # TODO Get this from somewhere
-                maxcoefficientCount=None,  # TODO Get this from somewhere
-                powerInjections=None,  # TODO Get this from somewhere
-                voltageSetPoints=None,  # TODO Get this from somewhere
-                types=None,  # TODO Get this from somewhere
-                eps=1e-3,  # TODO Get this from somewhere
-                usePade=True,  # TODO Get this from somewhere
-                inherited_pv=None,  # TODO Get this from somewhere
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                helm_z_pv(
+                    bus_admittances=bus_admittances,
+                    slack_bus_indices=slack_bus_indices,
+                    maxcoefficientCount=max_iterations,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_voltages=bus_voltages,
+                    types=None,  # TODO Get this from somewhere
+                    tolerance=tolerance,
+                    usePade=True,  # TODO Get this from somewhere
+                    inherited_pv=None,  # TODO Get this from somewhere
+                )
 
         # type DC
         elif solver_type == SolverType.DC:
-            V0, converged, normF, Scalc, it, el = dcpf(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                Ibus=Ibus,
-                V0=V0,
-                ref=ref,
-                pvpq=pqpv,
-                pq=pq,
-                pv=pv,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                dcpf(
+                    bus_admittances=bus_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    bus_voltages=bus_voltages,
+                    slack_bus_indices=slack_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                )
 
         # LAC PF
         elif solver_type == SolverType.LACPF:
-            V0, converged, normF, Scalc, it, el = lacpf(
-                Y=Ybus,
-                Ys=Yseries,
-                S=Sbus,
-                I=Ibus,
-                Vset=V0,
-                pq=pq,
-                pv=pv,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                lacpf(
+                    bus_admittances=bus_admittances,
+                    series_admittances=series_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    bus_voltages=bus_voltages,
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                )
 
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
-            V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                LevenbergMarquardtPF(
+                    bus_admittances=bus_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_voltages=bus_voltages,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
+                )
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
-            V0, converged, normF, Scalc, it, el = FDPF(
-                Vbus=V0,
-                Sbus=Sbus,
-                Ibus=Ibus,
-                Ybus=Ybus,
-                B1=B1,
-                B2=B2,
-                pq=pq,
-                pv=pv,
-                pqpv=pqpv,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            bus_voltages, converged, normF, Scalc, it, el =\
+                FDPF(
+                    bus_voltages=bus_voltages,
+                    complex_bus_powers=complex_bus_powers,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    bus_admittances=bus_admittances,
+                    B1=B1,
+                    B2=B2,
+                    pq_bus_indices=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_and_pv_bus_indices=pq_and_pv_bus_indices,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
+                )
 
         # Newton-Raphson
         elif solver_type == SolverType.NR:
             # Solve NR with the linear AC solution
-            V0, converged, normF, Scalc, it, el = NR_LS(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            bus_voltages, converged, normF, Scalc, it, el =\
+                NR_LS(
+                    bus_admittances=bus_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_voltages=bus_voltages,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
+                )
 
         # Newton-Raphson-Iwamoto
         elif solver_type == SolverType.IWAMOTO:
-            V0, converged, normF, Scalc, it, el = IwamotoNR(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-                robust=True,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                IwamotoNR(
+                    bus_admittances=bus_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_voltages=bus_voltages,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
+                    robust=True,
+                )
 
         # Newton-Raphson in current equations
         elif solver_type == SolverType.NRI:
             # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
-            V0, converged, normF, Scalc, it, el = NR_I_LS(
-                Ybus=Ybus,
-                Sbus_sp=Sbus,
-                V0=V0,
-                Ibus_sp=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                NR_I_LS(
+                    bus_admittances=bus_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_voltages=bus_voltages,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
+                )
 
         # for any other method, for now, do a LM
         else:
-            V0, converged, \
-            normF, Scalc, it, el = LevenbergMarquardtPF(
-                Ybus=Ybus,
-                Sbus=Sbus,
-                V0=V0,
-                Ibus=Ibus,
-                pv=pv,
-                pq=pq,
-                tol=tolerance,
-                max_it=max_iter,
-            )
+            bus_voltages, converged, normF, Scalc, it, el = \
+                LevenbergMarquardtPF(
+                    bus_admittances=bus_admittances,
+                    complex_bus_powers=complex_bus_powers,
+                    bus_voltages=bus_voltages,
+                    current_injections_and_extractions=current_injections_and_extractions,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
+                    tolerance=tolerance,
+                    max_iterations=max_iterations,
+                )
 
-        return V0, converged, normF, Scalc, it, el
+        return bus_voltages, converged, normF, Scalc, it, el
 
     def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
         """
@@ -455,19 +482,19 @@ class PowerFlowMP:
                 # run the power flow method that shall be run
                 voltage_solution, converged, normF, Scalc, it, el = self.solve(
                     solver_type=solver_type,
-                    V0=voltage_solution,
-                    Sbus=Sbus,
-                    Ibus=Ibus,
-                    Ybus=circuit.Ybus,
-                    Yseries=circuit.Yseries,
+                    bus_voltages=voltage_solution,
+                    complex_bus_powers=Sbus,
+                    current_injections_and_extractions=Ibus,
+                    bus_admittances=circuit.Ybus,
+                    series_admittances=circuit.Yseries,
                     B1=circuit.B1,
                     B2=circuit.B2,
-                    pq=pq,
-                    pv=pv,
-                    ref=ref,
-                    pqpv=pqpv,
+                    pq_bus_indices=pq,
+                    pv_bus_indices=pv,
+                    slack_bus_indices=ref,
+                    pq_and_pv_bus_indices=pqpv,
                     tolerance=self.options.tolerance,
-                    max_iter=self.options.max_iter,
+                    max_iterations=self.options.max_iter,
                 )
                 # record the method used
                 methods.append(solver_type)

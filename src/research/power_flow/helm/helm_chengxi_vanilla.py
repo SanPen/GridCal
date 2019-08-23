@@ -5,6 +5,7 @@ by Chengxi Liu, Bin Wang, Fengkai Hu, Kai Sun and Claus Leth Bak
 Implemented by Santiago Peñate Vera 2018
 """
 import numpy as np
+import pandas as pd
 
 np.set_printoptions(linewidth=32000, suppress=False)
 from numpy import zeros, mod, angle, conj, array, c_, r_, linalg, Inf, complex128
@@ -20,6 +21,7 @@ complex_type = complex128
 def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
     """
     Prepare the system matrices
+
     :param Ybus: Admittanche matrix
     :param Vbus: Node complex voltage vector (initial set voltages)
     :param pqpv: list of pq and pv bus indices
@@ -255,26 +257,28 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_chengxi_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
+def helm_chengxi_vanilla(bus_voltages, complex_bus_powers, bus_admittances, pq_bus_indices, pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices):
     """
     Helm Method
-    :param Vbus: voltages array
-    :param Sbus: Power injections array
-    :param Ybus: System admittance matrix
-    :param pq: list of pq node indices
-    :param pv: list of pv node indices
-    :param ref: list of slack node indices
-    :param pqpv: list of pq and pv node indices sorted
+
+    :param bus_voltages: List of bus voltages
+    :param complex_bus_powers: List of complex power injections/extractions
+    :param bus_admittances: Matrix of bus admittances
+    :param pq_bus_indices: List of pq bus indices
+    :param pv_bus_indices: List of pv bus indices
+    :param slack_bus_indices: List of slack bus indices
+    :param pq_and_pv_bus_indices: List of pq and pv node indices sorted
+
     :return: Voltage array and the power mismatch
     """
 
-    nbus = len(Vbus)
-    npv = len(pv)
+    nbus = len(bus_voltages)
+    npv = len(pv_bus_indices)
     bus_idx = array(range(nbus), dtype=int)
     pvpos = array(range(npv))
 
     # Prepare system matrices
-    Asys, Vst, Wst = prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref)
+    Asys, Vst, Wst = prepare_system_matrices(bus_admittances, bus_voltages, bus_idx, pq_and_pv_bus_indices, pq_bus_indices, pv_bus_indices, slack_bus_indices)
 
     # Factorize the system matrix
     Afact = factorized(Asys)
@@ -283,7 +287,7 @@ def helm_chengxi_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
     nsys = Asys.shape[0]
 
     # declare the active power injections
-    Pbus = Sbus.real
+    Pbus = complex_bus_powers.real
 
     # declare the matrix of coefficients: [order, bus index]
     V = zeros((1, nbus), dtype=complex_type)
@@ -305,18 +309,18 @@ def helm_chengxi_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
-                      Vbus=Vbus, Vst=Vst,
-                      Sbus=Sbus,
+                      Vbus=bus_voltages, Vst=Vst,
+                      Sbus=complex_bus_powers,
                       Pbus=Pbus, nsys=nsys,
                       nbus2=2 * nbus,
-                      pv=pv, pq=pq,
+                      pv=pv_bus_indices, pq=pq_bus_indices,
                       pvpos=pvpos)
 
         # Solve the linear system Asys x res = rhs
         res = Afact(rhs)
 
         # get the new rows of coefficients
-        v, w, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
+        v, w, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv_bus_indices, nbus=nbus)
 
         # Add coefficients row
         V = np.vstack((V, v))
@@ -340,43 +344,22 @@ def helm_chengxi_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
         voltage = V.sum(axis=0)
 
         # Calculate the error and check the convergence
-        Scalc = voltage * conj(Ybus * voltage)
-        mismatch = Scalc - Sbus  # complex power mismatch
-        power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
+        Scalc = voltage * conj(bus_admittances * voltage)
+        mismatch = Scalc - complex_bus_powers  # complex power mismatch
+        power_mismatch_ = r_[mismatch[pv_bus_indices].real, mismatch[pq_bus_indices].real, mismatch[pq_bus_indices].imag]
 
         # check for convergence
         normF = linalg.norm(power_mismatch_, Inf)
 
         if npv > 0:
-            a = linalg.norm(mismatch[pv].real, Inf)
+            a = linalg.norm(mismatch[pv_bus_indices].real, Inf)
         else:
             a = 0
-        b = linalg.norm(mismatch[pq].real, Inf)
-        c = linalg.norm(mismatch[pq].imag, Inf)
+        b = linalg.norm(mismatch[pq_bus_indices].real, Inf)
+        c = linalg.norm(mismatch[pq_bus_indices].imag, Inf)
         error.append([a, b, c])
 
     err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
     err_df.plot(logy=True)
 
     return voltage, normF
-
-
-def res_2_df(V, Sbus, tpe):
-    """
-    Create dataframe to display the results nicely
-    :param V: Voltage complex vector
-    :param Sbus: Power complex vector
-    :param tpe: Types
-    :return: Pandas DataFrame
-    """
-    vm = abs(V)
-    va = angle(V)
-
-    d = {1: 'PQ', 2: 'PV', 3: 'VD'}
-
-    tpe_str = array([d[i] for i in tpe], dtype=object)
-    data = c_[tpe_str, Sbus.real, Sbus.imag, vm, va]
-    cols = ['Type', 'P', 'Q', '|V|', 'angle']
-    df = pd.DataFrame(data=data, columns=cols)
-
-    return df

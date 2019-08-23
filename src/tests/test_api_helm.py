@@ -33,7 +33,7 @@ def test_api_helm():
     print('\n\n', grid.name)
 
     # print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())
-    options = PowerFlowOptions(SolverType.HELM, verbose=False, tolerance=1e-9)
+    options = PowerFlowOptions(SolverType.HELM_STABLE, verbose=False, tolerance=1e-9)
     power_flow = PowerFlow(grid, options)
     power_flow.run()
 

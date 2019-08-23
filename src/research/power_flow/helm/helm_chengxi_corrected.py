@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 np.set_printoptions(linewidth=32000, suppress=False)
-from numpy import zeros, mod, angle, conj, array, c_, r_, linalg, Inf, complex128
+from numpy import zeros, mod, conj, array, r_, linalg, Inf, complex128
 from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
 from scipy.sparse import lil_matrix
@@ -258,27 +258,37 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_chengxi_corrected(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
+def helm_chengxi_corrected(
+        *,
+        bus_voltages, complex_bus_powers, bus_admittances, pq_bus_indices,
+        pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices
+):
     """
     Helm Method
 
-    :param Vbus: voltages array
-    :param Sbus: Power injections array
-    :param Ybus: System admittance matrix
-    :param pq: list of pq node indices
-    :param pv: list of pv node indices
-    :param ref: list of slack node indices
-    :param pqpv: list of pq and pv node indices sorted
+    :param bus_voltages: List of bus voltages
+    :param complex_bus_powers: List of power injections/consumptions
+    :param bus_admittances: Matrix of bus admittances
+    :param pq_bus_indices: List of pq bus indices
+    :param pv_bus_indices: List of pv bus indices
+    :param slack_bus_indices: List of slack bus indices
+    :param pq_and_pv_bus_indices: Sorted list of pq and pv bus indices
+
     :return: Voltage array and the power mismatch
     """
+    converged = None  # TODO Get this from algorithm
+    complex_power_calculated = None  # TODO Get this from algorithm
+    it = None  # TODO Get this from algorithm
+    el = None  # TODO Get this from algorithm
+    normF = None  # TODO Get this from algorithm
 
-    nbus = len(Vbus)
-    npv = len(pv)
-    bus_idx = array(range(nbus), dtype=int)
-    pvpos = array(range(npv))
+    bus_count = len(bus_voltages)
+    pv_bus_count = len(pv_bus_indices)
+    bus_indices = array(range(bus_count), dtype=int)
+    pv_bus_indices = array(range(pv_bus_count))  # TODO Really?!
 
     # Prepare system matrices
-    Asys, Vst, Wst = prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref)
+    Asys, Vst, Wst = prepare_system_matrices(bus_admittances, bus_voltages, bus_indices, pq_and_pv_bus_indices, pq_bus_indices, pv_bus_indices, slack_bus_indices)
 
     # Factorize the system matrix
     Afact = factorized(Asys)
@@ -287,24 +297,24 @@ def helm_chengxi_corrected(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
     nsys = Asys.shape[0]
 
     # declare the active power injections
-    Pbus = Sbus.real
+    Pbus = complex_bus_powers.real
 
     # declare the matrix of coefficients: [order, bus index]
-    V = zeros((1, nbus), dtype=complex_type)
+    V = zeros((1, bus_count), dtype=complex_type)
 
     # Declare the inverse voltage coefficients: [order, pv bus index]
-    W = zeros((1, nbus), dtype=complex_type)
+    W = zeros((1, bus_count), dtype=complex_type)
 
     # Reactive power coefficients on the PV nodes: [order, pv bus index]
-    Q = zeros((1, npv), dtype=np.double)
+    Q = zeros((1, pv_bus_count), dtype=np.double)
 
     # Assign the initial values
     V[0, :] = Vst
     W[0, :] = Wst
 
     # Compute the reactive power matching the initial solution Vst, then assign it as initial reactive power
-    Scalc = Vst * conj(Ybus * Vst)
-    Q[0, :] = Scalc[pv].imag
+    complex_power_calculated = Vst * conj(bus_admittances * Vst)
+    Q[0, :] = complex_power_calculated[pv_bus_indices].imag
 
     error = list()
     voltage = Vst
@@ -313,18 +323,18 @@ def helm_chengxi_corrected(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
-                      Vbus=Vbus, Vst=Vst,
-                      Sbus=Sbus,
+                      Vbus=bus_voltages, Vst=Vst,
+                      Sbus=complex_bus_powers,
                       Pbus=Pbus, nsys=nsys,
-                      nbus2=2 * nbus,
-                      pv=pv, pq=pq,
-                      pvpos=pvpos)
+                      nbus2=2 * bus_count,
+                      pv=pv_bus_indices, pq=pq_bus_indices,
+                      pvpos=pv_bus_indices)
 
         # Solve the linear system Asys x res = rhs
         res = Afact(rhs)
 
         # get the new rows of coefficients
-        v, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
+        v, q = assign_solution(x=res, bus_idx=bus_indices, pvpos=pv_bus_indices, pv=pv_bus_indices, nbus=bus_count)
 
         # Add coefficients row
         V = np.vstack((V, v))
@@ -350,51 +360,29 @@ def helm_chengxi_corrected(Vbus, Sbus, Ybus, pq, pv, ref, pqpv):
         # NOTE: Apparently the padé approximation is equivalent to the bare sum of coefficients !!
 
         if n > 1:
-            for i in range(nbus):
+            for i in range(bus_count):
                 voltage[i], _, _ = pade_approximation(n, V[:, i])
         #
         # voltage = V.sum(axis=0)
 
         # Calculate the error and check the convergence
-        Scalc = voltage * conj(Ybus * voltage)
-        mismatch = Scalc - Sbus  # complex power mismatch
+        complex_power_calculated = voltage * conj(bus_admittances * voltage)
+        mismatch = complex_power_calculated - complex_bus_powers  # complex power mismatch
 
-        power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
+        power_mismatch_ = r_[mismatch[pv_bus_indices].real, mismatch[pq_bus_indices].real, mismatch[pq_bus_indices].imag]
 
         # check for convergence
         normF = linalg.norm(power_mismatch_, Inf)
 
-        if npv > 0:
-            a = linalg.norm(mismatch[pv].real, Inf)
+        if pv_bus_count > 0:
+            a = linalg.norm(mismatch[pv_bus_indices].real, Inf)
         else:
             a = 0
-        b = linalg.norm(mismatch[pq].real, Inf)
-        c = linalg.norm(mismatch[pq].imag, Inf)
+        b = linalg.norm(mismatch[pq_bus_indices].real, Inf)
+        c = linalg.norm(mismatch[pq_bus_indices].imag, Inf)
         error.append([a, b, c])
 
     err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
     err_df.plot(logy=True)
 
-    return voltage, normF
-    # return zeros(nbus), 0
-
-
-def res_2_df(V, Sbus, tpe):
-    """
-    Create dataframe to display the results nicely
-    :param V: Voltage complex vector
-    :param Sbus: Power complex vector
-    :param tpe: Types
-    :return: Pandas DataFrame
-    """
-    vm = abs(V)
-    va = angle(V)
-
-    d = {1: 'PQ', 2: 'PV', 3: 'VD'}
-
-    tpe_str = array([d[i] for i in tpe], dtype=object)
-    data = c_[tpe_str, Sbus.real, Sbus.imag, vm, va]
-    cols = ['Type', 'P', 'Q', '|V|', 'angle']
-    df = pd.DataFrame(data=data, columns=cols)
-
-    return df
+    return bus_voltages, converged, normF, complex_power_calculated, it, el

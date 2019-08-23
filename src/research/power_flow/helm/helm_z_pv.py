@@ -404,20 +404,20 @@ def calc_error(admittances, V, powerInjections):
 
 
 # @jit(cache=True)
-def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, voltageSetPoints, types,
-              eps=1e-3, usePade=True, inherited_pv=None):
+def helm_z_pv(bus_admittances, slack_bus_indices, maxcoefficientCount, complex_bus_powers, bus_voltages, types,
+              tolerance=1e-3, usePade=True, inherited_pv=None):
     """
 
     Args:
-        admittances: Circuit complete admittance matrix
+        bus_admittances: Circuit complete admittance matrix
 
-        slackIndices: Indices of the slack buses (although most likely only one works)
+        slack_bus_indices: Indices of the slack buses (although most likely only one works)
 
         coefficientCount: Number of voltage coefficients to evaluate (Must be an odd number)
 
-        powerInjections: Array of power injections matching the admittance matrix size
+        complex_bus_powers: Array of power injections matching the admittance matrix size
 
-        voltageSetPoints: Array of voltage set points matching the admittance matrix size
+        bus_voltages: Array of voltage set points matching the admittance matrix size
 
         types: Array of bus types matching the admittance matrix size. types: {1-> PQ, 2-> PV, 3-> Slack}
 
@@ -426,19 +426,19 @@ def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, v
     """
 
     # The routines in this script are meant to handle sparse matrices, hence non-sparse ones are not allowed
-    assert (issparse(admittances))
+    assert (issparse(bus_admittances))
 
     # get the admittance matrix size AKA number of nodes
-    n_original = np.shape(admittances)[0]
+    n_original = np.shape(bus_admittances)[0]
 
     # get array with the PV buses indices
     pq_idx_all = where(types == 1)[0]
     pv_idx_all = where(types == 2)[0]
     # reduce the admittance matrix to omit the slack buses
     Yred, Zred, Iind, Sred, Vslack, types_red, non_slack_indices, \
-    map_idx, npq, npv = reduce_arrays(n_bus=n_original, Ymat=admittances.copy(),
-                                      slack_indices=array(slackIndices, dtype=int),
-                                      Vset=voltageSetPoints, S=powerInjections,
+    map_idx, npq, npv = reduce_arrays(n_bus=n_original, Ymat=bus_admittances.copy(),
+                                      slack_indices=array(slack_bus_indices, dtype=int),
+                                      Vset=bus_voltages, S=complex_bus_powers,
                                       types=types)
 
     # get the new dimension AKA number of nodes minus the slack nodes
@@ -464,7 +464,7 @@ def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, v
     H = zeros((0, npv), dtype=complex_type)
 
     # Squared values of the voltage module for the buses that are not of slack type
-    Vset_abs2 = (abs(voltageSetPoints) ** 2)[non_slack_indices]
+    Vset_abs2 = (abs(bus_voltages) ** 2)[non_slack_indices]
 
     # progressive calculation of coefficients
     n = 0
@@ -484,7 +484,7 @@ def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, v
 
     # Declare the vector of all the voltages
     voltages_vector = zeros(n_original, dtype=complex_type)
-    voltages_vector[slackIndices] = Vslack
+    voltages_vector[slack_bus_indices] = Vslack
 
     error = list()
 
@@ -553,14 +553,14 @@ def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, v
         voltages.append(voltages_vector.copy())
 
         # Calculate the missing power values (Q for PV buses and P, Q for slack buses)
-        S = update_all_powers(pv_idx_all, slackIndices, voltages_vector, admittances, powerInjections)
+        S = update_all_powers(pv_idx_all, slack_bus_indices, voltages_vector, bus_admittances, complex_bus_powers)
 
         # Calculate the error and check the convergence
-        mis = calc_error(admittances, voltages_vector, S)
+        mis = calc_error(bus_admittances, voltages_vector, S)
 
         # check for convergence
         # Calculate the error and check the convergence
-        Scalc = voltages_vector * conj(admittances * voltages_vector)
+        Scalc = voltages_vector * conj(bus_admittances * voltages_vector)
 
         # complex power mismatch
         power_mismatch = Scalc - S
@@ -576,7 +576,7 @@ def helm_z_pv(admittances, slackIndices, maxcoefficientCount, powerInjections, v
             last_err = normF
             best_V = voltages_vector
 
-        converged = (normF < eps)
+        converged = (normF < tolerance)
 
         if npv > 0:
             a = linalg.norm(mismatch[pv_idx_all].real, Inf)

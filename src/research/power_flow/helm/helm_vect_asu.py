@@ -449,19 +449,19 @@ def interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_pv):
     return C, Q
 
 
-def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, eps=1e-3, use_pade=False):
+def helm_vect_asu(bus_admittances, series_admittances, shunt_admittances, max_coefficient_count, complex_bus_powers, voltage_set_points, pq, pv, vd, tolerance=1e-3, use_pade=False):
     """
     Run the holomorphic embedding power flow
-    @param Y: Circuit complete admittance matrix
-    @param Ys: Circuit series elements admittance matrix
-    @param Ysh: Circuit shunt elements admittance matrix
+    @param bus_admittances: Circuit complete admittance matrix
+    @param series_admittances: Circuit series elements admittance matrix
+    @param shunt_admittances: Circuit shunt elements admittance matrix
     @param max_coefficient_count: Maximum number of voltage coefficients to evaluate (Must be an odd number)
-    @param S: Array of power injections matching the admittance matrix size
+    @param complex_bus_powers: Array of power injections matching the admittance matrix size
     @param voltage_set_points: Array of voltage set points matching the admittance matrix size
     @param pq: list of PQ node indices
     @param pv: list of PV node indices
     @param vd: list of Slack node indices
-    @param eps: Tolerance
+    @param tolerance: Tolerance
     @param use_pade: Use the Padè approximation? If False the Epsilon algorithm is used
     @return:
         Vred_last: voltage solution
@@ -473,10 +473,10 @@ def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, 
     start = time.time()
 
     # number of nodes
-    nbus = np.shape(Ys)[0]
+    nbus = np.shape(series_admittances)[0]
 
     # The routines in this script are meant to handle sparse matrices, hence non-sparse ones are not allowed
-    assert(issparse(Ys))
+    assert(issparse(series_admittances))
 
     # Make bus type lists combinations that are going to be used later
     pqvd = r_[pq, vd]
@@ -485,7 +485,7 @@ def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, 
     pqpv.sort()
 
     # prepare the arrays
-    Ysys, Ypv, Vset, map_pv, map_w, npq, npv, nvd = pre_process(n_bus=nbus, Yseries=Ys, Vset=voltage_set_points,
+    Ysys, Ypv, Vset, map_pv, map_w, npq, npv, nvd = pre_process(n_bus=nbus, Yseries=series_admittances, Vset=voltage_set_points,
                                                                 pq=pq, pv=pv, vd=vd)
     npqpv = npq + npv
 
@@ -537,7 +537,7 @@ def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, 
         Q = np.vstack((Q, np.zeros((1, npv), dtype=complex_type)))
 
         # get the system independent term to solve the coefficients
-        rhs, Vre = RHS(n, nbus, npq, npv, nvd, Ysh, Ypv, S, Vset, Vset_abs2, C, W, Q, pq, pv, vd, map_pv, map_w)
+        rhs, Vre = RHS(n, nbus, npq, npv, nvd, shunt_admittances, Ypv, complex_bus_powers, Vset, Vset_abs2, C, W, Q, pq, pv, vd, map_pv, map_w)
 
         # Solve the linear system to obtain the new coefficients
         x_sol = solve(rhs)
@@ -562,10 +562,10 @@ def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, 
             if use_pade:
                 if mod(n, 2) == 0 and n > 2:
                     q, _, _ = pade_approximation(n, Q)
-                    S[k] = S[k].real + 1j * q.real
+                    complex_bus_powers[k] = complex_bus_powers[k].real + 1j * q.real
             else:
                 q, E_q[:, kk] = epsilon(Sn_q[kk], n, E_q[:, kk])
-                S[k] = S[k].real + 1j * q
+                complex_bus_powers[k] = complex_bus_powers[k].real + 1j * q
 
         # calculate the voltages
         for k in pqpv:
@@ -592,9 +592,9 @@ def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, 
         voltages.append(voltages_vector.copy())
 
         # Calculate the error and check the convergence
-        Scalc = voltages_vector * conj(Y * voltages_vector)
+        Scalc = voltages_vector * conj(bus_admittances * voltages_vector)
         # complex power mismatch
-        power_mismatch = Scalc - S
+        power_mismatch = Scalc - complex_bus_powers
         # concatenate error by type
         mismatch = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
 
@@ -609,7 +609,7 @@ def helm_vect_asu(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, 
         c = linalg.norm(mismatch[pq].imag, Inf)
         error.append([a, b, c])
 
-        if normF < eps:
+        if normF < tolerance:
             converged = True
         else:
             converged = False

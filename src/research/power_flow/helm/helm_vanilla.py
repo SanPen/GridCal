@@ -494,42 +494,55 @@ def interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_idx):
     return C, Q
 
 
-def helm_vanilla(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, pv, vd, eps=1e-3, use_pade=True):
+def helm_vanilla(
+    *,
+    bus_admittances, series_admittances, shunt_admittances,
+    max_coefficient_count, complex_bus_powers, voltage_set_points,
+    pq_indices, pv_indices, slack_node_indices, tolerance=1e-3,
+    use_pade_approximation=True
+):
     """
     Run the holomorphic embedding power flow
-    @param Y: Circuit complete admittance matrix
-    @param Ys: Circuit series elements admittance matrix
-    @param Ysh: Circuit shunt elements admittance matrix
-    @param max_coefficient_count: Maximum number of voltage coefficients to evaluate (Must be an odd number)
-    @param S: Array of power injections matching the admittance matrix size
-    @param voltage_set_points: Array of voltage set points matching the admittance matrix size
-    @param pq: list of PQ node indices
-    @param pv: list of PV node indices
-    @param vd: list of Slack node indices
-    @param eps: Tolerance
-    @param use_pade: Use the Padè approximation? If False the Epsilon algorithm is used
-    @return:
-    """
 
-    nbus = np.shape(Ys)[0]
+    :param bus_admittances: Complete admittance matrix
+    :param series_admittances: Series elements admittance matrix
+    :param shunt_admittances: Shunt elements admittance matrix
+    :param max_coefficient_count: Maximum number of voltage coefficients to evaluate (Must be an odd number)
+    :param complex_bus_powers: Matrix power injections/extractions matching the admittance matrix size
+    :param voltage_set_points: Matrix of voltage set points matching the admittance matrix size
+    :param pq_indices: List of PQ node indices
+    :param pv_indices: List of PV node indices
+    :param slack_node_indices: List of slack node indices
+    :param tolerance: Tolerance
+    :param use_pade_approximation: Use the Padè approximation? If False the Epsilon algorithm is used
+
+    :return:
+    """
+    converged = None  # TODO Get this from algorithm
+    complex_power_calculated = None  # TODO Get this from algorithm
+    it = None  # TODO Get this from algorithm
+    el = None  # TODO Get this from algorithm
+    normF = None  # TODO Get this from algorithm
+
+    nbus = np.shape(series_admittances)[0]
 
     # The routines in this script are meant to handle sparse matrices, hence non-sparse ones are not allowed
-    assert(issparse(Ys))
+    assert(issparse(series_admittances))
     # assert(not np.all((Ys + sparse(np.eye(nbus) * Ysh) != Y).data))
 
     # Make bus type lists combinations that are going to be used later
-    pqvd = r_[pq, vd]
+    pqvd = r_[pq_indices, slack_node_indices]
     pqvd.sort()
-    pqpv = r_[pq, pv]
+    pqpv = r_[pq_indices, pv_indices]
     pqpv.sort()
 
-    print('Ymat:\n', Y.todense())
-    print('Yseries:\n', Ys.todense())
-    print('Yshunt:\n', Ysh)
+    print('Ymat:\n', bus_admittances.todense())
+    print('Yseries:\n', series_admittances.todense())
+    print('Yshunt:\n', shunt_admittances)
 
     # prepare the arrays
-    Ysys, Ypv, Vset, map_idx, map_w, npq, npv = pre_process(n_bus=nbus, Yseries=Ys, Vset=voltage_set_points,
-                                                            pq=pq, pv=pv, vd=vd)
+    Ysys, Ypv, Vset, map_idx, map_w, npq, npv = pre_process(n_bus=nbus, Yseries=series_admittances, Vset=voltage_set_points,
+                                                            pq=pq_indices, pv=pv_indices, vd=slack_node_indices)
 
     print('Ysys:\n', Ysys.todense())
 
@@ -570,7 +583,7 @@ def helm_vanilla(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, p
     solve = factorized(Ysys)
 
     # set the slack indices voltages
-    voltages_vector[vd] = voltage_set_points[vd]
+    voltages_vector[slack_node_indices] = voltage_set_points[slack_node_indices]
 
     while n <= max_coefficient_count and not converged and inside_precision:
 
@@ -583,16 +596,16 @@ def helm_vanilla(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, p
 
         # get the system independent term to solve the coefficients
         # n, nbus, F, Ypv, S, Vset, Vset_abs2, C, W, Q, pq, pv, vd, map_idx, map_w,
-        rhs, Vre = RHS(n, nbus, Ysh, Ypv, S, Vset, Vset_abs2, C, W, Q, pq, pv, vd, map_idx, map_w)
+        rhs, Vre = RHS(n, nbus, shunt_admittances, Ypv, complex_bus_powers, Vset, Vset_abs2, C, W, Q, pq_indices, pv_indices, slack_node_indices, map_idx, map_w)
 
         # Solve the linear system to obtain the new coefficients
         x_sol = solve(rhs)
 
         # assign the voltages and the reactive power values correctly
-        C[n, :], Q[n, :] = interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_idx)
+        C[n, :], Q[n, :] = interprete_solution(nbus, npv, pv_indices, pqvd, x_sol, Vre, map_idx)
 
         # copy variables for the epsilon algorithm
-        if not use_pade:
+        if not use_pade_approximation:
             E_v[n, :] = C[n, :]
             E_q[n, :] = Q[n, :]
             Sn_v += C[n, :]
@@ -604,19 +617,19 @@ def helm_vanilla(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, p
             W[n, kw] = calc_W(n, k, kw, C, W)
 
         # calculate the reactive power
-        for k in pv:
+        for k in pv_indices:
             kk = map_idx[k]
-            if use_pade:
+            if use_pade_approximation:
                 if mod(n, 2) == 0 and n > 2:
                     q, _, _ = pade_approximation(n, Q)
-                    S[k] = S[k].real + 1j * q.real
+                    complex_bus_powers[k] = complex_bus_powers[k].real + 1j * q.real
             else:
                 q, E_q[:, kk] = epsilon(Sn_q[kk], n, E_q[:, kk])
-                S[k] = S[k].real + 1j * q
+                complex_bus_powers[k] = complex_bus_powers[k].real + 1j * q
 
         # calculate the voltages
         for k in pqpv:
-            if use_pade:
+            if use_pade_approximation:
                 if mod(n, 2) == 0 and n > 2:
                     v, _, _ = pade_approximation(n, C[:, k])
                     voltages_vector[k] = v
@@ -636,18 +649,18 @@ def helm_vanilla(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, p
         # print(voltages_vector)
 
         # Calculate the error and check the convergence
-        Scalc = voltages_vector * conj(Y * voltages_vector)
-        power_mismatch = Scalc - S  # complex power mismatch
-        power_mismatch_ = r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]  # concatenate error by type
+        Scalc = voltages_vector * conj(bus_admittances * voltages_vector)
+        power_mismatch = Scalc - complex_bus_powers  # complex power mismatch
+        power_mismatch_ = r_[power_mismatch[pv_indices].real, power_mismatch[pq_indices].real, power_mismatch[pq_indices].imag]  # concatenate error by type
 
         # check for convergence
         normF = linalg.norm(power_mismatch_, Inf)
         errors.append(normF)
-        errors_PV_P.append(power_mismatch[pv].real)
-        errors_PV_Q.append(power_mismatch[pv].imag)
-        errors_PQ_P.append(power_mismatch[pq].real)
-        errors_PQ_Q.append(power_mismatch[pq].imag)
-        if normF < eps:
+        errors_PV_P.append(power_mismatch[pv_indices].real)
+        errors_PV_Q.append(power_mismatch[pv_indices].imag)
+        errors_PQ_P.append(power_mismatch[pq_indices].real)
+        errors_PQ_Q.append(power_mismatch[pq_indices].imag)
+        if normF < tolerance:
             converged = True
         else:
             converged = False
@@ -656,14 +669,14 @@ def helm_vanilla(Y, Ys, Ysh, max_coefficient_count, S, voltage_set_points, pq, p
 
     # errors_lst = [array(errors), array(errors_PV_P), array(errors_PV_Q), array(errors_PQ_P), array(errors_PQ_Q)]
 
-    return Vred_last, converged, normF, Scalc
+    return Vred_last, converged, normF, Scalc, it, el
 
 
 def bifurcation_point(C, slackIndices):
     """
     Computes the bifurcation point
-    @param C:
-    @return:
+    :param C:
+    :return:
     """
     npoints = 100
     order_num, bus_num = np.shape(C)

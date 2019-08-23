@@ -257,29 +257,36 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_count=30):
+def helm_stable(
+        *,
+        bus_voltages, complex_bus_powers, bus_admittances, pq_bus_indices,
+        pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices,
+        tolerance=1e-9, max_coefficient_count=30
+):
     """
     Helm Method
-    :param Vbus: voltages array
-    :param Sbus: Power injections array
-    :param Ibus: Currents injection array
-    :param Ybus: System admittance matrix
-    :param pq: list of pq node indices
-    :param pv: list of pv node indices
-    :param ref: list of slack node indices
-    :param pqpv: list of pq and pv node indices sorted
-    :param tol: tolerance
+
+    :param max_coefficient_count: Maximum number of coefficients to use
+    :param bus_voltages: List of bus voltages
+    :param complex_bus_powers: List of power injections/extractions
+    :param bus_admittances: Bus admittance matrix
+    :param pq_bus_indices: list of pq node indices
+    :param pv_bus_indices: list of pv node indices
+    :param slack_bus_indices: list of slack node indices
+    :param pq_and_pv_bus_indices: list of pq and pv node indices sorted
+    :param tolerance: tolerance
+
     :return: Voltage array and the power mismatch
     """
     start = time.time()
 
-    nbus = len(Vbus)
-    npv = len(pv)
+    nbus = len(bus_voltages)
+    npv = len(pv_bus_indices)
     bus_idx = array(range(nbus), dtype=int)
     pvpos = array(range(npv))
 
     # Prepare system matrices
-    Asys, Vst, Wst = prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref)
+    Asys, Vst, Wst = prepare_system_matrices(bus_admittances, bus_voltages, bus_idx, pq_and_pv_bus_indices, pq_bus_indices, pv_bus_indices, slack_bus_indices)
 
     # Factorize the system matrix
     Afact = factorized(Asys)
@@ -288,7 +295,7 @@ def helm_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_
     nsys = Asys.shape[0]
 
     # declare the active power injections
-    Pbus = Sbus.real
+    Pbus = complex_bus_powers.real
 
     # declare the matrix of coefficients: [order, bus index]
     V = zeros((1, nbus), dtype=complex_type)
@@ -304,8 +311,8 @@ def helm_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_
     W[0, :] = Wst
 
     # Compute the reactive power matching the initial solution Vst, then assign it as initial reactive power
-    Scalc = Vst * conj(Ybus * Vst)
-    Q[0, :] = Scalc[pv].imag
+    Scalc = Vst * conj(bus_admittances * Vst)
+    Q[0, :] = Scalc[pv_bus_indices].imag
 
     n = 1
     converged = False
@@ -314,18 +321,18 @@ def helm_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_
 
         # Compute the free terms
         rhs = get_rhs(n=n, V=V, W=W, Q=Q,
-                      Vbus=Vbus, Vst=Vst,
-                      Sbus=Sbus,
+                      Vbus=bus_voltages, Vst=Vst,
+                      Sbus=complex_bus_powers,
                       Pbus=Pbus, nsys=nsys,
                       nbus2=2 * nbus,
-                      pv=pv, pq=pq,
+                      pv=pv_bus_indices, pq=pq_bus_indices,
                       pvpos=pvpos)
 
         # Solve the linear system Asys x res = rhs
         res = Afact(rhs)
 
         # get the new rows of coefficients
-        v, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
+        v, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv_bus_indices, nbus=nbus)
 
         # Add coefficients row
         V = np.vstack((V, v))
@@ -338,14 +345,14 @@ def helm_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_
         voltage = V.sum(axis=0)
 
         # Calculate the error and check the convergence
-        Scalc = voltage * conj(Ybus * voltage)
-        mismatch = Scalc - Sbus  # complex power mismatch
-        power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
+        Scalc = voltage * conj(bus_admittances * voltage)
+        mismatch = Scalc - complex_bus_powers  # complex power mismatch
+        power_mismatch_ = r_[mismatch[pv_bus_indices].real, mismatch[pq_bus_indices].real, mismatch[pq_bus_indices].imag]
 
         # check for convergence
         normF = linalg.norm(power_mismatch_, Inf)
 
-        converged = normF < tol
+        converged = normF < tolerance
         n += 1
 
     end = time.time()
@@ -353,24 +360,3 @@ def helm_vanilla(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_
 
     # V, converged, normF, Scalc, it, el
     return voltage, converged, normF, Scalc, n, elapsed
-
-
-def res_2_df(V, Sbus, tpe):
-    """
-    Create dataframe to display the results nicely
-    :param V: Voltage complex vector
-    :param Sbus: Power complex vector
-    :param tpe: Types
-    :return: Pandas DataFrame
-    """
-    vm = abs(V)
-    va = angle(V)
-
-    d = {1: 'PQ', 2: 'PV', 3: 'VD'}
-
-    tpe_str = array([d[i] for i in tpe], dtype=object)
-    data = c_[tpe_str, Sbus.real, Sbus.imag, vm, va]
-    cols = ['Type', 'P', 'Q', '|V|', 'angle']
-    df = pd.DataFrame(data=data, columns=cols)
-
-    return df

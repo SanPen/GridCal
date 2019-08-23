@@ -112,7 +112,7 @@ class MainGUI(QMainWindow):
         self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
         self.solvers_dict[SolverType.LM.value] = SolverType.LM
         self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
-        self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+        self.solvers_dict[SolverType.HELM_STABLE.value] = SolverType.HELM_STABLE
         self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
         self.solvers_dict[SolverType.DC.value] = SolverType.DC
 

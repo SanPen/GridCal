@@ -81,7 +81,7 @@ def pade_approximation(n, an, s=1):
 
 
 # @jit(cache=True)
-def helm_z_pq(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
+def helm_z_pq(bus_voltages, complex_bus_powers, Ibus, Ybus, pq_bus_indices, pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices, tol=1e-9, max_ter=5):
     """
 
     Args:
@@ -102,15 +102,15 @@ def helm_z_pq(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
     """
 
     # reduced impedance matrix
-    Zred = np.linalg.inv(Ybus[pqpv, :][:, pqpv]).toarray()
+    Zred = np.linalg.inv(Ybus[pq_and_pv_bus_indices, :][:, pq_and_pv_bus_indices]).toarray()
 
     # slack currents
-    Ivd = -Ybus[pqpv, :][:, ref].dot(Vbus[ref])
+    Ivd = -Ybus[pq_and_pv_bus_indices, :][:, slack_bus_indices].dot(bus_voltages[slack_bus_indices])
 
     # slack voltages influence
     Ck = Zred.dot(Ivd)
 
-    npqpv = len(pqpv)
+    npqpv = len(pq_and_pv_bus_indices)
 
     Vcoeff = zeros((0, npqpv), dtype=complex_type)
     Wcoeff = zeros((0, npqpv), dtype=complex_type)
@@ -126,7 +126,7 @@ def helm_z_pq(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
         if n == 0:
             I = Ivd
         else:
-            I = conj(Sbus[pqpv]) * Wcoeff[n-1, :]
+            I = conj(complex_bus_powers[pq_and_pv_bus_indices]) * Wcoeff[n - 1, :]
 
         # solve the voltage coefficients
         Vcoeff[n, :] = Zred.dot(I)
@@ -135,15 +135,15 @@ def helm_z_pq(Vbus, Sbus, Ibus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_ter=5):
         Wcoeff[n, :] = calc_W(n=n, npqpv=npqpv, C=Vcoeff, W=Wcoeff)
 
     # compose the final voltage
-    voltage = Vbus.copy()
+    voltage = bus_voltages.copy()
 
-    for i, ii in enumerate(pqpv):
+    for i, ii in enumerate(pq_and_pv_bus_indices):
         voltage[ii], _, _ = pade_approximation(n, Vcoeff[:, i])
 
     # evaluate F(x)
     Scalc = voltage * conj(Ybus * voltage - Ibus)
-    mis = Scalc - Sbus  # complex power mismatch
-    normF = linalg.norm(r_[mis[pv].real, mis[pq].real, mis[pq].imag], Inf)
+    mis = Scalc - complex_bus_powers  # complex power mismatch
+    normF = linalg.norm(r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag], Inf)
 
     print('Vcoeff:\n', Vcoeff)
 

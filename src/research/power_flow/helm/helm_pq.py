@@ -95,33 +95,46 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
+def helm_pq(
+    *,
+    bus_voltages, complex_bus_powers, Ibus, bus_admittances, series_admittances, shunt_admittances, pq_bus_indices, pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices, tolerance=1e-9
+):
     """
-    Args:
-        Vbus:
-        Sbus:
-        Ibus:
-        Ybus:
-        Yserie:
-        Ysh:
-        pq:
-        pv:
-        ref:
-        pqpv:
+    :param bus_voltages:
+    :param complex_bus_powers:
+    :param Ibus:
+    :param bus_admittances:
+    :param series_admittances:
+    :param shunt_admittances:
+    :param pq_bus_indices:
+    :param pv_bus_indices:
+    :param slack_bus_indices:
+    :param pq_and_pv_bus_indices:
+    :param tolerance:
+
+    :param bus_voltages: List of bus voltages
+    :param complex_bus_powers: List of power injections/extractions
+    :param bus_admittances: Bus admittance matrix
+    :param pq_bus_indices: list of pq node indices
+    :param pv_bus_indices: list of pv node indices
+    :param slack_bus_indices: list of slack node indices
+    :param pq_and_pv_bus_indices: list of pq and pv node indices sorted
+    :param tolerance: tolerance
+
     Returns:
     """
 
     # compose the slack nodes influence current
-    Yslack = Yserie[pqpv, :][:, ref]
-    Iref = Yslack.dot(Vbus[ref])
+    Yslack = series_admittances[pq_and_pv_bus_indices, :][:, slack_bus_indices]
+    Iref = Yslack.dot(bus_voltages[slack_bus_indices])
 
-    nbus = len(Vbus)
-    npqpv = len(pqpv)
-    npq = len(pq)
-    npv = len(pv)
+    nbus = len(bus_voltages)
+    npqpv = len(pq_and_pv_bus_indices)
+    npq = len(pq_bus_indices)
+    npv = len(pv_bus_indices)
 
     # factorize the Yseries matrix only once
-    Yseries_pqpv = Yserie[pqpv, :][:, pqpv]
+    Yseries_pqpv = series_admittances[pq_and_pv_bus_indices, :][:, pq_and_pv_bus_indices]
     # Yseries_pqpv = Ybus[pqpv, :][:, pqpv]
     Ysolve = factorized(Yseries_pqpv)
 
@@ -136,15 +149,15 @@ def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
     n = 0
     coeff_tol = 10
 
-    while coeff_tol > tol:
+    while coeff_tol > tolerance:
         # add coefficients row
         Vcoeff = r_[Vcoeff, np.zeros((1, npqpv), dtype=complex_type)]
         Wcoeff = r_[Wcoeff, np.zeros((1, npqpv), dtype=complex_type)]
 
         if n == 0:
-            RHS = Ibus[pqpv] - Iref
+            RHS = Ibus[pq_and_pv_bus_indices] - Iref
         else:
-            RHS = Sbus[pqpv].conj() * Wcoeff[n-1, :] + Ysh[pqpv] * Vcoeff[n-1, :]
+            RHS = complex_bus_powers[pq_and_pv_bus_indices].conj() * Wcoeff[n - 1, :] + shunt_admittances[pq_and_pv_bus_indices] * Vcoeff[n - 1, :]
 
         # solve the voltage coefficients
         Vcoeff[n, :] = Ysolve(RHS)
@@ -160,19 +173,19 @@ def helm_pq(Vbus, Sbus, Ibus, Ybus, Yserie, Ysh, pq, pv, ref, pqpv, tol=1e-9):
         n += 1
 
     # compose the final voltage
-    voltage = Vbus
+    voltage = bus_voltages
     # voltage[pqpv] = Vcoeff.sum(axis=0)
 
-    for i, ii in enumerate(pqpv):
+    for i, ii in enumerate(pq_and_pv_bus_indices):
         voltage[ii], _, _ = pade_approximation(n, Vcoeff[:, i])
         # voltage[ii] = continued_fraction(Vcoeff[:, i])
 
     print('\nVcoeff:\n', Vcoeff)
 
     # evaluate F(x)
-    Scalc = voltage * conj(Ybus * voltage - Ibus)
-    mis = Scalc - Sbus  # complex power mismatch
-    F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+    Scalc = voltage * conj(bus_admittances * voltage - Ibus)
+    mis = Scalc - complex_bus_powers  # complex power mismatch
+    F = r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag]  # concatenate again
 
     # check for convergence
     normF = linalg.norm(F, Inf)

@@ -10,7 +10,8 @@ class SolverType(Enum):
     # Power Flow Solvers
     CONTINUATION_NR = 'Continuation-Newton-Raphson'
     GAUSS = 'Gauss-Seidel'
-    HELM = 'Holomorphic Embedding'
+    HELM_STABLE = 'Holomorphic Embedding'
+    HELM_EXPERIMENTAL = 'HELM-Experimental'
     HELM_CHENGXI_VANILLA = 'HELM-Chengxi-Vanilla'
     HELM_CHENGXI_2 = 'HELM-Chengxi-2'
     HELM_CHENGXI_CORRECTED = 'HELM-Chengxi-Corrected'

@@ -256,30 +256,30 @@ def get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv):
     return np.hstack((r1, rpq, rpv))
 
 
-def helm_wallace(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, types, eps=1e-3, maxcoefficientCount=50):
+def helm_wallace(series_admittances, shunt_admittances, complex_bus_powers, voltageSetPoints, pq_bus_indices, pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices, types, tolerance=1e-3, maxcoefficientCount=50):
     """
 
     Args:
-        Y_series:
-        Y_shunt:
-        Sbus:
+        series_admittances:
+        shunt_admittances:
+        complex_bus_powers:
         voltageSetPoints:
-        pq:
-        pv:
-        ref:
-        pqpv:
-        eps:
+        pq_bus_indices:
+        pv_bus_indices:
+        slack_bus_indices:
+        pq_and_pv_bus_indices:
+        tolerance:
         maxcoefficientCount:
 
     Returns:
 
     """
 
-    nbus = len(Y_shunt)
-    nref = len(ref)
+    nbus = len(shunt_admittances)
+    nref = len(slack_bus_indices)
 
     # reduce the arrays and build the system matrix
-    A, npqpv = make_A(Y_series=Y_series, Y_shunt=Y_shunt, pq=pq, pv=pv, pqpv=pqpv, types=types)
+    A, npqpv = make_A(Y_series=series_admittances, Y_shunt=shunt_admittances, pq=pq_bus_indices, pv=pv_bus_indices, pqpv=pq_and_pv_bus_indices, types=types)
     print('\nA:\n', A.toarray())
 
     # get the set points array
@@ -292,12 +292,12 @@ def helm_wallace(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, t
     V = ones((maxcoefficientCount, nbus), dtype=complex_type)
 
     error = list()
-    npv = len(pv)
+    npv = len(pv_bus_indices)
 
     for n in range(1, maxcoefficientCount):
 
         # compute the right hand side of the linear system
-        rhs = get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv)
+        rhs = get_rhs(n, npqpv, V, series_admittances, shunt_admittances, complex_bus_powers, M, pq_bus_indices, pv_bus_indices, pq_and_pv_bus_indices)
         print('\nn:', n, ', rhs:\n', rhs)
 
         # solve the linear system
@@ -310,29 +310,29 @@ def helm_wallace(Y_series, Y_shunt, Sbus, voltageSetPoints, pq, pv, ref, pqpv, t
         print('voltage coeff (n):\n', vn)
 
         # stack the coefficients solution
-        V[n, pqpv] = vn
+        V[n, pq_and_pv_bus_indices] = vn
 
         # compute the voltages with Padè
         # print('\nVoltage coeff: \n', V)
         voltages = voltageSetPoints.copy()
-        for j in pqpv:
+        for j in pq_and_pv_bus_indices:
             voltages[j], _, _ = pade_approximation(n, j, V)
 
         # print('\nVoltage coeff: \n', V)
         # print('\nVoltage values: \n', voltages)
 
         # evaluate the solution error F(x0)
-        Scalc = voltages * conj(Y_series * voltages)
-        mis = Scalc - Sbus  # compute the mismatch
-        dx = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+        Scalc = voltages * conj(series_admittances * voltages)
+        mis = Scalc - complex_bus_powers  # compute the mismatch
+        dx = r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag]  # mismatch in the Jacobian order
         normF = np.linalg.norm(dx, np.Inf)
 
         if npv > 0:
-            a = linalg.norm(mis[pv].real, Inf)
+            a = linalg.norm(mis[pv_bus_indices].real, Inf)
         else:
             a = 0
-        b = linalg.norm(mis[pq].real, Inf)
-        c = linalg.norm(mis[pq].imag, Inf)
+        b = linalg.norm(mis[pq_bus_indices].real, Inf)
+        c = linalg.norm(mis[pq_bus_indices].imag, Inf)
         error.append([a, b, c])
 
     err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
