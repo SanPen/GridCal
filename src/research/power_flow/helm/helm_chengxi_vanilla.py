@@ -257,7 +257,12 @@ def pade_approximation(n, an, s=1):
     return p / q, a, b
 
 
-def helm_chengxi_vanilla(bus_voltages, complex_bus_powers, bus_admittances, pq_bus_indices, pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices):
+def helm_chengxi_vanilla(
+        *,
+        bus_voltages, complex_bus_powers, bus_admittances,
+        pq_bus_indices, pv_bus_indices, slack_bus_indices,
+        pq_and_pv_bus_indices
+):
     """
     Helm Method
 
@@ -278,7 +283,10 @@ def helm_chengxi_vanilla(bus_voltages, complex_bus_powers, bus_admittances, pq_b
     pvpos = array(range(npv))
 
     # Prepare system matrices
-    Asys, Vst, Wst = prepare_system_matrices(bus_admittances, bus_voltages, bus_idx, pq_and_pv_bus_indices, pq_bus_indices, pv_bus_indices, slack_bus_indices)
+    Asys, Vst, Wst = prepare_system_matrices(
+        bus_admittances, bus_voltages, bus_idx, pq_and_pv_bus_indices,
+        pq_bus_indices, pv_bus_indices, slack_bus_indices
+    )
 
     # Factorize the system matrix
     Afact = factorized(Asys)

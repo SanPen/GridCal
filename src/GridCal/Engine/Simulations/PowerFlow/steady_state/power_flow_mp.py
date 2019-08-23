@@ -103,15 +103,18 @@ class PowerFlowMP:
 
     @staticmethod
     def solve(
+        *,
         solver_type, bus_voltages, complex_bus_powers,
         current_injections_and_extractions, bus_admittances,
         series_admittances, B1, B2, pq_bus_indices, pv_bus_indices,
         slack_bus_indices, pq_and_pv_bus_indices, tolerance,
-        max_iterations
+        max_iterations,
+        shunt_admittances,
     ):
         """
         Run a power flow simulation using the selected method (no outer loop controls).
 
+        :param shunt_admittances: Matrix of shunt admittances
         :param solver_type: Type of the solver to use for this calculation.
         :param bus_voltages: Voltage solution vector
         :param complex_bus_powers: Power injections vector
@@ -179,20 +182,6 @@ class PowerFlowMP:
                     shunt_admittances=None,  # TODO Get this from somewhere
                 )
 
-        elif solver_type == SolverType.HELM_VECT_ASU:
-            bus_voltages, converged, normF, Scalc, it, el = \
-                helm_vect_asu(
-                    pq=pq_bus_indices,
-                    pv=pv_bus_indices,
-                    shunt_admittances=None,  # TODO Get this from somewhere
-                    bus_admittances=bus_admittances,
-                    series_admittances=series_admittances,
-                    max_coefficient_count=max_iterations,
-                    complex_bus_powers=complex_bus_powers,
-                    voltage_set_points=bus_voltages,
-                    vd=None,  # TODO Get this from somewhere
-                )
-
         elif solver_type == SolverType.HELM_CHENGXI_2:
             bus_voltages, converged, normF, Scalc, it, el = \
                 helm_chengxi_2(
@@ -234,15 +223,15 @@ class PowerFlowMP:
                 helm_vect_asu(
                     bus_admittances=bus_admittances,
                     series_admittances=series_admittances,
-                    shunt_admittances=None,  # TODO Get this from somewhere
+                    shunt_admittances=shunt_admittances,  # TODO Get this from somewhere
                     max_coefficient_count=max_iterations,
                     complex_bus_powers=complex_bus_powers,
                     voltage_set_points=bus_voltages,
-                    vd=None,  # TODO Get this from somewhere
+                    slack_bus_indices=slack_bus_indices,
                     tolerance=tolerance,
                     use_pade=False,  # TODO Get this from somewhere
-                    pv=pv_bus_indices,
-                    pq=pq_bus_indices,
+                    pv_bus_indices=pv_bus_indices,
+                    pq_bus_indices=pq_bus_indices,
                 )
 
         elif solver_type == SolverType.HELM_WALLACE:
@@ -467,6 +456,8 @@ class PowerFlowMP:
         # For the iterate_pv_control logic:
         Vset = voltage_solution.copy()  # Origin voltage set-points
 
+        shunt_admittances = circuit.Ys
+
         # this the "outer-loop"
         while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
@@ -495,6 +486,7 @@ class PowerFlowMP:
                     pq_and_pv_bus_indices=pqpv,
                     tolerance=self.options.tolerance,
                     max_iterations=self.options.max_iter,
+                    shunt_admittances=shunt_admittances,
                 )
                 # record the method used
                 methods.append(solver_type)
