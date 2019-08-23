@@ -22,7 +22,7 @@ def calc_W(n, npqpv, C, W):
     if n == 0:
         res = ones(npqpv, dtype=complex_type)
     else:
-        l = arange(n)
+        l = np.arange(n)
         res = -(W[l, :] * C[n - l, :]).sum(axis=0)
 
     res /= conj(C[0, :])
@@ -123,6 +123,10 @@ def helm_pq(
 
     Returns:
     """
+    converged = None  # TODO Get this from algorithm
+    it = None  # TODO Get this from algorithm
+    el = None  # TODO Get this from algorithm
+    normF = None  # TODO Get this from algorithm
 
     # compose the slack nodes influence current
     Yslack = series_admittances[pq_and_pv_bus_indices, :][:, slack_bus_indices]
@@ -190,4 +194,4 @@ def helm_pq(
     # check for convergence
     normF = linalg.norm(F, Inf)
 
-    return voltage, normF
+    return voltage, converged, normF, Scalc, it, el

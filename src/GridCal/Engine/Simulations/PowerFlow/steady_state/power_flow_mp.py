@@ -158,7 +158,7 @@ class PowerFlowMP:
                     tolerance=tolerance,
                     max_coefficient_count=max_iterations,
                     series_admittances=series_admittances,
-                    shunt_admittances=None,  # TODO Get this from somewhere
+                    shunt_admittances=shunt_admittances,
                     voltage_set_points=bus_voltages,
                     pq_indices=pq_bus_indices,
                     pv_indices=pv_bus_indices,
@@ -179,7 +179,7 @@ class PowerFlowMP:
                     tolerance=tolerance,
                     Ibus=current_injections_and_extractions,
                     series_admittances=series_admittances,
-                    shunt_admittances=None,  # TODO Get this from somewhere
+                    shunt_admittances=shunt_admittances,
                 )
 
         elif solver_type == SolverType.HELM_CHENGXI_2:
@@ -223,7 +223,7 @@ class PowerFlowMP:
                 helm_vect_asu(
                     bus_admittances=bus_admittances,
                     series_admittances=series_admittances,
-                    shunt_admittances=shunt_admittances,  # TODO Get this from somewhere
+                    shunt_admittances=shunt_admittances,
                     max_coefficient_count=max_iterations,
                     complex_bus_powers=complex_bus_powers,
                     voltage_set_points=bus_voltages,
@@ -243,7 +243,7 @@ class PowerFlowMP:
                     slack_bus_indices=slack_bus_indices,
                     pq_and_pv_bus_indices=pq_and_pv_bus_indices,
                     series_admittances=series_admittances,
-                    shunt_admittances=None,  # TODO Get this from somewhere
+                    shunt_admittances=shunt_admittances,
                     voltageSetPoints=bus_voltages,
                     types=None,  # TODO Get this from somewhere
                     tolerance=tolerance,
