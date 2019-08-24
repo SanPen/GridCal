@@ -26,7 +26,7 @@ def test_helm_chengxi_vanilla():
     )
     power_flow = PowerFlow(grid, power_flow_options)
     power_flow.run()
-    headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
+    headers = ['Voltage Magnitude (p.u.)', 'Voltage Angle (Deg)', 'Voltage real', 'V imaginary']
     Vm = np.abs(power_flow.results.voltage)
     Va = np.angle(power_flow.results.voltage, deg=True)
     Vre = power_flow.results.voltage.real

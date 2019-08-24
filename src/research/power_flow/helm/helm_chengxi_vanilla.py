@@ -7,6 +7,8 @@ Implemented by Santiago Peñate Vera 2018
 import numpy as np
 import pandas as pd
 
+from research.power_flow.helm.helm_chengxi_corrected import calc_W
+
 np.set_printoptions(linewidth=32000, suppress=False)
 from numpy import zeros, mod, angle, conj, array, c_, r_, linalg, Inf, complex128
 from numpy.linalg import solve
@@ -276,11 +278,15 @@ def helm_chengxi_vanilla(
 
     :return: Voltage array and the power mismatch
     """
+    converged = None  # TODO Get this from algorithm
+    it = None  # TODO Get this from algorithm
+    el = None  # TODO Get this from algorithm
+    normF = None  # TODO Get this from algorithm
 
     nbus = len(bus_voltages)
     npv = len(pv_bus_indices)
     bus_idx = array(range(nbus), dtype=int)
-    pvpos = array(range(npv))
+    pvpos = array(range(npv), dtype=int)
 
     # Prepare system matrices
     Asys, Vst, Wst = prepare_system_matrices(
@@ -332,6 +338,8 @@ def helm_chengxi_vanilla(
 
         # Add coefficients row
         V = np.vstack((V, v))
+
+        w = calc_W(n, V, W)
         W = np.vstack((W, w))
         Q = np.vstack((Q, q))
 
@@ -370,4 +378,4 @@ def helm_chengxi_vanilla(
     err_df = pd.DataFrame(array(error), columns=['PV_real', 'PQ_real', 'PQ_imag'])
     err_df.plot(logy=True)
 
-    return voltage, normF
+    return voltage, converged, normF, Scalc, it, el
