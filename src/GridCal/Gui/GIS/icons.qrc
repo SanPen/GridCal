@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/map (night).svg</file>
+    <file>icons/map.svg</file>
+    <file>icons/zoom_default.svg</file>
+    <file>icons/zoom_out.svg</file>
+    <file>icons/zoom_in.svg</file>
+  </qresource>
+</RCC>

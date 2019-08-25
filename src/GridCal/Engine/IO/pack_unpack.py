@@ -355,4 +355,4 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    # FileSave(main_circuit, 'file.gridcal').save()
+    FileSave(main_circuit, 'file.gridcal').save()

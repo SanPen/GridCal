@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-import pandas as pd
 import multiprocessing
 from GridCal.Engine.Core.multi_circuit import MultiCircuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP, PowerFlowResults
@@ -101,16 +100,16 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
     return variations
 
 
-def power_flow_worker(variation, nbus, nbr, calculation_inputs, power_flow, dP, return_dict=dict()):
+def power_flow_worker(variation, nbus, nbr, calculation_inputs: NumericalCircuit, power_flow: PowerFlowMP, dP, return_dict):
     """
-
-    :param nbus:
-    :param nbr:
-    :param calculation_inputs:
-    :param power_flow:
-    :param dP:
-    :param return_dict:
-    :return:
+    Run asynchronous power flow
+    :param nbus: number of buses
+    :param nbr: number of branches
+    :param calculation_inputs: list of CalculationInputs' instances
+    :param power_flow: PowerFlowMP instance
+    :param dP: delta of active power
+    :param return_dict: dictionary to return values
+    :return: Nothing because it is a worker, the return is done via the return_dict variable
     """
     # create new results
     pf_results = PowerFlowResults()

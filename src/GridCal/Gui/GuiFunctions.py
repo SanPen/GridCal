@@ -19,7 +19,7 @@ from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
 from warnings import warn
-from enum import Enum, EnumMeta
+from enum import EnumMeta
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from collections import defaultdict
@@ -31,12 +31,11 @@ class TreeDelegate(QItemDelegate):
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent, data=dict()):
+    def __init__(self, parent, data=defaultdict()):
         """
-        Constructoe
+        Constructor
         :param parent: QTableView parent object
-        :param objects: List of objects to set. i.e. [True, False]
-        :param object_names: List of Object names to display. i.e. ['True', 'False']
+        :param data: dictionary of lists
         """
         QItemDelegate.__init__(self, parent)
 
@@ -91,7 +90,7 @@ class ComboDelegate(QItemDelegate):
     """
     def __init__(self, parent, objects, object_names):
         """
-        Constructoe
+        Constructor
         :param parent: QTableView parent object
         :param objects: List of objects to set. i.e. [True, False]
         :param object_names: List of Object names to display. i.e. ['True', 'False']
@@ -202,7 +201,7 @@ class ComplexDelegate(QItemDelegate):
     """
     def __init__(self, parent):
         """
-        Constructoe
+        Constructor
         :param parent: QTableView parent object
         """
         QItemDelegate.__init__(self, parent)
@@ -236,8 +235,6 @@ class ComplexDelegate(QItemDelegate):
         imag.setMaximum(9999)
         imag.setMinimum(-9999)
         imag.setDecimals(8)
-
-        # button = QPushButton()
 
         main_layout.addWidget(real)
         main_layout.addWidget(imag)
@@ -331,21 +328,21 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
-                val = self.data_c[index.row(), index.column()]
-                if isinstance(val, str):
-                    return val
-                elif isinstance(val, complex):
-                    if val.real != 0 or val.imag != 0:
-                        return val.__format__(self.format_string)
-                    else:
-                        return '0'
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+
+            val = self.data_c[index.row(), index.column()]
+            if isinstance(val, str):
+                return val
+            elif isinstance(val, complex):
+                if val.real != 0 or val.imag != 0:
+                    return val.__format__(self.format_string)
                 else:
-                    if val != 0:
-                        return val.__format__(self.format_string)
-                    else:
-                        return '0'
+                    return '0'
+            else:
+                if val != 0:
+                    return val.__format__(self.format_string)
+                else:
+                    return '0'
         return None
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
@@ -650,9 +647,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
-                return str(self.data_with_type(index))
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            return str(self.data_with_type(index))
 
         return None
 
@@ -1001,16 +997,13 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         if role == QtCore.Qt.DisplayRole:
-
-            if role == QtCore.Qt.DisplayRole:
-                if orientation == QtCore.Qt.Horizontal:
-                    return str(self.elements[p_int].name)
-                elif orientation == QtCore.Qt.Vertical:
-                    if self.circuit.time_profile is None:
-                        return str(p_int)
-                    else:
-                        # return pd.to_datetime(self.time_array[p_int]).strftime('%d/%m/%Y %H:%M')
-                        return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d-%m-%Y %H:%M')
+            if orientation == QtCore.Qt.Horizontal:
+                return str(self.elements[p_int].name)
+            elif orientation == QtCore.Qt.Vertical:
+                if self.circuit.time_profile is None:
+                    return str(p_int)
+                else:
+                    return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d-%m-%Y %H:%M')
 
         return None
 
@@ -1166,9 +1159,8 @@ class EnumModel(QtCore.QAbstractListModel):
         return len(self.items)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid() is True:
-            if role == QtCore.Qt.DisplayRole:
-                return self.items[index.row()].value[0]
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            return self.items[index.row()].value[0]
         return None
 
 
@@ -1186,9 +1178,8 @@ class MeasurementsModel(QtCore.QAbstractListModel):
         return len(self.items)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid() is True:
-            if role == QtCore.Qt.DisplayRole:
-                return self.items[index.row()].value[0]
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            return self.items[index.row()].value[0]
         return None
 
 

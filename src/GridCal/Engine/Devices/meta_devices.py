@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-from warnings import warn
-from enum import Enum
 from typing import List, Dict, AnyStr, Any, Optional
 from GridCal.Engine.Devices.types import DeviceType, TimeFrame
 

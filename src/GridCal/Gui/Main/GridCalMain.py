@@ -24,7 +24,7 @@ from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
-# from GridCal.Gui.Main.smart_search_dialogue import *
+from GridCal.Gui.Main.visualization import colour_the_schematic
 
 # Engine imports
 # from GridCal.Engine.OptimizationDriver import *
@@ -57,7 +57,6 @@ import sys
 import datetime
 import codecs
 from collections import OrderedDict
-from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
 from PySide2 import QtWidgets
@@ -498,23 +497,6 @@ class MainGUI(QMainWindow):
         self.ui.smart_search_lineEdit.returnPressed.connect(self.smart_search)
 
         ################################################################################################################
-        # Color maps
-        ################################################################################################################
-        vmax = 1.2
-        seq = [(0 / vmax, 'black'),
-               (0.8 / vmax, 'blue'),
-               (1.0 / vmax, 'green'),
-               (1.05 / vmax, 'orange'),
-               (1.2 / vmax, 'red')]
-        self.voltage_cmap = LinearSegmentedColormap.from_list('vcolors', seq)
-        load_max = 1.5
-        seq = [(0.0 / load_max, 'gray'),
-               (0.8 / load_max, 'green'),
-               (1.2 / load_max, 'orange'),
-               (1.5 / load_max, 'red')]
-        self.loading_cmap = LinearSegmentedColormap.from_list('lcolors', seq)
-
-        ################################################################################################################
         # Other actions
         ################################################################################################################
         self.ui.actionShow_map.setVisible(False)
@@ -736,88 +718,7 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def color_based_of_pf(self, s_bus, s_branch, voltages, loadings, types, losses=None, failed_br_idx=None,
-                          loading_label='loading'):
-        """
-        Color the grid based on the results passed
-        Args:
-            s_bus: Buses power
-            s_branch: Branches power
-            voltages: Buses voltage
-            loadings: Branches load
-            types: Buses type
-            losses: Branches losses
-            failed_br_idx: failed branches
-        """
-        # color nodes
-        vmin = 0
-        vmax = 1.2
-        vrng = vmax - vmin
-        vabs = np.abs(voltages)
-        vang = np.angle(voltages, deg=True)
-        vnorm = (vabs - vmin) / vrng
-        Sbase = self.circuit.Sbase
-
-        '''
-        class BusMode(Enum):
-        PQ = 1,
-        PV = 2,
-        REF = 3,
-        NONE = 4,
-        STO_DISPATCH = 5
-        '''
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
-
-        for i, bus in enumerate(self.circuit.buses):
-            if bus.active:
-                r, g, b, a = self.voltage_cmap(vnorm[i])
-                # print(vnorm[i], '->', r*255, g*255, b*255, a)
-                # QColor(r, g, b, alpha)
-                bus.graphic_obj.set_tile_color(QColor(r * 255, g * 255, b * 255, a * 255))
-
-                tooltip = str(i) + ': ' + bus.name + '\n' \
-                          + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-                          + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-                if s_bus is not None:
-                    tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * Sbase) + ' [MVA]'
-                if types is not None:
-                    tooltip += '\nType: ' + bus_types[types[i]]
-                bus.graphic_obj.setToolTip(tooltip)
-
-            else:
-                bus.graphic_obj.set_tile_color(Qt.gray)
-
-        # color branches
-        if s_branch is not None:
-            lnorm = abs(loadings)
-            lnorm[lnorm == np.inf] = 0
-
-            for i, branch in enumerate(self.circuit.branches):
-
-                w = branch.graphic_obj.pen_width
-                if branch.active:
-                    style = Qt.SolidLine
-                    r, g, b, a = self.loading_cmap(lnorm[i])
-                    color = QColor(r * 255, g * 255, b * 255, a * 255)
-                else:
-                    style = Qt.DashLine
-                    color = Qt.gray
-
-                tooltip = str(i) + ': ' + branch.name
-                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-                if s_branch is not None:
-                    tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
-                if losses is not None:
-                    tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-                branch.graphic_obj.setToolTipText(tooltip)
-                branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
-
-        if failed_br_idx is not None:
-            for i in failed_br_idx:
-                w = self.circuit.branches[i].graphic_obj.pen_width
-                style = Qt.DashLine
-                color = Qt.gray
-                self.circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
+    
 
     def msg(self, text, title="Warning"):
         """
@@ -1985,13 +1886,9 @@ class MainGUI(QMainWindow):
 
         max_outer_iter = self.ui.outer_loop_spinBox.value()
 
-        # set_last_solution = self.ui.remember_last_solution_checkBox.isChecked()
-
-        # dispatch_storage = self.ui.dispatch_storage_checkBox.isChecked()
         dispatch_storage = False
 
         if self.ui.helm_retry_checkBox.isChecked():
-            # solver_to_retry_with = self.solvers_dict[self.ui.retry_solver_comboBox.currentText()]
             retry_with_other_methods = True  # to set a value
         else:
             retry_with_other_methods = False
@@ -2087,12 +1984,13 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(SimulationTypes.PowerFlow_run)
 
-            self.color_based_of_pf(s_bus=self.power_flow.results.Sbus,
-                                   s_branch=self.power_flow.results.Sbranch,
-                                   voltages=self.power_flow.results.voltage,
-                                   loadings=self.power_flow.results.loading,
-                                   types=self.power_flow.results.bus_types,
-                                   losses=self.power_flow.results.losses)
+            colour_the_schematic(circuit=self.circuit,
+                                 s_bus=self.power_flow.results.Sbus,
+                                 s_branch=self.power_flow.results.Sbranch,
+                                 voltages=self.power_flow.results.voltage,
+                                 loadings=self.power_flow.results.loading,
+                                 types=self.power_flow.results.bus_types,
+                                 losses=self.power_flow.results.losses)
             self.update_available_results()
 
             # print convergence reports on the console
@@ -2186,11 +2084,12 @@ class MainGUI(QMainWindow):
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
-            self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
-                                   s_branch=self.short_circuit.results.Sbranch,
-                                   voltages=self.short_circuit.results.voltage,
-                                   types=self.short_circuit.results.bus_types,
-                                   loadings=self.short_circuit.results.loading)
+            colour_the_schematic(circuit=self.circuit,
+                                 s_bus=self.short_circuit.results.Sbus,
+                                 s_branch=self.short_circuit.results.Sbranch,
+                                 voltages=self.short_circuit.results.voltage,
+                                 types=self.short_circuit.results.bus_types,
+                                 loadings=self.short_circuit.results.loading)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
@@ -2246,12 +2145,7 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Colouring PTDF results in the grid...')
             QtGui.QGuiApplication.processEvents()
-
-            # self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
-            #                        s_branch=self.short_circuit.results.Sbranch,
-            #                        voltages=self.short_circuit.results.voltage,
-            #                        types=self.short_circuit.results.bus_types,
-            #                        loadings=self.short_circuit.results.loading)
+            
             self.update_available_results()
         else:
             self.msg('Something went wrong, There are no PTDF results.')
@@ -2389,11 +2283,12 @@ class MainGUI(QMainWindow):
             if self.voltage_stability.results.voltages is not None:
                 V = self.voltage_stability.results.voltages[-1, :]
 
-                self.color_based_of_pf(s_bus=self.voltage_stability.results.Sbus,
-                                       s_branch=self.voltage_stability.results.Sbranch,
-                                       voltages=V,
-                                       loadings=self.voltage_stability.results.loading,
-                                       types=self.voltage_stability.results.bus_types)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.voltage_stability.results.Sbus,
+                                     s_branch=self.voltage_stability.results.Sbranch,
+                                     voltages=V,
+                                     loadings=self.voltage_stability.results.loading,
+                                     types=self.voltage_stability.results.bus_types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
@@ -2476,8 +2371,9 @@ class MainGUI(QMainWindow):
             loading = self.time_series.results.loading.max(axis=0)
             Sbranch = self.time_series.results.Sbranch.max(axis=0)
 
-            self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                   types=self.time_series.results.bus_types)
+            colour_the_schematic(circuit=self.circuit,
+                                 s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                 types=self.time_series.results.bus_types)
 
             self.update_available_results()
 
@@ -2538,11 +2434,12 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(SimulationTypes.MonteCarlo_run)
 
-            self.color_based_of_pf(voltages=self.monte_carlo.results.voltage,
-                                   loadings=self.monte_carlo.results.loading,
-                                   s_branch=self.monte_carlo.results.sbranch,
-                                   types=self.monte_carlo.results.bus_types,
-                                   s_bus=None)
+            colour_the_schematic(circuit=self.circuit,
+                                 voltages=self.monte_carlo.results.voltage,
+                                 loadings=self.monte_carlo.results.loading,
+                                 s_branch=self.monte_carlo.results.sbranch,
+                                 types=self.monte_carlo.results.bus_types,
+                                 s_bus=None)
             self.update_available_results()
 
         else:
@@ -2598,11 +2495,12 @@ class MainGUI(QMainWindow):
         self.remove_simulation(SimulationTypes.LatinHypercube_run)
 
         if not self.latin_hypercube_sampling.__cancel__:
-            self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.voltage,
-                                   loadings=self.latin_hypercube_sampling.results.loading,
-                                   types=self.latin_hypercube_sampling.results.bus_types,
-                                   s_branch=self.latin_hypercube_sampling.results.sbranch,
-                                   s_bus=None)
+            colour_the_schematic(circuit=self.circuit,
+                                 voltages=self.latin_hypercube_sampling.results.voltage,
+                                 loadings=self.latin_hypercube_sampling.results.loading,
+                                 types=self.latin_hypercube_sampling.results.bus_types,
+                                 s_branch=self.latin_hypercube_sampling.results.sbranch,
+                                 s_bus=None)
             self.update_available_results()
 
         else:
@@ -2625,10 +2523,6 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             self.LOCK()
-
-            # self.ui.progress_label.setText('Compiling the grid...')
-            # QtGui.QGuiApplication.processEvents()
-            # self.compile()
 
             if self.cascade is None:
                 options = self.get_selected_power_flow_options()
@@ -2711,12 +2605,13 @@ class MainGUI(QMainWindow):
             results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
 
             # print grid
-            self.color_based_of_pf(voltages=results.voltage,
-                                   loadings=results.loading,
-                                   types=results.bus_types,
-                                   s_branch=results.sbranch,
-                                   s_bus=None,
-                                   failed_br_idx=br_idx)
+            colour_the_schematic(circuit=self.circuit,
+                                 voltages=results.voltage,
+                                 loadings=results.loading,
+                                 types=results.bus_types,
+                                 s_branch=results.sbranch,
+                                 s_bus=None,
+                                 failed_br_idx=br_idx)
 
             # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
@@ -2785,11 +2680,12 @@ class MainGUI(QMainWindow):
 
             if self.optimal_power_flow.results.converged:
 
-                self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
-                                       loadings=self.optimal_power_flow.results.loading,
-                                       types=self.optimal_power_flow.results.bus_types,
-                                       s_branch=self.optimal_power_flow.results.Sbranch,
-                                       s_bus=self.optimal_power_flow.results.Sbus)
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=self.optimal_power_flow.results.voltage,
+                                     loadings=self.optimal_power_flow.results.loading,
+                                     types=self.optimal_power_flow.results.bus_types,
+                                     s_branch=self.optimal_power_flow.results.Sbranch,
+                                     s_bus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
 
             else:
@@ -2878,8 +2774,9 @@ class MainGUI(QMainWindow):
                 loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
                 Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
 
-                self.color_based_of_pf(s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                       types=self.optimal_power_flow_time_series.results.bus_types)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                     types=self.optimal_power_flow_time_series.results.bus_types)
 
                 self.update_available_results()
 
@@ -3321,12 +3218,13 @@ class MainGUI(QMainWindow):
 
             if current_study == 'Power Flow':
 
-                self.color_based_of_pf(s_bus=self.power_flow.results.Sbus,
-                                       s_branch=self.power_flow.results.Sbranch,
-                                       voltages=self.power_flow.results.voltage,
-                                       loadings=self.power_flow.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       losses=self.power_flow.results.losses)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.power_flow.results.Sbus,
+                                     s_branch=self.power_flow.results.Sbranch,
+                                     voltages=self.power_flow.results.voltage,
+                                     loadings=self.power_flow.results.loading,
+                                     types=self.circuit.numerical_circuit.bus_types,
+                                     losses=self.power_flow.results.losses)
 
             elif current_study == 'Time Series':
 
@@ -3334,49 +3232,55 @@ class MainGUI(QMainWindow):
                 loading = self.time_series.results.loading[current_step, :]
                 Sbranch = self.time_series.results.Sbranch[current_step, :]
 
-                self.color_based_of_pf(s_bus=None,
-                                       s_branch=Sbranch,
-                                       voltages=voltage,
-                                       loadings=loading,
-                                       types=self.circuit.numerical_circuit.bus_types)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=None,
+                                     s_branch=Sbranch,
+                                     voltages=voltage,
+                                     loadings=loading,
+                                     types=self.circuit.numerical_circuit.bus_types)
 
             elif current_study == 'Voltage Stability':
 
-                self.color_based_of_pf(s_bus=self.voltage_stability.results.Sbus,
-                                       s_branch=self.voltage_stability.results.Sbranch,
-                                       voltages=self.voltage_stability.results.voltages[current_step, :],
-                                       loadings=self.voltage_stability.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.voltage_stability.results.Sbus,
+                                     s_branch=self.voltage_stability.results.Sbranch,
+                                     voltages=self.voltage_stability.results.voltages[current_step, :],
+                                     loadings=self.voltage_stability.results.loading,
+                                     types=self.circuit.numerical_circuit.bus_types)
 
             elif current_study == 'Monte Carlo':
 
-                self.color_based_of_pf(voltages=self.monte_carlo.results.V_points[current_step, :],
-                                       loadings=self.monte_carlo.results.loading_points[current_step, :],
-                                       s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       s_bus=self.monte_carlo.results.S_points[current_step, :])
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=self.monte_carlo.results.V_points[current_step, :],
+                                     loadings=self.monte_carlo.results.loading_points[current_step, :],
+                                     s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
+                                     types=self.circuit.numerical_circuit.bus_types,
+                                     s_bus=self.monte_carlo.results.S_points[current_step, :])
 
             elif current_study == 'Latin Hypercube':
 
-                self.color_based_of_pf(voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
-                                       loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
-                                       s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :])
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
+                                     loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
+                                     s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
+                                     types=self.circuit.numerical_circuit.bus_types,
+                                     s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :])
 
             elif current_study == 'Short Circuit':
-                self.color_based_of_pf(s_bus=self.short_circuit.results.Sbus,
-                                       s_branch=self.short_circuit.results.Sbranch,
-                                       voltages=self.short_circuit.results.voltage,
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       loadings=self.short_circuit.results.loading)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.short_circuit.results.Sbus,
+                                     s_branch=self.short_circuit.results.Sbranch,
+                                     voltages=self.short_circuit.results.voltage,
+                                     types=self.circuit.numerical_circuit.bus_types,
+                                     loadings=self.short_circuit.results.loading)
 
             elif current_study == 'Optimal power flow':
-                self.color_based_of_pf(voltages=self.optimal_power_flow.results.voltage,
-                                       loadings=self.optimal_power_flow.results.loading,
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       s_branch=self.optimal_power_flow.results.Sbranch,
-                                       s_bus=self.optimal_power_flow.results.Sbus)
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=self.optimal_power_flow.results.voltage,
+                                     loadings=self.optimal_power_flow.results.loading,
+                                     types=self.circuit.numerical_circuit.bus_types,
+                                     s_branch=self.optimal_power_flow.results.Sbranch,
+                                     s_bus=self.optimal_power_flow.results.Sbus)
 
             elif current_study == 'Optimal power flow time series':
 
@@ -3384,11 +3288,12 @@ class MainGUI(QMainWindow):
                 loading = self.optimal_power_flow_time_series.results.loading[current_step, :]
                 Sbranch = self.optimal_power_flow_time_series.results.Sbranch[current_step, :]
 
-                self.color_based_of_pf(s_bus=None,
-                                       s_branch=Sbranch,
-                                       voltages=voltage,
-                                       loadings=loading,
-                                       types=self.circuit.numerical_circuit.bus_types)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=None,
+                                     s_branch=Sbranch,
+                                     voltages=voltage,
+                                     loadings=loading,
+                                     types=self.circuit.numerical_circuit.bus_types)
 
             elif current_study == 'PTDF':
 
@@ -3396,12 +3301,13 @@ class MainGUI(QMainWindow):
                 loading = self.ptdf_analysis.results.sensitivity_matrix[current_step, :]
                 Sbranch = self.ptdf_analysis.results.pf_results[current_step].Sbranch
 
-                self.color_based_of_pf(s_bus=None,
-                                       s_branch=Sbranch,
-                                       voltages=voltage,
-                                       loadings=loading,
-                                       types=self.circuit.numerical_circuit.bus_types,
-                                       loading_label='Sensitivity')
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=None,
+                                     s_branch=Sbranch,
+                                     voltages=voltage,
+                                     loadings=loading,
+                                     types=self.circuit.numerical_circuit.bus_types,
+                                     loading_label='Sensitivity')
 
             elif current_study == 'Transient stability':
                 pass
