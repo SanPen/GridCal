@@ -1,7 +1,6 @@
 
 import json
 import requests
-import urllib
 import os
 # os.environ['no_proxy'] = '127.0.0.1,localhost'
 

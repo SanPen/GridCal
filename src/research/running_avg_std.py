@@ -1,4 +1,3 @@
-import math
 from numpy import zeros_like, random
 from matplotlib import pyplot as plt
 

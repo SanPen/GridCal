@@ -1,6 +1,5 @@
 import os
 import string
-import sys
 from random import randint
 from enum import Enum
 
