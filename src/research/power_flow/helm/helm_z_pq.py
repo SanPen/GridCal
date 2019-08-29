@@ -120,8 +120,8 @@ def helm_z_pq(bus_voltages, complex_bus_powers, Ibus, Ybus, pq_bus_indices, pv_b
     for n in range(max_ter):
 
         # reserve memory
-        Vcoeff = r_[Vcoeff, row.copy()]
-        Wcoeff = r_[Wcoeff, row.copy()]
+        Vcoeff = np.r_[Vcoeff, row.copy()]
+        Wcoeff = np.r_[Wcoeff, row.copy()]
 
         if n == 0:
             I = Ivd
@@ -129,7 +129,7 @@ def helm_z_pq(bus_voltages, complex_bus_powers, Ibus, Ybus, pq_bus_indices, pv_b
             I = conj(complex_bus_powers[pq_and_pv_bus_indices]) * Wcoeff[n - 1, :]
 
         # solve the voltage coefficients
-        Vcoeff[n, :] = Zred.dot(I)
+        Vcoeff[n, :] = reduced_impedance_matrix_Z.dot(I)
 
         # compute the inverse voltage coefficients
         Wcoeff[n, :] = calc_W(n=n, npqpv=npqpv, C=Vcoeff, W=Wcoeff)
@@ -143,7 +143,7 @@ def helm_z_pq(bus_voltages, complex_bus_powers, Ibus, Ybus, pq_bus_indices, pv_b
     # evaluate F(x)
     Scalc = voltage * conj(Ybus * voltage - Ibus)
     mis = Scalc - complex_bus_powers  # complex power mismatch
-    normF = linalg.norm(r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag], Inf)
+    normF = linalg.norm(np.r_[mis[pv_bus_indices].real, mis[pq_bus_indices].real, mis[pq_bus_indices].imag], Inf)
 
     print('Vcoeff:\n', Vcoeff)
 

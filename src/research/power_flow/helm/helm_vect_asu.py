@@ -449,7 +449,10 @@ def interprete_solution(nbus, npv, pv, pqvd, x_sol, Vre, map_pv):
     return C, Q
 
 
-def helm_vect_asu(bus_admittances, series_admittances, shunt_admittances, max_coefficient_count, complex_bus_powers, voltage_set_points, pq_bus_indices, pv_bus_indices, slack_bus_indices, tolerance=1e-3, use_pade=False):
+def helm_vect_asu(
+    *,
+    bus_admittances, series_admittances, shunt_admittances, max_coefficient_count, complex_bus_powers, voltage_set_points, pq_bus_indices, pv_bus_indices, slack_bus_indices, tolerance=1e-3, use_pade=False
+):
     """
     Run the holomorphic embedding power flow
     @param bus_admittances: Circuit complete admittance matrix

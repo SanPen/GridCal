@@ -110,6 +110,7 @@ class PowerFlowMP:
         slack_bus_indices, pq_and_pv_bus_indices, tolerance,
         max_iterations,
         shunt_admittances,
+        voltage_set_points,
     ):
         """
         Run a power flow simulation using the selected method (no outer loop controls).
@@ -159,7 +160,7 @@ class PowerFlowMP:
                     max_coefficient_count=max_iterations,
                     series_admittances=series_admittances,
                     shunt_admittances=shunt_admittances,
-                    voltage_set_points=bus_voltages,
+                    voltage_set_points=voltage_set_points,
                     pq_indices=pq_bus_indices,
                     pv_indices=pv_bus_indices,
                     slack_node_indices=slack_bus_indices,
@@ -226,7 +227,7 @@ class PowerFlowMP:
                     shunt_admittances=shunt_admittances,
                     max_coefficient_count=max_iterations,
                     complex_bus_powers=complex_bus_powers,
-                    voltage_set_points=bus_voltages,
+                    voltage_set_points=voltage_set_points,
                     slack_bus_indices=slack_bus_indices,
                     tolerance=tolerance,
                     use_pade=False,  # TODO Get this from somewhere
@@ -244,10 +245,8 @@ class PowerFlowMP:
                     pq_and_pv_bus_indices=pq_and_pv_bus_indices,
                     series_admittances=series_admittances,
                     shunt_admittances=shunt_admittances,
-                    voltageSetPoints=bus_voltages,
-                    types=None,  # TODO Get this from somewhere
-                    tolerance=tolerance,
-                    maxcoefficientCount=max_iterations,
+                    voltage_set_points=voltage_set_points,
+                    maxCoefficientCount=max_iterations,
                 )
 
         elif solver_type == SolverType.HELM_Z_PQ:
@@ -454,7 +453,7 @@ class PowerFlowMP:
         el = list()
 
         # For the iterate_pv_control logic:
-        Vset = voltage_solution.copy()  # Origin voltage set-points
+        voltage_set_points = voltage_solution.copy()  # Origin voltage set-points
 
         shunt_admittances = circuit.Ys
 
@@ -487,6 +486,7 @@ class PowerFlowMP:
                     tolerance=self.options.tolerance,
                     max_iterations=self.options.max_iter,
                     shunt_admittances=shunt_admittances,
+                    voltage_set_points=voltage_set_points,
                 )
                 # record the method used
                 methods.append(solver_type)
@@ -516,7 +516,7 @@ class PowerFlowMP:
                         types_new, \
                         any_q_control_issue = self.control_q_iterative(
                             V=voltage_solution,
-                            Vset=Vset,
+                            Vset=voltage_set_points,
                             Q=Scalc.imag,
                             Qmax=circuit.Qmax,
                             Qmin=circuit.Qmin,

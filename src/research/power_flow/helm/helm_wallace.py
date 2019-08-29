@@ -132,7 +132,7 @@ def make_A2(Y_series, Y_shunt, pq, pv, pqpv, types):
     return A, NPQPV
 
 
-def make_A(Y_series, Y_shunt, pq, pv, pqpv, types):
+def make_A(Y_series, Y_shunt, pq, pv, pqpv):
 
     # create system matrix A of the model 4 of the Wallace article
     N = len(Y_shunt)
@@ -256,20 +256,23 @@ def get_rhs(n, npqpv, V, Y_series, Y_shunt, Sbus, M, pq, pv, pqpv):
     return np.hstack((r1, rpq, rpv))
 
 
-def helm_wallace(series_admittances, shunt_admittances, complex_bus_powers, voltageSetPoints, pq_bus_indices, pv_bus_indices, slack_bus_indices, pq_and_pv_bus_indices, types, tolerance=1e-3, maxcoefficientCount=50):
+def helm_wallace(
+    *,
+    series_admittances, shunt_admittances, complex_bus_powers,
+        voltage_set_points, pq_bus_indices, pv_bus_indices, slack_bus_indices,
+        pq_and_pv_bus_indices, maxCoefficientCount=50,
+):
     """
 
-    Args:
-        series_admittances:
-        shunt_admittances:
-        complex_bus_powers:
-        voltageSetPoints:
-        pq_bus_indices:
-        pv_bus_indices:
-        slack_bus_indices:
-        pq_and_pv_bus_indices:
-        tolerance:
-        maxcoefficientCount:
+    :param series_admittances:
+    :param shunt_admittances:
+    :param complex_bus_powers:
+    :param voltage_set_points:
+    :param pq_bus_indices:
+    :param pv_bus_indices:
+    :param slack_bus_indices:
+    :param pq_and_pv_bus_indices:
+    :param maxCoefficientCount:
 
     Returns:
 
@@ -279,22 +282,22 @@ def helm_wallace(series_admittances, shunt_admittances, complex_bus_powers, volt
     nref = len(slack_bus_indices)
 
     # reduce the arrays and build the system matrix
-    A, npqpv = make_A(Y_series=series_admittances, Y_shunt=shunt_admittances, pq=pq_bus_indices, pv=pv_bus_indices, pqpv=pq_and_pv_bus_indices, types=types)
+    A, npqpv = make_A(Y_series=series_admittances, Y_shunt=shunt_admittances, pq=pq_bus_indices, pv=pv_bus_indices, pqpv=pq_and_pv_bus_indices)
     print('\nA:\n', A.toarray())
 
     # get the set points array
-    M = abs(voltageSetPoints)
+    M = abs(voltage_set_points)
 
     # factorize the system matrix only once
     Afac = factorized(A)
 
     # declare the voltages coefficient matrix
-    V = ones((maxcoefficientCount, nbus), dtype=complex_type)
+    V = ones((maxCoefficientCount, nbus), dtype=complex_type)
 
     error = list()
     npv = len(pv_bus_indices)
 
-    for n in range(1, maxcoefficientCount):
+    for n in range(1, maxCoefficientCount):
 
         # compute the right hand side of the linear system
         rhs = get_rhs(n, npqpv, V, series_admittances, shunt_admittances, complex_bus_powers, M, pq_bus_indices, pv_bus_indices, pq_and_pv_bus_indices)
@@ -314,7 +317,7 @@ def helm_wallace(series_admittances, shunt_admittances, complex_bus_powers, volt
 
         # compute the voltages with Padè
         # print('\nVoltage coeff: \n', V)
-        voltages = voltageSetPoints.copy()
+        voltages = voltage_set_points.copy()
         for j in pq_and_pv_bus_indices:
             voltages[j], _, _ = pade_approximation(n, j, V)
 
