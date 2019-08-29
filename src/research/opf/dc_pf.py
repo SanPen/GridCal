@@ -3,8 +3,6 @@ This program implements the DC power flow as a linear program
 """
 from pulp import *
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 
 
 class DcOpf:

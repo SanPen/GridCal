@@ -6,9 +6,6 @@ This version uses the sparse structures and it the problem compilation is
 blazing fast compared to the full matrix version
 """
 from pulp import *
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 
 from GridCal.Engine import *
 

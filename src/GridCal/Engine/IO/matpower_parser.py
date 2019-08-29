@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
-import pandas as pd
-import numpy as np
 import os
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit

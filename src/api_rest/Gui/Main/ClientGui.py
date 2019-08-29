@@ -19,10 +19,8 @@ from PySide2.QtWidgets import *
 from api_rest.Gui.Main.MainWindow import *
 import json
 import requests
-import os.path
 import pandas as pd
 import sys
-from matplotlib import pyplot as plt
 import os
 os.environ['no_proxy'] = '127.0.0.1,localhost'
 

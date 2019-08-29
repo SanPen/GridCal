@@ -7,10 +7,9 @@ Implemented by Santiago Peñate Vera 2018
 This implementation computes W[n] for all the buses outside the system matrix leading to better results
 """
 import numpy as np
-import pandas as pd
 
 np.set_printoptions(linewidth=32000, suppress=False)
-from numpy import zeros, ones, mod, angle, conj, array, c_, r_, linalg, Inf, complex128, double
+from numpy import zeros, mod, conj, array, r_, linalg, Inf, complex128, double
 from numpy.linalg import solve
 from scipy.sparse.linalg import factorized
 from scipy.sparse import lil_matrix

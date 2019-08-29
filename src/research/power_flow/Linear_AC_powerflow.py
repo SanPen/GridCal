@@ -10,11 +10,8 @@ Implementation by Santiago Peñate Vera 2018
 import time
 import numpy as np
 np.set_printoptions(linewidth=320)
-from numpy import zeros, ones, mod, conj, array, r_, linalg, Inf, complex128, c_, r_, angle
-from itertools import product
-from numpy.linalg import solve
+from numpy import conj, array, linalg, Inf, c_, r_
 from scipy.sparse.linalg import factorized
-from scipy.sparse import issparse, csc_matrix as sparse
 from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 import pandas as pd
 

@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-import os
 import h5py
 from h5py._hl.dataset import Dataset
 from h5py._hl.group import Group

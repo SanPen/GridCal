@@ -4,10 +4,9 @@ from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Devices.bus import Bus
 
 from networkx import DiGraph, all_simple_paths
-import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
-from PySide2.QtCore import QThread, QRunnable, Signal
+from PySide2.QtCore import QThread, Signal
 from typing import List
 
 pd.set_option('display.max_rows', 500)
