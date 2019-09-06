@@ -16,6 +16,7 @@
 import json
 import pandas as pd
 import numpy as np
+import time
 import multiprocessing
 from matplotlib import pyplot as plt
 
@@ -30,7 +31,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import power_flow_wo
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, nt, start, end, time=None):
+    def __init__(self, n, m, nt, start, end, time_array=None):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -45,7 +46,7 @@ class TimeSeriesResults(PowerFlowResults):
         self.start = start
         self.end = end
 
-        self.time = time
+        self.time = time_array
 
         self.bus_types = np.zeros(n, dtype=int)
 
@@ -398,6 +399,8 @@ class TimeSeries(QThread):
 
         self.end_ = end_
 
+        self.elapsed = 0
+
         self.__cancel__ = False
 
     def get_steps(self):
@@ -418,7 +421,7 @@ class TimeSeries(QThread):
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time_array=self.grid.time_profile)
         if self.end_ is None:
             self.end_ = nt
 
@@ -550,7 +553,7 @@ class TimeSeries(QThread):
         n = len(self.grid.buses)
         m = len(self.grid.branches)
         nt = len(self.grid.time_profile)
-        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time=self.grid.time_profile)
+        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time_array=self.grid.time_profile)
 
         if self.end_ is None:
             self.end_ = nt
@@ -753,10 +756,13 @@ class TimeSeries(QThread):
         @return:
         """
 
+        a = time.time()
         if self.options.multi_thread:
             self.results = self.run_multi_thread()
         else:
             self.results = self.run_single_thread()
+
+        self.elapsed = time.time() - a
 
         # send the finnish signal
         self.progress_signal.emit(0.0)

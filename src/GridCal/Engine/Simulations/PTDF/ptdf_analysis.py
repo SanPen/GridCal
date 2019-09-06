@@ -14,6 +14,8 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import multiprocessing
+from typing import List
+from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP, PowerFlowResults
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation, PTDFResults
@@ -100,7 +102,8 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
     return variations
 
 
-def power_flow_worker(variation, nbus, nbr, calculation_inputs: NumericalCircuit, power_flow: PowerFlowMP, dP, return_dict):
+def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[CalculationInputs],
+                      power_flow: PowerFlowMP, dP, return_dict):
     """
     Run asynchronous power flow
     :param nbus: number of buses

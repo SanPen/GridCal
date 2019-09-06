@@ -15,8 +15,12 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
-from scipy.sparse.linalg import spsolve
-from scipy.sparse.linalg import factorized
+try:
+    from pypardiso import spsolve
+    print('Using Pardiso!')
+except ImportError:
+    print('Using scipy')
+    from scipy.sparse.linalg import spsolve
 from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 from numpy import linalg, Inf, exp, r_, conj, angle, matrix, empty, ones, abs as npabs
 

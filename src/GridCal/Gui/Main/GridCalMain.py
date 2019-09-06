@@ -36,7 +36,7 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
-    reduce_buses
+    DeleteAndReduce
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
@@ -60,6 +60,7 @@ from collections import OrderedDict
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
 from PySide2 import QtWidgets
+from matplotlib.colors import LinearSegmentedColormap
 
 try:
     from pandas.plotting import register_matplotlib_converters
@@ -254,6 +255,7 @@ class MainGUI(QMainWindow):
         self.save_file_thread_object = None
         self.ptdf_analysis = None
         self.painter = None
+        self.delete_and_reduce_driver = None
 
         self.stuff_running_now = list()
 
@@ -4228,20 +4230,21 @@ class MainGUI(QMainWindow):
 
                         if reply == QMessageBox.Yes:
 
-                            # get the selected buses
-                            buses = list()
-                            for idx in sel_idx:
-                                buses.append(objects[idx.row()])
+                            self.LOCK()
 
-                            buses_merged = reduce_buses(circuit=self.circuit, buses_to_reduce=buses)
+                            self.add_simulation(SimulationTypes.Delete_and_reduce_run)
 
-                            for bus in buses_merged:
-                                bus.graphic_obj.create_children_icons()
-                                bus.graphic_obj.arrange_children()
+                            self.delete_and_reduce_driver = DeleteAndReduce(grid=self.circuit,
+                                                                            objects=objects,
+                                                                            sel_idx=sel_idx)
 
-                            self.create_schematic_from_api(explode_factor=1)
+                            self.delete_and_reduce_driver.progress_signal.connect(self.ui.progressBar.setValue)
+                            self.delete_and_reduce_driver.progress_text.connect(self.ui.progress_label.setText)
+                            self.delete_and_reduce_driver.done_signal.connect(self.UNLOCK)
+                            self.delete_and_reduce_driver.done_signal.connect(self.post_delete_and_reduce_selected_objects)
 
-                            self.clear_results()
+                            self.delete_and_reduce_driver.start()
+
                         else:
                             # selected QMessageBox.No
                             pass
@@ -4258,6 +4261,26 @@ class MainGUI(QMainWindow):
                 pass
         else:
             pass
+
+    def post_delete_and_reduce_selected_objects(self):
+        """
+        POst delete and merge buses
+        """
+        if self.delete_and_reduce_driver is not None:
+
+            print('Removing graphics...')
+            for bus in self.delete_and_reduce_driver.buses_merged:
+                bus.graphic_obj.create_children_icons()
+                bus.graphic_obj.arrange_children()
+
+            print('Reprinting schematic graphics...')
+            self.create_schematic_from_api(explode_factor=1)
+
+            self.clear_results()
+
+            self.remove_simulation(SimulationTypes.Delete_and_reduce_run)
+
+            self.UNLOCK()
 
     def delete_selected_objects(self):
         """

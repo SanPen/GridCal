@@ -90,6 +90,7 @@ class PSSeGrid:
         self.buses = list()
         self.loads = list()
         self.shunts = list()
+        self.switched_shunts = list()
         self.generators = list()
         self.branches = list()
         self.transformers = list()
@@ -138,7 +139,7 @@ class PSSeGrid:
             circuit.add_load(bus, api_obj)
 
         # Go through shunts
-        for psse_shunt in self.shunts:
+        for psse_shunt in self.shunts + self.switched_shunts:
 
             bus = psse_bus_dict[psse_shunt.I]
             api_obj = psse_shunt.get_object(bus, logger)
@@ -218,7 +219,6 @@ class PSSeBus:
 
             # create bus
             name = self.NAME
-            # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
                            area=self.AREA, zone=self.ZONE)
 
@@ -228,7 +228,6 @@ class PSSeBus:
 
             # create bus
             name = self.NAME
-            # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True, area=self.AREA, zone=self.ZONE)
 
@@ -237,11 +236,8 @@ class PSSeBus:
             self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
-            # print(self.NAME, self.I)
-
             # create bus
             name = self.NAME
-            # name = str(self.I) + '_' + self.NAME
             self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True, area=self.AREA, zone=self.ZONE)
 
@@ -266,7 +262,6 @@ class PSSeBus:
 
         # Ensures unique name
         self.bus.name = str(self.I) + '_' + self.bus.name.replace("'", "").strip()
-        # self.bus.name = self.bus.name.replace("'", "").strip()
 
 
 class PSSeLoad:
@@ -352,6 +347,109 @@ class PSSeLoad:
         return object
 
 
+class PSSeSwitchedShunt:
+
+    def __init__(self, data, version, logger: list):
+        """
+        I Bus number, or extended bus name enclosed in single quotes (refer to Extended
+            Bus Names). No default allowed.
+        MODSW Control mode:
+            0 locked
+            1 discrete adjustment, controlling voltage locally or at bus SWREM
+            2 continuous adjustment, controlling voltage locally or at bus SWREM
+            3 discrete adjustment, controlling the reactive power output of the
+              plant at bus SWREM
+            4 discrete adjustment, controlling the reactive power output of
+              the VSC dc line converter at bus SWREM of the VSC dc line
+              for which the name is specified as RMIDNT
+            5 discrete adjustment, controlling the admittance setting of the
+              switched shunt at bus SWREM
+            6 discrete adjustment, controlling the reactive power output of the
+              shunt element of the FACTS device for which the name is specified
+              as RMIDNT
+              MODSW = 1 by default.
+        ADJM Adjustment method:
+            0 steps and blocks are switched on in input order, and off in reverse
+             input order; this adjustment method was the only method available
+             prior to PSS®E-32.0.
+            1 steps and blocks are switched on and off such that the next highest
+             (or lowest, as appropriate) total admittance is achieved.
+            ADJM = 0 by default.
+        STAT Initial switched shunt status of one for in-service and zero for out-of-service;
+            STAT = 1 by default.
+        VSWHI When MODSW is 1 or 2, the controlled voltage upper limit; entered in pu.
+            When MODSW is 3, 4, 5 or 6, the controlled reactive power range upper limit;
+            entered in pu of the total reactive power range of the controlled voltage controlling
+            device.
+            VSWHI is not used when MODSW is 0. VSWHI = 1.0 by default
+        VSWLO When MODSW is 1 or 2, the controlled voltage lower limit; entered in pu.
+            When MODSW is 3, 4, 5 or 6, the controlled reactive power range lower limit;
+            entered in pu of the total reactive power range of the controlled voltage controlling
+            device.
+            VSWLO is not used when MODSW is 0. VSWLO = 1.0 by default.
+        SWREM Bus number, or extended bus name enclosed in single quotes (refer to Extended
+            Bus Names), of the bus where voltage or connected equipment reactive power
+            output is controlled by this switched shunt.
+            When MODSW is 1 or 2, SWREM is entered as 0 if the switched shunt is to regulate
+            its own voltage; otherwise, SWREM specifies the remote Type 1 or 2 bus where
+            voltage is to be regulated by this switched shunt
+            When MODSW is 3, SWREM specifies the Type 2 or 3 bus where plant reactive
+            power output is to be regulated by this switched shunt. Set SWREM to I if the
+            switched shunt and the plant that it controls are connected to the same bus.
+            When MODSW is 4, SWREM specifies the converter bus of a VSC dc line where
+            converter reactive power output is to be regulated by this switched shunt. Set
+            SWREM to I if the switched shunt and the VSC dc line converter that it controls are
+            connected to the same bus.
+            When MODSW is 5, SWREM specifies the remote bus to which the switched shunt
+            for which the admittance setting is to be regulated by this switched shunt is
+            connected.
+            SWREM is not used when MODSW is 0 or 6. SWREM = 0 by default.
+        RMPCT Percent of the total Mvar required to hold the voltage at the bus controlled by bus I
+            that are to be contributed by this switched shunt; RMPCT must be positive. RMPCT
+            is needed only if SWREM specifies a valid remote bus and there is more than one
+            local or remote voltage controlling device (plant, switched shunt, FACTS device
+            shunt element, or VSC dc line converter) controlling the voltage at bus SWREM to a
+            setpoint, or SWREM is zero but bus I is the controlled bus, local or remote, of one or
+            more other setpoint mode voltage controlling devices. Only used if MODSW = 1 or
+            2. RMPCT = 100.0 by default.
+        RMIDNT When MODSW is 4, the name of the VSC dc line where the converter bus is specified in SWREM. When MODSW is 6, the name of the FACTS device where the
+            shunt element’s reactive output is to be controlled. RMIDNT is not used for other
+            values of MODSW. RMIDNT is a blank name by default.
+            BINIT Initial switched shunt admittance; entered in Mvar at unity voltage. BINIT = 0.0 by
+            default.
+        Args:
+            data:
+        """
+        if version in [34, 33, 32]:
+            self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
+             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT = data[0][:10]
+        else:
+            logger.append('Shunt not implemented for the version ' + str(version))
+
+    def get_object(self, bus: Bus, logger: list):
+        """
+        Return GridCal Load object
+        Returns:
+            Gridcal Load object
+        """
+
+        # GL and BL come in MW and MVAr
+        # THey must be in siemens
+        vv = bus.Vnom**2.0
+
+        if vv == 0:
+            logger.append('Voltage equal to zero in shunt conversion!!!')
+
+        g = 0.0
+        b = self.BINIT * self.RMPCT / 100.0
+
+        object = Shunt(name='Switched shunt ' + str(self.I),
+                       G=g, B=b,
+                       active=bool(self.STAT))
+
+        return object
+
+
 class PSSeShunt:
 
     def __init__(self, data, version, logger: list):
@@ -390,7 +488,7 @@ class PSSeShunt:
         """
 
         # GL and BL come in MW and MVAr
-        # THey must be in siemens
+        # They must be in siemens
         vv = bus.Vnom**2.0
 
         if vv == 0:
@@ -399,7 +497,7 @@ class PSSeShunt:
         g = self.GL
         b = self.BL
 
-        object = Shunt(name='Shunt' + self.ID,
+        object = Shunt(name='Shunt ' + str(self.ID),
                        G=g, B=b,
                        active=bool(self.STATUS))
 
@@ -485,6 +583,35 @@ class PSSeGenerator:
             version:
         """
 
+        self.I = 0
+        self.ID = 0
+        self.PG = 0
+        self.QG = 0
+        self.QT = 0
+        self.QB = 0
+        self.VS = 0
+        self.IREG = 0
+        self.MBASE = 0
+        self.ZR = 0
+        self.ZX = 0
+        self.RT = 0
+        self.XT = 0
+        self.GTAP = 0
+        self.STAT = 0
+        self.RMPCT = 0
+        self.PT = 0
+        self.PB = 0
+        self.O1 = 0
+        self.F1 = 0
+        self.O2 = 0
+        self.F2 = 0
+        self.O3 = 0
+        self.F3 = 0
+        self.O4 = 0
+        self.F4 = 0
+        self.WMOD = 0
+        self.WPF = 0
+
         length = len(data[0])
 
         if version in [33, 32, 30]:
@@ -520,6 +647,7 @@ class PSSeGenerator:
             ZR,ZX,RT,XT,GTAP,STAT,RMPCT,PT,PB,
             O1,F1,...,O4,F4
             """
+
             if length == 26:
                 self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
                  self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
@@ -2041,23 +2169,25 @@ class PSSeParser:
         # 20: Q Record
 
         meta_data = dict()
-        meta_data['bus'] = [1, grid.buses, PSSeBus, 1]
-        meta_data['load'] = [2, grid.loads, PSSeLoad, 1]
-        meta_data['fixed shunt'] = [3, grid.shunts, PSSeShunt, 1]
-        # meta_data['shunt'] = [3, grid.shunts, PSSeShunt, 1]
-        meta_data['generator'] = [4, grid.generators, PSSeGenerator, 1]
-        meta_data['induction machine'] = [5, grid.generators, PSSeInductionMachine, 3]
-        meta_data['branch'] = [6, grid.branches, PSSeBranch, 1]
-        meta_data['transformer'] = [7, grid.transformers, PSSeTransformer, 4]
-        meta_data['two-terminal dc'] = [8, grid.branches, PSSeTwoTerminalDCLine, 3]
-        meta_data['vsc dc line'] = [9, grid.branches, PSSeVscDCLine, 3]
-        meta_data['area'] = [10, grid.areas, PSSeArea, 1]
-        meta_data['zone'] = [11, grid.zones, PSSeZone, 1]
+        meta_data['bus'] = [grid.buses, PSSeBus, 1]
+        meta_data['load'] = [grid.loads, PSSeLoad, 1]
+        meta_data['fixed shunt'] = [grid.shunts, PSSeShunt, 1]
+        meta_data['shunt'] = [grid.shunts, PSSeShunt, 1]
+        meta_data['switched shunt'] = [grid.switched_shunts, PSSeSwitchedShunt, 1]
+        meta_data['generator'] = [grid.generators, PSSeGenerator, 1]
+        meta_data['induction machine'] = [grid.generators, PSSeInductionMachine, 3]
+        meta_data['branch'] = [grid.branches, PSSeBranch, 1]
+        meta_data['transformer'] = [grid.transformers, PSSeTransformer, 4]
+        meta_data['two-terminal dc'] = [grid.branches, PSSeTwoTerminalDCLine, 3]
+        meta_data['vsc dc line'] = [grid.branches, PSSeVscDCLine, 3]
+        meta_data['area data'] = [grid.areas, PSSeArea, 1]
+        meta_data['inter-area transfer'] = [grid.areas, PSSeArea, 1]
+        meta_data['zone'] = [grid.zones, PSSeZone, 1]
 
         for key, values in meta_data.items():
 
             # get the parsers for the declared object type
-            section_idx, objects_list, ObjectT, lines_per_object = values
+            objects_list, ObjectT, lines_per_object = values
 
             if key in sections_dict.keys():
                 lines = sections_dict[key]
@@ -2176,24 +2306,31 @@ def process_raw_file(root_folder, destination_folder, fname):
 
 
 if __name__ == '__main__':
-    import os
-    import pandas as pd
-    from GridCal.Engine.IO.file_handler import FileSave
 
-    origin_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
-    destination_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
+    # import os
+    # import pandas as pd
+    # from GridCal.Engine.IO.file_handler import FileSave
+    #
+    # origin_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
+    # destination_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
+    #
+    # for root, dirs, files in os.walk(origin_folder):
+    #
+    #     path = root.split(os.sep)
+    #
+    #     print((len(path) - 1) * '---', os.path.basename(root))
+    #
+    #     for fname in files:
+    #
+    #         if fname.lower().endswith('.raw'):
+    #
+    #             process_raw_file(root, root, fname)
+    #
+    #         else:
+    #             print('Skipping', fname)
 
-    for root, dirs, files in os.walk(origin_folder):
+    fname = '/home/santi/Descargas/2026_INVIERNO_para Plexos_FINAL_9.raw'
 
-        path = root.split(os.sep)
+    pss_parser = PSSeParser(fname)
 
-        print((len(path) - 1) * '---', os.path.basename(root))
-
-        for fname in files:
-
-            if fname.lower().endswith('.raw'):
-
-                process_raw_file(root, root, fname)
-
-            else:
-                print('Skipping', fname)
+    print()

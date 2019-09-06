@@ -64,6 +64,7 @@ class Opf:
         # self.problem.writeLP('OPF.lp')
         if self.solver == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+
         elif self.solver == MIPSolvers.CPLEX:
             params = CPLEX_CMD(msg=1)
         elif self.solver == MIPSolvers.GUROBI:

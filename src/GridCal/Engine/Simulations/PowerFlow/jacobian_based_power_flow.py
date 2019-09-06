@@ -21,7 +21,13 @@
 from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \
 empty, float64, int32, arange
 from scipy.sparse import issparse, csr_matrix as sparse, hstack as hstack_sp, vstack as vstack_sp, diags
-from scipy.sparse.linalg import spsolve, splu
+try:
+    from pypardiso import spsolve
+    print('Using Pardiso!')
+except ImportError:
+    print('Using scipy')
+    from scipy.sparse.linalg import spsolve
+
 import scipy
 scipy.ALLOW_THREADS = True
 import time

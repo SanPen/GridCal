@@ -4,10 +4,9 @@ from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Devices.bus import Bus
 
 from networkx import DiGraph, all_simple_paths
-import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
-from PySide2.QtCore import QThread, QRunnable, Signal
+from PySide2.QtCore import QThread, Signal
 from typing import List
 
 pd.set_option('display.max_rows', 500)
@@ -148,7 +147,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     return removed_branch, removed_bus, updated_bus, updated_branches
 
 
-def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus]):
+def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=None, prog_func=None):
     """
     Reduce the uses in the grid
     This function removes the buses but whenever a bus is removed, the devices connected to it
@@ -158,6 +157,9 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus]):
     :param buses_to_reduce: list of Bus objects
     :return: Nothing
     """
+
+    if text_func is not None:
+        text_func('Removing and merging buses...')
 
     # create dictionary of bus relationships
     bus_bus = dict()
@@ -184,7 +186,8 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus]):
     buses_merged = list()
 
     # remove
-    for bus in buses_to_reduce:
+    total = len(buses_to_reduce)
+    for k, bus in enumerate(buses_to_reduce):
 
         if bus in bus_bus.keys():
             related_buses = bus_bus[bus]
@@ -215,6 +218,12 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus]):
         else:
             # the bus is isolated, so delete it
             circuit.delete_bus(bus)
+
+        if text_func is not None:
+            text_func('Removing ' + bus.name + '...')
+
+        if prog_func is not None:
+            prog_func((k+1) / total * 100.0)
 
     return buses_merged
 
@@ -277,6 +286,63 @@ class TopologyReduction(QThread):
             self.progress_text.emit('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)
             progress = (i+1) / total * 100
             self.progress_signal.emit(progress)
+
+        # display progress
+        self.progress_text.emit('Done')
+        self.progress_signal.emit(0.0)
+        self.done_signal.emit()
+
+    def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
+
+
+class DeleteAndReduce(QThread):
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
+
+    def __init__(self, grid: MultiCircuit, objects, sel_idx):
+        """
+
+        :param grid:
+        :param objects: list of objects to reduce (buses in this cases)
+        :param sel_idx: indices
+        """
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.objects = objects
+
+        self.sel_idx = sel_idx
+
+        self.buses_merged = list()
+
+        self.__cancel__ = False
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Detecting which branches to remove...')
+
+        # get the selected buses
+        buses = [self.objects[idx.row()] for idx in self.sel_idx]
+
+        # reduce
+        self.buses_merged = reduce_buses(circuit=self.grid,
+                                         buses_to_reduce=buses,
+                                         text_func=self.progress_text.emit,
+                                         prog_func=self.progress_signal.emit)
 
         # display progress
         self.progress_text.emit('Done')
