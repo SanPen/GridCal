@@ -12,16 +12,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
 import numpy as np
 import networkx as nx
-from scipy.sparse import lil_matrix, diags, csc_matrix
 from typing import List, Dict
-
+import scipy.sparse as sp
 
 from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+
+from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
+
+sparse = get_sparse_type()
 
 
 def get_branches_of_the_island(island, C_branch_bus):
@@ -33,7 +35,7 @@ def get_branches_of_the_island(island, C_branch_bus):
     """
 
     # faster method
-    A = csc_matrix(C_branch_bus)
+    A = sp.csc_matrix(C_branch_bus)
     n = A.shape[0]
     visited = np.zeros(n, dtype=bool)
     br_idx = np.zeros(n, dtype=int)
@@ -91,7 +93,7 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
              islands: List of islands bus indices (each list element is a list of bus indices of the island)
     """
     # form the connectivity matrices with the states applied
-    states_dia = diags(branch_active)
+    states_dia = sp.diags(branch_active)
     Cf = states_dia * C_branch_bus_f
     Ct = states_dia * C_branch_bus_t
 
@@ -120,9 +122,9 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
     Ytf = - Ys / (tap_t * tap_f * tap)
 
     # form the admittance matrices
-    Yf = diags(Yff) * Cf + diags(Yft) * Ct
-    Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
-    Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
+    Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
+    Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
+    Ybus = sparse(Cf.T * Yf + Ct.T * Yt + sp.diags(Ysh))
 
     # branch primitives in vector form
     Ytts = Ys
@@ -131,9 +133,9 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
     Ytfs = - Ys / tap
 
     # form the admittance matrices of the series elements
-    Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
-    Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
-    Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
+    Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
+    Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
+    Yseries = sparse(Cf.T * Yfs + Ct.T * Yts)
 
     # Form the matrices for fast decoupled
     '''
@@ -151,18 +153,18 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
     B2[t, t] -= b2
     '''
     b1 = 1.0 / (X + 1e-20)
-    B1f = diags(-b1) * Cf + diags(-b1) * Ct
-    B1t = diags(-b1) * Cf + diags(-b1) * Ct
-    B1 = csc_matrix(Cf.T * B1f + Ct.T * B1t)
+    B1f = sp.diags(-b1) * Cf + sp.diags(-b1) * Ct
+    B1t = sp.diags(-b1) * Cf + sp.diags(-b1) * Ct
+    B1 = sparse(Cf.T * B1f + Ct.T * B1t)
 
     b2 = b1 + B
     b2_ff = -(b2 / (tap * np.conj(tap))).real
     b2_ft = -(b1 / np.conj(tap)).real
     b2_tf = -(b1 / tap).real
     b2_tt = - b2
-    B2f = diags(b2_ff) * Cf + diags(b2_ft) * Ct
-    B2t = diags(b2_tf) * Cf + diags(b2_tt) * Ct
-    B2 = csc_matrix(Cf.T * B2f + Ct.T * B2t)
+    B2f = sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
+    B2t = sp.diags(b2_tf) * Cf + sp.diags(b2_tt) * Ct
+    B2 = sparse(Cf.T * B2f + Ct.T * B2t)
 
     ################################################################################################################
     # Bus connectivity
@@ -192,7 +194,7 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
     :return: list of CalculationInputs instances
     """
     # find the islands of the circuit
-    islands = Graph(csc_matrix(C_bus_bus)).find_islands()
+    islands = Graph(sp.csc_matrix(C_bus_bus)).find_islands()
 
     # clear the list of circuits
     calculation_islands = list()
@@ -332,8 +334,8 @@ class NumericalCircuit:
         self.tap_inc_reg_down = np.zeros(n_br, dtype=float)
         self.vset = np.zeros(n_br, dtype=float)
 
-        self.C_branch_bus_f = lil_matrix((n_br, n_bus), dtype=int)
-        self.C_branch_bus_t = lil_matrix((n_br, n_bus), dtype=int)
+        self.C_branch_bus_f = sp.lil_matrix((n_br, n_bus), dtype=int)
+        self.C_branch_bus_t = sp.lil_matrix((n_br, n_bus), dtype=int)
 
         self.switch_indices = list()
 
@@ -355,7 +357,7 @@ class NumericalCircuit:
         self.load_current_profile = np.zeros((n_time, n_ld), dtype=complex)
         self.load_admittance_profile = np.zeros((n_time, n_ld), dtype=complex)
 
-        self.C_load_bus = lil_matrix((n_ld, n_bus), dtype=int)
+        self.C_load_bus = sp.lil_matrix((n_ld, n_bus), dtype=int)
 
         # battery
         self.battery_names = np.empty(n_batt, dtype=object)
@@ -384,7 +386,7 @@ class NumericalCircuit:
 
         self.battery_cost_profile = np.zeros((n_time, n_batt), dtype=float)
 
-        self.C_batt_bus = lil_matrix((n_batt, n_bus), dtype=int)
+        self.C_batt_bus = sp.lil_matrix((n_batt, n_bus), dtype=int)
 
         # static generator
         self.static_gen_names = np.empty(n_sta_gen, dtype=object)
@@ -399,7 +401,7 @@ class NumericalCircuit:
 
         self.static_gen_power_profile = np.zeros((n_time, n_sta_gen), dtype=complex)
 
-        self.C_sta_gen_bus = lil_matrix((n_sta_gen, n_bus), dtype=int)
+        self.C_sta_gen_bus = sp.lil_matrix((n_sta_gen, n_bus), dtype=int)
 
         # controlled generator
         self.generator_names = np.empty(n_gen, dtype=object)
@@ -425,7 +427,7 @@ class NumericalCircuit:
         self.generator_power_factor_profile = np.zeros((n_time, n_gen), dtype=float)
         self.generator_voltage_profile = np.zeros((n_time, n_gen), dtype=float)
 
-        self.C_gen_bus = lil_matrix((n_gen, n_bus), dtype=int)
+        self.C_gen_bus = sp.lil_matrix((n_gen, n_bus), dtype=int)
 
         # shunt
         self.shunt_names = np.empty(n_sh, dtype=object)
@@ -439,7 +441,7 @@ class NumericalCircuit:
 
         self.shunt_admittance_profile = np.zeros((n_time, n_sh), dtype=complex)
 
-        self.C_shunt_bus = lil_matrix((n_sh, n_bus), dtype=int)
+        self.C_shunt_bus = sp.lil_matrix((n_sh, n_bus), dtype=int)
 
         # Islands indices
         # self.islands = list()  # bus indices per island
@@ -761,7 +763,7 @@ class NumericalCircuit:
         Ysh += self.C_load_bus.T * (self.load_admittance / self.Sbase * self.load_active)
 
         # form the connectivity matrices with the states applied
-        states_dia = diags(self.branch_active)
+        states_dia = sp.diags(self.branch_active)
         Cf = states_dia * self.C_branch_bus_f
         Ct = states_dia * self.C_branch_bus_t
 
@@ -781,9 +783,9 @@ class NumericalCircuit:
         Ytf = - Ys / (self.tap_t * self.tap_f * tap)
 
         # form the admittance matrices
-        Yf = diags(Yff) * Cf + diags(Yft) * Ct
-        Yt = diags(Ytf) * Cf + diags(Ytt) * Ct
-        Ybus = csc_matrix(Cf.T * Yf + Ct.T * Yt + diags(Ysh))
+        Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
+        Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
+        Ybus = sparse(Cf.T * Yf + Ct.T * Yt + sp.diags(Ysh))
 
         return Ybus.imag
 

@@ -96,7 +96,7 @@ References:
 import itertools
 
 from GridCal.ThirdParty.pulp.solvers import *
-from GridCal.ThirdParty.pulp.external_solvers import *
+from GridCal.ThirdParty.pulp.solver_interfaces import *
 from collections import Iterable
 
 import logging

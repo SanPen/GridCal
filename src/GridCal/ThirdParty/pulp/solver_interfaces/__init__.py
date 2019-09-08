@@ -24,10 +24,10 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
-from GridCal.ThirdParty.pulp.external_solvers.coin import *
-from GridCal.ThirdParty.pulp.external_solvers.cplex import *
-from GridCal.ThirdParty.pulp.external_solvers.glpk import *
-from GridCal.ThirdParty.pulp.external_solvers.gurobi import *
-from GridCal.ThirdParty.pulp.external_solvers.scip import *
-from GridCal.ThirdParty.pulp.external_solvers.xpress import *
-from GridCal.ThirdParty.pulp.external_solvers.yaposib import *
+from GridCal.ThirdParty.pulp.solver_interfaces.coin import *
+from GridCal.ThirdParty.pulp.solver_interfaces.cplex import *
+from GridCal.ThirdParty.pulp.solver_interfaces.glpk import *
+from GridCal.ThirdParty.pulp.solver_interfaces.gurobi import *
+from GridCal.ThirdParty.pulp.solver_interfaces.scip import *
+from GridCal.ThirdParty.pulp.solver_interfaces.xpress import *
+from GridCal.ThirdParty.pulp.solver_interfaces.yaposib import *

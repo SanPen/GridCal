@@ -28,7 +28,9 @@ from GridCal.ThirdParty.pulp.solvers import *
 
 
 class SCIP_CMD(LpSolver_CMD):
-    """The SCIP optimization solver"""
+    """
+    The SCIP optimization solver
+    """
 
     SCIP_STATUSES = {
         'unknown': LpStatusUndefined,
@@ -52,11 +54,15 @@ class SCIP_CMD(LpSolver_CMD):
         return self.executableExtension(scip_path)
 
     def available(self):
-        """True if the solver is available"""
+        """
+        True if the solver is available
+        """
         return self.executable(self.path)
 
     def actualSolve(self, lp):
-        """Solve a well formulated lp problem"""
+        """
+        Solve a well formulated lp problem
+        """
         if not self.executable(self.path):
             raise PulpSolverError("PuLP: cannot execute "+self.path)
 
@@ -88,11 +94,11 @@ class SCIP_CMD(LpSolver_CMD):
         lp.status, values = self.readsol(tmpSol)
 
         # Make sure to add back in any 0-valued variables SCIP leaves out.
-        finalVals = {}
+        final_vals = {}
         for v in lp.variables():
-            finalVals[v.name] = values.get(v.name, 0.0)
+            final_vals[v.name] = values.get(v.name, 0.0)
 
-        lp.assignVarsVals(finalVals)
+        lp.assignVarsVals(final_vals)
 
         if not self.keepFiles:
             for f in (tmpLp, tmpSol):
@@ -104,7 +110,9 @@ class SCIP_CMD(LpSolver_CMD):
         return lp.status
 
     def readsol(self, filename):
-        """Read a SCIP solution file"""
+        """
+        Read a SCIP solution file
+        """
         with open(filename) as f:
             # First line must containt 'solution status: <something>'
             try:

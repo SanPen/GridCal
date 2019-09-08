@@ -18,21 +18,28 @@
 # This file retains the BSD-Style license
 
 
-from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \
-empty, float64, int32, arange
-from scipy.sparse import issparse, csr_matrix as sparse, hstack as hstack_sp, vstack as vstack_sp, diags
-try:
-    from pypardiso import spsolve
-    print('Using Pardiso!')
-except ImportError:
-    print('Using scipy')
-    from scipy.sparse.linalg import spsolve
-
-import scipy
-scipy.ALLOW_THREADS = True
+# from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \
+# empty, float64, int32, arange
+# from scipy.sparse import issparse, hstack as hstack_sp, vstack as vstack_sp, diags
+# try:
+#     from cvxoptklu import klu
+#     spsolve = klu.linsolve
+#     from scipy.sparse import csc_matrix as sparse
+#     print('Using KLU!')
+# except ImportError:
+#     print('Using scipy')
+#     from scipy.sparse.linalg import spsolve
+#     from scipy.sparse import csr_matrix as sparse
 import time
+import scipy
+import scipy.sparse as sp
 import numpy as np
 
+from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+
+linear_solver = get_linear_solver()
+sparse = get_sparse_type()
+scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
@@ -90,21 +97,14 @@ def dSbus_dV(Ybus, V, I):
 
     ib = range(len(V))
 
-    if issparse(Ybus):
-        Ibus = Ybus * V - I
+    Ibus = Ybus * V - I
 
-        diagV = sparse((V, (ib, ib)))
-        diagIbus = sparse((Ibus, (ib, ib)))
-        diagVnorm = sparse((V / abs(V), (ib, ib)))
-    else:
-        Ibus = Ybus * asmatrix(V).T - I
+    diagV = sparse((V, (ib, ib)))
+    diagIbus = sparse((Ibus, (ib, ib)))
+    diagVnorm = sparse((V / abs(V), (ib, ib)))
 
-        diagV = asmatrix(diag(V))
-        diagIbus = asmatrix(diag(asarray(Ibus).flatten()))
-        diagVnorm = asmatrix(diag(V / abs(V)))
-
-    dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
-    dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
+    dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagIbus) * diagVnorm
+    dS_dVa = 1j * diagV * np.conj(diagIbus - Ybus * diagV)
 
     return dS_dVm, dS_dVa
 
@@ -157,26 +157,24 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     Returns:
         The system Jacobian matrix
     """
-    # dS_dVm, dS_dVa = dSbus_dV(Ybus, V, Ibus)  # compute the derivatives
-
     I = Ybus * V - Ibus
 
-    diagV = diags(V)
-    diagI = diags(I)
-    diagVnorm = diags(V / np.abs(V))
+    diagV = sp.diags(V)
+    diagI = sp.diags(I)
+    diagVnorm = sp.diags(V / np.abs(V))
 
-    dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagI) * diagVnorm
-    dS_dVa = 1j * diagV * conj(diagI - Ybus * diagV)
+    dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
+    dS_dVa = 1j * diagV * np.conj(diagI - Ybus * diagV)
 
-    J11 = dS_dVa[array([pvpq]).T, pvpq].real
-    J12 = dS_dVm[array([pvpq]).T, pq].real
-    J21 = dS_dVa[array([pq]).T, pvpq].imag
-    J22 = dS_dVm[array([pq]).T, pq].imag
+    J11 = dS_dVa[np.array([pvpq]).T, pvpq].real
+    J12 = dS_dVm[np.array([pvpq]).T, pq].real
+    J21 = dS_dVa[np.array([pq]).T, pvpq].imag
+    J22 = dS_dVm[np.array([pq]).T, pq].imag
 
-    J = vstack_sp([hstack_sp([J11, J12]),
-                   hstack_sp([J21, J22])], format="csr")
+    J = sp.vstack([sp.hstack([J11, J12]),
+                   sp.hstack([J21, J22])], format="csr")
 
-    return J
+    return sparse(J)
 
 
 def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
@@ -207,13 +205,13 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     converged = 0
     iter_ = 0
     V = V0
-    Va = angle(V)
+    Va = np.angle(V)
     Vm = np.abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
 
@@ -228,13 +226,13 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Scalc = V * conj(Ybus * V - Ibus)
+    Scalc = V * np.conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+    F = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     if (npq + npv) > 0:
         # check tolerance
-        normF = linalg.norm(F, Inf)
+        normF = np.linalg.norm(F, np.Inf)
 
         if normF < tol:
             converged = 1
@@ -248,7 +246,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # compute update step
-            dx = spsolve(J, F)
+            dx = linear_solver(J, F)
 
             # reassign the solution vector
             if npv:
@@ -261,11 +259,11 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             mu_ = 1.0
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
-            Vnew = Vm * exp(1j * Va)
+            Vnew = Vm * np.exp(1j * Va)
 
             # compute the mismatch function f(x_new)
-            dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+            dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            Fnew = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
             Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
             cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
 
@@ -283,11 +281,11 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
                 mu_ *= 0.25
                 Vm -= mu_ * dVm
                 Va -= mu_ * dVa
-                Vnew = Vm * exp(1j * Va)
+                Vnew = Vm * np.exp(1j * Va)
 
                 # compute the mismatch function f(x_new)
-                dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-                Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+                Fnew = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
                 Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
                 cond = (Fnew < Fnew_prev).any()
 
@@ -299,7 +297,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             F = Fnew
 
             # check for convergence
-            normF = linalg.norm(F, Inf)
+            normF = np.linalg.norm(F, np.Inf)
 
             if normF < tol:
                 converged = 1
@@ -340,13 +338,13 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     converged = 0
     iter_ = 0
     V = V0
-    Va = angle(V)
-    Vm = abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
+    Va = np.angle(V)
+    Vm = np.abs(V)
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
 
@@ -361,16 +359,16 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Scalc = V * conj(Ybus * V - Ibus)
+    Scalc = V * np.conj(Ybus * V - Ibus)
     mis = Scalc - Sbus  # compute the mismatch
-    F = r_[mis[pv].real,
-           mis[pq].real,
-           mis[pq].imag]
+    F = np.r_[mis[pv].real,
+              mis[pq].real,
+              mis[pq].imag]
 
     if (npq + npv) > 0:
 
         # check tolerance
-        normF = linalg.norm(F, Inf)
+        normF = np.linalg.norm(F, np.Inf)
 
         if normF < tol:
             converged = 1
@@ -384,7 +382,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # compute update step
-            dx = spsolve(J, F)
+            dx = linear_solver(J, F)
 
             # reassign the solution vector
             if npv:
@@ -392,7 +390,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             if npq:
                 dVa[pq] = dx[j3:j4]
                 dVm[pq] = dx[j5:j6]
-            dV = dVm * exp(1j * dVa)  # voltage mismatch
+            dV = dVm * np.exp(1j * dVa)  # voltage mismatch
 
             # update voltage
             if robust:
@@ -408,18 +406,18 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
 
-            V = Vm * exp(1j * Va)
+            V = Vm * np.exp(1j * Va)
 
-            Vm = abs(V)  # update Vm and Va again in case
-            Va = angle(V)  # we wrapped around with a negative Vm
+            Vm = np.abs(V)  # update Vm and Va again in case
+            Va = np.angle(V)  # we wrapped around with a negative Vm
 
             # evaluate F(x)
-            Scalc = V * conj(Ybus * V - Ibus)
+            Scalc = V * np.conj(Ybus * V - Ibus)
             mis = Scalc - Sbus  # complex power mismatch
-            F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+            F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
 
             # check for convergence
-            normF = linalg.norm(F, Inf)
+            normF = np.linalg.norm(F, np.Inf)
 
             if normF < tol:
                 converged = 1
@@ -455,12 +453,12 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
     # initialize
     V = V0
-    Va = angle(V)
+    Va = np.angle(V)
     Vm = np.abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
 
@@ -492,9 +490,9 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
                 H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # evaluate the solution error F(x0)
-            Scalc = V * conj(Ybus * V - Ibus)
+            Scalc = V * np.conj(Ybus * V - Ibus)
             mis = Scalc - Sbus  # compute the mismatch
-            dz = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
+            dz = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # mismatch in the Jacobian order
 
             # system matrix
             # H1 = H^t
@@ -515,7 +513,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
             rhs = H1.dot(dz)
 
             # Solve the increment
-            dx = spsolve(A, rhs)
+            dx = linear_solver(A, rhs)
 
             # objective function to minimize
             f = 0.5 * dz.dot(dz)
@@ -543,9 +541,9 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
                 Vm -= dVm
                 Va -= dVa
                 # update Vm and Va again in case we wrapped around with a negative Vm
-                V = Vm * exp(1j * Va)
+                V = Vm * np.exp(1j * Va)
                 Vm = np.abs(V)
-                Va = angle(V)
+                Va = np.angle(V)
             else:
                 update_jacobian = False
                 lbmda *= nu
@@ -553,7 +551,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
             # check convergence
             # normF = np.linalg.norm(dx, np.Inf)
-            normF = np.linalg.norm(Sbus - V * conj(Ybus.dot(V)), np.Inf)
+            normF = np.linalg.norm(Sbus - V * np.conj(Ybus.dot(V)), np.Inf)
             converged = normF < tol
             f_prev = f
 
@@ -562,7 +560,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     else:
         normF = 0
         converged = True
-        Scalc = V * conj(Ybus * V - Ibus)
+        Scalc = V * np.conj(Ybus * V - Ibus)
         iter_ = 0
 
     end = time.time()
@@ -583,16 +581,16 @@ def Jacobian_I(Ybus, V, pq, pvpq):
     Returns:
         The system Jacobian matrix in current equations
     """
-    dI_dVm = Ybus * diags(V / np.abs(V))
-    dI_dVa = 1j * (Ybus * diags(V))
+    dI_dVm = Ybus * sp.diags(V / np.abs(V))
+    dI_dVa = 1j * (Ybus * sp.diags(V))
 
-    J11 = dI_dVa[array([pvpq]).T, pvpq].real
-    J12 = dI_dVm[array([pvpq]).T, pq].real
-    J21 = dI_dVa[array([pq]).T, pvpq].imag
-    J22 = dI_dVm[array([pq]).T, pq].imag
+    J11 = dI_dVa[sp.array([pvpq]).T, pvpq].real
+    J12 = dI_dVm[sp.array([pvpq]).T, pq].real
+    J21 = dI_dVa[sp.array([pq]).T, pvpq].imag
+    J22 = dI_dVm[sp.array([pq]).T, pq].imag
 
-    J = vstack_sp([hstack_sp([J11, J12]),
-                   hstack_sp([J21, J22])], format="csr")
+    J = sp.vstack([sp.hstack([J11, J12]),
+                   sp.hstack([J21, J22])], format="csr")
 
     return J
 
@@ -623,13 +621,13 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
     converged = 0
     iter_ = 0
     V = V0
-    Va = angle(V)
-    Vm = abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
+    Va = np.angle(V)
+    Vm = np.abs(V)
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
 
@@ -645,9 +643,9 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
 
     # evaluate F(x0)
     Icalc = Ybus * V - Ibus_sp
-    dI = conj(Sbus_sp / V) - Icalc  # compute the mismatch
-    F = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
-    normF = linalg.norm(F, Inf)  # check tolerance
+    dI = np.conj(Sbus_sp / V) - Icalc  # compute the mismatch
+    F = np.r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+    normF = np.linalg.norm(F, np.Inf)  # check tolerance
 
     if normF < tol:
         converged = 1
@@ -661,7 +659,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         J = Jacobian_I(Ybus, V, pq, pvpq)
 
         # compute update step
-        dx = spsolve(J, F)
+        dx = linear_solver(J, F)
 
         # reassign the solution vector
         if npv:
@@ -674,14 +672,14 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         mu_ = 1.0
         Vm += mu_ * dVm
         Va += mu_ * dVa
-        Vnew = Vm * exp(1j * Va)
+        Vnew = Vm * np.exp(1j * Va)
 
         # compute the mismatch function f(x_new)
         Icalc = Ybus * Vnew - Ibus_sp
-        dI = conj(Sbus_sp / Vnew) - Icalc
-        Fnew = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+        dI = np.conj(Sbus_sp / Vnew) - Icalc
+        Fnew = np.r_[dI[pv].real, dI[pq].real, dI[pq].imag]
 
-        normFprev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+        normFprev = np.linalg.norm(F + alpha * (F * J).dot(Fnew - F), np.Inf)
 
         cond = normF < normFprev  # condition to back track (no improvement at all)
 
@@ -699,15 +697,15 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
             mu_ *= 0.25
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
-            Vnew = Vm * exp(1j * Va)
+            Vnew = Vm * np.exp(1j * Va)
 
             # compute the mismatch function f(x_new)
             Icalc = Ybus * Vnew - Ibus_sp
-            dI = conj(Sbus_sp / Vnew) - Icalc
-            Fnew = r_[dI[pv].real, dI[pq].real, dI[pq].imag]
+            dI = np.conj(Sbus_sp / Vnew) - Icalc
+            Fnew = np.r_[dI[pv].real, dI[pq].real, dI[pq].imag]
 
-            normFnew = linalg.norm(Fnew, Inf)
-            normFnew_prev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+            normFnew = np.linalg.norm(Fnew, np.Inf)
+            normFnew_prev = np.linalg.norm(F + alpha * (F * J).dot(Fnew - F), np.Inf)
 
             cond = normFnew < normFnew_prev
 
@@ -719,7 +717,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         F = Fnew
 
         # check for convergence
-        normF = linalg.norm(F, Inf)
+        normF = np.linalg.norm(F, np.Inf)
 
         if normF < tol:
             converged = 1
@@ -731,7 +729,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
     #       '  -  back_track_counter', back_track_counter,
     #       '  -  back_track_iterations', back_track_iterations)
 
-    Scalc = V * conj(Icalc)
+    Scalc = V * np.conj(Icalc)
 
     return V, converged, normF, Scalc, iter_, elapsed
 
@@ -749,8 +747,8 @@ def F(V, Ybus, S, I, pq, pv):
     :return:
     """
     # compute the mismatch function f(x_new)
-    dS = V * conj(Ybus * V - I) - S  # complex power mismatch
-    return r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+    dS = V * np.conj(Ybus * V - I) - S  # complex power mismatch
+    return np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
 
 def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
@@ -776,7 +774,7 @@ def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
         Va[pq] = x[j3:j4]
         Vm[pq] = x[j5:j6]
 
-    V = Vm * exp(1j * Va)  # voltage mismatch
+    V = Vm * np.exp(1j * Va)  # voltage mismatch
 
     # right hand side
     g = F(V, Ybus, S, I, pq, pv)
@@ -785,7 +783,7 @@ def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
     gx = Jacobian(Ybus, V, I, pq, pvpq)
 
     # return the increment of x
-    return spsolve(gx, g)
+    return linear_solver(gx, g)
 
 
 def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
@@ -816,7 +814,7 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     V = V0.copy()
 
     # set up indexing for updating V
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
 
@@ -831,12 +829,12 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     j6 = j4 + npq
 
     # evaluate F(x0)
-    Scalc = V * conj(Ybus * V - Ibus)
+    Scalc = V * np.conj(Ybus * V - Ibus)
     mis = Scalc - Sbus  # compute the mismatch
-    F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]
+    F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
 
     # check tolerance
-    normF = linalg.norm(F, Inf)
+    normF = np.linalg.norm(F, np.Inf)
 
     if normF < tol:
         converged = 1
@@ -847,11 +845,6 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     x = np.zeros(2 * npq + npv)
     Va = np.angle(V)
     Vm = np.abs(V)
-    # if npv:
-    #     x[j1:j2] = Va[pv]
-    # if npq:
-    #     x[j3:j4] = Va[pq]
-    #     x[j5:j6] = Vm[pq]
 
     # do Newton iterations
     while not converged and iter_ < max_it:
@@ -885,15 +878,15 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         if npq:
             Va[pq] = x[j3:j4]
             Vm[pq] = x[j5:j6]
-        V = Vm * exp(1j * Va)  # voltage mismatch
+        V = Vm * np.exp(1j * Va)  # voltage mismatch
 
         # evaluate F(x)
-        Scalc = V * conj(Ybus * V - Ibus)
+        Scalc = V * np.conj(Ybus * V - Ibus)
         mis = Scalc - Sbus  # complex power mismatch
-        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+        F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
 
         # check for convergence
-        normF = linalg.norm(F, Inf)
+        normF = np.linalg.norm(F, np.Inf)
 
         if normF > 0.01:
             dt = max(dt * 0.985, 0.75)

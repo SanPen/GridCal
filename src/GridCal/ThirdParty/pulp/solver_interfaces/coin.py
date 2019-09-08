@@ -229,19 +229,19 @@ class COIN_CMD(LpSolver_CMD):
         Read a CBC solution file generated from an lp (good names)
         """
         values = {}
-        reducedCosts = {}
-        shadowPrices = {}
+        reduced_costs = {}
+        shadow_prices = {}
         slacks = {}
         for v in vs:
             values[v.name] = 0.0
-        cbcStatus = {'Optimal': LpStatusOptimal,
-                     'Infeasible': LpStatusInfeasible,
-                     'Integer': LpStatusInfeasible,
-                     'Unbounded': LpStatusUnbounded,
-                     'Stopped': LpStatusNotSolved}
+        cbc_status = {'Optimal': LpStatusOptimal,
+                      'Infeasible': LpStatusInfeasible,
+                      'Integer': LpStatusInfeasible,
+                      'Unbounded': LpStatusUnbounded,
+                      'Stopped': LpStatusNotSolved}
         with open(filename) as f:
-            statusstr = f.readline().split()[0]
-            status = cbcStatus.get(statusstr, LpStatusUndefined)
+            status_str = f.readline().split()[0]
+            status = cbc_status.get(status_str, LpStatusUndefined)
             for l in f:
                 if len(l)<=2:
                     break
@@ -253,11 +253,11 @@ class COIN_CMD(LpSolver_CMD):
                 dj = l[3]
                 if vn in values:
                     values[vn] = float(val)
-                    reducedCosts[vn] = float(dj)
+                    reduced_costs[vn] = float(dj)
                 if vn in lp.constraints:
                     slacks[vn] = float(val)
-                    shadowPrices[vn] = float(dj)
-        return status, values, reducedCosts, shadowPrices, slacks
+                    shadow_prices[vn] = float(dj)
+        return status, values, reduced_costs, shadow_prices, slacks
 
 
 COIN = COIN_CMD
@@ -365,24 +365,25 @@ class COINMP_DLL(LpSolver):
             self.crash = crash
             self.scale = scale
             self.rounding = rounding
-            self.integerPresolve = integerPresolve
+            self.integer_presolve = integerPresolve
             self.strong = strong
             self.debug = 0
+            self.coin_time = 0
             self.hProb = None
 
         def copy(self):
             """Make a copy of self"""
 
-            aCopy = LpSolver.copy()
-            aCopy.cuts = self.cuts
-            aCopy.presolve = self.presolve
-            aCopy.dual = self.dual
-            aCopy.crash = self.crash
-            aCopy.scale = self.scale
-            aCopy.rounding = self.rounding
-            aCopy.integerPresolve = self.integerPresolve
-            aCopy.strong = self.strong
-            return aCopy
+            cpy = LpSolver.copy()
+            cpy.cuts = self.cuts
+            cpy.presolve = self.presolve
+            cpy.dual = self.dual
+            cpy.crash = self.crash
+            cpy.scale = self.scale
+            cpy.rounding = self.rounding
+            cpy.integer_presolve = self.integer_presolve
+            cpy.strong = self.strong
+            return cpy
 
         @classmethod
         def available(cls):
@@ -400,7 +401,9 @@ class COINMP_DLL(LpSolver):
             return self.lib.CoinGetVersionStr()
 
         def actualSolve(self, lp):
-            """Solve a well formulated lp problem"""
+            """
+            Solve a well formulated lp problem
+            """
             # TODO alter so that msg parameter is handled correctly
             self.debug = 0
             # initialise solver
@@ -415,12 +418,16 @@ class COINMP_DLL(LpSolver):
                     self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPMAXSEC, ctypes.c_double(self.maxSeconds))
                 else:
                     self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MAXSECONDS, ctypes.c_double(self.maxSeconds))
+
             if self.fracGap:
-               # Hopefully this is the bound gap tolerance
-               self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPFRACGAP, ctypes.c_double(self.fracGap))
+                # Hopefully this is the bound gap tolerance
+                self.lib.CoinSetRealOption(hProb, self.COIN_REAL_MIPFRACGAP, ctypes.c_double(self.fracGap))
+
             # CoinGetInfinity is needed for varibles with no bounds
             coinDblMax = self.lib.CoinGetInfinity()
-            if self.debug: print("Before getCoinMPArrays")
+
+            if self.debug:
+                print("Before getCoinMPArrays")
             (numVars, numRows, numels, rangeCount,
                 objectSense, objectCoeffs, objectConst,
                 rhsValues, rangeValues, rowType, startsBase,
@@ -438,57 +445,58 @@ class COINMP_DLL(LpSolver):
                 self.lib.CoinLoadInteger(hProb, columnType)
 
             if self.msg == 0:
-                self.lib.CoinRegisterMsgLogCallback(
-                    hProb, ctypes.c_char_p(""), ctypes.POINTER(ctypes.c_int)()
-                )
-            self.coinTime = -clock()
-            self.lib.CoinOptimizeProblem(hProb, 0);
-            self.coinTime += clock()
+                self.lib.CoinRegisterMsgLogCallback(hProb, ctypes.c_char_p(""), ctypes.POINTER(ctypes.c_int)())
 
-            CoinLpStatus = {0: LpStatusOptimal,
-                            1: LpStatusInfeasible,
-                            2: LpStatusInfeasible,
-                            3: LpStatusNotSolved,
-                            4: LpStatusNotSolved,
-                            5: LpStatusNotSolved,
-                            -1: LpStatusUndefined}
+            self.coin_time = -clock()
+            self.lib.CoinOptimizeProblem(hProb, 0);
+            self.coin_time += clock()
+
+            coin_lp_status = {0: LpStatusOptimal,
+                              1: LpStatusInfeasible,
+                              2: LpStatusInfeasible,
+                              3: LpStatusNotSolved,
+                              4: LpStatusNotSolved,
+                              5: LpStatusNotSolved,
+                              -1: LpStatusUndefined}
 
             solutionStatus = self.lib.CoinGetSolutionStatus(hProb)
             solutionText = self.lib.CoinGetSolutionText(hProb)
             objectValue = self.lib.CoinGetObjectValue(hProb)
 
             # get the solution values
-            NumVarDoubleArray = ctypes.c_double * numVars
-            NumRowsDoubleArray = ctypes.c_double * numRows
-            cActivity = NumVarDoubleArray()
-            cReducedCost = NumVarDoubleArray()
-            cSlackValues = NumRowsDoubleArray()
-            cShadowPrices = NumRowsDoubleArray()
-            self.lib.CoinGetSolutionValues(hProb, ctypes.byref(cActivity),
-                                         ctypes.byref(cReducedCost),
-                                         ctypes.byref(cSlackValues),
-                                         ctypes.byref(cShadowPrices))
+            num_var_double_array = ctypes.c_double * numVars
+            num_rows_double_array = ctypes.c_double * numRows
+            c_activity = num_var_double_array()
+            c_reduced_cost = num_var_double_array()
+            c_slack_values = num_rows_double_array()
+            c_shadow_prices = num_rows_double_array()
+            self.lib.CoinGetSolutionValues(hProb, ctypes.byref(c_activity),
+                                           ctypes.byref(c_reduced_cost),
+                                           ctypes.byref(c_slack_values),
+                                           ctypes.byref(c_shadow_prices))
 
-            variablevalues = {}
-            variabledjvalues = {}
-            constraintpivalues = {}
-            constraintslackvalues = {}
+            variable_values = {}
+            variable_dj_values = {}
+            constraint_pi_values = {}
+            constraint_slack_values = {}
             if lp.isMIP() and self.mip:
                 lp.bestBound = self.lib.CoinGetMipBestBound(hProb)
+
             for i in range(numVars):
-                variablevalues[self.n2v[i].name] = cActivity[i]
-                variabledjvalues[self.n2v[i].name] = cReducedCost[i]
-            lp.assignVarsVals(variablevalues)
-            lp.assignVarsDj(variabledjvalues)
+                variable_values[self.n2v[i].name] = c_activity[i]
+                variable_dj_values[self.n2v[i].name] = c_reduced_cost[i]
+
+            lp.assignVarsVals(variable_values)
+            lp.assignVarsDj(variable_dj_values)
             # put pi and slack variables against the constraints
             for i in range(numRows):
-                constraintpivalues[self.n2c[i]] = cShadowPrices[i]
-                constraintslackvalues[self.n2c[i]] = cSlackValues[i]
-            lp.assignConsPi(constraintpivalues)
-            lp.assignConsSlack(constraintslackvalues)
+                constraint_pi_values[self.n2c[i]] = c_shadow_prices[i]
+                constraint_slack_values[self.n2c[i]] = c_slack_values[i]
+            lp.assignConsPi(constraint_pi_values)
+            lp.assignConsSlack(constraint_slack_values)
 
             self.lib.CoinFreeSolver()
-            lp.status = CoinLpStatus[self.lib.CoinGetSolutionStatus(hProb)]
+            lp.status = coin_lp_status[self.lib.CoinGetSolutionStatus(hProb)]
             return lp.status
 
 

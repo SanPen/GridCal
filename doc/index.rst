@@ -25,6 +25,7 @@ the author's
     theory/models
     gui
     development
+    benchmarks
     change_log
 
 This documentation is generated using Sphinx and autodoc.

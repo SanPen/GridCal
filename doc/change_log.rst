@@ -10,6 +10,14 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.6
+_____________
+
+- Added thread for buses delete-and-reduce functionality.
+- Moved the pulp solvers into individual files.
+- Implemented the option to choose the linear algebra framework.
+
+
 Version 3.5.5
 _____________
 

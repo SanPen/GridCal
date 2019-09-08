@@ -3030,6 +3030,46 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
         branch.graphic_obj = graphic_obj
 
+    def add_api_bus(self, bus: Bus, explode_factor=1.0):
+        """
+        Add API bus to the diagram
+        :param bus: Bus instance
+        :param explode_factor: explode factor
+        """
+        # add the graphic object to the diagram view
+        graphic_obj = self.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
+
+        # add circuit pointer to the bus graphic element
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+
+        # create the bus children
+        graphic_obj.create_children_icons()
+
+        # arrange the children
+        graphic_obj.arrange_children()
+
+        return graphic_obj
+
+    def add_api_branch(self, branch: Branch):
+        """
+
+        :param branch:
+        :return:
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+
+        graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+
+        graphic_obj.redraw()
+
+        return graphic_obj
+
     def schematic_from_api(self, explode_factor=1.0):
         """
         Generate schematic from the API
@@ -3039,21 +3079,25 @@ class GridEditor(QSplitter):
         # clear all
         self.diagramView.scene_.clear()
 
-        # set "infinite" limits for the figure
+        # first create the buses
+        for bus in self.circuit.buses:
+            bus.graphic_obj = self.add_api_bus(bus, explode_factor)
+
+        for branch in self.circuit.branches:
+            branch.graphic_obj = self.add_api_branch(branch)
+
+        # figure limits
         min_x = sys.maxsize
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
-        # first create the buses
+        # Align lines
         for bus in self.circuit.buses:
-            # print(bus.x, bus.y)
-            graphic_obj = self.diagramView.add_bus(bus=bus, explode_factor=explode_factor)
-            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-
+            bus.graphic_obj.arrange_children()
             # get the item position
-            x = graphic_obj.pos().x()
-            y = graphic_obj.pos().y()
+            x = bus.graphic_obj.pos().x()
+            y = bus.graphic_obj.pos().y()
 
             # compute the boundaries of the grid
             max_x = max(max_x, x)
@@ -3061,27 +3105,8 @@ class GridEditor(QSplitter):
             max_y = max(max_y, y)
             min_y = min(min_y, y)
 
-            bus.graphic_obj = graphic_obj
-            bus.graphic_obj.create_children_icons()
-            bus.graphic_obj.arrange_children()
-
         # set the figure limits
         self.set_limits(min_x, max_x, min_y, max_y)
-
-        for branch in self.circuit.branches:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
-            graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
-            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-            terminal_from.hosting_connections.append(graphic_obj)
-            terminal_to.hosting_connections.append(graphic_obj)
-            graphic_obj.redraw()
-            branch.graphic_obj = graphic_obj
-
-        # Align lines
-        for bus in self.circuit.buses:
-            bus.graphic_obj.arrange_children()
-
         #  center the view
         self.center_nodes()
 
