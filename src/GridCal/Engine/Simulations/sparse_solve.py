@@ -1,14 +1,18 @@
-# Copyright (c) 1996-2015 PSERC. All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE_MATPOWER file.
-
-# Copyright 1996-2015 PSERC. All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file.
-
-# Copyright (c) 2018 Santiago Peñate Vera
+# -*- coding: utf-8 -*-
+# This file is part of GridCal.
 #
-# This file retains the BSD-Style license
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from enum import Enum
 from scipy.sparse import csr_matrix, csc_matrix
@@ -137,3 +141,34 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type):
 
     elif solver_type == SparseSolver.ILU:
         return ilu_linsolver
+
+
+if __name__ == '__main__':
+
+    import time
+    import scipy.sparse as sp
+
+    solver_types = [SparseSolver.BLAS_LAPACK,
+                    SparseSolver.KLU,
+                    SparseSolver.SuperLU,
+                    SparseSolver.ILU,
+                    SparseSolver.Pardiso
+                    ]
+
+    for solver_type in solver_types:
+        start = time.time()
+        repetitions = 50
+        n = 1000
+        np.random.seed(0)
+
+        sparse = get_sparse_type(solver_type)
+        solver = get_linear_solver(solver_type)
+
+        for r in range(repetitions):
+            A = sparse(sp.rand(n, n, 0.01)) + sp.diags(np.random.rand(n) * 10.0, shape=(n, n))
+            b = np.random.rand(n)
+            x = solver(A, b)
+
+        end = time.time()
+        dt = end - start
+        print(solver_type, '  total', dt, 's, average:', dt / repetitions, 's')
