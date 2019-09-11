@@ -24,6 +24,8 @@ class SparseSolver(Enum):
     KLU = 'KLU'
     SuperLU = 'SuperLU'
     Pardiso = 'Pardiso'
+    GMRES = 'GMRES'
+    AMG = 'Algebraic Multigrid'
 
     def __str__(self):
         return self.value
@@ -44,10 +46,11 @@ except ImportError:
 
 
 try:
-    from scipy.sparse.linalg import spsolve as scipy_spsolve, splu, spilu
+    from scipy.sparse.linalg import spsolve as scipy_spsolve, splu, spilu, gmres
     available_sparse_solvers.append(SparseSolver.BLAS_LAPACK)
     available_sparse_solvers.append(SparseSolver.ILU)
     available_sparse_solvers.append(SparseSolver.SuperLU)
+    available_sparse_solvers.append(SparseSolver.GMRES)
 except ImportError:
     print('Blas/Lapack failed')
 
@@ -59,8 +62,15 @@ try:
 except ImportError:
     print('Pardiso failed')
 
+try:
+    import pyamg
 
-preferred_type = SparseSolver.BLAS_LAPACK
+    available_sparse_solvers.append(SparseSolver.AMG)
+except ImportError:
+    print('AMG failed')
+
+
+preferred_type = SparseSolver.KLU
 
 if preferred_type not in available_sparse_solvers:
     if len(available_sparse_solvers) > 0:
@@ -77,7 +87,7 @@ def get_sparse_type(solver_type: SparseSolver = preferred_type):
     :param solver_type:
     :return: sparse matrix type
     """
-    if solver_type in [SparseSolver.BLAS_LAPACK, SparseSolver.Pardiso]:
+    if solver_type in [SparseSolver.BLAS_LAPACK, SparseSolver.Pardiso, SparseSolver.GMRES, SparseSolver.AMG]:
         return csr_matrix
 
     elif solver_type in [SparseSolver.KLU, SparseSolver.SuperLU, SparseSolver.ILU]:
@@ -121,6 +131,28 @@ def klu_linsolve(A, b):
     return np.array(x)[:, 0]
 
 
+def gmres_linsolve(A, b):
+    """
+
+    :param A:
+    :param b:
+    :return:
+    """
+    x, info = gmres(A, b)
+    return x
+
+
+def amg_linsolve(A, b):
+    """
+
+    :param A:
+    :param b:
+    :return:
+    """
+    ml = pyamg.smoothed_aggregation_solver(A)  # construct the multigrid hierarchy
+    return ml.solve(b, tol=1e-5)
+
+
 def get_linear_solver(solver_type: SparseSolver = preferred_type):
     """
     Privide the chosen linear solver function pointer to solver linear systems of the type A x = b, with x = f(A,b)
@@ -142,6 +174,12 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type):
     elif solver_type == SparseSolver.ILU:
         return ilu_linsolver
 
+    elif solver_type == SparseSolver.GMRES:
+            return gmres_linsolve
+
+    elif solver_type == SparseSolver.AMG:
+            return amg_linsolve
+
 
 if __name__ == '__main__':
 
@@ -149,10 +187,10 @@ if __name__ == '__main__':
     import scipy.sparse as sp
 
     solver_types = [SparseSolver.BLAS_LAPACK,
-                    SparseSolver.KLU,
-                    SparseSolver.SuperLU,
-                    SparseSolver.ILU,
-                    SparseSolver.Pardiso
+                    # SparseSolver.KLU,
+                    # SparseSolver.SuperLU,
+                    # SparseSolver.ILU,
+                    SparseSolver.AMG
                     ]
 
     for solver_type in solver_types:

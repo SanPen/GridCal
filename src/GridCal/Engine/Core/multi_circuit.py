@@ -359,13 +359,16 @@ class MultiCircuit:
             as full matrix (False)
         """
 
+        numerical_circuit = self.compile()
+        islands = numerical_circuit.compute()
+        i = 0
         # Initial magnitudes
-        pvpq = np.r_[self.numerical_circuit.pv, self.numerical_circuit.pq]
+        pvpq = np.r_[islands[i].pv, islands[i].pq]
 
-        J = Jacobian(Ybus=self.numerical_circuit.Ybus,
-                     V=self.numerical_circuit.Vbus,
-                     Ibus=self.numerical_circuit.Ibus,
-                     pq=self.numerical_circuit.pq,
+        J = Jacobian(Ybus=islands[i].Ybus,
+                     V=islands[i].Vbus,
+                     Ibus=islands[i].Ibus,
+                     pq=islands[i].pq,
                      pvpq=pvpq)
 
         if sparse:
