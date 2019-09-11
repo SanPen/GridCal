@@ -1,4 +1,5 @@
 import time
+import numpy as np
 import scipy.sparse as sp
 from GridCal.Engine import *
 
@@ -9,7 +10,7 @@ if __name__ == '__main__':
     n, m = J.shape
 
     solver_types = [SparseSolver.BLAS_LAPACK,
-                    SparseSolver.KLU,
+                    # SparseSolver.KLU,
                     SparseSolver.SuperLU,
                     SparseSolver.ILU,
                     # SparseSolver.AMG
