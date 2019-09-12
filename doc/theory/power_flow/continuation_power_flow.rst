@@ -16,21 +16,58 @@ Predictor
 .. math::
 
     \begin{bmatrix}
-    J & \frac{\partial F}{\partial \lambda} \\
-    \frac{\partial P}{\partial V} & \frac{\partial P}{\partial \lambda} \\
-    \end{bmatrix}
-    \times
-    \begin{bmatrix}
-    \Delta\theta\\
-    \Delta|V|\\
-    \lambda
-    \end{bmatrix}
+        \theta \\
+        V \\
+        \lambda \\
+    \end{bmatrix}^{predicted}
     =
     \begin{bmatrix}
-    0^\hat \\
-    0^\hat \\
-    1\\
+            \theta \\
+            V \\
+            \lambda \\
+        \end{bmatrix}^{i}
+    +
+    \sigma \cdot
+    \begin{bmatrix}
+        J11  &  J12  & P_{base} \\
+        J21  &  J22  & Q_{base} \\
+        0    & 0    & 1 \\
+    \end{bmatrix}^{-1}
+    \times
+    \begin{bmatrix}
+        \hat{0} \\
+        \hat{0} \\
+        1\\
     \end{bmatrix}
 
 Corrector
 ---------
+
+.. math::
+
+    \begin{bmatrix}
+        d\theta \\
+        dV \\
+        d\lambda \\
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+            d\theta_0\\
+            dV_0 \\
+            d\lambda_0 \\
+        \end{bmatrix}
+    +
+    \sigma \cdot
+    \begin{bmatrix}
+        J11  &  J12  & P_{base} \\
+        J21  &  J22  & Q_{base} \\
+        0    & -1    & 0 \\
+    \end{bmatrix}^{-1}
+    \times
+    \begin{bmatrix}
+        \hat{0} \\
+        \hat{0} \\
+        1\\
+    \end{bmatrix}
+
+
