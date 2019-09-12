@@ -189,7 +189,6 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        robust: Boolean variable for the use of the Iwamoto optimal step factor.
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
