@@ -219,10 +219,6 @@ def data_frames_to_circuit(data: Dict):
                 # create the buses dictionary, this works because the bus is the first key in "object_types"
                 devices_dict[name] = elm
 
-                # ensure profiles existance
-                if circuit.time_profile is not None:
-                    elm.ensure_profiles_exist(circuit.time_profile)
-
                 # add the device to the elements
                 devices.append(elm)
 
@@ -294,6 +290,11 @@ def data_frames_to_circuit(data: Dict):
             else:
                 # no objects of this type
                 pass
+
+            # ensure profiles existence
+            if circuit.time_profile is not None:
+                for i in range(df.shape[0]):
+                    devices[i].ensure_profiles_exist(circuit.time_profile)
 
             # add the objects to the circuit (buses, branches ot template types)
             if template_elm.device_type == DeviceType.BusDevice:

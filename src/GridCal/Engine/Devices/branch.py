@@ -388,6 +388,7 @@ class Branch(EditableDevice):
                                                   'template': GCProp('', BranchTemplate, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
+                                                         'rate': 'rate_prof',
                                                          'temp_oper': 'temp_oper_prof',
                                                          'Cost': 'Cost_prof'})
 
@@ -450,6 +451,8 @@ class Branch(EditableDevice):
         # branch rating in MVA
         self.rate = rate
 
+        self.rate_prof = None
+
         # branch type: Line, Transformer, etc...
         self.branch_type = branch_type
 
@@ -457,8 +460,6 @@ class Branch(EditableDevice):
         self.template = template
         self.bus_to_regulated = bus_to_regulated
         self.vset = vset
-
-        # self.non_editable_indices = [1, 2, 19]
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
