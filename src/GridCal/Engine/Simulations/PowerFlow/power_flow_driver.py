@@ -309,7 +309,7 @@ class PowerFlowMP:
         **options** (:ref:`PowerFlowOptions<pf_options>`): Power flow options to use
     """
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, t=None):
 
         # Grid to run a power flow in
         self.grid = grid
@@ -320,6 +320,8 @@ class PowerFlowMP:
         self.results = None
 
         self.last_V = None
+
+        self.t = t
 
         self.logger = list()
 
@@ -523,7 +525,8 @@ class PowerFlowMP:
 
         return V0, converged, normF, Scalc, it, el
 
-    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus):
+    def single_power_flow(self, circuit: CalculationInputs, solver_type: SolverType, voltage_solution, Sbus, Ibus,
+                          t=None):
         """
         Run a power flow simulation for a single circuit using the selected outer loop
         controls. This method shouldn't be called directly.
@@ -539,6 +542,8 @@ class PowerFlowMP:
             **Sbus**: vector of power injections
 
             **Ibus**: vector of current injections
+
+            **t**: (optional) time step
 
         Return:
 
@@ -724,7 +729,8 @@ class PowerFlowMP:
 
         # Compute the branches power and the slack buses power
         Sbranch, Ibranch, Vbranch, loading, losses, \
-            flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution)
+            flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit,
+                                                                V=voltage_solution, t=t)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
@@ -934,7 +940,7 @@ class PowerFlowMP:
         return Qnew, types_new, any_control_issue
 
     @staticmethod
-    def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False):
+    def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False, t=None):
         """
         Compute the power flows trough the branches.
 
@@ -988,7 +994,10 @@ class PowerFlowMP:
             Sbranch = np.maximum(Sf, St) * calculation_inputs.Sbase
 
             # Branch loading in p.u.
-            loading = Sbranch / (calculation_inputs.branch_rates + 1e-9)
+            if t is None:
+                loading = Sbranch / (calculation_inputs.branch_rates + 1e-9)
+            else:
+                loading = Sbranch / (calculation_inputs.branch_rates_prof[t, :] + 1e-9)
 
             return Sbranch, Ibranch, Vbranch, loading, losses, flow_direction, Sbus
 
@@ -1363,21 +1372,22 @@ class PowerFlowMP:
 
         return stable, tap_module, tap_position
 
-    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
+    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus, t=None):
         """
         Run a power flow for a circuit. In most cases, the **run** method should be
         used instead.
 
         Arguments:
 
-            **circuit** (:ref:`CalculationInputs<calculation_inputs>`): CalculationInputs
-            instance
+            **circuit** (:ref:`CalculationInputs<calculation_inputs>`): CalculationInputs instance
 
             **Vbus** (list): Initial voltage at each bus in complex per unit
 
             **Sbus** (list): Power injection at each bus in complex MVA
 
             **Ibus** (list): Current injection at each bus in complex amperes
+
+            **t** (optional) time step index
 
         Returns:
 
@@ -1420,7 +1430,8 @@ class PowerFlowMP:
                                              solver_type=solver,
                                              voltage_solution=V0,
                                              Sbus=Sbus,
-                                             Ibus=Ibus)
+                                             Ibus=Ibus,
+                                             t=t)
 
             # did it worked?
             worked = np.all(results.converged)
@@ -1544,7 +1555,7 @@ class PowerFlowMP:
                     Ibus = calculation_input.Ibus
 
                     # run circuit power flow
-                    res = self.run_pf(calculation_input, Vbus, Sbus, Ibus)
+                    res = self.run_pf(calculation_input, Vbus, Sbus, Ibus, t=self.t)
 
                     bus_original_idx = calculation_input.original_bus_idx
                     branch_original_idx = calculation_input.original_branch_idx
@@ -1565,7 +1576,7 @@ class PowerFlowMP:
                 Ibus = calculation_inputs[0].Ibus
 
                 # run circuit power flow
-                results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus)
+                results = self.run_pf(calculation_inputs[0], Vbus, Sbus, Ibus, t=self.t)
 
                 # build the report
                 self.convergence_reports.append(results.get_report_dataframe())
@@ -1598,7 +1609,7 @@ def power_flow_worker(t, options: PowerFlowOptions, circuit: CalculationInputs, 
     :return:
     """
 
-    instance = PowerFlowMP(None, options)
+    instance = PowerFlowMP(None, options, t=t)
     return_dict[t] = instance.run_pf(circuit, Vbus, Sbus, Ibus)
 
 

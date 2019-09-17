@@ -315,6 +315,7 @@ class NumericalCircuit:
         self.branch_active = np.zeros(n_br, dtype=int)
         self.branch_active_prof = np.zeros((n_time, n_br), dtype=int)
         self.temp_oper_prof = np.zeros((n_time, n_br), dtype=float)
+        self.br_rate_profile = np.zeros((n_time, n_br), dtype=float)
 
         self.branch_cost = np.zeros(n_br, dtype=float)
         self.branch_cost_profile = np.zeros((n_time, n_br), dtype=float)
@@ -485,6 +486,7 @@ class NumericalCircuit:
 
         # branches
         circuit.branch_rates = self.br_rates
+        circuit.branch_rates_prof = self.br_rate_profile
         circuit.F = self.F
         circuit.T = self.T
         circuit.tap_f = self.tap_f

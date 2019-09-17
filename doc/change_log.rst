@@ -10,6 +10,13 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.7
+_____________
+
+- Fixed profile default-value initialization in automatic-load function.
+- Added branch dynamic rating.
+
+
 Version 3.5.6
 _____________
 

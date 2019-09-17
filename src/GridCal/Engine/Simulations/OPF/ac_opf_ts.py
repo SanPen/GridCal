@@ -210,14 +210,14 @@ def add_branch_loading_restriction(problem: LpProblem,
     # from-to branch power restriction
     lpAddRestrictions2(problem=problem,
                        lhs=load_f,
-                       rhs=np.array([Fmax + FSlack1[:, i] for i in range(FSlack1.shape[1])]).transpose(),  # Fmax + FSlack1
+                       rhs=np.array([Fmax[:, i] + FSlack1[:, i] for i in range(FSlack1.shape[1])]).transpose(),  # Fmax + FSlack1
                        name='from_to_branch_rate',
                        op='<=')
 
     # to-from branch power restriction
     lpAddRestrictions2(problem=problem,
                        lhs=load_t,
-                       rhs=np.array([Fmax + FSlack2[:, i] for i in range(FSlack2.shape[1])]).transpose(),  # Fmax + FSlack2
+                       rhs=np.array([Fmax[:, i] + FSlack2[:, i] for i in range(FSlack2.shape[1])]).transpose(),  # Fmax + FSlack2
                        name='to_from_branch_rate',
                        op='<=')
 
@@ -332,7 +332,7 @@ class OpfAcTimeSeries(OpfTimeSeries):
         cost_l = numerical_circuit.load_cost_prof[a:b, :].transpose()
 
         # branch
-        branch_ratings = numerical_circuit.br_rates / Sbase
+        branch_ratings = numerical_circuit.br_rate_profile[a:b, :].transpose() / Sbase
         Bseries = (numerical_circuit.branch_active_prof[a:b, :] * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
         cost_br = numerical_circuit.branch_cost_profile[a:b, :].transpose()
 
@@ -397,7 +397,7 @@ class OpfAcTimeSeries(OpfTimeSeries):
         self.s_from = load_f.transpose()
         self.s_to = load_t.transpose()
         self.overloads = (branch_rating_slack1 + branch_rating_slack2).transpose()
-        self.rating = branch_ratings
+        self.rating = branch_ratings.T
         self.nodal_restrictions = nodal_restrictions_P
 
         return problem
@@ -417,17 +417,17 @@ if __name__ == '__main__':
     from GridCal.Engine import *
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
 
     main_circuit = FileOpen(fname).open()
 
-    main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
+    # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
     # get the power flow options from the GUI
     solver = SolverType.AC_OPF
     mip_solver = MIPSolvers.CBC
-    grouping = TimeGrouping.NoGrouping
+    grouping = TimeGrouping.Daily
     pf_options = PowerFlowOptions()
 
     options = OptimalPowerFlowOptions(solver=solver,

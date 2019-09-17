@@ -131,6 +131,7 @@ class CalculationInputs:
         self.Asys = None
 
         self.branch_rates = np.zeros(nbr)
+        self.branch_rates_prof = np.zeros((ntime, nbr))
 
         self.pq = list()
         self.pv = list()
@@ -244,6 +245,7 @@ class CalculationInputs:
         obj.F = self.F[branch_idx]
         obj.T = self.T[branch_idx]
         obj.branch_rates = self.branch_rates[branch_idx]
+        obj.branch_rates_prof = self.branch_rates_prof[:, branch_idx]
         obj.bus_names = self.bus_names[bus_idx]
         obj.branch_names = self.branch_names[branch_idx]
 

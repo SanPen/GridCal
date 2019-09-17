@@ -826,6 +826,7 @@ class MultiCircuit:
                 circuit.branch_active_prof[:, i] = branch.active_prof
                 circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
                 circuit.branch_cost_profile[:, i] = branch.Cost_prof
+                circuit.br_rate_profile[:, i] = branch.rate_prof
 
             # switches
             if branch.branch_type == BranchType.Switch:
