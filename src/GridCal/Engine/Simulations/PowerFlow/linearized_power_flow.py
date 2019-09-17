@@ -24,7 +24,7 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
+def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     """
     Solves a DC power flow.
     :param Ybus: Normal circuit admittance matrix
@@ -50,13 +50,6 @@ def dcpf(Ybus, Sbus, Ibus, V0, ref, pvpq, pq, pv):
 
     # initialize result vector
     Va = np.empty(len(V0))
-
-    # reconvert the pqpv vector to a matrix so that we can call numpy directly with it
-    pvpq_ = np.matrix(pvpq)
-
-    # Compile the reduced imaginary impedance matrix
-    Bpqpv = Ybus.imag[pvpq_.T, pvpq_]
-    Bref = Ybus.imag[pvpq_.T, ref]
 
     # compose the reduced power injections
     # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref

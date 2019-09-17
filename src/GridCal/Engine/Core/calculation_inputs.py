@@ -58,6 +58,8 @@ class CalculationInputs:
         self.Yseries = csc_matrix((nbus, nbus), dtype=complex)
         self.B1 = csc_matrix((nbus, nbus), dtype=float)
         self.B2 = csc_matrix((nbus, nbus), dtype=float)
+        self.Bpqpv = None
+        self.Bref = None
 
         self.Ysh = np.zeros(nbus, dtype=complex)
         self.Sbus = np.zeros(nbus, dtype=complex)
@@ -134,9 +136,9 @@ class CalculationInputs:
         self.pv = list()
         self.ref = list()
         self.sto = list()
-        self.pqpv = list()
+        self.pqpv = list()  # it is sorted
 
-        self.logger =list()
+        self.logger = list()
 
         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', "B'", "B''", 'Types',
                                      'Jacobian', 'Qmin', 'Qmax']
@@ -183,7 +185,6 @@ class CalculationInputs:
 
         self.pqpv = np.r_[self.pq, self.pv]
         self.pqpv.sort()
-        pass
 
     def consolidate(self):
         """
@@ -195,6 +196,9 @@ class CalculationInputs:
         self.dispatcheable_batteries_bus_idx = np.where(np.array(self.C_batt_bus[dispatcheable_batteries_idx, :].sum(axis=0))[0] > 0)[0]
 
         self.compile_types()
+
+        self.Bpqpv = self.Ybus.imag[self.pqpv, :][:, self.pqpv]
+        self.Bref = self.Ybus.imag[self.pqpv, :][:, self.ref]
 
     def trim_profiles(self, time_idx):
         """

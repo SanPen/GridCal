@@ -371,7 +371,7 @@ class PowerFlowMP:
         return ref, pq, pv, pqpv
 
     @staticmethod
-    def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, pq, pv, ref, pqpv, tolerance, max_iter):
+    def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter):
         """
         Run a power flow simulation using the selected method (no outer loop controls).
 
@@ -390,6 +390,10 @@ class PowerFlowMP:
             **B1**: B' for the fast decoupled method
 
             **B2**: B'' for the fast decoupled method
+
+            **Bpqpv**: PQ-PV, PQ-PV submatrix of the susceptance matrix (used in the DC power flow)
+
+            **Bref**: PQ-PV, Ref submatrix of the susceptance matrix (used in the DC power flow)
 
             **pq**: list of pq nodes
 
@@ -423,6 +427,8 @@ class PowerFlowMP:
         # type DC
         elif solver_type == SolverType.DC:
             V0, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
+                                                       Bpqpv=Bpqpv,
+                                                       Bref=Bref,
                                                        Sbus=Sbus,
                                                        Ibus=Ibus,
                                                        V0=V0,
@@ -598,6 +604,8 @@ class PowerFlowMP:
                                                                                Yseries=circuit.Yseries,
                                                                                B1=circuit.B1,
                                                                                B2=circuit.B2,
+                                                                               Bpqpv=circuit.Bpqpv,
+                                                                               Bref=circuit.Bref,
                                                                                pq=pq,
                                                                                pv=pv,
                                                                                ref=ref,

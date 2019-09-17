@@ -26,6 +26,7 @@ _____________
     - The enum's behave like types and are able to parse text into types.
     - The objects editor is now agnostic of complex types, and so are the load and save functions.
 - Added Power Transfer Distribution Factors (PTDF) analysis
+- Vastly improved DC power flow performance.
 
 
 Version 3.5.4
