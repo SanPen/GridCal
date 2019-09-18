@@ -10,6 +10,13 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.5.8
+_____________
+
+- Fixed PTDF and added cancelling
+- Fixed Vbranch not being copied correctly in multi-island mode in the Time series
+
+
 Version 3.5.7
 _____________
 
