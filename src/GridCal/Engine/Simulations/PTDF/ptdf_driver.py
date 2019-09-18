@@ -12,15 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
 import time
 import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP, PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
-from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation, PTDFResults
+from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -284,7 +283,7 @@ class PTDF(QThread):
 if __name__ == '__main__':
 
     from GridCal.Engine import FileOpen, SolverType
-    import time
+
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'

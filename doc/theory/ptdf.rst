@@ -1,7 +1,7 @@
 
 
 PTDF (Power Transmission Distribution Factors)
-==================================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 GridCal features a PTDF simulation of the branches sensitivity to the generation variations.
 This classic method is implemented in GridCal using two variants:

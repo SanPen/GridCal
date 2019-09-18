@@ -154,7 +154,7 @@ class PTDFResults:
             labels = names[indices]
 
             if result_type == ResultTypes.PTDFBranchesSensitivity:
-                y = self.sensitivity_matrix[:, indices].transpose()
+                y = self.sensitivity_matrix[:, indices]
                 y_label = '(p.u.)'
                 title = 'Branches sensitivity'
 
@@ -165,7 +165,7 @@ class PTDFResults:
                 title = ''
 
             # plot
-            df = pd.DataFrame(data=y, index=labels, columns=self.get_var_names())
+            df = pd.DataFrame(data=y, columns=labels, index=self.get_var_names())
             df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
             ax.set_ylabel(y_label)
             ax.set_title(title)
