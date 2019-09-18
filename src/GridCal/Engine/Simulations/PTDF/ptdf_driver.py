@@ -14,11 +14,13 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
-from GridCal.Engine.Simulations.PTDF.ptdf_analysis import ptdf, ptdf_multi_treading
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP, PowerFlowResults
+from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
+from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation, PTDFResults
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -74,28 +76,168 @@ class PTDF(QThread):
 
         self.elapsed = 0.0
 
-    def ptdf(self):
+    def ptdf(self, circuit: MultiCircuit, options: PowerFlowOptions, group_by_technology, power_amount,
+             text_func=None, prog_func=None):
         """
-        Run PTDF with the selected options
-        :return: None
+        Power Transfer Distribution Factors analysis
+        :param circuit: MultiCircuit instance
+        :param options: power flow options
+        :param group_by_technology:group by technology of generation?
+        :param power_amount: amount o power to vary in MW
+        :param text_func: text function to display progress
+        :param prog_func: progress function to display progress [0~100]
+        :return:
         """
 
-        if self.options.use_multi_threading:
+        if text_func is not None:
+            text_func('Compiling...')
 
-            self.results = ptdf_multi_treading(circuit=self.grid, options=self.pf_options,
-                                               group_by_technology=self.options.group_by_technology,
-                                               power_amount=self.options.power_increment,
-                                               text_func=self.progress_text.emit,
-                                               prog_func=self.progress_signal.emit)
-        else:
+        # initialize the power flow
+        power_flow = PowerFlowMP(circuit, options)
 
-            self.results = ptdf(circuit=self.grid, options=self.pf_options,
-                                group_by_technology=self.options.group_by_technology,
-                                power_amount=self.options.power_increment,
-                                text_func=self.progress_text.emit,
-                                prog_func=self.progress_signal.emit)
+        # compile to arrays
+        numerical_circuit = circuit.compile()
+        calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
+                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode)
 
-        self.results.consolidate()
+        # compute the variations
+        delta_of_power_variations = get_ptdf_variations(circuit=circuit,
+                                                        numerical_circuit=numerical_circuit,
+                                                        group_by_technology=group_by_technology,
+                                                        power_amount=power_amount)
+
+        # declare the PTDF results
+        results = PTDFResults(n_variations=len(delta_of_power_variations) - 1,
+                              n_br=numerical_circuit.nbr,
+                              br_names=numerical_circuit.branch_names)
+
+        if text_func is not None:
+            text_func('Running PTDF...')
+
+        nvar = len(delta_of_power_variations)
+        for v, variation in enumerate(delta_of_power_variations):
+
+            # this super strange way of calling a function is done to maintain the same
+            # call format as the multi-threading function
+            returns = dict()
+            power_flow_worker(variation=0,
+                              nbus=numerical_circuit.nbus,
+                              nbr=numerical_circuit.nbr,
+                              calculation_inputs=calculation_inputs,
+                              power_flow=power_flow,
+                              dP=variation.dP,
+                              return_dict=returns)
+
+            pf_results, log = returns[0]
+            results.logger += log
+
+            # add the power flow results
+            if v == 0:
+                results.default_pf_results = pf_results
+            else:
+                results.add_results_at(v - 1, pf_results, variation)
+
+            if prog_func is not None:
+                p = (v + 1) / nvar * 100.0
+                prog_func(p)
+
+            if self.__cancel__:
+                break
+
+        return results
+
+    def ptdf_multi_treading(self, circuit: MultiCircuit, options: PowerFlowOptions, group_by_technology, power_amount,
+                            text_func=None, prog_func=None):
+        """
+        Power Transfer Distribution Factors analysis
+        :param circuit: MultiCircuit instance
+        :param options: power flow options
+        :param group_by_technology:group by technology of generation?
+        :param power_amount: amount o power to vary in MW
+        :param text_func:
+        :param prog_func
+        :return:
+        """
+        # initialize the power flow
+        power_flow = PowerFlowMP(circuit, options)
+
+        if text_func is not None:
+            text_func('Compiling...')
+
+        # compile to arrays
+        numerical_circuit = circuit.compile()
+        calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
+                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode)
+
+        # compute the variations
+        delta_of_power_variations = get_ptdf_variations(circuit=circuit,
+                                                        numerical_circuit=numerical_circuit,
+                                                        group_by_technology=group_by_technology,
+                                                        power_amount=power_amount)
+
+        # declare the PTDF results
+        results = PTDFResults(n_variations=len(delta_of_power_variations) - 1,
+                              n_br=numerical_circuit.nbr,
+                              br_names=numerical_circuit.branch_names)
+
+        if text_func is not None:
+            text_func('Running PTDF...')
+
+        jobs = list()
+        n_cores = multiprocessing.cpu_count()
+        manager = multiprocessing.Manager()
+        return_dict = manager.dict()
+
+        # for v, variation in enumerate(delta_of_power_variations):
+        v = 0
+        nvar = len(delta_of_power_variations)
+        while v < nvar:
+
+            k = 0
+
+            # launch only n_cores jobs at the time
+            while k < n_cores + 2 and (v + k) < nvar:
+                # run power flow at the circuit
+                p = multiprocessing.Process(target=power_flow_worker, args=(v,
+                                                                            numerical_circuit.nbus,
+                                                                            numerical_circuit.nbr,
+                                                                            calculation_inputs,
+                                                                            power_flow,
+                                                                            delta_of_power_variations[v].dP,
+                                                                            return_dict))
+                jobs.append(p)
+                p.start()
+                v += 1
+                k += 1
+
+                if self.__cancel__:
+                    break
+
+            # wait for all jobs to complete
+            for process_ in jobs:
+                process_.join()
+
+            # emit the progress
+            if prog_func is not None:
+                p = (v + 1) / nvar * 100.0
+                prog_func(p)
+
+            if self.__cancel__:
+                break
+
+        if text_func is not None:
+            text_func('Collecting results...')
+
+        # gather the results
+        for v in range(nvar):
+            pf_results, log = return_dict[v]
+            results.logger += log
+            if v == 0:
+                results.default_pf_results = pf_results
+            else:
+                results.add_results_at(v - 1, pf_results, delta_of_power_variations[v])
+
+        return results
 
     def run(self):
         """
@@ -103,7 +245,24 @@ class PTDF(QThread):
         :return:
         """
         start = time.time()
-        self.ptdf()
+        if self.options.use_multi_threading:
+
+            self.results = self.ptdf_multi_treading(circuit=self.grid, options=self.pf_options,
+                                                    group_by_technology=self.options.group_by_technology,
+                                                    power_amount=self.options.power_increment,
+                                                    text_func=self.progress_text.emit,
+                                                    prog_func=self.progress_signal.emit)
+        else:
+
+            self.results = self.ptdf(circuit=self.grid, options=self.pf_options,
+                                     group_by_technology=self.options.group_by_technology,
+                                     power_amount=self.options.power_increment,
+                                     text_func=self.progress_text.emit,
+                                     prog_func=self.progress_signal.emit)
+
+        if not self.__cancel__:
+            self.results.consolidate()
+
         end = time.time()
         self.elapsed = end - start
         self.progress_text.emit('Done!')
@@ -123,8 +282,9 @@ class PTDF(QThread):
 
 
 if __name__ == '__main__':
-    from GridCal.Engine import FileOpen, SolverType
 
+    from GridCal.Engine import FileOpen, SolverType
+    import time
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
@@ -133,13 +293,19 @@ if __name__ == '__main__':
     main_circuit = FileOpen(fname).open()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.DC)
+    options = PTDFOptions(group_by_technology=True, power_increment=10, use_multi_threading=False)
+    simulation = PTDF(grid=main_circuit, options=options, pf_options=pf_options)
+    simulation.run()
+    ptdf_df = simulation.results.get_results_data_frame()
 
-    options = PTDFOptions(group_by_technology=False, use_multi_threading=True, power_increment=50)
+    print(ptdf_df)
 
-    module = PTDF(grid=main_circuit, options=options, pf_options=pf_options)
-
-    module.run()
-
-    print(module.results.get_results_data_frame())
-
-    print(module.elapsed)
+    print()
+    a = time.time()
+    options = PTDFOptions(group_by_technology=True, power_increment=10, use_multi_threading=True)
+    simulation = PTDF(grid=main_circuit, options=options, pf_options=pf_options)
+    simulation.run()
+    ptdf_df = simulation.results.get_results_data_frame()
+    b = time.time()
+    print(ptdf_df)
+    print(b-a)

@@ -208,7 +208,7 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.Ibranch[:, br_idx] = results.Ibranch
 
-        self.Vbranch[:, br_idx] = results.Ibranch
+        self.Vbranch[:, br_idx] = results.Vbranch
 
         self.loading[:, br_idx] = results.loading
 

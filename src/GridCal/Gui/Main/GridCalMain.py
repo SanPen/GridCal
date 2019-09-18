@@ -2140,17 +2140,18 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
+        self.remove_simulation(SimulationTypes.PTDF_run)
+
         # update the results in the circuit structures
-        if self.ptdf_analysis.results is not None:
+        if not self.ptdf_analysis.__cancel__:
+            if self.ptdf_analysis.results is not None:
 
-            self.remove_simulation(SimulationTypes.PTDF_run)
+                self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+                QtGui.QGuiApplication.processEvents()
 
-            self.ui.progress_label.setText('Colouring PTDF results in the grid...')
-            QtGui.QGuiApplication.processEvents()
-            
-            self.update_available_results()
-        else:
-            self.msg('Something went wrong, There are no PTDF results.')
+                self.update_available_results()
+            else:
+                self.msg('Something went wrong, There are no PTDF results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -3076,6 +3077,9 @@ class MainGUI(QMainWindow):
 
             if self.cascade is not None:
                 self.cascade.cancel()
+
+            if self.ptdf_analysis is not None:
+                self.ptdf_analysis.cancel()
         else:
             pass
 

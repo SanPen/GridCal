@@ -24,15 +24,20 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResu
 
 class PTDFVariation:
 
-    def __init__(self, name, n):
+    def __init__(self, name, n, original_power):
         """
         PTDF variation
         :param name: name of the variation
         :param n: number of buses
+        :param original_power: power failed in MW
         """
         self.name = name
 
+        # vector that was actually subtracted to Sbus
         self.dP = np.zeros(n)
+
+        # original amount of power failed
+        self.original_power = original_power
 
 
 class PTDFResults:
@@ -85,7 +90,9 @@ class PTDFResults:
         :param i: variation index
         :return: array of sensitivities from -1 to 1
         """
-        return 1.0 - self.pf_results[i].Sbranch.real / (self.default_pf_results.Sbranch.real + 1e-20)
+        # return 1.0 - self.pf_results[i].Sbranch.real / (self.default_pf_results.Sbranch.real + 1e-20)
+        dSbranch = (self.pf_results[i].Sbranch.real - self.default_pf_results.Sbranch.real)
+        return dSbranch / (self.variations[i].original_power + 1e-20)
 
     def get_var_names(self):
         """
