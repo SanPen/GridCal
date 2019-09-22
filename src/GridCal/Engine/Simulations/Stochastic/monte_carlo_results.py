@@ -24,6 +24,7 @@ from sklearn.ensemble import RandomForestRegressor
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class MonteCarloResults:
@@ -288,7 +289,7 @@ class MonteCarloResults:
 
         return idx, val, prob, cdf.arr[-1, :]
 
-    def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
         """
         Plot the results
         :param result_type:
@@ -297,10 +298,6 @@ class MonteCarloResults:
         :param names:
         :return:
         """
-
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
         p, n = self.V_points.shape
 
@@ -374,35 +371,35 @@ class MonteCarloResults:
 
             elif result_type == ResultTypes.BusVoltageCDF:
                 cdf = CDF(np.abs(self.V_points[:, indices]))
-                cdf.plot(ax=ax)
+                # cdf.plot(ax=ax)
                 y_label = '(p.u.)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BranchLoadingCDF:
                 cdf = CDF(np.abs(self.loading_points.real[:, indices]))
-                cdf.plot(ax=ax)
+                # cdf.plot(ax=ax)
                 y_label = '(p.u.)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BranchLossesCDF:
                 cdf = CDF(np.abs(self.losses_points[:, indices]))
-                cdf.plot(ax=ax)
+                # cdf.plot(ax=ax)
                 y_label = '(MVA)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BranchCurrentCDF:
                 cdf = CDF(np.abs(self.I_points[:, indices]))
-                cdf.plot(ax=ax)
+                # cdf.plot(ax=ax)
                 y_label = '(kA)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BusPowerCDF:
                 cdf = CDF(np.abs(self.S_points[:, indices]))
-                cdf.plot(ax=ax)
+                # cdf.plot(ax=ax)
                 y_label = '(p.u.)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
@@ -413,18 +410,16 @@ class MonteCarloResults:
                 title = ''
 
             if result_type not in cdf_result_types:
-                df = pd.DataFrame(data=np.abs(y), columns=labels)
-                lines = ax.plot(np.abs(y), linewidth=LINEWIDTH)
-                if len(df.columns) < 10:
-                    ax.legend(lines, labels, loc='best')
+
+                # assemble model
+                index = np.arange(0, y.shape[0], 1)
+                mdl = ResultsModel(data=np.abs(y), index=index, columns=labels, title=title,
+                                   ylabel=y_label, xlabel=x_label)
+
             else:
-                df = pd.DataFrame(index=cdf.prob, data=cdf.arr, columns=labels)
-
-            ax.set_title(title)
-            ax.set_ylabel(y_label)
-            ax.set_xlabel(x_label)
-
-            return df
+                mdl = ResultsModel(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
+                                   ylabel=y_label, xlabel=x_label)
+            return mdl
 
         else:
             return None

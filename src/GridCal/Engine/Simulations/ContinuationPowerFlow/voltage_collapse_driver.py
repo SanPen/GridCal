@@ -25,6 +25,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 ########################################################################################################################
@@ -193,7 +194,7 @@ class VoltageCollapseResults:
             self.losses[branch_original_idx] = pf_res.losses
             self.Sbus[bus_original_idx] = pf_res.Sbus
 
-    def plot(self, result_type=ResultTypes.BusVoltage, ax=None, indices=None, names=None):
+    def mdl(self, result_type=ResultTypes.BusVoltage, indices=None, names=None):
         """
         Plot the results
         :param result_type:
@@ -203,10 +204,6 @@ class VoltageCollapseResults:
         :return:
         """
 
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-
         if names is None:
             names = np.array(['bus ' + str(i + 1) for i in range(self.voltages.shape[1])])
 
@@ -215,27 +212,22 @@ class VoltageCollapseResults:
 
         if len(indices) > 0:
             labels = names[indices]
-            ylabel = ''
+            y_label = ''
+            x_label = ''
+            title = ''
             if result_type == ResultTypes.BusVoltage:
                 y = abs(np.array(self.voltages)[:, indices])
                 x = self.lambdas
                 title = 'Bus voltage'
-                ylabel = '(p.u.)'
+                y_label = '(p.u.)'
+                x_label = 'Loading from the base situation ($\lambda$)'
             else:
-                pass
+                x = self.lambdas
+                y = self.voltages[:, indices]
 
-            df = pd.DataFrame(data=y, index=x, columns=indices)
-            df.columns = labels
-            if len(df.columns) > 10:
-                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
-            else:
-                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
-
-            ax.set_title(title)
-            ax.set_ylabel(ylabel)
-            ax.set_xlabel('Loading from the base situation ($\lambda$)')
-
-            return df
+            # assemble model
+            mdl = ResultsModel(data=y, index=x, columns=indices, title=title, ylabel=y_label, xlabel=x_label)
+            return mdl
 
 
 class VoltageCollapse(QThread):

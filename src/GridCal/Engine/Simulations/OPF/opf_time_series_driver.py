@@ -27,10 +27,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
-from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
-from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
-from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
+from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
 
@@ -126,7 +123,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbranch[t, :] = res.Sbranch
 
-    def plot(self, result_type, ax=None, indices=None, names=None):
+    def mdl(self, result_type, indices=None, names=None) -> "ResultsModel":
         """
         Plot the results
         :param result_type:
@@ -135,9 +132,6 @@ class OptimalPowerFlowTimeSeriesResults:
         :param names:
         :return:
         """
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
         if indices is None:
             indices = array(range(len(names)))
@@ -214,23 +208,32 @@ class OptimalPowerFlowTimeSeriesResults:
             else:
                 print(str(result_type) + ' not understood.')
 
+            # if self.time is not None:
+            #     df = pd.DataFrame(data=y, columns=labels, index=self.time)
+            # else:
+            #     df = pd.DataFrame(data=y, columns=labels)
+            #
+            # df.fillna(0, inplace=True)
+            #
+            # if len(df.columns) > 10:
+            #     df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
+            # else:
+            #     df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
+            #
+            # ax.set_title(title)
+            # ax.set_ylabel(y_label)
+            # ax.set_xlabel('Time')
+            #
+            # return df
+
             if self.time is not None:
-                df = pd.DataFrame(data=y, columns=labels, index=self.time)
+                index = self.time
             else:
-                df = pd.DataFrame(data=y, columns=labels)
+                index = np.arange(0, y.shape[0], 1)
 
-            df.fillna(0, inplace=True)
-
-            if len(df.columns) > 10:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=False)
-            else:
-                df.plot(ax=ax, linewidth=LINEWIDTH, legend=True)
-
-            ax.set_title(title)
-            ax.set_ylabel(y_label)
-            ax.set_xlabel('Time')
-
-            return df
+            mdl = ResultsModel(data=y, index=index, columns=labels, title=title,
+                               ylabel=y_label, xlabel='')
+            return mdl
 
         else:
             return None

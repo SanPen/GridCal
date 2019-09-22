@@ -19,6 +19,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class PowerFlowResults:
@@ -323,28 +324,15 @@ class PowerFlowResults:
 
         return df
 
-    def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
-        """
-        Plot the results.
-
-        Arguments:
-
-            **result_type**: ResultTypes
-
-            **ax**: matplotlib axis
-
-            **indices**: Indices f the array to plot (indices of the elements)
-
-            **names**: Names of the elements
-
-        Returns:
-
-            DataFrame
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
         """
 
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
+        :param result_type:
+        :param ax:
+        :param indices:
+        :param names:
+        :return:
+        """
 
         if indices is None and names is not None:
             indices = np.array(range(len(names)))
@@ -410,16 +398,10 @@ class PowerFlowResults:
                 y_label = ''
                 title = ''
 
-            # plot
-            df = pd.DataFrame(data=y, index=labels, columns=[result_type.value[0]])
-            if len(df.columns) < self.plot_bars_limit:
-                df.abs().plot(ax=ax, kind='bar')
-            else:
-                df.abs().plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(y_label)
-            ax.set_title(title)
-
-            return df
+            # assemble model
+            mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
+                               title=title, ylabel=y_label)
+            return mdl
 
         else:
             return None

@@ -450,6 +450,51 @@ class NumericalCircuit:
         #
         # self.calculation_islands = list()
 
+    def re_index_time(self, t_idx):
+        """
+        Re-index all the time based profiles
+        :param t_idx: new indices of the time profiles
+        :return: Nothing, this is done in-place
+        """
+
+        self.time_array = self.time_array[t_idx]
+        self.ntime = len(t_idx)
+
+        # branch
+        self.branch_active_prof = self.branch_active_prof[t_idx, :]  # np.zeros((n_time, n_br), dtype=int)
+        self.temp_oper_prof = self.temp_oper_prof[t_idx, :]  # np.zeros((n_time, n_br), dtype=float)
+        self.br_rate_profile = self.br_rate_profile[t_idx, :]  # np.zeros((n_time, n_br), dtype=float)
+        self.branch_cost_profile = self.branch_cost_profile[t_idx, :]  # np.zeros((n_time, n_br), dtype=float)
+
+        # load
+        self.load_active_prof = self.load_active_prof[t_idx, :]   # np.zeros((n_time, n_ld), dtype=bool)
+        self.load_cost_prof = self.load_cost_prof[t_idx, :]   # np.zeros((n_time, n_ld), dtype=float)
+
+        self.load_power_profile = self.load_power_profile[t_idx, :]  # np.zeros((n_time, n_ld), dtype=complex)
+        self.load_current_profile = self.load_current_profile[t_idx, :]  # np.zeros((n_time, n_ld), dtype=complex)
+        self.load_admittance_profile = self.load_admittance_profile[t_idx, :]  # np.zeros((n_time, n_ld), dtype=complex)
+
+        # battery
+        self.battery_active_prof = self.battery_active_prof[t_idx, :]  # np.zeros((n_time, n_batt), dtype=bool)
+        self.battery_power_profile = self.battery_power_profile[t_idx, :]  # np.zeros((n_time, n_batt), dtype=float)
+        self.battery_voltage_profile = self.battery_voltage_profile[t_idx, :]  # np.zeros((n_time, n_batt), dtype=float)
+        self.battery_cost_profile = self.battery_cost_profile[t_idx, :]  # np.zeros((n_time, n_batt), dtype=float)
+
+        # static generator
+        self.static_gen_active_prof = self.static_gen_active_prof[t_idx, :]  # np.zeros((n_time, n_sta_gen), dtype=bool)
+        self.static_gen_power_profile = self.static_gen_power_profile[t_idx, :]  # np.zeros((n_time, n_sta_gen), dtype=complex)
+
+        # controlled generator
+        self.generator_active_prof = self.generator_active_prof  # np.zeros((n_time, n_gen), dtype=bool)
+        self.generator_cost_profile = self.generator_cost_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+        self.generator_power_profile = self.generator_power_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+        self.generator_power_factor_profile = self.generator_power_factor_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+        self.generator_voltage_profile = self.generator_voltage_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+
+        # shunt
+        self.shunt_active_prof = self.shunt_active_prof  # np.zeros((n_time, n_sh), dtype=bool)
+        self.shunt_admittance_profile = self.shunt_admittance_profile[t_idx, :]  # np.zeros((n_time, n_sh), dtype=complex)
+
     def get_different_states(self):
         """
         Get a dictionary of different connectivity states
@@ -683,13 +728,15 @@ class NumericalCircuit:
         """
 
         # get the raw circuit with the inner arrays computed
-        circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
+        # circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
         states = self.get_different_states()
 
         calculation_islands_collection = dict()
 
         for t, t_array in states.items():
+
+            circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
             # compute the connectivity and the different admittance matrices
             circuit.Ybus, \

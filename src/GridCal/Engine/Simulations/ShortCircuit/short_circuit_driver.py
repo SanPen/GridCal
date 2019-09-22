@@ -27,6 +27,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResu
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 ########################################################################################################################
 # Short circuit classes
@@ -174,7 +175,7 @@ class ShortCircuitResults(PowerFlowResults):
         if results.buses_useful_for_storage is not None:
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
-    def plot(self, result_type, ax=None, indices=None, names=None):
+    def mdl(self, result_type, indices=None, names=None) -> "ResultsModel":
         """
         Plot the results
         Args:
@@ -186,10 +187,6 @@ class ShortCircuitResults(PowerFlowResults):
         Returns:
 
         """
-
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
         if indices is None:
             indices = array(range(len(names)))
@@ -230,12 +227,9 @@ class ShortCircuitResults(PowerFlowResults):
             else:
                 pass
 
-            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
-            df.abs().plot(ax=ax, kind='bar', linewidth=LINEWIDTH)
-            ax.set_ylabel(ylabel)
-            ax.set_title(title)
-
-            return df
+            mdl = ResultsModel(data=y, index=labels, columns=[result_type], title=title,
+                               ylabel=ylabel, xlabel='')
+            return mdl
 
         else:
             return None

@@ -135,7 +135,7 @@ class OptimalPowerFlow(QThread):
         self.results = OptimalPowerFlowResults(Sbus=None,
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld * self.grid.Sbase,
-                                               generation_shedding=np.zeros_like(ld) * self.grid.Sbase,
+                                               generation_shedding=np.zeros_like(gn) * self.grid.Sbase,
                                                battery_power=bt * self.grid.Sbase,
                                                controlled_generation_power=gn * self.grid.Sbase,
                                                Sbranch=Sbr * self.grid.Sbase,

@@ -20,6 +20,7 @@ from pySOT.strategy import SRBFStrategy
 from pySOT.surrogate import GPRegressor
 from pySOT.optimization_problems import OptimizationProblem
 from poap.controller import ThreadController, BasicWorkerThread
+from scipy.optimize import fmin_bfgs, minimize
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlow, PowerFlowOptions
@@ -31,7 +32,7 @@ from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_
 ########################################################################################################################
 
 
-class VoltageOptimizationProblem(OptimizationProblem):
+class SetPointsOptimizationProblem(OptimizationProblem):
     """
 
     :ivar dim: Number of dimensions
@@ -53,72 +54,76 @@ class VoltageOptimizationProblem(OptimizationProblem):
         # initialize the power flow
         self.power_flow = PowerFlow(self.circuit, self.options)
 
+        # compile circuits
+        self.numerical_circuit = self.circuit.compile()
+        self.numerical_input_islands = self.numerical_circuit.compute()
+
         n = len(self.circuit.buses)
         m = len(self.circuit.branches)
 
         self.max_eval = max_iter
 
         # the dimension is the number of nodes
-        self.dim = n
+        self.dim = self.numerical_circuit.n_ctrl_gen
+        self.x0 = np.abs(self.numerical_circuit.generator_voltage) - np.ones(self.dim)
         self.min = 0
         self.minimum = np.zeros(self.dim)
-        self.lb = -15 * np.ones(self.dim)
-        self.ub = 20 * np.ones(self.dim)
+        self.lb = -0.1 * np.ones(self.dim)
+        self.ub = 0.1 * np.ones(self.dim)
         self.int_var = np.array([])
         self.cont_var = np.arange(0, self.dim)
-        self.info = str(self.dim) + "Voltage collapse optimization"
+        self.info = str(self.dim) + "Generators voltage set points optimization"
 
         # results
         self.results = MonteCarloResults(n, m, self.max_eval)
 
-        # compile circuits
-        self.numerical_circuit = self.circuit.compile()
-        self.numerical_input_islands = self.numerical_circuit.compute()
+        self.all_f = list()
 
         self.it = 0
 
     def eval(self, x):
         """
-        Evaluate the Ackley function  at x
+        Evaluate the function  at x
 
-        :param x: Data point
+        :param x: Data point; x is a vector of Vset increment for all the generators
         :type x: numpy.array
         :return: Value at x
         :rtype: float
         """
+
+        inc_v = self.numerical_circuit.C_gen_bus.T * x
+
         # For every circuit, run the time series
-        for numerical_island in self.numerical_input_islands:
+        for island in self.numerical_input_islands:
             # sample from the CDF give the vector x of values in [0, 1]
             # c.sample_at(x)
-            monte_carlo_input = make_monte_carlo_input(numerical_island)
-            mc_time_series = monte_carlo_input.get_at(x)
 
-            Y, I, S = mc_time_series.get_at(t=0)
+            V = island.Vbus + inc_v[island.original_bus_idx]
 
             #  run the sampled values
             # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=numerical_island, Vbus=numerical_island.Vbus, Sbus=S, Ibus=I)
+            res = self.power_flow.run_pf(circuit=island, Vbus=V, Sbus=island.Sbus, Ibus=island.Ibus)
 
-            self.results.S_points[self.it, numerical_island.original_bus_idx] = S
-            self.results.V_points[self.it, numerical_island.original_bus_idx] = res.voltage[
-                numerical_island.original_bus_idx]
-            self.results.I_points[self.it, numerical_island.original_branch_idx] = res.Ibranch[
-                numerical_island.original_branch_idx]
-            self.results.loading_points[self.it, numerical_island.original_branch_idx] = res.loading[
-                numerical_island.original_branch_idx]
+            self.results.S_points[self.it, island.original_bus_idx] = island.Sbus
+            self.results.V_points[self.it, island.original_bus_idx] = res.voltage[island.original_bus_idx]
+            self.results.I_points[self.it, island.original_branch_idx] = res.Ibranch[island.original_branch_idx]
+            self.results.loading_points[self.it, island.original_branch_idx] = res.loading[island.original_branch_idx]
+            self.results.losses_points[self.it, island.original_branch_idx] = res.losses[island.original_branch_idx]
 
         self.it += 1
         if self.callback is not None:
             prog = self.it / self.max_eval * 100
             self.callback(prog)
 
-        f = abs(self.results.V_points[self.it - 1, :].sum()) / self.dim
+        f = np.abs(self.results.losses_points[self.it - 1, :].sum()) / self.dim
         # print(prog, ' % \t', f)
+
+        self.all_f.append(f)
 
         return f
 
 
-class Optimize(QThread):
+class OptimizeVoltageSetPoints(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
@@ -162,10 +167,10 @@ class Optimize(QThread):
         # self.progress_text.emit('Running stochastic voltage collapse...')
         # self.results = MonteCarloResults(n, m, self.max_eval)
 
-        self.problem = VoltageOptimizationProblem(self.circuit,
-                                                  self.options,
-                                                  self.max_iter,
-                                                  callback=self.progress_signal.emit)
+        self.problem = SetPointsOptimizationProblem(self.circuit,
+                                                    self.options,
+                                                    self.max_iter,
+                                                    callback=self.progress_signal.emit)
 
         # # (1) Optimization problem
         # # print(data.info)
@@ -277,4 +282,133 @@ class Optimize(QThread):
         self.done_signal.emit()
 
 
+class OptimizeVoltageSetPointsBFGS(QThread):
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
 
+    def __init__(self, circuit: MultiCircuit, options: PowerFlowOptions, max_iter=1000):
+        """
+        Constructor
+        Args:
+            circuit: Grid to cascade
+            options: Power flow Options
+            max_iter: max iterations
+        """
+
+        QThread.__init__(self)
+
+        self.circuit = circuit
+
+        self.options = options
+
+        self.max_iter = max_iter
+
+        self.__cancel__ = False
+
+        self.problem = None
+
+        self.solution = None
+
+        self.optimization_values = None
+
+    def run_bfgs(self):
+        """
+        Run the optimization
+        @return: Nothing
+        """
+
+        self.problem = SetPointsOptimizationProblem(self.circuit,
+                                                    self.options,
+                                                    self.max_iter,
+                                                    callback=self.progress_signal.emit)
+
+        xopt = fmin_bfgs(f=self.problem.eval, x0=self.problem.x0,
+                         fprime=None, args=(), gtol=1e-05,  epsilon=1e-2,
+                         maxiter=self.max_iter, full_output=0, disp=1, retall=0,
+                         callback=None)
+
+        self.solution = np.ones(self.problem.dim) + xopt
+
+        # Extract function values from the controller
+        self.optimization_values = np.array(self.problem.all_f)
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def run_slsqp(self):
+
+        self.problem = SetPointsOptimizationProblem(self.circuit,
+                                                    self.options,
+                                                    self.max_iter,
+                                                    callback=self.progress_signal.emit)
+
+        bounds = [(l, u) for l, u in zip(self.problem.lb, self.problem.ub)]
+
+        res = minimize(fun=self.problem.eval, x0=self.problem.x0, method='SLSQP', bounds=bounds)
+
+        self.solution = np.ones(self.problem.dim) + res.x
+
+        # Extract function values from the controller
+        self.optimization_values = np.array(self.problem.all_f)
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def plot(self, ax=None):
+        """
+        Plot the optimization convergence
+        """
+        clr = np.array(['#2200CC', '#D9007E', '#FF6600', '#FFCC00', '#ACE600', '#0099CC',
+                        '#8900CC', '#FF0000', '#FF9900', '#FFFF00', '#00CC01', '#0055CC'])
+        if self.optimization_values is not None:
+            max_eval = len(self.optimization_values)
+
+            if ax is None:
+                f, ax = plt.subplots()
+            # Points
+            ax.scatter(np.arange(0, max_eval), self.optimization_values, color='b', s=10)
+            # Best value found
+            ax.plot(np.arange(0, max_eval), np.minimum.accumulate(self.optimization_values), color='r',
+                    linewidth=3.0, alpha=0.8)
+            ax.set_xlabel('Evaluations')
+            ax.set_ylabel('Function Value')
+            ax.set_title('Optimization convergence')
+
+    def cancel(self):
+        """
+        Cancel the simulation
+        """
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
+
+
+if __name__ == '__main__':
+
+    from GridCal.Engine import *
+
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+
+    main_circuit = FileOpen(fname).open()
+    pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
+
+    opt = OptimizeVoltageSetPointsBFGS(circuit=main_circuit, options=pf_options, max_iter=1000)
+    # opt.progress_signal.connect(print)
+
+    opt.run_bfgs()
+    print(opt.solution)
+    opt.plot()
+
+    opt.run_slsqp()
+    print(opt.solution)
+    opt.plot()
+
+    plt.show()

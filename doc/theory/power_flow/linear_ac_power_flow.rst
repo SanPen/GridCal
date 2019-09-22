@@ -10,42 +10,39 @@ Following the formulation presented in *Linearized AC Load Flow Applied to Analy
 .. math::
 
     \begin{bmatrix}
-    A_{11} & A_{12} \\
-    A_{21} & A_{22} \\
+    -Bs_{pqpv, pqpv} & G_{pqpv, pq} \\
+    -Gs_{pq, pqpv} & -B_{pq, pq} \\
     \end{bmatrix}
     \times
     \begin{bmatrix}
-    \Delta \theta\\
-    \Delta |V|\\
+    \Delta \theta_{pqpv}  \\
+    \Delta |V|_{pq}\\
     \end{bmatrix}
     =
     \begin{bmatrix}
-    Rhs_1\\
-    Rhs_2\\
+    P_{pqpv}\\
+    Q_{pq}\\
     \end{bmatrix}
 
 Where:
 
-- :math:`A_{11} = -Im\left(Y_{series}[pqpv, pqpv]\right)`
-- :math:`A_{12} = Re\left(Y_{bus}[pqpv, pq]\right)`
-- :math:`A_{21} = -Im\left(Y_{series}[pq, pqpv]\right)`
-- :math:`A_{22} = -Re\left(Y_{bus}[pq, pq]\right)`
-- :math:`Rhs_1 = P[pqpv]`
-- :math:`Rhs_2 = Q[pq]`
+- :math:`G = Re\left(Y_{bus}\right)`
+- :math:`B = Re\left(Y_{bus}\right)`
+- :math:`Gs = Im\left(Y_{series}\right)`
+- :math:`Bs = Im\left(Y_{series}\right)`
+
 
 Here, :math:`Y_{bus}` is the normal circuit admittance matrix and :math:`Y_{series}`
 is the admittance matrix formed with only series elements of the :math:`\pi` model,
 this is neglecting all the shunt admittances.
 
 Solving the vector :math:`[\Delta \theta + 0, \Delta |V| + 1]` we get :math:`\theta`
-for the pq and pv nodes and :math:`|V|` for the pq nodes.
+for the `pq` and `pv` nodes and :math:`|V|` for the `pq` nodes.
 
-For equivalence with the paper:
+For equivalence with the paper [1]_:
 
-- :math:`-B' = -Im(Y_{series}[pqpv, pqpv])`
-- :math:`G = Re(Y_{bus}[pqpv, pq])`
-- :math:`-G' = -Im(Y_{series}[pq, pqpv])`
-- :math:`-B = -Re(Y_{bus}[pq, pq])`
+- :math:`-B' = -Bs`
+- :math:`-G' = -Gs`
 
 .. [1] Rossoni, P. / Moreti da Rosa, W. / Antonio Belati, E., Linearized AC Load Flow
     Applied to Analysis in Electric Power Systems, IEEE Latin America Transactions,

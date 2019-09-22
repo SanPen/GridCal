@@ -236,6 +236,9 @@ class MainGUI(QMainWindow):
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
         self.ui.catalogueSplitter.setStretchFactor(1, 15)
 
+        self.ui.results_splitter.setStretchFactor(0, 1)
+        self.ui.results_splitter.setStretchFactor(1, 4)
+
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
@@ -261,7 +264,7 @@ class MainGUI(QMainWindow):
 
         self.file_name = ''
 
-        self.results_df = None
+        self.results_mdl = ResultsModel(data=np.zeros((0, 0)), columns=np.zeros(0), index=np.zeros(0))
 
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
@@ -454,6 +457,8 @@ class MainGUI(QMainWindow):
         self.ui.clear_highlight_pushButton.clicked.connect(self.clear_big_bus_markers)
 
         self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
+
+        self.ui.plot_data_pushButton.clicked.connect(self.plot_results)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -857,7 +862,7 @@ class MainGUI(QMainWindow):
         # self.ui.splitter_8.setStretchFactor(1, 15)
 
         # clear the results
-        self.ui.resultsPlot.clear()
+        # self.ui.resultsPlot.clear()
         self.ui.resultsTableView.setModel(None)
 
         # clear the comments
@@ -3200,9 +3205,9 @@ class MainGUI(QMainWindow):
         self.ui.dataStructureTableView.setModel(None)
         self.ui.catalogueTreeView.setModel(None)
 
-        self.ui.resultsPlot.clear(force=True)
+        # self.ui.resultsPlot.clear(force=True)
         # self.ui.resultsPlot.canvas.fig.clear()
-        self.ui.resultsPlot.get_figure().set_facecolor('white')
+        # self.ui.resultsPlot.get_figure().set_facecolor('white')
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
@@ -3408,101 +3413,92 @@ class MainGUI(QMainWindow):
                 self.ui.result_element_selection_listView.setModel(mdl)
 
             # clear the plot display
-            self.ui.resultsPlot.clear()
+            # self.ui.resultsPlot.clear()
 
             # get the plot axis
-            ax = self.ui.resultsPlot.get_axis()
+            # ax = self.ui.resultsPlot.get_axis()
 
-            self.results_df = None
+            self.results_mdl = None
 
             if study == 'Power Flow':
                 if self.power_flow.results is not None:
-                    self.results_df = self.power_flow.results.plot(result_type=study_type,
-                                                                   ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.power_flow.results.mdl(result_type=study_type, indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Time Series':
                 if self.time_series.results is not None:
-                    self.results_df = self.time_series.results.plot(result_type=study_type,
-                                                                    ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.time_series.results.mdl(result_type=study_type, indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Voltage Stability':
                 if self.voltage_stability.results is not None:
-                    self.results_df = self.voltage_stability.results.plot(result_type=study_type,
-                                                                          ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type,
+                                                                          indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Monte Carlo':
                 if self.monte_carlo.results is not None:
-                    self.results_df = self.monte_carlo.results.plot(result_type=study_type,
-                                                                    ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.monte_carlo.results.mdl(result_type=study_type,
+                                                                    indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Latin Hypercube':
                 if self.latin_hypercube_sampling.results is not None:
-                    self.results_df = self.latin_hypercube_sampling.results.plot(result_type=study_type,
-                                                                                 ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.latin_hypercube_sampling.results.mdl(result_type=study_type,
+                                                                                 indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Short Circuit':
                 if self.short_circuit.results is not None:
-                    self.results_df = self.short_circuit.results.plot(result_type=study_type,
-                                                                      ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.short_circuit.results.mdl(result_type=study_type,
+                                                                      indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Optimal power flow':
                 if self.optimal_power_flow.results is not None:
-                    self.results_df = self.optimal_power_flow.results.plot(result_type=study_type,
-                                                                           ax=ax, indices=indices, names=names)
+                    self.results_mdl = self.optimal_power_flow.results.mdl(result_type=study_type,
+                                                                           indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'Optimal power flow time series':
                 if self.optimal_power_flow_time_series.results is not None:
-                    self.results_df = self.optimal_power_flow_time_series.results.plot(result_type=study_type,
-                                                                                       ax=ax, indices=indices,
+                    self.results_mdl = self.optimal_power_flow_time_series.results.mdl(result_type=study_type,
+                                                                                       indices=indices,
                                                                                        names=names)
-                else:
-                    self.msg('There seem to be no results :(')
-
-            elif study == 'Transient stability':
-                if self.transient_stability.results is not None:
-                    self.results_df = self.transient_stability.results.plot(result_type=study_type,
-                                                                            ax=ax, indices=indices,
-                                                                            names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
             elif study == 'PTDF':
                 if self.ptdf_analysis.results is not None:
-                    self.results_df = self.ptdf_analysis.results.plot(result_type=study_type,
-                                                                      ax=ax, indices=indices,
+                    self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type,
+                                                                      indices=indices,
                                                                       names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            if self.results_df is not None:
+            if self.results_mdl is not None:
                 # set the table model
-                res_mdl = PandasModel(self.results_df)
-                self.ui.resultsTableView.setModel(res_mdl)
+                self.ui.resultsTableView.setModel(self.results_mdl)
+            else:
+                self.ui.resultsTableView.setModel(None)
 
-            # refresh the plot display (LEFT, RIGHT, TOP, BOTTOM are defined in CalculationEngine.py)
+    def plot_results(self):
+        """
 
-            self.ui.resultsPlot.get_figure().subplots_adjust(left=plot_config.LEFT,
-                                                             right=plot_config.RIGHT,
-                                                             top=plot_config.TOP,
-                                                             bottom=plot_config.BOTTOM)
-            self.ui.resultsPlot.redraw()
+        :return:
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111)
 
-        else:
-            pass
+        self.results_mdl.plot(ax=ax)
+        plt.show()
 
     def save_results_df(self):
         """

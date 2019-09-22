@@ -23,6 +23,7 @@ from enum import EnumMeta
 from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from collections import defaultdict
+from matplotlib import pyplot as plt
 
 
 class TreeDelegate(QItemDelegate):
@@ -1181,6 +1182,236 @@ class MeasurementsModel(QtCore.QAbstractListModel):
         if index.isValid() and role == QtCore.Qt.DisplayRole:
             return self.items[index.row()].value[0]
         return None
+
+
+class ResultsModel(QtCore.QAbstractTableModel):
+    """
+    Class to populate a Qt table view with data from the results
+    """
+    def __init__(self, data: np.ndarray, columns, index, palette=None, title='', xlabel='', ylabel='',
+                 parent=None, editable=False, editable_min_idx=-1, decimals=6):
+        """
+
+        :param data:
+        :param columns:
+        :param index:
+        :param palette:
+        :param title:
+        :param xlabel:
+        :param ylabel:
+        :param parent:
+        :param editable:
+        :param editable_min_idx:
+        :param decimals:
+        """
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        if len(data.shape) == 1:
+            self.data_c = data.reshape(-1, 1)
+        else:
+            self.data_c = data
+        self.cols_c = columns
+        self.index_c = index
+        self.editable = editable
+        self.editable_min_idx = editable_min_idx
+        self.palette = palette
+        self.title = title
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.r, self.c = self.data_c.shape
+        self.isDate = False
+        if self.r > 0 and self.c > 0:
+            if isinstance(self.index_c[0], np.datetime64):
+                self.index_c = pd.to_datetime(self.index_c)
+                self.isDate = True
+
+        self.format_string = '.' + str(decimals) + 'f'
+
+        self.formatter = lambda x: "%.2f" % x
+
+    def flags(self, index):
+        if self.editable and index.column() > self.editable_min_idx:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
+        return self.r
+
+    def columnCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
+        return self.c
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid():
+
+            val = self.data_c[index.row(), index.column()]
+
+            if role == QtCore.Qt.DisplayRole:
+
+                if isinstance(val, str):
+                    return val
+                elif isinstance(val, complex):
+                    if val.real != 0 or val.imag != 0:
+                        return val.__format__(self.format_string)
+                    else:
+                        return '0'
+                else:
+                    if val != 0:
+                        return val.__format__(self.format_string)
+                    else:
+                        return '0'
+
+            elif role == QtCore.Qt.BackgroundRole:
+
+                return None  # QBrush(Qt.yellow)
+
+        return None
+
+    def headerData(self, p_int, orientation, role):
+        """
+
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.cols_c[p_int]
+            elif orientation == QtCore.Qt.Vertical:
+                if self.index_c is None:
+                    return p_int
+                else:
+                    if self.isDate:
+                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                    else:
+                        return str(self.index_c[p_int])
+        return None
+
+    def copy_to_column(self, row, col):
+        """
+        Copies one value to all the column
+        @param row: Row of the value
+        @param col: Column of the value
+        @return: Nothing
+        """
+        self.data_c[:, col] = self.data_c[row, col]
+
+    def get_data(self, mode=None):
+        """
+
+        Args:
+            mode: 'real', 'imag', 'abs'
+
+        Returns: index, columns, data
+
+        """
+        n = len(self.cols_c)
+
+        if n > 0:
+            # gather values
+            if type(self.cols_c) == pd.Index:
+                names = self.cols_c.values
+
+                if len(names) > 0:
+                    if type(names[0]) == ResultTypes:
+                        names = [val.name for val in names]
+            else:
+                names = [val.name for val in self.cols_c]
+
+            if self.data_c.dtype == complex:
+
+                if mode == 'real':
+                    values = self.data_c.real
+                elif mode == 'imag':
+                    values = self.data_c.imag
+                elif mode == 'abs':
+                    values = np.abs(self.data_c)
+                else:
+                    values = np.abs(self.data_c)
+
+            else:
+                values = self.data_c
+
+            return self.index_c, names, values
+        else:
+            # there are no elements
+            return list(), list(), list()
+
+    def save_to_excel(self, file_name, mode):
+        """
+
+        Args:
+            file_name:
+            mode: 'real', 'imag', 'abs'
+
+        Returns:
+
+        """
+        index, columns, data = self.get_data(mode=mode)
+
+        df = pd.DataFrame(data=data, index=index, columns=columns)
+        df.to_excel(file_name)
+
+    def copy_to_clipboard(self, mode=None):
+        """
+        Copy profiles to clipboard
+        Args:
+            mode: 'real', 'imag', 'abs'
+        """
+        n = len(self.cols_c)
+
+        if n > 0:
+
+            index, columns, data = self.get_data(mode=mode)
+
+            data = data.astype(str)
+
+            # header first
+            txt = '\t' + '\t'.join(columns) + '\n'
+
+            # data
+            for t, index_value in enumerate(index):
+                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+
+            # copy to clipboard
+            cb = QApplication.clipboard()
+            cb.clear(mode=cb.Clipboard)
+            cb.setText(txt, mode=cb.Clipboard)
+
+        else:
+            # there are no elements
+            pass
+
+    def plot(self, ax=None):
+        """
+        PLot the data model
+        :param ax: Matplotlib axis
+        """
+        if ax is None:
+            fig = plt.figure(figsize=(12, 6))
+            ax = fig.add_subplot(111)
+
+        ax.plot(self.index_c, self.data_c, linewidth=2)
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_title(self.title)
 
 
 def get_list_model(lst, checks=False):

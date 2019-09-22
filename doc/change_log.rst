@@ -15,6 +15,9 @@ _____________
 
 - Fixed PTDF and added cancelling
 - Fixed Vbranch not being copied correctly in multi-island mode in the Time series
+- Redesigned the results tab: Now the data is the default view and the plot is optional. This allows
+  a much better user interface experience since Matplotlib does not block the results when the grids are large.
+- Added N-k simulation.
 
 
 Version 3.5.7

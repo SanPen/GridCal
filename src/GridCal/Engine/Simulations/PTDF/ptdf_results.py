@@ -20,6 +20,7 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class PTDFVariation:
@@ -124,15 +125,13 @@ class PTDFResults:
 
         return df
 
-    def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> ResultsModel:
         """
         Plot the results.
 
         Arguments:
 
             **result_type**: ResultTypes
-
-            **ax**: matplotlib axis
 
             **indices**: Indices f the array to plot (indices of the elements)
 
@@ -142,10 +141,6 @@ class PTDFResults:
 
             DataFrame
         """
-
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
         if indices is None and names is not None:
             indices = np.array(range(len(names)))
@@ -164,13 +159,10 @@ class PTDFResults:
                 y_label = ''
                 title = ''
 
-            # plot
-            df = pd.DataFrame(data=y, columns=labels, index=self.get_var_names())
-            df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(y_label)
-            ax.set_title(title)
+            # assemble model
+            mdl = ResultsModel(data=y, index=self.get_var_names(), columns=labels, title=title, ylabel=y_label)
+            return mdl
 
-            return df
 
         else:
             return None

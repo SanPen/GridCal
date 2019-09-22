@@ -19,6 +19,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class OptimalPowerFlowResults:
@@ -127,7 +128,7 @@ class OptimalPowerFlowResults:
 
         self.plot_bars_limit = 100
 
-    def plot(self, result_type, ax=None, indices=None, names=None):
+    def mdl(self, result_type, indices=None, names=None) -> "ResultsModel":
         """
         Plot the results
         :param result_type: type of results (string)
@@ -136,10 +137,6 @@ class OptimalPowerFlowResults:
         :param names: element names
         :return: DataFrame of the results (or None if the result was not understood)
         """
-
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
         if indices is None:
             indices = np.array(range(len(names)))
@@ -206,18 +203,9 @@ class OptimalPowerFlowResults:
             else:
                 pass
 
-            df = pd.DataFrame(data=y, index=labels, columns=[result_type])
-            df.fillna(0, inplace=True)
-
-            if len(df.columns) < self.plot_bars_limit:
-                df.plot(ax=ax, kind='bar')
-            else:
-                df.plot(ax=ax, legend=False, linewidth=LINEWIDTH)
-            ax.set_ylabel(y_label)
-            ax.set_title(title)
-
-            return df
-
+            mdl = ResultsModel(data=y, index=labels, columns=[result_type], title=title,
+                               ylabel=y_label, xlabel='')
+            return mdl
         else:
             return None
 

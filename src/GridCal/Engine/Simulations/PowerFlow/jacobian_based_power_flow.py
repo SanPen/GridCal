@@ -166,13 +166,21 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
     dS_dVa = 1j * diagV * np.conj(diagI - Ybus * diagV)
 
-    J11 = dS_dVa[np.array([pvpq]).T, pvpq].real
-    J12 = dS_dVm[np.array([pvpq]).T, pq].real
-    J21 = dS_dVa[np.array([pq]).T, pvpq].imag
-    J22 = dS_dVm[np.array([pq]).T, pq].imag
+    # J11 = dS_dVa[np.array([pvpq]).T, pvpq].real
+    # J12 = dS_dVm[np.array([pvpq]).T, pq].real
+    # J21 = dS_dVa[np.array([pq]).T, pvpq].imag
+    # J22 = dS_dVm[np.array([pq]).T, pq].imag
+    #
+    # J = sp.vstack([sp.hstack([J11, J12]),
+    #                sp.hstack([J21, J22])], format="csr")
 
-    J = sp.vstack([sp.hstack([J11, J12]),
-                   sp.hstack([J21, J22])], format="csr")
+    # J11 = dS_dVa[np.ix_(pvpq, pvpq)].real
+    # J12 = dS_dVm[np.ix_(pvpq, pq)].real
+    # J21 = dS_dVa[np.ix_(pq, pvpq)].imag
+    # J22 = dS_dVm[np.ix_(pq, pq)].imag
+
+    J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
+                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag, dS_dVm[np.ix_(pq, pq)].imag])], format="csr")
 
     return sparse(J)
 

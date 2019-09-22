@@ -27,6 +27,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
+from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -265,19 +266,14 @@ class TimeSeriesResults(PowerFlowResults):
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
                 buses_selected_for_storage_frequency
 
-    def plot(self, result_type: ResultTypes, ax=None, indices=None, names=None):
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
         """
-        Plot the results
+
         :param result_type:
-        :param ax:
         :param indices:
         :param names:
         :return:
         """
-
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
 
         if indices is None:
             indices = np.array(range(len(names)))
@@ -342,7 +338,7 @@ class TimeSeriesResults(PowerFlowResults):
                 title = 'Battery power'
 
             elif result_type == ResultTypes.SimulationError:
-                data = self.error
+                data = self.error.reshape(-1, 1)
                 y_label = 'Per unit power'
                 labels = [y_label]
                 title = 'Error'
@@ -351,20 +347,13 @@ class TimeSeriesResults(PowerFlowResults):
                 raise Exception('Result type not understood:' + str(result_type))
 
             if self.time is not None:
-                df = pd.DataFrame(data=data, columns=labels, index=self.time)
+                index = self.time
             else:
-                df = pd.DataFrame(data=data, columns=labels)
+                index = list(range(data.shape[0]))
 
-            if len(df.columns) > 10:
-                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=False)
-            else:
-                df.abs().plot(ax=ax, linewidth=LINEWIDTH, legend=True)
-
-            ax.set_title(title)
-            ax.set_ylabel(y_label)
-            ax.set_xlabel('Time')
-
-            return df
+            # assemble model
+            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label)
+            return mdl
 
         else:
             return None
