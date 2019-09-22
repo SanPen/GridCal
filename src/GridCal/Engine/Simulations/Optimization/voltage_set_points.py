@@ -93,6 +93,8 @@ class SetPointsOptimizationProblem(OptimizationProblem):
 
         inc_v = self.numerical_circuit.C_gen_bus.T * x
 
+        losses = np.empty(self.numerical_circuit.nbr, dtype=complex)
+
         # For every circuit, run the time series
         for island in self.numerical_input_islands:
             # sample from the CDF give the vector x of values in [0, 1]
@@ -104,18 +106,20 @@ class SetPointsOptimizationProblem(OptimizationProblem):
             # res = self.power_flow.run_at(0, mc=True)
             res = self.power_flow.run_pf(circuit=island, Vbus=V, Sbus=island.Sbus, Ibus=island.Ibus)
 
-            self.results.S_points[self.it, island.original_bus_idx] = island.Sbus
-            self.results.V_points[self.it, island.original_bus_idx] = res.voltage[island.original_bus_idx]
-            self.results.I_points[self.it, island.original_branch_idx] = res.Ibranch[island.original_branch_idx]
-            self.results.loading_points[self.it, island.original_branch_idx] = res.loading[island.original_branch_idx]
-            self.results.losses_points[self.it, island.original_branch_idx] = res.losses[island.original_branch_idx]
+            # self.results.S_points[self.it, island.original_bus_idx] = island.Sbus
+            # self.results.V_points[self.it, island.original_bus_idx] = res.voltage[island.original_bus_idx]
+            # self.results.I_points[self.it, island.original_branch_idx] = res.Ibranch[island.original_branch_idx]
+            # self.results.loading_points[self.it, island.original_branch_idx] = res.loading[island.original_branch_idx]
+            # self.results.losses_points[self.it, island.original_branch_idx] = res.losses[island.original_branch_idx]
+            losses[island.original_branch_idx] = res.losses[island.original_branch_idx]
 
+        f = np.abs(losses.sum()) / self.dim
         self.it += 1
         if self.callback is not None:
             prog = self.it / self.max_eval * 100
-            self.callback(prog)
+            # self.callback(prog)
+            self.callback(f)
 
-        f = np.abs(self.results.losses_points[self.it - 1, :].sum()) / self.dim
         # print(prog, ' % \t', f)
 
         self.all_f.append(f)
@@ -124,165 +128,6 @@ class SetPointsOptimizationProblem(OptimizationProblem):
 
 
 class OptimizeVoltageSetPoints(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
-
-    def __init__(self, circuit: MultiCircuit, options: PowerFlowOptions, max_iter=1000):
-        """
-        Constructor
-        Args:
-            circuit: Grid to cascade
-            options: Power flow Options
-            max_iter: max iterations
-        """
-
-        QThread.__init__(self)
-
-        self.circuit = circuit
-
-        self.options = options
-
-        self.max_iter = max_iter
-
-        self.__cancel__ = False
-
-        self.problem = None
-
-        self.solution = None
-
-        self.optimization_values = None
-
-    def run(self):
-        """
-        Run the optimization
-        @return: Nothing
-        """
-        # self.it = 0
-        # n = len(self.circuit.buses)
-        # m = len(self.circuit.branches)
-        # self.xlow = zeros(n)  # lower bounds
-        # self.xup = ones(n)  # upper bounds
-        # self.progress_signal.emit(0.0)
-        # self.progress_text.emit('Running stochastic voltage collapse...')
-        # self.results = MonteCarloResults(n, m, self.max_eval)
-
-        self.problem = SetPointsOptimizationProblem(self.circuit,
-                                                    self.options,
-                                                    self.max_iter,
-                                                    callback=self.progress_signal.emit)
-
-        # # (1) Optimization problem
-        # # print(data.info)
-        #
-        # # (2) Experimental design
-        # # Use a symmetric Latin hypercube with 2d + 1 samples
-        # exp_des = SymmetricLatinHypercube(dim=self.problem.dim, npts=2 * self.problem.dim + 1)
-        #
-        # # (3) Surrogate model
-        # # Use a cubic RBF interpolant with a linear tail
-        # surrogate = RBFInterpolant(kernel=CubicKernel, tail=LinearTail, maxp=self.max_eval)
-        #
-        # # (4) Adaptive sampling
-        # # Use DYCORS with 100d candidate points
-        # adapt_samp = CandidateDYCORS(data=self, numcand=100 * self.dim)
-        #
-        # # Use the serial controller (uses only one thread)
-        # controller = SerialController(self.objfunction)
-        #
-        # # (5) Use the sychronous strategy without non-bound constraints
-        # strategy = SyncStrategyNoConstraints(worker_id=0,
-        #                                      data=self,
-        #                                      maxeval=self.max_eval,
-        #                                      nsamples=1,
-        #                                      exp_design=exp_des,
-        #                                      response_surface=surrogate,
-        #                                      sampling_method=adapt_samp)
-        #
-        # controller.strategy = strategy
-        #
-        # # Run the optimization strategy
-        # result = controller.run()
-        #
-        # # Print the final result
-        # print('Best value found: {0}'.format(result.value))
-        # print('Best solution found: {0}'.format(np.array_str(result.params[0], max_line_width=np.inf, precision=5,
-        #                                                      suppress_small=True)))
-
-        num_threads = 4
-
-        surrogate_model = GPRegressor(dim=self.problem.dim)
-        sampler = SymmetricLatinHypercube(dim=self.problem.dim, num_pts=2 * (self.problem.dim + 1))
-
-        # Create a strategy and a controller
-        controller = ThreadController()
-        controller.strategy = SRBFStrategy(max_evals=self.max_iter,
-                                           opt_prob=self.problem,
-                                           exp_design=sampler,
-                                           surrogate=surrogate_model,
-                                           asynchronous=True,
-                                           batch_size=num_threads)
-
-        print("Number of threads: {}".format(num_threads))
-        print("Maximum number of evaluations: {}".format(self.max_iter))
-        print("Strategy: {}".format(controller.strategy.__class__.__name__))
-        print("Experimental design: {}".format(sampler.__class__.__name__))
-        print("Surrogate: {}".format(surrogate_model.__class__.__name__))
-
-        # Launch the threads and give them access to the objective function
-        for _ in range(num_threads):
-            worker = BasicWorkerThread(controller, self.problem.eval)
-            controller.launch_worker(worker)
-
-        # Run the optimization strategy
-        result = controller.run()
-
-        print('Best value found: {0}'.format(result.value))
-        print('Best solution found: {0}\n'.format(np.array_str(result.params[0],
-                                                               max_line_width=np.inf,
-                                                               precision=4, suppress_small=True)))
-
-        self.solution = result.params[0]
-
-        # Extract function values from the controller
-        self.optimization_values = np.array([o.value for o in controller.fevals])
-
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
-    def plot(self, ax=None):
-        """
-        Plot the optimization convergence
-        """
-        clr = np.array(['#2200CC', '#D9007E', '#FF6600', '#FFCC00', '#ACE600', '#0099CC',
-                        '#8900CC', '#FF0000', '#FF9900', '#FFFF00', '#00CC01', '#0055CC'])
-        if self.optimization_values is not None:
-            max_eval = len(self.optimization_values)
-
-            if ax is None:
-                f, ax = plt.subplots()
-            # Points
-            ax.scatter(np.arange(0, max_eval), self.optimization_values, color=clr[6])
-            # Best value found
-            ax.plot(np.arange(0, max_eval), np.minimum.accumulate(self.optimization_values), color=clr[1],
-                    linewidth=3.0)
-            ax.set_xlabel('Evaluations')
-            ax.set_ylabel('Function Value')
-            ax.set_title('Optimization convergence')
-
-    def cancel(self):
-        """
-        Cancel the simulation
-        """
-        self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled')
-        self.done_signal.emit()
-
-
-class OptimizeVoltageSetPointsBFGS(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
@@ -347,7 +192,9 @@ class OptimizeVoltageSetPointsBFGS(QThread):
 
         bounds = [(l, u) for l, u in zip(self.problem.lb, self.problem.ub)]
 
-        res = minimize(fun=self.problem.eval, x0=self.problem.x0, method='SLSQP', bounds=bounds)
+        options = {'maxiter': self.max_iter, 'tol': 0.01}
+
+        res = minimize(fun=self.problem.eval, x0=self.problem.x0, method='SLSQP', bounds=bounds, options=options)
 
         self.solution = np.ones(self.problem.dim) + res.x
 
@@ -390,25 +237,27 @@ class OptimizeVoltageSetPointsBFGS(QThread):
 
 
 if __name__ == '__main__':
-
+    import time
     from GridCal.Engine import *
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+    fname = '/mnt/sdc1/tmp/src/ReePlexos/spain_plexos(sin restricciones).gridcal'
 
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
 
-    opt = OptimizeVoltageSetPointsBFGS(circuit=main_circuit, options=pf_options, max_iter=1000)
-    # opt.progress_signal.connect(print)
+    opt = OptimizeVoltageSetPoints(circuit=main_circuit, options=pf_options, max_iter=100)
+    opt.progress_signal.connect(print)
 
-    opt.run_bfgs()
-    print(opt.solution)
-    opt.plot()
+    # opt.run_bfgs()
+    # print(opt.solution)
+    # opt.plot()
 
+    a = time.time()
     opt.run_slsqp()
     print(opt.solution)
     opt.plot()
-
+    print('Elapsed', time.time() - a)
     plt.show()
