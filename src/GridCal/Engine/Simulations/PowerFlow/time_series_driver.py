@@ -192,7 +192,7 @@ class TimeSeriesResults(PowerFlowResults):
 
         return df
 
-    def apply_from_island(self, results, b_idx, br_idx, index, grid_idx):
+    def apply_from_island(self, results, b_idx, br_idx, t_index, grid_idx):
         """
         Apply results from another island circuit to the circuit results represented here
         @param results: PowerFlowResults
@@ -201,26 +201,60 @@ class TimeSeriesResults(PowerFlowResults):
         @return:
         """
 
-        self.voltage[:, b_idx] = results.voltage
+        # self.voltage[t_index, :][:, b_idx] = results.voltage
+        #
+        # self.S[t_index, :][:, b_idx] = results.S
+        #
+        # self.Sbranch[t_index, :][:, br_idx] = results.Sbranch
+        #
+        # self.Ibranch[t_index, :][:, br_idx] = results.Ibranch
+        #
+        # self.Vbranch[t_index, :][:, br_idx] = results.Vbranch
+        #
+        # self.loading[t_index, :][:, br_idx] = results.loading
+        #
+        # self.losses[t_index, :][:, br_idx] = results.losses
+        #
+        # self.flow_direction[t_index, :][:, br_idx] = results.flow_direction
 
-        self.S[:, b_idx] = results.S
+        # bus results
+        if self.voltage.shape == results.voltage.shape:
+            self.voltage = results.voltage
+            self.S = results.S
+        else:
+            self.voltage[np.ix_(t_index, b_idx)] = results.voltage
+            self.S[np.ix_(t_index, b_idx)] = results.S
 
-        self.Sbranch[:, br_idx] = results.Sbranch
+        # branch results
+        if self.Sbranch.shape == results.Sbranch.shape:
+            self.Sbranch = results.Sbranch
 
-        self.Ibranch[:, br_idx] = results.Ibranch
+            self.Ibranch = results.Ibranch
 
-        self.Vbranch[:, br_idx] = results.Vbranch
+            self.Vbranch = results.Vbranch
 
-        self.loading[:, br_idx] = results.loading
+            self.loading = results.loading
 
-        self.losses[:, br_idx] = results.losses
+            self.losses = results.losses
 
-        self.flow_direction[:, br_idx] = results.flow_direction
+            self.flow_direction = results.flow_direction
+        else:
+            self.Sbranch[np.ix_(t_index, br_idx)] = results.Sbranch
 
-        if (results.error > self.error).any():
-            self.error += results.error
+            self.Ibranch[np.ix_(t_index, br_idx)] = results.Ibranch
 
-        self.converged = self.converged * results.converged
+            self.Vbranch[np.ix_(t_index, br_idx)] = results.Vbranch
+
+            self.loading[np.ix_(t_index, br_idx)] = results.loading
+
+            self.losses[np.ix_(t_index, br_idx)] = results.losses
+
+            self.flow_direction[np.ix_(t_index, br_idx)] = results.flow_direction
+
+        if (results.error > self.error[t_index]).any():
+            self.error[t_index] += results.error
+
+        self.converged[t_index] = self.converged[t_index] * results.converged
 
     def get_results_dict(self):
         """
@@ -505,7 +539,6 @@ class TimeSeries(QThread):
                             self.progress_signal.emit(progress)
                             self.progress_text.emit('Simulating island ' + str(island_index)
                                                     + ' at ' + str(self.grid.time_profile[t]))
-
                         else:
                             pass
 
@@ -514,7 +547,7 @@ class TimeSeries(QThread):
                             time_series_results.apply_from_island(results,
                                                                   bus_original_idx,
                                                                   branch_original_idx,
-                                                                  calculation_input.time_array,
+                                                                  calculation_input.original_time_idx,
                                                                   'TS')
                             # abort by returning at this point
                             return time_series_results
@@ -523,7 +556,7 @@ class TimeSeries(QThread):
                     time_series_results.apply_from_island(results,
                                                           bus_original_idx,
                                                           branch_original_idx,
-                                                          calculation_input.time_array,
+                                                          calculation_input.original_time_idx,
                                                           'TS')
 
                 else:
@@ -626,7 +659,7 @@ class TimeSeries(QThread):
                     time_series_results.apply_from_island(results,
                                                           calculation_input.original_bus_idx,
                                                           calculation_input.original_branch_idx,
-                                                          calculation_input.time_array,
+                                                          calculation_input.original_time_idx,
                                                           'TS multi-thread')
                 else:
                     print('There are no profiles')
@@ -766,5 +799,3 @@ class TimeSeries(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
-
-

@@ -591,10 +591,10 @@ def Jacobian_I(Ybus, V, pq, pvpq):
     dI_dVm = Ybus * sp.diags(V / np.abs(V))
     dI_dVa = 1j * (Ybus * sp.diags(V))
 
-    J11 = dI_dVa[sp.array([pvpq]).T, pvpq].real
-    J12 = dI_dVm[sp.array([pvpq]).T, pq].real
-    J21 = dI_dVa[sp.array([pq]).T, pvpq].imag
-    J22 = dI_dVm[sp.array([pq]).T, pq].imag
+    J11 = dI_dVa[np.array([pvpq]).T, pvpq].real
+    J12 = dI_dVm[np.array([pvpq]).T, pq].real
+    J21 = dI_dVa[np.array([pq]).T, pvpq].imag
+    J22 = dI_dVm[np.array([pq]).T, pq].imag
 
     J = sp.vstack([sp.hstack([J11, J12]),
                    sp.hstack([J21, J22])], format="csr")

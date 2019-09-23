@@ -3409,7 +3409,11 @@ class MainGUI(QMainWindow):
                 names = None
 
             if indices is None:
-                mdl = get_list_model(names, checks=True)
+                if len(names) > 30:
+                    n = 1
+                else:
+                    n = None
+                mdl = get_list_model(names, checks=True, n=n)
                 self.ui.result_element_selection_listView.setModel(mdl)
 
             # clear the plot display
