@@ -1331,9 +1331,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
                 if len(names) > 0:
                     if type(names[0]) == ResultTypes:
-                        names = [val.name for val in names]
+                        names = [str(val) for val in names]
             else:
-                names = [val.name for val in self.cols_c]
+                names = [str(val) for val in self.cols_c]
 
             if self.data_c.dtype == complex:
 
@@ -1357,12 +1357,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def save_to_excel(self, file_name, mode):
         """
 
-        Args:
-            file_name:
-            mode: 'real', 'imag', 'abs'
-
-        Returns:
-
+        :param file_name:
+        :param mode: 'real', 'imag', 'abs'
+        :return:
         """
         index, columns, data = self.get_data(mode=mode)
 

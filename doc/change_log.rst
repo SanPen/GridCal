@@ -18,6 +18,7 @@ _____________
 - Redesigned the results tab: Now the data is the default view and the plot is optional. This allows
   a much better user interface experience since Matplotlib does not block the results when the grids are large.
 - Added N-k simulation.
+- Fixed PSS/e import branches; PSS/e does not account for the length in the impedance computation.
 
 
 Version 3.5.7

@@ -3413,7 +3413,7 @@ class MainGUI(QMainWindow):
                     n = 1
                 else:
                     n = None
-                mdl = get_list_model(names, checks=True, n=n)
+                mdl = get_list_model(names, checks=True)
                 self.ui.result_element_selection_listView.setModel(mdl)
 
             # clear the plot display
@@ -3498,11 +3498,12 @@ class MainGUI(QMainWindow):
 
         :return:
         """
-        fig = plt.figure(figsize=(12, 8))
-        ax = fig.add_subplot(111)
+        if self.results_mdl is not None:
+            fig = plt.figure(figsize=(12, 8))
+            ax = fig.add_subplot(111)
 
-        self.results_mdl.plot(ax=ax)
-        plt.show()
+            self.results_mdl.plot(ax=ax)
+            plt.show()
 
     def save_results_df(self):
         """

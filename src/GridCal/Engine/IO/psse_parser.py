@@ -341,7 +341,7 @@ class PSSeLoad:
         ir, ii = self.IP, self.IQ
         p, q = self.PL, self.QL
 
-        object = Load(name='Load ' + self.ID,
+        object = Load(name='Load ' + str(self.ID).replace("'", ""),
                       G=g, B=b, Ir=ir, Ii=ii, P=p, Q=q)
 
         return object
@@ -685,7 +685,7 @@ class PSSeGenerator:
             Gridcal Load object
         """
 
-        object = Generator(name='Gen_' + str(self.ID),
+        object = Generator(name='Gen_' + str(self.ID).replace("'", ""),
                            active_power=self.PG,
                            voltage_module=self.VS,
                            Qmin=self.QB,
@@ -879,17 +879,13 @@ class PSSeBranch:
         bus_from = psse_bus_dict[abs(self.I)]
         bus_to = psse_bus_dict[abs(self.J)]
 
-        if self.LEN > 0:
-            r = self.R * self.LEN
-            x = self.X * self.LEN
-            b = self.B * self.LEN
-        else:
-            r = self.R
-            x = self.X
-            b = self.B
+        # the length in PSSe is merely indicative
+        r = self.R
+        x = self.X
+        b = self.B
 
-        object = Branch(bus_from=bus_from, bus_to=bus_to,
-                        name='Branch',
+        branch = Branch(bus_from=bus_from, bus_to=bus_to,
+                        name=str(self.I) + '_' + str(self.J),
                         r=r,
                         x=x,
                         g=1e-20,
@@ -900,8 +896,9 @@ class PSSeBranch:
                         active=True,
                         mttf=0,
                         mttr=0,
+                        length=self.LEN,
                         branch_type=BranchType.Line)
-        return object
+        return branch
 
 
 class PSSeTwoTerminalDCLine:

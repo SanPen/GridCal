@@ -22,3 +22,4 @@ from GridCal.Engine.Simulations.Stochastic import *
 from GridCal.Engine.Simulations.OPF import *
 from GridCal.Engine.Simulations.PTDF import *
 from GridCal.Engine.Simulations.sparse_solve import *
+from GridCal.Engine.Simulations.NK import *
