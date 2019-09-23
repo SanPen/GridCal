@@ -11,10 +11,10 @@ if __name__ == '__main__':
 
     solver_types = [SparseSolver.BLAS_LAPACK,
                     # SparseSolver.KLU,
-                    SparseSolver.SuperLU,
-                    SparseSolver.ILU,
+                    # SparseSolver.SuperLU,
+                    # SparseSolver.ILU,
                     # SparseSolver.AMG
-                    SparseSolver.Pardiso
+                    # SparseSolver.Pardiso
                     ]
 
     for solver_type in solver_types:

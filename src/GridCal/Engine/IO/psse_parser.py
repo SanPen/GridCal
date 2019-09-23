@@ -341,10 +341,10 @@ class PSSeLoad:
         ir, ii = self.IP, self.IQ
         p, q = self.PL, self.QL
 
-        object = Load(name='Load ' + self.ID,
+        elm = Load(name=str(self.I) + '_' + self.ID,
                       G=g, B=b, Ir=ir, Ii=ii, P=p, Q=q)
 
-        return object
+        return elm
 
 
 class PSSeSwitchedShunt:
@@ -443,11 +443,11 @@ class PSSeSwitchedShunt:
         g = 0.0
         b = self.BINIT * self.RMPCT / 100.0
 
-        object = Shunt(name='Switched shunt ' + str(self.I),
-                       G=g, B=b,
-                       active=bool(self.STAT))
+        elm = Shunt(name='Switched shunt ' + str(self.I),
+                    G=g, B=b,
+                    active=bool(self.STAT))
 
-        return object
+        return elm
 
 
 class PSSeShunt:
@@ -489,7 +489,7 @@ class PSSeShunt:
 
         # GL and BL come in MW and MVAr
         # They must be in siemens
-        vv = bus.Vnom**2.0
+        vv = bus.Vnom * bus.Vnom
 
         if vv == 0:
             logger.append('Voltage equal to zero in shunt conversion!!!')
@@ -497,11 +497,11 @@ class PSSeShunt:
         g = self.GL
         b = self.BL
 
-        object = Shunt(name='Shunt ' + str(self.ID),
-                       G=g, B=b,
-                       active=bool(self.STATUS))
+        elm = Shunt(name=str(self.I) + '_' + str(self.ID),
+                    G=g, B=b,
+                    active=bool(self.STATUS))
 
-        return object
+        return elm
 
 
 class PSSeGenerator:
@@ -685,17 +685,17 @@ class PSSeGenerator:
             Gridcal Load object
         """
 
-        object = Generator(name='Gen_' + str(self.ID),
-                           active_power=self.PG,
-                           voltage_module=self.VS,
-                           Qmin=self.QB,
-                           Qmax=self.QT,
-                           Snom=self.MBASE,
-                           power_prof=None,
-                           vset_prof=None,
-                           active=bool(self.STAT))
+        elm = Generator(name=str(self.I) + '_' + str(self.ID),
+                        active_power=self.PG,
+                        voltage_module=self.VS,
+                        Qmin=self.QB,
+                        Qmax=self.QT,
+                        Snom=self.MBASE,
+                        power_prof=None,
+                        vset_prof=None,
+                        active=bool(self.STAT))
 
-        return object
+        return elm
 
 
 class PSSeInductionMachine:
@@ -731,13 +731,13 @@ class PSSeInductionMachine:
             Gridcal Load object
         """
 
-        object = Generator(name='Gen_' + str(self.ID),
-                           active_power=self.PSET,
-                           voltage_module=self.RATEKV,
-                           Snom=self.MBASE,
-                           active=bool(self.STAT))
+        elm = Generator(name=str(self.I) + '_' + str(self.ID),
+                        active_power=self.PSET,
+                        voltage_module=self.RATEKV,
+                        Snom=self.MBASE,
+                        active=bool(self.STAT))
 
-        return object
+        return elm
 
 
 class PSSeBranch:
@@ -876,32 +876,26 @@ class PSSeBranch:
         Returns:
             Gridcal Branch object
         """
-        bus_from = psse_bus_dict[abs(self.I)]
-        bus_to = psse_bus_dict[abs(self.J)]
+        i = abs(self.I)
+        j = abs(self.J)
+        bus_from = psse_bus_dict[i]
+        bus_to = psse_bus_dict[j]
 
-        if self.LEN > 0:
-            r = self.R * self.LEN
-            x = self.X * self.LEN
-            b = self.B * self.LEN
-        else:
-            r = self.R
-            x = self.X
-            b = self.B
-
-        object = Branch(bus_from=bus_from, bus_to=bus_to,
-                        name='Branch',
-                        r=r,
-                        x=x,
+        branch = Branch(bus_from=bus_from, bus_to=bus_to,
+                        name=str(i) + '_' + str(j),
+                        r=self.R,
+                        x=self.X,
                         g=1e-20,
-                        b=b,
+                        b=self.B,
                         rate=max(self.RATEA, self.RATEB, self.RATEC),
                         tap=1,
                         shift_angle=0,
-                        active=True,
+                        active=bool(self.ST),
                         mttf=0,
                         mttr=0,
+                        length=self.LEN,
                         branch_type=BranchType.Line)
-        return object
+        return branch
 
 
 class PSSeTwoTerminalDCLine:
@@ -1900,21 +1894,21 @@ class PSSeTransformer:
 
                 logger.append('Transformer impedance is not in p.u.')
 
-            object = Branch(bus_from=bus_from, bus_to=bus_to,
-                            name=self.NAME.replace("'", "").strip(),
-                            r=r,
-                            x=x,
-                            g=g,
-                            b=b,
-                            rate=max(self.RATA1, self.RATB1, self.RATC1),
-                            tap=1,
-                            shift_angle=0,
-                            active=True,
-                            mttf=0,
-                            mttr=0,
-                            branch_type=BranchType.Transformer)
+            elm = Branch(bus_from=bus_from, bus_to=bus_to,
+                         name=self.NAME.replace("'", "").strip(),
+                         r=r,
+                         x=x,
+                         g=g,
+                         b=b,
+                         rate=max(self.RATA1, self.RATB1, self.RATC1),
+                         tap=1,
+                         shift_angle=0,
+                         active=True,
+                         mttf=0,
+                         mttr=0,
+                         branch_type=BranchType.Transformer)
 
-            return [object]
+            return [elm]
 
         elif self.windings == 3:
 

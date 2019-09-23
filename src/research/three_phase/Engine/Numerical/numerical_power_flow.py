@@ -506,10 +506,15 @@ def linear_ac_power_flow(Ybus, Yseries, Sbus, Ibus, Vbus, pq, pv):
     # Gp = Ys.real
     # Bp = Ys.imag
 
-    A11 = -Yseries.imag[pvpq, :][:, pvpq]
-    A12 = Ybus.real[pvpq, :][:, pq]
-    A21 = -Yseries.real[pq, :][:, pvpq]
-    A22 = -Ybus.imag[pq, :][:, pq]
+    # A11 = -Yseries.imag[pvpq, :][:, pvpq]
+    # A12 = Ybus.real[pvpq, :][:, pq]
+    # A21 = -Yseries.real[pq, :][:, pvpq]
+    # A22 = -Ybus.imag[pq, :][:, pq]
+
+    A11 = -Yseries.imag[np.ix_(pvpq, pvpq)]
+    A12 = Ybus.real[np.ix_(pvpq, pq)]
+    A21 = -Yseries.real[np.ix_(pq, pvpq)]
+    A22 = -Ybus.imag[np.ix_(pq, pq)]
 
     Asys = vstack([hstack([A11, A12]),
                    hstack([A21, A22])], format="csc")
