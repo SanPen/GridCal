@@ -963,11 +963,11 @@ class PowerFlowMP:
         pv = calculation_inputs.pv
 
         # power at the slack nodes
-        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :][:, :].dot(V))
+        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
 
         # Reactive power at the pv nodes
         P = Sbus[pv].real
-        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :][:, :].dot(V))).imag
+        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
         Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
         if not only_power:

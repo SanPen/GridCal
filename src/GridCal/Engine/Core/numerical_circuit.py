@@ -838,69 +838,6 @@ class NumericalCircuit:
 
         return Ybus.imag
 
-    def power_flow_post_process(self, V, only_power=False, t=0):
-        """
-        Compute the power flows trough the branches for the complete circuit taking into account the islands
-        @param V: Voltage solution array for the circuit buses
-        @param only_power: compute only the power injection
-        @return: Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
-        """
-        Sbranch_all = np.zeros(self.nbr, dtype=complex)
-        Ibranch_all = np.zeros(self.nbr, dtype=complex)
-        loading_all = np.zeros(self.nbr, dtype=complex)
-        losses_all = np.zeros(self.nbr, dtype=complex)
-        Sbus_all = np.zeros(self.nbus, dtype=complex)
-
-        for circuit in self.calculation_islands:
-            # Compute the slack and pv buses power
-            Sbus = circuit.Sbus[t, :]
-
-            vd = circuit.ref
-            pv = circuit.pv
-
-            # power at the slack nodes
-            Sbus[vd] = V[vd] * np.conj(circuit.Ybus[t][vd, :][:, :].dot(V))
-
-            # Reactive power at the pv nodes
-            P = Sbus[pv].real
-            Q = (V[pv] * np.conj(circuit.Ybus[t][pv, :][:, :].dot(V))).imag
-            Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
-
-            if not only_power:
-                # Branches current, loading, etc
-                If = circuit.Yf[t] * V
-                It = circuit.Yt[t] * V
-                Sf = (circuit.C_branch_bus_f[t] * V) * np.conj(If)
-                St = (circuit.C_branch_bus_t[t] * V) * np.conj(It)
-
-                # Branch losses in MVA
-                losses = (Sf + St) * circuit.Sbase
-
-                # Branch current in p.u.
-                Ibranch = np.maximum(If, It)
-
-                # Branch power in MVA
-                Sbranch = np.maximum(Sf, St) * circuit.Sbase
-
-                # Branch loading in p.u.
-                loading = Sbranch / (circuit.branch_rates + 1e-9)
-
-            else:
-                Sbranch = np.zeros(self.nbr, dtype=complex)
-                Ibranch = np.zeros(self.nbr, dtype=complex)
-                loading = np.zeros(self.nbr, dtype=complex)
-                losses = np.zeros(self.nbr, dtype=complex)
-                Sbus = np.zeros(self.nbus, dtype=complex)
-
-            # assign to master
-            Sbranch_all[circuit.original_branch_idx[t]] = Sbranch
-            Ibranch_all[circuit.original_branch_idx[t]] = Ibranch
-            loading_all[circuit.original_branch_idx[t]] = loading
-            losses_all[circuit.original_branch_idx[t]] = losses
-            Sbus_all[circuit.original_bus_idx[t]] = Sbus
-
-        return Sbranch_all, Ibranch_all, loading_all, losses_all, Sbus_all
-
     def print(self, islands_only=False):
         """
         print the connectivity matrices
