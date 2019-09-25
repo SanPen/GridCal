@@ -142,11 +142,11 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     # PV nodes
     # ##################################################################################################################
     # Compute convolutions
-    QW_convolution = (Q[n - m, :] * W[m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
-    VV_convolution = (V[m, :][:, pv] * V[n - m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
+    QW_convolution = (Q[n - m, :] * W[np.ix_(m, pv)].conjugate()).sum(axis=0)  # only pv nodes
+    VV_convolution = (V[np.ix_(m, pv)] * V[np.ix_(n - m, pv)].conjugate()).sum(axis=0)  # only pv nodes
 
     # compute the formulas
-    f2 = Pbus[pv] * W[:, pv][n-1, :] + QW_convolution
+    f2 = Pbus[pv] * W[np.ix_(n-1, pv)] + QW_convolution
 
     epsilon = -0.5 * VV_convolution
     if n == 1:

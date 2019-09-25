@@ -201,22 +201,6 @@ class TimeSeriesResults(PowerFlowResults):
         @return:
         """
 
-        # self.voltage[t_index, :][:, b_idx] = results.voltage
-        #
-        # self.S[t_index, :][:, b_idx] = results.S
-        #
-        # self.Sbranch[t_index, :][:, br_idx] = results.Sbranch
-        #
-        # self.Ibranch[t_index, :][:, br_idx] = results.Ibranch
-        #
-        # self.Vbranch[t_index, :][:, br_idx] = results.Vbranch
-        #
-        # self.loading[t_index, :][:, br_idx] = results.loading
-        #
-        # self.losses[t_index, :][:, br_idx] = results.losses
-        #
-        # self.flow_direction[t_index, :][:, br_idx] = results.flow_direction
-
         # bus results
         if self.voltage.shape == results.voltage.shape:
             self.voltage = results.voltage

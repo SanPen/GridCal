@@ -148,8 +148,8 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
             # Add nodal real power balance for the non slack nodes
             idx = bus_original_idx[pqpv]
             nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
-                                                           lhs=-lpDot(Bs_island[pqpv, :][:, pqpv], dva_island[pqpv, :])
-                                                               + lpDot(G_island[pqpv, :][:, pq], dvm_island[pq, :]),
+                                                           lhs=-lpDot(Bs_island[np.ix_(pqpv, pqpv)], dva_island[pqpv, :])
+                                                               + lpDot(G_island[np.ix_(pqpv, pq)], dvm_island[pq, :]),
                                                            rhs=P_island[pqpv, :],
                                                            name='Nodal_real_power_balance_pqpv_is' + str(i),
                                                            op='=')
@@ -157,8 +157,8 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
             # Add nodal reactive power balance for the non slack nodes
             idx = bus_original_idx[pq]
             nodal_restrictions_Q[idx] = lpAddRestrictions2(problem=problem,
-                                                           lhs=-lpDot(Gs_island[pq, :][:, pqpv], dva_island[pqpv, :])
-                                                               - lpDot(B_island[pq, :][:, pq], dvm_island[pq, :]),
+                                                           lhs=-lpDot(Gs_island[np.ix_(pq, pqpv)], dva_island[pqpv, :])
+                                                               - lpDot(B_island[np.ix_(pq, pq)], dvm_island[pq, :]),
                                                            rhs=Q_island[pq, :],
                                                            name='Nodal_imag_power_balance_pqpv_is' + str(i),
                                                            op='=')

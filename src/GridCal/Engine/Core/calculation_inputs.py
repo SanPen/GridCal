@@ -199,8 +199,8 @@ class CalculationInputs:
 
         self.compile_types()
 
-        self.Bpqpv = self.Ybus.imag[self.pqpv, :][:, self.pqpv]
-        self.Bref = self.Ybus.imag[self.pqpv, :][:, self.ref]
+        self.Bpqpv = self.Ybus.imag[np.ix_(self.pqpv, self.pqpv)]
+        self.Bref = self.Ybus.imag[np.ix_(self.pqpv, self.ref)]
 
     def trim_profiles(self, time_idx):
         """
@@ -208,7 +208,7 @@ class CalculationInputs:
         :param time_idx: array of time indices
         """
         self.original_time_idx = time_idx
-        # self.time_array = self.time_array[time_idx]
+
         self.Ysh_prof = self.Ysh_prof[:, time_idx]
         self.Sbus_prof = self.Sbus_prof[:, time_idx]
         self.Ibus_prof = self.Ibus_prof[:, time_idx]
@@ -226,12 +226,12 @@ class CalculationInputs:
         obj.original_bus_idx = bus_idx
         obj.original_branch_idx = branch_idx
 
-        obj.Yf = self.Yf[branch_idx, :][:, bus_idx]
-        obj.Yt = self.Yt[branch_idx, :][:, bus_idx]
-        obj.Ybus = self.Ybus[bus_idx, :][:, bus_idx]
-        obj.Yseries = self.Yseries[bus_idx, :][:, bus_idx]
-        obj.B1 = self.B1[bus_idx, :][:, bus_idx]
-        obj.B2 = self.B2[bus_idx, :][:, bus_idx]
+        obj.Yf = self.Yf[np.ix_(branch_idx, bus_idx)]
+        obj.Yt = self.Yt[np.ix_(branch_idx, bus_idx)]
+        obj.Ybus = self.Ybus[np.ix_(bus_idx, bus_idx)]
+        obj.Yseries = self.Yseries[np.ix_(bus_idx, bus_idx)]
+        obj.B1 = self.B1[np.ix_(bus_idx, bus_idx)]
+        obj.B2 = self.B2[np.ix_(bus_idx, bus_idx)]
 
         obj.Ysh = self.Ysh[bus_idx]
         obj.Sbus = self.Sbus[bus_idx]
@@ -255,8 +255,8 @@ class CalculationInputs:
         obj.Sbus_prof = self.Sbus_prof[bus_idx, :]
         obj.Ibus_prof = self.Ibus_prof[bus_idx, :]
 
-        obj.C_branch_bus_f = self.C_branch_bus_f[branch_idx, :][:, bus_idx]
-        obj.C_branch_bus_t = self.C_branch_bus_t[branch_idx, :][:, bus_idx]
+        obj.C_branch_bus_f = self.C_branch_bus_f[np.ix_(branch_idx, bus_idx)]
+        obj.C_branch_bus_t = self.C_branch_bus_t[np.ix_(branch_idx, bus_idx)]
 
         obj.C_load_bus = self.C_load_bus[:, bus_idx]
         obj.C_batt_bus = self.C_batt_bus[:, bus_idx]
@@ -394,17 +394,17 @@ class CalculationInputs:
         Get the AC linear approximation matrices
         :return:
         """
-        A11 = -self.Yseries.imag[self.pqpv, :][:, self.pqpv]
-        A12 = self.Ybus.real[self.pqpv, :][:, self.pq]
-        A21 = -self.Yseries.real[self.pq, :][:, self.pqpv]
-        A22 = -self.Ybus.imag[self.pq, :][:, self.pq]
+        A11 = -self.Yseries.imag[np.ix_(self.pqpv, self.pqpv)]
+        A12 = self.Ybus.real[np.ix_(self.pqpv, self.pq)]
+        A21 = -self.Yseries.real[np.ix_(self.pq, self.pqpv)]
+        A22 = -self.Ybus.imag[np.ix_(self.pq, self.pq)]
 
         A = vstack_s([hstack_s([A11, A12]),
                       hstack_s([A21, A22])], format="csc")
 
         # form the slack system matrix
-        A11s = -self.Yseries.imag[self.ref, :][:, self.pqpv]
-        A12s = self.Ybus.real[self.ref, :][:, self.pq]
+        A11s = -self.Yseries.imag[np.ix_(self.ref, self.pqpv)]
+        A12s = self.Ybus.real[np.ix_(self.ref, self.pq)]
         A_slack = hstack_s([A11s, A12s], format="csr")
 
         self.Asys = factorized(A)

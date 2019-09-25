@@ -631,22 +631,25 @@ class PowerFlowMP:
                         delta = slack_power * circuit.Sinstalled / installed_power
 
                         # repeat power flow with the redistributed power
-                        voltage_solution, converged, normF, Scalc, it, el = self.solve(solver_type=solver_type,
-                                                                                       V0=voltage_solution,
-                                                                                       Sbus=Sbus + delta,
-                                                                                       Ibus=Ibus,
-                                                                                       Ybus=circuit.Ybus,
-                                                                                       Yseries=circuit.Yseries,
-                                                                                       B1=circuit.B1,
-                                                                                       B2=circuit.B2,
-                                                                                       Bpqpv=circuit.Bpqpv,
-                                                                                       Bref=circuit.Bref,
-                                                                                       pq=pq,
-                                                                                       pv=pv,
-                                                                                       ref=ref,
-                                                                                       pqpv=pqpv,
-                                                                                       tolerance=self.options.tolerance,
-                                                                                       max_iter=self.options.max_iter)
+                        voltage_solution, converged, normF, Scalc, it2, el2 = self.solve(solver_type=solver_type,
+                                                                                         V0=voltage_solution,
+                                                                                         Sbus=Sbus + delta,
+                                                                                         Ibus=Ibus,
+                                                                                         Ybus=circuit.Ybus,
+                                                                                         Yseries=circuit.Yseries,
+                                                                                         B1=circuit.B1,
+                                                                                         B2=circuit.B2,
+                                                                                         Bpqpv=circuit.Bpqpv,
+                                                                                         Bref=circuit.Bref,
+                                                                                         pq=pq,
+                                                                                         pv=pv,
+                                                                                         ref=ref,
+                                                                                         pqpv=pqpv,
+                                                                                         tolerance=self.options.tolerance,
+                                                                                         max_iter=self.options.max_iter)
+                        # increase the metrics with the second run numbers
+                        it += it2
+                        el += el2
 
                 # record the method used
                 methods.append(solver_type)

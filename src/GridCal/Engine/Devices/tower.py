@@ -480,10 +480,10 @@ def kron_reduction(mat, keep, embed):
     :param embed: indices to remove / embed
     :return:
     """
-    Zaa = mat[keep, :][:, keep]
-    Zag = mat[keep, :][:, embed]
-    Zga = mat[embed, :][:, keep]
-    Zgg = mat[embed, :][:, embed]
+    Zaa = mat[np.ix_(keep, keep)]
+    Zag = mat[np.ix_(keep, embed)]
+    Zga = mat[np.ix_(embed, keep)]
+    Zgg = mat[np.ix_(embed, embed)]
 
     return Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
 

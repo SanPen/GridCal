@@ -241,20 +241,20 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm, If, It = dIbr_dV(Yf, Yt, V)
 
     # for the sub-jacobians
-    H11 = dSf_dVa[inputs.p_flow_idx, :][:, pvpq].real
-    H12 = dSf_dVm[inputs.p_flow_idx, :][:, :].real
+    H11 = dSf_dVa[np.ix_(inputs.p_flow_idx, pvpq)].real
+    H12 = dSf_dVm[inputs.p_flow_idx, :].real
 
-    H21 = dS_dVa[inputs.p_inj_idx, :][:, pvpq].real
-    H22 = dS_dVm[inputs.p_inj_idx, :][:, :].real
+    H21 = dS_dVa[np.ix_(inputs.p_inj_idx, pvpq)].real
+    H22 = dS_dVm[inputs.p_inj_idx, :].real
 
-    H31 = dSf_dVa[inputs.q_flow_idx, :][:, pvpq].imag
-    H32 = dSf_dVm[inputs.q_flow_idx, :][:, :].imag
+    H31 = dSf_dVa[np.ix_(inputs.q_flow_idx, pvpq)].imag
+    H32 = dSf_dVm[inputs.q_flow_idx, :].imag
 
-    H41 = dS_dVa[inputs.q_inj_idx, :][:, pvpq].imag
-    H42 = dS_dVm[inputs.q_inj_idx, :][:, :].imag
+    H41 = dS_dVa[np.ix_(inputs.q_inj_idx, pvpq)].imag
+    H42 = dS_dVm[inputs.q_inj_idx, :].imag
 
-    H51 = np.abs(dIf_dVa[inputs.i_flow_idx, :][:, pvpq])
-    H52 = np.abs(dIf_dVm[inputs.i_flow_idx, :][:, :])
+    H51 = np.abs(dIf_dVa[np.ix_(inputs.i_flow_idx, pvpq)])
+    H52 = np.abs(dIf_dVm[inputs.i_flow_idx, :])
 
     H61 = csc_matrix(np.zeros((len(inputs.vm_m_idx), len(pvpq))))
     H62 = csc_matrix(np.diag(np.ones(n))[inputs.vm_m_idx, :])

@@ -33,8 +33,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     Vm = abs(voltage)
 
     # Factorize B1 and B2
-    J1 = splu(B1[pqpv, :][:, pqpv])
-    J2 = splu(B2[pq, :][:, pq])
+    J1 = splu(B1[np.ix_(pqpv, pqpv)])
+    J2 = splu(B2[np.ix_(pq, pq)])
 
     # evaluate initial mismatch
     Scalc = voltage * conj(Ybus * voltage - Ibus)

@@ -128,7 +128,7 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
             # Add nodal power balance for the non slack nodes
             idx = bus_original_idx[pqpv]
             nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                         lhs=lpDot(B_island[pqpv, :][:, pqpv], theta_island[pqpv]),
+                                                         lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv]),
                                                          rhs=P_island[pqpv],
                                                          name='Nodal_power_balance_pqpv_is' + str(i),
                                                          op='=')

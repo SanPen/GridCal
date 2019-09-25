@@ -116,10 +116,10 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
         # Gp = Ys.real
         # Bp = Ys.imag
 
-        A11 = -Ys.imag[pvpq, :][:, pvpq]
-        A12 = Y.real[pvpq, :][:, pq]
-        A21 = -Ys.real[pq, :][:, pvpq]
-        A22 = -Y.imag[pq, :][:, pq]
+        A11 = -Ys.imag[np.ix_(pvpq, pvpq)]
+        A12 = Y.real[np.ix_(pvpq, pq)]
+        A21 = -Ys.real[np.ix_(pq, pvpq)]
+        A22 = -Y.imag[np.ix_(pq, pq)]
 
         Asys = sp.vstack([sp.hstack([A11, A12]),
                           sp.hstack([A21, A22])], format="csc")

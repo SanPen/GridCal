@@ -22,6 +22,7 @@ _____________
 - Greatly improved the PSS/e file parser by using variable length lists.
 - Implemented the distributed slack.
 - Open by GUI file drop.
+- Fixed bug: Now when many generators are at a node only one controls voltage.
 
 Version 3.5.7
 _____________
