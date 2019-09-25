@@ -416,6 +416,7 @@ class NumericalCircuit:
         self.generator_dispatchable = np.zeros(n_gen, dtype=bool)
         self.generator_controllable = np.zeros(n_gen, dtype=bool)
         self.generator_cost = np.zeros(n_gen, dtype=float)
+        self.generator_nominal_power = np.zeros(n_gen, dtype=float)
 
         self.generator_active = np.zeros(n_gen, dtype=bool)
         self.generator_active_prof = np.zeros((n_time, n_gen), dtype=bool)
@@ -597,6 +598,8 @@ class NumericalCircuit:
             gen_S = self.generator_power + 1j * Q
             S += self.C_gen_bus.T * (gen_S / self.Sbase * self.generator_active)
 
+        installed_generation_per_bus = self.C_gen_bus.T * (self.generator_nominal_power * self.generator_active)
+
         # batteries
         if add_storage:
             S += self.C_batt_bus.T * (self.battery_power / self.Sbase * self.battery_active)
@@ -618,6 +621,7 @@ class NumericalCircuit:
         circuit.types = self.bus_types
         circuit.Qmax = q_max
         circuit.Qmin = q_min
+        circuit.Sinstalled = installed_generation_per_bus
 
         # if there are profiles...
         if self.ntime > 0:

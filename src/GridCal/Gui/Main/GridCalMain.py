@@ -96,6 +96,8 @@ class MainGUI(QMainWindow):
         self.ui = Ui_mainWindow()
         self.ui.setupUi(self)
 
+        self.setAcceptDrops(True)
+
         self.use_native_dialogues = use_native_dialogues
 
         # Declare circuit
@@ -534,6 +536,33 @@ class MainGUI(QMainWindow):
         """
         self.LOCK(False)
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        """
+        Drop file on the GUI, the default behaviour is to load the file
+        :param event: event containing all the information
+        """
+        # print(event)
+        if event.mimeData().hasUrls:
+            file_name = event.mimeData().urls()[0].toLocalFile()
+            name, file_extension = os.path.splitext(file_name)
+            accepted = ['.gridcal', '.xlsx', '.xls', '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
+            if file_extension.lower() in accepted:
+                self.open_file_now(filename=file_name)
+            else:
+                self.msg('File type not accepted :(')
+
     def add_simulation(self, val: SimulationTypes):
         """
         Add a simulation to the simulations list
@@ -947,27 +976,35 @@ class MainGUI(QMainWindow):
                                                                         options=options)
 
         if len(filename) > 0:
-            self.file_name = filename
+            self.open_file_now(filename)
 
-            # store the working directory
-            self.project_directory = os.path.dirname(self.file_name)
+    def open_file_now(self, filename):
+        """
 
-            # lock the ui
-            self.LOCK()
+        :param filename:
+        :return:
+        """
+        self.file_name = filename
 
-            # create thread
-            self.open_file_thread_object = FileOpenThread(file_name=self.file_name)
+        # store the working directory
+        self.project_directory = os.path.dirname(self.file_name)
 
-            # make connections
-            self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
-            self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
-            self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-            self.open_file_thread_object.done_signal.connect(self.post_open_file)
+        # lock the ui
+        self.LOCK()
 
-            # thread start
-            self.open_file_thread_object.start()
+        # create thread
+        self.open_file_thread_object = FileOpenThread(file_name=self.file_name)
 
-            self.stuff_running_now.append('file_open')
+        # make connections
+        self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+        self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+        self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+        self.open_file_thread_object.done_signal.connect(self.post_open_file)
+
+        # thread start
+        self.open_file_thread_object.start()
+
+        self.stuff_running_now.append('file_open')
 
     def post_open_file(self):
         """
@@ -1909,6 +1946,8 @@ class MainGUI(QMainWindow):
 
         temp_correction = self.ui.temperature_correction_checkBox.isChecked()
 
+        distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+
         ops = PowerFlowOptions(solver_type=solver_type,
                                retry_with_other_methods=retry_with_other_methods,
                                verbose=False,
@@ -1923,7 +1962,7 @@ class MainGUI(QMainWindow):
                                apply_temperature_correction=temp_correction,
                                branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
                                q_steepness_factor=q_steepness_factor,
-                               )
+                               distributed_slack=distributed_slack)
 
         return ops
 

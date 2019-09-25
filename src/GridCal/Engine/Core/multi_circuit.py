@@ -700,6 +700,7 @@ class MultiCircuit:
                 circuit.generator_mttf[i_gen] = elm.mttf
                 circuit.generator_mttr[i_gen] = elm.mttr
                 circuit.generator_cost[i_gen] = elm.Cost
+                circuit.generator_nominal_power[i_gen] = elm.Snom
 
                 if n_time > 0:
                     # power profile
@@ -719,7 +720,12 @@ class MultiCircuit:
                     circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
 
                 circuit.C_gen_bus[i_gen, i] = 1
-                circuit.V0[i] *= elm.Vset
+
+                if circuit.V0[i].real == 1.0:
+                    circuit.V0[i] = complex(elm.Vset, 0)
+                elif elm.Vset != circuit.V0[i]:
+                    # circuit.V0[i] = elm.Vset
+                    logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
                 i_gen += 1
 
             for elm in bus.batteries:

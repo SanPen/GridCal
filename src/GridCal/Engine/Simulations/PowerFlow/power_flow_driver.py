@@ -230,8 +230,7 @@ class PowerFlowOptions:
         TapsControlMode.NoControl): Control mode for the transformer taps equipped with
         a voltage regulator (as part of the outer loop)
 
-        **multi_core** (bool, False): Use multi-core processing? applicable for time
-        series
+        **multi_core** (bool, False): Use multi-core processing? applicable for time series
 
         **dispatch_storage** (bool, False): Dispatch storage?
 
@@ -246,6 +245,8 @@ class PowerFlowOptions:
         **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the
         :ref:`ReactivePowerControlMode<q_control>` iterative control
 
+        **distributed_slack** (bool, False): Applies the redistribution of the slack power proportionally
+                                             among the controlled generators
     """
 
     def __init__(self,
@@ -264,7 +265,7 @@ class PowerFlowOptions:
                  apply_temperature_correction=False,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  q_steepness_factor=30,
-                 ):
+                 distributed_slack=False):
 
         self.solver_type = solver_type
 
@@ -295,6 +296,8 @@ class PowerFlowOptions:
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
 
         self.q_steepness_factor = q_steepness_factor
+
+        self.distributed_slack = distributed_slack
 
 
 class PowerFlowMP:
@@ -543,6 +546,8 @@ class PowerFlowMP:
 
             **Ibus**: vector of current injections
 
+            **Sinstalled**: vector of installed power per bus in MVA
+
             **t**: (optional) time step
 
         Return:
@@ -559,7 +564,7 @@ class PowerFlowMP:
 
         tap_module = circuit.tap_mod.copy()
 
-        # guilty assumption...
+        # control flags
         any_q_control_issue = True
         any_tap_control_issue = True
 
@@ -582,8 +587,8 @@ class PowerFlowMP:
         methods = list()
         converged_lst = list()
         errors = list()
-        it = list()
-        el = list()
+        it = list()  # iterations
+        el = list()  # elapsed
 
         # For the iterate_pv_control logic:
         Vset = voltage_solution.copy()  # Origin voltage set-points
@@ -617,6 +622,32 @@ class PowerFlowMP:
                                                                                pqpv=pqpv,
                                                                                tolerance=self.options.tolerance,
                                                                                max_iter=self.options.max_iter)
+                if self.options.distributed_slack:
+                    # Distribute the slack power
+                    slack_power = Scalc[ref].real.sum()
+                    installed_power = circuit.Sinstalled.sum()
+
+                    if installed_power > 0.0:
+                        delta = slack_power * circuit.Sinstalled / installed_power
+
+                        # repeat power flow with the redistributed power
+                        voltage_solution, converged, normF, Scalc, it, el = self.solve(solver_type=solver_type,
+                                                                                       V0=voltage_solution,
+                                                                                       Sbus=Sbus + delta,
+                                                                                       Ibus=Ibus,
+                                                                                       Ybus=circuit.Ybus,
+                                                                                       Yseries=circuit.Yseries,
+                                                                                       B1=circuit.B1,
+                                                                                       B2=circuit.B2,
+                                                                                       Bpqpv=circuit.Bpqpv,
+                                                                                       Bref=circuit.Bref,
+                                                                                       pq=pq,
+                                                                                       pv=pv,
+                                                                                       ref=ref,
+                                                                                       pqpv=pqpv,
+                                                                                       tolerance=self.options.tolerance,
+                                                                                       max_iter=self.options.max_iter)
+
                 # record the method used
                 methods.append(solver_type)
 
@@ -650,8 +681,7 @@ class PowerFlowMP:
                                                                        types=circuit.types,
                                                                        original_types=original_types,
                                                                        verbose=self.options.verbose,
-                                                                       k=self.options.q_steepness_factor,
-                                                                       )
+                                                                       k=self.options.q_steepness_factor)
 
                     else:
                         # did not check Q limits
@@ -729,8 +759,7 @@ class PowerFlowMP:
 
         # Compute the branches power and the slack buses power
         Sbranch, Ibranch, Vbranch, loading, losses, \
-            flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit,
-                                                                V=voltage_solution, t=t)
+            flow_direction, Sbus = self.power_flow_post_process(calculation_inputs=circuit, V=voltage_solution, t=t)
 
         # voltage, Sbranch, loading, losses, error, converged, Qpv
         results = PowerFlowResults(Sbus=Sbus,
@@ -1381,11 +1410,11 @@ class PowerFlowMP:
 
             **circuit** (:ref:`CalculationInputs<calculation_inputs>`): CalculationInputs instance
 
-            **Vbus** (list): Initial voltage at each bus in complex per unit
+            **Vbus** (array): Initial voltage at each bus in complex per unit
 
-            **Sbus** (list): Power injection at each bus in complex MVA
+            **Sbus** (array): Power injection at each bus in complex MVA
 
-            **Ibus** (list): Current injection at each bus in complex amperes
+            **Ibus** (array): Current injection at each bus in complex MVA
 
             **t** (optional) time step index
 
@@ -1652,19 +1681,19 @@ class PowerFlow(QRunnable):
         # Options to use
         self.options = options
 
-        self.results = None
+        self.results = PowerFlowResults()
 
         self.pf = PowerFlowMP(grid, options)
 
         self.__cancel__ = False
 
-    def get_steps(self):
+    @staticmethod
+    def get_steps():
         return list()
 
     def run(self):
         """
         Pack run_pf for the QThread
-        :return:
         """
 
         results = self.pf.run()

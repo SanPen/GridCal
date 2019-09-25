@@ -75,6 +75,7 @@ class CalculationInputs:
         self.types = np.zeros(nbus, dtype=int)
         self.Qmin = np.zeros(nbus, dtype=float)
         self.Qmax = np.zeros(nbus, dtype=float)
+        self.Sinstalled = np.zeros(nbus, dtype=float)
 
         self.F = np.zeros(nbr, dtype=int)
         self.T = np.zeros(nbr, dtype=int)
@@ -241,6 +242,7 @@ class CalculationInputs:
         obj.Qmax = self.Qmax[bus_idx]
         obj.Vmin = self.Vmin[bus_idx]
         obj.Vmax = self.Vmax[bus_idx]
+        obj.Sinstalled = self.Sinstalled[bus_idx]
 
         obj.F = self.F[branch_idx]
         obj.T = self.T[branch_idx]

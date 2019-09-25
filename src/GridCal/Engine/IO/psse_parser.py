@@ -13,15 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
 import chardet
-import os
 import re
-import numpy as np
-import pandas as pd
-from numpy import array
-from pandas import DataFrame as df
-from warnings import warn
 from typing import List, AnyStr
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -412,7 +405,8 @@ class PSSeSwitchedShunt:
             setpoint, or SWREM is zero but bus I is the controlled bus, local or remote, of one or
             more other setpoint mode voltage controlling devices. Only used if MODSW = 1 or
             2. RMPCT = 100.0 by default.
-        RMIDNT When MODSW is 4, the name of the VSC dc line where the converter bus is specified in SWREM. When MODSW is 6, the name of the FACTS device where the
+        RMIDNT When MODSW is 4, the name of the VSC dc line where the converter bus is specified in SWREM.
+            When MODSW is 6, the name of the FACTS device where the
             shunt element’s reactive output is to be controlled. RMIDNT is not used for other
             values of MODSW. RMIDNT is a blank name by default.
             BINIT Initial switched shunt admittance; entered in Mvar at unity voltage. BINIT = 0.0 by
@@ -420,9 +414,35 @@ class PSSeSwitchedShunt:
         Args:
             data:
         """
+        self.N1 = ''
+        self.N2 = ''
+        self.N3 = ''
+        self.N4 = ''
+        self.N5 = ''
+        self.N6 = ''
+        self.N7 = ''
+        self.N8 = ''
+        self.B1 = ''
+        self.B2 = ''
+        self.B3 = ''
+        self.B4 = ''
+        self.B5 = ''
+        self.B6 = ''
+        self.B7 = ''
+        self.B8 = ''
+
+        var = [self.N1, self.B1,
+               self.N2, self.B2,
+               self.N3, self.B3,
+               self.N4, self.B4,
+               self.N5, self.B5,
+               self.N6, self.B6,
+               self.N7, self.B7,
+               self.N8, self.B8, ]
+
         if version in [34, 33, 32]:
             self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT = data[0][:10]
+             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
         else:
             logger.append('Shunt not implemented for the version ' + str(version))
 
@@ -441,7 +461,10 @@ class PSSeSwitchedShunt:
             logger.append('Voltage equal to zero in shunt conversion!!!')
 
         g = 0.0
-        b = self.BINIT * self.RMPCT / 100.0
+        if self.MODSW in [1, 2]:
+            b = self.BINIT * self.RMPCT / 100.0
+        else:
+            b = self.BINIT
 
         elm = Shunt(name='Switched shunt ' + str(self.I),
                     G=g, B=b,
@@ -612,34 +635,18 @@ class PSSeGenerator:
         self.WMOD = 0
         self.WPF = 0
 
+        var = [self.O1, self.F1,
+               self.O2, self.F2,
+               self.O3, self.F3,
+               self.O4, self.F4]
+
         length = len(data[0])
 
         if version in [33, 32, 30]:
 
-            if length == 28:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, self.WMOD, self.WPF = data[0]
-
-            elif length == 26:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.WMOD, self.WPF = data[0]
-
-            elif length == 24:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.O2, self.F2, self.WMOD, self.WPF = data[0]
-
-            elif length == 22:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.WMOD, self.WPF = data[0]
-
-            elif length == 20:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.WMOD, self.WPF = data[0]
+            self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+             self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var, \
+             self.WMOD, self.WPF = data[0]
 
         elif version in [29]:
             """
@@ -648,32 +655,8 @@ class PSSeGenerator:
             O1,F1,...,O4,F4
             """
 
-            if length == 26:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
-
-            elif length == 24:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-
-            elif length == 22:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1, self.O2, self.F2 = data[0]
-
-            elif length == 20:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, \
-                 self.O1, self.F1 = data[0]
-
-            elif length == 18:
-                self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                 self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB = data[0]
-
-            else:
-                raise Exception('Wrong data length in generator' + str(length))
+            self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
+             self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var = data[0]
 
         else:
             logger.append('Generator not implemented for version ' + str(version))
@@ -691,6 +674,8 @@ class PSSeGenerator:
                         Qmin=self.QB,
                         Qmax=self.QT,
                         Snom=self.MBASE,
+                        p_max=self.PT,
+                        p_min=self.PB,
                         power_prof=None,
                         vset_prof=None,
                         active=bool(self.STAT))
@@ -798,70 +783,33 @@ class PSSeBranch:
             version:
         """
 
-        length = len(data[0])
+        self.O1 = ''
+        self.F1 = ''
+        self.O2 = ''
+        self.F2 = ''
+        self.O3 = ''
+        self.F3 = ''
+        self.O4 = ''
+        self.F4 = ''
+        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
         if version in [33, 32]:
 
-            if length == 24:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
+            '''
+            I,J,CKT,R,X,B,RATEA,RATEB,RATEC,GI,BI,GJ,BJ,ST,MET,LEN,O1,F1,...,O4,F4
+            '''
 
-            elif length == 22:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-
-            elif length == 20:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
-                 self.O1, self.F1, self.O2, self.F2 = data[0]
-
-            elif length == 18:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, \
-                 self.O1, self.F1 = data[0]
-
-            elif length == 16:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN = data[0]
-
-            else:
-                logger.append('Wrong data length in branch' + str(length))
-                return
+            self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+             self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
 
         elif version in [29, 30]:
             """
             v29, v30
             I,J,CKT,R,X,B,RATEA,RATEB,RATEC,GI,BI,GJ,BJ,ST,LEN,01,F1,...,04,F4
             """
-            if length == 23:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
 
-            elif length == 21:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
-                 self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-
-            elif length == 19:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
-                 self.O1, self.F1, self.O2, self.F2 = data[0]
-
-            elif length == 17:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, \
-                 self.O1, self.F1 = data[0]
-
-            elif length == 15:
-                self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN = data[0]
-
-            else:
-                logger.append('Wrong data length in branch' + str(length))
-                raise Exception('Wrong data length in branch' + str(length))
+            self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
+             self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, *var = data[0]
 
         else:
 
@@ -997,7 +945,7 @@ class PSSeTwoTerminalDCLine:
 
         """
 
-        if version == 33:
+        if version in [33, 34]:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
@@ -1005,13 +953,13 @@ class PSSeTwoTerminalDCLine:
             '''
 
             self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+             self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
 
             self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+             self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
 
             self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+             self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
 
         elif version == 29:
             '''
@@ -1021,13 +969,13 @@ class PSSeTwoTerminalDCLine:
             '''
 
             self.I, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+             self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
 
             self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+             self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
 
             self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+             self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
 
             self.NAME = str(self.I)
         else:
@@ -1095,17 +1043,35 @@ class PSSeVscDCLine:
         SMAX	Converter MVA rating; entered in MVA. SMAX = 0.0 to allow unlimited converter MVA loading. SMAX = 0.0 by default.
         IMAX	Converter ac current rating; entered in amps. IMAX = 0.0 to allow unlimited converter current loading. If a positive IMAX is specified, the base voltage assigned to bus IBUS must be positive. IMAX = 0.0 by default.
         PWF	Power weighting factor fraction (0.0 < PWF < 1.0) used in reducing the active power order and either the reactive power order (when MODE is 2) or the reactive power limits (when MODE is 1) when the converter MVA or current rating is violated. When PWF is 0.0, only the active power is reduced; when PWF is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. PWF = 1.0 by default.
-        MAXQ	Reactive power upper limit; entered in Mvar. A positive value of reactive power indicates reactive power flowing into the ac network from the converter; a negative value of reactive power indicates reactive power withdrawn from the ac network.
-        Not used if MODE = 2. MAXQ = 9999.0 by default.
+        MAXQ	Reactive power upper limit; entered in Mvar. A positive value of reactive power indicates reactive power
+                flowing into the ac network from the converter; a negative value of reactive power indicates reactive
+                power withdrawn from the ac network. Not used if MODE = 2. MAXQ = 9999.0 by default.
         MINQ	Reactive power lower limit; entered in Mvar. A positive value of reactive power indicates reactive power flowing into the ac network from the converter; a negative value of reactive power indicates reactive power withdrawn from the ac network.
-        Not used if MODE = 2. MINQ = -9999.0 by default.
-        REMOT	Bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names), of a remote Type 1 or 2 bus for which voltage is to be regulated by this converter to the value specified by ACSET. If bus REMOT is other than a Type 1 or 2 bus, bus IBUS regulates its own voltage to the value specified by ACSET.
-        REMOT is entered as zero if the converter is to regulate its own voltage. Not used if MODE = 2. REMOT = 0 by default.
-        RMPCT	Percent of the total Mvar required to hold the voltage at the bus controlled by bus IBUS that is to be contributed by this VSC; RMPCT must be positive. RMPCT is needed only if REMOT specifies a valid remote bus and there is more than one local or remote voltage controlling device (plant, switched shunt, FACTS device shunt element, or VSC dc line converter) controlling the voltage at bus REMOT to a setpoint, or REMOT is zero but bus IBUS is the controlled bus, local or remote, of one or more other setpoint mode voltage controlling devices. Not used if MODE = 2. RMPCT = 100.0 by default.
-
-
+                Not used if MODE = 2. MINQ = -9999.0 by default.
+        REMOT	Bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names), of a remote
+                Type 1 or 2 bus for which voltage is to be regulated by this converter to the value specified by ACSET.
+                If bus REMOT is other than a Type 1 or 2 bus, bus IBUS regulates its own voltage to the value specified
+                by ACSET.
+        REMOT   is entered as zero if the converter is to regulate its own voltage. Not used if MODE = 2. REMOT = 0 by
+                default.
+        RMPCT	Percent of the total Mvar required to hold the voltage at the bus controlled by bus IBUS that is to be
+                contributed by this VSC; RMPCT must be positive. RMPCT is needed only if REMOT specifies a valid remote
+                bus and there is more than one local or remote voltage controlling device (plant, switched shunt, FACTS
+                device shunt element, or VSC dc line converter) controlling the voltage at bus REMOT to a setpoint, or
+                REMOT is zero but bus IBUS is the controlled bus, local or remote, of one or more other setpoint mode
+                voltage controlling devices. Not used if MODE = 2. RMPCT = 100.0 by default.
         """
-        if version == 33:
+        self.O1 = ''
+        self.F1 = ''
+        self.O2 = ''
+        self.F2 = ''
+        self.O3 = ''
+        self.F3 = ''
+        self.O4 = ''
+        self.F4 = ''
+        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
+
+        if version in [33, 34]:
 
             '''
             NAME, MDC, RDC, O1, F1, ... O4, F4
@@ -1113,15 +1079,7 @@ class PSSeVscDCLine:
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
 
-            if len(data[0]) == 11:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, \
-                 self.O3, self.F3, self.O4, self.F4 = data[0]
-            elif len(data[0]) == 9:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            elif len(data[0]) == 7:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2 = data[0]
-            elif len(data[0]) == 5:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1 = data[0]
+            self.NAME, self.MDC, self.RDC, *var = data[0]
 
             self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1, self.BLOSS1, self.MINLOSS1, \
              self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
@@ -1137,15 +1095,7 @@ class PSSeVscDCLine:
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
 
-            if len(data[0]) == 11:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, \
-                 self.O3, self.F3, self.O4, self.F4 = data[0]
-            elif len(data[0]) == 9:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            elif len(data[0]) == 7:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1, self.O2, self.F2 = data[0]
-            elif len(data[0]) == 5:
-                self.NAME, self.MDC, self.RDC,  self.O1, self.F1 = data[0]
+            self.NAME, self.MDC, self.RDC, *var = data[0]
 
             self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1, self.BLOSS1, self.MINLOSS1, \
              self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
@@ -1554,42 +1504,22 @@ class PSSeTransformer:
         """
 
         self.windings = 0
+        self.O1 = ''
+        self.F1 = ''
+        self.O2 = ''
+        self.F2 = ''
+        self.O3 = ''
+        self.F3 = ''
+        self.O4 = ''
+        self.F4 = ''
+        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
         if version == 33:
 
             # Line 1: for both types
 
-            if len(data[0]) == 21:
-                n = len(data[0])
-                dta = np.zeros(21, dtype=object)
-                dta[0:n] = data[0]
-
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
-                self.VECGRP = dta
-
-            if len(data[0]) == 20:
-
-                n = len(data[0])
-                dta = np.zeros(21, dtype=object)
-                dta[0:n] = data[0]
-
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4, \
-                  self.VECGRP = dta
-
-            elif len(data[0]) == 18:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.VECGRP = data[0]
-            elif len(data[0]) == 16:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.VECGRP = data[0]
-            elif len(data[0]) == 14:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.VECGRP = data[0]
-            elif len(data[0]) == 12:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.VECGRP = data[0]
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+             self.NAME, self.STAT, *var, self.VECGRP = data[0]
 
             if len(data) == 4:
                 self.windings = 2
@@ -1650,28 +1580,9 @@ class PSSeTransformer:
 
             # Line 1: for both types
 
-            n = len(data[0])
-            dta = np.zeros(20, dtype=object)
-            dta[0:n] = data[0]
-
-            # if len(data[0]) == 20:
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-             self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = dta
+             self.NAME, self.STAT, *var = data[0]
 
-            # elif len(data[0]) == 18:
-            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            #      self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            # elif len(data[0]) == 16:
-            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            #      self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
-            # elif len(data[0]) == 14:
-            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            #      self.NAME, self.STAT, self.O1, self.F1 = data[0]
-            # elif len(data[0]) == 12:
-            #     self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            #      self.NAME, self.STAT = data[0]
-
-            # line 2
             if len(data[1]) == 3:
                 # 2-windings
                 self.windings = 2
@@ -1714,24 +1625,9 @@ class PSSeTransformer:
             WINDV3,NOMV3,ANG3, RATA3, BATB3, RATC3, COD3, CONT3, RMA3, RMI3,VMA3,VMI3,NTP3, TAB3, CR3, CX3
             """
 
-            # Line 1: for both types
-            if len(data[0]) == 20:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
-            elif len(data[0]) == 18:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            elif len(data[0]) == 16:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
-            elif len(data[0]) == 14:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT, self.O1, self.F1 = data[0]
-            elif len(data[0]) == 12:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                 self.NAME, self.STAT = data[0]
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+            self.NAME, self.STAT, *var = data[0]
 
-            # line 2
             if len(data[1]) == 3:
                 # 2-windings
                 self.windings = 2
@@ -1780,24 +1676,9 @@ class PSSeTransformer:
                  
             '''
 
-            # Line 1: for both types
-            if len(data[0]) == 20:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4 = data[0]
-            elif len(data[0]) == 18:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2, self.O3, self.F3 = data[0]
-            elif len(data[0]) == 16:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, self.O1, self.F1, self.O2, self.F2 = data[0]
-            elif len(data[0]) == 14:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, self.O1, self.F1 = data[0]
-            elif len(data[0]) == 12:
-                self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT = data[0]
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+             self.NAME, self.STAT, *var = data[0]
 
-            # line 2
             if len(data[1]) == 3:
 
                 '''
@@ -1836,8 +1717,8 @@ class PSSeTransformer:
                  self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, \
-                self.CONT1, self.RMA1,  self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, \
-                self.CR1, self.CX1 = data[2]
+                 self.CONT1, self.RMA1,  self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, \
+                 self.CR1, self.CX1 = data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2 = data[3]
 
@@ -1977,6 +1858,29 @@ class PSSeTransformer:
 
         else:
             raise Exception(str(self.windings) + ' number of windings!')
+
+
+class PSSeInterArea:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        self.I = -1
+
+        self.ARNAME = ''
+
+        if version in [29, 33]:
+            # I, ISW, PDES, PTOL, 'ARNAME'
+            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+
+            self.ARNAME = self.ARNAME.replace("'", "").strip()
+        else:
+            logger.append('Areas not defined for version ' + str(version))
 
 
 class PSSeArea:
@@ -2175,7 +2079,7 @@ class PSSeParser:
         meta_data['two-terminal dc'] = [grid.branches, PSSeTwoTerminalDCLine, 3]
         meta_data['vsc dc line'] = [grid.branches, PSSeVscDCLine, 3]
         meta_data['area data'] = [grid.areas, PSSeArea, 1]
-        meta_data['inter-area transfer'] = [grid.areas, PSSeArea, 1]
+        meta_data['inter-area transfer'] = [grid.areas, PSSeInterArea, 1]
         meta_data['zone'] = [grid.zones, PSSeZone, 1]
 
         for key, values in meta_data.items():
@@ -2238,92 +2142,9 @@ class PSSeParser:
         return grid, logger
 
 
-def process_raw_file(root_folder, destination_folder, fname):
-    """
-    process a .raw file
-    :param root_folder: folder
-    :param fname: file name (in the folder)
-    :return: nothing
-    """
-
-    input_file = os.path.join(root_folder, fname)
-    output_file = os.path.join(destination_folder, fname)
-    log_file = os.path.join(destination_folder, fname + '_log.txt')
-
-    print('Processing', input_file)
-    parser = PSSeParser(input_file)
-
-    # print('Logs')
-    pointer = open(log_file, "w")
-    for l in parser.logger:
-        pointer.write(l + '\n')
-    pointer.close()
-
-    # open xlsx file for saving
-    xlsx_file = output_file + '.xlsx'
-    FileSave(circuit=parser.circuit,
-             file_name=xlsx_file).save()
-
-    # post process to get capacity by zone
-    xls = pd.ExcelFile(xlsx_file)
-    bus = pd.read_excel(xls, 'bus')
-    br = pd.read_excel(xls, 'branch')
-    gen = pd.read_excel(xls, 'generator')
-    lod = pd.read_excel(xls, 'load')
-    xls.close()
-
-    gen_bus = pd.merge(bus, gen, left_on='name', right_on='bus')
-    power_generation_per_area_and_zone = gen_bus.groupby(['area', 'zone']).sum()['Snom']
-
-    load_bus = pd.merge(bus, lod, left_on='name', right_on='bus')
-    power_load_per_area_and_zone = load_bus.groupby(['area', 'zone']).sum()['P']
-
-    br['area_from'] = br['bus_from'].map(bus.set_index('name')['area'].drop_duplicates())
-    br['area_to'] = br['bus_to'].map(bus.set_index('name')['area'].drop_duplicates())
-
-    br['zone_from'] = br['bus_from'].map(bus.set_index('name')['zone'].drop_duplicates())
-    br['zone_to'] = br['bus_to'].map(bus.set_index('name')['zone'].drop_duplicates())
-
-    transmission_per_area = br.groupby(['area_from', 'area_to']).sum()['rate']
-    transmission_per_zone = br.groupby(['zone_from', 'zone_to']).sum()['rate']
-
-    xls2 = pd.ExcelWriter(output_file + '_process.xlsx')
-    gen_bus[['area', 'zone', 'substation', 'name_y', 'bus', 'active_y',
-             'is_controlled', 'P', 'Pf', 'Vset', 'Snom', 'Qmin', 'Qmax']].to_excel(xls2, sheet_name='generation')
-    load_bus[['area', 'zone', 'substation', 'name_y', 'bus', 'active_y', 'P', 'Q']].to_excel(xls2, sheet_name='load')
-    power_generation_per_area_and_zone.to_excel(xls2, sheet_name='generation_processed')
-    power_load_per_area_and_zone.to_excel(xls2, sheet_name='load_processed')
-    transmission_per_area.to_excel(xls2, sheet_name='transmission_per_area')
-    transmission_per_zone.to_excel(xls2, sheet_name='transmission_per_zone')
-    xls2.save()
-    print('Saved!')
-
-
 if __name__ == '__main__':
 
-    # import os
-    # import pandas as pd
-    # from GridCal.Engine.IO.file_handler import FileSave
-    #
-    # origin_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
-    # destination_folder = r'C:\Users\A487516\Dropbox (AF CONSULT)\MI1861_MO-ZA\Network files'
-    #
-    # for root, dirs, files in os.walk(origin_folder):
-    #
-    #     path = root.split(os.sep)
-    #
-    #     print((len(path) - 1) * '---', os.path.basename(root))
-    #
-    #     for fname in files:
-    #
-    #         if fname.lower().endswith('.raw'):
-    #
-    #             process_raw_file(root, root, fname)
-    #
-    #         else:
-    #             print('Skipping', fname)
-
-    fname = '/home/santi/Descargas/2026_INVIERNO_para Plexos_FINAL_9.raw'
+    fname = '/home/santi/Descargas/PSS_file.raw'
 
     pss_parser = PSSeParser(fname)
 

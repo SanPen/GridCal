@@ -15,7 +15,7 @@
 
 import PySide2  # this line is necessary so that Matplotlib recognises that PySide is the Qt Backend
 import matplotlib
-# matplotlib.use('Qt5Agg')
+matplotlib.use('Qt5Agg')
 # matplotlib.rcParams['backend.qt5'] = 'PySide2'
 from matplotlib import pyplot as plt
 

@@ -43,39 +43,45 @@ def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     """
 
     start = time.time()
+    npq = len(pq)
+    npv = len(pv)
+    if (npq + npv) > 0:
+        # Decompose the voltage in angle and magnitude
+        Va_ref = np.angle(V0[ref])  # we only need the angles at the slack nodes
+        Vm = np.abs(V0)
 
-    # Decompose the voltage in angle and magnitude
-    Va_ref = np.angle(V0[ref])  # we only need the angles at the slack nodes
-    Vm = np.abs(V0)
+        # initialize result vector
+        Va = np.empty(len(V0))
 
-    # initialize result vector
-    Va = np.empty(len(V0))
+        # compose the reduced power injections
+        # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
+        Pinj = Sbus[pvpq].real + (- Bref * Va_ref + Ibus[pvpq].real) * Vm[pvpq]
 
-    # compose the reduced power injections
-    # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
-    Pinj = Sbus[pvpq].real + (- Bref * Va_ref + Ibus[pvpq].real) * Vm[pvpq]
+        # update angles for non-reference buses
+        Va[pvpq] = linear_solver(Bpqpv, Pinj)
+        Va[ref] = Va_ref
 
-    # update angles for non-reference buses
-    Va[pvpq] = linear_solver(Bpqpv, Pinj)
-    Va[ref] = Va_ref
+        # re assemble the voltage
+        V = Vm * np.exp(1j * Va)
 
-    # re assemble the voltage
-    V = Vm * np.exp(1j * Va)
+        # compute the calculated power injection and the error of the voltage solution
+        Scalc = V * np.conj(Ybus * V - Ibus)
 
-    # compute the calculated power injection and the error of the voltage solution
-    Scalc = V * np.conj(Ybus * V - Ibus)
+        # compute the power mismatch between the specified power Sbus and the calculated power Scalc
+        mis = Scalc - Sbus  # complex power mismatch
+        mismatch = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
 
-    # compute the power mismatch between the specified power Sbus and the calculated power Scalc
-    mis = Scalc - Sbus  # complex power mismatch
-    F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
-
-    # check for convergence
-    normF = np.linalg.norm(F, np.Inf)
+        # check for convergence
+        norm_f = np.linalg.norm(mismatch, np.Inf)
+    else:
+        norm_f = 0.0
+        V = V0
+        Scalc = V * np.conj(Ybus * V - Ibus)
 
     end = time.time()
     elapsed = end - start
 
-    return V, True, normF, Scalc, 1, elapsed
+    return V, True, norm_f, Scalc, 1, elapsed
 
 
 def lacpf(Y, Ys, S, I, Vset, pq, pv):
@@ -103,62 +109,67 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     npq = len(pq)
     npv = len(pv)
 
-    # compose the system matrix
-    # G = Y.real
-    # B = Y.imag
-    # Gp = Ys.real
-    # Bp = Ys.imag
+    if (npq + npv) > 0:
+        # compose the system matrix
+        # G = Y.real
+        # B = Y.imag
+        # Gp = Ys.real
+        # Bp = Ys.imag
 
-    A11 = -Ys.imag[pvpq, :][:, pvpq]
-    A12 = Y.real[pvpq, :][:, pq]
-    A21 = -Ys.real[pq, :][:, pvpq]
-    A22 = -Y.imag[pq, :][:, pq]
+        A11 = -Ys.imag[pvpq, :][:, pvpq]
+        A12 = Y.real[pvpq, :][:, pq]
+        A21 = -Ys.real[pq, :][:, pvpq]
+        A22 = -Y.imag[pq, :][:, pq]
 
-    Asys = sp.vstack([sp.hstack([A11, A12]),
-                      sp.hstack([A21, A22])], format="csc")
+        Asys = sp.vstack([sp.hstack([A11, A12]),
+                          sp.hstack([A21, A22])], format="csc")
 
-    # compose the right hand side (power vectors)
-    rhs = np.r_[S.real[pvpq], S.imag[pq]]
+        # compose the right hand side (power vectors)
+        rhs = np.r_[S.real[pvpq], S.imag[pq]]
 
-    # solve the linear system
-    try:
-        x = linear_solver(Asys, rhs)
-    except Exception as e:
-        voltages_vector = Vset
+        # solve the linear system
+        try:
+            x = linear_solver(Asys, rhs)
+        except Exception as e:
+            voltages_vector = Vset
+            # Calculate the error and check the convergence
+            s_calc = voltages_vector * np.conj(Y * voltages_vector)
+            # complex power mismatch
+            power_mismatch = s_calc - S
+            # concatenate error by type
+            mismatch = np.r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+            # check for convergence
+            norm_f = np.linalg.norm(mismatch, np.Inf)
+            end = time.time()
+            elapsed = end - start
+            return voltages_vector, False, norm_f, s_calc, 1, elapsed
+
+        # compose the results vector
+        voltages_vector = Vset.copy()
+
+        #  set the pv voltages
+        va_pv = x[0:npv]
+        vm_pv = np.abs(Vset[pv])
+        voltages_vector[pv] = vm_pv * np.exp(1j * va_pv)
+
+        # set the PQ voltages
+        va_pq = x[npv:npv+npq]
+        vm_pq = np.ones(npq) + x[npv+npq::]
+        voltages_vector[pq] = vm_pq * np.exp(1j * va_pq)
+
         # Calculate the error and check the convergence
         s_calc = voltages_vector * np.conj(Y * voltages_vector)
         # complex power mismatch
         power_mismatch = s_calc - S
         # concatenate error by type
         mismatch = np.r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
+
         # check for convergence
         norm_f = np.linalg.norm(mismatch, np.Inf)
-        end = time.time()
-        elapsed = end - start
-        return voltages_vector, False, norm_f, s_calc, 1, elapsed
-
-    # compose the results vector
-    voltages_vector = Vset.copy()
-
-    #  set the pv voltages
-    va_pv = x[0:npv]
-    vm_pv = np.abs(Vset[pv])
-    voltages_vector[pv] = vm_pv * np.exp(1j * va_pv)
-
-    # set the PQ voltages
-    va_pq = x[npv:npv+npq]
-    vm_pq = np.ones(npq) + x[npv+npq::]
-    voltages_vector[pq] = vm_pq * np.exp(1j * va_pq)
-
-    # Calculate the error and check the convergence
-    s_calc = voltages_vector * np.conj(Y * voltages_vector)
-    # complex power mismatch
-    power_mismatch = s_calc - S
-    # concatenate error by type
-    mismatch = np.r_[power_mismatch[pv].real, power_mismatch[pq].real, power_mismatch[pq].imag]
-
-    # check for convergence
-    norm_f = np.linalg.norm(mismatch, np.Inf)
+    else:
+        norm_f = 0.0
+        voltages_vector = Vset
+        s_calc = voltages_vector * np.conj(Y * voltages_vector)
 
     end = time.time()
     elapsed = end - start

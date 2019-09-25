@@ -311,7 +311,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
 
     else:
         # there are no pq nor pv nodes
-        normF = 0
+        normF = 0.0
         converged = True
 
     end = time.time()
@@ -600,6 +600,18 @@ def Jacobian_I(Ybus, V, pq, pvpq):
                    sp.hstack([J21, J22])], format="csr")
 
     return J
+
+
+def condition_number(J):
+    """
+    Computes the condition number of a sparse matrix
+    :param J: sparse matrix like the Jacobian
+    :return:
+    """
+    norm_A = scipy.sparse.linalg.norm(J)
+    norm_invA = scipy.sparse.linalg.norm(scipy.sparse.linalg.inv(J))
+    cond = norm_A * norm_invA
+    return cond
 
 
 def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):

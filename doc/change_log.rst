@@ -19,7 +19,9 @@ _____________
   a much better user interface experience since Matplotlib does not block the results when the grids are large.
 - Added N-k simulation.
 - Fixed PSS/e import branches; PSS/e does not account for the length in the impedance computation.
-
+- Greatly improved the PSS/e file parser by using variable length lists.
+- Implemented the distributed slack.
+- Open by GUI file drop.
 
 Version 3.5.7
 _____________
