@@ -287,7 +287,6 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         # update calculation variables
         V = Vnew
         F = Fnew
-        # normF = normFnew
 
         # check for convergence
         normF = linalg.norm(F, Inf)

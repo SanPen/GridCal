@@ -13,8 +13,8 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 3.5.8
 _____________
 
-- Fixed PTDF and added cancelling
-- Fixed Vbranch not being copied correctly in multi-island mode in the Time series
+- Fixed PTDF and added cancelling.
+- Fixed Vbranch not being copied correctly in multi-island mode in the Time series.
 - Redesigned the results tab: Now the data is the default view and the plot is optional. This allows
   a much better user interface experience since Matplotlib does not block the results when the grids are large.
 - Added N-k simulation.

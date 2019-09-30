@@ -14,19 +14,16 @@ among the existing generators.
 
 .. math::
 
-    P_{slack} = \sum_i^ref Re(Scalc_{i})
+    P_{slack} = \sum_i^{slack} Re \{Scalc_{i} \}
+
 
 .. math::
 
-    P_{installed} = \sum {S_{installed}}
+    factors_i = \frac{S_{installed, i}}{\sum {S_{installed}}} \quad \quad \forall i \in {All \quad buses}
 
 .. math::
 
-    factors_i = S_{installed, i} / P_{installed}
-
-.. math::
-
-    delta_i = factors_i \cdot slack_power
+    delta_i = factors_i \cdot P_{slack}
 
 .. math::
 
@@ -37,6 +34,6 @@ a second power flow run.
 
 Where:
 
-- :math:`Scalc`: Power injections at the buses computed after the power flow
+- :math:`Scalc`: Power injections at the buses computed after the power flow.
 
 - :math:`S_{installed}`: Generation installed power per bus.
