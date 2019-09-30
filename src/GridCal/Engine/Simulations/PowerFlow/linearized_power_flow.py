@@ -150,12 +150,12 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
         #  set the pv voltages
         va_pv = x[0:npv]
         vm_pv = np.abs(Vset[pv])
-        voltages_vector[pv] = vm_pv * np.exp(1j * va_pv)
+        voltages_vector[pv] = vm_pv * np.exp(1.0j * va_pv)
 
         # set the PQ voltages
         va_pq = x[npv:npv+npq]
-        vm_pq = np.ones(npq) + x[npv+npq::]
-        voltages_vector[pq] = vm_pq * np.exp(1j * va_pq)
+        vm_pq = np.ones(npq) - x[npv+npq::]
+        voltages_vector[pq] = vm_pq * np.exp(1.0j * va_pq)
 
         # Calculate the error and check the convergence
         s_calc = voltages_vector * np.conj(Y * voltages_vector)

@@ -36,9 +36,19 @@ Here, :math:`Y_{bus}` is the normal circuit admittance matrix and :math:`Y_{seri
 is the admittance matrix formed with only series elements of the :math:`\pi` model,
 this is neglecting all the shunt admittances.
 
-Solving the vector :math:`[\Delta \theta + 0, \Delta |V| + 1]` we get :math:`\theta`
-for the `pq` and `pv` nodes and :math:`|V|` for the `pq` nodes.
 
+After the voltage delta computations, we obtain the final voltage vector by:
+
+- Copy the initial voltage: :math:`V = V_0`. This copies the slack values.
+
+- Set the voltage module values for the pq nodes: :math:`|V|_{pq} = 1 - \Delta |V|_{pq}`
+
+- Copy the voltage module values for the pq nodes: :math:`|V|_{pv} = |V_0|_{pv}`
+
+- Set the voltage angle for the pq and pv nodes: :math:`\theta_{pqpv} = \Delta \theta_{pqpv}`
+
+
+This last part has not been explained in the paper but is is necessary for the adequate performance of the method.
 For equivalence with the paper [1]_:
 
 - :math:`-B' = -Bs`
