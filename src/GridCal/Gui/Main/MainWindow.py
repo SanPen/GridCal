@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Tue Sep 24 09:04:01 2019
+# Created: Mon Sep 30 19:20:56 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -2267,7 +2267,7 @@ class Ui_mainWindow(object):
         self.label_6.setText(QtWidgets.QApplication.translate("mainWindow", "Numerical method max. iterations", None, -1))
         self.outer_loop_spinBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Maximum iterations for the outer loop that controls reactive power and transformer taps.", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("mainWindow", "Precision", None, -1))
-        self.distributed_slack_checkBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>If active, the slack power is distributed among the generators according to theis installed power &quot;Snom&quot;</p></body></html>", None, -1))
+        self.distributed_slack_checkBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None, -1))
         self.distributed_slack_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Distributed slack", None, -1))
         self.label_45.setText(QtWidgets.QApplication.translate("mainWindow", "Time series", None, -1))
         self.label_21.setText(QtWidgets.QApplication.translate("mainWindow", "k", None, -1))

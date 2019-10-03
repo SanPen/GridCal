@@ -142,11 +142,11 @@ def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
     # PV nodes
     # ##################################################################################################################
     # Compute convolutions
-    QW_convolution = (Q[n - m, :] * W[np.ix_(m, pv)].conjugate()).sum(axis=0)  # only pv nodes
-    VV_convolution = (V[np.ix_(m, pv)] * V[np.ix_(n - m, pv)].conjugate()).sum(axis=0)  # only pv nodes
+    QW_convolution = (Q[n - m, :] * W[m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
+    VV_convolution = (V[m, :][:, pv] * V[n - m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
 
     # compute the formulas
-    f2 = Pbus[pv] * W[np.ix_(n-1, pv)] + QW_convolution
+    f2 = Pbus[pv] * W[n-1, pv] + QW_convolution
 
     epsilon = -0.5 * VV_convolution
     if n == 1:
@@ -381,33 +381,33 @@ if __name__ == '__main__':
 
     grid = FileOpen(file_name).open()
 
-    grid.compile()
+    nc = grid.compile()
+    islands = nc.compute()
+    circuit = islands[0]
 
-    circuit = grid.circuits[0]
-
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
+    print('\nYbus:\n', circuit.Ybus.todense())
+    print('\nSbus:\n', circuit.Sbus)
+    print('\nIbus:\n', circuit.Ibus)
+    print('\nVbus:\n', circuit.Vbus)
+    print('\ntypes:\n', circuit.types)
+    print('\npq:\n', circuit.pq)
+    print('\npv:\n', circuit.pv)
+    print('\nvd:\n', circuit.ref)
 
     start_time = time.time()
 
-    v, err = helm(Vbus=circuit.power_flow_input.Vbus,
-                  Sbus=circuit.power_flow_input.Sbus,
-                  Ibus=circuit.power_flow_input.Ibus,
-                  Ybus=circuit.power_flow_input.Ybus,
-                  pq=circuit.power_flow_input.pq,
-                  pv=circuit.power_flow_input.pv,
-                  ref=circuit.power_flow_input.ref,
-                  pqpv=circuit.power_flow_input.pqpv)
+    # voltage, converged, normF, Scalc, n, elapsed
+    v,_, err, _, _, _ = helm(Vbus=circuit.Vbus,
+                             Sbus=circuit.Sbus,
+                             Ybus=circuit.Ybus,
+                             pq=circuit.pq,
+                             pv=circuit.pv,
+                             ref=circuit.ref,
+                             pqpv=circuit.pqpv)
 
     print('HEM:')
     print("--- %s seconds ---" % (time.time() - start_time))
-    print('Results:\n', res_2_df(v, circuit.power_flow_input.Sbus, circuit.power_flow_input.types))
+    print('Results:\n', res_2_df(v, circuit.Sbus, circuit.types))
     print('error: \t', err)
 
     # check the HELM solution: v against the NR power flow
@@ -418,10 +418,10 @@ if __name__ == '__main__':
     start_time = time.time()
     power_flow.run()
     print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
+    vnr = power_flow.results.voltage
 
-    print('Results:\n', res_2_df(vnr, circuit.power_flow_input.Sbus, circuit.power_flow_input.types))
-    print('error: \t', circuit.power_flow_results.error)
+    print('Results:\n', res_2_df(vnr, circuit.Sbus, circuit.types))
+    print('error: \t', power_flow.results.error)
 
     # check
     print('\ndiff:\t', v - vnr)
