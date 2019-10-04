@@ -13,8 +13,8 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 3.5.9
 _____________
 
+- Added the ability to ignore single node islands
 - Fixed voltage module in the LACPF algorithm: Now the PQ buses voltage is closer to NR.
-
 
 Version 3.5.8
 _____________

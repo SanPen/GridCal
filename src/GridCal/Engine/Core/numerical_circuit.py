@@ -179,7 +179,7 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
 
 
 def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus, C_batt_bus,
-                 nbus, nbr, time_idx=None) -> List[CalculationInputs]:
+                 nbus, nbr, time_idx=None, ignore_single_node_islands=False) -> List[CalculationInputs]:
     """
     Partition the circuit in islands for the designated time intervals
     :param circuit: CalculationInputs instance with all the data regardless of the islands and the branch states
@@ -191,6 +191,7 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
     :param nbr: number of branches
     :param time_idx: array with the time indices where this set of islands belongs to
                     (if None all the time series are kept)
+    :param ignore_single_node_islands: Ignore the single node islands
     :return: list of CalculationInputs instances
     """
     # find the islands of the circuit
@@ -206,24 +207,31 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
 
         # there are islands, pack the islands into sub circuits
         for island_bus_idx in islands:
-            # get the branch indices of the island
-            island_br_idx = get_branches_of_the_island(island_bus_idx, C_branch_bus)
-            island_br_idx = np.sort(island_br_idx)  # sort
-            island_branches.append(island_br_idx)
 
-            # indices of batteries and controlled generators that belong to this island
-            gen_idx = np.where(C_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
-            bat_idx = np.where(C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+            if ignore_single_node_islands and len(island_bus_idx) <= 1:
+                keep = False
+            else:
+                keep = True
 
-            # Get the island circuit (the bus types are computed automatically)
-            # The island original indices are generated within the get_island function
-            circuit_island = circuit.get_island(island_bus_idx, island_br_idx, gen_idx, bat_idx)
+            if keep:
+                # get the branch indices of the island
+                island_br_idx = get_branches_of_the_island(island_bus_idx, C_branch_bus)
+                island_br_idx = np.sort(island_br_idx)  # sort
+                island_branches.append(island_br_idx)
 
-            if time_idx is not None:
-                circuit_island.trim_profiles(time_idx=time_idx)
+                # indices of batteries and controlled generators that belong to this island
+                gen_idx = np.where(C_gen_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
+                bat_idx = np.where(C_batt_bus[:, island_bus_idx].sum(axis=0) > 0)[0]
 
-            # store the island
-            calculation_islands.append(circuit_island)
+                # Get the island circuit (the bus types are computed automatically)
+                # The island original indices are generated within the get_island function
+                circuit_island = circuit.get_island(island_bus_idx, island_br_idx, gen_idx, bat_idx)
+
+                if time_idx is not None:
+                    circuit_island.trim_profiles(time_idx=time_idx)
+
+                # store the island
+                calculation_islands.append(circuit_island)
 
     else:
         # Only one island
@@ -660,7 +668,8 @@ class NumericalCircuit:
         return circuit
 
     def compute(self, add_storage=True, add_generation=True, apply_temperature=False,
-                branch_tolerance_mode=BranchImpedanceMode.Specified) -> List[CalculationInputs]:
+                branch_tolerance_mode=BranchImpedanceMode.Specified,
+                ignore_single_node_islands=False) -> List[CalculationInputs]:
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
         towards the calculation. Additionally, compute the calculation matrices.
@@ -668,6 +677,7 @@ class NumericalCircuit:
         :param add_generation:
         :param apply_temperature:
         :param branch_tolerance_mode:
+        :param ignore_single_node_islands: If True, the single node islands are omitted
         :return: list of CalculationInputs instances where each one is a circuit island
         """
 
@@ -711,7 +721,8 @@ class NumericalCircuit:
                                            C_batt_bus=self.C_batt_bus,
                                            nbus=self.nbus,
                                            nbr=self.nbr,
-                                           time_idx=None)
+                                           time_idx=None,
+                                           ignore_single_node_islands=ignore_single_node_islands)
 
         for island in calculation_islands:
             self.bus_types[island.original_bus_idx] = island.types
@@ -720,7 +731,8 @@ class NumericalCircuit:
         return calculation_islands
 
     def compute_ts(self, add_storage=True, add_generation=True, apply_temperature=False,
-                   branch_tolerance_mode=BranchImpedanceMode.Specified) -> Dict[int, List[CalculationInputs]]:
+                   branch_tolerance_mode=BranchImpedanceMode.Specified,
+                   ignore_single_node_islands=False) -> Dict[int, List[CalculationInputs]]:
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
         towards the calculation. Additionally, compute the calculation matrices.
@@ -728,6 +740,7 @@ class NumericalCircuit:
         :param add_generation:
         :param apply_temperature:
         :param branch_tolerance_mode:
+        :param ignore_single_node_islands: If True, the single node islands are omitted
         :return: dictionary of lists of CalculationInputs instances where each one is a circuit island
         """
 
@@ -779,7 +792,8 @@ class NumericalCircuit:
                                                C_batt_bus=self.C_batt_bus,
                                                nbus=self.nbus,
                                                nbr=self.nbr,
-                                               time_idx=t_array)
+                                               time_idx=t_array,
+                                               ignore_single_node_islands=ignore_single_node_islands)
 
             calculation_islands_collection[t] = calculation_islands
 

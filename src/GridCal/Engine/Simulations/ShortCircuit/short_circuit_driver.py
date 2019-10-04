@@ -436,7 +436,8 @@ class ShortCircuit(QRunnable):
 
         # Compile the grid
         numerical_circuit = self.grid.compile()
-        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                       ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
         results.bus_types = numerical_circuit.bus_types
 
@@ -446,8 +447,8 @@ class ShortCircuit(QRunnable):
 
             for i, calculation_input in enumerate(calculation_inputs):
 
-                bus_original_idx = numerical_circuit.islands[i]
-                branch_original_idx = numerical_circuit.island_branches[i]
+                bus_original_idx = calculation_input.original_bus_idx
+                branch_original_idx = calculation_input.original_branch_idx
 
                 res = self.single_short_circuit(calculation_inputs=calculation_input,
                                                 Vpf=self.pf_results.voltage[bus_original_idx],

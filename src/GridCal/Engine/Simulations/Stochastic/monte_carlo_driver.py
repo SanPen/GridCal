@@ -118,7 +118,8 @@ class MonteCarlo(QThread):
 
         # compile circuits
         numerical_circuit = self.circuit.compile()
-        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                            ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         mc_results.bus_types = numerical_circuit.bus_types
 
@@ -258,9 +259,8 @@ class MonteCarlo(QThread):
 
         # compile circuits
         numerical_circuit = self.circuit.compile()
-        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
-
-
+        numerical_input_islands = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                            ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         mc_results = MonteCarloResults(n, m)
         avg_res = PowerFlowResults()

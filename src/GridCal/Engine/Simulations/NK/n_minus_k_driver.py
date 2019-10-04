@@ -165,7 +165,7 @@ class NMinusK(QThread):
         # do the topological computation
         self.progress_text("Compiling topology...")
         self.progress_signal(0.0)
-        calc_inputs_dict = numerical_circuit.compute_ts()
+        calc_inputs_dict = numerical_circuit.compute_ts(ignore_single_node_islands=pf_options.ignore_single_node_islands)
 
         n_k_results.bus_types = numerical_circuit.bus_types
 
@@ -291,7 +291,7 @@ class NMinusK(QThread):
         # do the topological computation
         self.progress_text("Compiling topology...")
         self.progress_signal(0.0)
-        calc_inputs_dict = numerical_circuit.compute_ts()
+        calc_inputs_dict = numerical_circuit.compute_ts(ignore_single_node_islands=pf_options.ignore_single_node_islands)
 
         n_k_results.bus_types = numerical_circuit.bus_types
 

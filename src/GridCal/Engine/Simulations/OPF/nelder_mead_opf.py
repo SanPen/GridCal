@@ -279,7 +279,8 @@ class AcOpfNelderMead:
 
         self.numerical_circuit = self.multi_circuit.compile()
 
-        self.calculation_inputs = self.numerical_circuit.compute(add_storage=False, add_generation=True)
+        self.calculation_inputs = self.numerical_circuit.compute(add_storage=False, add_generation=True,
+                                                                 ignore_single_node_islands=options.ignore_single_node_islands)
 
         self.pf = PowerFlowMP(self.multi_circuit, options)
 

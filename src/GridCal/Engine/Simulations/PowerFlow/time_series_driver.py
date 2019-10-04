@@ -437,8 +437,8 @@ class TimeSeries(QThread):
                                               opf_time_series_results=self.opf_time_series_results)
 
         # do the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=
-                                                        self.options.branch_impedance_tolerance_mode)
+        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                        ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         time_series_results.bus_types = numerical_circuit.bus_types
 
@@ -571,8 +571,8 @@ class TimeSeries(QThread):
                                               opf_time_series_results=self.opf_time_series_results)
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=
-                                                        self.options.branch_impedance_tolerance_mode)
+        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                        ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         jobs = list()
 

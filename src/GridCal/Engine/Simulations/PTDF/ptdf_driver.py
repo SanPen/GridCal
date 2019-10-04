@@ -97,7 +97,8 @@ class PTDF(QThread):
         # compile to arrays
         numerical_circuit = circuit.compile()
         calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
-                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode)
+                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                                       ignore_single_node_islands=options.ignore_single_node_islands)
 
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,
@@ -166,7 +167,8 @@ class PTDF(QThread):
         # compile to arrays
         numerical_circuit = circuit.compile()
         calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
-                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode)
+                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                                       ignore_single_node_islands=options.ignore_single_node_islands)
 
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,

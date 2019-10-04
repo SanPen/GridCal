@@ -1948,6 +1948,8 @@ class MainGUI(QMainWindow):
 
         distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
 
+        ignore_single_node_islands = self.ui.ignore_single_node_islands_checkBox.isChecked()
+
         ops = PowerFlowOptions(solver_type=solver_type,
                                retry_with_other_methods=retry_with_other_methods,
                                verbose=False,
@@ -1962,7 +1964,8 @@ class MainGUI(QMainWindow):
                                apply_temperature_correction=temp_correction,
                                branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
                                q_steepness_factor=q_steepness_factor,
-                               distributed_slack=distributed_slack)
+                               distributed_slack=distributed_slack,
+                               ignore_single_node_islands=ignore_single_node_islands)
 
         return ops
 
@@ -3538,10 +3541,16 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.results_mdl is not None:
+
+            plt.rcParams["date.autoformatter.minute"] = "%Y-%m-%d %H:%M:%S"
+
             fig = plt.figure(figsize=(12, 8))
             ax = fig.add_subplot(111)
+            mode = self.ui.export_mode_comboBox.currentText()
+            self.results_mdl.plot(ax=ax, mode=mode)
+            # rotate and align the tick labels so they look better
+            # fig.autofmt_xdate()
 
-            self.results_mdl.plot(ax=ax)
             plt.show()
 
     def save_results_df(self):

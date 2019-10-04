@@ -213,8 +213,7 @@ class PowerFlowOptions:
 
         **initialize_with_existing_solution** (bool, True): *To be detailed*
 
-        **tolerance** (float, 1e-6): Solution tolerance for the power flow numerical
-        methods
+        **tolerance** (float, 1e-6): Solution tolerance for the power flow numerical methods
 
         **max_iter** (int, 25): Maximum number of iterations for the power flow
         numerical method
@@ -247,6 +246,8 @@ class PowerFlowOptions:
 
         **distributed_slack** (bool, False): Applies the redistribution of the slack power proportionally
                                              among the controlled generators
+
+        **ignore_single_node_islands**(bool, False): If True the islandss of 1 node are ignored
     """
 
     def __init__(self,
@@ -265,7 +266,8 @@ class PowerFlowOptions:
                  apply_temperature_correction=False,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  q_steepness_factor=30,
-                 distributed_slack=False):
+                 distributed_slack=False,
+                 ignore_single_node_islands=False):
 
         self.solver_type = solver_type
 
@@ -298,6 +300,8 @@ class PowerFlowOptions:
         self.q_steepness_factor = q_steepness_factor
 
         self.distributed_slack = distributed_slack
+
+        self.ignore_single_node_islands = ignore_single_node_islands
 
 
 class PowerFlowMP:
@@ -1572,7 +1576,8 @@ class PowerFlowMP:
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile()
         calculation_inputs = numerical_circuit.compute(apply_temperature=self.options.apply_temperature_correction,
-                                                       branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+                                                       branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                       ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         results.bus_types = numerical_circuit.bus_types
 

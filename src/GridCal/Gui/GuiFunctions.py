@@ -24,6 +24,7 @@ from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTempla
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from collections import defaultdict
 from matplotlib import pyplot as plt
+from matplotlib.dates import  DateFormatter, DayLocator
 
 
 class TreeDelegate(QItemDelegate):
@@ -465,7 +466,8 @@ class PandasModel(QtCore.QAbstractTableModel):
 
             # data
             for t, index_value in enumerate(index):
-                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+                if data[t, :].sum() != 0.0:
+                    txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -1378,14 +1380,13 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
             index, columns, data = self.get_data(mode=mode)
 
-            data = data.astype(str)
-
             # header first
             txt = '\t' + '\t'.join(columns) + '\n'
 
             # data
             for t, index_value in enumerate(index):
-                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+                if data[t, :].sum() != 0.0:
+                    txt += str(index_value) + '\t' + '\t'.join(data[t, :].astype(str)) + '\n'
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -1396,19 +1397,28 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def plot(self, ax=None):
+    def plot(self, ax=None, mode=None):
         """
-        PLot the data model
+        Plot the data model
         :param ax: Matplotlib axis
+        :param mode: 'real', 'imag', 'abs'
         """
+
+        index, columns, data = self.get_data(mode=mode)
+
         if ax is None:
             fig = plt.figure(figsize=(12, 6))
             ax = fig.add_subplot(111)
 
-        ax.plot(self.index_c, self.data_c, linewidth=2)
+        index2 = [str(x) for x in index]
+
+        ax.plot(index2, data, linewidth=2)
+
+        ax.xaxis.set_major_formatter(DateFormatter("%Y/%m/%d %H:%M"))
+        ax.xaxis.set_major_locator(DayLocator())
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
-        ax.set_title(self.title)
+        ax.set_title(self.title + ' (' + mode + ')')
 
 
 def get_list_model(lst, checks=False):
