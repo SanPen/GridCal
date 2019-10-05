@@ -166,7 +166,7 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return J
 
 
-def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
@@ -178,11 +178,11 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        robust: Boolean variable for the use of the Iwamoto optimal step factor.
+        acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+        error_registry: list to store the error for plotting
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
-    @author: Ray Zimmerman (PSERC Cornell)
     @Author: Santiago Penate Vera
     """
     start = time.time()
@@ -217,12 +217,15 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     # evaluate F(x0)
     Scalc = V * conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+    f = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     # check tolerance
-    normF = linalg.norm(F, Inf)
+    norm_f = linalg.norm(f, Inf)
 
-    if normF < tol:
+    if error_registry is not None:
+        error_registry.append(norm_f)
+
+    if norm_f < tol:
         converged = 1
 
     # do Newton iterations
@@ -234,7 +237,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
         # compute update step
-        dx = spsolve(J, F)
+        dx = spsolve(J, f)
 
         # reassign the solution vector
         if npv:
@@ -251,10 +254,13 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
 
         # compute the mismatch function f(x_new)
         dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-        Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-        normFprev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+        f_new = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        norm_f_prev = linalg.norm(f + alpha * (f * J).dot(f_new - f), Inf)
 
-        cond = normF < normFprev  # condition to back track (no improvement at all)
+        if error_registry is not None:
+            error_registry.append(norm_f_prev)
+
+        cond = norm_f < norm_f_prev  # condition to back track (no improvement at all)
 
         if not cond:
             back_track_counter += 1
@@ -267,31 +273,37 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
             # TODO: implement the more complex mu backtrack from numerical recipes
 
             # update voltage with a closer value to the last value in the Jacobian direction
-            mu_ *= 0.25
+            mu_ *= acceleration_parameter
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
             Vnew = Vm * exp(1j * Va)
 
             # compute the mismatch function f(x_new)
             dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+            f_new = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-            normFnew = linalg.norm(Fnew, Inf)
-            normFnew_prev = linalg.norm(F + alpha * (F * J).dot(Fnew - F), Inf)
+            norm_f_new = linalg.norm(f_new, Inf)
+            norm_f_new_prev = linalg.norm(f + alpha * (f * J).dot(f_new - f), Inf)
 
-            cond = normFnew < normFnew_prev
+            cond = norm_f_new < norm_f_new_prev
+
+            if error_registry is not None:
+                error_registry.append(norm_f_new_prev)
 
             l_iter += 1
             back_track_iterations += 1
 
         # update calculation variables
         V = Vnew
-        F = Fnew
+        f = f_new
 
         # check for convergence
-        normF = linalg.norm(F, Inf)
+        norm_f = linalg.norm(f, Inf)
 
-        if normF < tol:
+        if error_registry is not None:
+            error_registry.append(norm_f)
+
+        if norm_f < tol:
             converged = 1
 
     end = time.time()
@@ -300,10 +312,10 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     print('iter_', iter_, '  -  back_track_counter', back_track_counter,
           '  -  back_track_iterations', back_track_iterations)
 
-    return V, converged, normF, Scalc
+    return V, converged, norm_f, Scalc, elapsed
 
 
-def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
@@ -315,11 +327,11 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        robust: Boolean variable for the use of the Iwamoto optimal step factor.
+        acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+        error_registry: list to store the error for plotting
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
-    @author: Ray Zimmerman (PSERC Cornell)
     @Author: Santiago Penate Vera
     """
     start = time.time()
@@ -327,14 +339,13 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     # initialize
     back_track_counter = 0
     back_track_iterations = 0
-    alpha = 1e-4
     converged = 0
     iter_ = 0
     V = V0
-    Va = angle(V)
-    Vm = abs(V)
-    dVa = zeros_like(Va)
-    dVm = zeros_like(Vm)
+    Va = np.angle(V)
+    Vm = np.abs(V)
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
     pvpq = r_[pv, pq]
@@ -354,12 +365,15 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     # evaluate F(x0)
     Scalc = V * conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+    f = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     # check tolerance
-    normF = 0.5 * F.dot(F)
+    norm_f = 0.5 * f.dot(f)
 
-    if normF < tol:
+    if error_registry is not None:
+        error_registry.append(norm_f)
+
+    if norm_f < tol:
         converged = 1
 
     # do Newton iterations
@@ -371,7 +385,7 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
         # compute update step
-        dx = spsolve(J, F)
+        dx = spsolve(J, f)
 
         # reassign the solution vector
         if npv:
@@ -388,10 +402,13 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
 
         # compute the mismatch function f(x_new)
         dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-        Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-        normFnew = 0.5 * Fnew.dot(Fnew)
+        f_new = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        norm_f_new = 0.5 * f_new.dot(f_new)
 
-        cond = normFnew > normF  # condition to back track (no improvement at all)
+        if error_registry is not None:
+            error_registry.append(norm_f_new)
+
+        cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
 
         if not cond:
             back_track_counter += 1
@@ -399,36 +416,37 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         l_iter = 0
         while not cond and l_iter < 10 and mu_ > 0.01:
             # line search back
-
-            # to divide mu by 4 is the simplest backtracking process
-            # TODO: implement the more complex mu backtrack from numerical recipes
-
             # update voltage with a closer value to the last value in the Jacobian direction
-            mu_ *= 0.25
+            mu_ *= acceleration_parameter
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
-            Vnew = Vm * exp(1j * Va)
+            Vnew = Vm * exp(1.0j * Va)
 
             # compute the mismatch function f(x_new)
             dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+            f_new = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-            normFnew = 0.5 * Fnew.dot(Fnew)
+            norm_f_new = 0.5 * f_new.dot(f_new)
 
-            cond = normFnew > normF
+            cond = norm_f_new > norm_f
+
+            if error_registry is not None:
+                error_registry.append(norm_f_new)
 
             l_iter += 1
             back_track_iterations += 1
 
         # update calculation variables
         V = Vnew
-        F = Fnew
-        # normF = normFnew
+        f = f_new
 
         # check for convergence
-        normF = 0.5 * Fnew.dot(Fnew)
+        norm_f = 0.5 * f_new.dot(f_new)
 
-        if normF < tol:
+        if error_registry is not None:
+            error_registry.append(norm_f)
+
+        if norm_f < tol:
             converged = 1
 
     end = time.time()
@@ -437,68 +455,104 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     print('iter_', iter_, '  -  back_track_counter', back_track_counter,
           '  -  back_track_iterations', back_track_iterations)
 
-    return V, converged, normF, Scalc
+    return V, converged, norm_f, Scalc, elapsed
 
 
 ########################################################################################################################
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine.calculation_engine import MultiCircuit, PowerFlowOptions, PowerFlow, SolverType
+    from GridCal.Engine import PowerFlowOptions, PowerFlow, SolverType, FileOpen
+    from matplotlib import pyplot as plt
     import pandas as pd
+    import os
+    import time
 
     pd.set_option('display.max_rows', 500)
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    grid = MultiCircuit()
-    # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('IEEE30.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Pegase 2869.xlsx')
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
+
+    grid = FileOpen(file_name=fname).open()
     grid.compile()
 
-    circuit = grid.circuits[0]
+    nc = grid.compile()
+    islands = nc.compute()
+    circuit = islands[0]
 
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
+    # print('\nYbus:\n', circuit.Ybus.todense())
+    # print('\nYseries:\n', circuit.Yseries.todense())
+    # print('\nYshunt:\n', circuit.Ysh)
+    # print('\nSbus:\n', circuit.Sbus)
+    # print('\nIbus:\n', circuit.Ibus)
+    # print('\nVbus:\n', circuit.Vbus)
+    # print('\ntypes:\n', circuit.types)
+    # print('\npq:\n', circuit.pq)
+    # print('\npv:\n', circuit.pv)
+    # print('\nvd:\n', circuit.ref)
 
-    import time
-    print('Newton-Raphson-Line-search')
-    start_time = time.time()
-    # Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15
-    V1, converged_, err, S = NR_LS2(Ybus=circuit.power_flow_input.Ybus,
-                                   Sbus=circuit.power_flow_input.Sbus,
-                                   V0=circuit.power_flow_input.Vbus,
-                                   Ibus=circuit.power_flow_input.Ibus,
-                                   pv=circuit.power_flow_input.pv,
-                                   pq=circuit.power_flow_input.pq,
-                                   tol=1e-9,
-                                   max_it=100)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
 
-    print("--- %s seconds ---" % (time.time() - start_time))
-    # print_coeffs(C, W, R, X, H)
+    print('Newton-Raphson-Line-search 1')
+    for acc in [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]:
+        start_time = time.time()
 
-    print('error: \t', err)
+        error_data1 = list()
+        V1, converged_, err, S, el = NR_LS(Ybus=circuit.Ybus,
+                                           Sbus=circuit.Sbus,
+                                           V0=circuit.Vbus,
+                                           Ibus=circuit.Ibus,
+                                           pv=circuit.pv,
+                                           pq=circuit.pq,
+                                           tol=1e-9,
+                                           max_it=100,
+                                           acceleration_parameter=acc,
+                                           error_registry=error_data1)
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print('error: \t', err)
+        ax.plot(error_data1, lw=2, label='NRLS 1:' + str(acc))
 
-    # check the HELM solution: v against the NR power flow
+    print('\nNewton-Raphson-Line-search 2')
+    for acc in [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]:
+
+        start_time = time.time()
+        error_data2 = list()
+        V1, converged_, err, S, el = NR_LS2(Ybus=circuit.Ybus,
+                                            Sbus=circuit.Sbus,
+                                            V0=circuit.Vbus,
+                                            Ibus=circuit.Ibus,
+                                            pv=circuit.pv,
+                                            pq=circuit.pq,
+                                            tol=1e-9,
+                                            max_it=100,
+                                            acceleration_parameter=acc,
+                                            error_registry=error_data2)
+
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print('error: \t', err)
+
+        ax.plot(error_data2, lw=2, linestyle=':', label='NRLS 2: ' + str(acc))
+    ax.set_yscale('log')
+    ax.set_xlabel('Evaluations of $f(x)$')
+    ax.set_ylabel('Error')
+    ax.legend()
+
+    # check against the standard NR power flow used in GridCal
     print('\nNR standard')
-    options = PowerFlowOptions(SolverType.IWAMOTO, verbose=False, robust=False, tolerance=1e-9, control_q=False)
+    options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
     power_flow = PowerFlow(grid, options)
 
     start_time = time.time()
     power_flow.run()
     print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
+    vnr = power_flow.results.voltage
 
-    print('error: \t', circuit.power_flow_results.error)
+    print('error: \t', power_flow.results.error)
 
     # check
 
@@ -507,4 +561,6 @@ if __name__ == "__main__":
     df = pd.DataFrame(data, columns=cols)
 
     print()
-    print(df)
+    # print(df)
+
+    plt.show()

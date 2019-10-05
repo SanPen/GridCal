@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lac
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import LevenbergMarquardtPF
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS2, NR_I_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
@@ -247,7 +247,10 @@ class PowerFlowOptions:
         **distributed_slack** (bool, False): Applies the redistribution of the slack power proportionally
                                              among the controlled generators
 
-        **ignore_single_node_islands**(bool, False): If True the islandss of 1 node are ignored
+        **ignore_single_node_islands** (bool, False): If True the islands of 1 node are ignored
+
+        **correction_parameter** (float, 1e-4): parameter used to correct the "bad" iterations,
+                                                should be be between 1e-4 ~ 0.5
     """
 
     def __init__(self,
@@ -267,7 +270,8 @@ class PowerFlowOptions:
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  q_steepness_factor=30,
                  distributed_slack=False,
-                 ignore_single_node_islands=False):
+                 ignore_single_node_islands=False,
+                 correction_parameter=1e-4):
 
         self.solver_type = solver_type
 
@@ -302,6 +306,8 @@ class PowerFlowOptions:
         self.distributed_slack = distributed_slack
 
         self.ignore_single_node_islands = ignore_single_node_islands
+
+        self.acceleration_parameter = correction_parameter
 
 
 class PowerFlowMP:
@@ -380,7 +386,8 @@ class PowerFlowMP:
         return ref, pq, pv, pqpv
 
     @staticmethod
-    def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter):
+    def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
+              acceleration_parameter=1e-5):
         """
         Run a power flow simulation using the selected method (no outer loop controls).
 
@@ -485,14 +492,15 @@ class PowerFlowMP:
         # Newton-Raphson
         elif solver_type == SolverType.NR:
             # Solve NR with the linear AC solution
-            V0, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
-                                                        Sbus=Sbus,
-                                                        V0=V0,
-                                                        Ibus=Ibus,
-                                                        pv=pv,
-                                                        pq=pq,
-                                                        tol=tolerance,
-                                                        max_it=max_iter)
+            V0, converged, normF, Scalc, it, el = NR_LS2(Ybus=Ybus,
+                                                         Sbus=Sbus,
+                                                         V0=V0,
+                                                         Ibus=Ibus,
+                                                         pv=pv,
+                                                         pq=pq,
+                                                         tol=tolerance,
+                                                         max_it=max_iter,
+                                                         acceleration_parameter=acceleration_parameter)
 
         # Newton-Raphson-Iwamoto
         elif solver_type == SolverType.IWAMOTO:
@@ -625,7 +633,8 @@ class PowerFlowMP:
                                                                                ref=ref,
                                                                                pqpv=pqpv,
                                                                                tolerance=self.options.tolerance,
-                                                                               max_iter=self.options.max_iter)
+                                                                               max_iter=self.options.max_iter,
+                                                                               acceleration_parameter=self.options.acceleration_parameter)
                 if self.options.distributed_slack:
                     # Distribute the slack power
                     slack_power = Scalc[ref].real.sum()
@@ -650,7 +659,8 @@ class PowerFlowMP:
                                                                                          ref=ref,
                                                                                          pqpv=pqpv,
                                                                                          tolerance=self.options.tolerance,
-                                                                                         max_iter=self.options.max_iter)
+                                                                                         max_iter=self.options.max_iter,
+                                                                                         acceleration_parameter=self.options.acceleration_parameter)
                         # increase the metrics with the second run numbers
                         it += it2
                         el += el2

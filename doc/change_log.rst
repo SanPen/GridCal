@@ -15,6 +15,8 @@ _____________
 
 - Added the ability to ignore single node islands
 - Fixed voltage module in the LACPF algorithm: Now the PQ buses voltage is closer to NR.
+- Improved the Newton-Raphson line search speed by roughly 200% by tuning the acceleration parameter.
+
 
 Version 3.5.8
 _____________

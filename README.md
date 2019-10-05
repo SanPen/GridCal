@@ -70,7 +70,7 @@ Some of the features you'll find already are:
 - Compatible with other formats:
   - Import
     - CIM (Common Information Model v16)
-    - PSS/e RAW versions 29, 30, 32 and 33.
+    - PSS/e RAW versions 29, 30, 32, 33 and 34.
     - Matpower (might not be fully compatible, notify me if not).
     - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
     

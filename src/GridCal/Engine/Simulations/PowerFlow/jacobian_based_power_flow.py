@@ -185,7 +185,7 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     return sparse(J)
 
 
-def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, correction_parameter=1e-4):
     """
     Solves the power flow using a full Newton's method with the backtrack improvement algorithm
     Args:
@@ -197,6 +197,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
+        correction_parameter: parameter used to correct the "bad" iterations, should be be between 1e-5 ~ 0.5
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
@@ -285,7 +286,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
                 # TODO: implement the more complex mu backtrack from numerical recipes
 
                 # update voltage with a closer value to the last value in the Jacobian direction
-                mu_ *= 0.25
+                mu_ *= correction_parameter
                 Vm -= mu_ * dVm
                 Va -= mu_ * dVa
                 Vnew = Vm * np.exp(1j * Va)
@@ -318,6 +319,149 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     elapsed = end - start
 
     return V, converged, normF, Scalc, iter_, elapsed
+
+
+def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
+    """
+    Solves the power flow using a full Newton's method with backtrack correction.
+    Args:
+        Ybus: Admittance matrix
+        Sbus: Array of nodal power injections
+        V0: Array of nodal voltages (initial solution)
+        Ibus: Array of nodal current injections
+        pv: Array with the indices of the PV buses
+        pq: Array with the indices of the PQ buses
+        tol: Tolerance
+        max_it: Maximum number of iterations
+        acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+        error_registry: list to store the error for plotting
+    Returns:
+        Voltage solution, converged?, error, calculated power injections
+
+    @Author: Santiago Penate Vera
+    """
+    start = time.time()
+
+    # initialize
+    back_track_counter = 0
+    back_track_iterations = 0
+    converged = 0
+    iter_ = 0
+    V = V0
+    Va = np.angle(V)
+    Vm = np.abs(V)
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
+
+    # set up indexing for updating V
+    pvpq = np.r_[pv, pq]
+    npv = len(pv)
+    npq = len(pq)
+
+    # j1:j2 - V angle of pv buses
+    j1 = 0
+    j2 = npv
+    # j3:j4 - V angle of pq buses
+    j3 = j2
+    j4 = j2 + npq
+    # j5:j6 - V mag of pq buses
+    j5 = j4
+    j6 = j4 + npq
+
+    # evaluate F(x0)
+    Scalc = V * np.conj(Ybus * V - Ibus)
+    dS = Scalc - Sbus  # compute the mismatch
+    f = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+
+    # check tolerance
+    norm_f = 0.5 * f.dot(f)
+
+    if error_registry is not None:
+        error_registry.append(norm_f)
+
+    if norm_f < tol:
+        converged = 1
+
+    # do Newton iterations
+    while not converged and iter_ < max_it:
+        # update iteration counter
+        iter_ += 1
+
+        # evaluate Jacobian
+        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+
+        # compute update step
+        dx = linear_solver(J, f)
+
+        # reassign the solution vector
+        if npv:
+            dVa[pv] = dx[j1:j2]
+        if npq:
+            dVa[pq] = dx[j3:j4]
+            dVm[pq] = dx[j5:j6]
+
+        # update voltage the Newton way (mu=1)
+        mu_ = 1.0
+        Vm -= mu_ * dVm
+        Va -= mu_ * dVa
+        Vnew = Vm * np.exp(1.0j * Va)
+
+        # compute the mismatch function f(x_new)
+        dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+        f_new = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        norm_f_new = 0.5 * f_new.dot(f_new)
+
+        if error_registry is not None:
+            error_registry.append(norm_f_new)
+
+        cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
+
+        if not cond:
+            back_track_counter += 1
+
+        l_iter = 0
+        while not cond and l_iter < 10 and mu_ > 0.01:
+            # line search back
+            # update voltage with a closer value to the last value in the Jacobian direction
+            mu_ *= acceleration_parameter
+            Vm -= mu_ * dVm
+            Va -= mu_ * dVa
+            Vnew = Vm * np.exp(1.0j * Va)
+
+            # compute the mismatch function f(x_new)
+            dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            f_new = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+
+            norm_f_new = 0.5 * f_new.dot(f_new)
+
+            cond = norm_f_new > norm_f
+
+            if error_registry is not None:
+                error_registry.append(norm_f_new)
+
+            l_iter += 1
+            back_track_iterations += 1
+
+        # update calculation variables
+        V = Vnew
+        f = f_new
+
+        # check for convergence
+        norm_f = 0.5 * f_new.dot(f_new)
+
+        if error_registry is not None:
+            error_registry.append(norm_f)
+
+        if norm_f < tol:
+            converged = 1
+
+    end = time.time()
+    elapsed = end - start
+
+    # print('iter_', iter_, '  -  back_track_counter', back_track_counter,
+    #       '  -  back_track_iterations', back_track_iterations)
+
+    return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
