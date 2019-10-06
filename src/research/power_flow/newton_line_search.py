@@ -473,9 +473,9 @@ if __name__ == "__main__":
     pd.set_option('display.width', 1000)
 
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
-    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Pegase 2869.xlsx')
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
 
     grid = FileOpen(file_name=fname).open()
     grid.compile()
