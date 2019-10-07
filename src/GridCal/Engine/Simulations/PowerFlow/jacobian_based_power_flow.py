@@ -98,13 +98,12 @@ def dSbus_dV(Ybus, V, I):
     ib = range(len(V))
 
     Ibus = Ybus * V - I
-
     diagV = sparse((V, (ib, ib)))
     diagIbus = sparse((Ibus, (ib, ib)))
-    diagVnorm = sparse((V / abs(V), (ib, ib)))
+    diagVnorm = sparse((V / np.abs(V), (ib, ib)))
 
     dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagIbus) * diagVnorm
-    dS_dVa = 1j * diagV * np.conj(diagIbus - Ybus * diagV)
+    dS_dVa = 1.0j * diagV * np.conj(diagIbus - Ybus * diagV)
 
     return dS_dVm, dS_dVa
 
@@ -164,13 +163,13 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     diagVnorm = sp.diags(V / np.abs(V))
 
     dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
-    dS_dVa = 1j * diagV * np.conj(diagI - Ybus * diagV)
+    dS_dVa = 1.0j * diagV * np.conj(diagI - Ybus * diagV)
 
     # J11 = dS_dVa[np.array([pvpq]).T, pvpq].real
     # J12 = dS_dVm[np.array([pvpq]).T, pq].real
     # J21 = dS_dVa[np.array([pq]).T, pvpq].imag
     # J22 = dS_dVm[np.array([pq]).T, pq].imag
-    #
+
     # J = sp.vstack([sp.hstack([J11, J12]),
     #                sp.hstack([J21, J22])], format="csr")
 
@@ -180,7 +179,7 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     # J22 = dS_dVm[np.ix_(pq, pq)].imag
 
     J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
-                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag, dS_dVm[np.ix_(pq, pq)].imag])], format="csr")
+                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csr")
 
     return sparse(J)
 
@@ -236,13 +235,13 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, correction_parameter=1e-
     # evaluate F(x0)
     Scalc = V * np.conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
-    F = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+    f = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]
 
     if (npq + npv) > 0:
         # check tolerance
-        normF = np.linalg.norm(F, np.Inf)
+        norm_f = np.linalg.norm(f, np.Inf)
 
-        if normF < tol:
+        if norm_f < tol:
             converged = 1
 
         # do Newton iterations
@@ -254,7 +253,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, correction_parameter=1e-
             J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # compute update step
-            dx = linear_solver(J, F)
+            dx = linear_solver(J, f)
 
             # reassign the solution vector
             if npv:
@@ -271,9 +270,9 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, correction_parameter=1e-
 
             # compute the mismatch function f(x_new)
             dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-            Fnew = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-            Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
-            cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
+            f_new = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+            f_new_prev = f + alpha * (f * J).dot(f_new - f)
+            cond = (f_new < f_new_prev).any()  # condition to back track (no improvement at all)
 
             if not cond:
                 back_track_counter += 1
@@ -293,32 +292,32 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, correction_parameter=1e-
 
                 # compute the mismatch function f(x_new)
                 dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-                Fnew = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-                Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
-                cond = (Fnew < Fnew_prev).any()
+                f_new = np.r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                f_new_prev = f + alpha * (f * J).dot(f_new - f)
+                cond = (f_new < f_new_prev).any()
 
                 l_iter += 1
                 back_track_iterations += 1
 
             # update calculation variables
             V = Vnew
-            F = Fnew
+            f = f_new
 
             # check for convergence
-            normF = np.linalg.norm(F, np.Inf)
+            norm_f = np.linalg.norm(f, np.Inf)
 
-            if normF < tol:
+            if norm_f < tol:
                 converged = 1
 
     else:
         # there are no pq nor pv nodes
-        normF = 0.0
+        norm_f = 0.0
         converged = True
 
     end = time.time()
     elapsed = end - start
 
-    return V, converged, normF, Scalc, iter_, elapsed
+    return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
@@ -512,16 +511,16 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     # evaluate F(x0)
     Scalc = V * np.conj(Ybus * V - Ibus)
     mis = Scalc - Sbus  # compute the mismatch
-    F = np.r_[mis[pv].real,
+    f = np.r_[mis[pv].real,
               mis[pq].real,
               mis[pq].imag]
 
     if (npq + npv) > 0:
 
         # check tolerance
-        normF = np.linalg.norm(F, np.Inf)
+        norm_f = np.linalg.norm(f, np.Inf)
 
-        if normF < tol:
+        if norm_f < tol:
             converged = 1
 
         # do Newton iterations
@@ -533,7 +532,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # compute update step
-            dx = linear_solver(J, F)
+            dx = linear_solver(J, f)
 
             # reassign the solution vector
             if npv:
@@ -548,7 +547,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, Ibus, J, F, dV, dx, pvpq, pq)
+                    mu_ = mu(Ybus, Ibus, J, f, dV, dx, pvpq, pq)
                 else:
                     mu_ = 1.0
             else:
@@ -565,21 +564,21 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             # evaluate F(x)
             Scalc = V * np.conj(Ybus * V - Ibus)
             mis = Scalc - Sbus  # complex power mismatch
-            F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+            f = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
 
             # check for convergence
-            normF = np.linalg.norm(F, np.Inf)
+            norm_f = np.linalg.norm(f, np.Inf)
 
-            if normF < tol:
+            if norm_f < tol:
                 converged = 1
     else:
-        normF = 0
+        norm_f = 0
         converged = True
 
     end = time.time()
     elapsed = end - start
 
-    return V, converged, normF, Scalc, iter_, elapsed
+    return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
