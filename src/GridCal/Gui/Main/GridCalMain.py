@@ -2007,11 +2007,6 @@ class MainGUI(QMainWindow):
                 self.power_flow.done_signal.connect(self.post_power_flow)
                 self.power_flow.start()
 
-
-                # self.power_flow.run()
-                # self.threadpool.start(self.power_flow)
-                # self.threadpool.waitForDone()
-                # self.post_power_flow()
             else:
                 self.msg('Another simulation of the same type is running...')
         else:
@@ -2041,7 +2036,7 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
             # print convergence reports on the console
-            for report in self.power_flow.pf.convergence_reports:
+            for report in self.power_flow.convergence_reports:
                 msg_ = 'Power flow converged: \n' + report.__str__() + '\n\n'
                 self.console_msg(msg_)
 
@@ -2049,8 +2044,8 @@ class MainGUI(QMainWindow):
             self.msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
-        if len(self.power_flow.pf.logger) > 0:
-            dlg = LogsDialogue('Power flow', self.power_flow.pf.logger)
+        if len(self.power_flow.logger) > 0:
+            dlg = LogsDialogue('Power flow', self.power_flow.logger)
             dlg.exec_()
 
         if len(self.stuff_running_now) == 0:

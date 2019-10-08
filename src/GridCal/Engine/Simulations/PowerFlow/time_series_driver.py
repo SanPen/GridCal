@@ -19,13 +19,13 @@ import numpy as np
 import time
 import multiprocessing
 
-from PySide2.QtCore import QThread, Signal
+from PySide2.QtCore import QThread, QThreadPool, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_worker, PowerFlowOptions, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_worker, single_island_pf
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 
@@ -407,6 +407,8 @@ class TimeSeries(QThread):
 
         self.elapsed = 0
 
+        self.logger = list()
+
         self.__cancel__ = False
 
     def get_steps(self):
@@ -420,8 +422,6 @@ class TimeSeries(QThread):
         Run single thread time series
         :return: TimeSeriesResults instance
         """
-        # initialize the power flow
-        power_flow = PowerFlowMP(self.grid, self.options)
 
         # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
@@ -510,7 +510,8 @@ class TimeSeries(QThread):
                                 pass
 
                             # run power flow at the circuit
-                            res = power_flow.run_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t)
+                            res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t,
+                                                   options=self.options, logger=self.logger)
 
                             # Recycle voltage solution
                             last_voltage = res.voltage
@@ -574,6 +575,8 @@ class TimeSeries(QThread):
                                                         ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         jobs = list()
+
+        self.threadpool = QThreadPool()
 
         if len(calc_inputs_dict) == 1:
 

@@ -17,7 +17,7 @@ import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
 
@@ -91,9 +91,6 @@ class PTDF(QThread):
         if text_func is not None:
             text_func('Compiling...')
 
-        # initialize the power flow
-        power_flow = PowerFlowMP(circuit, options)
-
         # compile to arrays
         numerical_circuit = circuit.compile()
         calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
@@ -124,7 +121,7 @@ class PTDF(QThread):
                               nbus=numerical_circuit.nbus,
                               nbr=numerical_circuit.nbr,
                               calculation_inputs=calculation_inputs,
-                              power_flow=power_flow,
+                              options=options,
                               dP=variation.dP,
                               return_dict=returns)
 
@@ -158,8 +155,6 @@ class PTDF(QThread):
         :param prog_func
         :return:
         """
-        # initialize the power flow
-        power_flow = PowerFlowMP(circuit, options)
 
         if text_func is not None:
             text_func('Compiling...')
@@ -203,7 +198,7 @@ class PTDF(QThread):
                                                                             numerical_circuit.nbus,
                                                                             numerical_circuit.nbr,
                                                                             calculation_inputs,
-                                                                            power_flow,
+                                                                            options,
                                                                             delta_of_power_variations[v].dP,
                                                                             return_dict))
                 jobs.append(p)

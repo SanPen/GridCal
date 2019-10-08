@@ -19,7 +19,7 @@ import numpy as np
 from PySide2.QtCore import QThread, Signal
 
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
@@ -262,13 +262,13 @@ class Cascading(QThread):
 
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
-            model_simulator = PowerFlowMP(self.grid, self.options)
+            model_simulator = PowerFlowDriver(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
             model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
 
         else:
-            model_simulator = PowerFlowMP(self.grid, self.options)
+            model_simulator = PowerFlowDriver(self.grid, self.options)
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running cascading failure...')

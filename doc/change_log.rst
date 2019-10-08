@@ -17,6 +17,9 @@ _____________
 - Fixed csv profile input.
 - Added similarity-based auto link in the profile import.
 - Improved PSS/e import by improving the device naming.
+- Refactored the power flow section, removing quite a lot of the
+  existing complexity. Now there is only one power flow class which
+  calls to power flow functions.
 
 Version 3.5.9
 _____________

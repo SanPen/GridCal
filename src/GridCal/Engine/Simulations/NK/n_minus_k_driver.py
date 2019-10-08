@@ -15,12 +15,10 @@
 import time
 import numpy as np
 from itertools import combinations
-import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, PowerFlowMP, SolverType
-from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, SolverType, single_island_pf
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
 
 
@@ -153,7 +151,6 @@ class NMinusK(QThread):
 
         # initialize the power flow
         pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
-        power_flow = PowerFlowMP(self.grid, pf_options)
 
         # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
@@ -203,7 +200,8 @@ class NMinusK(QThread):
                         S = calculation_input.Sbus_prof[:, it]
 
                         # run power flow at the circuit
-                        res = power_flow.run_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t)
+                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t,
+                                               options=pf_options, logger=self.logger)
 
                         # Recycle voltage solution
                         last_voltage = res.voltage
@@ -279,7 +277,6 @@ class NMinusK(QThread):
 
         # initialize the power flow
         pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
-        power_flow = PowerFlowMP(self.grid, pf_options)
 
         # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
@@ -328,7 +325,8 @@ class NMinusK(QThread):
                         S = calculation_input.Sbus_prof[:, it]
 
                         # run power flow at the circuit
-                        res = power_flow.run_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t)
+                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t,
+                                               options=pf_options, logger=self.logger)
 
                         # Recycle voltage solution
                         last_voltage = res.voltage

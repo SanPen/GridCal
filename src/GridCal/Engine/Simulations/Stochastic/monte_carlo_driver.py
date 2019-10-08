@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.Stochastic.monte_carlo_input import MonteCarloIn
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowMP, PowerFlowOptions, power_flow_worker
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, power_flow_worker, single_island_pf
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
 
 ########################################################################################################################
@@ -80,6 +80,8 @@ class MonteCarlo(QThread):
         m = len(self.circuit.branches)
 
         self.results = MonteCarloResults(n, m)
+
+        self.logger = list()
 
         self.__cancel__ = False
 
@@ -241,9 +243,6 @@ class MonteCarlo(QThread):
 
         self.__cancel__ = False
 
-        # initialize the power flow
-        power_flow = PowerFlowMP(self.circuit, self.options)
-
         # initialize the grid time series results
         # we will append the island results with another function
         self.circuit.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
@@ -289,8 +288,12 @@ class MonteCarlo(QThread):
                     # set the power values
                     Y, I, S = mc_time_series.get_at(t)
 
-                    # res = powerflow.run_at(t, mc=True)
-                    res = power_flow.run_pf(circuit=numerical_island, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
+                    res = single_island_pf(circuit=numerical_island,
+                                           Vbus=Vbus,
+                                           Sbus=S / Sbase,
+                                           Ibus=I / Sbase,
+                                           options=self.options,
+                                           logger=self.logger)
 
                     mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                     mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage

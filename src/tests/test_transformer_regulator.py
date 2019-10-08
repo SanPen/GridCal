@@ -6,8 +6,8 @@ from GridCal.Engine.Devices.static_generator import StaticGenerator
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
-    PowerFlowOptions, ReactivePowerControlMode, SolverType, PowerFlowMP, TapsControlMode
-
+    PowerFlowOptions, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow import PowerFlowDriver
 
 Sbase = 100  # MVA
 
@@ -135,7 +135,7 @@ def test_gridcal_regulator():
                                tolerance=1e-6,
                                max_iter=99)
 
-    power_flow = PowerFlowMP(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]

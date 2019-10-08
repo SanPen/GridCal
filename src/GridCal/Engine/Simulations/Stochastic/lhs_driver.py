@@ -22,7 +22,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowMP, PowerFlowOptions, power_flow_worker
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, power_flow_worker, single_island_pf
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
 
 
@@ -48,6 +48,8 @@ class LatinHypercubeSampling(QThread):
         self.sampling_points = sampling_points
 
         self.results = None
+
+        self.logger = list()
 
         self.__cancel__ = False
 
@@ -183,9 +185,6 @@ class LatinHypercubeSampling(QThread):
         # print('LHS run')
         self.__cancel__ = False
 
-        # initialize the power flow
-        power_flow = PowerFlowMP(self.circuit, self.options)
-
         # initialize the grid time series results
         # we will append the island results with another function
         self.circuit.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
@@ -231,7 +230,8 @@ class LatinHypercubeSampling(QThread):
                 Y, I, S = mc_time_series.get_at(t)
 
                 # Run the set monte carlo point at 't'
-                res = power_flow.run_pf(circuit=numerical_island, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase)
+                res = single_island_pf(circuit=numerical_island, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase,
+                                       options=self.options, logger=self.logger)
 
                 # Gather the results
                 lhs_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus

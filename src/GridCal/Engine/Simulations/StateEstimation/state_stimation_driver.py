@@ -17,7 +17,7 @@ import numpy as np
 from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.measurement import MeasurementType
 
@@ -228,8 +228,7 @@ class StateEstimation(QRunnable):
 
             # Compute the branches power and the slack buses power
             Sbranch, Ibranch, Vbrnach, loading, \
-             losses, flow_direction, Sbus = PowerFlowMP.power_flow_post_process(calculation_inputs=island,
-                                                                                V=v_sol)
+             losses, flow_direction, Sbus = power_flow_post_process(calculation_inputs=island, V=v_sol)
 
             # pack results into a SE results object
             results = StateEstimationResults(Sbus=Sbus,

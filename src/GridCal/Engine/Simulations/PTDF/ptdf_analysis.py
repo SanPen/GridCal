@@ -17,8 +17,9 @@ import numpy as np
 from typing import List
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit, NumericalCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, PowerFlowMP, PowerFlowResults
-from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation, PTDFResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
 
 
 def group_generators_by_technology(circuit: MultiCircuit):
@@ -104,7 +105,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
 
 
 def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[CalculationInputs],
-                      power_flow: PowerFlowMP, dP, return_dict):
+                      options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow
     :param nbus: number of buses
@@ -129,7 +130,8 @@ def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[Calculation
             Ibus = calculation_input.Ibus
 
             # run circuit power flow
-            res = power_flow.run_pf(circuit=calculation_input, Vbus=Vbus, Sbus=Sbus, Ibus=Ibus)
+            res = single_island_pf(circuit=calculation_input, Vbus=Vbus, Sbus=Sbus, Ibus=Ibus,
+                                   options=options, logger=list())
 
             bus_original_idx = calculation_input.original_bus_idx
             branch_original_idx = calculation_input.original_branch_idx
