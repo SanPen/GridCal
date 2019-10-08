@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Mon May 13 19:15:05 2019
-#      by: pyside2-uic  running on PySide2 5.12.3
+# Created: Tue Oct  8 08:16:16 2019
+#      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -77,6 +77,13 @@ class Ui_Dialog(object):
         self.autolink_button.setIcon(icon1)
         self.autolink_button.setObjectName("autolink_button")
         self.horizontalLayout_7.addWidget(self.autolink_button)
+        self.autolink_slider = QtWidgets.QSlider(self.frame_10)
+        self.autolink_slider.setMinimum(1)
+        self.autolink_slider.setMaximum(100)
+        self.autolink_slider.setProperty("value", 60)
+        self.autolink_slider.setOrientation(QtCore.Qt.Horizontal)
+        self.autolink_slider.setObjectName("autolink_slider")
+        self.horizontalLayout_7.addWidget(self.autolink_slider)
         self.rnd_link_pushButton = QtWidgets.QPushButton(self.frame_10)
         self.rnd_link_pushButton.setText("")
         icon2 = QtGui.QIcon()
@@ -185,6 +192,7 @@ class Ui_Dialog(object):
         self.open_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Import file", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "Units", None, -1))
         self.autolink_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Automatic link profiles to objects based on their name", None, -1))
+        self.autolink_slider.setToolTip(QtWidgets.QApplication.translate("Dialog", "Auto-link string simmilarity", None, -1))
         self.rnd_link_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Random-link profiles and objects", None, -1))
         self.assign_to_all_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Assign profile to all objects", None, -1))
         self.assign_to_selection_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Assign profile to object selection", None, -1))

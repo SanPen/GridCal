@@ -63,8 +63,8 @@ def create_data_frames(circuit: MultiCircuit):
     obj = list()
     obj.append(['BaseMVA', circuit.Sbase])
     obj.append(['Version', 4])
-    obj.append(['Name', circuit.name])
-    obj.append(['Comments', circuit.comments])
+    obj.append(['Name', str(circuit.name)])
+    obj.append(['Comments', str(circuit.comments)])
     obj.append(['program', 'GridCal'])
 
     dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])

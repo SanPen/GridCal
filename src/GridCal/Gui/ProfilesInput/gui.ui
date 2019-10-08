@@ -135,6 +135,25 @@
                </widget>
               </item>
               <item>
+               <widget class="QSlider" name="autolink_slider">
+                <property name="toolTip">
+                 <string>Auto-link string simmilarity</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>60</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="rnd_link_pushButton">
                 <property name="toolTip">
                  <string>Random-link profiles and objects</string>

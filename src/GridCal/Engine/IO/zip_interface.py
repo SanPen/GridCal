@@ -95,6 +95,8 @@ def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None)
 
                 if 'name' in df.index:
                     data["name"] = df.at['name', 'Value']
+                elif 'Name' in df.index:
+                    data["name"] = df.at['Name', 'Value']
                 else:
                     data["name"] = 'Grid'
 

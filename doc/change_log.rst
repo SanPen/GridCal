@@ -10,13 +10,20 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+
+Version 3.6.0
+_____________
+
+- Fixed csv profile input.
+- Added similarity-based auto link in the profile import.
+- Improved PSS/e import by improving the device naming.
+
 Version 3.5.9
 _____________
 
 - Added the ability to ignore single node islands
 - Fixed voltage module in the LACPF algorithm: Now the PQ buses voltage is closer to NR.
 - Improved the Newton-Raphson line search speed by roughly 200% by tuning the acceleration parameter.
-
 
 Version 3.5.8
 _____________

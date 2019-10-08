@@ -3,7 +3,7 @@ import string
 import sys
 from random import randint
 from enum import Enum
-
+from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 # from PySide2.QtCore import *
@@ -184,6 +184,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.assign_to_selection_pushButton.clicked.connect(self.link_to_selection)
         self.ui.assign_to_all_pushButton.clicked.connect(self.link_to_all)
         self.ui.doit_button.clicked.connect(self.do_it)
+        self.ui.clear_selection_button.clicked.connect(self.clear_selection)
 
         # double click
         self.ui.sources_list.doubleClicked.connect(self.sources_list_double_click)
@@ -235,38 +236,42 @@ class ProfileInputGUI(QtWidgets.QDialog):
                                                               options=options)
 
         if len(filename) > 0:
+            # get the filename extension
+            name, file_extension = os.path.splitext(filename)
 
-            # select the sheet from the file
-            window = ExcelDialog(self, filename)
-            window.exec_()
-            sheet_index = window.excel_sheet
+            # Depending on the extension load the file
+            if file_extension == '.csv':
+                self.original_data_frame = pd.read_csv(filename, index_col=0)
 
-            if sheet_index is not None:
-                # get the filename extension
-                name, file_extension = os.path.splitext(filename)
+            elif file_extension in ['.xlsx', '.xls']:
 
-                # Depending on the extension load the file
-                if file_extension == '.csv':
-                    self.original_data_frame = pd.read_csv(filename, index_col=0)
+                # select the sheet from the file
+                window = ExcelDialog(self, filename)
+                window.exec_()
+                sheet_index = window.excel_sheet
 
-                elif file_extension in ['.xlsx', '.xls']:
+                if sheet_index is not None:
+
                     self.original_data_frame = pd.read_excel(filename, sheet_name=sheet_index, index_col=0)
 
-                # try to format the data
-                try:
-                    self.original_data_frame = self.original_data_frame.astype(float)
-                except:
-                    self.msg('The format of the data is not recognized. Only int or float values are allowed')
+                else:
                     return
 
-                # set the profile names list
-                self.profile_names = self.original_data_frame.columns
+            # try to format the data
+            try:
+                self.original_data_frame = self.original_data_frame.astype(float)
+            except:
+                self.msg('The format of the data is not recognized. Only int or float values are allowed')
+                return
 
-                # set the loaded data_frame to the GUI
-                model = PandasModel(self.original_data_frame)
-                self.ui.tableView.setModel(model)
+            # set the profile names list
+            self.profile_names = self.original_data_frame.columns
 
-                self.ui.sources_list.setModel(get_list_model(self.original_data_frame.columns))
+            # set the loaded data_frame to the GUI
+            model = PandasModel(self.original_data_frame)
+            self.ui.tableView.setModel(model)
+
+            self.ui.sources_list.setModel(get_list_model(self.original_data_frame.columns))
 
     def sources_list_double_click(self):
         """
@@ -394,27 +399,25 @@ class ProfileInputGUI(QtWidgets.QDialog):
         Performs an automatic link between the sources and the objectives based on the names
         """
         mult = self.get_multiplier()
-        idx_o = 0
-        for objective in self.objects:
+        threshold = self.ui.autolink_slider.value() / 100.0
 
-            idx_s = 0
-            for source in self.profile_names:
+        for idx_o, elm in enumerate(self.objects):
 
-                try:
-                    name = objective.name
-                except:
-                    name = ''
+            max_val = 0
+            max_idx = None
+            for idx_s, profile_name in enumerate(self.profile_names):
 
-                if self.normalize_string(source) in self.normalize_string(name) \
-                 or self.normalize_string(name) in self.normalize_string(source)  \
-                 or source in name \
-                 or name in source:
+                # find the string distance
+                d = SequenceMatcher(None, elm.name, profile_name).ratio()
 
-                    self.make_association(idx_s, idx_o, mult)
+                if d > max_val:
+                    max_val = d
+                    max_idx = idx_s
 
-                idx_s += 1
+            # assign the string with the closest profile (60% or better similarity)
+            if max_idx is not None and max_val > threshold:
+                self.make_association(max_idx, idx_o, mult)
 
-            idx_o += 1
         self.display_associations()
 
     def rnd_link(self):
@@ -599,6 +602,15 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 data[objective_name] = np.array(dta).transpose()
 
         return data
+
+    def clear_selection(self):
+        """
+        Clear the selected associations
+        """
+        for idx in self.ui.assignation_table.selectedIndexes():
+            obj_idx = idx.row()
+            self.associations[obj_idx][self.P_idx] = ""
+        self.display_associations()
 
     def do_it(self):
         """

@@ -324,7 +324,6 @@ class PSSeLoad:
         """
 
         # GL and BL come in MW and MVAr
-        # THey must be in siemens
         vv = bus.Vnom ** 2.0
 
         if vv == 0:
@@ -333,9 +332,8 @@ class PSSeLoad:
         g, b = self.YP, self.YQ
         ir, ii = self.IP, self.IQ
         p, q = self.PL, self.QL
-
-        elm = Load(name=str(self.I) + '_' + self.ID,
-                      G=g, B=b, Ir=ir, Ii=ii, P=p, Q=q)
+        name = str(self.I) + '_' + self.ID.replace("'", "")
+        elm = Load(name=name, G=g, B=b, Ir=ir, Ii=ii, P=p, Q=q)
 
         return elm
 
@@ -667,8 +665,8 @@ class PSSeGenerator:
         Returns:
             Gridcal Load object
         """
-
-        elm = Generator(name=str(self.I) + '_' + str(self.ID),
+        name = str(self.I) + '_' + str(self.ID).replace("'", "")
+        elm = Generator(name=name,
                         active_power=self.PG,
                         voltage_module=self.VS,
                         Qmin=self.QB,
@@ -828,9 +826,10 @@ class PSSeBranch:
         j = abs(self.J)
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
+        name = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "")
 
         branch = Branch(bus_from=bus_from, bus_to=bus_to,
-                        name=str(i) + '_' + str(j),
+                        name=name,
                         r=self.R,
                         x=self.X,
                         g=1e-20,
