@@ -2087,7 +2087,13 @@ class MainGUI(QMainWindow):
                         # get the power flow options from the GUI
                         sc_options = ShortCircuitOptions(bus_index=sel_buses,
                                                          branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
-                        self.short_circuit = ShortCircuit(self.circuit, sc_options, self.power_flow.results)
+
+                        pf_options = self.get_selected_power_flow_options()
+
+                        self.short_circuit = ShortCircuit(grid=self.circuit,
+                                                          options=sc_options,
+                                                          pf_options=pf_options,
+                                                          pf_results=self.power_flow.results)
 
                         # self.threadpool.start(self.short_circuit)
                         # self.threadpool.waitForDone()

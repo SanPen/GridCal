@@ -20,7 +20,7 @@ from PySide2.QtCore import QRunnable
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_3p
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
@@ -237,7 +237,8 @@ class ShortCircuit(QRunnable):
     # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()
 
-    def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions, pf_results: PowerFlowResults):
+    def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions, pf_options: PowerFlowOptions,
+                 pf_results: PowerFlowResults):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -249,6 +250,8 @@ class ShortCircuit(QRunnable):
 
         # power flow results
         self.pf_results = pf_results
+
+        self.pf_options = pf_options
 
         # Options to use
         self.options = options
@@ -387,10 +390,7 @@ class ShortCircuit(QRunnable):
         losses = Sf - St
         Ibranch = np.maximum(If, It)
         Sbranch = np.maximum(Sf, St)
-        loading = Sbranch * calculation_inputs.Sbase / calculation_inputs.branch_rates
-
-        # idx = where(abs(loading) == inf)[0]
-        # loading[idx] = 9999
+        loading = Sbranch * calculation_inputs.Sbase / (calculation_inputs.branch_rates + 1e-20)
 
         return Sbranch, Ibranch, loading, losses
 
@@ -399,8 +399,6 @@ class ShortCircuit(QRunnable):
         Run a power flow for every circuit
         @return:
         """
-        # print('Short circuit at ', self.grid.name)
-        # self.progress_signal.emit(0.0)
 
         if len(self.options.branch_index) > 0:
 
