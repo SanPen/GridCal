@@ -23,7 +23,7 @@ from poap.controller import ThreadController, BasicWorkerThread
 from scipy.optimize import fmin_bfgs, minimize
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlow, PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 
@@ -52,7 +52,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         self.callback = callback
 
         # initialize the power flow
-        self.power_flow = PowerFlow(self.circuit, self.options)
+        self.power_flow = PowerFlowDriver(self.circuit, self.options)
 
         # compile circuits
         self.numerical_circuit = self.circuit.compile()

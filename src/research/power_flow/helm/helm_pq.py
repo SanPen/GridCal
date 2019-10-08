@@ -220,7 +220,7 @@ if __name__ == '__main__':
     # check the HELM solution: v against the NR power flow
     # print('\nNR')
     # options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9)
-    # power_flow = PowerFlow(grid, options)
+    # power_flow = PowerFlowDriver(grid, options)
     # power_flow.run()
     # vnr = circuit.power_flow_results.voltage
     #

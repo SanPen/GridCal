@@ -17,7 +17,7 @@ import numpy as np
 
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Devices import DeviceType

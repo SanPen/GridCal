@@ -18,7 +18,7 @@ def test_voltage_collapse(root_path=ROOT_PATH):
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     ####################################################################################################################
-    # PowerFlow
+    # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
     vc_options = VoltageCollapseOptions()

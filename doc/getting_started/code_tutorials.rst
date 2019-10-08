@@ -76,7 +76,7 @@ the results are printed on the console.
 
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     print('\n\n', grid.name)

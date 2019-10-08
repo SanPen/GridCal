@@ -13,9 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import numpy as np
-from itertools import product
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.ThirdParty.pulp import *

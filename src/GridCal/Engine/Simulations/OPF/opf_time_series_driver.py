@@ -22,8 +22,7 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
@@ -246,7 +245,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
     def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
         """
-        PowerFlow class constructor
+        PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
         @param options: OPF options
         """

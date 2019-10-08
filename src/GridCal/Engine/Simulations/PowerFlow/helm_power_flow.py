@@ -413,7 +413,7 @@ if __name__ == '__main__':
     # check the HELM solution: v against the NR power flow
     print('\nNR')
     options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
 
     start_time = time.time()
     power_flow.run()

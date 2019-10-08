@@ -15,7 +15,7 @@
 
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlow
+    PowerFlowOptions, SolverType, PowerFlowDriver
 from GridCal.print_power_flow_results import print_power_flow_results
 import numpy as np
 
@@ -32,7 +32,7 @@ def test_api_helm():
 
     # print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())
     options = PowerFlowOptions(SolverType.HELM, verbose=False, tolerance=1e-9)
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     print_power_flow_results(power_flow)

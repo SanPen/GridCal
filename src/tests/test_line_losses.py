@@ -4,7 +4,7 @@ from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, PowerFlow
+    PowerFlowOptions, PowerFlowDriver
 
 
 def test_line_losses_1():
@@ -37,7 +37,7 @@ def test_line_losses_1():
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     # Check solution
@@ -120,7 +120,7 @@ def test_line_losses_2():
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     # Check solution
@@ -202,7 +202,7 @@ def test_line_losses_3():
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     # Check solution

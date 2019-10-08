@@ -19,7 +19,7 @@ import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, PowerFlowMP, SolverType
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
 

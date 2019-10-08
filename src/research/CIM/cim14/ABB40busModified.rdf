@@ -14452,7 +14452,7 @@
 		<cim:IdentifiedObject.name>Estimated</cim:IdentifiedObject.name>
 	</cim:MeasurementValueSource>
 	<cim:MeasurementValueSource rdf:ID="_624665E4F2DE4A8DA24ECECEF0BC7DE2">
-		<cim:IdentifiedObject.name>PowerFlow</cim:IdentifiedObject.name>
+		<cim:IdentifiedObject.name>PowerFlowDriver</cim:IdentifiedObject.name>
 	</cim:MeasurementValueSource>
 	<cim:MeasurementValueSource rdf:ID="_D64EED6CB3AA4CFDA5EDA86FD421139B">
 		<cim:IdentifiedObject.name>Calculated</cim:IdentifiedObject.name>

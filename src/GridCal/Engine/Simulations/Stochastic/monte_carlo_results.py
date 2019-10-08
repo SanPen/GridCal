@@ -17,11 +17,7 @@ import os
 import json
 from warnings import warn
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
-
-from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel

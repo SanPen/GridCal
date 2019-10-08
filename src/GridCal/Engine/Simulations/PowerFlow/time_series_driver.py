@@ -18,7 +18,6 @@ import pandas as pd
 import numpy as np
 import time
 import multiprocessing
-from matplotlib import pyplot as plt
 
 from PySide2.QtCore import QThread, Signal
 
@@ -26,7 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import power_flow_worker, PowerFlowOptions, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_worker, PowerFlowOptions, PowerFlowMP
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 

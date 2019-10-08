@@ -934,7 +934,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
 if __name__ == '__main__':
 
     from GridCal.Engine.IO.file_handler import *
-    from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, \
+    from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlowDriver, \
         SolverType
     from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
     from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
@@ -959,10 +959,10 @@ if __name__ == '__main__':
                                control_p=True)
 
     ####################################################################################################################
-    # PowerFlow
+    # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    power_flow = PowerFlow(main_circuit, options)
+    power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
     print('\n\n', main_circuit.name)

@@ -1,9 +1,9 @@
 import numpy as np
-np.set_printoptions(linewidth=320)
 from numpy import angle, conj, exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
+np.set_printoptions(linewidth=320)
 
 
 def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):

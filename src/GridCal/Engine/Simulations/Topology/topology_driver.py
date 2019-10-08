@@ -1,13 +1,26 @@
-
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.branch import BranchType
-from GridCal.Engine.Devices.bus import Bus
-
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from networkx import DiGraph, all_simple_paths
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
 from PySide2.QtCore import QThread, Signal
 from typing import List
+
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Devices.branch import BranchType
+from GridCal.Engine.Devices.bus import Bus
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)

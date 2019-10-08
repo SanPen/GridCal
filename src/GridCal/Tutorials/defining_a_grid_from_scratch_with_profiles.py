@@ -15,7 +15,7 @@ from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlow
+    PowerFlowOptions, SolverType, PowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
 
@@ -170,7 +170,7 @@ def main():
                                   )
 
     # Declare and execute the power flow simulation
-    pf = PowerFlow(grid, pf_options)
+    pf = PowerFlowDriver(grid, pf_options)
     pf.run()
 
     # now, let's compose a nice DataFrame with the voltage results

@@ -28,7 +28,7 @@ class ShortCircuit(QRunnable):
 
     def __init__(self, grid: MultiCircuit):
         """
-        PowerFlow class constructor
+        PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
         """
         QRunnable.__init__(self)

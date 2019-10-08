@@ -26,7 +26,7 @@ from GridCal.Engine.Simulations.OPF.opf_time_series_driver import \
 from GridCal.Engine.Simulations.Optimization.optimization_driver import \
     Optimize
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    ReactivePowerControlMode, PowerFlowOptions, SolverType, PowerFlow
+    ReactivePowerControlMode, PowerFlowOptions, SolverType, PowerFlowDriver
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import \
     ShortCircuitOptions, ShortCircuit
@@ -49,10 +49,10 @@ def _test_api():
                                control_q=ReactivePowerControlMode.NoControl,
                                control_p=True)
     ####################################################################################################################
-    # PowerFlow
+    # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    power_flow = PowerFlow(main_circuit, options)
+    power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(power_flow.results.voltage))

@@ -15,9 +15,6 @@
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-
-from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCal.Gui.GuiFunctions import ResultsModel

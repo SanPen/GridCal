@@ -17,7 +17,7 @@ import time
 from GridCal.Engine.IO.file_handler import FileOpen
 from multiprocessing import Pool
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlow, \
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, \
     PowerFlowMP, SolverType, PowerFlowOptions
 
 
@@ -31,11 +31,11 @@ def simulation_constructor(args):
     # grd = grid.copy()
     # grd.name = 'grid ' + str(i)
     # grd.compile()
-    # return PowerFlow(grd, options)
+    # return PowerFlowDriver(grd, options)
     return PowerFlowMP(args[0], args[1])
 
 
-def instance_executor(instance: PowerFlow):
+def instance_executor(instance: PowerFlowDriver):
     """
     function to run the instance
 
@@ -64,7 +64,7 @@ def test_api_multi_core():
     print('\n\n', grid.name)
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     # create instances of the of the power flow simulation given the grid

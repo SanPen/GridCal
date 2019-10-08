@@ -189,7 +189,7 @@ def res_2_df(V, Sbus, tpe):
 
 
 if __name__ == '__main__':
-    from GridCal.Engine import FileOpen, PowerFlowOptions, PowerFlow, SolverType
+    from GridCal.Engine import FileOpen, PowerFlowOptions, PowerFlowDriver, SolverType
     from matplotlib import pyplot as plt
 
 
@@ -240,7 +240,7 @@ if __name__ == '__main__':
     # check the method solution: v against the Newton-Raphson power flow
     print('\nNR')
     options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
 
     start_time = time.time()
     power_flow.run()

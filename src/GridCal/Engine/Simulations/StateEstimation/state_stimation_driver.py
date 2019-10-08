@@ -17,7 +17,7 @@ import numpy as np
 from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, PowerFlowMP
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.measurement import MeasurementType
 

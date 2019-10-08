@@ -6,7 +6,7 @@ from GridCal.Engine.Devices.static_generator import StaticGenerator
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, ReactivePowerControlMode, PowerFlow
+    PowerFlowOptions, SolverType, ReactivePowerControlMode, PowerFlowDriver
 
 Sbase = 100 # MVA
 
@@ -131,7 +131,7 @@ def test_xfo_static_tap_1():
                                tolerance=1e-6,
                                max_iter=99)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
@@ -282,7 +282,7 @@ def test_xfo_static_tap_2():
                                tolerance=1e-6,
                                max_iter=99)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
@@ -436,7 +436,7 @@ def test_xfo_static_tap_3():
                                tolerance=1e-6,
                                max_iter=15)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     print()

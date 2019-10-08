@@ -17,7 +17,7 @@ import numpy as np
 from typing import List
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit, NumericalCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowMP, PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, PowerFlowMP, PowerFlowResults
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation, PTDFResults
 
 

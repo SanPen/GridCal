@@ -620,7 +620,7 @@ def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
 
 def runge_kutta_nr(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, error_registry=None):
     """
-    Solves the power flow using a full Newton's method with the backtrack improvement algorithm
+    Solves the power flow using a the runge-kutta integration algorithm
     Args:
         Ybus: Admittance matrix
         Sbus: Array of nodal power injections
@@ -634,7 +634,7 @@ def runge_kutta_nr(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, error_registry=
     Returns:
         Voltage solution, converged?, error, calculated power injections, elapsed time
 
-    @Author: Santiago Penate Vera
+    @Author: Santiago Peñate Vera
     """
 
     start = time.time()
@@ -743,7 +743,7 @@ def runge_kutta_nr(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, error_registry=
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine import PowerFlowOptions, PowerFlow, SolverType, FileOpen
+    from GridCal.Engine import PowerFlowOptions, PowerFlowDriver, SolverType, FileOpen
     from matplotlib import pyplot as plt
     import pandas as pd
     import os
@@ -754,9 +754,10 @@ if __name__ == "__main__":
     pd.set_option('display.width', 1000)
 
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Pegase 2869.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
+    fname = '/home/santi/Documentos/Private_Grids/2026_INVIERNO_para Plexos_FINAL_9.raw'
 
     grid = FileOpen(file_name=fname).open()
     nc = grid.compile()
@@ -766,6 +767,8 @@ if __name__ == "__main__":
     # declare figure
     fig = plt.figure(figsize=(12, 7))
     ax = fig.add_subplot(1, 1, 1)
+
+    circuit.Vbus = np.ones(len(circuit.Vbus), dtype=complex)
 
     print('Newton-Raphson-Line-search 1')
     for acc in [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]:
@@ -848,22 +851,21 @@ if __name__ == "__main__":
     ax.legend()
 
     # check against the standard NR power flow used in GridCal
-    print('\nNR implemented in GridCal ---')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
-    power_flow = PowerFlow(grid, options)
-
-    start_time = time.time()
-    power_flow.run()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = power_flow.results.voltage
-
-    print('error: \t', power_flow.results.error)
-
-    # check
-
-    data = np.c_[np.abs(V1), angle(V1), np.abs(vnr), angle(vnr),  np.abs(V1 - vnr)]
-    cols = ['|V|', 'angle', '|V| benchmark NR', 'angle benchmark NR', 'Diff']
-    df = pd.DataFrame(data, columns=cols)
+    # print('\nNR implemented in GridCal ---')
+    # options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
+    # power_flow = PowerFlowDriver(grid, options)
+    #
+    # start_time = time.time()
+    # power_flow.run()
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # vnr = power_flow.results.voltage
+    #
+    # print('error: \t', power_flow.results.error)
+    #
+    # # check
+    # data = np.c_[np.abs(V1), angle(V1), np.abs(vnr), angle(vnr),  np.abs(V1 - vnr)]
+    # cols = ['|V|', 'angle', '|V| benchmark NR', 'angle benchmark NR', 'Diff']
+    # df = pd.DataFrame(data, columns=cols)
 
     print()
     # print(df)

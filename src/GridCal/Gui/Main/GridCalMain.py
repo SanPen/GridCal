@@ -27,11 +27,7 @@ from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.Main.visualization import colour_the_schematic
 
 # Engine imports
-# from GridCal.Engine.OptimizationDriver import *
-# from GridCal.Engine.StateEstimationDriver import *
-from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
-from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
@@ -41,11 +37,11 @@ from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
 from GridCal.Engine.IO.file_handler import *
-import GridCal.Engine.plot_config as plot_config
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 from GridCal.Engine.Simulations.result_types import SimulationTypes
@@ -2003,17 +1999,19 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                self.power_flow = PowerFlow(self.circuit, options)
+                self.power_flow = PowerFlowDriver(self.circuit, options)
 
-                # self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-                # self.power_flow.progress_text.connect(self.ui.progress_label.setText)
-                # self.power_flow.done_signal.connect(self.UNLOCK)
-                # self.power_flow.done_signal.connect(self.post_power_flow)
+                self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+                self.power_flow.progress_text.connect(self.ui.progress_label.setText)
+                self.power_flow.done_signal.connect(self.UNLOCK)
+                self.power_flow.done_signal.connect(self.post_power_flow)
+                self.power_flow.start()
+
 
                 # self.power_flow.run()
-                self.threadpool.start(self.power_flow)
-                self.threadpool.waitForDone()
-                self.post_power_flow()
+                # self.threadpool.start(self.power_flow)
+                # self.threadpool.waitForDone()
+                # self.post_power_flow()
             else:
                 self.msg('Another simulation of the same type is running...')
         else:

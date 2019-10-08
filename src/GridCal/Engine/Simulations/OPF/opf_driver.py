@@ -22,9 +22,7 @@ from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
 from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import SolverType
-from GridCal.Engine.Simulations.OPF.nelder_mead_opf import AcOpfNelderMead
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -71,7 +69,7 @@ class OptimalPowerFlow(QThread):
 
     def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
         """
-        PowerFlow class constructor
+        PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
         @param options: OPF options
         """
@@ -104,7 +102,7 @@ class OptimalPowerFlow(QThread):
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
         """
-        # print('PowerFlow at ', self.grid.name)
+        # print('PowerFlowDriver at ', self.grid.name)
 
         # self.progress_signal.emit(0.0)
         numerical_circuit = self.grid.compile()

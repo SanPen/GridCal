@@ -66,10 +66,10 @@ if __name__ == '__main__':
     sc_bus_index = len(main_circuit.buses) - 1
 
     ####################################################################################################################
-    # PowerFlow
+    # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    power_flow = PowerFlow(main_circuit, options)
+    power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
     print('\n\n', main_circuit.name, ' number of buses:', len(main_circuit.buses))

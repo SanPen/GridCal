@@ -4,7 +4,7 @@ from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, PowerFlow
+    PowerFlowOptions, PowerFlowDriver
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 
 Sbase = 100  # MVA
@@ -42,7 +42,7 @@ def test_tolerance_lf_higher():
     options = PowerFlowOptions(verbose=True,
                                branch_impedance_tolerance_mode=BranchImpedanceMode.Upper)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     # Check solution
@@ -133,7 +133,7 @@ def test_tolerance_lf_lower():
     options = PowerFlowOptions(verbose=True,
                                branch_impedance_tolerance_mode=BranchImpedanceMode.Lower)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     # Check solution

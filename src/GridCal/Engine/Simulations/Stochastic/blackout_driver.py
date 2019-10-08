@@ -18,7 +18,9 @@ import pandas as pd
 import numpy as np
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlow, PowerFlowMP
+
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, PowerFlowMP
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -209,13 +211,13 @@ class Cascading(QThread):
 
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowDriver(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
             model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
 
         else:
-            model_simulator = PowerFlow(self.grid, self.options)
+            model_simulator = PowerFlowDriver(self.grid, self.options)
 
         # For every circuit, run a power flow
         # for c in self.grid.circuits:

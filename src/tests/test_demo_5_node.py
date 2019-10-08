@@ -21,7 +21,7 @@ from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlow
+    PowerFlowOptions, SolverType, PowerFlowDriver
 from GridCal.print_power_flow_results import print_power_flow_results
 from tests.conftest import ROOT_PATH
 
@@ -67,7 +67,7 @@ def test_demo_5_node(root_path):
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
 
-    power_flow = PowerFlow(grid, options)
+    power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
     print_power_flow_results(power_flow=power_flow)

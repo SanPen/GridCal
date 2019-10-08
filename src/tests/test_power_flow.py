@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlow, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlowDriver, SolverType
 
 
 def test_power_flow():
@@ -18,10 +18,10 @@ def test_power_flow():
     # grid.export_profiles('ppppppprrrrroooofiles.xlsx')
     # exit()
     ####################################################################################################################
-    # PowerFlow
+    # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    power_flow = PowerFlow(main_circuit, options)
+    power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(power_flow.results.voltage))
