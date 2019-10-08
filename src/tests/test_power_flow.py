@@ -1,7 +1,9 @@
 from pathlib import Path
 
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlowDriver, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
+    PowerFlowOptions, ReactivePowerControlMode, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
 def test_power_flow():

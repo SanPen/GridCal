@@ -5,8 +5,9 @@ from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.static_generator import StaticGenerator
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, ReactivePowerControlMode, PowerFlowDriver
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
+    PowerFlowOptions, ReactivePowerControlMode, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 Sbase = 100 # MVA
 

@@ -8,14 +8,15 @@ Author: Santiago Peñate Vera (September 2018)
 """
 import numpy as np
 import pandas as pd
-
+from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.branch import Branch, BranchTemplate
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlowDriver
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
+    PowerFlowOptions, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
 

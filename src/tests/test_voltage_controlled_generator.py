@@ -4,9 +4,9 @@ from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, PowerFlowDriver, SolverType, ReactivePowerControlMode, \
-    TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
+    PowerFlowOptions, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
 def complex_impedance(z, XR):
