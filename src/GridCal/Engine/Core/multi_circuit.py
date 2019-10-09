@@ -677,7 +677,6 @@ class MultiCircuit:
                 circuit.static_gen_active[i_sta_gen] = elm.active
                 circuit.static_gen_mttf[i_sta_gen] = elm.mttf
                 circuit.static_gen_mttr[i_sta_gen] = elm.mttr
-                # circuit.static_gen_dispatchable[i_sta_gen] = elm.enabled_dispatch
 
                 if n_time > 0:
                     circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
