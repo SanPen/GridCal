@@ -575,9 +575,6 @@ class TimeSeries(QThread):
                                                         ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         jobs = list()
-
-        self.threadpool = QThreadPool()
-
         if len(calc_inputs_dict) == 1:
 
             # there is only one partition

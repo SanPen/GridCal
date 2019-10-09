@@ -21,13 +21,13 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType, m
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 
-def test_api_multi_core_starmap(file_name, batch_size=100):
+def test_api_multi_core_starmap():
     """
     Test the pool.starmap function together with GridCal
-    :param file_name: name of the file
-    :param batch_size: size of the batch
-    :return:
     """
+
+    file_name = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    batch_size = 100
     grid = FileOpen(file_name).open()
     print('\n\n', grid.name)
 
@@ -46,6 +46,4 @@ def test_api_multi_core_starmap(file_name, batch_size=100):
 
 if __name__ == '__main__':
 
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
-
-    test_api_multi_core_starmap(file_name=fname, batch_size=1000)
+    test_api_multi_core_starmap()
