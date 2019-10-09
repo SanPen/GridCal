@@ -1322,5 +1322,5 @@ def power_flow_worker_args(args):
     :return:
     """
     t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
-    # instance = PowerFlowMP(None, options)
+
     return_dict[t] = single_island_pf(circuit, Vbus, Sbus, Ibus, options=options, logger=list())
