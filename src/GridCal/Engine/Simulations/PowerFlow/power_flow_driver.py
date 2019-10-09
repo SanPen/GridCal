@@ -46,8 +46,6 @@ class PowerFlowDriver(QThread):
 
         self.results = PowerFlowResults()
 
-        # self.pf = PowerFlowMP(grid, options)
-
         self.logger = list()
 
         self.convergence_reports = list()

@@ -1209,7 +1209,7 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, options: Powe
         return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger, t=None, convergence_reports=list()):
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, t=None, logger=list(), convergence_reports=list()):
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance

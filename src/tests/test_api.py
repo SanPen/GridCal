@@ -33,8 +33,7 @@ from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 
 
 def _test_api():
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids',
-                         'IEEE 30 Bus with storage.xlsx')
+    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     options = PowerFlowOptions(SolverType.NR, verbose=False,

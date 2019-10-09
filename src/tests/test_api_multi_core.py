@@ -13,54 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import time
-
+import os
 from GridCal.Engine.IO.file_handler import FileOpen
 from multiprocessing import Pool
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType, multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 
-def simulation_constructor(args):
+def test_api_multi_core_starmap(file_name, batch_size=100):
     """
-    function to create a copy of the grid and a power flow associated
-
-    :param args:
+    Test the pool.starmap function together with GridCal
+    :param file_name: name of the file
+    :param batch_size: size of the batch
     :return:
     """
-    # grd = grid.copy()
-    # grd.name = 'grid ' + str(i)
-    # grd.compile()
-    # return PowerFlowDriver(grd, options)
-    return PowerFlowDriver(args[0], args[1])
-
-
-def instance_executor(instance: PowerFlowDriver):
-    """
-    function to run the instance
-
-    :param instance:
-    :return:
-    """
-    instance.run()
-
-    return instance.grid
-
-
-def test_api_multi_core():
-
-    batch_size = 10000
-
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_118.xls'
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_57BUS.xls'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
-    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE_30_new.xlsx'
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
-
-    grid = FileOpen(fname).open()
-    grid.compile()
+    grid = FileOpen(file_name).open()
     print('\n\n', grid.name)
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
@@ -68,34 +36,16 @@ def test_api_multi_core():
     power_flow.run()
 
     # create instances of the of the power flow simulation given the grid
-    print('cloning...')
-    pool = Pool()
-    instances = pool.map(simulation_constructor, [[grid, options]]*batch_size)
-    # run asynchronous power flows on the created instances
     print('running...')
-    instances = pool.map_async(instance_executor, instances)
 
-    # monitor progress
-    while True:
-        if instances.ready():
-            break
-        remaining = instances._number_left
-        progress = ((batch_size - remaining + 1) / batch_size) * 100
-        print("Waiting for", remaining, "tasks to complete...", progress, '%')
+    pool = Pool()
+    results = pool.starmap(multi_island_pf, [(grid, options, 0)] * batch_size)
 
-        time.sleep(0.5)
-
-    # display the collected results
-    for instance in instances.get():
-        print('\n\n' + instance.name)
-        # print('\t|V|:', abs(instance.power_flow.results.voltage))
-
-    # print('\t|V|:', abs(grid.power_flow.results.voltage))
-    # print('\t|Sbranch|:', abs(grid.power_flow.results.Sbranch))
-    # print('\t|loading|:', abs(grid.power_flow_results.loading) * 100)
-    # print('\terr:', grid.power_flow_results.error)
-    # print('\tConv:', grid.power_flow_results.converged)
+    print()
 
 
 if __name__ == '__main__':
-    test_api_multi_core()
+
+    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+
+    test_api_multi_core_starmap(file_name=fname, batch_size=1000)

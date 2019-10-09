@@ -72,5 +72,6 @@ def test_demo_5_node(root_path):
 
     print_power_flow_results(power_flow=power_flow)
 
+
 if __name__ == '__main__':
     test_demo_5_node(root_path=ROOT_PATH)

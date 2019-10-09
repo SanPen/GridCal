@@ -12,20 +12,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import os
+import numpy as np
 
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from GridCal.print_power_flow_results import print_power_flow_results
-import numpy as np
 
 
 def test_api_helm():
     np.set_printoptions(precision=4)
-    # fname = 'Muthu4Bus.xls'
-    # fname = 'IEEE_30BUS.xls'
-    fname = 'IEEE_39Bus.xls'
-    # fname = 'case9target.xls'
+    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     grid = FileOpen(fname).open()
     grid.compile()
     print('\n\n', grid.name)

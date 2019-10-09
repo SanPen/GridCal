@@ -128,3 +128,5 @@ class PowerFlowOptions:
 
         self.acceleration_parameter = correction_parameter
 
+    def __str__(self):
+        return "PowerFlowOptions"
