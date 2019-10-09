@@ -20,8 +20,8 @@ from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.load import Load
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, SolverType, PowerFlowDriver
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from GridCal.print_power_flow_results import print_power_flow_results
 from tests.conftest import ROOT_PATH
 
@@ -71,10 +71,6 @@ def test_demo_5_node(root_path):
     power_flow.run()
 
     print_power_flow_results(power_flow=power_flow)
-
-    # fname = root_path / 'data' / 'output' / 'test_demo_5_node.png'
-    # plt.savefig(fname=fname)
-
 
 if __name__ == '__main__':
     test_demo_5_node(root_path=ROOT_PATH)

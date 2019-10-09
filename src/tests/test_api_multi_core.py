@@ -17,8 +17,8 @@ import time
 from GridCal.Engine.IO.file_handler import FileOpen
 from multiprocessing import Pool
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, \
-    PowerFlowMP, SolverType, PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 
 def simulation_constructor(args):
@@ -32,7 +32,7 @@ def simulation_constructor(args):
     # grd.name = 'grid ' + str(i)
     # grd.compile()
     # return PowerFlowDriver(grd, options)
-    return PowerFlowMP(args[0], args[1])
+    return PowerFlowDriver(args[0], args[1])
 
 
 def instance_executor(instance: PowerFlowDriver):

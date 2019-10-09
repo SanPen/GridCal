@@ -15,25 +15,19 @@
 import os
 
 from numpy.matlib import zeros
-
+import numpy as np
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
     VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
-from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions, \
-    OptimalPowerFlow
-from GridCal.Engine.Simulations.OPF.opf_time_series_driver import \
-    OptimalPowerFlowTimeSeries
-from GridCal.Engine.Simulations.Optimization.optimization_driver import \
-    Optimize
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    ReactivePowerControlMode, PowerFlowOptions, SolverType, PowerFlowDriver
+from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions, OptimalPowerFlow
+from GridCal.Engine.Simulations.OPF.opf_time_series_driver import OptimalPowerFlowTimeSeries
+from GridCal.Engine.Simulations.Optimization.optimization_driver import Optimize
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import ReactivePowerControlMode, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
-from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import \
-    ShortCircuitOptions, ShortCircuit
-from GridCal.Engine.Simulations.Stochastic.blackout_driver import Cascading, \
-    CascadeType
-from GridCal.Engine.Simulations.Stochastic.lhs_driver import \
-    LatinHypercubeSampling
+from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import ShortCircuitOptions, ShortCircuit
+from GridCal.Engine.Simulations.Stochastic.blackout_driver import Cascading,  CascadeType
+from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import MonteCarlo
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 
