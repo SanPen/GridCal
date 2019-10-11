@@ -20,6 +20,8 @@ _____________
 - Refactored the power flow section, removing quite a lot of the
   existing complexity. Now there is only one power flow class which
   calls to power flow functions.
+- Changed the multiprocess from multiple processes to a pool.
+  Hopefully this will allow multicore on MS Windows.
 
 Version 3.5.9
 _____________

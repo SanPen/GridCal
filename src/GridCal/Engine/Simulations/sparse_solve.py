@@ -70,7 +70,7 @@ except ImportError:
     print('AMG failed')
 
 
-preferred_type = SparseSolver.KLU
+preferred_type = SparseSolver.BLAS_LAPACK
 
 if preferred_type not in available_sparse_solvers:
     if len(available_sparse_solvers) > 0:

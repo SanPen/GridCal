@@ -198,10 +198,11 @@ class NMinusK(QThread):
                         Ysh = calculation_input.Ysh_prof[:, it]
                         I = calculation_input.Ibus_prof[:, it]
                         S = calculation_input.Sbus_prof[:, it]
+                        branch_rates = calculation_input.branch_rates_prof[it, :]
 
                         # run power flow at the circuit
-                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t,
-                                               options=pf_options, logger=self.logger)
+                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
+                                               branch_rates=branch_rates, options=pf_options, logger=self.logger)
 
                         # Recycle voltage solution
                         last_voltage = res.voltage
@@ -323,10 +324,11 @@ class NMinusK(QThread):
                         Ysh = calculation_input.Ysh_prof[:, it]
                         I = calculation_input.Ibus_prof[:, it]
                         S = calculation_input.Sbus_prof[:, it]
+                        branch_rates = calculation_input.branch_rates_prof[it, :]
 
                         # run power flow at the circuit
-                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I, t=t,
-                                               options=pf_options, logger=self.logger)
+                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
+                                               branch_rates=branch_rates, options=pf_options, logger=self.logger)
 
                         # Recycle voltage solution
                         last_voltage = res.voltage

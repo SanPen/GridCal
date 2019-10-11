@@ -22,7 +22,7 @@ from pySOT.optimization_problems import OptimizationProblem
 from poap.controller import ThreadController, BasicWorkerThread
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions, single_island_pf
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 
@@ -97,7 +97,7 @@ class VoltageOptimizationProblem(OptimizationProblem):
 
             #  run the sampled values
             # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=numerical_island, Vbus=numerical_island.Vbus, Sbus=S, Ibus=I)
+            res = single_island_pf(circuit, Vbus, Sbus, Ibus, options=self.options, logger=self.logger)
 
             self.results.S_points[self.it, numerical_island.original_bus_idx] = S
             self.results.V_points[self.it, numerical_island.original_bus_idx] = res.voltage[

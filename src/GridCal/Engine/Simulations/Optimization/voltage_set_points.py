@@ -104,7 +104,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
 
             #  run the sampled values
             # res = self.power_flow.run_at(0, mc=True)
-            res = self.power_flow.run_pf(circuit=island, Vbus=V, Sbus=island.Sbus, Ibus=island.Ibus)
+            res = single_island_pf(circuit, Vbus, Sbus, Ibus, options=self.options, logger=self.logger)
 
             # self.results.S_points[self.it, island.original_bus_idx] = island.Sbus
             # self.results.V_points[self.it, island.original_bus_idx] = res.voltage[island.original_bus_idx]

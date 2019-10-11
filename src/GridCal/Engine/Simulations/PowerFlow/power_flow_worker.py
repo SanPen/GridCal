@@ -231,7 +231,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
 
 
 def outer_loop_power_flow(circuit: CalculationInputs, options: PowerFlowOptions, solver_type: SolverType,
-                          voltage_solution, Sbus, Ibus, logger, t=None):
+                          voltage_solution, Sbus, Ibus, branch_rates, logger):
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -465,7 +465,9 @@ def outer_loop_power_flow(circuit: CalculationInputs, options: PowerFlowOptions,
 
     # Compute the branches power and the slack buses power
     Sbranch, Ibranch, Vbranch, loading, losses, \
-     flow_direction, Sbus = power_flow_post_process(calculation_inputs=circuit, V=voltage_solution, t=t)
+     flow_direction, Sbus = power_flow_post_process(calculation_inputs=circuit,
+                                                    V=voltage_solution,
+                                                    branch_rates=branch_rates)
 
     # voltage, Sbranch, loading, losses, error, converged, Qpv
     results = PowerFlowResults(Sbus=Sbus,
@@ -680,7 +682,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
     return Qnew, types_new, any_control_issue
 
 
-def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power=False, t=None):
+def power_flow_post_process(calculation_inputs: CalculationInputs, V, branch_rates, only_power=False):
     """
     Compute the power flows trough the branches.
 
@@ -734,10 +736,7 @@ def power_flow_post_process(calculation_inputs: CalculationInputs, V, only_power
         Sbranch = np.maximum(Sf, St) * calculation_inputs.Sbase
 
         # Branch loading in p.u.
-        if t is None:
-            loading = Sbranch / (calculation_inputs.branch_rates + 1e-9)
-        else:
-            loading = Sbranch / (calculation_inputs.branch_rates_prof[t, :] + 1e-9)
+        loading = Sbranch / (branch_rates + 1e-9)
 
         return Sbranch, Ibranch, Vbranch, loading, losses, flow_direction, Sbus
 
@@ -1114,7 +1113,7 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     return stable, tap_module, tap_position
 
 
-def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, options: PowerFlowOptions, logger, t=None):
+def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates, options: PowerFlowOptions, logger):
     """
     Run a power flow for a circuit. In most cases, the **run** method should be
     used instead.
@@ -1172,8 +1171,8 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, options: Powe
                                         voltage_solution=V0,
                                         Sbus=Sbus,
                                         Ibus=Ibus,
-                                        logger=logger,
-                                        t=t)
+                                        branch_rates=branch_rates,
+                                        logger=logger)
 
         # did it worked?
         worked = np.all(results.converged)
@@ -1209,13 +1208,12 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, options: Powe
         return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, t=None, logger=list(), convergence_reports=list()):
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=list(), convergence_reports=list()):
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
     :param options: PowerFlowOptions instance
     :param logger: list of evenets to add to
-    :param t: time step (None if the defualt is to be taken)
     :param convergence_reports:
     :return:
     """
@@ -1249,9 +1247,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, t=No
                                        Vbus=calculation_input.Vbus,
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
+                                       branch_rates=calculation_input.branch_rates,
                                        options=options,
-                                       logger=logger,
-                                       t=t)
+                                       logger=logger)
 
                 bus_original_idx = calculation_input.original_bus_idx
                 branch_original_idx = calculation_input.original_branch_idx
@@ -1272,9 +1270,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, t=No
                                        Vbus=calculation_inputs[0].Vbus,
                                        Sbus=calculation_inputs[0].Sbus,
                                        Ibus=calculation_inputs[0].Ibus,
+                                       branch_rates=calculation_inputs[0].branch_rates,
                                        options=options,
-                                       logger=logger,
-                                       t=t)
+                                       logger=logger)
 
             # build the report
             convergence_reports.append(results.get_report_dataframe())
@@ -1287,22 +1285,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, t=No
                          wo=1, wv1=1, wv2=1)
 
     return results
-
-
-def power_flow_worker(t, options: PowerFlowOptions, circuit: CalculationInputs, Vbus, Sbus, Ibus, return_dict):
-    """
-    Power flow worker to schedule parallel power flows
-        **t: execution index
-        **options: power flow options
-        **circuit: circuit
-        **Vbus: Voltages to initialize
-        **Sbus: Power injections
-        **Ibus: Current injections
-        **return_dict: parallel module dictionary in wich to return the values
-    :return:
-    """
-
-    return_dict[t] = single_island_pf(circuit, Vbus, Sbus, Ibus, options=options, logger=list, t=t)
 
 
 def power_flow_worker_args(args):
@@ -1321,6 +1303,9 @@ def power_flow_worker_args(args):
         **return_dict: parallel module dictionary in wich to return the values
     :return:
     """
-    t, options, circuit, Vbus, Sbus, Ibus, return_dict = args
+    t, options, circuit, Vbus, Sbus, Ibus, branch_rates = args
 
-    return_dict[t] = single_island_pf(circuit, Vbus, Sbus, Ibus, options=options, logger=list())
+    res = single_island_pf(circuit=circuit, Vbus=Vbus, Sbus=Sbus,
+                           Ibus=Ibus, branch_rates=branch_rates, options=options, logger=list())
+
+    return t, res

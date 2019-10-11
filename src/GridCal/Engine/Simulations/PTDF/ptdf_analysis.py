@@ -108,10 +108,10 @@ def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[Calculation
                       options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow
+    :param variation:
     :param nbus: number of buses
     :param nbr: number of branches
     :param calculation_inputs: list of CalculationInputs' instances
-    :param power_flow: PowerFlowMP instance
     :param dP: delta of active power
     :param return_dict: dictionary to return values
     :return: Nothing because it is a worker, the return is done via the return_dict variable
@@ -125,13 +125,15 @@ def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[Calculation
     for i, calculation_input in enumerate(calculation_inputs):
 
         if len(calculation_input.ref) > 0:
-            Vbus = calculation_input.Vbus
-            Sbus = calculation_input.Sbus - dP[calculation_input.original_bus_idx]
-            Ibus = calculation_input.Ibus
 
             # run circuit power flow
-            res = single_island_pf(circuit=calculation_input, Vbus=Vbus, Sbus=Sbus, Ibus=Ibus,
-                                   options=options, logger=list())
+            res = single_island_pf(circuit=calculation_input,
+                                   Vbus=calculation_input.Vbus,
+                                   Sbus=calculation_input.Sbus - dP[calculation_input.original_bus_idx],
+                                   Ibus=calculation_input.Ibus,
+                                   branch_rates=calculation_input.branch_rates,
+                                   options=options,
+                                   logger=list())
 
             bus_original_idx = calculation_input.original_bus_idx
             branch_original_idx = calculation_input.original_branch_idx

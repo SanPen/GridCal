@@ -16,9 +16,8 @@
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf, single_island_pf
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
@@ -63,20 +62,12 @@ class PowerFlowDriver(QThread):
         self.results = multi_island_pf(multi_circuit=self.grid,
                                        options=self.options,
                                        logger=self.logger,
-                                       t=None,
                                        convergence_reports=self.convergence_reports)
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-    def run_pf(self, circuit: CalculationInputs, Vbus, Sbus, Ibus):
-        """
-        Run a power flow for every circuit
-        @return:
-        """
-        return single_island_pf(circuit, Vbus, Sbus, Ibus, options=self.options, logger=self.logger)
 
     def cancel(self):
         self.__cancel__ = True
