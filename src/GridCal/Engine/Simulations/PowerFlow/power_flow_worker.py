@@ -15,8 +15,6 @@
 
 
 import numpy as np
-from PySide2.QtCore import QRunnable, Slot
-
 
 from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
@@ -29,7 +27,6 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-
 
 
 def compile_types(Sbus, types=None, logger=list()):

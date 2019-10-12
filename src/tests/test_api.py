@@ -14,7 +14,6 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
-from numpy.matlib import zeros
 import numpy as np
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
@@ -36,7 +35,7 @@ def _test_api():
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    options = PowerFlowOptions(SolverType.NR, verbose=False,
+    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
                                initialize_with_existing_solution=False,
                                multi_core=False, dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
@@ -45,7 +44,7 @@ def _test_api():
     # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow = PowerFlowDriver(main_circuit, pf_options)
     power_flow.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(power_flow.results.voltage))
@@ -59,7 +58,8 @@ def _test_api():
     print('\n\n')
     print('Short Circuit')
     sc_options = ShortCircuitOptions(bus_index=[16])
-    sc = ShortCircuit(main_circuit, sc_options, power_flow.results)
+    # grid, options, pf_options:, pf_results:
+    sc = ShortCircuit(grid=main_circuit, options=sc_options, pf_options=pf_options, pf_results=power_flow.results)
     sc.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
@@ -70,7 +70,7 @@ def _test_api():
     # Time Series
     ####################################################################################################################
     print('Running TS...', '')
-    ts = TimeSeries(grid=main_circuit, options=options, start_=0, end_=96)
+    ts = TimeSeries(grid=main_circuit, options=pf_options, start_=0, end_=96)
     ts.run()
     numeric_circuit = main_circuit.compile()
     ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
@@ -100,8 +100,8 @@ def _test_api():
     # just for this test
     numeric_circuit = main_circuit.compile()
     numeric_inputs = numeric_circuit.compute()
-    Sbase = zeros(len(main_circuit.buses), dtype=complex)
-    Vbase = zeros(len(main_circuit.buses), dtype=complex)
+    Sbase = np.zeros(len(main_circuit.buses), dtype=complex)
+    Vbase = np.zeros(len(main_circuit.buses), dtype=complex)
     for c in numeric_inputs:
         Sbase[c.original_bus_idx] = c.Sbus
         Vbase[c.original_bus_idx] = c.Vbus
@@ -117,7 +117,7 @@ def _test_api():
     # Monte Carlo
     ####################################################################################################################
     print('Running MC...')
-    mc_sim = MonteCarlo(main_circuit, options, mc_tol=1e-5,
+    mc_sim = MonteCarlo(main_circuit, pf_options, mc_tol=1e-5,
                         max_mc_iter=1000000)
     mc_sim.run()
     lst = np.array(list(range(mc_sim.results.n)), dtype=int)
@@ -126,14 +126,14 @@ def _test_api():
     # Latin Hypercube
     ####################################################################################################################
     print('Running LHC...')
-    lhs_sim = LatinHypercubeSampling(main_circuit, options,
+    lhs_sim = LatinHypercubeSampling(main_circuit, pf_options,
                                      sampling_points=100)
     lhs_sim.run()
     ####################################################################################################################
     # Cascading
     ####################################################################################################################
     print('Running Cascading...')
-    cascade = Cascading(main_circuit.copy(), options,
+    cascade = Cascading(main_circuit.copy(), pf_options,
                         max_additional_islands=5,
                         cascade_type_=CascadeType.LatinHypercube,
                         n_lhs_samples_=10)
@@ -142,17 +142,7 @@ def _test_api():
     cascade.perform_step_run()
     cascade.perform_step_run()
     cascade.perform_step_run()
-    ####################################################################################################################
-    # Fuck up the voltage
-    ####################################################################################################################
-    print('Run optimization to f**k up the voltage')
-    options = PowerFlowOptions(SolverType.LM, verbose=False,
-                               initialize_with_existing_solution=False)
-    opt = Optimize(main_circuit, options, max_iter=100)
-    opt.run()
-    # opt.plot()
-    # plt.show()
-    print('\nDone!')
+
 
 
 if __name__ == '__main__':
