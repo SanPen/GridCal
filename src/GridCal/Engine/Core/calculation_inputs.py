@@ -13,16 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-# from warnings import warn
 import numpy as np
 import pandas as pd
 from scipy.sparse import diags, hstack as hstack_s, vstack as vstack_s
 from scipy.sparse.linalg import factorized
 from scipy.sparse import csc_matrix
 
-from GridCal.Engine.basic_structures import BusMode
+
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
 
 
 class CalculationInputs:
@@ -142,51 +142,8 @@ class CalculationInputs:
 
         self.logger = list()
 
-        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries', "B'", "B''", 'Types',
-                                     'Jacobian', 'Qmin', 'Qmax']
-
-    def compile_types(self, types_new=None):
-        """
-        Compile the types
-        :param types_new: new array of types to consider
-        :return: Nothing
-        """
-        if types_new is not None:
-            self.types = types_new.copy()
-        self.pq = np.where(self.types == BusMode.PQ.value[0])[0]
-        self.pv = np.where(self.types == BusMode.PV.value[0])[0]
-        self.ref = np.where(self.types == BusMode.REF.value[0])[0]
-        self.sto = np.where(self.types == BusMode.STO_DISPATCH.value)[0]
-
-        if len(self.ref) == 0:  # there is no slack!
-
-            if len(self.pv) == 0:  # there are no pv neither -> blackout grid
-
-                self.logger.append('There are no slack nodes selected')
-
-            else:  # select the first PV generator as the slack
-
-                mx = max(self.Sbus[self.pv])
-                if mx > 0:
-                    # find the generator that is injecting the most
-                    i = np.where(self.Sbus == mx)[0][0]
-
-                else:
-                    # all the generators are injecting zero, pick the first pv
-                    i = self.pv[0]
-
-                # delete the selected pv bus from the pv list and put it in the slack list
-                self.pv = np.delete(self.pv, np.where(self.pv == i)[0])
-                self.ref = [i]
-                # print('Setting bus', i, 'as slack')
-
-            self.ref = np.ndarray.flatten(np.array(self.ref))
-            self.types[self.ref] = BusMode.REF.value[0]
-        else:
-            pass  # no problem :)
-
-        self.pqpv = np.r_[self.pq, self.pv]
-        self.pqpv.sort()
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
+                                     "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
 
     def consolidate(self):
         """
@@ -197,8 +154,10 @@ class CalculationInputs:
         dispatcheable_batteries_idx = np.where(self.battery_dispatchable == True)[0]
         self.dispatcheable_batteries_bus_idx = np.where(np.array(self.C_batt_bus[dispatcheable_batteries_idx, :].sum(axis=0))[0] > 0)[0]
 
-        self.compile_types()
+        #
+        self.ref, self.pq, self.pv, self.pqpv = compile_types(self.Sbus, self.types)
 
+        #
         self.Bpqpv = self.Ybus.imag[np.ix_(self.pqpv, self.pqpv)]
         self.Bref = self.Ybus.imag[np.ix_(self.pqpv, self.ref)]
 

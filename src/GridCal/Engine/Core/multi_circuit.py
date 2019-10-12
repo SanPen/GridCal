@@ -645,7 +645,7 @@ class MultiCircuit:
             circuit.bus_vnom[i] = bus.Vnom  # kV
             circuit.Vmax[i] = bus.Vmax
             circuit.Vmin[i] = bus.Vmin
-            circuit.bus_types[i] = bus.determine_bus_type().value[0]
+            circuit.bus_types[i] = bus.determine_bus_type().value
 
             # Add buses dictionary entry
             self.bus_dictionary[bus] = i

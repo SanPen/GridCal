@@ -20,7 +20,6 @@ from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver im
     VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions, OptimalPowerFlow
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import OptimalPowerFlowTimeSeries
-from GridCal.Engine.Simulations.Optimization.optimization_driver import Optimize
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import ReactivePowerControlMode, SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
@@ -36,10 +35,10 @@ def _test_api():
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True,
-                               control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True)
+                                  initialize_with_existing_solution=False,
+                                  multi_core=False, dispatch_storage=True,
+                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_p=True)
     ####################################################################################################################
     # PowerFlowDriver
     ####################################################################################################################
@@ -142,7 +141,6 @@ def _test_api():
     cascade.perform_step_run()
     cascade.perform_step_run()
     cascade.perform_step_run()
-
 
 
 if __name__ == '__main__':

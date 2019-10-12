@@ -24,10 +24,10 @@ from GridCal.Engine.plot_config import LINEWIDTH, plt
 
 
 class BusMode(Enum):
-    PQ = 1,
-    PV = 2,
-    REF = 3,
-    NONE = 4,
+    PQ = 1
+    PV = 2
+    REF = 3
+    NONE = 4
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
 
 
@@ -58,6 +58,7 @@ class SolverType(Enum):
     LACPF = 'Linear AC'
     DC_OPF = 'Linear DC OPF'
     AC_OPF = 'Linear AC OPF'
+    Proportional_OPF = 'Proportional OPF'
     NRI = 'Newton-Raphson in current'
     DYCORS_OPF = 'DYCORS OPF'
     GA_OPF = 'Genetic Algorithm OPF'

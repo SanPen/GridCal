@@ -27,49 +27,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-
-
-def compile_types(Sbus, types=None, logger=list()):
-    """
-    Compile the types.
-    """
-
-    pq = np.where(types == BusMode.PQ.value[0])[0]
-    pv = np.where(types == BusMode.PV.value[0])[0]
-    ref = np.where(types == BusMode.REF.value[0])[0]
-    sto = np.where(types == BusMode.STO_DISPATCH.value)[0]
-
-    if len(ref) == 0:  # there is no slack!
-
-        if len(pv) == 0:  # there are no pv neither -> blackout grid
-
-            logger.append('There are no slack nodes selected')
-
-        else:  # select the first PV generator as the slack
-
-            mx = max(Sbus[pv])
-            if mx > 0:
-                # find the generator that is injecting the most
-                i = np.where(Sbus == mx)[0][0]
-
-            else:
-                # all the generators are injecting zero, pick the first pv
-                i = pv[0]
-
-            # delete the selected pv bus from the pv list and put it in the slack list
-            pv = np.delete(pv, np.where(pv == i)[0])
-            ref = [i]
-            # print('Setting bus', i, 'as slack')
-
-        ref = np.ndarray.flatten(np.array(ref))
-        types[ref] = BusMode.REF.value[0]
-    else:
-        pass  # no problem :)
-
-    pqpv = np.r_[pq, pv]
-    pqpv.sort()
-
-    return ref, pq, pv, pqpv
+from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
 
 
 def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
@@ -141,7 +99,6 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
 
     # LAC PF
     elif solver_type == SolverType.LACPF:
-
         V0, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
                                                     Ys=Yseries,
                                                     S=Sbus,
@@ -202,7 +159,6 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
 
     # Newton-Raphson in current equations
     elif solver_type == SolverType.NRI:
-        # NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it
         V0, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
                                                       Sbus_sp=Sbus,
                                                       V0=V0,
@@ -212,17 +168,9 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
                                                       tol=tolerance,
                                                       max_it=max_iter)
 
-    # for any other method, for now, do a LM
     else:
-        V0, converged, \
-        normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=Ybus,
-                                                    Sbus=Sbus,
-                                                    V0=V0,
-                                                    Ibus=Ibus,
-                                                    pv=pv,
-                                                    pq=pq,
-                                                    tol=tolerance,
-                                                    max_it=max_iter)
+        # for any other method, raise exception
+        raise Exception(solver_type + ' Not supported in power flow mode')
 
     return V0, converged, normF, Scalc, it, el
 
@@ -256,7 +204,7 @@ def outer_loop_power_flow(circuit: CalculationInputs, options: PowerFlowOptions,
 
     # get the original types and compile this class' own lists of node types for thread independence
     original_types = circuit.types.copy()
-    ref, pq, pv, pqpv = compile_types(Sbus, original_types)
+    ref, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
 
     # copy the tap positions
     tap_positions = circuit.tap_position.copy()
@@ -396,7 +344,7 @@ def outer_loop_power_flow(circuit: CalculationInputs, options: PowerFlowOptions,
                 if any_q_control_issue:
                     circuit.types = types_new
                     Sbus = Sbus.real + 1j * Qnew
-                    ref, pq, pv, pqpv = compile_types(Sbus, types_new)
+                    ref, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
                 else:
                     if options.verbose:
                         print('Q controls Ok')
@@ -560,10 +508,10 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
 
     for i in range(n):
 
-        if types[i] == BusMode.REF.value[0]:
+        if types[i] == BusMode.REF.value:
             pass
 
-        elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
+        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
 
             gain = get_q_increment(Vm[i], abs(Vset[i]), k)
 
@@ -668,9 +616,9 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
                                                                      )
                           )
 
-        elif types[i] == BusMode.PV.value[0]:
+        elif types[i] == BusMode.PV.value:
             # If it's still in PV mode (first run), change it to PQ mode
-            types_new[i] = BusMode.PQ.value[0]
+            types_new[i] = BusMode.PQ.value
             Qnew[i] = 0
             if verbose:
                 print("Bus {} switching to PQ control, with a Q of 0".format(i))
@@ -838,10 +786,10 @@ def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
     any_control_issue = False
     for i in range(n):
 
-        if types[i] == BusMode.REF.value[0]:
+        if types[i] == BusMode.REF.value:
             pass
 
-        elif types[i] == BusMode.PQ.value[0] and original_types[i] == BusMode.PV.value[0]:
+        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
 
             if Vm[i] != Vset[i]:
 
@@ -854,7 +802,7 @@ def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
                 else:  # switch back to PV, set Vinew = Viset.
                     if verbose:
                         print('Bus', i, 'switched back to PV')
-                    types_new[i] = BusMode.PV.value[0]
+                    types_new[i] = BusMode.PV.value
                     Vnew[i] = complex(Vset[i], 0)
 
                 any_control_issue = True
@@ -862,19 +810,19 @@ def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
             else:
                 pass  # The voltages are equal
 
-        elif types[i] == BusMode.PV.value[0]:
+        elif types[i] == BusMode.PV.value:
 
             if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
                 if verbose:
                     print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
-                types_new[i] = BusMode.PQ.value[0]
+                types_new[i] = BusMode.PQ.value
                 Qnew[i] = Qmax[i]
                 any_control_issue = True
 
             elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
                 if verbose:
                     print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
-                types_new[i] = BusMode.PQ.value[0]
+                types_new[i] = BusMode.PQ.value
                 Qnew[i] = Qmin[i]
                 any_control_issue = True
 
