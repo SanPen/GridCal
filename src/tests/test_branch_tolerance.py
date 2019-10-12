@@ -1,3 +1,4 @@
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
@@ -15,7 +16,7 @@ def test_tolerance_lf_higher():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
@@ -106,7 +107,7 @@ def test_tolerance_lf_lower():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)

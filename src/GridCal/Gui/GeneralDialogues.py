@@ -15,8 +15,9 @@
 
 from enum import Enum
 from datetime import datetime, timedelta
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets, Qt
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
@@ -124,35 +125,75 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
 
         time_base = self.calendar.dateTime()
 
-        # a = QDateTime(2011, 4, 22, 00, 00, 00)
-        # a
         return steps, step_length, step_unit, time_base.toPython()
+
+
+class LogsModel(QtCore.QAbstractTableModel):
+
+    def __init__(self, logs: Logger, parent=None):
+
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.logs = logs
+
+    def flags(self, index):
+        return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=None):
+        return len(self.logs)
+
+    def columnCount(self, parent=None):
+        return 2
+
+    def headerData(self, index, orientation, role):
+        """
+
+        :param index:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                if index == 0:
+                    return "Severity"
+                elif index == 1:
+                    return "Message"
+        return None
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid():
+
+            if role == QtCore.Qt.DisplayRole:
+
+                if index.column() == 0:
+                    return str(self.logs.severity[index.row()])
+
+                elif index.column() == 1:
+                    return str(self.logs.messages[index.row()])
+
+        return None
 
 
 class LogsDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
-    def __init__(self, name, logs: list()):
+    def __init__(self, name, logs: Logger()):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
-        # self.resize(200, 71)
-        # self.setMinimumSize(QtCore.QSize(200, 71))
-        # self.setMaximumSize(QtCore.QSize(200, 71))
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        # icon = QtGui.QIcon()
-        # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # self.setWindowIcon(icon)
         self.layout = QtWidgets.QVBoxLayout(self)
 
         # logs_list
-        self.logs_list = QtWidgets.QListView()
-        model = QtGui.QStandardItemModel()
-        self.logs_list.setModel(model)
-
-        for entry in logs:
-            item = QtGui.QStandardItem(entry)
-            model.appendRow(item)
+        self.logs_table = QtWidgets.QTableView()
+        self.logs_table.setModel(LogsModel(logs))
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()
@@ -161,7 +202,7 @@ class LogsDialogue(QtWidgets.QDialog):
 
         # add all to the GUI
         self.layout.addWidget(QtWidgets.QLabel("Logs"))
-        self.layout.addWidget(self.logs_list)
+        self.layout.addWidget(self.logs_table)
 
         self.layout.addWidget(self.accept_btn)
 

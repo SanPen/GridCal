@@ -14,9 +14,8 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import json
-import sys
-# from warnings import warn
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.json_parser import save_json_file
 from GridCal.Engine.IO.cim_parser import CIMExport
@@ -47,7 +46,7 @@ class FileOpen:
 
         self.circuit = MultiCircuit()
 
-        self.logger = list()
+        self.logger = Logger()
 
     def open(self, text_func=None, progress_func=None):
         """
@@ -56,7 +55,7 @@ class FileOpen:
         :param progress_func: pointer to function that prints the progress 0~100
         :return: logger with information
         """
-        logger = list()
+        self.logger = Logger()
 
         if os.path.exists(self.file_name):
             name, file_extension = os.path.splitext(self.file_name)
@@ -80,8 +79,7 @@ class FileOpen:
                     self.circuit = data_frames_to_circuit(data_dictionary)
 
                 else:
-                    self.logger.append('The file could not be processed')
-                    # return self.circuit
+                    self.logger.add('The file could not be processed')
 
             elif file_extension.lower() == '.gridcal':
 
@@ -105,10 +103,11 @@ class FileOpen:
                 self.circuit.assign_circuit(circ)
 
             elif file_extension.lower() == '.dpx':
-                circ, logger = load_dpx(self.file_name)
+                circ, log = load_dpx(self.file_name)
                 self.circuit.buses = circ.buses
                 self.circuit.branches = circ.branches
                 self.circuit.assign_circuit(circ)
+                self.logger += log
 
             elif file_extension.lower() == '.json':
 
@@ -122,7 +121,7 @@ class FileOpen:
                         self.circuit.branches = circ.branches
                         self.circuit.assign_circuit(circ)
                     else:
-                        logger.append('Unknown json format')
+                        self.logger.append('Unknown json format')
 
                 elif type(data) == list():
                     circ = parse_json(self.file_name)
@@ -130,7 +129,7 @@ class FileOpen:
                     self.circuit.branches = circ.branches
                     self.circuit.assign_circuit(circ)
                 else:
-                    logger.append('Unknown json format')
+                    self.logger.append('Unknown json format')
 
             elif file_extension.lower() == '.raw':
                 parser = PSSeParser(self.file_name)
@@ -138,19 +137,17 @@ class FileOpen:
                 self.circuit.buses = circ.buses
                 self.circuit.branches = circ.branches
                 self.circuit.assign_circuit(circ)
-                logger = parser.logger
+                self.logger += parser.logger
 
             elif file_extension.lower() == '.xml':
                 parser = CIMImport()
                 circ = parser.load_cim_file(self.file_name)
                 self.circuit.assign_circuit(circ)
-                logger = parser.logger
+                self.logger += parser.logger
 
         else:
             # warn('The file does not exist.')
-            logger.append(self.file_name + ' does not exist.')
-
-        self.logger = logger
+            self.logger.append(self.file_name + ' does not exist.')
 
         return self.circuit
 
@@ -191,7 +188,7 @@ class FileSave:
             logger = self.save_cim()
 
         else:
-            logger = list()
+            logger = Logger()
             logger.append('File path extension not understood\n' + self.file_name)
 
         return logger
@@ -212,7 +209,7 @@ class FileSave:
         :return: logger with information
         """
 
-        logger = list()
+        logger = Logger()
 
         dfs = create_data_frames(self.circuit)
 
@@ -260,7 +257,7 @@ class FileOpenThread(QThread):
 
         self.valid = False
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.circuit = None
 
@@ -276,7 +273,7 @@ class FileOpenThread(QThread):
 
         self.progress_text.emit('Loading ' + fname + '...')
 
-        self.logger = list()
+        self.logger = Logger()
 
         file_handler = FileOpen(file_name=self.file_name)
 
@@ -314,7 +311,7 @@ class FileSaveThread(QThread):
 
         self.valid = False
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.error_msg = ''
 
@@ -331,7 +328,7 @@ class FileSaveThread(QThread):
 
         self.progress_text.emit('Flushing ' + fname + ' into ' + fname + '...')
 
-        self.logger = list()
+        self.logger = Logger()
 
         file_handler = FileSave(self.circuit,
                                 self.file_name,

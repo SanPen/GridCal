@@ -1,3 +1,4 @@
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
@@ -37,7 +38,7 @@ def test_basic():
     S_base = 100  # MVA
     grid.Sbase = S_base
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",
@@ -189,7 +190,7 @@ def test_gridcal_basic_pi():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",

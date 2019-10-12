@@ -17,6 +17,8 @@ import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
 from PySide2 import QtCore
+
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.wire import Wire
@@ -273,7 +275,7 @@ class Tower(EditableDevice):
             # there are no wires
             pass
 
-    def check(self, logger=list()):
+    def check(self, logger=Logger()):
         """
         Check that the wires configuration make sense
         :return:

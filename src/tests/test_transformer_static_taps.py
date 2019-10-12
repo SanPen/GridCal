@@ -1,3 +1,4 @@
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch, TapChanger
 from GridCal.Engine.Devices.bus import Bus
@@ -35,7 +36,7 @@ def test_xfo_static_tap_1():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",
@@ -186,7 +187,7 @@ def test_xfo_static_tap_2():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",
@@ -337,7 +338,7 @@ def test_xfo_static_tap_3():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",

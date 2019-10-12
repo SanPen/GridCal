@@ -17,6 +17,7 @@ import numpy as np
 from itertools import combinations
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, SolverType, single_island_pf
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
@@ -88,7 +89,7 @@ class NMinusK(QThread):
 
         self.all_solved = True
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.elapsed = 0.0
 

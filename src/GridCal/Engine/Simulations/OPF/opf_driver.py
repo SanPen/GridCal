@@ -17,6 +17,7 @@ import numpy as np
 import time
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -90,6 +91,8 @@ class OptimalPowerFlow(QThread):
         self.all_solved = True
 
         self.elapsed = 0.0
+
+        self.logger = Logger()
 
     def get_steps(self):
         """

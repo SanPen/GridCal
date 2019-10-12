@@ -17,6 +17,7 @@ import chardet
 import re
 from typing import List, AnyStr
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
@@ -90,7 +91,7 @@ class PSSeGrid:
         self.areas = list()
         self.zones = list()
 
-    def get_circuit(self, logger: list):
+    def get_circuit(self, logger: Logger):
         """
         Return GridCal circuit
         Returns:
@@ -1965,7 +1966,7 @@ class PSSeParser:
         self.parsers = dict()
         self.versions = [33, 32, 30, 29]
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.file_name = file_name
 
@@ -1980,7 +1981,6 @@ class PSSeParser:
         Read the text file and split it into sections
         :return:
         """
-        logger = list()
 
         # make a guess of the file encoding
         detection = chardet.detect(open(self.file_name, "rb").read())
@@ -2026,7 +2026,7 @@ class PSSeParser:
         Returns: MultiCircuit, List[str]
         """
 
-        logger = list()
+        logger = Logger()
 
         sections, sections_dict = self.read_and_split()
 

@@ -1,3 +1,4 @@
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.load import Load
@@ -16,7 +17,7 @@ def test_line_losses_1():
     Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
@@ -97,7 +98,7 @@ def test_line_losses_2():
     Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
@@ -180,7 +181,7 @@ def test_line_losses_3():
     Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)

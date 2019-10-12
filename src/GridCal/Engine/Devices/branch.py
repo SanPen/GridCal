@@ -17,6 +17,8 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Devices.transformer import TransformerType
@@ -597,7 +599,7 @@ class Branch(EditableDevice):
         else:
             return 1.0, 1.0
 
-    def apply_template(self, obj, Sbase, logger=list()):
+    def apply_template(self, obj, Sbase, logger=Logger()):
         """
         Apply a branch template to this object
 

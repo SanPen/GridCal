@@ -1,5 +1,6 @@
 from pytest import approx
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
@@ -55,7 +56,7 @@ def test_corr_line_losses():
     grid = MultiCircuit(name=test_name)
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     Bus0 = Bus(name="Bus0", vnom=10, is_slack=True)

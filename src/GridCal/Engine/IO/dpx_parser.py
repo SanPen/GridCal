@@ -1,7 +1,22 @@
-import pandas as pd
-import numpy as np
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+
+
 import chardet
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
@@ -203,14 +218,13 @@ def reformat(val):
     return x
 
 
-
 def read_dpx_data(file_name):
     """
     Read the DPX file into a structured dictionary
     :param file_name:
     :return:
     """
-    logger = list()
+    logger = Logger()
 
     structures_dict = dict()
 
@@ -273,7 +287,7 @@ def read_dpx_data(file_name):
     return structures_dict, logger
 
 
-def repack(data_structures, logger=list(), verbose=False):
+def repack(data_structures, logger=Logger(), verbose=False):
     """
     Pack the values as DataFrames with headers where available
     :param data_structures: Raw data structures

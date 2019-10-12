@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
@@ -1058,7 +1058,8 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     return stable, tap_module, tap_position
 
 
-def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates, options: PowerFlowOptions, logger):
+def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
+                     options: PowerFlowOptions, logger: Logger):
     """
     Run a power flow for a circuit. In most cases, the **run** method should be
     used instead.
@@ -1153,7 +1154,7 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
         return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=list(), convergence_reports=list()):
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger(), convergence_reports=list()):
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
@@ -1251,6 +1252,6 @@ def power_flow_worker_args(args):
     t, options, circuit, Vbus, Sbus, Ibus, branch_rates = args
 
     res = single_island_pf(circuit=circuit, Vbus=Vbus, Sbus=Sbus,
-                           Ibus=Ibus, branch_rates=branch_rates, options=options, logger=list())
+                           Ibus=Ibus, branch_rates=branch_rates, options=options, logger=Logger())
 
     return t, res

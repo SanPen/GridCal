@@ -16,6 +16,7 @@ import time
 import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
@@ -74,6 +75,8 @@ class PTDF(QThread):
         self.all_solved = True
 
         self.elapsed = 0.0
+
+        self.logger = Logger()
 
     def ptdf(self, circuit: MultiCircuit, options: PowerFlowOptions, group_by_technology, power_amount,
              text_func=None, prog_func=None):

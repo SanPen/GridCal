@@ -17,7 +17,7 @@ from numpy import complex, zeros, power
 import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
-
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
@@ -50,7 +50,7 @@ class LatinHypercubeSampling(QThread):
 
         self.results = None
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.pool = multiprocessing.Pool()
 

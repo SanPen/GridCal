@@ -15,10 +15,10 @@
 
 
 import numpy as np
-from GridCal.Engine.basic_structures import BusMode
+from GridCal.Engine.basic_structures import BusMode, Logger
 
 
-def compile_types(Sbus, types, logger=list()):
+def compile_types(Sbus, types, logger=Logger()):
     """
     Compile the types.
     :param Sbus: array of power injections per node
@@ -35,7 +35,7 @@ def compile_types(Sbus, types, logger=list()):
 
         if len(pv) == 0:  # there are no pv neither -> blackout grid
 
-            logger.append('There are no slack nodes selected')
+            logger.add('There are no slack nodes selected')
 
         else:  # select the first PV generator as the slack
 

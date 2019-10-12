@@ -16,6 +16,7 @@ import pandas as pd
 import sqlite3
 import numpy as np
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.excel_interface import create_data_frames, interpret_excel_v3, check_names
 
@@ -27,7 +28,7 @@ def save_sqlite(circuit: MultiCircuit, file_path):
     :param file_path: path to the excel file
     :return: logger with information
     """
-    logger = list()
+    logger = Logger()
 
     dfs = create_data_frames(circuit=circuit)
 

@@ -15,6 +15,7 @@
 
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -45,7 +46,7 @@ class PowerFlowDriver(QThread):
 
         self.results = PowerFlowResults()
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.convergence_reports = list()
 

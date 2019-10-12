@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import networkx as nx
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
@@ -561,7 +562,7 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=list()) -> NumericalCircuit:
+    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=Logger()) -> NumericalCircuit:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -1217,7 +1218,7 @@ class MultiCircuit:
         """
         Apply all the branch types
         """
-        logger = list()
+        logger = Logger()
         for branch in self.branches:
             branch.apply_template(branch.template, self.Sbase, logger=logger)
 

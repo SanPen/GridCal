@@ -19,7 +19,7 @@ from scipy.sparse import diags, hstack as hstack_s, vstack as vstack_s
 from scipy.sparse.linalg import factorized
 from scipy.sparse import csc_matrix
 
-
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
@@ -140,7 +140,7 @@ class CalculationInputs:
         self.sto = list()
         self.pqpv = list()  # it is sorted
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
                                      "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']

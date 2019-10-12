@@ -200,7 +200,7 @@ class TapsControlMode(Enum):
     Iterative = "Iterative"
 
 
-class CDF(object):
+class CDF:
     """
     Inverse Cumulative density function of a given array of data
     """
@@ -320,7 +320,7 @@ class CDF(object):
         # ax.plot(self.norm_points, self.values, 'x')
 
 
-class StatisticalCharacterization(object):
+class StatisticalCharacterization:
     """
     Object to store the statistical characterization
     It is useful because the statistical characterizations can be:
@@ -521,6 +521,84 @@ def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
         groups.append(i)
 
     return groups
+
+
+class LogSeverity(Enum):
+    Error = 'Error'
+    Warning = 'Warning'
+    Information = 'Information'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return LogSeverity[s]
+        except KeyError:
+            return s
+
+
+class Logger:
+
+    def __init__(self):
+
+        self.messages = list()
+        self.severity = list()
+
+    def append(self, txt):
+        """
+
+        :param txt:
+        :return:
+        """
+        self.messages.append(txt)
+        self.severity.append(LogSeverity.Information)
+
+    def add(self, msg, severity: LogSeverity = LogSeverity.Error):
+        """
+
+        :param msg:
+        :param severity:
+        :return:
+        """
+        self.messages.append(msg)
+        self.severity.append(severity)
+
+    def __getitem__(self, key):
+        """
+        get [index] implementation
+        :param key: integer
+        :return: message, severity
+        """
+        return self.messages[key], self.severity[key]
+
+    def __setitem__(self, idx, value):
+        """
+        set [index] implementation
+        :param idx: integer
+        :param value: string message
+        :return: Nothing
+        """
+        self.messages[idx] = value
+
+    def __iadd__(self, other: "Logger"):
+        """
+        += implementation
+        :param other:
+        :return:
+        """
+
+        if other is not None:
+            self.messages += other.messages
+            self.severity += other.severity
+        return self
+
+    def __len__(self):
+        return len(self.messages)
 
 
 if __name__ == '__main__':

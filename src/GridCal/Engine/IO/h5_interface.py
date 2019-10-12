@@ -30,7 +30,7 @@ def save_h5(circuit: MultiCircuit, file_path):
     :param file_path: path to the excel file
     :return: logger with information
     """
-    logger = list()
+    logger = Logger()
 
     dfs = create_data_frames(circuit=circuit)
 

@@ -15,6 +15,8 @@
 
 import numpy as np
 import pandas as pd
+
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCal.Gui.GuiFunctions import ResultsModel
@@ -64,7 +66,7 @@ class PTDFResults:
         # definition of the variation
         self.variations = [None] * n_variations
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.sensitivity_matrix = None
 

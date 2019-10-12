@@ -13,8 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np
-
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 from GridCal.Engine.IO.pack_unpack import create_data_frames
@@ -253,7 +252,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
     circuit.time_profile = None
 
-    circuit.logger = list()
+    circuit.logger = Logger()
 
     # common function
     def set_object_attributes(obj_, attr_list, values):
@@ -689,7 +688,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     # Set comments
     circuit.comments = data['Comments'] if 'Comments' in data.keys() else ''
 
-    circuit.logger = list()
+    circuit.logger = Logger()
 
     # common function
     def set_object_attributes(obj_, attr_list, values):
@@ -1139,7 +1138,7 @@ def save_excel(circuit: MultiCircuit, file_path):
     :param file_path: path to the excel file
     :return: logger with information
     """
-    logger = list()
+    logger = Logger()
 
     dfs = create_data_frames(circuit=circuit)
 

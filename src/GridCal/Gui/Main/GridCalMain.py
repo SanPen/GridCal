@@ -3941,7 +3941,7 @@ class MainGUI(QMainWindow):
         """
         Assign the selected branch templates
         """
-        logger = list()
+        logger = Logger()
 
         if len(self.ui.catalogueTreeView.selectedIndexes()) > 0:
 

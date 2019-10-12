@@ -1,3 +1,4 @@
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch, TapChanger
 from GridCal.Engine.Devices.bus import Bus
@@ -37,7 +38,7 @@ def test_pv_1():
     Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",
@@ -189,7 +190,7 @@ def test_pv_2():
     Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",
@@ -349,7 +350,7 @@ def test_pv_3():
     Sbase = 100  # MVA
     grid.Sbase = Sbase
     grid.time_profile = None
-    grid.logger = list()
+    grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",

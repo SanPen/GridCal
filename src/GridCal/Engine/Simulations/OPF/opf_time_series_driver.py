@@ -17,9 +17,9 @@ import pandas as pd
 import numpy as np
 from numpy import complex, zeros,  array
 import time
-from matplotlib import pyplot as plt
 from PySide2.QtCore import QThread, Signal
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
@@ -272,7 +272,7 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         self.end_ = end_
 
-        self.logger = list()
+        self.logger = Logger()
 
         # set cancel state
         self.__cancel__ = False

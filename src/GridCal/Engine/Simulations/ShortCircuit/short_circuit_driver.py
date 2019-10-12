@@ -17,6 +17,7 @@ import numpy as np
 from scipy.sparse.linalg import inv
 from PySide2.QtCore import QRunnable
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_3p
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -257,6 +258,8 @@ class ShortCircuit(QRunnable):
         self.options = options
 
         self.results = None
+
+        self.logger = Logger()
 
         self.__cancel__ = False
 

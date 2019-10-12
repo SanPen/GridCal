@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-
 from typing import List
+
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
@@ -119,7 +120,7 @@ def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[Calculation
     # create new results
     pf_results = PowerFlowResults()
     pf_results.initialize(nbus, nbr)
-    logger = list()
+    logger = Logger()
 
     # simulate each island and merge the results
     for i, calculation_input in enumerate(calculation_inputs):
@@ -133,7 +134,7 @@ def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[Calculation
                                    Ibus=calculation_input.Ibus,
                                    branch_rates=calculation_input.branch_rates,
                                    options=options,
-                                   logger=list())
+                                   logger=Logger())
 
             bus_original_idx = calculation_input.original_bus_idx
             branch_original_idx = calculation_input.original_branch_idx

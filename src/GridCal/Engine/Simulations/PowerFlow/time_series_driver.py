@@ -21,6 +21,7 @@ import multiprocessing
 
 from PySide2.QtCore import QThread, QThreadPool, Signal
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -407,7 +408,7 @@ class TimeSeries(QThread):
 
         self.elapsed = 0
 
-        self.logger = list()
+        self.logger = Logger()
 
         self.returned_results = list()
 

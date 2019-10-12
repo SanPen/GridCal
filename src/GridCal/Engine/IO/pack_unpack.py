@@ -14,6 +14,8 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Dict
+
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
@@ -186,7 +188,7 @@ def data_frames_to_circuit(data: Dict):
     # dictionary of objects to iterate
     object_types = get_objects_dictionary()
 
-    circuit.logger = list()
+    circuit.logger = Logger()
 
     # time profile -----------------------------------------------------------------------------------------------------
     if 'time' in data.keys():

@@ -15,6 +15,7 @@
 
 import json
 
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
@@ -193,7 +194,7 @@ def save_json_file(file_path, circuit: MultiCircuit):
     elements = list()  # list of
     key = 0
     bus_key_dict = dict()
-    logger = list()
+    logger = Logger()
 
     # add the circuit
     circuit_dict = circuit.get_json_dict(key)
