@@ -131,6 +131,8 @@ class PowerFlowResults:
 
         self.methods = methods
 
+        self.convergence_reports = list()
+
     def copy(self):
         """
         Return a copy of this

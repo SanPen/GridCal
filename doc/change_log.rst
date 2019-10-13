@@ -22,6 +22,8 @@ _____________
   calls to power flow functions.
 - Changed the multiprocess from multiple processes to a pool.
   Hopefully this will allow multicore on MS Windows.
+- Added a proper logger object.
+
 
 Version 3.5.9
 _____________

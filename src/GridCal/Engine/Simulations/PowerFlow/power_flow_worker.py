@@ -1154,13 +1154,12 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
         return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger(), convergence_reports=list()):
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger()):
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
     :param options: PowerFlowOptions instance
     :param logger: list of evenets to add to
-    :param convergence_reports:
     :return:
     """
     # print('PowerFlowDriver at ', self.grid.name)
@@ -1168,10 +1167,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logg
     m = len(multi_circuit.branches)
     results = PowerFlowResults()
     results.initialize(n, m)
-    # self.progress_signal.emit(0.0)
-
-    # columns of the report
-    convergence_reports.clear()
 
     numerical_circuit = multi_circuit.compile()
 
@@ -1204,7 +1199,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logg
                 results.apply_from_island(res, bus_original_idx, branch_original_idx)
 
                 # # build the report
-                convergence_reports.append(res.get_report_dataframe())
+                results.convergence_reports.append(res.get_report_dataframe())
             else:
                 logger.append('There are no slack nodes in the island ' + str(i))
     else:
@@ -1221,7 +1216,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logg
                                        logger=logger)
 
             # build the report
-            convergence_reports.append(results.get_report_dataframe())
+            results.convergence_reports.append(results.get_report_dataframe())
         else:
             logger.append('There are no slack nodes')
 

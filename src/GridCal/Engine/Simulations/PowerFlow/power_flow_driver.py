@@ -62,9 +62,8 @@ class PowerFlowDriver(QThread):
         """
         self.results = multi_island_pf(multi_circuit=self.grid,
                                        options=self.options,
-                                       logger=self.logger,
-                                       convergence_reports=self.convergence_reports)
-
+                                       logger=self.logger)
+        self.convergence_reports = self.results.convergence_reports
         # send the finnish signal
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')

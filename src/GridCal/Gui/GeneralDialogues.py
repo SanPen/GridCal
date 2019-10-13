@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from datetime import datetime, timedelta
+from datetime import datetime
 from PySide2 import QtCore, QtGui, QtWidgets, Qt
 
 from GridCal.Engine.basic_structures import Logger
@@ -145,38 +145,35 @@ class LogsModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=None):
         return 2
 
-    def headerData(self, index, orientation, role):
+    def headerData(self, section, orientation, role=None):
         """
 
-        :param index:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                if index == 0:
-                    return "Severity"
-                elif index == 1:
-                    return "Message"
+        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
+            if section == 0:
+                return "Severity"
+            elif section == 1:
+                return "Message"
         return None
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=None):
         """
 
         :param index:
         :param role:
         :return:
         """
-        if index.isValid():
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
 
-            if role == QtCore.Qt.DisplayRole:
+            if index.column() == 0:
+                return str(self.logs.severity[index.row()])
 
-                if index.column() == 0:
-                    return str(self.logs.severity[index.row()])
-
-                elif index.column() == 1:
-                    return str(self.logs.messages[index.row()])
+            elif index.column() == 1:
+                return str(self.logs.messages[index.row()])
 
         return None
 
@@ -210,6 +207,9 @@ class LogsDialogue(QtWidgets.QDialog):
 
         self.setWindowTitle(name)
 
+        h = 400
+        self.resize(int(1.61 * h), h)
+
     def accept_click(self):
         self.accept()
 
@@ -230,7 +230,8 @@ class ElementsDialogue(QtWidgets.QDialog):
 
         if len(elements) > 0:
             model = ObjectsModel(elements, elements[0].editable_headers,
-                                 parent=self.objects_table, editable=False, non_editable_attributes=[1, 2, 14])
+                                 parent=self.objects_table, editable=False,
+                                 non_editable_attributes=[1, 2, 14])
 
             self.objects_table.setModel(model)
 
@@ -239,11 +240,20 @@ class ElementsDialogue(QtWidgets.QDialog):
         self.accept_btn.setText('Proceed')
         self.accept_btn.clicked.connect(self.accept_click)
 
-        # add all to the GUI
-        self.layout.addWidget(QtWidgets.QLabel("Logs"))
-        self.layout.addWidget(self.objects_table)
+        # Copy button
+        self.copy_btn = QtWidgets.QPushButton()
+        self.copy_btn.setText('Copy')
+        self.copy_btn.clicked.connect(self.copy_click)
 
-        self.layout.addWidget(self.accept_btn)
+        # add all to the GUI
+        self.layout.addWidget(self.objects_table)
+        self.frame2 = QtWidgets.QFrame()
+        self.layout.addWidget(self.frame2)
+        self.layout2 = QtWidgets.QHBoxLayout(self.frame2)
+
+        self.layout2.addWidget(self.accept_btn)
+        self.layout2.addWidget(QtWidgets.QSpacerItem())
+        self.layout2.addWidget(self.copy_btn)
 
         self.setLayout(self.layout)
 
@@ -255,3 +265,14 @@ class ElementsDialogue(QtWidgets.QDialog):
         self.accepted = True
         self.accept()
 
+    def copy_click(self):
+        pass
+
+
+if __name__ == "__main__":
+    import sys
+    from PySide2.QtWidgets import QApplication
+    app = QApplication(sys.argv)
+    window = LogsDialogue(name='', logs=Logger())
+    window.show()
+    sys.exit(app.exec_())
