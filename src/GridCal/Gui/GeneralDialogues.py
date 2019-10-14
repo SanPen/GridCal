@@ -15,7 +15,7 @@
 
 from enum import Enum
 from datetime import datetime
-from PySide2 import QtCore, QtGui, QtWidgets, Qt
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.GuiFunctions import ObjectsModel
