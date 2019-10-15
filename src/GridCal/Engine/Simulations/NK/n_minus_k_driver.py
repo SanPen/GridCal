@@ -93,7 +93,7 @@ class NMinusK(QThread):
 
         self.elapsed = 0.0
 
-    def n_minus_k(self, k=1, time_indices=np.array([0]), vmin=200, states_number_limit=None):
+    def n_minus_k(self, k=1, time_indices=np.array([0]), vmin=0, states_number_limit=None):
         """
         Run N-K simulation in series
         :param k: Parameter level (1 for n-1, 2 for n-2, etc...)
@@ -262,7 +262,7 @@ class NMinusK(QThread):
 
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
-        self.progress_signal(0)
+        self.progress_signal.emit(0)
         numerical_circuit = self.grid.compile(use_opf_vals=False, opf_time_series_results=None)
 
         # re-index the profile (this is essential for time-compatibility)
@@ -350,33 +350,32 @@ class NMinusK(QThread):
         start = time.time()
         if self.options.use_multi_threading:
 
-            self.results = self.n_minus_k_mt(k=1, time_indices=np.array([0]), vmin=200, states_number_limit=None)
+            self.results = self.n_minus_k_mt(k=1, time_indices=np.array([0]), vmin=0, states_number_limit=None)
 
         else:
 
-            self.results = self.n_minus_k(k=1, time_indices=np.array([0]), vmin=200, states_number_limit=None)
+            self.results = self.n_minus_k(k=1, time_indices=np.array([0]), vmin=0, states_number_limit=None)
 
         end = time.time()
         self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-    def get_otdf(self):
+    def get_otdf(self, failure_flow_limit=1.0):
         """
         Outage Transfer Distribution Factors (OTDF)
-        :return:
+        :return: OTDF matrix with the failures as rows
         """
         if self.results is None:
             return None
         else:
-            Pbr = self.results.Sbranch.real
-
-            # m = Pbr.shape[1]
-            # otdf = np.empty((m, m))
-            # for i in range(m):
-            #     otdf[i, :] = (Pbr[i + 1, :] - Pbr[0, :]) / Pbr[0, :]
-
-            otdf = (Pbr[1:, :] - Pbr[0, :]) / Pbr[0, :]
+            p_branch = self.results.Sbranch.real
+            m = p_branch.shape[1]
+            otdf = np.zeros((m, m))
+            for i in range(m):
+                # (power of line_i at the base - power of line_i at the failure) / power of the failed line at the base
+                if abs(p_branch[0, i]) >= failure_flow_limit:
+                    otdf[i, :] = (p_branch[i + 1, :] - p_branch[0, :]) / p_branch[0, i]
 
             return otdf
 
@@ -385,21 +384,34 @@ class NMinusK(QThread):
 
 
 if __name__ == '__main__':
-
+    import os
+    import pandas as pd
     from GridCal.Engine import FileOpen, SolverType
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/2869 Pegase.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/2869 Pegase.gridcal'
+    fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    # fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', '2869 Pegase.gridcal')
 
     main_circuit = FileOpen(fname).open()
 
-    pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
-    options = NMinusKOptions(use_multi_threading=False)
-    simulation = NMinusK(grid=main_circuit, options=options, pf_options=pf_options)
+    pf_options_ = PowerFlowOptions(solver_type=SolverType.LACPF)
+    options_ = NMinusKOptions(use_multi_threading=False)
+    simulation = NMinusK(grid=main_circuit, options=options_, pf_options=pf_options_)
     simulation.run()
 
     otdf_ = simulation.get_otdf()
 
-    print(otdf_)
+    # save the result
+    br_names = [b.name for b in main_circuit.branches]
+    br_names2 = ['#' + b.name for b in main_circuit.branches]
+    w = pd.ExcelWriter('OTDF IEEE30.xlsx')
+    pd.DataFrame(data=simulation.results.Sbranch.real,
+                 columns=br_names,
+                 index=['base'] + br_names2).to_excel(w, sheet_name='branch power')
+    pd.DataFrame(data=otdf_,
+                 columns=br_names,
+                 index=br_names2).to_excel(w, sheet_name='OTDF')
+    w.save()

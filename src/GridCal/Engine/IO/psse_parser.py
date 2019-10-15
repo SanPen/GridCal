@@ -251,6 +251,9 @@ class PSSeBus:
         else:
             self.bus.type = BusMode.PQ
 
+        if int(self.IDE) == 4:
+            self.bus.active = False
+
         if self.bus.type == BusMode.REF:
             self.bus.is_slack = True
 
