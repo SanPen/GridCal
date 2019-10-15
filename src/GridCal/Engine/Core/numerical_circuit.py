@@ -13,10 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+import datetime
 import networkx as nx
 from typing import List, Dict
 import scipy.sparse as sp
-
+import pandas as pd
 from GridCal.Engine.Core.csc_graph import Graph
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
@@ -494,15 +495,60 @@ class NumericalCircuit:
         self.static_gen_power_profile = self.static_gen_power_profile[t_idx, :]  # np.zeros((n_time, n_sta_gen), dtype=complex)
 
         # controlled generator
-        self.generator_active_prof = self.generator_active_prof  # np.zeros((n_time, n_gen), dtype=bool)
+        self.generator_active_prof = self.generator_active_prof[t_idx, :]  # np.zeros((n_time, n_gen), dtype=bool)
         self.generator_cost_profile = self.generator_cost_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
         self.generator_power_profile = self.generator_power_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
         self.generator_power_factor_profile = self.generator_power_factor_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
         self.generator_voltage_profile = self.generator_voltage_profile[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
 
         # shunt
-        self.shunt_active_prof = self.shunt_active_prof  # np.zeros((n_time, n_sh), dtype=bool)
+        self.shunt_active_prof = self.shunt_active_prof[t_idx, :]  # np.zeros((n_time, n_sh), dtype=bool)
         self.shunt_admittance_profile = self.shunt_admittance_profile[t_idx, :]  # np.zeros((n_time, n_sh), dtype=complex)
+
+    def set_base_profile(self):
+        """
+        Re-index all the time based profiles
+        :return: Nothing, this is done in-place
+        """
+        now = datetime.datetime.now()
+        dte = datetime.datetime(year=now.year, month=1, day=1, hour=0)
+        self.time_array = pd.to_datetime([dte])
+        self.ntime = len(self.time_array)
+
+        # branch
+        self.branch_active_prof = self.branch_active.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=int)
+        self.temp_oper_prof = self.temp_oper.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=float)
+        self.br_rate_profile = self.br_rates.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=float)
+        self.branch_cost_profile = self.branch_cost.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=float)
+
+        # load
+        self.load_active_prof = self.load_active.reshape(1, -1)   # np.zeros((n_time, n_ld), dtype=bool)
+        self.load_cost_prof = self.load_cost.reshape(1, -1)   # np.zeros((n_time, n_ld), dtype=float)
+
+        self.load_power_profile = self.load_power.reshape(1, -1)  # np.zeros((n_time, n_ld), dtype=complex)
+        self.load_current_profile = self.load_current.reshape(1, -1)  # np.zeros((n_time, n_ld), dtype=complex)
+        self.load_admittance_profile = self.load_admittance.reshape(1, -1)  # np.zeros((n_time, n_ld), dtype=complex)
+
+        # battery
+        self.battery_active_prof = self.battery_active.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=bool)
+        self.battery_power_profile = self.battery_power.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=float)
+        self.battery_voltage_profile = self.battery_voltage.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=float)
+        self.battery_cost_profile = self.battery_cost.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=float)
+
+        # static generator
+        self.static_gen_active_prof = self.static_gen_active.reshape(1, -1)  # np.zeros((n_time, n_sta_gen), dtype=bool)
+        self.static_gen_power_profile = self.static_gen_power.reshape(1, -1)  # np.zeros((n_time, n_sta_gen), dtype=complex)
+
+        # controlled generator
+        self.generator_active_prof = self.generator_active.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=bool)
+        self.generator_cost_profile = self.generator_cost.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+        self.generator_power_profile = self.generator_power.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+        self.generator_power_factor_profile = self.generator_power_factor.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+        self.generator_voltage_profile = self.generator_voltage.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+
+        # shunt
+        self.shunt_active_prof = self.shunt_active.reshape(1, -1)  # np.zeros((n_time, n_sh), dtype=bool)
+        self.shunt_admittance_profile = self.shunt_admittance.reshape(1, -1)  # np.zeros((n_time, n_sh), dtype=complex)
 
     def get_different_states(self):
         """

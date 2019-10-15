@@ -93,19 +93,26 @@ class NMinusK(QThread):
 
         self.elapsed = 0.0
 
-    def n_minus_k(self, k=1, time_indices=np.array([0]), vmin=0, states_number_limit=None):
+        self.branch_names = list()
+
+    def get_steps(self):
+        """
+        Get variations list of strings
+        """
+        if self.results is not None:
+            return [v for v in self.branch_names]
+        else:
+            return list()
+
+    def n_minus_k(self, k=1, indices=None, vmin=0, states_number_limit=None):
         """
         Run N-K simulation in series
         :param k: Parameter level (1 for n-1, 2 for n-2, etc...)
-        :param time_indices: time indices
+        :param indices: time indices {np.array([0])}
         :param vmin: minimum nominal voltage to allow (filters out branches and buses below)
         :param states_number_limit: limit the amount of states
         :return: Nothing, saves a report
         """
-
-        # if there are valid profiles...
-        if self.grid.time_profile is None:
-            return None
 
         self.progress_text.emit("Filtering elements by voltage")
 
@@ -119,6 +126,8 @@ class NMinusK(QThread):
                 branch_index.append(i)
                 branches.append(branch)
         branch_index = np.array(branch_index)
+
+        self.branch_names = branch_names
 
         # filter buses
         bus_names = list()
@@ -138,9 +147,6 @@ class NMinusK(QThread):
             states = states[:states_number_limit, :]
             failed_indices = failed_indices[:states_number_limit]
 
-        # construct the profile indices
-        profile_indices = np.tile(time_indices, len(states))
-
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
@@ -148,6 +154,16 @@ class NMinusK(QThread):
 
         # re-index the profile (this is essential for time-compatibility)
         self.progress_signal.emit(100)
+
+        # if no base profile time is given, pick the base values
+        if indices is None:
+            time_indices = np.array([0])
+            numerical_circuit.set_base_profile()
+        else:
+            time_indices = indices
+
+        # construct the profile indices
+        profile_indices = np.tile(time_indices, len(states))
         numerical_circuit.re_index_time(t_idx=profile_indices)
 
         # set the branch states
@@ -217,11 +233,11 @@ class NMinusK(QThread):
 
         return n_k_results
 
-    def n_minus_k_mt(self, k=1, time_indices=np.array([0]), vmin=200, states_number_limit=None):
+    def n_minus_k_mt(self, k=1, indices=None, vmin=200, states_number_limit=None):
         """
         Run N-K simulation in series
         :param k: Parameter level (1 for n-1, 2 for n-2, etc...)
-        :param time_indices: time indices
+        :param indices: time indices {np.array([0])}
         :param vmin: minimum nominal voltage to allow (filters out branches and buses below)
         :param states_number_limit: limit the amount of states
         :return: Nothing, saves a report
@@ -257,16 +273,22 @@ class NMinusK(QThread):
             states = states[:states_number_limit, :]
             failed_indices = failed_indices[:states_number_limit]
 
-        # construct the profile indices
-        profile_indices = np.tile(time_indices, len(states))
-
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
         numerical_circuit = self.grid.compile(use_opf_vals=False, opf_time_series_results=None)
 
+        # if no base profile time is given, pick the base values
+        if indices is None:
+            time_indices = np.array([0])
+            numerical_circuit.set_base_profile()
+        else:
+            time_indices = indices
+
         # re-index the profile (this is essential for time-compatibility)
         self.progress_signal.emit(100)
+        # construct the profile indices
+        profile_indices = np.tile(time_indices, len(states))
         numerical_circuit.re_index_time(t_idx=profile_indices)
 
         # set the branch states
@@ -350,11 +372,16 @@ class NMinusK(QThread):
         start = time.time()
         if self.options.use_multi_threading:
 
-            self.results = self.n_minus_k_mt(k=1, time_indices=np.array([0]), vmin=0, states_number_limit=None)
+            self.results = self.n_minus_k_mt(k=1, indices=None, vmin=0, states_number_limit=None)
 
         else:
 
-            self.results = self.n_minus_k(k=1, time_indices=np.array([0]), vmin=0, states_number_limit=None)
+            self.results = self.n_minus_k(k=1, indices=None, vmin=0, states_number_limit=None)
+
+        self.progress_text.emit('Computing OTDF...')
+        if self.results is not None:
+            self.results.branch_names = np.array([b.name for b in self.grid.branches])
+            self.results.otdf = self.get_otdf(failure_flow_limit=0.0)
 
         end = time.time()
         self.elapsed = end - start

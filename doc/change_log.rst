@@ -10,6 +10,11 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 3.6.1
+_____________
+
+- Added N-1 and OTDF
+
 
 Version 3.6.0
 _____________

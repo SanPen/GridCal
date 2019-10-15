@@ -40,6 +40,7 @@ from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
+from GridCal.Engine.Simulations.NK.n_minus_k_driver import *
 from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
@@ -255,6 +256,7 @@ class MainGUI(QMainWindow):
         self.open_file_thread_object = None
         self.save_file_thread_object = None
         self.ptdf_analysis = None
+        self.otdf_analysis = None
         self.painter = None
         self.delete_and_reduce_driver = None
 
@@ -357,6 +359,8 @@ class MainGUI(QMainWindow):
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
 
         self.ui.actionPTDF.triggered.connect(self.run_ptdf)
+
+        self.ui.actionOTDF.triggered.connect(self.run_otdf)
 
         # Buttons
 
@@ -2202,6 +2206,58 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
+    def run_otdf(self):
+        """
+        Run a Power Transfer Distribution Factors analysis
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            if SimulationTypes.OTDF_run not in self.stuff_running_now:
+
+                self.add_simulation(SimulationTypes.OTDF_run)
+
+                if len(self.circuit.buses) > 0:
+                    self.LOCK()
+
+                    pf_options = self.get_selected_power_flow_options()
+
+                    options = NMinusKOptions(use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked())
+
+                    self.otdf_analysis = NMinusK(grid=self.circuit, options=options, pf_options=pf_options)
+
+                    self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
+                    self.otdf_analysis.done_signal.connect(self.UNLOCK)
+                    self.otdf_analysis.done_signal.connect(self.post_otdf)
+
+                    self.otdf_analysis.start()
+            else:
+                self.msg('Another OTDF is being executed now...')
+        else:
+            pass
+
+    def post_otdf(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        self.remove_simulation(SimulationTypes.OTDF_run)
+
+        # update the results in the circuit structures
+        if not self.otdf_analysis.__cancel__:
+            if self.otdf_analysis.results is not None:
+
+                self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+            else:
+                self.msg('Something went wrong, There are no PTDF results.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def get_selected_voltage_stability(self):
         """
         Gather the voltage stability options
@@ -3203,6 +3259,12 @@ class MainGUI(QMainWindow):
                 self.available_results_dict["PTDF"] = self.ptdf_analysis.results.available_results
                 self.available_results_steps_dict["PTDF"] = self.ptdf_analysis.get_steps()
 
+        if self.otdf_analysis is not None:
+            if self.otdf_analysis.results is not None:
+                lst.append("OTDF")
+                self.available_results_dict["OTDF"] = self.otdf_analysis.results.available_results
+                self.available_results_steps_dict["OTDF"] = self.otdf_analysis.get_steps()
+
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
@@ -3523,6 +3585,14 @@ class MainGUI(QMainWindow):
             elif study == 'PTDF':
                 if self.ptdf_analysis.results is not None:
                     self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type,
+                                                                      indices=indices,
+                                                                      names=names)
+                else:
+                    self.msg('There seem to be no results :(')
+
+            elif study == 'OTDF':
+                if self.otdf_analysis.results is not None:
+                    self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type,
                                                                       indices=indices,
                                                                       names=names)
                 else:

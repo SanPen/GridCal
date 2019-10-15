@@ -63,7 +63,11 @@ class ResultTypes(Enum):
     # PTDF
     PTDFBranchesSensitivity = 'Branch sensitivity', DeviceType.BranchDevice
 
+    OTDF = 'Outage transfer distribution factors', DeviceType.BranchDevice
+
     SimulationError = 'Error', DeviceType.BusDevice
+
+    OTDFSimulationError = 'Error', DeviceType.BranchDevice
 
 
 class SimulationTypes(Enum):
@@ -79,4 +83,5 @@ class SimulationTypes(Enum):
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
     PTDF_run = 'PTDF'
+    OTDF_run = 'OTDF'
     Delete_and_reduce_run = 'Delete and reduce'

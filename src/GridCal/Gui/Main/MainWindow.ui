@@ -4715,7 +4715,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1178</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -4754,7 +4754,9 @@ points from time series</string>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionLatin_Hypercube_Sampling"/>
+    <addaction name="separator"/>
     <addaction name="actionPTDF"/>
+    <addaction name="actionOTDF"/>
     <addaction name="separator"/>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
@@ -4798,7 +4800,9 @@ points from time series</string>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionLatin_Hypercube_Sampling"/>
    <addaction name="actionBlackout_cascade"/>
+   <addaction name="separator"/>
    <addaction name="actionPTDF"/>
+   <addaction name="actionOTDF"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -5408,10 +5412,22 @@ points from time series</string>
      <normaloff>:/Icons/icons/ptdf.svg</normaloff>:/Icons/icons/ptdf.svg</iconset>
    </property>
    <property name="text">
-    <string>Power Transfer Distribution Factors</string>
+    <string>(PTDF) Power Transfer Distribution Factors</string>
    </property>
    <property name="toolTip">
     <string>Power Transfer Distribution Factors</string>
+   </property>
+  </action>
+  <action name="actionOTDF">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/otdf.svg</normaloff>:/Icons/icons/otdf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>OTDF</string>
+   </property>
+   <property name="toolTip">
+    <string>(OTDF) Outage transfer distribution factors</string>
    </property>
   </action>
  </widget>

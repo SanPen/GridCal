@@ -48,6 +48,8 @@ class NMinusKResults(PowerFlowResults):
 
         self.bus_types = np.zeros(n, dtype=int)
 
+        self.branch_names = None
+
         if nt > 0:
             self.voltage = np.zeros((nt, n), dtype=complex)
 
@@ -118,7 +120,10 @@ class NMinusKResults(PowerFlowResults):
 
             self.buses_useful_for_storage = None
 
-        self.available_results = [ResultTypes.BusVoltageModule,
+        self.otdf = np.zeros((m, m))
+
+        self.available_results = [ResultTypes.OTDF,
+                                  ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
                                   ResultTypes.BusReactivePower,
@@ -128,7 +133,7 @@ class NMinusKResults(PowerFlowResults):
                                   ResultTypes.BranchLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
-                                  ResultTypes.SimulationError]
+                                  ResultTypes.OTDFSimulationError]
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -170,6 +175,9 @@ class NMinusKResults(PowerFlowResults):
         self.undervoltage_idx[t] = results.undervoltage_idx
 
         self.buses_useful_for_storage[t] = results.buses_useful_for_storage
+
+    def get_steps(self):
+        return
 
     @staticmethod
     def merge_if(df, arr, ind, cols):
@@ -299,73 +307,80 @@ class NMinusKResults(PowerFlowResults):
             labels = names[indices]
 
             if result_type == ResultTypes.BusVoltageModule:
-                data = np.abs(self.voltage[:, indices])
+                data = np.abs(self.voltage[indices + 1])
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusVoltageAngle:
-                data = np.angle(self.voltage[:, indices], deg=True)
+                data = np.angle(self.voltage[indices + 1], deg=True)
                 y_label = '(Deg)'
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusActivePower:
-                data = self.S[:, indices].real
+                data = self.S[indices + 1].real
                 y_label = '(MW)'
                 title = 'Bus active power '
 
             elif result_type == ResultTypes.BusReactivePower:
-                data = self.S[:, indices].imag
+                data = self.S[indices + 1].imag
                 y_label = '(MVAr)'
                 title = 'Bus reactive power '
 
             elif result_type == ResultTypes.BranchPower:
-                data = self.Sbranch[:, indices]
+                data = self.Sbranch[indices + 1]
                 y_label = '(MVA)'
                 title = 'Branch power '
 
             elif result_type == ResultTypes.BranchCurrent:
-                data = self.Ibranch[:, indices]
+                data = self.Ibranch[indices + 1]
                 y_label = '(kA)'
                 title = 'Branch current '
 
             elif result_type == ResultTypes.BranchLoading:
-                data = self.loading[:, indices] * 100
+                data = self.loading[indices + 1] * 100
                 y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == ResultTypes.BranchLosses:
-                data = self.losses[:, indices]
+                data = self.losses[indices + 1]
                 y_label = '(MVA)'
                 title = 'Branch losses'
 
             elif result_type == ResultTypes.BranchVoltage:
-                data = np.abs(self.Vbranch[:, indices])
+                data = np.abs(self.Vbranch[indices + 1])
                 y_label = '(p.u.)'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BranchAngles:
-                data = np.angle(self.Vbranch[:, indices], deg=True)
+                data = np.angle(self.Vbranch[indices + 1], deg=True)
                 y_label = '(deg)'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BatteryPower:
-                data = np.zeros_like(self.losses[:, indices])
+                data = np.zeros_like(self.losses[indices + 1])
                 y_label = '$\Delta$ (MVA)'
                 title = 'Battery power'
 
-            elif result_type == ResultTypes.SimulationError:
-                data = self.error
+            elif result_type == ResultTypes.OTDFSimulationError:
+                data = self.error[indices + 1]
                 y_label = 'Per unit power'
                 labels = [y_label]
                 title = 'Error'
 
+            elif result_type == ResultTypes.OTDF:
+                data = self.otdf[indices, :]
+                y_label = 'Per unit'
+                labels = [y_label]
+                title = 'OTDF'
+
+                # assemble model
+                mdl = ResultsModel(data=data, index=self.branch_names[indices],
+                                   columns=self.branch_names, title=title, ylabel=y_label)
+                return mdl
             else:
                 raise Exception('Result type not understood:' + str(result_type))
 
-            if self.time is not None:
-                index = self.time
-            else:
-                index = list(range(data.shape[0]))
+            index = self.branch_names[indices]
 
             # assemble model
             mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label)

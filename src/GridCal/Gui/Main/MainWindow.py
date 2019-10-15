@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Fri Oct  4 16:39:08 2019
+# Created: Tue Oct 15 19:51:55 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -1863,7 +1863,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1178, 21))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1178, 22))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -2084,6 +2084,11 @@ class Ui_mainWindow(object):
         icon67.addPixmap(QtGui.QPixmap(":/Icons/icons/ptdf.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionPTDF.setIcon(icon67)
         self.actionPTDF.setObjectName("actionPTDF")
+        self.actionOTDF = QtWidgets.QAction(mainWindow)
+        icon68 = QtGui.QIcon()
+        icon68.addPixmap(QtGui.QPixmap(":/Icons/icons/otdf.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionOTDF.setIcon(icon68)
+        self.actionOTDF.setObjectName("actionOTDF")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2106,7 +2111,9 @@ class Ui_mainWindow(object):
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionPower_flow_Stochastic)
         self.menuActions.addAction(self.actionLatin_Hypercube_Sampling)
+        self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionPTDF)
+        self.menuActions.addAction(self.actionOTDF)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionBigger_nodes)
         self.menuActions.addAction(self.actionSmaller_nodes)
@@ -2138,7 +2145,9 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionPower_flow_Stochastic)
         self.toolBar.addAction(self.actionLatin_Hypercube_Sampling)
         self.toolBar.addAction(self.actionBlackout_cascade)
+        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPTDF)
+        self.toolBar.addAction(self.actionOTDF)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionBigger_nodes)
         self.toolBar.addAction(self.actionSmaller_nodes)
@@ -2449,8 +2458,10 @@ class Ui_mainWindow(object):
         self.actionDelete_selected.setText(QtWidgets.QApplication.translate("mainWindow", "Delete selected", None, -1))
         self.actionDelete_selected.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Delete selected objects", None, -1))
         self.actionDelete_selected.setShortcut(QtWidgets.QApplication.translate("mainWindow", "Del", None, -1))
-        self.actionPTDF.setText(QtWidgets.QApplication.translate("mainWindow", "Power Transfer Distribution Factors", None, -1))
+        self.actionPTDF.setText(QtWidgets.QApplication.translate("mainWindow", "(PTDF) Power Transfer Distribution Factors", None, -1))
         self.actionPTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Power Transfer Distribution Factors", None, -1))
+        self.actionOTDF.setText(QtWidgets.QApplication.translate("mainWindow", "OTDF", None, -1))
+        self.actionOTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "(OTDF) Outage transfer distribution factors", None, -1))
 
 from .icons_rc import *
 
