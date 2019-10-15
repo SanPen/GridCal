@@ -186,8 +186,12 @@ class NMinusK(QThread):
 
         n_k_results.bus_types = numerical_circuit.bus_types
 
+        npart = len(calc_inputs_dict)
+        k = 1
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():
+
+            self.progress_signal.emit(k / npart * 100.0)
 
             # For every island, run the time series
             for island_index, calculation_input in enumerate(calc_inputs):
@@ -206,9 +210,6 @@ class NMinusK(QThread):
 
                 # traverse the time profiles of the partition and simulate each time step
                 for it, t in enumerate(calculation_input.original_time_idx):
-
-                    self.progress_signal.emit(t / nt * 100.0)
-
                     # set the power values
                     # if the storage dispatch option is active, the batteries power is not included
                     # therefore, it shall be included after processing
@@ -230,6 +231,8 @@ class NMinusK(QThread):
                 # merge the circuit's results
                 n_k_results.apply_from_island(partial_results, bus_original_idx, branch_original_idx,
                                               calculation_input.original_time_idx, 'TS')
+
+            k += 1
 
         return n_k_results
 
