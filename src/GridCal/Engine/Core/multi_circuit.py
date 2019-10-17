@@ -643,10 +643,15 @@ class MultiCircuit:
             # bus parameters
             self.bus_names[i] = bus.name
             circuit.bus_names[i] = bus.name
+            circuit.bus_active[i] = bus.active
             circuit.bus_vnom[i] = bus.Vnom  # kV
             circuit.Vmax[i] = bus.Vmax
             circuit.Vmin[i] = bus.Vmin
             circuit.bus_types[i] = bus.determine_bus_type().value
+
+            if n_time > 0:
+                # active profile
+                circuit.bus_active_prof[:, i] = bus.active_prof
 
             # Add buses dictionary entry
             self.bus_dictionary[bus] = i
@@ -764,9 +769,9 @@ class MultiCircuit:
                     # Voltage profile
                     circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
 
-                circuit.battery_active_prof[:, i_batt] = elm.active_prof
+                    circuit.battery_active_prof[:, i_batt] = elm.active_prof
 
-                circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
+                    circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
 
                 circuit.C_batt_bus[i_batt, i] = 1
                 circuit.V0[i] *= elm.Vset

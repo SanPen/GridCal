@@ -27,43 +27,13 @@ from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 sparse = get_sparse_type()
 
 
-def get_branches_of_the_island(island, C_branch_bus):
-    """
-    Get the branch indices of the island
-    :param island: array of bus indices of the island
-    :param C_branch_bus: connectivity matrix of the branches and the buses
-    :return: array of indices of the branches
-    """
-
-    # faster method
-    A = sp.csc_matrix(C_branch_bus)
-    n = A.shape[0]
-    visited = np.zeros(n, dtype=bool)
-    br_idx = np.zeros(n, dtype=int)
-    n_visited = 0
-    for k in range(len(island)):
-        j = island[k]
-
-        for l in range(A.indptr[j], A.indptr[j + 1]):
-            i = A.indices[l]  # row index
-
-            if not visited[i]:
-                visited[i] = True
-                br_idx[n_visited] = i
-                n_visited += 1
-
-    # resize vector
-    br_idx = br_idx[:n_visited]
-
-    return br_idx
-
-
-def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_temperature, R_corrected, R, X, G, B,
-                      branch_tolerance_mode: BranchImpedanceMode, impedance_tolerance, tap_mod, tap_ang, tap_t, tap_f,
-                      Ysh):
+def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t, apply_temperature, R_corrected,
+                      R, X, G, B, branch_tolerance_mode: BranchImpedanceMode, impedance_tolerance,
+                      tap_mod, tap_ang, tap_t, tap_f, Ysh):
     """
     Build all the admittance related objects
     :param branch_active: array of branch active
+    :param bus_active: array of bus active
     :param C_branch_bus_f: branch-bus from connectivity matrix
     :param C_branch_bus_t: branch-bus to connectivity matrix
     :param apply_temperature: apply temperature correction?
@@ -94,9 +64,9 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
              islands: List of islands bus indices (each list element is a list of bus indices of the island)
     """
     # form the connectivity matrices with the states applied
-    states_dia = sp.diags(branch_active)
-    Cf = states_dia * C_branch_bus_f
-    Ct = states_dia * C_branch_bus_t
+    br_states_diag = sp.diags(branch_active)
+    Cf = br_states_diag * C_branch_bus_f
+    Ct = br_states_diag * C_branch_bus_t
 
     # use the specified of the temperature-corrected resistance
     if apply_temperature:
@@ -174,12 +144,13 @@ def calc_connectivity(branch_active, C_branch_bus_f, C_branch_bus_t, apply_tempe
     C_branch_bus = Cf + Ct
 
     # Connectivity node - Connectivity node connectivity matrix
-    C_bus_bus = C_branch_bus.T * C_branch_bus
+    bus_states_diag = sp.diags(bus_active)
+    C_bus_bus = bus_states_diag * (C_branch_bus.T * C_branch_bus)
 
     return Ybus, Yf, Yt, B1, B2, Yseries, Ys, GBc, Cf, Ct, C_bus_bus, C_branch_bus
 
 
-def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus, C_batt_bus,
+def calc_islands(circuit: CalculationInputs, bus_active, C_bus_bus, C_branch_bus, C_gen_bus, C_batt_bus,
                  nbus, nbr, time_idx=None, ignore_single_node_islands=False) -> List[CalculationInputs]:
     """
     Partition the circuit in islands for the designated time intervals
@@ -196,7 +167,8 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
     :return: list of CalculationInputs instances
     """
     # find the islands of the circuit
-    islands = Graph(sp.csc_matrix(C_bus_bus)).find_islands()
+    g = Graph(C_bus_bus=sp.csc_matrix(C_bus_bus), C_branch_bus=sp.csc_matrix(C_branch_bus), bus_states=bus_active)
+    islands = g.find_islands()
 
     # clear the list of circuits
     calculation_islands = list()
@@ -216,7 +188,7 @@ def calc_islands(circuit: CalculationInputs, C_bus_bus, C_branch_bus, C_gen_bus,
 
             if keep:
                 # get the branch indices of the island
-                island_br_idx = get_branches_of_the_island(island_bus_idx, C_branch_bus)
+                island_br_idx = g.get_branches_of_the_island(island_bus_idx)
                 island_br_idx = np.sort(island_br_idx)  # sort
                 island_branches.append(island_br_idx)
 
@@ -299,10 +271,12 @@ class NumericalCircuit:
         # bus
         self.bus_names = np.empty(n_bus, dtype=object)
         self.bus_vnom = np.zeros(n_bus, dtype=float)
+        self.bus_active = np.ones(n_bus, dtype=int)
         self.V0 = np.ones(n_bus, dtype=complex)
         self.Vmin = np.ones(n_bus, dtype=float)
         self.Vmax = np.ones(n_bus, dtype=float)
         self.bus_types = np.empty(n_bus, dtype=int)
+        self.bus_active_prof = np.zeros((n_time, n_bus), dtype=int)
 
         # branch
         self.branch_names = np.empty(n_br, dtype=object)
@@ -550,16 +524,22 @@ class NumericalCircuit:
         self.shunt_active_prof = self.shunt_active.reshape(1, -1)  # np.zeros((n_time, n_sh), dtype=bool)
         self.shunt_admittance_profile = self.shunt_admittance.reshape(1, -1)  # np.zeros((n_time, n_sh), dtype=complex)
 
-    def get_different_states(self):
+    def get_different_states(self, prog_func=None, text_func=None):
         """
         Get a dictionary of different connectivity states
         :return: dictionary of states  {master state index -> list of states associated}
         """
 
+        if text_func is not None:
+            text_func('Enumerating different admittance states...')
+
         # initialize
         states = dict()
-
+        k = 1
         for t in range(self.ntime):
+
+            if prog_func is not None:
+                prog_func(k / self.ntime * 100)
 
             # search this state in the already existing states
             found = False
@@ -571,6 +551,8 @@ class NumericalCircuit:
             if not found:
                 # new state found (append itself)
                 states[t] = [t]
+
+            k += 1
 
         return states
 
@@ -743,6 +725,7 @@ class NumericalCircuit:
         circuit.C_branch_bus_t, \
         C_bus_bus, \
         C_branch_bus = calc_connectivity(branch_active=self.branch_active,
+                                         bus_active=self.bus_active,
                                          C_branch_bus_f=self.C_branch_bus_f,
                                          C_branch_bus_t=self.C_branch_bus_t,
                                          apply_temperature=apply_temperature,
@@ -761,6 +744,7 @@ class NumericalCircuit:
 
         #  split the circuit object into the individual circuits that may arise from the topological islands
         calculation_islands = calc_islands(circuit=circuit,
+                                           bus_active=self.bus_active,
                                            C_bus_bus=C_bus_bus,
                                            C_branch_bus=C_branch_bus,
                                            C_gen_bus=self.C_gen_bus,
@@ -778,7 +762,7 @@ class NumericalCircuit:
 
     def compute_ts(self, add_storage=True, add_generation=True, apply_temperature=False,
                    branch_tolerance_mode=BranchImpedanceMode.Specified,
-                   ignore_single_node_islands=False) -> Dict[int, List[CalculationInputs]]:
+                   ignore_single_node_islands=False, prog_func=None, text_func=None) -> Dict[int, List[CalculationInputs]]:
         """
         Compute the cross connectivity matrices to determine the circuit connectivity
         towards the calculation. Additionally, compute the calculation matrices.
@@ -787,17 +771,27 @@ class NumericalCircuit:
         :param apply_temperature:
         :param branch_tolerance_mode:
         :param ignore_single_node_islands: If True, the single node islands are omitted
+        :param prog_func: progress report function
+        :param text_func: text report function
         :return: dictionary of lists of CalculationInputs instances where each one is a circuit island
         """
 
         # get the raw circuit with the inner arrays computed
         # circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
-        states = self.get_different_states()
+        states = self.get_different_states(prog_func=prog_func, text_func=text_func)
 
         calculation_islands_collection = dict()
 
+        if text_func is not None:
+            text_func('Computing topological states...')
+
+        ni = len(states.items())
+        k = 1
         for t, t_array in states.items():
+
+            if prog_func is not None:
+                prog_func(k / ni * 100.0)
 
             circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
@@ -814,6 +808,7 @@ class NumericalCircuit:
              circuit.C_branch_bus_t, \
              C_bus_bus, \
              C_branch_bus = calc_connectivity(branch_active=self.branch_active_prof[t, :],
+                                              bus_active=self.bus_active_prof[t, :],
                                               C_branch_bus_f=self.C_branch_bus_f,
                                               C_branch_bus_t=self.C_branch_bus_t,
                                               apply_temperature=apply_temperature,
@@ -832,6 +827,7 @@ class NumericalCircuit:
 
             #  split the circuit object into the individual circuits that may arise from the topological islands
             calculation_islands = calc_islands(circuit=circuit,
+                                               bus_active=self.bus_active,
                                                C_bus_bus=C_bus_bus,
                                                C_branch_bus=C_branch_bus,
                                                C_gen_bus=self.C_gen_bus,
@@ -846,6 +842,8 @@ class NumericalCircuit:
             if t == 0:
                 for island in calculation_islands:
                     self.bus_types[island.original_bus_idx] = island.types
+
+            k += 1
 
         # return the list of islands
         return calculation_islands_collection

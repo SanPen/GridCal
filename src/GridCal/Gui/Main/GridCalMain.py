@@ -926,12 +926,7 @@ class MainGUI(QMainWindow):
             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-
                 self.new_project_now()
-            else:
-                pass
-        else:
-            pass
 
     def open_file(self):
         """
@@ -3625,7 +3620,6 @@ class MainGUI(QMainWindow):
     def save_results_df(self):
         """
         Save the data displayed at the results as excel
-        :return:
         """
         mdl = self.ui.resultsTableView.model()
         mode = self.ui.export_mode_comboBox.currentText()
@@ -3635,18 +3629,25 @@ class MainGUI(QMainWindow):
             if self.use_native_dialogues:
                 options |= QFileDialog.DontUseNativeDialog
 
-            file = QFileDialog.getSaveFileName(self, "Save to Excel", '', filter="Excel files (*.xlsx)",
-                                               options=options)
+            file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
+                                                       filter="CSV (*.csv);;Excel files (*.xlsx)",
+                                                       options=options)
 
-            if file[0] != '':
-
-                if not file[0].endswith('.xlsx'):
-                    f = file[0] + '.xlsx'
+            if file != '':
+                if 'xlsx' in filter:
+                    f = file
+                    if not f.endswith('.xlsx'):
+                        f += '.xlsx'
+                    mdl.save_to_excel(f, mode=mode)
+                    print('Saved!')
+                if'csv' in filter:
+                    f = file
+                    if not f.endswith('.csv'):
+                        f += '.csv'
+                    mdl.save_to_csv(f, mode=mode)
+                    print('Saved!')
                 else:
-                    f = file[0]
-
-                mdl.save_to_excel(f, mode=mode)
-                print('Saved!')
+                    self.msg(file[0] + ' is not valid :(')
         else:
             self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 

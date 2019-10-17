@@ -182,7 +182,9 @@ class NMinusK(QThread):
         # do the topological computation
         self.progress_text.emit("Compiling topology...")
         self.progress_signal.emit(0.0)
-        calc_inputs_dict = numerical_circuit.compute_ts(ignore_single_node_islands=pf_options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute_ts(ignore_single_node_islands=pf_options.ignore_single_node_islands,
+                                                        prog_func=self.progress_signal.emit,
+                                                        text_func=self.progress_text.emit)
 
         n_k_results.bus_types = numerical_circuit.bus_types
 
@@ -384,14 +386,14 @@ class NMinusK(QThread):
         self.progress_text.emit('Computing OTDF...')
         if self.results is not None:
             self.results.branch_names = np.array([b.name for b in self.grid.branches])
-            self.results.otdf = self.get_otdf(failure_flow_limit=0.0)
+            self.results.otdf = self.get_otdf(failure_flow_limit=1.0/100.0)
 
         end = time.time()
         self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-    def get_otdf(self, failure_flow_limit=1.0):
+    def get_otdf(self, failure_flow_limit=0.0):
         """
         Outage Transfer Distribution Factors (OTDF)
         :return: OTDF matrix with the failures as rows
@@ -405,7 +407,7 @@ class NMinusK(QThread):
             for i in range(m):
                 # (power of line_i at the base - power of line_i at the failure) / power of the failed line at the base
                 if abs(p_branch[0, i]) >= failure_flow_limit:
-                    otdf[i, :] = (p_branch[i + 1, :] - p_branch[0, :]) / p_branch[0, i]
+                    otdf[i, :] = (p_branch[i + 1, :] - p_branch[0, :]) / (p_branch[0, i] + 1e-12)
 
             return otdf
 

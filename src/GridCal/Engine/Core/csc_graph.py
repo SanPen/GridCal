@@ -18,14 +18,20 @@ import numpy as np
 
 class Graph:
 
-    def __init__(self, adj):
+    def __init__(self, C_bus_bus, C_branch_bus, bus_states):
         """
         Graph adapted to work with CSC sparse matrices
         see: http://www.scipy-lectures.org/advanced/scipy_sparse/csc_matrix.html
-        :param adj: Adjacency matrix in lil format
+        :param C_bus_bus: Adjacency matrix in lil format
+        :param C_branch_bus: Connectivity of the branches and the buses
         """
-        self.node_number = adj.shape[0]
-        self.adj = adj
+        self.node_number = C_bus_bus.shape[0]
+
+        self.adj = C_bus_bus
+
+        self.C_branch_bus = C_branch_bus
+
+        self.bus_states = bus_states
 
     def find_islands(self):
         """
@@ -100,3 +106,32 @@ class Graph:
 
         return islands
 
+    def get_branches_of_the_island(self, island):
+        """
+        Get the branch indices of the island
+        :param island: array of bus indices of the island
+        :param C_branch_bus: connectivity matrix of the branches and the buses
+        :return: array of indices of the branches
+        """
+
+        # faster method
+        # A = self.C_branch_bus
+        n = self.C_branch_bus.shape[0]
+        visited = np.zeros(n, dtype=bool)
+        br_idx = np.zeros(n, dtype=int)
+        n_visited = 0
+        for k in range(len(island)):
+            j = island[k]
+
+            for l in range(self.C_branch_bus.indptr[j], self.C_branch_bus.indptr[j + 1]):
+                i = self.C_branch_bus.indices[l]  # row index
+
+                if not visited[i]:
+                    visited[i] = True
+                    br_idx[n_visited] = i
+                    n_visited += 1
+
+        # resize vector
+        br_idx = br_idx[:n_visited]
+
+        return br_idx

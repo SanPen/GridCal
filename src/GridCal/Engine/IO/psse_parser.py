@@ -257,6 +257,9 @@ class PSSeBus:
         if self.bus.type == BusMode.REF:
             self.bus.is_slack = True
 
+        if int(self.IDE) == 4:
+            self.bus.active = False
+
         # Ensures unique name
         self.bus.name = str(self.I) + '_' + self.bus.name.replace("'", "").strip()
 

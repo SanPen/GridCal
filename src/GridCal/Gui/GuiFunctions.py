@@ -1358,15 +1358,23 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
     def save_to_excel(self, file_name, mode):
         """
-
+        save data to excel
         :param file_name:
         :param mode: 'real', 'imag', 'abs'
-        :return:
         """
         index, columns, data = self.get_data(mode=mode)
 
-        df = pd.DataFrame(data=data, index=index, columns=columns)
-        df.to_excel(file_name)
+        pd.DataFrame(data=data, index=index, columns=columns).to_excel(file_name)
+
+    def save_to_csv(self, file_name, mode):
+        """
+        Save data to csv
+        :param file_name:
+        :param mode: 'real', 'imag', 'abs'
+        """
+        index, columns, data = self.get_data(mode=mode)
+
+        pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
 
     def copy_to_clipboard(self, mode=None):
         """

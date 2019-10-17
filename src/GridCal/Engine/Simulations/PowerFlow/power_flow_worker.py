@@ -1146,11 +1146,6 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
         results.error = errors
         results.converged = converged_lst
 
-        # check the power flow limits
-        results.check_limits(F=circuit.F, T=circuit.T,
-                             Vmax=circuit.Vmax, Vmin=circuit.Vmin,
-                             wo=1, wv1=1, wv2=1)
-
         return results
 
 
@@ -1219,11 +1214,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logg
             results.convergence_reports.append(results.get_report_dataframe())
         else:
             logger.append('There are no slack nodes')
-
-    # check the limits
-    results.check_limits(F=numerical_circuit.F, T=numerical_circuit.T,
-                         Vmax=numerical_circuit.Vmax, Vmin=numerical_circuit.Vmin,
-                         wo=1, wv1=1, wv2=1)
 
     return results
 

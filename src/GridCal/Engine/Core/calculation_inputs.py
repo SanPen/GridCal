@@ -98,8 +98,8 @@ class CalculationInputs:
         self.tap_inc_reg_down = np.zeros(nbr, dtype=float)
         self.vset = np.zeros(nbr, dtype=float)
 
-        self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=complex)
-        self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=complex)
+        self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=int)
+        self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=int)
 
         # Active power control
         self.controlled_gen_pmin = np.zeros(nctrlgen, dtype=float)
