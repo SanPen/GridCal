@@ -15,6 +15,7 @@
 
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
@@ -283,18 +284,23 @@ class Bus(EditableDevice):
             v = np.abs(time_series_driver.results.voltage[:, my_index])
             p = np.abs(time_series_driver.results.S[:, my_index])
             t = time_series_driver.results.time
-            ax_voltage.plot(t, v)
-            ax_load.plot(t, p, label='computed')
+            pd.DataFrame(data=v, index=t, columns=['Voltage (p.u.)']).plot(ax=ax_voltage)
+            pd.DataFrame(data=p, index=t, columns=['Computed power (p.u.)']).plot(ax=ax_load)
 
+            # plot the objects' active power profiles
+
+            devices = self.loads + self.controlled_generators + self.batteries + self.static_generators
+            if len(devices) > 0:
+                dta = dict()
+                for elm in devices:
+                    dta[elm.name + ' defined'] = elm.P_prof
+                pd.DataFrame(data=dta, index=t).plot(ax=ax_load)
+
+            ax_load.set_ylabel('Power [MW]', fontsize=11)
+            ax_load.legend()
         else:
             pass
 
-        # plot the objects' active power profiles
-        for elm in self.loads + self.controlled_generators + self.batteries + self.static_generators:
-            ax_load.plot(time_profile, elm.P_prof, label='defined')
-
-        ax_load.set_ylabel('Power [MW]', fontsize=11)
-        ax_load.legend()
         if ax_voltage is not None:
             ax_voltage.set_ylabel('Voltage module [p.u.]', fontsize=11)
             ax_voltage.legend()

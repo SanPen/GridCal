@@ -1214,40 +1214,11 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.glyph.setPen(QPen(self.color, self.width, self.style))
 
     def plot(self):
+        # time series object from the last simulation
+        ts = self.diagramScene.circuit.time_profile
 
-        fig = plt.figure(figsize=(10, 8))
-        ax1 = fig.add_subplot(321)
-        ax2 = fig.add_subplot(322)
-        ax3 = fig.add_subplot(323)
-        ax4 = fig.add_subplot(324)
-        ax5 = fig.add_subplot(325)
-        ax6 = fig.add_subplot(326)
-
-        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
-        self.api_object.Ir_prof.plot(ax=ax2, linewidth=1)
-        self.api_object.G_prof.plot(ax=ax3, linewidth=1)
-
-        self.api_object.Q_prof.plot(ax=ax4, linewidth=1)
-        self.api_object.Ii_prof.plot(ax=ax5, linewidth=1)
-        self.api_object.B_prof.plot(ax=ax6, linewidth=1)
-
-        ax1.set_title('Active power profile')
-        ax2.set_title('Active current profile')
-        ax3.set_title('Active impedance profile')
-        ax4.set_title('Reactive power profile')
-        ax5.set_title('Reactive current profile')
-        ax6.set_title('Reactive impedance profile')
-
-        ax1.set_ylabel('MW')
-        ax2.set_ylabel('MW at V=1 p.u.')
-        ax3.set_ylabel('MW at V=1 p.u.')
-        ax4.set_ylabel('MVAr')
-        ax5.set_ylabel('MW at V=1 p.u.')
-        ax6.set_ylabel('MW at V=1 p.u.')
-
-        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
-
-        plt.show()
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -1402,19 +1373,11 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         """
         Plot API objects profiles
         """
-        fig = plt.figure(figsize=(10, 6))
-        ax1 = fig.add_subplot(111)
+        # time series object from the last simulation
+        ts = self.diagramScene.circuit.time_profile
 
-        if self.api_object.Yprof is not None:
-            self.api_object.Yprof.plot(ax=ax1, linewidth=1)
-
-        ax1.set_title('Admittance profile')
-
-        ax1.set_ylabel('S (p.u.)')
-
-        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
-
-        plt.show()
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -1560,22 +1523,11 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         """
         Plot API objects profiles
         """
-        fig = plt.figure(figsize=(10, 8))
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        # time series object from the last simulation
+        ts = self.diagramScene.circuit.time_profile
 
-        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
-        self.api_object.Vset_prof.plot(ax=ax2, linewidth=1)
-
-        ax1.set_title('Active power profile')
-        ax2.set_title('Set voltage profile')
-
-        ax1.set_ylabel('MW')
-        ax2.set_ylabel('V (p.u.)')
-
-        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
-
-        plt.show()
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -1721,22 +1673,11 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         """
         Plot API objects profiles
         """
-        fig = plt.figure(figsize=(10, 6))
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        # time series object from the last simulation
+        ts = self.diagramScene.circuit.time_profile
 
-        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
-        self.api_object.Q_prof.plot(ax=ax2, linewidth=1)
-
-        ax1.set_title('Active power profile')
-        ax1.set_ylabel('MW')
-
-        ax1.set_title('Reactive power profile')
-        ax1.set_ylabel('MVAr')
-
-        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
-
-        plt.show()
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -1882,30 +1823,11 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         """
         Plot API objects profiles
         """
-        fig = plt.figure(figsize=(10, 8))
-        ax1 = fig.add_subplot(411)
-        ax2 = fig.add_subplot(412)
-        ax3 = fig.add_subplot(413)
-        ax4 = fig.add_subplot(414)
+        # time series object from the last simulation
+        ts = self.diagramScene.circuit.time_profile
 
-        self.api_object.P_prof.plot(ax=ax1, linewidth=1)
-        self.api_object.Vset_prof.plot(ax=ax2, linewidth=1)
-        self.api_object.power_array.plot(ax=ax3, linewidth=1)
-        self.api_object.energy_array.plot(ax=ax4, linewidth=1)
-
-        ax1.set_title('Active power profile')
-        ax2.set_title('Set voltage profile')
-        ax3.set_title('Active power profile')
-        ax4.set_title('Energy profile')
-
-        ax1.set_ylabel('MW')
-        ax2.set_ylabel('V (p.u.)')
-        ax3.set_ylabel('MW')
-        ax4.set_ylabel('MWh')
-
-        plt.subplots_adjust(left=0.12, bottom=0.1, right=0.96, top=0.96, wspace=None, hspace=0.6)
-
-        plt.show()
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -2281,8 +2203,7 @@ class BusGraphicItem(QGraphicsRectItem):
     def mousePressEvent(self, event):
         """
         mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
+        :param event: QGraphicsSceneMouseEvent
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
@@ -2307,9 +2228,7 @@ class BusGraphicItem(QGraphicsRectItem):
 
     def add_load(self, api_obj=None):
         """
-
-        Returns:
-
+        Add load object to bus
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.diagramScene.circuit.add_load(self.api_object)

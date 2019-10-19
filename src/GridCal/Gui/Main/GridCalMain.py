@@ -1872,12 +1872,13 @@ class MainGUI(QMainWindow):
                 cols.add(obj_idx[i].column())
 
             # plot every column
+            dta = dict()
             for k in cols:
                 attr = objects[k].properties_with_profile[magnitude]
-                profile = getattr(objects[k], attr)
-                ax.plot(t, profile, label=objects[k].name)
+                dta[objects[k].name] = getattr(objects[k], attr)
+            df = pd.DataFrame(data=dta, index=t)
+            df.plot(ax=ax)
 
-            ax.legend()
             plt.show()
 
     def display_profiles(self):
@@ -3612,9 +3613,6 @@ class MainGUI(QMainWindow):
             ax = fig.add_subplot(111)
             mode = self.ui.export_mode_comboBox.currentText()
             self.results_mdl.plot(ax=ax, mode=mode)
-            # rotate and align the tick labels so they look better
-            # fig.autofmt_xdate()
-
             plt.show()
 
     def save_results_df(self):

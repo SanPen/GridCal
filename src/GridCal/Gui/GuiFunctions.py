@@ -1417,16 +1417,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
         if ax is None:
             fig = plt.figure(figsize=(12, 6))
             ax = fig.add_subplot(111)
-
-        index2 = [str(x) for x in index]
-
-        ax.plot(index2, data, linewidth=2)
-
-        ax.xaxis.set_major_formatter(DateFormatter("%Y/%m/%d %H:%M"))
-        ax.xaxis.set_major_locator(DayLocator())
-        ax.set_xlabel(self.xlabel)
-        ax.set_ylabel(self.ylabel)
-        ax.set_title(self.title + ' (' + mode + ')')
+        df = pd.DataFrame(data=data, index=index, columns=columns)
+        ax.set_title('Active power', fontsize=14)
+        ax.set_ylabel('MW', fontsize=11)
+        df.plot(ax=ax)
 
 
 def get_list_model(lst, checks=False):

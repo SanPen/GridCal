@@ -14,6 +14,8 @@ Version 3.6.1
 _____________
 
 - Added N-1 and OTDF
+- Now the plots are way faster
+- Fixed the results representation when single-node islands were ignored.
 
 
 Version 3.6.0

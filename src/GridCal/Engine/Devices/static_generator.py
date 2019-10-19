@@ -12,7 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import pandas as pd
+from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 
 
@@ -101,3 +102,35 @@ class StaticGenerator(EditableDevice):
                 'P': self.P,
                 'Q': self.Q}
 
+    def plot_profiles(self, time=None, show_fig=True):
+        """
+        Plot the time series results of this object
+        :param time: array of time values
+        :param show_fig: Show the figure?
+        """
+
+        if time is not None:
+            fig = plt.figure(figsize=(12, 8))
+
+            ax_1 = fig.add_subplot(211)
+            ax_2 = fig.add_subplot(212)
+
+            # P
+            y = self.P_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_1.set_title('Active power', fontsize=14)
+            ax_1.set_ylabel('MW', fontsize=11)
+            df.plot(ax=ax_1)
+
+            # Q
+            y = self.Q_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_2.set_title('Reactive power', fontsize=14)
+            ax_2.set_ylabel('MVAr', fontsize=11)
+            df.plot(ax=ax_2)
+
+            plt.legend()
+            fig.suptitle(self.name, fontsize=20)
+
+            if show_fig:
+                plt.show()

@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
-import numpy as np
+from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.meta_devices import EditableDevice, GCProp
 from GridCal.Engine.Devices.types import DeviceType, GeneratorTechnologyType
 
@@ -255,3 +255,35 @@ class Generator(EditableDevice):
                 'Pmax': self.Pmax,
                 'Cost': self.Cost}
 
+    def plot_profiles(self, time=None, show_fig=True):
+        """
+        Plot the time series results of this object
+        :param time: array of time values
+        :param show_fig: Show the figure?
+        """
+
+        if time is not None:
+            fig = plt.figure(figsize=(12, 8))
+
+            ax_1 = fig.add_subplot(211)
+            ax_2 = fig.add_subplot(212)
+
+            # P
+            y = self.P_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_1.set_title('Active power', fontsize=14)
+            ax_1.set_ylabel('MW', fontsize=11)
+            df.plot(ax=ax_1)
+
+            # V
+            y = self.Vset_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_2.set_title('Voltage Set point', fontsize=14)
+            ax_2.set_ylabel('p.u.', fontsize=11)
+            df.plot(ax=ax_2)
+
+            plt.legend()
+            fig.suptitle(self.name, fontsize=20)
+
+            if show_fig:
+                plt.show()

@@ -1202,13 +1202,18 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logg
         if len(calculation_inputs[0].ref) > 0:
             # only one island
             # run circuit power flow
-            results = single_island_pf(circuit=calculation_inputs[0],
-                                       Vbus=calculation_inputs[0].Vbus,
-                                       Sbus=calculation_inputs[0].Sbus,
-                                       Ibus=calculation_inputs[0].Ibus,
-                                       branch_rates=calculation_inputs[0].branch_rates,
-                                       options=options,
-                                       logger=logger)
+            res = single_island_pf(circuit=calculation_inputs[0],
+                                   Vbus=calculation_inputs[0].Vbus,
+                                   Sbus=calculation_inputs[0].Sbus,
+                                   Ibus=calculation_inputs[0].Ibus,
+                                   branch_rates=calculation_inputs[0].branch_rates,
+                                   options=options,
+                                   logger=logger)
+
+            # merge the results from this island, this is needed because there may be single nodes omitted
+            bus_original_idx = calculation_inputs[0].original_bus_idx
+            branch_original_idx = calculation_inputs[0].original_branch_idx
+            results.apply_from_island(res, bus_original_idx, branch_original_idx)
 
             # build the report
             results.convergence_reports.append(results.get_report_dataframe())
