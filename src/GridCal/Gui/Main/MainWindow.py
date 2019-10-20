@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Tue Oct 15 19:51:55 2019
+# Created: Sun Oct 20 23:17:41 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -2460,8 +2460,8 @@ class Ui_mainWindow(object):
         self.actionDelete_selected.setShortcut(QtWidgets.QApplication.translate("mainWindow", "Del", None, -1))
         self.actionPTDF.setText(QtWidgets.QApplication.translate("mainWindow", "(PTDF) Power Transfer Distribution Factors", None, -1))
         self.actionPTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Power Transfer Distribution Factors", None, -1))
-        self.actionOTDF.setText(QtWidgets.QApplication.translate("mainWindow", "OTDF", None, -1))
-        self.actionOTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "(OTDF) Outage transfer distribution factors", None, -1))
+        self.actionOTDF.setText(QtWidgets.QApplication.translate("mainWindow", "N-1 / OTDF (Outage Transfer Distribution Factors)", None, -1))
+        self.actionOTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "N-1 / OTDF (Outage Transfer Distribution Factors)", None, -1))
 
 from .icons_rc import *
 

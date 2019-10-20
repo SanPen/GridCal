@@ -5424,10 +5424,10 @@ points from time series</string>
      <normaloff>:/Icons/icons/otdf.svg</normaloff>:/Icons/icons/otdf.svg</iconset>
    </property>
    <property name="text">
-    <string>OTDF</string>
+    <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
    </property>
    <property name="toolTip">
-    <string>(OTDF) Outage transfer distribution factors</string>
+    <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
    </property>
   </action>
  </widget>
