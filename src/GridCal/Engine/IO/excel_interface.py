@@ -333,6 +333,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
             circuit.add_bus(obj)
+            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.append('No buses in the file!')
 
@@ -734,6 +735,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
             circuit.add_bus(obj)
+            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.append('No buses in the file!')
 

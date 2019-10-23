@@ -949,7 +949,7 @@ class MainGUI(QMainWindow):
                 self.open_file_threaded()
 
         else:
-            self.msg('THere is a file being processed now.')
+            self.msg('There is a file being processed now.')
 
     def open_file_threaded(self):
         """

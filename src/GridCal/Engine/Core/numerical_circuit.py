@@ -444,6 +444,9 @@ class NumericalCircuit:
         self.time_array = self.time_array[t_idx]
         self.ntime = len(t_idx)
 
+        # bus
+        self.bus_active_prof = self.bus_active_prof[t_idx, :]
+
         # branch
         self.branch_active_prof = self.branch_active_prof[t_idx, :]  # np.zeros((n_time, n_br), dtype=int)
         self.temp_oper_prof = self.temp_oper_prof[t_idx, :]  # np.zeros((n_time, n_br), dtype=float)

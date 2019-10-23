@@ -88,6 +88,8 @@ def create_data_frames(circuit: MultiCircuit):
             else:
                 names_count[elm.name] = 1
 
+            elm.ensure_profiles_exist(T)
+
             elm.retrieve_graphic_position()
 
     ########################################################################################################

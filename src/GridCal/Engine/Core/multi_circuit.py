@@ -116,7 +116,7 @@ class MultiCircuit:
         self.time_profile = None
 
         # objects with profiles
-        self.objects_with_profiles = [Load(), StaticGenerator(),
+        self.objects_with_profiles = [Bus(), Load(), StaticGenerator(),
                                       Generator(), Battery(),
                                       Shunt(), Branch(None, None)]
 
@@ -136,6 +136,7 @@ class MultiCircuit:
                 profile_types = [dev.editable_headers[attr].tpe for attr in profile_attr]
                 self.profile_magnitudes[dev.device_type.value] = (profile_attr, profile_types)
                 self.device_type_name_dict[dev.device_type.value] = dev.device_type
+
 
     def __str__(self):
         return self.name
@@ -651,6 +652,9 @@ class MultiCircuit:
 
             if n_time > 0:
                 # active profile
+                if bus.active_prof is None:
+                    bus.ensure_profiles_exist(self.time_profile)
+
                 circuit.bus_active_prof[:, i] = bus.active_prof
 
             # Add buses dictionary entry
