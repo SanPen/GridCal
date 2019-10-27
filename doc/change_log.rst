@@ -20,6 +20,8 @@ _____________
 - The top menus have been re-arranged.
 - The multi-core test was moved into research.
 - Added tap module to the power flow results.
+- Fixed bug related to OPF results being multiplied by Sbase twice.
+- Fixed units displayed in the results plot.
 
 Version 3.6.0
 _____________

@@ -1430,8 +1430,8 @@ class ResultsModel(QtCore.QAbstractTableModel):
             fig = plt.figure(figsize=(12, 6))
             ax = fig.add_subplot(111)
         df = pd.DataFrame(data=data, index=index, columns=columns)
-        ax.set_title('Active power', fontsize=14)
-        ax.set_ylabel('MW', fontsize=11)
+        ax.set_title(self.title, fontsize=14)
+        ax.set_ylabel(self.ylabel, fontsize=11)
         df.plot(ax=ax)
 
 
