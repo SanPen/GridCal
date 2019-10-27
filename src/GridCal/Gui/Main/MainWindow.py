@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Oct 20 23:17:41 2019
+# Created: Sun Oct 27 21:04:24 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -2094,6 +2094,8 @@ class Ui_mainWindow(object):
         self.menuProject.addAction(self.actionSave)
         self.menuProject.addAction(self.actionSave_as)
         self.menuProject.addSeparator()
+        self.menuProject.addAction(self.actionExport)
+        self.menuProject.addAction(self.actionExport_all_results)
         self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionAbout)
         self.menuActions.addAction(self.actionPower_flow)
@@ -2122,10 +2124,8 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionDetect_transformers)
         self.menuActions.addAction(self.actionAuto_rate_branches)
         self.menuActions.addAction(self.actionGrid_Reduction)
-        self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuActions.addSeparator()
-        self.menuActions.addAction(self.actionExport)
-        self.menuActions.addAction(self.actionExport_all_results)
+        self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuActions.menuAction())
         self.menuBar.addAction(self.menuAbout.menuAction())
@@ -2351,7 +2351,7 @@ class Ui_mainWindow(object):
         self.label_38.setText(QtWidgets.QApplication.translate("mainWindow", "Plotting style", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QtWidgets.QApplication.translate("mainWindow", "Settings", None, -1))
         self.cancelButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Cancel process", None, -1))
-        self.menuProject.setTitle(QtWidgets.QApplication.translate("mainWindow", "Project", None, -1))
+        self.menuProject.setTitle(QtWidgets.QApplication.translate("mainWindow", "File", None, -1))
         self.menuAbout.setTitle(QtWidgets.QApplication.translate("mainWindow", "Help", None, -1))
         self.menuActions.setTitle(QtWidgets.QApplication.translate("mainWindow", "Actions", None, -1))
         self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("mainWindow", "toolBar", None, -1))

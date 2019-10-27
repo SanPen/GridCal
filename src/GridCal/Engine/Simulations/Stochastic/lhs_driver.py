@@ -31,6 +31,7 @@ class LatinHypercubeSampling(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Latin Hypercube'
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, sampling_points=1000):
         """
@@ -93,7 +94,7 @@ class LatinHypercubeSampling(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running Latin Hypercube Sampling in parallel using ' + str(n_cores) + ' cores ...')
 
-        lhs_results = MonteCarloResults(n, m, batch_size)
+        lhs_results = MonteCarloResults(n, m, batch_size, name='Latin Hypercube')
         avg_res = PowerFlowResults()
         avg_res.initialize(n, m)
 
@@ -189,7 +190,7 @@ class LatinHypercubeSampling(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running Latin Hypercube Sampling...')
 
-        lhs_results = MonteCarloResults(n, m, batch_size)
+        lhs_results = MonteCarloResults(n, m, batch_size, name='Latin Hypercube')
         avg_res = PowerFlowResults()
         avg_res.initialize(n, m)
 

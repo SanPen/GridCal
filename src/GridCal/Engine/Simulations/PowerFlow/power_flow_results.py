@@ -68,6 +68,8 @@ class PowerFlowResults:
                  flow_direction=None, Vbranch=None, error=None, converged=None, Qpv=None, battery_power_inc=None,
                  inner_it=None,  outer_it=None, elapsed=None, methods=None, bus_types=None):
 
+        self.name = 'Power flow'
+
         self.Sbus = Sbus
 
         self.voltage = voltage

@@ -26,6 +26,7 @@ class PowerFlowDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Power Flow'
 
     """
     Power flow wrapper to use with Qt

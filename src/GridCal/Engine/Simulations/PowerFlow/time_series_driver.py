@@ -40,7 +40,7 @@ class TimeSeriesResults(PowerFlowResults):
         @param nt: number of time steps
         """
         PowerFlowResults.__init__(self)
-
+        self.name = 'Time series'
         self.nt = nt
         self.m = m
         self.n = n
@@ -381,6 +381,7 @@ class TimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Time Series'
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, use_opf_vals=False, opf_time_series_results=None,
                  start_=0, end_=None):

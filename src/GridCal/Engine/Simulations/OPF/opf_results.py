@@ -45,6 +45,8 @@ class OptimalPowerFlowResults:
                  battery_power=None, controlled_generation_power=None,
                  Sbranch=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
 
+        self.name = 'OPF'
+
         self.Sbus = Sbus
 
         self.voltage = voltage

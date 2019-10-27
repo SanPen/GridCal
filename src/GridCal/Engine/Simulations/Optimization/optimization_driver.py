@@ -70,7 +70,7 @@ class VoltageOptimizationProblem(OptimizationProblem):
         self.info = str(self.dim) + "Voltage collapse optimization"
 
         # results
-        self.results = MonteCarloResults(n, m, self.max_eval)
+        self.results = MonteCarloResults(n, m, self.max_eval, name='Voltage optimization')
 
         # compile circuits
         self.numerical_circuit = self.circuit.compile()

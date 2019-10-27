@@ -15,7 +15,6 @@
 
 import pandas as pd
 import numpy as np
-from numpy import complex, zeros,  array
 import time
 from PySide2.QtCore import QThread, Signal
 
@@ -43,6 +42,8 @@ class OptimalPowerFlowTimeSeriesResults:
         :param nload:
         :param time: Time array (optional)
         """
+        self.name = 'OPF time series'
+
         self.n = n
 
         self.m = m
@@ -51,23 +52,23 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.time = time
 
-        self.voltage = zeros((nt, n), dtype=complex)
+        self.voltage = np.zeros((nt, n), dtype=complex)
 
-        self.load_shedding = zeros((nt, nload), dtype=float)
+        self.load_shedding = np.zeros((nt, nload), dtype=float)
 
-        self.loading = zeros((nt, m), dtype=float)
+        self.loading = np.zeros((nt, m), dtype=float)
 
-        self.losses = zeros((nt, m), dtype=float)
+        self.losses = np.zeros((nt, m), dtype=float)
 
-        self.overloads = zeros((nt, m), dtype=float)
+        self.overloads = np.zeros((nt, m), dtype=float)
 
-        self.Sbus = zeros((nt, n), dtype=complex)
+        self.Sbus = np.zeros((nt, n), dtype=complex)
 
-        self.shadow_prices = zeros((nt, n), dtype=float)
+        self.shadow_prices = np.zeros((nt, n), dtype=float)
 
-        self.Sbranch = zeros((nt, m), dtype=complex)
+        self.Sbranch = np.zeros((nt, m), dtype=complex)
 
-        self.bus_types = zeros(n, dtype=int)
+        self.bus_types = np.zeros(n, dtype=int)
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
@@ -133,7 +134,7 @@ class OptimalPowerFlowTimeSeriesResults:
         """
 
         if indices is None:
-            indices = array(range(len(names)))
+            indices = np.array(range(len(names)))
 
         if len(indices) > 0:
             labels = names[indices]
@@ -242,6 +243,7 @@ class OptimalPowerFlowTimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Optimal power flow time series'
 
     def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
         """

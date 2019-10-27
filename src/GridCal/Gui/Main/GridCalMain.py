@@ -45,6 +45,7 @@ from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
+from GridCal.Engine.IO.export_results_driver import ExportAllThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 
 import gc
@@ -259,6 +260,7 @@ class MainGUI(QMainWindow):
         self.otdf_analysis = None
         self.painter = None
         self.delete_and_reduce_driver = None
+        self.export_all_thread_object = None
 
         self.stuff_running_now = list()
 
@@ -1254,37 +1256,41 @@ class MainGUI(QMainWindow):
         # set grid name
         self.circuit.name = self.grid_editor.name_label.text()
 
-        files_types = "Json (*.json)"
+        available_results = self.get_available_results()
 
-        fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
+        if len(available_results) > 0:
 
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
+            files_types = "Zip file (*.zip)"
+            fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
+            options = QFileDialog.Options()
+            if self.use_native_dialogues:
+                options |= QFileDialog.DontUseNativeDialog
 
-        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                              options=options)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
+                                                                  options=options)
 
-        if filename is not "":
+            if filename is not "":
+                self.LOCK()
 
-            data = dict()
+                self.stuff_running_now.append('export_all')
+                self.export_all_thread_object = ExportAllThread(circuit=self.circuit,
+                                                                simulations_list=available_results,
+                                                                file_name=filename)
 
-            if self.time_series is not None:
-                if self.time_series.results is not None:
-                    data['ts'] = self.time_series.results.get_results_dict()
+                self.export_all_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+                self.export_all_thread_object.progress_text.connect(self.ui.progress_label.setText)
+                self.export_all_thread_object.done_signal.connect(self.post_export_all)
+                self.export_all_thread_object.start()
+        else:
+            self.msg('There are no result available :/')
 
-            if self.latin_hypercube_sampling is not None:
-                if self.latin_hypercube_sampling.results is not None:
-                    data['lhs'] = self.latin_hypercube_sampling.results.get_results_dict()
-
-            if self.monte_carlo is not None:
-                if self.monte_carlo.results is not None:
-                    data['mc'] = self.monte_carlo.results.get_results_dict()
-
-            json.dump(data, codecs.open(filename, 'w', encoding='utf-8'),
-                      separators=(',', ':'), sort_keys=True, indent=4)
-
-            print('Check the json at', filename)
+    def post_export_all(self):
+        """
+        Actions post export all
+        """
+        self.stuff_running_now.remove('export_all')
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
 
     def export_simulation_data(self):
         """
@@ -2171,7 +2177,6 @@ class MainGUI(QMainWindow):
 
                     self.ptdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
                     self.ptdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                    self.ptdf_analysis.done_signal.connect(self.UNLOCK)
                     self.ptdf_analysis.done_signal.connect(self.post_ptdf)
 
                     self.ptdf_analysis.start()
@@ -2223,7 +2228,6 @@ class MainGUI(QMainWindow):
 
                     self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
                     self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                    self.otdf_analysis.done_signal.connect(self.UNLOCK)
                     self.otdf_analysis.done_signal.connect(self.post_otdf)
 
                     self.otdf_analysis.start()
@@ -2658,8 +2662,6 @@ class MainGUI(QMainWindow):
                 options = self.get_selected_power_flow_options()
                 options.solver_type = SolverType.LM
 
-                # step_by_step = self.ui.cascade_step_by_step_checkBox.isChecked()
-
                 max_isl = self.ui.cascading_islands_spinBox.value()
                 n_lsh_samples = self.ui.lhs_samples_number_spinBox.value()
 
@@ -2761,7 +2763,6 @@ class MainGUI(QMainWindow):
 
                 self.optimal_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
                 self.optimal_power_flow.progress_text.connect(self.ui.progress_label.setText)
-                self.optimal_power_flow.done_signal.connect(self.UNLOCK)
                 self.optimal_power_flow.done_signal.connect(self.post_opf)
 
                 self.optimal_power_flow.start()
@@ -2841,7 +2842,6 @@ class MainGUI(QMainWindow):
                     # make the thread connections to the GUI
                     self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
                     self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
-                    self.optimal_power_flow_time_series.done_signal.connect(self.UNLOCK)
                     self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
 
                     # Run
@@ -2915,7 +2915,6 @@ class MainGUI(QMainWindow):
                 try:
                     self.transient_stability.progress_signal.connect(self.ui.progressBar.setValue)
                     self.transient_stability.progress_text.connect(self.ui.progress_label.setText)
-                    self.transient_stability.done_signal.connect(self.UNLOCK)
                     self.transient_stability.done_signal.connect(self.post_transient_stability)
 
                     # Run
@@ -3181,6 +3180,59 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def get_available_results(self):
+        """
+        Get a list of all the available results' objects
+        :return: list[object]
+        """
+        lst = list()
+
+        if self.power_flow is not None:
+            if self.power_flow.results is not None:
+                lst.append(self.power_flow)
+
+        if self.voltage_stability is not None:
+            if self.voltage_stability.results is not None:
+                lst.append(self.voltage_stability)
+
+        if self.time_series is not None:
+            if self.time_series.results is not None:
+                lst.append(self.time_series)
+
+        if self.monte_carlo is not None:
+            if self.monte_carlo.results is not None:
+                lst.append(self.monte_carlo)
+
+        if self.latin_hypercube_sampling is not None:
+            if self.latin_hypercube_sampling.results is not None:
+                lst.append(self.latin_hypercube_sampling)
+
+        if self.short_circuit is not None:
+            if self.short_circuit.results is not None:
+                lst.append(self.short_circuit)
+
+        if self.optimal_power_flow is not None:
+            if self.optimal_power_flow.results is not None:
+                lst.append(self.optimal_power_flow)
+
+        if self.optimal_power_flow_time_series is not None:
+            if self.optimal_power_flow_time_series.results is not None:
+                lst.append(self.optimal_power_flow_time_series)
+
+        if self.transient_stability is not None:
+            if self.transient_stability.results is not None:
+                lst.append(self.transient_stability)
+
+        if self.ptdf_analysis is not None:
+            if self.ptdf_analysis.results is not None:
+                lst.append(self.ptdf_analysis)
+
+        if self.otdf_analysis is not None:
+            if self.otdf_analysis.results is not None:
+                lst.append(self.otdf_analysis)
+
+        return lst
+
     def update_available_results(self):
         """
         Update the results that are displayed in the results tab
@@ -3193,73 +3245,81 @@ class MainGUI(QMainWindow):
         self.ui.result_type_listView.setModel(None)
         self.ui.result_element_selection_listView.setModel(None)
 
-        if self.power_flow is not None:
-            if self.power_flow.results is not None:
-                lst.append("Power Flow")
-                self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
-                self.available_results_steps_dict["Power Flow"] = self.power_flow.get_steps()
+        available_results = self.get_available_results()
 
-        if self.voltage_stability is not None:
-            if self.voltage_stability.results is not None:
-                lst.append("Voltage Stability")
-                self.available_results_dict["Voltage Stability"] = self.voltage_stability.results.available_results
-                self.available_results_steps_dict["Voltage Stability"] = self.voltage_stability.get_steps()
-
-        if self.time_series is not None:
-            if self.time_series.results is not None:
-                lst.append("Time Series")
-                self.available_results_dict["Time Series"] = self.time_series.results.available_results
-                self.available_results_steps_dict["Time Series"] = self.time_series.get_steps()
-
-        if self.monte_carlo is not None:
-            if self.monte_carlo.results is not None:
-                lst.append("Monte Carlo")
-                self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
-                self.available_results_steps_dict["Monte Carlo"] = self.monte_carlo.get_steps()
-
-        if self.latin_hypercube_sampling is not None:
-            if self.latin_hypercube_sampling.results is not None:
-                lst.append("Latin Hypercube")
-                self.available_results_dict["Latin Hypercube"] = self.latin_hypercube_sampling.results.available_results
-                self.available_results_steps_dict["Latin Hypercube"] = self.latin_hypercube_sampling.get_steps()
-
-        if self.short_circuit is not None:
-            if self.short_circuit.results is not None:
-                lst.append("Short Circuit")
-                self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
-                self.available_results_steps_dict["Short Circuit"] = self.short_circuit.get_steps()
-
-        if self.optimal_power_flow is not None:
-            if self.optimal_power_flow.results is not None:
-                lst.append("Optimal power flow")
-                self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
-                self.available_results_steps_dict["Optimal power flow"] = self.optimal_power_flow.get_steps()
-
-        if self.optimal_power_flow_time_series is not None:
-            if self.optimal_power_flow_time_series.results is not None:
-                lst.append("Optimal power flow time series")
-                self.available_results_dict[
-                    "Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
-                self.available_results_steps_dict[
-                    "Optimal power flow time series"] = self.optimal_power_flow_time_series.get_steps()
-
-        if self.transient_stability is not None:
-            if self.transient_stability.results is not None:
-                lst.append("Transient stability")
-                self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
-                self.available_results_steps_dict["Transient stability"] = self.transient_stability.get_steps()
-
-        if self.ptdf_analysis is not None:
-            if self.ptdf_analysis.results is not None:
-                lst.append("PTDF")
-                self.available_results_dict["PTDF"] = self.ptdf_analysis.results.available_results
-                self.available_results_steps_dict["PTDF"] = self.ptdf_analysis.get_steps()
-
-        if self.otdf_analysis is not None:
-            if self.otdf_analysis.results is not None:
-                lst.append("OTDF")
-                self.available_results_dict["OTDF"] = self.otdf_analysis.results.available_results
-                self.available_results_steps_dict["OTDF"] = self.otdf_analysis.get_steps()
+        for driver in available_results:
+            lst.append(driver.name)
+            self.available_results_dict[driver.name] = driver.results.available_results
+            self.available_results_steps_dict[driver.name] = driver.get_steps()
+        #
+        #
+        # if self.power_flow is not None:
+        #     if self.power_flow.results is not None:
+        #         lst.append("Power Flow")
+        #         self.available_results_dict["Power Flow"] = self.power_flow.results.available_results
+        #         self.available_results_steps_dict["Power Flow"] = self.power_flow.get_steps()
+        #
+        # if self.voltage_stability is not None:
+        #     if self.voltage_stability.results is not None:
+        #         lst.append("Voltage Stability")
+        #         self.available_results_dict["Voltage Stability"] = self.voltage_stability.results.available_results
+        #         self.available_results_steps_dict["Voltage Stability"] = self.voltage_stability.get_steps()
+        #
+        # if self.time_series is not None:
+        #     if self.time_series.results is not None:
+        #         lst.append("Time Series")
+        #         self.available_results_dict["Time Series"] = self.time_series.results.available_results
+        #         self.available_results_steps_dict["Time Series"] = self.time_series.get_steps()
+        #
+        # if self.monte_carlo is not None:
+        #     if self.monte_carlo.results is not None:
+        #         lst.append("Monte Carlo")
+        #         self.available_results_dict["Monte Carlo"] = self.monte_carlo.results.available_results
+        #         self.available_results_steps_dict["Monte Carlo"] = self.monte_carlo.get_steps()
+        #
+        # if self.latin_hypercube_sampling is not None:
+        #     if self.latin_hypercube_sampling.results is not None:
+        #         lst.append("Latin Hypercube")
+        #         self.available_results_dict["Latin Hypercube"] = self.latin_hypercube_sampling.results.available_results
+        #         self.available_results_steps_dict["Latin Hypercube"] = self.latin_hypercube_sampling.get_steps()
+        #
+        # if self.short_circuit is not None:
+        #     if self.short_circuit.results is not None:
+        #         lst.append("Short Circuit")
+        #         self.available_results_dict["Short Circuit"] = self.short_circuit.results.available_results
+        #         self.available_results_steps_dict["Short Circuit"] = self.short_circuit.get_steps()
+        #
+        # if self.optimal_power_flow is not None:
+        #     if self.optimal_power_flow.results is not None:
+        #         lst.append("Optimal power flow")
+        #         self.available_results_dict["Optimal power flow"] = self.optimal_power_flow.results.available_results
+        #         self.available_results_steps_dict["Optimal power flow"] = self.optimal_power_flow.get_steps()
+        #
+        # if self.optimal_power_flow_time_series is not None:
+        #     if self.optimal_power_flow_time_series.results is not None:
+        #         lst.append("Optimal power flow time series")
+        #         self.available_results_dict[
+        #             "Optimal power flow time series"] = self.optimal_power_flow_time_series.results.available_results
+        #         self.available_results_steps_dict[
+        #             "Optimal power flow time series"] = self.optimal_power_flow_time_series.get_steps()
+        #
+        # if self.transient_stability is not None:
+        #     if self.transient_stability.results is not None:
+        #         lst.append("Transient stability")
+        #         self.available_results_dict["Transient stability"] = self.transient_stability.results.available_results
+        #         self.available_results_steps_dict["Transient stability"] = self.transient_stability.get_steps()
+        #
+        # if self.ptdf_analysis is not None:
+        #     if self.ptdf_analysis.results is not None:
+        #         lst.append("PTDF")
+        #         self.available_results_dict["PTDF"] = self.ptdf_analysis.results.available_results
+        #         self.available_results_steps_dict["PTDF"] = self.ptdf_analysis.get_steps()
+        #
+        # if self.otdf_analysis is not None:
+        #     if self.otdf_analysis.results is not None:
+        #         lst.append("OTDF")
+        #         self.available_results_dict["OTDF"] = self.otdf_analysis.results.available_results
+        #         self.available_results_steps_dict["OTDF"] = self.otdf_analysis.get_steps()
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
@@ -3303,10 +3363,6 @@ class MainGUI(QMainWindow):
 
         self.ui.dataStructureTableView.setModel(None)
         self.ui.catalogueTreeView.setModel(None)
-
-        # self.ui.resultsPlot.clear(force=True)
-        # self.ui.resultsPlot.canvas.fig.clear()
-        # self.ui.resultsPlot.get_figure().set_facecolor('white')
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
@@ -3475,7 +3531,6 @@ class MainGUI(QMainWindow):
         """
         elm = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
         lst = self.available_results_dict[elm]
-        # mdl = get_list_model(lst)
         mdl = EnumModel(lst)
         self.ui.result_type_listView.setModel(mdl)
 
@@ -3508,69 +3563,59 @@ class MainGUI(QMainWindow):
                 names = None
 
             if indices is None:
-                if len(names) > 30:
-                    n = 1
-                else:
-                    n = None
                 mdl = get_list_model(names, checks=True)
                 self.ui.result_element_selection_listView.setModel(mdl)
 
-            # clear the plot display
-            # self.ui.resultsPlot.clear()
-
-            # get the plot axis
-            # ax = self.ui.resultsPlot.get_axis()
-
             self.results_mdl = None
 
-            if study == 'Power Flow':
+            if study == PowerFlowDriver.name:
                 if self.power_flow.results is not None:
                     self.results_mdl = self.power_flow.results.mdl(result_type=study_type, indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Time Series':
+            elif study == TimeSeries.name:
                 if self.time_series.results is not None:
                     self.results_mdl = self.time_series.results.mdl(result_type=study_type, indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Voltage Stability':
+            elif study == VoltageCollapse.name:
                 if self.voltage_stability.results is not None:
                     self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type,
                                                                           indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Monte Carlo':
+            elif study == MonteCarlo.name:
                 if self.monte_carlo.results is not None:
                     self.results_mdl = self.monte_carlo.results.mdl(result_type=study_type,
                                                                     indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Latin Hypercube':
+            elif study == LatinHypercubeSampling.name:
                 if self.latin_hypercube_sampling.results is not None:
                     self.results_mdl = self.latin_hypercube_sampling.results.mdl(result_type=study_type,
                                                                                  indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Short Circuit':
+            elif study == ShortCircuit.name:
                 if self.short_circuit.results is not None:
                     self.results_mdl = self.short_circuit.results.mdl(result_type=study_type,
                                                                       indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Optimal power flow':
+            elif study == OptimalPowerFlow.name:
                 if self.optimal_power_flow.results is not None:
                     self.results_mdl = self.optimal_power_flow.results.mdl(result_type=study_type,
                                                                            indices=indices, names=names)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'Optimal power flow time series':
+            elif study == OptimalPowerFlowTimeSeries.name:
                 if self.optimal_power_flow_time_series.results is not None:
                     self.results_mdl = self.optimal_power_flow_time_series.results.mdl(result_type=study_type,
                                                                                        indices=indices,
@@ -3578,7 +3623,7 @@ class MainGUI(QMainWindow):
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'PTDF':
+            elif study == PTDF.name:
                 if self.ptdf_analysis.results is not None:
                     self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type,
                                                                       indices=indices,
@@ -3586,7 +3631,7 @@ class MainGUI(QMainWindow):
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == 'OTDF':
+            elif study == NMinusK.name:
                 if self.otdf_analysis.results is not None:
                     self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type,
                                                                       indices=indices,

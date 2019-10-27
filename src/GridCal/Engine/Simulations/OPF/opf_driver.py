@@ -67,6 +67,7 @@ class OptimalPowerFlow(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Optimal power flow'
 
     def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
         """

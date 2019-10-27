@@ -48,6 +48,9 @@ class PTDFResults:
         :param n_variations:
         :param n_br: number of branches:
         """
+
+        self.name = 'PTDF'
+
         # number of variations
         self.n_variations = n_variations
 

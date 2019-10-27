@@ -38,6 +38,8 @@ class NMinusKResults(PowerFlowResults):
         """
         PowerFlowResults.__init__(self)
 
+        self.name = 'N-1'
+
         self.nt = nt
         self.m = m
         self.n = n

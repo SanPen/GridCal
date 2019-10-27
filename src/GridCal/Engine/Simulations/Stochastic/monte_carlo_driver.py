@@ -56,6 +56,7 @@ class MonteCarlo(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Monte Carlo'
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, max_mc_iter=10000):
         """
@@ -80,7 +81,7 @@ class MonteCarlo(QThread):
         n = len(self.circuit.buses)
         m = len(self.circuit.branches)
 
-        self.results = MonteCarloResults(n, m)
+        self.results = MonteCarloResults(n, m, name='Monte Carlo')
 
         self.logger = Logger()
 
@@ -128,7 +129,7 @@ class MonteCarlo(QThread):
         n = len(self.circuit.buses)
         m = len(self.circuit.branches)
 
-        mc_results = MonteCarloResults(n, m)
+        mc_results = MonteCarloResults(n, m, name='Monte Carlo')
         avg_res = PowerFlowResults()
         avg_res.initialize(n, m)
 
@@ -150,7 +151,7 @@ class MonteCarlo(QThread):
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            mc_results = MonteCarloResults(n, m, self.batch_size)
+            mc_results = MonteCarloResults(n, m, self.batch_size, name='Monte Carlo')
 
             # for each partition of the profiles...
             for t_key, calc_inputs in calc_inputs_dict.items():
@@ -269,7 +270,7 @@ class MonteCarlo(QThread):
             branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
-        mc_results = MonteCarloResults(n, m)
+        mc_results = MonteCarloResults(n, m, name='Monte Carlo')
         avg_res = PowerFlowResults()
         avg_res.initialize(n, m)
 
@@ -281,7 +282,7 @@ class MonteCarlo(QThread):
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            mc_results = MonteCarloResults(n, m, self.batch_size)
+            mc_results = MonteCarloResults(n, m, self.batch_size, name='Monte Carlo')
 
             # for each partition of the profiles...
             for t_key, calc_inputs in calc_inputs_dict.items():

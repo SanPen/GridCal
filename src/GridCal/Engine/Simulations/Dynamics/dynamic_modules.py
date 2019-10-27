@@ -81,6 +81,8 @@ class TransientStabilityResults:
 
     def __init__(self):
 
+        self.name = "Transient stability"
+
         self.voltage = None
 
         self.omega = None

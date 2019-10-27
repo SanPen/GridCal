@@ -25,13 +25,15 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class MonteCarloResults:
 
-    def __init__(self, n, m, p=0):
+    def __init__(self, n, m, p=0, name='Monte Carlo'):
         """
         Constructor
         @param n: number of nodes
         @param m: number of branches
         @param p: number of points (rows)
         """
+
+        self.name = name
 
         self.n = n
 

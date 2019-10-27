@@ -1315,11 +1315,14 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         self.data_c[:, col] = self.data_c[row, col]
 
+    def is_complex(self):
+        return self.data_c.dtype == complex
+
     def get_data(self, mode=None):
         """
 
         Args:
-            mode: 'real', 'imag', 'abs'
+            mode: 'real', 'imag', 'abs', 'as_is'
 
         Returns: index, columns, data
 
@@ -1337,7 +1340,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             else:
                 names = [str(val) for val in self.cols_c]
 
-            if self.data_c.dtype == complex:
+            if self.is_complex():
 
                 if mode == 'real':
                     values = self.data_c.real
@@ -1345,6 +1348,8 @@ class ResultsModel(QtCore.QAbstractTableModel):
                     values = self.data_c.imag
                 elif mode == 'abs':
                     values = np.abs(self.data_c)
+                elif mode == 'as_is':
+                    values = self.data_c
                 else:
                     values = np.abs(self.data_c)
 
@@ -1370,11 +1375,18 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         Save data to csv
         :param file_name:
-        :param mode: 'real', 'imag', 'abs'
+        :param mode: 'real', 'imag', 'abs', 'as_is'
         """
         index, columns, data = self.get_data(mode=mode)
-
         pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
+
+    def get_data_frame(self, mode='as_is'):
+        """
+        Save data to csv
+        :param mode: 'real', 'imag', 'abs', 'as_is'
+        """
+        index, columns, data = self.get_data(mode=mode)
+        return pd.DataFrame(data=data, index=index, columns=columns)
 
     def copy_to_clipboard(self, mode=None):
         """

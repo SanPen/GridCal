@@ -48,6 +48,7 @@ class PTDF(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'PTDF'
 
     def __init__(self, grid: MultiCircuit, options: PTDFOptions, pf_options: PowerFlowOptions):
         """

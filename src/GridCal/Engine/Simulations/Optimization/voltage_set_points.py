@@ -75,7 +75,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         self.info = str(self.dim) + "Generators voltage set points optimization"
 
         # results
-        self.results = MonteCarloResults(n, m, self.max_eval)
+        self.results = MonteCarloResults(n, m, self.max_eval, name='Set point optimization')
 
         self.all_f = list()
 

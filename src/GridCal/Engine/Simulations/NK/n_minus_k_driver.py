@@ -48,9 +48,6 @@ def enumerate_states_n_k(m, k=1):
     return np.array(states), indices
 
 
-
-
-
 class NMinusKOptions:
 
     def __init__(self, use_multi_threading):
@@ -62,6 +59,7 @@ class NMinusK(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'N-1/OTDF'
 
     def __init__(self, grid: MultiCircuit, options: NMinusKOptions, pf_options: PowerFlowOptions):
         """

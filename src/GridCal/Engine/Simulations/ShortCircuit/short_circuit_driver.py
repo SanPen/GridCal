@@ -85,6 +85,8 @@ class ShortCircuitResults(PowerFlowResults):
         PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
                                   loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
 
+        self.name = 'Short circuit'
+
         self.short_circuit_power = SCpower
 
         self.available_results = [ResultTypes.BusVoltage,
@@ -237,6 +239,7 @@ class ShortCircuit(QRunnable):
     # progress_signal = pyqtSignal(float)
     # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()
+    name = 'Short Circuit'
 
     def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions, pf_options: PowerFlowOptions,
                  pf_results: PowerFlowResults):

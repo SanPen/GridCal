@@ -16,7 +16,9 @@ _____________
 - Added N-1 and OTDF
 - Now the plots are way faster
 - Fixed the results representation when single-node islands were ignored.
-
+- Now the export results truly exports everything into a zip file with csv files inside.
+- The top menus have been re-arranged.
+- The multi-core test was moved into research.
 
 Version 3.6.0
 _____________

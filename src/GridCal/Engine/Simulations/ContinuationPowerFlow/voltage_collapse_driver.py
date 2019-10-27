@@ -93,9 +93,11 @@ class VoltageCollapseResults:
     def __init__(self, nbus, nbr):
         """
         VoltageCollapseResults instance
-        @param voltages: Resulting voltages
-        @param lambdas: Continuation factor
+        :param nbus:
+        :param nbr:
         """
+
+        self.name = 'Voltage collapse'
 
         self.voltages = None
 
@@ -226,7 +228,7 @@ class VoltageCollapseResults:
                 y = self.voltages[:, indices]
 
             # assemble model
-            mdl = ResultsModel(data=y, index=x, columns=indices, title=title, ylabel=y_label, xlabel=x_label)
+            mdl = ResultsModel(data=y, index=x, columns=labels, title=title, ylabel=y_label, xlabel=x_label)
             return mdl
 
 
@@ -234,6 +236,7 @@ class VoltageCollapse(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    name = 'Voltage Stability'
 
     def __init__(self, circuit: MultiCircuit,
                  options: VoltageCollapseOptions, inputs: VoltageCollapseInput):

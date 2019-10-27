@@ -4720,13 +4720,15 @@ points from time series</string>
    </property>
    <widget class="QMenu" name="menuProject">
     <property name="title">
-     <string>Project</string>
+     <string>File</string>
     </property>
     <addaction name="actionNew_project"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
+    <addaction name="actionExport"/>
+    <addaction name="actionExport_all_results"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -4765,10 +4767,8 @@ points from time series</string>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionGrid_Reduction"/>
-    <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="separator"/>
-    <addaction name="actionExport"/>
-    <addaction name="actionExport_all_results"/>
+    <addaction name="actionLaunch_data_analysis_tool"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
