@@ -558,6 +558,19 @@ class Logger:
         self.messages.append(txt)
         self.severity.append(LogSeverity.Information)
 
+    def has_logs(self):
+        return len(self.messages) > 0
+
+    def add_info(self, msg, severity: LogSeverity = LogSeverity.Information):
+        """
+
+        :param msg:
+        :param severity:
+        :return:
+        """
+        self.messages.append(msg)
+        self.severity.append(severity)
+
     def add(self, msg, severity: LogSeverity = LogSeverity.Error):
         """
 

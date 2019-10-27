@@ -109,6 +109,8 @@ class ExportAllThread(QThread):
                                 filename = driver.results.name + ' ' + result_name + '.csv'
                                 mdl.save_to_csv(buffer, mode='as_is')
                                 myzip.writestr(filename, buffer.getvalue())
+                    else:
+                        self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
 
         self.valid = True
 

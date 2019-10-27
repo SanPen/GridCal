@@ -1289,6 +1289,12 @@ class MainGUI(QMainWindow):
         Actions post export all
         """
         self.stuff_running_now.remove('export_all')
+
+        if self.export_all_thread_object is not None:
+            if self.export_all_thread_object.logger.has_logs():
+                dlg = LogsDialogue('Export all', self.export_all_thread_object.logger)
+                dlg.exec_()
+
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
