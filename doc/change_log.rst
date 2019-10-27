@@ -19,6 +19,7 @@ _____________
 - Now the export results truly exports everything into a zip file with csv files inside.
 - The top menus have been re-arranged.
 - The multi-core test was moved into research.
+- Added tap module to the power flow results.
 
 Version 3.6.0
 _____________

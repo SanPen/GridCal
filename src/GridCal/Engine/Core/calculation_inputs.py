@@ -172,7 +172,7 @@ class CalculationInputs:
         self.Sbus_prof = self.Sbus_prof[:, time_idx]
         self.Ibus_prof = self.Ibus_prof[:, time_idx]
 
-    def get_island(self, bus_idx, branch_idx, gen_idx, bat_idx):
+    def get_island(self, bus_idx, branch_idx, gen_idx, bat_idx) -> "CalculationInputs":
         """
         Get a sub-island
         :param bus_idx: bus indices of the island
@@ -257,11 +257,11 @@ class CalculationInputs:
 
         return obj
 
-    def compute_branch_results(self, V):
+    def compute_branch_results(self, V) -> "PowerFlowResults":
         """
         Compute the branch magnitudes from the voltages
         :param V: Voltage vector solution in p.u.
-        :return: CalculationResults instance with all the grid magnitudes
+        :return: PowerFlowResults instance
         """
 
         # declare circuit results
@@ -369,7 +369,7 @@ class CalculationInputs:
         self.Asys = factorized(A)
         return A, A_slack
 
-    def get_structure(self, structure_type):
+    def get_structure(self, structure_type) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
 
@@ -445,11 +445,6 @@ class CalculationInputs:
         print in console
         :return:
         """
-        # print('\ntypes\n', self.types)
-        # print('\nSbus\n', self.Sbus)
-        # print('\nVbus\n', self.Vbus)
-        # print('\nYsh\n', self.Ysh)
-
         df_bus = pd.DataFrame(
             np.c_[self.types, np.abs(self.Vbus), np.angle(self.Vbus), self.Vbus.real, self.Vbus.imag,
                   self.Sbus.real, self.Sbus.imag, self.Ysh.real, self.Ysh.imag],

@@ -118,6 +118,7 @@ class PowerFlowResults:
                                   ResultTypes.BranchPower,
                                   ResultTypes.BranchCurrent,
                                   ResultTypes.BranchLoading,
+                                  ResultTypes.BranchTapModule,
                                   ResultTypes.BranchLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
@@ -171,6 +172,8 @@ class PowerFlowResults:
 
         self.flow_direction = np.zeros(m, dtype=float)
 
+        self.tap_module = np.zeros(m, dtype=float)
+
         self.losses = np.zeros(m, dtype=complex)
 
         self.overloads = np.zeros(m, dtype=complex)
@@ -215,6 +218,8 @@ class PowerFlowResults:
         self.Vbranch[br_idx] = results.Vbranch
 
         self.loading[br_idx] = results.loading
+
+        self.tap_module[br_idx] = results.tap_module
 
         self.losses[br_idx] = results.losses
 
@@ -363,6 +368,11 @@ class PowerFlowResults:
                 y = self.Sbranch[indices]
                 y_label = '(MVA)'
                 title = 'Branch power '
+
+            elif result_type == ResultTypes.BranchTapModule:
+                y = self.tap_module[indices]
+                y_label = '(p.u.)'
+                title = 'Branch tap module '
 
             elif result_type == ResultTypes.BranchCurrent:
                 y = self.Ibranch[indices]

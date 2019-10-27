@@ -176,7 +176,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
 
 
 def outer_loop_power_flow(circuit: CalculationInputs, options: PowerFlowOptions, solver_type: SolverType,
-                          voltage_solution, Sbus, Ibus, branch_rates, logger):
+                          voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -1059,7 +1059,7 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
 
 
 def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
-                     options: PowerFlowOptions, logger: Logger):
+                     options: PowerFlowOptions, logger: Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be
     used instead.
@@ -1149,13 +1149,13 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
         return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger()):
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger()) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
     :param options: PowerFlowOptions instance
     :param logger: list of evenets to add to
-    :return:
+    :return: PowerFlowResults instance
     """
     # print('PowerFlowDriver at ', self.grid.name)
     n = len(multi_circuit.buses)
