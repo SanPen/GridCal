@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Oct 27 21:04:24 2019
+# Created: Fri Nov  1 11:03:44 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -2089,6 +2089,9 @@ class Ui_mainWindow(object):
         icon68.addPixmap(QtGui.QPixmap(":/Icons/icons/otdf.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionOTDF.setIcon(icon68)
         self.actionOTDF.setObjectName("actionOTDF")
+        self.actionReset_console = QtWidgets.QAction(mainWindow)
+        self.actionReset_console.setIcon(icon25)
+        self.actionReset_console.setObjectName("actionReset_console")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2126,6 +2129,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionGrid_Reduction)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
+        self.menuActions.addAction(self.actionReset_console)
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuActions.menuAction())
         self.menuBar.addAction(self.menuAbout.menuAction())
@@ -2458,10 +2462,11 @@ class Ui_mainWindow(object):
         self.actionDelete_selected.setText(QtWidgets.QApplication.translate("mainWindow", "Delete selected", None, -1))
         self.actionDelete_selected.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Delete selected objects", None, -1))
         self.actionDelete_selected.setShortcut(QtWidgets.QApplication.translate("mainWindow", "Del", None, -1))
-        self.actionPTDF.setText(QtWidgets.QApplication.translate("mainWindow", "(PTDF) Power Transfer Distribution Factors", None, -1))
+        self.actionPTDF.setText(QtWidgets.QApplication.translate("mainWindow", "PTDF (Power Transfer Distribution Factors)", None, -1))
         self.actionPTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Power Transfer Distribution Factors", None, -1))
         self.actionOTDF.setText(QtWidgets.QApplication.translate("mainWindow", "N-1 / OTDF (Outage Transfer Distribution Factors)", None, -1))
         self.actionOTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "N-1 / OTDF (Outage Transfer Distribution Factors)", None, -1))
+        self.actionReset_console.setText(QtWidgets.QApplication.translate("mainWindow", "Reset console", None, -1))
 
 from .icons_rc import *
 

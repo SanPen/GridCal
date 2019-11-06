@@ -4769,6 +4769,7 @@ points from time series</string>
     <addaction name="actionGrid_Reduction"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="actionReset_console"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -5412,7 +5413,7 @@ points from time series</string>
      <normaloff>:/Icons/icons/ptdf.svg</normaloff>:/Icons/icons/ptdf.svg</iconset>
    </property>
    <property name="text">
-    <string>(PTDF) Power Transfer Distribution Factors</string>
+    <string>PTDF (Power Transfer Distribution Factors)</string>
    </property>
    <property name="toolTip">
     <string>Power Transfer Distribution Factors</string>
@@ -5428,6 +5429,15 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
+   </property>
+  </action>
+  <action name="actionReset_console">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/undo.svg</normaloff>:/Icons/icons/undo.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset console</string>
    </property>
   </action>
  </widget>

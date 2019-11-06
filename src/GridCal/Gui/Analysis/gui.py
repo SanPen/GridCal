@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Mon May 13 19:14:58 2019
-#      by: pyside2-uic  running on PySide2 5.12.3
+# Created: Fri Nov  1 11:03:07 2019
+#      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -52,9 +52,9 @@ class Ui_Dialog(object):
         self.tab.setObjectName("tab")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.tab)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.logsTableView = QtWidgets.QTableView(self.tab)
-        self.logsTableView.setObjectName("logsTableView")
-        self.verticalLayout_2.addWidget(self.logsTableView)
+        self.logsTreeView = QtWidgets.QTreeView(self.tab)
+        self.logsTreeView.setObjectName("logsTreeView")
+        self.verticalLayout_2.addWidget(self.logsTreeView)
         self.tabWidget.addTab(self.tab, "")
         self.verticalLayout.addWidget(self.tabWidget)
 

@@ -101,7 +101,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QTableView" name="logsTableView"/>
+        <widget class="QTreeView" name="logsTreeView"/>
        </item>
       </layout>
      </widget>

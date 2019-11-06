@@ -283,23 +283,8 @@ class MainGUI(QMainWindow):
         # Console
         ################################################################################################################
 
-        self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
-                                                  "type hlp() to see the available specific commands.\n\n"
-                                                  "the following libraries are already loaded:\n"
-                                                  "np: numpy\n"
-                                                  "pd: pandas\n"
-                                                  "plt: matplotlib\n"
-                                                  "app: This instance of GridCal\n\n")
-        # add the console widget to the user interface
-        self.ui.main_console_tab.layout().addWidget(self.console)
-
-        # push some variables to the console
-        self.console.push_vars({"hlp": self.print_console_help,
-                                "np": np,
-                                "pd": pd,
-                                "plt": plt,
-                                "clc": self.clc,
-                                'app': self})
+        self.console = None
+        self.create_console()
 
         ################################################################################################################
         # Connections
@@ -363,6 +348,8 @@ class MainGUI(QMainWindow):
         self.ui.actionPTDF.triggered.connect(self.run_ptdf)
 
         self.ui.actionOTDF.triggered.connect(self.run_otdf)
+
+        self.ui.actionReset_console.triggered.connect(self.create_console)
 
         # Buttons
 
@@ -537,6 +524,33 @@ class MainGUI(QMainWindow):
         @return:
         """
         self.LOCK(False)
+
+    def create_console(self):
+        """
+
+        :return:
+        """
+        if self.console is not None:
+            self.ui.main_console_tab.layout().removeWidget(self.console)
+
+        self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
+                                                  "type hlp() to see the available specific commands.\n\n"
+                                                  "the following libraries are already loaded:\n"
+                                                  "np: numpy\n"
+                                                  "pd: pandas\n"
+                                                  "plt: matplotlib\n"
+                                                  "app: This instance of GridCal\n\n")
+        # add the console widget to the user interface
+
+        self.ui.main_console_tab.layout().addWidget(self.console)
+
+        # push some variables to the console
+        self.console.push_vars({"hlp": self.print_console_help,
+                                "np": np,
+                                "pd": pd,
+                                "plt": plt,
+                                "clc": self.clc,
+                                'app': self})
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:

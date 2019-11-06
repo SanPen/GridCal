@@ -11,12 +11,14 @@ this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
 Version 3.6.2
-_____________
+^^^^^^^^^^^^^^
 
-- Added logs record to the export all process.
+- Added logs record to the "export all" process.
+- Added a console reset. This is needed when the console crashes.
+- Improved the grid data expert analysis tool.
 
 Version 3.6.1
-_____________
+^^^^^^^^^^^^^^
 
 - Added N-1 and OTDF
 - Now the plots are way faster
@@ -29,7 +31,7 @@ _____________
 - Fixed units displayed in the results plot.
 
 Version 3.6.0
-_____________
+^^^^^^^^^^^^^^
 
 - Fixed csv profile input.
 - Added similarity-based auto link in the profile import.
@@ -43,14 +45,14 @@ _____________
 
 
 Version 3.5.9
-_____________
+^^^^^^^^^^^^^^
 
 - Added the ability to ignore single node islands
 - Fixed voltage module in the LACPF algorithm: Now the PQ buses voltage is closer to NR.
 - Improved the Newton-Raphson line search speed by roughly 200% by tuning the acceleration parameter.
 
 Version 3.5.8
-_____________
+^^^^^^^^^^^^^^
 
 - Fixed PTDF and added cancelling.
 - Fixed Vbranch not being copied correctly in multi-island mode in the Time series.
@@ -64,14 +66,14 @@ _____________
 - Fixed bug: Now when many generators are at a node only one controls voltage.
 
 Version 3.5.7
-_____________
+^^^^^^^^^^^^^^
 
 - Fixed profile default-value initialization in automatic-load function.
 - Added branch dynamic rating.
 
 
 Version 3.5.6
-_____________
+^^^^^^^^^^^^^^
 
 - Added thread for buses delete-and-reduce functionality.
 - Moved the pulp solvers into individual files.
@@ -80,7 +82,7 @@ _____________
 
 
 Version 3.5.5
-_____________
+^^^^^^^^^^^^^^
 
 - Added generator technology property
 - Refactored code to make it simpler:
@@ -90,7 +92,7 @@ _____________
 
 
 Version 3.5.4
-_____________
+^^^^^^^^^^^^^^
 
 - Fixed bug related to adding wires to the GUI.
 - For some reason, `sdist` does not ship the right files to pypi, so changed to `bdist_wheel`
@@ -98,7 +100,7 @@ _____________
 
 
 Version 3.5.3
-_____________
+^^^^^^^^^^^^^^
 
 - Added voltage angle in the power flow results and time series power flow results. About time!
 - Removed warnings from the power flow driver. Now the warnings are stored in a log and displayed in the GUI.
@@ -110,13 +112,13 @@ _____________
 - Changed the way the overhead lines tower information is stored. Now should be more maintainable.
 
 Version 3.5.2
-_____________
+^^^^^^^^^^^^^^
 
 - Removed pulp dependency in the generator objects (forced a critical update)
 - Added some icons in the GUI
 
 Version 3.5.1
-_____________
+^^^^^^^^^^^^^^
 
 - Simplified and unified the OPF interfaces.
 - Added AC-liner OPF time series as a non-sequential algorithm.
@@ -128,20 +130,20 @@ _____________
 
 
 Version 3.5.0 (commemorating the 100 GitHub stars)
-__________________________________________________
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Added pulp as an embedded dependency, and updated its CBC solver with a custom compiled one from the latest sources.
 - Fixed some bug related to the OPF storage and results display in non-sequential mode.
 
 Version 3.4.2
-_____________
+^^^^^^^^^^^^^^
 
 - Fixed branch saving code (hopefully forever)
 - Fixed the loading of some properties that were missing.
 - Fixed the non-sequential OPF.
 
 Version 3.4.1
-_____________
+^^^^^^^^^^^^^^
 
 - Added branch voltage and angle drops in the power flow and power flow time series simulations.
 - Added cost profiles for the use in the OPF programs.
@@ -150,7 +152,7 @@ _____________
 - Fixed ui bug when setting values in the profiles manually.
 
 Version 3.4.0
-_____________
+^^^^^^^^^^^^^^
 
 - Now when highlighting the selection, the buses on the schematic are selected.
   This feature allows to move buses in bulk after any selection kind.
@@ -159,32 +161,32 @@ _____________
   Now any selection of buses from the schematic can be deleted at once.
 
 Version 3.3.9
-_____________
+^^^^^^^^^^^^^^
 
 - Improved object filtering.
 - Fixed critical bug involving the change to setuptools.
 
 Version 3.3.7
-_____________
+^^^^^^^^^^^^^^
 
 - Added filtering capabilities to the object browser.
 - Added Bus reduction.
 - Added bus highlight based on the object filtering.
 
 Version 3.3.6
-_____________
+^^^^^^^^^^^^^^
 
 - Continued to improved PSS/e .raw support.
 - Fixed the bug caused by PySide2 with the excel sheet selection window.
 
 
 Version 3.3.5
-_____________
+^^^^^^^^^^^^^^
 
 - Greatly improved PSS/e .raw file import support.
 
 Version 3.3.4
-_____________
+^^^^^^^^^^^^^^
 
 - The tower names are displayed correctly now.
 
@@ -196,7 +198,7 @@ _____________
 
 
 Version 3.3.0
-_____________
+^^^^^^^^^^^^^^
 
 - Now the branches and the buses have activation profiles. This allows to run time series
   where the topology changes. Only available for time series for the moment.

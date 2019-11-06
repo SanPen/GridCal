@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'ConsoleLog.ui',
 # licensing of 'ConsoleLog.ui' applies.
 #
-# Created: Sun Oct 27 21:04:24 2019
+# Created: Fri Nov  1 11:03:44 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!

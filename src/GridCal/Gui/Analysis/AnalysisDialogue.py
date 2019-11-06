@@ -42,7 +42,6 @@ class PandasModel(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
-                # return self.formatter(self._data[index.row(), index.column()])
                 return str(self._data[index.row(), index.column()])
         return None
 
@@ -77,19 +76,32 @@ def get_list_model(iterable):
     return list_model
 
 
-class GridErrorLog(QtCore.QAbstractTableModel):
+class GridErrorLog:
 
     def __init__(self, parent=None):
 
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        self.logs = dict()
 
-        self.logs = list()
+        self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property']
 
-        self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property', 'Message']
+    def add(self, object_type, element_name, element_index, severity, propty, message):
+        """
 
-    def add(self, object_type, element_name, element_index, severity, property, message):
+        :param object_type:
+        :param element_name:
+        :param element_index:
+        :param severity:
+        :param propty:
+        :param message:
+        :return:
+        """
 
-        self.logs.append([object_type, element_name, element_index, severity, property, message])
+        e = [object_type, element_name, element_index, severity, propty]
+
+        if message in self.logs.keys():
+            self.logs[message].append(e)
+        else:
+            self.logs[message] = [e]
 
     def clear(self):
         """
@@ -97,23 +109,27 @@ class GridErrorLog(QtCore.QAbstractTableModel):
         """
         self.logs = list()
 
-    def rowCount(self, parent=None):
-        return len(self.logs)
+    def get_model(self) -> "QtGui.QStandardItemModel":
+        """
+        Get TreeView Model
+        :return: QStandardItemModel
+        """
+        model = QtGui.QStandardItemModel()
+        model.setHorizontalHeaderLabels(self.header)
 
-    def columnCount(self, parent=None):
-        return len(self.header)
+        # populate data
+        for message_key, entries in self.logs.items():
+            parent1 = QtGui.QStandardItem(message_key)
+            for object_type, element_name, element_index, severity, prop in entries:
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
-                # return self.formatter(self._data[index.row(), index.column()])
-                return str(self.logs[index.row()][index.column()])
-        return None
+                parent1.appendRow([QtGui.QStandardItem(str(object_type)),
+                                   QtGui.QStandardItem(str(element_name)),
+                                   QtGui.QStandardItem(str(element_index)),
+                                   QtGui.QStandardItem(str(severity)),
+                                   QtGui.QStandardItem(str(prop))])
+            model.appendRow(parent1)
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.header[p_int]
+        return model
 
 
 class GridAnalysisGUI(QtWidgets.QDialog):
@@ -139,9 +155,6 @@ class GridAnalysisGUI(QtWidgets.QDialog):
 
         self.object_types = object_types
 
-        # set logs
-        self.ui.logsTableView.setModel(self.log)
-
         # set the objects type model
         self.ui.objectsListView.setModel(get_list_model(object_types))
 
@@ -155,7 +168,8 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         self.ui.plotwidget.canvas.fig.clear()
         self.ui.plotwidget.get_figure().set_facecolor('white')
         self.ui.plotwidget.get_axis().set_facecolor('white')
-        self.analyze_click()
+
+        self.analyze_all()
 
     def msg(self, text, title="Warning"):
         """
@@ -183,7 +197,6 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         if object_type == 'branches':
             properties = ['R', 'X', 'G', 'B', 'rate']
             types = [float, float, float, float, float]
-            # log_scale = [True, True, True, True, False]
             log_scale = [False, False, False, False, False]
             objects = self.circuit.branches
 
@@ -305,133 +318,179 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         else:
             self.msg('Select a data structure')
 
-    def analyze_object_type(self, object_type):
+    def analyze_all(self):
         """
         Analyze all
         """
-        # analyze buses
 
-        if object_type == 'branches':
-            properties = ['R', 'X', 'G', 'B', 'rate']
-            types = [float, float, float, float, float]
-            # log_scale = [True, True, True, True, False]
-            log_scale = [False, False, False, False, False]
-            objects = self.circuit.branches
+        Pl = 0
+        Pg = 0
+        Pl_prof = 0
+        Pg_prof = 0
 
-            for i, elm in enumerate(objects):
-
-                if elm.branch_type != BranchType.Transformer:
-                    V1 = min(elm.bus_to.Vnom, elm.bus_from.Vnom)
-                    V2 = max(elm.bus_to.Vnom, elm.bus_from.Vnom)
-
-                    s = '[' + str(V1) + '-' + str(V2) + ']'
-
-                    if V1 > 0 and V2 > 0:
-                        per = V1 / V2
-                        if per < 0.9:
-                            self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
-                                         property='Connection', message='The branch if connected between a voltage that differs in 10% or more. Should this not be a transformer?' + s)
-                    else:
-                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
-                                     property='Voltage', message='The branch does is connected to a bus with Vnom=0, this is terrible.' + s)
-
-                if elm.name == '':
-                    self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
-                                 property='name', message='The branch does not have a name')
-
-                if elm.rate <= 0.0:
-                    self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
-                                 property='rate', message='There is no nominal power')
-
-                if elm.R == 0.0 and elm.X == 0.0:
-                    self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
-                                 property='R+X', message='There is no impedance, set at least a very low value')
-
-                else:
-                    if elm.R < 0.0:
-                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='Medium',
-                                     property='R', message='There resistance is negative')
-                    elif elm.R == 0.0:
-                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='Low',
-                                     property='R', message='There resistance is exactly zero')
-                    elif elm.X == 0.0:
-                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='Low',
-                                     property='X', message='There reactance is exactly zero')
-
-        elif object_type == 'buses':
-            properties = ['Vnom']
-            types = [float]
-            log_scale = [False]
-            objects = self.circuit.buses
-
-            names = set()
-
-            for i, elm in enumerate(objects):
-
-                if elm.Vnom <= 0.0:
-                    self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
-                                 property='Vnom', message='The nominal voltage is <= 0, this causes problems')
-
-                if elm.name == '':
-                    self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
-                                 property='name', message='The bus does not have a name')
-
-                if elm.name in names:
-                    self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
-                                 property='name', message='The bus name is not unique')
-
-                # add the name to a set
-                names.add(elm.name)
-
-        elif object_type == 'controlled generators':
-            properties = ['Vset', 'P', 'Qmin', 'Qmax']
-            log_scale = [False, False, False, False]
-            types = [float, float, float, float]
-            objects = self.circuit.get_generators()
-
-        elif object_type == 'batteries':
-            properties = ['Vset', 'P', 'Qmin', 'Qmax']
-            log_scale = [False, False, False, False]
-            types = [float, float, float, float]
-            objects = self.circuit.get_batteries()
-
-        elif object_type == 'static generators':
-            properties = ['S']
-            log_scale = [False]
-            types = [complex]
-            objects = self.circuit.get_static_generators()
-
-        elif object_type == 'shunts':
-            properties = ['Y']
-            log_scale = [False]
-            types = [complex]
-            objects = self.circuit.get_shunts()
-
-        elif object_type == 'loads':
-            properties = ['S', 'I', 'Z']
-            log_scale = [False, False, False]
-            types = [complex, complex, complex]
-            objects = self.circuit.get_loads()
-
-        else:
-            return
-
-    def analyze_click(self):
-        """
-        Analyze all the circuit data
-        """
+        Ql = 0
+        Qg = 0
+        Ql_prof = 0
+        Qg_prof = 0
 
         print('Analyzing...')
         # declare logs
         self.log = GridErrorLog()
 
-        for tpe in self.object_types:
-            print('Analyzing...', tpe)
-            self.analyze_object_type(tpe.lower())
+        for object_type in self.object_types:
+
+            if object_type.lower() == 'branches':
+                elements = self.circuit.branches
+                for i, elm in enumerate(elements):
+
+                    if elm.branch_type != BranchType.Transformer:
+                        V1 = min(elm.bus_to.Vnom, elm.bus_from.Vnom)
+                        V2 = max(elm.bus_to.Vnom, elm.bus_from.Vnom)
+
+                        s = '[' + str(V1) + '-' + str(V2) + ']'
+
+                        if V1 > 0 and V2 > 0:
+                            per = V1 / V2
+                            if per < 0.9:
+                                self.log.add(object_type='Branch', element_name=elm.name, element_index=i,
+                                             severity='High',
+                                             propty='Connection',
+                                             message='The branch is connected between a voltage '
+                                                      'that differs in 10% or more. Should this be a transformer?' + s)
+                        else:
+                            self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
+                                         propty='Voltage', message='The branch does is connected to a bus with '
+                                                                   'Vnom=0, this is terrible.' + s)
+
+                    if elm.name == '':
+                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
+                                     propty='name', message='The branch does not have a name')
+
+                    if elm.rate <= 0.0:
+                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
+                                     propty='rate', message='There is no nominal power')
+
+                    if elm.R == 0.0 and elm.X == 0.0:
+                        self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
+                                     propty='R+X', message='There is no impedance, set at least a very low value')
+
+                    else:
+                        if elm.R < 0.0:
+                            self.log.add(object_type='Branch', element_name=elm.name, element_index=i,
+                                         severity='Medium',
+                                         propty='R', message='The resistance is negative, that cannot be.')
+                        elif elm.R == 0.0:
+                            self.log.add(object_type='Branch', element_name=elm.name, element_index=i,
+                                         severity='Low',
+                                         propty='R', message='The resistance is exactly zero')
+                        elif elm.X == 0.0:
+                            self.log.add(object_type='Branch', element_name=elm.name, element_index=i,
+                                         severity='Low',
+                                         propty='X', message='The reactance is exactly zero')
+
+            elif object_type.lower() == 'buses':
+                elements = self.circuit.buses
+                names = set()
+
+                for i, elm in enumerate(elements):
+
+                    if elm.Vnom <= 0.0:
+                        self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
+                                     propty='Vnom', message='The nominal voltage is <= 0, this causes problems')
+
+                    if elm.name == '':
+                        self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
+                                     propty='name', message='The bus does not have a name')
+
+                    if elm.name in names:
+                        self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
+                                     propty='name', message='The bus name is not unique')
+
+                    # add the name to a set
+                    names.add(elm.name)
+
+            elif object_type.lower() == 'controlled generators':
+                elements = self.circuit.get_generators()
+
+                for obj in elements:
+                    Pg += obj.P
+
+                    if self.circuit.time_profile is not None:
+                        Pg_prof += obj.P_prof
+
+            elif object_type.lower() == 'batteries':
+                elements = self.circuit.get_batteries()
+
+                for obj in elements:
+                    Pg += obj.P
+
+                    if self.circuit.time_profile is not None:
+                        Pg_prof += obj.P_prof
+
+            elif object_type.lower() == 'static generators':
+                elements = self.circuit.get_static_generators()
+
+                for k, obj in enumerate(elements):
+                    Pg += obj.P
+                    Qg += obj.Q
+
+                    if self.circuit.time_profile is not None:
+                        Pg_prof += obj.P_prof
+                        Qg_prof += obj.Q_prof
+
+                    if obj.Vset < 0.95:
+                        self.log.add(object_type='Generator',
+                                     element_name=obj,
+                                     element_index=k,
+                                     severity='Medium',
+                                     propty='Vset',
+                                     message='The set point it too low:' + '{.2}'.format(obj.Vset))
+                    elif obj.Vset > 1.8:
+                        self.log.add(object_type='Generator',
+                                     element_name=obj,
+                                     element_index=k,
+                                     severity='Medium',
+                                     propty='Vset',
+                                     message='The set point it too high:' + '{.2}'.format(obj.Vset))
+
+            elif object_type.lower() == 'shunts':
+                elements = self.circuit.get_shunts()
+
+            elif object_type.lower() == 'loads':
+                elements = self.circuit.get_loads()
+
+                for obj in elements:
+                    Pl += obj.P
+                    Ql += obj.Q
+
+                    if self.circuit.time_profile is not None:
+                        Pl_prof += obj.P_prof
+                        Ql_prof += obj.Q_prof
+
+        # compare loads
+        p_ratio = Pg / (Pl + 1e-20)
+        q_ratio = Qg / (Ql + 1e-20)
+
+        if 0.8 < p_ratio < 1.25:
+            self.log.add(object_type='Grid',
+                         element_name=self.circuit,
+                         element_index=0,
+                         severity='High',
+                         propty='Active power balance',
+                         message='There is too much active power imbalance, ratio:' + '{.2}'.format(p_ratio))
+
+        if 0.8 < p_ratio < 1.25:
+            self.log.add(object_type='Grid',
+                         element_name=self.circuit,
+                         element_index=0,
+                         severity='High',
+                         propty='Reactive power balance',
+                         message='There is too much reactive power imbalance, ratio:' + '{.2}'.format(q_ratio))
 
         # set logs
-        self.ui.logsTableView.setModel(self.log)
+        self.ui.logsTreeView.setModel(self.log.get_model())
         print('Done!')
+
 
 
 if __name__ == "__main__":
