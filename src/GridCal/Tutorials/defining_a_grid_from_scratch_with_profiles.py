@@ -209,8 +209,7 @@ def main():
 
     ts = TimeSeries(grid=grid,
                     options=pf_options,
-                    use_opf_vals = False,
-                    opf_time_series_results = None,
+                    opf_time_series_results=None,
                     start_=0,
                     end_=None)
 

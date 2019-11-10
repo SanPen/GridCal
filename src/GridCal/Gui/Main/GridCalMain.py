@@ -35,7 +35,7 @@ from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReductio
     DeleteAndReduce
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
-from GridCal.Engine.Devices import Tower, Wire, TransformerType, SequenceLineType, UndergroundLineType
+from GridCal.Engine.Devices import *
 from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
@@ -205,14 +205,9 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         # create diagram editor object
-        self.ui.lat1_doubleSpinBox.setValue(60)
-        self.ui.lon1_doubleSpinBox.setValue(30)
-        self.ui.zoom_spinBox.setValue(5)
-
-        lat0 = self.ui.lat1_doubleSpinBox.value()
-        lon0 = self.ui.lon1_doubleSpinBox.value()
-        zoom = self.ui.zoom_spinBox.value()
-        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
+        self.grid_editor = GridEditor(self.circuit)
+        # self.grid_editor.setStretchFactor(0, 1)
+        # self.grid_editor.setStretchFactor(1, 700)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -223,7 +218,7 @@ class MainGUI(QMainWindow):
 
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
-        self.grid_editor.setStretchFactor(1, 10)
+        # self.grid_editor.setStretchFactor(1, 10)
 
         # 1:4
         self.ui.dataStructuresSplitter.setStretchFactor(0, 1)
@@ -313,8 +308,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
-        self.ui.actionShow_map.triggered.connect(self.show_map)
-
         self.ui.actionOPF.triggered.connect(self.run_opf)
 
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
@@ -385,11 +378,7 @@ class MainGUI(QMainWindow):
 
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
 
-        self.ui.view_map_pushButton.clicked.connect(self.update_map)
-
         self.ui.filter_pushButton.clicked.connect(self.smart_search)
-
-        self.ui.location_search_pushButton.clicked.connect(self.search_location)
 
         self.ui.profile_add_pushButton.clicked.connect(lambda: self.modify_profiles('+'))
 
@@ -506,7 +495,6 @@ class MainGUI(QMainWindow):
         self.view_template_controls(False)
 
         self.view_cascade_menu()
-        self.show_map()
 
     def LOCK(self, val=True):
         """
@@ -635,14 +623,6 @@ class MainGUI(QMainWindow):
         self.ui.cascade_menu.setVisible(self.ui.actionBlackout_cascade.isChecked())
         self.ui.cascade_grid_splitter.setStretchFactor(1, 4)
 
-    def show_map(self):
-        """
-        show/hide the cascade simulation menu
-        """
-        val = self.ui.actionShow_map.isChecked()
-        self.ui.map_frame.setVisible(val)
-        self.grid_editor.diagramView.view_map(val)
-
     def about_box(self):
         """
         Display about box
@@ -770,8 +750,6 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    
-
     def msg(self, text, title="Warning"):
         """
         Message box
@@ -888,13 +866,7 @@ class MainGUI(QMainWindow):
         # clear the file name
         self.file_name = ''
 
-        lat0 = self.ui.lat1_doubleSpinBox.value()
-        lon0 = self.ui.lon1_doubleSpinBox.value()
-        zoom = self.ui.zoom_spinBox.value()
-
-        self.grid_editor = GridEditor(self.circuit, lat0=lat0, lon0=lon0, zoom=zoom)
-
-        self.grid_editor.diagramView.view_map(False)
+        self.grid_editor = GridEditor(self.circuit)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -1940,8 +1912,7 @@ class MainGUI(QMainWindow):
         """
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        reactve_power_control_mode = self.q_control_modes_dict[
-            self.ui.reactive_power_control_mode_comboBox.currentText()]
+        q_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
         q_steepness_factor = self.ui.q_steepness_factor_spinBox.value()
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
@@ -1979,7 +1950,7 @@ class MainGUI(QMainWindow):
                                tolerance=tolerance,
                                max_iter=max_iter,
                                max_outer_loop_iter=max_outer_iter,
-                               control_q=reactve_power_control_mode,
+                               control_q=q_control_mode,
                                multi_core=mp,
                                dispatch_storage=dispatch_storage,
                                control_taps=taps_control_mode,
@@ -2022,10 +1993,30 @@ class MainGUI(QMainWindow):
                     options.tolerance = tolerance
                     self.ui.tolerance_spinBox.setValue(tol_idx)
 
+                use_opf = self.ui.actionOpf_to_Power_flow.isChecked()
+
+                if use_opf:
+
+                    if self.optimal_power_flow is not None:
+                        if self.optimal_power_flow.results is not None:
+                            opf_results = self.optimal_power_flow.results
+                        else:
+                            self.msg('There are no OPF results, '
+                                     'therefore this operation will not use OPF information.')
+                            self.ui.actionOpf_to_Power_flow.setChecked(False)
+                            opf_results = None
+                    else:
+                        self.msg('There are no OPF results, '
+                                 'therefore this operation will not use OPF information.')
+                        self.ui.actionOpf_to_Power_flow.setChecked(False)
+                        opf_results = None
+                else:
+                    opf_results = None
+
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                self.power_flow = PowerFlowDriver(self.circuit, options)
+                self.power_flow = PowerFlowDriver(self.circuit, options, opf_results)
 
                 self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
                 self.power_flow.progress_text.connect(self.ui.progress_label.setText)
@@ -2439,32 +2430,33 @@ class MainGUI(QMainWindow):
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
 
-                    use_opf_vals = self.ui.actionUse_OPF_in_TS.isChecked()
+                    use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
 
-                    if self.optimal_power_flow_time_series is None:
-                        if use_opf_vals:
-                            use_opf_vals = False
-                            self.msg('There are no OPF time series, '
-                                     'therefore this operation will not use OPF information.')
-                            self.ui.actionUse_OPF_in_TS.setChecked(False)
+                    if use_opf_vals:
+                        if self.optimal_power_flow_time_series is None:
+                            if use_opf_vals:
+                                use_opf_vals = False
+                                self.msg('There are no OPF time series, '
+                                         'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
 
-                        opf_time_series_results = None
-                    else:
-                        if self.optimal_power_flow_time_series.results is not None:
-                            opf_time_series_results = self.optimal_power_flow_time_series.results
-                        else:
-                            self.msg('There are no OPF time series results, '
-                                     'therefore this operation will not use OPF information.')
-                            self.ui.actionUse_OPF_in_TS.setChecked(False)
                             opf_time_series_results = None
-                            use_opf_vals = False
+                        else:
+                            if self.optimal_power_flow_time_series.results is not None:
+                                opf_time_series_results = self.optimal_power_flow_time_series.results
+                            else:
+                                self.msg('There are no OPF time series results, '
+                                         'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
+                                opf_time_series_results = None
+                    else:
+                        opf_time_series_results = None
 
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
 
                     self.time_series = TimeSeries(grid=self.circuit, options=options,
-                                                  use_opf_vals=use_opf_vals,
                                                   opf_time_series_results=opf_time_series_results,
                                                   start_=start, end_=end)
 

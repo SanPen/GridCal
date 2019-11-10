@@ -46,94 +46,9 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
 
-class MapWidget(QGraphicsRectItem):
-
-    def __init__(self, scene: QGraphicsScene, view: QGraphicsView, lat0=42, lon0=55, zoom=3):
-        super(MapWidget, self).__init__(None)
-
-        self.scene = scene
-        self.view = view
-
-        self.setFlags(self.ItemIsMovable)
-        self.image = None
-        self.img = None
-
-        self.pen_width = 4
-        # Properties of the rectangle:
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
-        self.setBrush(QBrush(Qt.darkGray))
-        self.setPen(QPen(self.color, self.pen_width, self.style))
-        self.setBrush(self.color)
-
-        self.scene.addItem(self)
-
-        self.h = view.size().height()
-        self.w = view.size().width()
-
-        self.lat0 = lat0
-        self.lon0 = lon0
-        self.zoom = zoom
-
-        # Create corner for resize:
-        self.sizer = HandleItem(self)
-        self.sizer.setPos(self.w, self.h)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
-        # self.sizer.setFlag(self.sizer.ItemIsSelectable, True)
-
-        self.change_size(self.w, self.h)
-        self.setPos(0, self.h)
-
-        # self.load_map()
-
-    def change_size(self, w, h):
-        """
-        Resize block function
-        @param w:
-        @param h:
-        @return:
-        """
-
-        self.setRect(0.0, 0.0, w, h)
-        self.h = h
-        self.w = w
-        self.repaint()
-
-        return w, h
-
-    def load_map(self, lat0=42, lon0=55, zoom=3):
-        """
-        Load a map image into the widget
-        :param lat0:
-        :param lon0:
-        :param zoom: 1~14
-        """
-        # store coordinates
-        self.lat0 = lat0
-        self.lon0 = lon0
-        self.zoom = zoom
-
-    def repaint(self):
-        """
-        Reload with the last parameters
-        """
-        self.load_map(self.lat0, self.lon0, self.zoom)
-
-    def paint(self, painter, option, widget=None):
-        """
-        Action that happens on widget repaint
-        :param painter:
-        :param option:
-        :param widget:
-        """
-        if self.image is not None:
-            painter.drawPixmap(QPoint(0, 0), self.image)
-            self.scene.update()
-
-
 class EditorGraphicsView(QGraphicsView):
 
-    def __init__(self, scene, parent=None, editor=None, lat0=42, lon0=55, zoom=3):
+    def __init__(self, scene, parent=None, editor=None):
         """
         Editor where the diagram is displayed
         @param scene: DiagramScene object
@@ -152,21 +67,12 @@ class EditorGraphicsView(QGraphicsView):
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
 
-        self.map = MapWidget(self.scene_, self, lat0, lon0, zoom)
 
     def adapt_map_size(self):
         w = self.size().width()
         h = self.size().height()
         print('EditorGraphicsView size: ', w, h)
         self.map.change_size(w, h)
-
-    def view_map(self, flag=True):
-        """
-
-        :param flag:
-        :return:
-        """
-        self.map.setVisible(flag)
 
     def dragEnterEvent(self, event):
         """
@@ -345,7 +251,7 @@ class ObjectFactory(object):
 
 class GridEditor(QSplitter):
 
-    def __init__(self, circuit: MultiCircuit, lat0=42, lon0=55, zoom=3):
+    def __init__(self, circuit: MultiCircuit):
         """
         Creates the Diagram Editor
         Args:
@@ -390,8 +296,7 @@ class GridEditor(QSplitter):
 
         # create all the schematic objects and replace the existing ones
         self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView
-        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self,
-                                              lat0=lat0, lon0=lon0, zoom=zoom)
+        self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
 
         # create the grid name editor
         self.frame1 = QFrame()
@@ -421,12 +326,12 @@ class GridEditor(QSplitter):
 
         # factor 1:10
         splitter2.setStretchFactor(0, 1)
-        splitter2.setStretchFactor(1, 10)
+        splitter2.setStretchFactor(1, 5)
 
         self.started_branch = None
 
-        self.setStretchFactor(0, 1)
-        self.setStretchFactor(1, 10)
+        self.setStretchFactor(0, 0.1)
+        self.setStretchFactor(1, 2000)
 
     def startConnection(self, port: TerminalItem):
         """

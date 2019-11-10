@@ -1149,12 +1149,14 @@ def single_island_pf(circuit: CalculationInputs, Vbus, Sbus, Ibus, branch_rates,
         return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger()) -> "PowerFlowResults":
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None,
+                    logger=Logger()) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
     :param options: PowerFlowOptions instance
-    :param logger: list of evenets to add to
+    :param opf_results: OPF results, to be used if not None
+    :param logger: list of events to add to
     :return: PowerFlowResults instance
     """
     # print('PowerFlowDriver at ', self.grid.name)
@@ -1163,7 +1165,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, logg
     results = PowerFlowResults()
     results.initialize(n, m)
 
-    numerical_circuit = multi_circuit.compile()
+    numerical_circuit = multi_circuit.compile(opf_results=opf_results)
 
     calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
                                                    branch_tolerance_mode=options.branch_impedance_tolerance_mode,

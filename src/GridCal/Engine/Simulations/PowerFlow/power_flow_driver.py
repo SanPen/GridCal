@@ -32,7 +32,7 @@ class PowerFlowDriver(QThread):
     Power flow wrapper to use with Qt
     """
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results=False):
         """
         PowerFlowDriver class constructor
         **grid: MultiCircuit Object
@@ -44,6 +44,8 @@ class PowerFlowDriver(QThread):
 
         # Options to use
         self.options = options
+
+        self.opf_results = opf_results
 
         self.results = PowerFlowResults()
 
@@ -63,6 +65,7 @@ class PowerFlowDriver(QThread):
         """
         self.results = multi_island_pf(multi_circuit=self.grid,
                                        options=self.options,
+                                       opf_results=self.opf_results,
                                        logger=self.logger)
         self.convergence_reports = self.results.convergence_reports
         # send the finnish signal

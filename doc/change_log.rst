@@ -16,6 +16,9 @@ Version 3.6.2
 - Added logs record to the "export all" process.
 - Added a console reset. This is needed when the console crashes.
 - Improved the grid data expert analysis tool.
+- Now the GUI elements are in a package *GridEditorWidget* instead of a single file. This improves the maintainability.
+- Added ability to set OPF generation into the power flow, the load shedding is also subtracted.
+- Fixed long standing bug related to MC and LHS having very small variation.
 
 Version 3.6.1
 ^^^^^^^^^^^^^^

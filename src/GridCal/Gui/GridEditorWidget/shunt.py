@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
+from PySide2 import QtWidgets
+from PySide2.QtCore import QPointF, QLineF
 from PySide2.QtGui import *
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, OTHER
+from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, OTHER, QLine
 from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
-class ShuntGraphicItem(QGraphicsItemGroup):
+class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -59,7 +59,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
+        self.nexus = QtWidgets.QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
         parent.scene().addItem(self.nexus)
 
@@ -102,7 +102,7 @@ class ShuntGraphicItem(QGraphicsItemGroup):
         @param event:
         @return:
         """
-        menu = QMenu()
+        menu = QtWidgets.QMenu()
 
         da = menu.addAction('Delete')
         da.triggered.connect(self.remove)

@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import timedelta
 import networkx as nx
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
@@ -563,7 +564,7 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, use_opf_vals=False, opf_time_series_results=None, logger=Logger()) -> NumericalCircuit:
+    def compile(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> NumericalCircuit:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -605,7 +606,7 @@ class MultiCircuit:
         else:
             n_time = 0
 
-        if use_opf_vals and opf_time_series_results is None:
+        if opf_time_series_results is not None and opf_time_series_results is None:
             raise Exception('You want to use the OPF results but none is passed')
 
         self.bus_dictionary = dict()
@@ -662,13 +663,19 @@ class MultiCircuit:
 
             for elm in bus.loads:
                 circuit.load_names[i_ld] = elm.name
-                circuit.load_power[i_ld] = complex(elm.P, elm.Q)
+
                 circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
                 circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
                 circuit.load_active[i_ld] = elm.active
                 circuit.load_mttf[i_ld] = elm.mttf
                 circuit.load_mttr[i_ld] = elm.mttr
                 circuit.load_cost[i_ld] = elm.Cost
+
+                if opf_results is not None:
+                    # subtract the load shedding
+                    circuit.load_power[i_ld] = complex(elm.P - opf_results.load_shedding[i_ld], elm.Q)
+                else:
+                    circuit.load_power[i_ld] = complex(elm.P, elm.Q)
 
                 if n_time > 0:
                     circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
@@ -677,7 +684,7 @@ class MultiCircuit:
                     circuit.load_active_prof[:, i_ld] = elm.active_prof
                     circuit.load_cost_prof[:, i_ld] = elm.Cost_prof
 
-                    if use_opf_vals:
+                    if opf_time_series_results is not None:
                         # subtract the load shedding from the generation
                         circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_gen]
 
@@ -700,7 +707,7 @@ class MultiCircuit:
 
             for elm in bus.controlled_generators:
                 circuit.generator_names[i_gen] = elm.name
-                circuit.generator_power[i_gen] = elm.P
+
                 circuit.generator_power_factor[i_gen] = elm.Pf
                 circuit.generator_voltage[i_gen] = elm.Vset
                 circuit.generator_qmin[i_gen] = elm.Qmin
@@ -714,9 +721,14 @@ class MultiCircuit:
                 circuit.generator_cost[i_gen] = elm.Cost
                 circuit.generator_nominal_power[i_gen] = elm.Snom
 
+                if opf_results is not None:
+                    circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
+                else:
+                    circuit.generator_power[i_gen] = elm.P
+
                 if n_time > 0:
                     # power profile
-                    if use_opf_vals:
+                    if opf_time_series_results is not None:
                         circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
                     else:
                         circuit.generator_power_profile[:, i_gen] = elm.P_prof
@@ -766,7 +778,7 @@ class MultiCircuit:
 
                 if n_time > 0:
                     # power profile
-                    if use_opf_vals:
+                    if opf_time_series_results is not None:
                         circuit.battery_power_profile[:, i_batt] = opf_time_series_results.battery_power[:, i_batt]
                     else:
                         circuit.battery_power_profile[:, i_batt] = elm.P_prof

@@ -302,8 +302,8 @@ class MonteCarlo(QThread):
 
                         res = single_island_pf(circuit=numerical_island,
                                                Vbus=Vbus,
-                                               Sbus=S / Sbase,
-                                               Ibus=I / Sbase,
+                                               Sbus=S,
+                                               Ibus=I,
                                                branch_rates=numerical_island.branch_rates,
                                                options=self.options,
                                                logger=self.logger)

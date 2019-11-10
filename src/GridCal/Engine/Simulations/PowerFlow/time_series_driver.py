@@ -383,7 +383,7 @@ class TimeSeries(QThread):
     done_signal = Signal()
     name = 'Time Series'
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, use_opf_vals=False, opf_time_series_results=None,
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
                  start_=0, end_=None):
         """
         TimeSeries constructor
@@ -396,8 +396,6 @@ class TimeSeries(QThread):
         self.grid = grid
 
         self.options = options
-
-        self.use_opf_vals = use_opf_vals
 
         self.opf_time_series_results = opf_time_series_results
 
@@ -438,8 +436,7 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
-                                              opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
 
         # do the topological computation
         calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
@@ -586,8 +583,7 @@ class TimeSeries(QThread):
         n_cores = multiprocessing.cpu_count()
 
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile(use_opf_vals=self.use_opf_vals,
-                                              opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
 
         # perform the topological computation
         calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,

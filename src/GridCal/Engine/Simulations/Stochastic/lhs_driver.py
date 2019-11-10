@@ -68,7 +68,7 @@ class LatinHypercubeSampling(QThread):
 
     def update_progress_mt(self, res):
         """
-
+        Update multi-threaded progress
         :param res:
         :return:
         """
@@ -181,7 +181,6 @@ class LatinHypercubeSampling(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.circuit.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
 
         batch_size = self.sampling_points
         n = len(self.circuit.buses)
@@ -202,7 +201,6 @@ class LatinHypercubeSampling(QThread):
             branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
-        Sbase = numerical_circuit.Sbase
         it = 0
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():
@@ -228,7 +226,7 @@ class LatinHypercubeSampling(QThread):
                     Y, I, S = mc_time_series.get_at(t)
 
                     # Run the set monte carlo point at 't'
-                    res = single_island_pf(circuit=numerical_island, Vbus=Vbus, Sbus=S / Sbase, Ibus=I / Sbase,
+                    res = single_island_pf(circuit=numerical_island, Vbus=Vbus, Sbus=S, Ibus=I,
                                            branch_rates=numerical_island.branch_rates,
                                            options=self.options, logger=self.logger)
 

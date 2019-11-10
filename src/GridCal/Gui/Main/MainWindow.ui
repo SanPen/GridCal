@@ -271,125 +271,6 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_34">
                 <item>
-                 <widget class="QFrame" name="map_frame">
-                  <property name="maximumSize">
-                   <size>
-                    <width>16777215</width>
-                    <height>48</height>
-                   </size>
-                  </property>
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_6">
-                   <item>
-                    <spacer name="horizontalSpacer_8">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label">
-                     <property name="text">
-                      <string>Location</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="location_lineEdit"/>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="location_search_pushButton">
-                     <property name="toolTip">
-                      <string>Search for the location's latitude and longitude.</string>
-                     </property>
-                     <property name="text">
-                      <string>Search &gt;</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_37">
-                     <property name="text">
-                      <string>Latitude</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QDoubleSpinBox" name="lat1_doubleSpinBox">
-                     <property name="minimum">
-                      <double>-86.000000000000000</double>
-                     </property>
-                     <property name="maximum">
-                      <double>86.000000000000000</double>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_39">
-                     <property name="text">
-                      <string>Longitude</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QDoubleSpinBox" name="lon1_doubleSpinBox">
-                     <property name="minimum">
-                      <double>-180.000000000000000</double>
-                     </property>
-                     <property name="maximum">
-                      <double>180.000000000000000</double>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_41">
-                     <property name="text">
-                      <string>zoom</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QSpinBox" name="zoom_spinBox">
-                     <property name="minimum">
-                      <number>1</number>
-                     </property>
-                     <property name="maximum">
-                      <number>14</number>
-                     </property>
-                     <property name="value">
-                      <number>5</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="view_map_pushButton">
-                     <property name="toolTip">
-                      <string>Render the map of the location.</string>
-                     </property>
-                     <property name="text">
-                      <string>view</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QFrame" name="grid_colouring_frame">
                   <property name="maximumSize">
                    <size>
@@ -4743,7 +4624,6 @@ points from time series</string>
     </property>
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
-    <addaction name="actionExport_all_power_flow_results"/>
     <addaction name="actionExport_all_the_device_s_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
@@ -4751,6 +4631,7 @@ points from time series</string>
     <addaction name="actionVoltage_stability"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
+    <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionCopy_OPF_profiles_to_Time_series"/>
     <addaction name="separator"/>
@@ -4796,7 +4677,7 @@ points from time series</string>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
-   <addaction name="actionUse_OPF_in_TS"/>
+   <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionLatin_Hypercube_Sampling"/>
@@ -5248,21 +5129,6 @@ points from time series</string>
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
-  <action name="actionUse_OPF_in_TS">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Use OPF results into Time series</string>
-   </property>
-   <property name="toolTip">
-    <string>Use OPF results into Time series</string>
-   </property>
-  </action>
   <action name="actionShow_map">
    <property name="checkable">
     <bool>true</bool>
@@ -5438,6 +5304,21 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Reset console</string>
+   </property>
+  </action>
+  <action name="actionOpf_to_Power_flow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/opf2pf.svg</normaloff>:/Icons/icons/opf2pf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set OPF results to Power flow</string>
+   </property>
+   <property name="toolTip">
+    <string>Set the OPF resultsinto the power flow or time series simulations (non destructive)</string>
    </property>
   </action>
  </widget>

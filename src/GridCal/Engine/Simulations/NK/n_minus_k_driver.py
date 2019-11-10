@@ -148,7 +148,7 @@ class NMinusK(QThread):
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
-        numerical_circuit = self.grid.compile(use_opf_vals=False, opf_time_series_results=None)
+        numerical_circuit = self.grid.compile()
 
         # re-index the profile (this is essential for time-compatibility)
         self.progress_signal.emit(100)
@@ -279,7 +279,7 @@ class NMinusK(QThread):
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
-        numerical_circuit = self.grid.compile(use_opf_vals=False, opf_time_series_results=None)
+        numerical_circuit = self.grid.compile()
 
         # if no base profile time is given, pick the base values
         if indices is None:
