@@ -381,7 +381,9 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.redraw()
 
     def remove_symbol(self):
-
+        """
+        Remove all symbols
+        """
         for elm in [self.symbol, self.c1, self.c2, self.c0]:
             if elm is not None:
                 try:
@@ -413,12 +415,12 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.symbol_type = BranchType.Switch
 
         else:
+            # this is a line
             self.symbol = None
             self.c0 = None
             self.c1 = None
             self.c2 = None
             self.symbol_type = BranchType.Line
-            pass  # It is a line
 
     def make_transformer_symbol(self):
         """
