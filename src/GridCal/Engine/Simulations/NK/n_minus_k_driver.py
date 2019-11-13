@@ -374,11 +374,9 @@ class NMinusK(QThread):
         """
         start = time.time()
         if self.options.use_multi_threading:
-
             self.results = self.n_minus_k_mt(k=1, indices=None, vmin=0, states_number_limit=None)
 
         else:
-
             self.results = self.n_minus_k(k=1, indices=None, vmin=0, states_number_limit=None)
 
         self.progress_text.emit('Computing OTDF...')

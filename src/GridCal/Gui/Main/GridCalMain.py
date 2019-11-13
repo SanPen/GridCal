@@ -2226,22 +2226,25 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
             if SimulationTypes.OTDF_run not in self.stuff_running_now:
 
-                self.add_simulation(SimulationTypes.OTDF_run)
+                if self.circuit.time_profile is None:
+                    self.msg('OTDF needs a profile of at least length 1')
 
-                if len(self.circuit.buses) > 0:
-                    self.LOCK()
+                else:
+                    self.add_simulation(SimulationTypes.OTDF_run)
 
-                    pf_options = self.get_selected_power_flow_options()
+                    if len(self.circuit.buses) > 0:
+                        self.LOCK()
 
-                    options = NMinusKOptions(use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked())
+                        pf_options = self.get_selected_power_flow_options()
 
-                    self.otdf_analysis = NMinusK(grid=self.circuit, options=options, pf_options=pf_options)
+                        options = NMinusKOptions(use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked())
 
-                    self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                    self.otdf_analysis.done_signal.connect(self.post_otdf)
+                        self.otdf_analysis = NMinusK(grid=self.circuit, options=options, pf_options=pf_options)
 
-                    self.otdf_analysis.start()
+                        self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                        self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
+                        self.otdf_analysis.done_signal.connect(self.post_otdf)
+                        self.otdf_analysis.start()
             else:
                 self.msg('Another OTDF is being executed now...')
         else:

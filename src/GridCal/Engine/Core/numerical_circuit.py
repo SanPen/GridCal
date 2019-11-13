@@ -428,11 +428,8 @@ class NumericalCircuit:
 
         self.C_shunt_bus = sp.lil_matrix((n_sh, n_bus), dtype=int)
 
-        # Islands indices
-        # self.islands = list()  # bus indices per island
-        # self.island_branches = list()  # branch indices per island
-        #
-        # self.calculation_islands = list()
+    def set_profile(self):
+        pass
 
     def re_index_time(self, t_idx):
         """

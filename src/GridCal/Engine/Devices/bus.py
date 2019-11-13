@@ -468,8 +468,12 @@ class Bus(EditableDevice):
 
     def create_profiles(self, index):
         """
-        Delete all profiles
+        Format all profiles
         """
+
+        # create the profiles of this very object
+        super().create_profiles(index)
+
         for elm in self.loads:
             elm.create_profiles(index)
 

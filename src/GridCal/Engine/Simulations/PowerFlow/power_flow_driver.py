@@ -19,6 +19,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
@@ -32,11 +33,14 @@ class PowerFlowDriver(QThread):
     Power flow wrapper to use with Qt
     """
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results=False):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results: OptimalPowerFlowResults = None):
         """
         PowerFlowDriver class constructor
-        **grid: MultiCircuit Object
+        :param grid: MultiCircuit instance
+        :param options: PowerFlowOptions instance
+        :param opf_results: OptimalPowerFlowResults instance
         """
+
         QThread.__init__(self)
 
         # Grid to run a power flow in
