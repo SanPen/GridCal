@@ -13,9 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
 
 from GridCal.Gui.GridEditorWidget.generic import *
 from GridCal.Gui.GuiFunctions import BranchObjectModel

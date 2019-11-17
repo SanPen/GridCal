@@ -35,6 +35,7 @@ import scipy
 import scipy.sparse as sp
 import numpy as np
 
+from GridCal.Engine.Sparse.csc import pack_4_by_4
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 
 linear_solver = get_linear_solver()
@@ -173,13 +174,15 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     # J = sp.vstack([sp.hstack([J11, J12]),
     #                sp.hstack([J21, J22])], format="csr")
 
-    # J11 = dS_dVa[np.ix_(pvpq, pvpq)].real
-    # J12 = dS_dVm[np.ix_(pvpq, pq)].real
-    # J21 = dS_dVa[np.ix_(pq, pvpq)].imag
-    # J22 = dS_dVm[np.ix_(pq, pq)].imag
+    J11 = dS_dVa[np.ix_(pvpq, pvpq)].real.tocsc()
+    J12 = dS_dVm[np.ix_(pvpq, pq)].real.tocsc()
+    J21 = dS_dVa[np.ix_(pq, pvpq)].imag.tocsc()
+    J22 = dS_dVm[np.ix_(pq, pq)].imag.tocsc()
 
-    J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
-                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csr")
+    # J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
+    #                sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csr")
+
+    J = pack_4_by_4(J11, J12, J21, J22)
 
     return sparse(J)
 
