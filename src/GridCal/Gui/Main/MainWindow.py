@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Nov 10 18:35:58 2019
+# Created: Wed Nov 13 18:34:52 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -1823,6 +1823,13 @@ class Ui_mainWindow(object):
         self.menuActions.setObjectName("menuActions")
         mainWindow.setMenuBar(self.menuBar)
         self.toolBar = QtWidgets.QToolBar(mainWindow)
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        self.toolBar.setFont(font)
+        self.toolBar.setMovable(False)
+        self.toolBar.setIconSize(QtCore.QSize(26, 26))
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
+        self.toolBar.setFloatable(False)
         self.toolBar.setObjectName("toolBar")
         mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionLine = QtWidgets.QAction(mainWindow)
@@ -2064,9 +2071,8 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionVoltage_stability)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionOPF)
-        self.menuActions.addAction(self.actionOpf_to_Power_flow)
         self.menuActions.addAction(self.actionOPF_time_series)
-        self.menuActions.addAction(self.actionCopy_OPF_profiles_to_Time_series)
+        self.menuActions.addAction(self.actionOpf_to_Power_flow)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionPower_flow_Stochastic)
         self.menuActions.addAction(self.actionLatin_Hypercube_Sampling)

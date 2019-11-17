@@ -16,22 +16,26 @@ Version 3.6.2
 - Added logs record to the "export all" process.
 - Added a console reset. This is needed when the console crashes.
 - Improved the grid data expert analysis tool.
-- Now the GUI elements are in a package *GridEditorWidget* instead of a single file. This improves the maintainability.
+- Now the GUI elements are in a package *GridEditorWidget* instead of a single file.
+  This improves the maintainability.
 - Added ability to set OPF generation into the power flow, the load shedding is also subtracted.
 - Fixed long standing bug related to MC and LHS having very small variation.
+- Fixed bug with buses not creating their own profile
+- Fixed bug with the run power flow interface
+
 
 Version 3.6.1
 ^^^^^^^^^^^^^^
 
 - Added N-1 and OTDF
 - Now the plots are way faster
-- Fixed the results representation when single-node islands were ignored.
 - Now the export results truly exports everything into a zip file with csv files inside.
 - The top menus have been re-arranged.
 - The multi-core test was moved into research.
 - Added tap module to the power flow results.
-- Fixed bug related to OPF results being multiplied by Sbase twice.
+- Fixed bug related to OPF results being multiplied by :math:`Sbase` twice.
 - Fixed units displayed in the results plot.
+- Fixed the results representation when single-node islands were ignored.
 
 Version 3.6.0
 ^^^^^^^^^^^^^^
@@ -43,7 +47,7 @@ Version 3.6.0
   existing complexity. Now there is only one power flow class which
   calls to power flow functions.
 - Changed the multiprocess from multiple processes to a pool.
-  Hopefully this will allow multicore on MS Windows.
+  Hopefully this will allow multi-core on MS Windows.
 - Added a proper logger object.
 
 

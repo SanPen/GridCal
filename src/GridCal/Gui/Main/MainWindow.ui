@@ -4631,9 +4631,8 @@ points from time series</string>
     <addaction name="actionVoltage_stability"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
-    <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="actionOPF_time_series"/>
-    <addaction name="actionCopy_OPF_profiles_to_Time_series"/>
+    <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionLatin_Hypercube_Sampling"/>
@@ -4657,8 +4656,28 @@ points from time series</string>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>26</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonIconOnly</enum>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>

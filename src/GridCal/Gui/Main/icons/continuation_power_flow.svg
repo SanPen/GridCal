@@ -12,7 +12,7 @@
    viewBox="0 0 48 48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   inkscape:version="0.92.4 (unknown)"
    sodipodi:docname="continuation_power_flow.svg">
   <metadata
      id="metadata12">
@@ -41,13 +41,13 @@
      inkscape:window-height="1025"
      id="namedview8"
      showgrid="false"
-     inkscape:zoom="8.0000001"
-     inkscape:cx="11.98169"
-     inkscape:cy="12.750247"
+     inkscape:zoom="1"
+     inkscape:cx="-330.81996"
+     inkscape:cy="-1.6822221"
      inkscape:window-x="57"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g828" />
+     inkscape:current-layer="g868" />
   <path
      d="M0 0h48v48h-48z"
      fill="none"
@@ -58,32 +58,32 @@
     <g
        id="g828">
       <path
-         style="fill:none;fill-rule:evenodd;stroke:#2a2aff;stroke-width:2;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-         d="M 8.9284573,21.414399 C 22.254022,21.665272 38.826213,31.164327 38.841148,37.485291"
-         id="path825-3"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="cc" />
-      <path
-         style="fill:none;fill-rule:evenodd;stroke:#7f2aff;stroke-width:2;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-         d="m 9,24 c 13.325565,0.250874 29.826212,7.164327 29.841148,13.485291"
+         style="fill:none;fill-rule:evenodd;stroke:#7f2aff;stroke-width:1.55563576;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         d="m 8.9284573,21.414399 c 13.3255647,0.250874 22.3140307,0.22166 30.8849637,7.223214"
          id="path825"
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#2a2aff;stroke-width:1.55563576;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         d="m 8.9284573,21.414399 c 6.6627827,0.125436 13.1892557,1.906635 18.5866507,4.507361 5.397394,2.600727 9.66571,6.020982 11.812176,9.424532"
+         id="path825-3"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="csc" />
     </g>
     <g
        style="stroke:#cc00ff"
        id="g828-3"
        transform="translate(0.040811,2.9907794)">
       <path
-         style="fill:none;fill-rule:evenodd;stroke:#cc00ff;stroke-width:2;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-         d="m 9,24 c 13.325565,0.250874 29.785401,4.173548 29.800337,10.494512"
+         style="fill:none;fill-rule:evenodd;stroke:#cc00ff;stroke-width:1.55563576;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         d="M 8.8876463,18.42362 C 22.213211,18.674494 35.67413,22.923277 39.383701,28.95256"
          id="path825-6"
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
     </g>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#ab37c8;stroke-width:2;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 8.9966168,30.216954 C 22.276375,30.60525 38.613479,33.12835 38.841148,37.485291"
+       style="fill:none;fill-rule:evenodd;stroke:#ab37c8;stroke-width:1.55563576;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 8.9284573,21.414399 C 22.208216,21.802695 35.599435,32.642214 39.132829,38.263109"
        id="path825-6-7"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
