@@ -87,11 +87,6 @@ class Graph:
                             k = self.adj.indices[i]  # get the column index in the CSC scheme
                             if not visited[k]:
                                 stack.append(k)
-                            else:
-                                pass
-                    else:
-                        pass
-                #
                 # ------------------------------------------------------------------------------------------------------
 
                 # increase the islands index, because all the other connected vertices have been visited

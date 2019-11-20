@@ -12,7 +12,7 @@
    viewBox="0 0 48 48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.4 (unknown)"
    sodipodi:docname="dcopf_ts.svg">
   <metadata
      id="metadata12">
@@ -52,17 +52,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1853"
+     inkscape:window-width="1863"
      inkscape:window-height="1025"
      id="namedview8"
      showgrid="false"
      inkscape:zoom="6.7604167"
-     inkscape:cx="-46.66872"
-     inkscape:cy="31.080489"
-     inkscape:window-x="67"
+     inkscape:cx="-2.5612374"
+     inkscape:cy="31.089326"
+     inkscape:window-x="57"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g901" />
+     inkscape:current-layer="g4615" />
   <g
      id="g4150">
     <g
@@ -147,7 +147,7 @@
          height="6.8807797"
          width="39.508312"
          id="rect4596"
-         style="fill:#939dac;stroke:#939dac;stroke-width:0.93585062;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke" />
+         style="fill:#002b2c;stroke:#002b2c;stroke-width:0.93585062;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke;fill-opacity:1" />
       <rect
          ry="1.8099315"
          y="37.580318"
@@ -155,7 +155,7 @@
          height="6.7369676"
          width="29.214371"
          id="rect4596-3"
-         style="fill:#0066ff;stroke:none;stroke-width:0.79624575;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal" />
+         style="fill:#2a7fff;stroke:none;stroke-width:0.79624575;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal" />
     </g>
   </g>
 </svg>

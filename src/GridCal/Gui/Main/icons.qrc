@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/ptdf_ts.svg</file>
+    <file>icons/otdf_ts.svg</file>
+    <file>icons/latin_hypercube(OPF).svg</file>
+    <file>icons/opf_lh.svg</file>
+    <file>icons/opf_lh.svg</file>
+    <file>icons/pf_lh.svg</file>
     <file>icons/opf2pf.svg</file>
     <file>icons/otdf.svg</file>
     <file>icons/ptdf.svg</file>
