@@ -25,6 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
+from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
 from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
@@ -329,6 +330,14 @@ class OptimalPowerFlowTimeSeries(QThread):
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_, end_idx=end_,
                                       solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0)
+
+        elif self.options.solver == SolverType.Simple_OPF:
+
+            # AC optimal power flow
+            problem = OpfSimpleTimeSeries(numerical_circuit=self.numerical_circuit,
+                                          start_idx=start_, end_idx=end_,
+                                          solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0,
+                                          text_prog=self.progress_text.emit, prog_func=self.progress_signal.emit)
 
         else:
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))

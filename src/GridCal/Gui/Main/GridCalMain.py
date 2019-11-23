@@ -170,6 +170,7 @@ class MainGUI(QMainWindow):
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
         self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
+        self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
         self.opf_time_groups = OrderedDict()
