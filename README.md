@@ -48,11 +48,11 @@ In an effort to ease the simulation and construction of grids, We have included 
 [Here](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles) you can find:
 - Load profiles for your projects
 - Standard IEEE grids as well as grids from open projects
-- Equipment catalogue (Wires, Cables and Transformers) ready to use in GridCal
+- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal
 
 # Examples
 
-Examples are included in [Tutorials](https://github.com/SanPen/GridCal/tree/master/Tutorials) folder of the GitHub repository. In addition, the
+Examples are included in [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html) section. In addition, the
 tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as valuable examples.
 
 # Testing GridCal
@@ -68,7 +68,7 @@ It is pure Python, it works for Windows, Linux and OSX.
 Some of the features you'll find already are:
 
 - Compatible with other formats:
-  - Import
+  - Import (Drag & Drop)
     - CIM (Common Information Model v16)
     - PSS/e RAW versions 29, 30, 32, 33 and 34.
     - Matpower (might not be fully compatible, notify me if not).
@@ -88,6 +88,11 @@ Some of the features you'll find already are:
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
   - Linear AC approximation.
+  
+- Optimal power flow (OPF) and generation dispatch:
+  - Linear (DC) with losses.
+  - Linear (Ac) with losses.
+  - Loss-less simple generation dispatch.
 
 - Time series with profiles in all the objects physical magnitudes.
 
