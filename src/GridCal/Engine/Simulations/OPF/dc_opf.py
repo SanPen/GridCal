@@ -182,7 +182,7 @@ def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries
     return load_f, load_t
 
 
-class DcOpf(Opf):
+class OpfDc(Opf):
 
     def __init__(self, numerical_circuit: NumericalCircuit):
         """
@@ -293,7 +293,7 @@ if __name__ == '__main__':
         main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
         numerical_circuit_ = main_circuit.compile()
-        problem = DcOpf(numerical_circuit=numerical_circuit_)
+        problem = OpfDc(numerical_circuit=numerical_circuit_)
 
         print('Solving...')
         status = problem.solve()

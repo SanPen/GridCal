@@ -10,9 +10,10 @@ power users to tweak it and extend it at will. GridCal is designed as a software
 library with a graphical user interface, and because of this you can use
 GridCal as a conventional software, or you may embed it into your own programs.
 
+.. figure:: figures/GridCal.png
+    :alt: GridCal main figure
 
-
-You may also power systems theory used in GridCal along with interesting information in
+You may also check out the power systems theory used in GridCal along with interesting information in
 the author's
 `simulation guide <https://github.com/SanPen/PracticalGridModeling/raw/master/practical_grid_modeling.pdf>`_.
 
@@ -21,11 +22,13 @@ the author's
 
     about
     getting_started
-    api
+    tutorials/tutorials_module
+    data_sheets
     theory/models
     gui
     development
     benchmarks
+    api
     change_log
 
 This documentation is generated using Sphinx and autodoc.

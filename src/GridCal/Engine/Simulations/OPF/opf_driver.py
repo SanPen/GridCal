@@ -21,8 +21,9 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.OPF.ac_opf import AcOpf
-from GridCal.Engine.Simulations.OPF.dc_opf import DcOpf
+from GridCal.Engine.Simulations.OPF.ac_opf import OpfAc
+from GridCal.Engine.Simulations.OPF.dc_opf import OpfDc
+from GridCal.Engine.Simulations.OPF.simple_dispatch import OpfSimple
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
 
 ########################################################################################################################
@@ -113,11 +114,16 @@ class OptimalPowerFlow(QThread):
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
-            problem = DcOpf(numerical_circuit=numerical_circuit)
+            problem = OpfDc(numerical_circuit=numerical_circuit)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
-            problem = AcOpf(numerical_circuit=numerical_circuit)
+            problem = OpfAc(numerical_circuit=numerical_circuit)
+
+        elif self.options.solver == SolverType.Simple_OPF:
+            # AC optimal power flow
+            problem = OpfSimple(numerical_circuit=numerical_circuit)
+
         else:
             raise Exception('Solver not recognized ' + str(self.options.solver))
 

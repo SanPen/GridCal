@@ -29,6 +29,8 @@ version = __GridCal_VERSION__
 # The full version, including alpha/beta/rc tags
 release = __GridCal_VERSION__
 
+def setup(app):
+    app.add_stylesheet('style.css')
 
 # -- General configuration ---------------------------------------------------
 
@@ -79,6 +81,8 @@ pygments_style = None
 #
 # html_theme = 'nature'
 html_theme = 'sphinx_rtd_theme'
+
+html_static_path = ['_static']
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
