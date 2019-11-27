@@ -138,7 +138,6 @@ class MultiCircuit:
                 self.profile_magnitudes[dev.device_type.value] = (profile_attr, profile_types)
                 self.device_type_name_dict[dev.device_type.value] = dev.device_type
 
-
     def __str__(self):
         return self.name
 

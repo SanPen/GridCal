@@ -280,7 +280,7 @@ class OpfSimple(Opf):
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.s_from / self.rating
+        return self.s_from / (self.rating + 1e-9)
 
     def get_branch_power(self):
         """

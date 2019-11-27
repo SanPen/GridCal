@@ -143,7 +143,7 @@ Where:
      - #load, 1
      - Array of complex load current values
 
-   * - :math:`[I_bus]`
+   * - :math:`[I_{bus}]`
      - #bus, 1
      - Nodal current injections array (positive: generation, negative: load).
 
@@ -472,7 +472,7 @@ graph matrix)
 
 The function returns a list (island) where each element is a list of the node
 indices of the island. These are used to slice the previously computed arrays
-so that each array slice is copied to the apropriate instance of `CalculationInputs`.
+so that each array slice is copied to the appropriate instance of `CalculationInputs`.
 
 
 CalculationInputs

@@ -86,7 +86,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     GBc = G + 1.0j * B
     tap = tap_mod * np.exp(1.0j * tap_ang)
 
-    # branch primitives in vector form
+    # branch primitives in vector form for Ybus
     Ytt = (Ys + GBc / 2.0) / (tap_t * tap_t)
     Yff = (Ys + GBc / 2.0) / (tap_f * tap_f * tap * np.conj(tap))
     Yft = - Ys / (tap_f * tap_t * np.conj(tap))
@@ -97,7 +97,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = sparse(Cf.T * Yf + Ct.T * Yt + sp.diags(Ysh))
 
-    # branch primitives in vector form
+    # branch primitives in vector form, for Yseries
     Ytts = Ys
     Yffs = Ytts / (tap * np.conj(tap))
     Yfts = - Ys / np.conj(tap)
@@ -109,20 +109,6 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     Yseries = sparse(Cf.T * Yfs + Ct.T * Yts)
 
     # Form the matrices for fast decoupled
-    '''
-    # B1 for FDPF (no shunts, no resistance, no tap module)
-    b1 = 1.0 / (self.X + 1e-20)
-    B1[f, f] -= b1
-    B1[f, t] -= b1
-    B1[t, f] -= b1
-    B1[t, t] -= b1
-    # B2 for FDPF (with shunts, only the tap module)
-    b2 = b1 + self.B
-    B2[f, f] -= (b2 / (tap * conj(tap))).real
-    B2[f, t] -= (b1 / conj(tap)).real
-    B2[t, f] -= (b1 / tap).real
-    B2[t, t] -= b2
-    '''
     b1 = 1.0 / (X + 1e-20)
     B1f = sp.diags(-b1) * Cf + sp.diags(-b1) * Ct
     B1t = sp.diags(-b1) * Cf + sp.diags(-b1) * Ct
