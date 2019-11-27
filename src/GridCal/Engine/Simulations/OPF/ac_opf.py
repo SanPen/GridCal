@@ -83,13 +83,13 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSl
     :return: Power injection at the buses (n, nt)
     """
 
-    P = lpDot(C_bus_gen.transpose(), Pg)
+    P = lpDot(C_bus_gen, Pg)
 
-    P += lpDot(C_bus_bat.transpose(), Pb)
+    P += lpDot(C_bus_bat, Pb)
 
-    P -= lpDot(C_bus_load.transpose(), Pl - PlSlack)
+    P -= lpDot(C_bus_load, Pl - PlSlack)
 
-    Q = - lpDot(C_bus_load.transpose(), Ql - QlSlack)
+    Q = - lpDot(C_bus_load, Ql - QlSlack)
 
     return P, Q
 
@@ -290,9 +290,9 @@ class OpfAc(Opf):
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections per node
-        P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
-                                    C_bus_bat=numerical_circuit.C_batt_bus, Pb=Pb,
-                                    C_bus_load=numerical_circuit.C_load_bus,
+        P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen, Pg=Pg,
+                                    C_bus_bat=numerical_circuit.C_bus_batt, Pb=Pb,
+                                    C_bus_load=numerical_circuit.C_bus_load,
                                     PlSlack=load_slack, QlSlack=load_slack,
                                     Pl=Pl, Ql=Ql)
 

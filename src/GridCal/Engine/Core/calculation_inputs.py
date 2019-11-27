@@ -122,11 +122,11 @@ class CalculationInputs:
         self.dispatcheable_batteries_bus_idx = list()
 
         # connectivity matrices used to formulate OPF problems
-        self.C_load_bus = None
-        self.C_batt_bus = None
-        self.C_sta_gen_bus = None
-        self.C_ctrl_gen_bus = None
-        self.C_shunt_bus = None
+        self.C_bus_load = None
+        self.C_bus_batt = None
+        self.C_bus_sta_gen = None
+        self.C_bus_gen = None
+        self.C_bus_shunt = None
 
         # ACPF system matrix factorization
         self.Asys = None
@@ -152,7 +152,8 @@ class CalculationInputs:
         self.bus_to_regulated_idx = np.where(self.is_bus_to_regulated == True)[0]
 
         dispatcheable_batteries_idx = np.where(self.battery_dispatchable == True)[0]
-        self.dispatcheable_batteries_bus_idx = np.where(np.array(self.C_batt_bus[dispatcheable_batteries_idx, :].sum(axis=0))[0] > 0)[0]
+
+        self.dispatcheable_batteries_bus_idx = np.where(np.array(self.C_bus_batt[:, dispatcheable_batteries_idx].sum(axis=0))[0] > 0)[0]
 
         #
         self.ref, self.pq, self.pv, self.pqpv = compile_types(self.Sbus, self.types)
@@ -217,11 +218,11 @@ class CalculationInputs:
         obj.C_branch_bus_f = self.C_branch_bus_f[np.ix_(branch_idx, bus_idx)]
         obj.C_branch_bus_t = self.C_branch_bus_t[np.ix_(branch_idx, bus_idx)]
 
-        obj.C_load_bus = self.C_load_bus[:, bus_idx]
-        obj.C_batt_bus = self.C_batt_bus[:, bus_idx]
-        obj.C_sta_gen_bus = self.C_sta_gen_bus[:, bus_idx]
-        obj.C_ctrl_gen_bus = self.C_ctrl_gen_bus[:, bus_idx]
-        obj.C_shunt_bus = self.C_shunt_bus[:, bus_idx]
+        obj.C_bus_load = self.C_bus_load[bus_idx, :]
+        obj.C_bus_batt = self.C_bus_batt[bus_idx, :]
+        obj.C_bus_sta_gen = self.C_bus_sta_gen[bus_idx, :]
+        obj.C_bus_gen = self.C_bus_gen[bus_idx, :]
+        obj.C_bus_shunt = self.C_bus_shunt[bus_idx, :]
 
         obj.is_bus_to_regulated = self.is_bus_to_regulated[branch_idx]
         obj.tap_position = self.tap_position[branch_idx]

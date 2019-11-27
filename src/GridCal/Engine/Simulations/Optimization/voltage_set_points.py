@@ -91,7 +91,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         :rtype: float
         """
 
-        inc_v = self.numerical_circuit.C_gen_bus.T * x
+        inc_v = self.numerical_circuit.C_bus_gen.T * x
 
         losses = np.empty(self.numerical_circuit.nbr, dtype=complex)
 

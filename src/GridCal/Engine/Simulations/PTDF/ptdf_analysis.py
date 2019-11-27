@@ -79,7 +79,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
             var = PTDFVariation(name=key, n=numerical_circuit.nbus, original_power=power_amount)
 
             # power increment by bus
-            var.dP = numerical_circuit.C_gen_bus[indices, :].transpose() * dPg
+            var.dP = numerical_circuit.C_bus_gen[indices, :].transpose() * dPg
 
             # store the variation
             variations.append(var)
@@ -97,7 +97,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
                                 n=numerical_circuit.nbus, original_power=power_amount)
 
             # power increment by bus
-            var.dP = numerical_circuit.C_gen_bus.transpose() * dPg
+            var.dP = numerical_circuit.C_bus_gen * dPg
 
             # store the variation
             variations.append(var)

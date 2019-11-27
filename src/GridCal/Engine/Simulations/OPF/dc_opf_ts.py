@@ -84,11 +84,11 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     :return: Power injection at the buses (n, nt)
     """
 
-    P = lpDot(C_bus_gen.transpose(), Pg)
+    P = lpDot(C_bus_gen, Pg)
 
-    P += lpDot(C_bus_bat.transpose(), Pb)
+    P += lpDot(C_bus_bat, Pb)
 
-    P -= lpDot(C_bus_load.transpose(), Pl - LSlack)
+    P -= lpDot(C_bus_load, Pl - LSlack)
 
     return P
 
@@ -323,11 +323,11 @@ class OpfDcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections
-        P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus,
+        P = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen,
                                  Pg=Pg,
-                                 C_bus_bat=numerical_circuit.C_batt_bus,
+                                 C_bus_bat=numerical_circuit.C_bus_batt,
                                  Pb=Pb,
-                                 C_bus_load=numerical_circuit.C_load_bus,
+                                 C_bus_load=numerical_circuit.C_bus_load,
                                  LSlack=load_slack,
                                  Pl=Pl)
 

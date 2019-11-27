@@ -687,7 +687,7 @@ class MultiCircuit:
                         # subtract the load shedding from the generation
                         circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_gen]
 
-                circuit.C_load_bus[i_ld, i] = 1
+                circuit.C_bus_load[i, i_ld] = 1
                 i_ld += 1
 
             for elm in bus.static_generators:
@@ -701,7 +701,7 @@ class MultiCircuit:
                     circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
                     circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
 
-                circuit.C_sta_gen_bus[i_sta_gen, i] = 1
+                circuit.C_bus_sta_gen[i, i_sta_gen] = 1
                 i_sta_gen += 1
 
             for elm in bus.controlled_generators:
@@ -742,19 +742,15 @@ class MultiCircuit:
 
                     circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
 
-                circuit.C_gen_bus[i_gen, i] = 1
+                circuit.C_bus_gen[i, i_gen] = 1
 
                 if circuit.V0[i].real == 1.0:
                     circuit.V0[i] = complex(elm.Vset, 0)
                 elif elm.Vset != circuit.V0[i]:
-                    # circuit.V0[i] = elm.Vset
                     logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
                 i_gen += 1
 
             for elm in bus.batteries:
-                # 'name', 'bus', 'active', 'P', 'Vset', 'Snom', 'Enom',
-                # 'Qmin', 'Qmax', 'Pmin', 'Pmax', 'Cost', 'enabled_dispatch', 'mttf', 'mttr',
-                # 'soc_0', 'max_soc', 'min_soc', 'charge_efficiency', 'discharge_efficiency'
                 circuit.battery_names[i_batt] = elm.name
                 circuit.battery_power[i_batt] = elm.P
                 circuit.battery_voltage[i_batt] = elm.Vset
@@ -788,7 +784,7 @@ class MultiCircuit:
 
                     circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
 
-                circuit.C_batt_bus[i_batt, i] = 1
+                circuit.C_bus_batt[i, i_batt] = 1
                 circuit.V0[i] *= elm.Vset
                 i_batt += 1
 
@@ -803,7 +799,7 @@ class MultiCircuit:
                     circuit.shunt_active_prof[:, i_sh] = elm.active_prof
                     circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
 
-                circuit.C_shunt_bus[i_sh, i] = 1
+                circuit.C_bus_shunt[i, i_sh] = 1
                 i_sh += 1
 
         # Compile the branches

@@ -81,13 +81,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     :return: Power injection at the buses (n, nt)
     """
 
-    P = lpDot(C_bus_gen.transpose(), Pg)
-
-    P += lpDot(C_bus_bat.transpose(), Pb)
-
-    P -= lpDot(C_bus_load.transpose(), Pl - LSlack)
-
-    return P
+    return lpDot(C_bus_gen, Pg) + lpDot(C_bus_bat, Pb) - lpDot(C_bus_load, Pl - LSlack)
 
 
 def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P):
@@ -251,9 +245,9 @@ class OpfDc(Opf):
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the nodal power injections
-        P = get_power_injections(C_bus_gen=numerical_circuit.C_gen_bus, Pg=Pg,
-                                 C_bus_bat=numerical_circuit.C_batt_bus, Pb=Pb,
-                                 C_bus_load=numerical_circuit.C_load_bus,
+        P = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen, Pg=Pg,
+                                 C_bus_bat=numerical_circuit.C_bus_batt, Pb=Pb,
+                                 C_bus_load=numerical_circuit.C_bus_load,
                                  LSlack=load_slack, Pl=Pl)
 
         # add the DC grid restrictions
