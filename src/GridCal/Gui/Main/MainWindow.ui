@@ -1809,7 +1809,7 @@ p, li { white-space: pre-wrap; }
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="minimum">
-                  <number>10</number>
+                  <number>1</number>
                  </property>
                  <property name="maximum">
                   <number>300</number>
@@ -1908,7 +1908,7 @@ p, li { white-space: pre-wrap; }
                   <number>1</number>
                  </property>
                  <property name="maximum">
-                  <number>20</number>
+                  <number>15</number>
                  </property>
                  <property name="value">
                   <number>4</number>
@@ -4647,6 +4647,7 @@ points from time series</string>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionGrid_Reduction"/>
+    <addaction name="actionTry_to_fix_buses_location"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionReset_console"/>
@@ -5331,13 +5332,21 @@ points from time series</string>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/opf2pf.svg</normaloff>:/Icons/icons/opf2pf.svg</iconset>
+     <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
    </property>
    <property name="text">
     <string>Set OPF results to Power flow</string>
    </property>
    <property name="toolTip">
     <string>Set the OPF resultsinto the power flow or time series simulations (non destructive)</string>
+   </property>
+  </action>
+  <action name="actionTry_to_fix_buses_location">
+   <property name="text">
+    <string>Try to fix buses location</string>
+   </property>
+   <property name="toolTip">
+    <string>Try to fix buses location withx=0, y=0</string>
    </property>
   </action>
  </widget>

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Wed Nov 13 18:34:52 2019
+# Created: Tue Dec  3 19:34:31 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -769,7 +769,7 @@ class Ui_mainWindow(object):
         self.reactive_power_control_mode_comboBox.setObjectName("reactive_power_control_mode_comboBox")
         self.gridLayout_4.addWidget(self.reactive_power_control_mode_comboBox, 18, 0, 1, 2)
         self.max_iterations_spinBox = QtWidgets.QSpinBox(self.frame_13)
-        self.max_iterations_spinBox.setMinimum(10)
+        self.max_iterations_spinBox.setMinimum(1)
         self.max_iterations_spinBox.setMaximum(300)
         self.max_iterations_spinBox.setProperty("value", 20)
         self.max_iterations_spinBox.setObjectName("max_iterations_spinBox")
@@ -804,7 +804,7 @@ class Ui_mainWindow(object):
         self.gridLayout_4.addWidget(self.distributed_slack_checkBox, 7, 0, 1, 1)
         self.tolerance_spinBox = QtWidgets.QSpinBox(self.frame_13)
         self.tolerance_spinBox.setMinimum(1)
-        self.tolerance_spinBox.setMaximum(20)
+        self.tolerance_spinBox.setMaximum(15)
         self.tolerance_spinBox.setProperty("value", 4)
         self.tolerance_spinBox.setObjectName("tolerance_spinBox")
         self.gridLayout_4.addWidget(self.tolerance_spinBox, 11, 1, 1, 1)
@@ -2049,10 +2049,10 @@ class Ui_mainWindow(object):
         self.actionReset_console.setObjectName("actionReset_console")
         self.actionOpf_to_Power_flow = QtWidgets.QAction(mainWindow)
         self.actionOpf_to_Power_flow.setCheckable(True)
-        icon69 = QtGui.QIcon()
-        icon69.addPixmap(QtGui.QPixmap(":/Icons/icons/opf2pf.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionOpf_to_Power_flow.setIcon(icon69)
+        self.actionOpf_to_Power_flow.setIcon(icon61)
         self.actionOpf_to_Power_flow.setObjectName("actionOpf_to_Power_flow")
+        self.actionTry_to_fix_buses_location = QtWidgets.QAction(mainWindow)
+        self.actionTry_to_fix_buses_location.setObjectName("actionTry_to_fix_buses_location")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2087,6 +2087,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionDetect_transformers)
         self.menuActions.addAction(self.actionAuto_rate_branches)
         self.menuActions.addAction(self.actionGrid_Reduction)
+        self.menuActions.addAction(self.actionTry_to_fix_buses_location)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuActions.addAction(self.actionReset_console)
@@ -2419,6 +2420,8 @@ class Ui_mainWindow(object):
         self.actionReset_console.setText(QtWidgets.QApplication.translate("mainWindow", "Reset console", None, -1))
         self.actionOpf_to_Power_flow.setText(QtWidgets.QApplication.translate("mainWindow", "Set OPF results to Power flow", None, -1))
         self.actionOpf_to_Power_flow.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Set the OPF resultsinto the power flow or time series simulations (non destructive)", None, -1))
+        self.actionTry_to_fix_buses_location.setText(QtWidgets.QApplication.translate("mainWindow", "Try to fix buses location", None, -1))
+        self.actionTry_to_fix_buses_location.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Try to fix buses location withx=0, y=0", None, -1))
 
 from .icons_rc import *
 

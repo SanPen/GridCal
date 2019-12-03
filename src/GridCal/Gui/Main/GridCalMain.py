@@ -207,8 +207,6 @@ class MainGUI(QMainWindow):
 
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
-        # self.grid_editor.setStretchFactor(0, 1)
-        # self.grid_editor.setStretchFactor(1, 700)
 
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
@@ -344,6 +342,8 @@ class MainGUI(QMainWindow):
         self.ui.actionOTDF.triggered.connect(self.run_otdf)
 
         self.ui.actionReset_console.triggered.connect(self.create_console)
+
+        self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
 
         # Buttons
 
@@ -509,15 +509,13 @@ class MainGUI(QMainWindow):
 
     def UNLOCK(self):
         """
-        Unloack the interface
-        @return:
+        Unlock the interface
         """
         self.LOCK(False)
 
     def create_console(self):
         """
-
-        :return:
+        Create console
         """
         if self.console is not None:
             self.ui.main_console_tab.layout().removeWidget(self.console)
@@ -4638,6 +4636,13 @@ class MainGUI(QMainWindow):
             else:
                 pass
 
+    def get_selected_buses(self):
+        """
+        Get the selected buses
+        :return:
+        """
+        return [(k, bus) for k, bus in enumerate(self.circuit.buses) if bus.graphic_obj.isSelected()]
+
     def delete_selected_from_the_schematic(self):
         """
         Prompt to delete the selected buses from the schematic
@@ -4645,7 +4650,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             # get the selected buses
-            selected = [bus for bus in self.circuit.buses if bus.graphic_obj.isSelected()]
+            selected = self.get_selected_buses()
 
             if len(selected) > 0:
                 reply = QMessageBox.question(self, 'Delete',
@@ -4655,7 +4660,7 @@ class MainGUI(QMainWindow):
                 if reply == QMessageBox.Yes:
 
                     # remove the buses (from the schematic and the circuit)
-                    for bus in selected:
+                    for k, bus in selected:
                         if bus.graphic_obj is not None:
                             # this is a more complete function than the circuit one because it removes the
                             # graphical items too, and for loads and generators it deletes them properly
@@ -4666,6 +4671,19 @@ class MainGUI(QMainWindow):
                 self.msg('Select some elements from the schematic', 'Delete buses')
         else:
             pass
+
+    def try_to_fix_buses_location(self):
+        """
+        Try to fix the location of the buses
+        """
+
+        selected_buses = self.get_selected_buses()
+        if len(selected_buses) > 0:
+            self.circuit.try_to_fix_buses_location(buses_selection=selected_buses)
+            for k, bus in selected_buses:
+                bus.graphic_obj.set_position(x=bus.x, y=bus.y)
+        else:
+            self.msg('Select some elements from the schematic', 'Fix buses locations')
 
 
 def run(use_native_dialogues=True):

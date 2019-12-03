@@ -15,6 +15,7 @@
 
 from datetime import timedelta
 import networkx as nx
+from scipy.sparse import csc_matrix, lil_matrix
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Gui.GeneralDialogues import *
@@ -1414,5 +1415,68 @@ class MultiCircuit:
         for bus in self.buses:
             bus.set_state(t)
 
+    def get_bus_branch_connectivity_matrix(self):
+        """
+        Get the branch-bus connectivity
+        :return: Cf, Ct, C
+        """
+        n = len(self.buses)
+        m = len(self.branches)
+        Cf = lil_matrix((m, n))
+        Ct = lil_matrix((m, n))
 
+        bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
+        for k, br in enumerate(self.branches):
+            i = bus_dict[br.bus_from]  # store the row indices
+            j = bus_dict[br.bus_to]  # store the row indices
+            Cf[k, i] = 1
+            Ct[k, j] = 1
+        Cf = csc_matrix(Cf)
+        Ct = csc_matrix(Ct)
+        C = Cf + Ct
+        return Cf, Ct, C
+
+    def get_adjacent_matrix(self):
+        """
+        Get the bus adjacent matrix
+        :return: Adjacent matrix
+        """
+        Cf, Ct, C = self.get_bus_branch_connectivity_matrix()
+        A = C.T * C
+        return A
+
+    @staticmethod
+    def get_adjacent_buses(A: csc_matrix, bus_idx):
+        """
+        Return array of indices of the buses adjacent to the bus given by it's index
+        :param A: Adjacent matrix
+        :param bus_idx: bus index
+        :return: array of adjacent bus indices
+        """
+        return A.indices[A.indptr[bus_idx]:A.indptr[bus_idx + 1]]
+
+    def try_to_fix_buses_location(self, buses_selection):
+        """
+        Try to fix the location of the null-location buses
+        :param buses_selection: list of tuples index, bus object
+        :return: indices of the corrected buses
+        """
+
+        A = self.get_adjacent_matrix()
+
+        for k, bus in buses_selection:
+            idx = list(self.get_adjacent_buses(A, k))
+
+            # remove the elements already in the selection
+            for i in range(len(idx)-1, 0, -1):
+                if k == idx[i]:
+                    idx.pop(i)
+
+            x = [self.buses[i].x for i in idx]
+            y = [self.buses[i].y for i in idx]
+            x_m = np.mean(x)
+            y_m = np.mean(y)
+
+            bus.x = x_m
+            bus.y = y_m

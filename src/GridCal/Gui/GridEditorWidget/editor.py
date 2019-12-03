@@ -67,7 +67,6 @@ class EditorGraphicsView(QGraphicsView):
         self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
 
-
     def adapt_map_size(self):
         w = self.size().width()
         h = self.size().height()

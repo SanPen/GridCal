@@ -274,6 +274,15 @@ class BusGraphicItem(QGraphicsRectItem):
             self.diagramScene.removeItem(self.big_marker)
             self.big_marker = None
 
+    def set_position(self, x, y):
+        """
+        Set the bus x, y position
+        :param x: x in pixels
+        :param y: y in pixels
+        """
+        # self.setPos(self.editor.diagramView.mapToScene(QPoint(x, y)))
+        self.setPos(QPoint(x, y))
+
     def set_tile_color(self, brush):
         """
         Set the color of the title
