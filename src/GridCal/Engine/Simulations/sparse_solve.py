@@ -70,7 +70,7 @@ except ImportError:
     print('AMG failed')
 
 
-preferred_type = SparseSolver.BLAS_LAPACK
+preferred_type = SparseSolver.KLU
 
 if preferred_type not in available_sparse_solvers:
     if len(available_sparse_solvers) > 0:
@@ -193,14 +193,14 @@ if __name__ == '__main__':
                     SparseSolver.AMG
                     ]
 
-    for solver_type in solver_types:
+    for solver_type_ in solver_types:
         start = time.time()
         repetitions = 50
         n = 1000
         np.random.seed(0)
 
-        sparse = get_sparse_type(solver_type)
-        solver = get_linear_solver(solver_type)
+        sparse = get_sparse_type(solver_type_)
+        solver = get_linear_solver(solver_type_)
 
         for r in range(repetitions):
             A = sparse(sp.rand(n, n, 0.01)) + sp.diags(np.random.rand(n) * 10.0, shape=(n, n))
@@ -209,4 +209,4 @@ if __name__ == '__main__':
 
         end = time.time()
         dt = end - start
-        print(solver_type, '  total', dt, 's, average:', dt / repetitions, 's')
+        print(solver_type_, '  total', dt, 's, average:', dt / repetitions, 's')
