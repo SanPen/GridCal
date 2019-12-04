@@ -1473,8 +1473,11 @@ class MultiCircuit:
                 if k == idx[i]:
                     idx.pop(i)
 
-            x = [self.buses[i].x for i in idx]
-            y = [self.buses[i].y for i in idx]
+            x = list()
+            y = list()
+            for i in idx:
+                x.append(self.buses[i].graphic_obj.x())
+                y.append(self.buses[i].graphic_obj.y())
             x_m = np.mean(x)
             y_m = np.mean(y)
 

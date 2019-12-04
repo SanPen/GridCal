@@ -13,9 +13,11 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 3.6.3
 ^^^^^^^^^^^^^^
 
-- Added equipment catalogue to the docs
-- Added tutorial section to the docs
-- Added simple dispatch
+- Added equipment catalogue to the docs.
+- Added tutorial section to the docs.
+- Added simple dispatch.
+- Refactored the device-bus connectivity matrices to avoid transpositions.
+- Added function to relocate buses based on their peers.
 
 Version 3.6.2
 ^^^^^^^^^^^^^^
