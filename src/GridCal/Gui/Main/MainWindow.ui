@@ -4599,7 +4599,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1178</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -4636,11 +4636,13 @@ points from time series</string>
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionOpf_to_Power_flow"/>
+    <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionLatin_Hypercube_Sampling"/>
     <addaction name="separator"/>
     <addaction name="actionPTDF"/>
+    <addaction name="actionPTDF_time_series"/>
     <addaction name="actionOTDF"/>
     <addaction name="separator"/>
     <addaction name="actionBigger_nodes"/>
@@ -4707,12 +4709,14 @@ points from time series</string>
    <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
    <addaction name="actionPTDF"/>
+   <addaction name="actionPTDF_time_series"/>
    <addaction name="actionOTDF"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
+   <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionShow_map"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
@@ -5338,18 +5342,46 @@ points from time series</string>
      <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
    </property>
    <property name="text">
-    <string>Set OPF results to Power flow</string>
+    <string>Set OPF results to Power flow (non destructive)</string>
    </property>
    <property name="toolTip">
     <string>Set the OPF resultsinto the power flow or time series simulations (non destructive)</string>
    </property>
   </action>
   <action name="actionTry_to_fix_buses_location">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/move_bus.svg</normaloff>:/Icons/icons/move_bus.svg</iconset>
+   </property>
    <property name="text">
-    <string>Try to fix buses location</string>
+    <string>Correct buses location</string>
    </property>
    <property name="toolTip">
-    <string>Try to fix buses location withx=0, y=0</string>
+    <string>Set selected buses location closer to their neighbours</string>
+   </property>
+  </action>
+  <action name="actionSet_OPF_generation_to_profiles">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy OPF generation to profiles (destructive)</string>
+   </property>
+   <property name="toolTip">
+    <string>Destructive copy of the OPF generation results to the input profiles</string>
+   </property>
+  </action>
+  <action name="actionPTDF_time_series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ptdf_ts.svg</normaloff>:/Icons/icons/ptdf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>PTDF time series power flow</string>
+   </property>
+   <property name="toolTip">
+    <string>Runs the PTDF based time series power flow</string>
    </property>
   </action>
  </widget>

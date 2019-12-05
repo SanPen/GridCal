@@ -92,9 +92,12 @@ Some of the features you'll find already are:
 - Optimal power flow (OPF) and generation dispatch:
   - Linear (DC) with losses.
   - Linear (Ac) with losses.
-  - Loss-less simple generation dispatch.
+  - Loss-less simple generation dispatch.  
+  - All the modes can be split the runs in hours, days, weeks or months!
 
 - Time series with profiles in all the objects physical magnitudes.
+
+- PTDF approximated branch flow time series for super fast estimation of the flows.
 
 - Bifurcation point with predictor-corrector Newton-Raphson.
 

@@ -675,10 +675,10 @@ def power_flow_post_process(calculation_inputs: CalculationInputs, V, branch_rat
         Vbranch = Vf - Vt
 
         # Branch current in p.u.
-        Ibranch = np.maximum(If, It)
+        Ibranch = If
 
         # Branch power in MVA
-        Sbranch = np.maximum(Sf, St) * calculation_inputs.Sbase
+        Sbranch = Sf * calculation_inputs.Sbase
 
         # Branch loading in p.u.
         loading = Sbranch / (branch_rates + 1e-9)

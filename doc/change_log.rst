@@ -18,6 +18,8 @@ Version 3.6.3
 - Added simple dispatch.
 - Refactored the device-bus connectivity matrices to avoid transpositions.
 - Added function to relocate buses based on their peers.
+- Added PTDF based time series.
+- Fixed very important bug that neglected the sign of the power flows!
 
 Version 3.6.2
 ^^^^^^^^^^^^^^

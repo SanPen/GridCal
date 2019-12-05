@@ -84,5 +84,6 @@ class SimulationTypes(Enum):
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
     PTDF_run = 'PTDF'
+    PTDF_TS_run = 'PTDF_TS'
     OTDF_run = 'OTDF'
     Delete_and_reduce_run = 'Delete and reduce'

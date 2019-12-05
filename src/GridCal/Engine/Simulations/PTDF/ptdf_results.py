@@ -93,13 +93,12 @@ class PTDFResults:
         :param i: variation index
         :return: array of sensitivities from -1 to 1
         """
-        # return 1.0 - self.pf_results[i].Sbranch.real / (self.default_pf_results.Sbranch.real + 1e-20)
         dSbranch = (self.pf_results[i].Sbranch.real - self.default_pf_results.Sbranch.real)
         return dSbranch / (self.variations[i].original_power + 1e-20)
 
     def get_var_names(self):
         """
-        GEt variation names
+        Get variation names
         :return:
         """
         return [v.name for v in self.variations]

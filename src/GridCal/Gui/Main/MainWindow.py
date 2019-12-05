@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Thu Dec  5 10:28:38 2019
+# Created: Thu Dec  5 22:15:14 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -1816,7 +1816,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1178, 21))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1178, 22))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -2055,7 +2055,18 @@ class Ui_mainWindow(object):
         self.actionOpf_to_Power_flow.setIcon(icon61)
         self.actionOpf_to_Power_flow.setObjectName("actionOpf_to_Power_flow")
         self.actionTry_to_fix_buses_location = QtWidgets.QAction(mainWindow)
+        icon69 = QtGui.QIcon()
+        icon69.addPixmap(QtGui.QPixmap(":/Icons/icons/move_bus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionTry_to_fix_buses_location.setIcon(icon69)
         self.actionTry_to_fix_buses_location.setObjectName("actionTry_to_fix_buses_location")
+        self.actionSet_OPF_generation_to_profiles = QtWidgets.QAction(mainWindow)
+        self.actionSet_OPF_generation_to_profiles.setIcon(icon61)
+        self.actionSet_OPF_generation_to_profiles.setObjectName("actionSet_OPF_generation_to_profiles")
+        self.actionPTDF_time_series = QtWidgets.QAction(mainWindow)
+        icon70 = QtGui.QIcon()
+        icon70.addPixmap(QtGui.QPixmap(":/Icons/icons/ptdf_ts.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPTDF_time_series.setIcon(icon70)
+        self.actionPTDF_time_series.setObjectName("actionPTDF_time_series")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2076,11 +2087,13 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionOPF)
         self.menuActions.addAction(self.actionOPF_time_series)
         self.menuActions.addAction(self.actionOpf_to_Power_flow)
+        self.menuActions.addAction(self.actionSet_OPF_generation_to_profiles)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionPower_flow_Stochastic)
         self.menuActions.addAction(self.actionLatin_Hypercube_Sampling)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionPTDF)
+        self.menuActions.addAction(self.actionPTDF_time_series)
         self.menuActions.addAction(self.actionOTDF)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionBigger_nodes)
@@ -2115,12 +2128,14 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionBlackout_cascade)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPTDF)
+        self.toolBar.addAction(self.actionPTDF_time_series)
         self.toolBar.addAction(self.actionOTDF)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionBigger_nodes)
         self.toolBar.addAction(self.actionSmaller_nodes)
         self.toolBar.addAction(self.actionCenter_view)
         self.toolBar.addAction(self.actionAutoatic_layout)
+        self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionShow_map)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
@@ -2421,10 +2436,14 @@ class Ui_mainWindow(object):
         self.actionOTDF.setText(QtWidgets.QApplication.translate("mainWindow", "N-1 / OTDF (Outage Transfer Distribution Factors)", None, -1))
         self.actionOTDF.setToolTip(QtWidgets.QApplication.translate("mainWindow", "N-1 / OTDF (Outage Transfer Distribution Factors)", None, -1))
         self.actionReset_console.setText(QtWidgets.QApplication.translate("mainWindow", "Reset console", None, -1))
-        self.actionOpf_to_Power_flow.setText(QtWidgets.QApplication.translate("mainWindow", "Set OPF results to Power flow", None, -1))
+        self.actionOpf_to_Power_flow.setText(QtWidgets.QApplication.translate("mainWindow", "Set OPF results to Power flow (non destructive)", None, -1))
         self.actionOpf_to_Power_flow.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Set the OPF resultsinto the power flow or time series simulations (non destructive)", None, -1))
-        self.actionTry_to_fix_buses_location.setText(QtWidgets.QApplication.translate("mainWindow", "Try to fix buses location", None, -1))
-        self.actionTry_to_fix_buses_location.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Try to fix buses location withx=0, y=0", None, -1))
+        self.actionTry_to_fix_buses_location.setText(QtWidgets.QApplication.translate("mainWindow", "Correct buses location", None, -1))
+        self.actionTry_to_fix_buses_location.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Set selected buses location closer to their neighbours", None, -1))
+        self.actionSet_OPF_generation_to_profiles.setText(QtWidgets.QApplication.translate("mainWindow", "Copy OPF generation to profiles (destructive)", None, -1))
+        self.actionSet_OPF_generation_to_profiles.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Destructive copy of the OPF generation results to the input profiles", None, -1))
+        self.actionPTDF_time_series.setText(QtWidgets.QApplication.translate("mainWindow", "PTDF time series power flow", None, -1))
+        self.actionPTDF_time_series.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Runs the PTDF based time series power flow", None, -1))
 
 from .icons_rc import *
 

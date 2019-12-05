@@ -51,11 +51,11 @@ class PtdfTimeSeriesResults(PowerFlowResults):
 
         if nt > 0:
 
-            self.S = np.zeros((nt, n), dtype=complex)
+            self.S = np.zeros((nt, n), dtype=float)
 
-            self.Sbranch = np.zeros((nt, m), dtype=complex)
+            self.Sbranch = np.zeros((nt, m), dtype=float)
 
-            self.loading = np.zeros((nt, m), dtype=complex)
+            self.loading = np.zeros((nt, m), dtype=float)
 
         else:
             self.S = None
@@ -197,7 +197,13 @@ class PtdfTimeSeries(QThread):
 
         self.__cancel__ = False
 
-    def run_single_thread(self) -> PtdfTimeSeriesResults:
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
+
+    def run_nodal_mode(self) -> PtdfTimeSeriesResults:
         """
         Run multi thread time series
         :return: TimeSeriesResults instance
@@ -221,28 +227,32 @@ class PtdfTimeSeries(QThread):
                                    power_increment=10,
                                    use_multi_threading=False)
 
+            # run a node based PTDF
             ptdf_driver = PTDF(grid=self.grid,
                                options=options_,
                                pf_options=self.pf_options)
-
+            ptdf_driver.progress_signal = self.progress_signal
             ptdf_driver.run()
 
-            ptdf_df = ptdf_driver.results.get_results_data_frame()
-            Pbus = nc.C_bus_gen * nc.generator_power_profile.real.T - nc.C_bus_load * nc.load_power_profile.real.T
-            Pbus /= nc.Sbase
+            # get the PTDF matrix
+            ptdf = ptdf_driver.results.consolidate()
+
+            # compose the power injections
+            Pbus = nc.C_bus_gen * nc.generator_power_profile.T
+            Pbus += nc.C_bus_batt * nc.battery_power_profile.T
+            Pbus += nc.C_bus_sta_gen * nc.static_gen_power_profile.real.T
+            Pbus -= nc.C_bus_load * nc.load_power_profile.real.T  # MW
 
             # base magnitudes
-            Pbr_0 = ptdf_driver.results.default_pf_results.Sbranch.real
-            Pbus_0 = ptdf_driver.results.default_pf_results.Sbus.real
+            Pbr_0 = ptdf_driver.results.default_pf_results.Sbranch.real  # MW
+            Pbus_0 = nc.C_bus_gen * nc.generator_power - nc.C_bus_load * nc.load_power.real  # MW
 
+            # run the PTDF time series
             for k, t_idx in enumerate(range(self.start_, self.end_)):
-                # for i in range(nc.nbr):
-                    # for j in range(nc.nbus):
-                    #     dg = Pbus_0[j] - Pbus[j, t_idx]
-                    #     results.Sbranch[k, i] = Pbr_0[i] + dg * ptdf_df.values[i, j]
-                    #     results.loading[k, i] = results.Sbranch[k, i] / nc.br_rates[i]
-                results.Sbranch[k, :] = Pbr_0 + np.dot(ptdf_df.values, (Pbus_0[:] - Pbus[:, t_idx]))
+                dP = (Pbus_0[:] - Pbus[:, t_idx])
+                results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
                 results.loading[k, :] = results.Sbranch[k, :] / nc.br_rates
+                results.S[k, :] = Pbus[:, t_idx]
 
                 progress = ((t_idx - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
@@ -262,7 +272,7 @@ class PtdfTimeSeries(QThread):
         self.__cancel__ = False
         a = time.time()
 
-        self.results = self.run_single_thread()
+        self.results = self.run_nodal_mode()
 
         self.elapsed = time.time() - a
 
@@ -283,20 +293,34 @@ class PtdfTimeSeries(QThread):
 
 
 if __name__ == '__main__':
+    from matplotlib import pyplot as plt
+    from GridCal.Engine import FileOpen, SolverType, TimeSeries
 
-    from GridCal.Engine import FileOpen, SolverType
-
-    fname = r'C:\Users\PENVERSA\OneDrive - Red Eléctrica Corporación\Escritorio\IEEE cases\IEEE 30.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
 
     main_circuit = FileOpen(fname).open()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.NR)
+    ptdf_driver = PtdfTimeSeries(grid=main_circuit, pf_options=pf_options)
+    ptdf_driver.run()
 
-    driver = PtdfTimeSeries(grid=main_circuit, pf_options=pf_options)
+    pf_options = PowerFlowOptions(solver_type=SolverType.NR)
+    ts_driver = TimeSeries(grid=main_circuit, options=pf_options)
+    ts_driver.run()
 
-    driver.run()
+    plt.figure(1)
+    plt.title('Newton-Raphson based flow')
+    plt.plot(ts_driver.results.Sbranch.real)
 
-    pass
+    plt.figure(2)
+    plt.title('PTDF based flow')
+    plt.plot(ptdf_driver.results.Sbranch.real)
+
+    plt.figure(3)
+    plt.title('Difference')
+    diff = ts_driver.results.Sbranch.real - ptdf_driver.results.Sbranch.real
+    plt.plot(diff)
+
+    plt.show()
