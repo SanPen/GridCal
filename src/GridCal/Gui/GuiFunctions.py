@@ -488,7 +488,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         """
 
         :param objects: list of objects associated to the editor
-        :param editable_headers: Dictionary with the properties and theit units and type {attribute: ('unit', type)}
+        :param editable_headers: Dictionary with the properties and the units and type {attribute: ('unit', type)}
         :param parent: Parent object: the QTableView object
         :param editable: Is the table editable?
         :param non_editable_attributes: List of attributes that are not enabled for editing

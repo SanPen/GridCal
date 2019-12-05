@@ -186,6 +186,7 @@ class NMinusK(QThread):
 
         n_k_results.bus_types = numerical_circuit.bus_types
 
+        self.progress_text.emit("Simulating states...")
         npart = len(calc_inputs_dict)
         k = 1
         # for each partition of the profiles...
@@ -315,6 +316,7 @@ class NMinusK(QThread):
         n_k_results.bus_types = numerical_circuit.bus_types
 
         # for each partition of the profiles...
+        self.progress_text.emit("Simulating states...")
         for t_key, calc_inputs in calc_inputs_dict.items():
 
             # For every island, run the time series

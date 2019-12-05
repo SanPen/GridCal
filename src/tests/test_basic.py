@@ -139,7 +139,7 @@ def test_basic():
     power_flow.run()
 
     approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 99.6, 102.7, 102.9] # Expected solution from GridCal and ETAP 16.1.0, for reference
+    solution = [100.0, 99.6, 102.7, 102.9]  # Expected solution from GridCal and ETAP 16.1.0, for reference
 
     print()
     print(f"Test: {test_name}")

@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from typing import List
+from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.calculation_inputs import CalculationInputs
@@ -21,6 +22,12 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
+
+
+class PtdfGroupMode(Enum):
+    ByTechnology = 'By technology'
+    ByNode = 'By node'
+    ByGenLoad = 'By Generator and Load'
 
 
 def group_generators_by_technology(circuit: MultiCircuit):
@@ -45,12 +52,12 @@ def group_generators_by_technology(circuit: MultiCircuit):
     return groups
 
 
-def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircuit, group_by_technology, power_amount):
+def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircuit, group_mode: PtdfGroupMode, power_amount):
     """
     Get the PTDF variations
     :param circuit: MultiCircuit instance
     :param numerical_circuit: NumericalCircuit instance (faster)
-    :param group_by_technology: group generators by technology?
+    :param group_mode: group generators by technology?
     :param power_amount: power amount to vary. if group_by_technology the variation applies by group otherwise per
                          individual generator
     :return: list of Variations (instances of PTDFVariation)
@@ -64,7 +71,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
     # compute the per unit power
     power = power_amount / circuit.Sbase
 
-    if group_by_technology:
+    if group_mode == PtdfGroupMode.ByTechnology:
 
         # get generator groups by technology
         groups = group_generators_by_technology(circuit=circuit)
@@ -79,13 +86,14 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
             var = PTDFVariation(name=key, n=numerical_circuit.nbus, original_power=power_amount)
 
             # power increment by bus
-            var.dP = numerical_circuit.C_bus_gen[indices, :].transpose() * dPg
+            var.dP = numerical_circuit.C_bus_gen[:, indices] * dPg
 
             # store the variation
             variations.append(var)
 
-    else:
+    elif group_mode == PtdfGroupMode.ByGenLoad:
 
+        # add the generation variations
         for i in range(numerical_circuit.n_ctrl_gen):
 
             # generate array of zeros, and modify the generation for the particular generator
@@ -94,7 +102,8 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
 
             # declare the variation object
             var = PTDFVariation(name=numerical_circuit.generator_names[i],
-                                n=numerical_circuit.nbus, original_power=power_amount)
+                                n=numerical_circuit.nbus,
+                                original_power=power_amount)
 
             # power increment by bus
             var.dP = numerical_circuit.C_bus_gen * dPg
@@ -102,18 +111,57 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
             # store the variation
             variations.append(var)
 
+        # add the load variations
+        for i in range(numerical_circuit.n_ld):
+
+            # generate array of zeros, and modify the generation for the particular generator
+            dPg = np.zeros(numerical_circuit.n_ld)
+            dPg[i] = -power
+
+            # declare the variation object
+            var = PTDFVariation(name=numerical_circuit.load_names[i],
+                                n=numerical_circuit.nbus,
+                                original_power=power_amount)
+
+            # power increment by bus
+            var.dP = numerical_circuit.C_bus_load * dPg
+
+            # store the variation
+            variations.append(var)
+
+    elif group_mode == PtdfGroupMode.ByNode:
+
+        # add the generation variations
+        for i in range(numerical_circuit.nbus):
+
+            # declare the variation object
+            var = PTDFVariation(name=numerical_circuit.bus_names[i],
+                                n=numerical_circuit.nbus,
+                                original_power=power_amount)
+
+            # generate array of zeros, and modify the generation for the particular generator
+            var.dP = np.zeros(numerical_circuit.nbus)
+            var.dP[i] = power
+
+            # store the variation
+            variations.append(var)
+
+    else:
+        raise Exception('PTDF grouping mode not implemented: ' + str(group_mode))
+
     return variations
 
 
-def power_flow_worker(variation, nbus, nbr, calculation_inputs: List[CalculationInputs],
+def power_flow_worker(variation: PTDFVariation, nbus, nbr, calculation_inputs: List[CalculationInputs],
                       options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow
-    :param variation:
+    :param variation: PTDFVariation instance
     :param nbus: number of buses
     :param nbr: number of branches
     :param calculation_inputs: list of CalculationInputs' instances
-    :param dP: delta of active power
+    :param options: PowerFlowOptions instance
+    :param dP: delta of active power (array of values of size nbus)
     :param return_dict: dictionary to return values
     :return: Nothing because it is a worker, the return is done via the return_dict variable
     """

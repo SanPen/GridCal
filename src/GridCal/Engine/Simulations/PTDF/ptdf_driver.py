@@ -19,7 +19,7 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker
+from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker, PtdfGroupMode
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
 
 ########################################################################################################################
@@ -29,15 +29,15 @@ from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
 
 class PTDFOptions:
 
-    def __init__(self, group_by_technology=True, power_increment=100.0, use_multi_threading=False):
+    def __init__(self, group_mode: PtdfGroupMode = PtdfGroupMode.ByGenLoad,
+                 power_increment=100.0, use_multi_threading=False):
         """
         Power Transfer Distribution Factors's options
-        :param group_by_technology: If true, the increment is divided by the generators per technology,
-                                    otherwise it is done by generator
+        :param group_mode: Grouping type
         :param power_increment: Amount of power to change in MVA
         :param use_multi_threading: use multi-threading?
         """
-        self.group_by_technology = group_by_technology
+        self.group_mode = group_mode
 
         self.power_increment = power_increment
 
@@ -79,13 +79,13 @@ class PTDF(QThread):
 
         self.logger = Logger()
 
-    def ptdf(self, circuit: MultiCircuit, options: PowerFlowOptions, group_by_technology, power_amount,
+    def ptdf(self, circuit: MultiCircuit, options: PowerFlowOptions, group_mode: PtdfGroupMode, power_amount,
              text_func=None, prog_func=None):
         """
         Power Transfer Distribution Factors analysis
         :param circuit: MultiCircuit instance
         :param options: power flow options
-        :param group_by_technology:group by technology of generation?
+        :param group_mode: group mode
         :param power_amount: amount o power to vary in MW
         :param text_func: text function to display progress
         :param prog_func: progress function to display progress [0~100]
@@ -104,7 +104,7 @@ class PTDF(QThread):
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,
                                                         numerical_circuit=numerical_circuit,
-                                                        group_by_technology=group_by_technology,
+                                                        group_mode=group_mode,
                                                         power_amount=power_amount)
 
         # declare the PTDF results
@@ -147,13 +147,13 @@ class PTDF(QThread):
 
         return results
 
-    def ptdf_multi_treading(self, circuit: MultiCircuit, options: PowerFlowOptions, group_by_technology, power_amount,
-                            text_func=None, prog_func=None):
+    def ptdf_multi_treading(self, circuit: MultiCircuit, options: PowerFlowOptions, group_mode: PtdfGroupMode,
+                            power_amount, text_func=None, prog_func=None):
         """
         Power Transfer Distribution Factors analysis
         :param circuit: MultiCircuit instance
         :param options: power flow options
-        :param group_by_technology:group by technology of generation?
+        :param group_mode: ptdf grouping mode
         :param power_amount: amount o power to vary in MW
         :param text_func:
         :param prog_func
@@ -172,7 +172,7 @@ class PTDF(QThread):
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,
                                                         numerical_circuit=numerical_circuit,
-                                                        group_by_technology=group_by_technology,
+                                                        group_mode=group_mode,
                                                         power_amount=power_amount)
 
         # declare the PTDF results
@@ -241,21 +241,20 @@ class PTDF(QThread):
 
     def run(self):
         """
-
-        :return:
+        Run thread
         """
         start = time.time()
         if self.options.use_multi_threading:
 
             self.results = self.ptdf_multi_treading(circuit=self.grid, options=self.pf_options,
-                                                    group_by_technology=self.options.group_by_technology,
+                                                    group_mode=self.options.group_mode,
                                                     power_amount=self.options.power_increment,
                                                     text_func=self.progress_text.emit,
                                                     prog_func=self.progress_signal.emit)
         else:
 
             self.results = self.ptdf(circuit=self.grid, options=self.pf_options,
-                                     group_by_technology=self.options.group_by_technology,
+                                     group_mode=self.options.group_mode,
                                      power_amount=self.options.power_increment,
                                      text_func=self.progress_text.emit,
                                      prog_func=self.progress_signal.emit)
@@ -293,8 +292,8 @@ if __name__ == '__main__':
     main_circuit = FileOpen(fname).open()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.DC)
-    options = PTDFOptions(group_by_technology=True, power_increment=10, use_multi_threading=False)
-    simulation = PTDF(grid=main_circuit, options=options, pf_options=pf_options)
+    options_ = PTDFOptions(group_mode=PtdfGroupMode.ByGenLoad, power_increment=10, use_multi_threading=False)
+    simulation = PTDF(grid=main_circuit, options=options_, pf_options=pf_options)
     simulation.run()
     ptdf_df = simulation.results.get_results_data_frame()
 
@@ -302,8 +301,8 @@ if __name__ == '__main__':
 
     print()
     a = time.time()
-    options = PTDFOptions(group_by_technology=True, power_increment=10, use_multi_threading=True)
-    simulation = PTDF(grid=main_circuit, options=options, pf_options=pf_options)
+    options_ = PTDFOptions(group_mode=PtdfGroupMode.ByGenLoad, power_increment=10, use_multi_threading=True)
+    simulation = PTDF(grid=main_circuit, options=options_, pf_options=pf_options)
     simulation.run()
     ptdf_df = simulation.results.get_results_data_frame()
     b = time.time()

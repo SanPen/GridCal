@@ -68,49 +68,53 @@ class ExportAllThread(QThread):
                       DeviceType.BusDevice.BatteryDevice: self.circuit.get_battery_names()}
 
         # open zip file for writing
-        with zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED) as myzip:
+        try:
+            with zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED) as myzip:
 
-            n = len(self.simulations_list)
+                n = len(self.simulations_list)
 
-            for k, driver in enumerate(self.simulations_list):
+                for k, driver in enumerate(self.simulations_list):
 
-                self.progress_signal.emit((k + 1) / n * 100.0)
+                    self.progress_signal.emit((k + 1) / n * 100.0)
 
-                for available_result in driver.results.available_results:
+                    for available_result in driver.results.available_results:
 
-                    # ge the result type definition
-                    result_name, device_type = available_result.value
+                        # ge the result type definition
+                        result_name, device_type = available_result.value
 
-                    # get the object names
-                    names = names_dict[device_type]
+                        # get the object names
+                        names = names_dict[device_type]
 
-                    self.progress_text.emit('flushing ' + driver.results.name + ' ' + result_name)
+                        self.progress_text.emit('flushing ' + driver.results.name + ' ' + result_name)
 
-                    # save the DataFrame to the buffer
-                    mdl = driver.results.mdl(result_type=available_result,
-                                             indices=None,
-                                             names=names)
-                    if mdl is not None:
-                        if mdl.is_complex():
-                            # save real part
-                            with StringIO() as buffer:
-                                filename = driver.results.name + ' ' + result_name + ' real.csv'
-                                mdl.save_to_csv(buffer, mode='real')
-                                myzip.writestr(filename, buffer.getvalue())
+                        # save the DataFrame to the buffer
+                        mdl = driver.results.mdl(result_type=available_result,
+                                                 indices=None,
+                                                 names=names)
+                        if mdl is not None:
+                            if mdl.is_complex():
+                                # save real part
+                                with StringIO() as buffer:
+                                    filename = driver.results.name + ' ' + result_name + ' real.csv'
+                                    mdl.save_to_csv(buffer, mode='real')
+                                    myzip.writestr(filename, buffer.getvalue())
 
-                            # save imaginary part
-                            with StringIO() as buffer:
-                                filename = driver.results.name + ' ' + result_name + ' imag.csv'
-                                mdl.save_to_csv(buffer, mode='imag')
-                                myzip.writestr(filename, buffer.getvalue())
+                                # save imaginary part
+                                with StringIO() as buffer:
+                                    filename = driver.results.name + ' ' + result_name + ' imag.csv'
+                                    mdl.save_to_csv(buffer, mode='imag')
+                                    myzip.writestr(filename, buffer.getvalue())
+                            else:
+                                # save
+                                with StringIO() as buffer:
+                                    filename = driver.results.name + ' ' + result_name + '.csv'
+                                    mdl.save_to_csv(buffer, mode='as_is')
+                                    myzip.writestr(filename, buffer.getvalue())
                         else:
-                            # save
-                            with StringIO() as buffer:
-                                filename = driver.results.name + ' ' + result_name + '.csv'
-                                mdl.save_to_csv(buffer, mode='as_is')
-                                myzip.writestr(filename, buffer.getvalue())
-                    else:
-                        self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
+                            self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
+
+        except PermissionError:
+            self.logger.add('Permission error.\nDo you have the file open?')
 
         self.valid = True
 

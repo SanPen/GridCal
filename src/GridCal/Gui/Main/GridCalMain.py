@@ -146,6 +146,15 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(lst)
         self.ui.taps_control_mode_comboBox.setModel(mdl)
 
+        # ptdf grouping modes
+        self.ptdf_group_modes = OrderedDict()
+        self.ptdf_group_modes[PtdfGroupMode.ByGenLoad.value] = PtdfGroupMode.ByGenLoad
+        self.ptdf_group_modes[PtdfGroupMode.ByTechnology.value] = PtdfGroupMode.ByTechnology
+        self.ptdf_group_modes[PtdfGroupMode.ByNode.value] = PtdfGroupMode.ByNode
+        lst = list(self.ptdf_group_modes.keys())
+        mdl = get_list_model(lst)
+        self.ui.ptdf_grouping_comboBox.setModel(mdl)
+
         # Automatic layout modes
         mdl = get_list_model(['fruchterman_reingold_layout',
                               'spectral_layout',
@@ -644,9 +653,10 @@ class MainGUI(QMainWindow):
 
         QMessageBox.about(self, "About GridCal", msg)
 
+    @staticmethod
     def show_online_docs(self):
         """
-        OPen the online documentation in a web browser
+        Open the online documentation in a web browser
         """
         import webbrowser
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
@@ -654,7 +664,7 @@ class MainGUI(QMainWindow):
     @staticmethod
     def print_console_help():
         """
-        print the console help in the console
+        Print the console help in the console
         @return:
         """
         print('GridCal internal commands.\n')
@@ -2176,7 +2186,9 @@ class MainGUI(QMainWindow):
 
                     pf_options = self.get_selected_power_flow_options()
 
-                    options = PTDFOptions(group_by_technology=self.ui.group_by_gen_technology_checkBox.isChecked(),
+                    group_mode = self.ptdf_group_modes[self.ui.ptdf_grouping_comboBox.currentText()]
+
+                    options = PTDFOptions(group_mode=group_mode,
                                           use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked(),
                                           power_increment=self.ui.ptdf_power_delta_doubleSpinBox.value())
 
