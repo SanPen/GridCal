@@ -31,7 +31,7 @@ def get_loading_color_map():
     return loading_cmap
 
 
-def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types, losses=None,
+def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types=None, losses=None,
                          failed_br_idx=None, loading_label='loading'):
     """
     Color the grid based on the results passed

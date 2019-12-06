@@ -2240,11 +2240,10 @@ class MainGUI(QMainWindow):
         Run PTDF time series simulation
         """
         if len(self.circuit.buses) > 0:
-            if SimulationTypes.PTDF_TS_run not in self.stuff_running_now:
+            if self.valid_time_series():
+                if SimulationTypes.PTDF_TS_run not in self.stuff_running_now:
 
-                self.add_simulation(SimulationTypes.PTDF_TS_run)
-
-                if len(self.circuit.buses) > 0:
+                    self.add_simulation(SimulationTypes.PTDF_TS_run)
                     self.LOCK()
 
                     pf_options = self.get_selected_power_flow_options()
@@ -2259,10 +2258,10 @@ class MainGUI(QMainWindow):
                     self.ptdf_ts_analysis.done_signal.connect(self.post_ptdf_ts)
 
                     self.ptdf_ts_analysis.start()
+                else:
+                    self.msg('Another PTDF time series is being executed now...')
             else:
-                self.msg('Another PTDF time series is being executed now...')
-        else:
-            pass
+                self.msg('There are no time series...')
 
     def post_ptdf_ts(self):
         """
@@ -2278,6 +2277,13 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
+
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
+                                     s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
+                                     voltages=np.ones(len(self.circuit.buses)),
+                                     loadings=self.ptdf_ts_analysis.results.loading.max(axis=0),
+                                     types=None)
 
                 self.update_available_results()
             else:
@@ -2492,8 +2498,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             if SimulationTypes.TimeSeries_run not in self.stuff_running_now:
-                if self.circuit.time_profile is not None:
-
+                if self.valid_time_series():
                     self.LOCK()
 
                     self.add_simulation(SimulationTypes.TimeSeries_run)
@@ -3402,7 +3407,7 @@ class MainGUI(QMainWindow):
             current_study = self.ui.available_results_to_color_comboBox.currentText()
             current_step = self.ui.simulation_results_step_comboBox.currentIndex()
 
-            if current_study == 'Power Flow':
+            if current_study == PowerFlowDriver.name:
 
                 colour_the_schematic(circuit=self.circuit,
                                      s_bus=self.power_flow.results.Sbus,
@@ -3412,7 +3417,7 @@ class MainGUI(QMainWindow):
                                      types=self.circuit.numerical_circuit.bus_types,
                                      losses=self.power_flow.results.losses)
 
-            elif current_study == 'Time Series':
+            elif current_study == TimeSeries.name:
 
                 voltage = self.time_series.results.voltage[current_step, :]
                 loading = self.time_series.results.loading[current_step, :]
@@ -3425,7 +3430,7 @@ class MainGUI(QMainWindow):
                                      loadings=loading,
                                      types=self.circuit.numerical_circuit.bus_types)
 
-            elif current_study == 'Voltage Stability':
+            elif current_study == VoltageCollapse.name:
 
                 colour_the_schematic(circuit=self.circuit,
                                      s_bus=self.voltage_stability.results.Sbus,
@@ -3434,7 +3439,7 @@ class MainGUI(QMainWindow):
                                      loadings=self.voltage_stability.results.loading,
                                      types=self.circuit.numerical_circuit.bus_types)
 
-            elif current_study == 'Monte Carlo':
+            elif current_study == MonteCarlo.name:
 
                 colour_the_schematic(circuit=self.circuit,
                                      voltages=self.monte_carlo.results.V_points[current_step, :],
@@ -3443,7 +3448,7 @@ class MainGUI(QMainWindow):
                                      types=self.circuit.numerical_circuit.bus_types,
                                      s_bus=self.monte_carlo.results.S_points[current_step, :])
 
-            elif current_study == 'Latin Hypercube':
+            elif current_study == LatinHypercubeSampling.name:
 
                 colour_the_schematic(circuit=self.circuit,
                                      voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
@@ -3452,7 +3457,7 @@ class MainGUI(QMainWindow):
                                      types=self.circuit.numerical_circuit.bus_types,
                                      s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :])
 
-            elif current_study == 'Short Circuit':
+            elif current_study == ShortCircuit.name:
                 colour_the_schematic(circuit=self.circuit,
                                      s_bus=self.short_circuit.results.Sbus,
                                      s_branch=self.short_circuit.results.Sbranch,
@@ -3460,7 +3465,7 @@ class MainGUI(QMainWindow):
                                      types=self.circuit.numerical_circuit.bus_types,
                                      loadings=self.short_circuit.results.loading)
 
-            elif current_study == 'Optimal power flow':
+            elif current_study == OptimalPowerFlow.name:
                 colour_the_schematic(circuit=self.circuit,
                                      voltages=self.optimal_power_flow.results.voltage,
                                      loadings=self.optimal_power_flow.results.loading,
@@ -3468,7 +3473,7 @@ class MainGUI(QMainWindow):
                                      s_branch=self.optimal_power_flow.results.Sbranch,
                                      s_bus=self.optimal_power_flow.results.Sbus)
 
-            elif current_study == 'Optimal power flow time series':
+            elif current_study == OptimalPowerFlowTimeSeries.name:
 
                 voltage = self.optimal_power_flow_time_series.results.voltage[current_step, :]
                 loading = self.optimal_power_flow_time_series.results.loading[current_step, :]
@@ -3481,7 +3486,7 @@ class MainGUI(QMainWindow):
                                      loadings=loading,
                                      types=self.circuit.numerical_circuit.bus_types)
 
-            elif current_study == 'PTDF':
+            elif current_study == PTDF.name:
 
                 voltage = self.ptdf_analysis.results.pf_results[current_step].voltage
                 loading = self.ptdf_analysis.results.sensitivity_matrix[current_step, :]
@@ -3494,6 +3499,15 @@ class MainGUI(QMainWindow):
                                      loadings=loading,
                                      types=self.circuit.numerical_circuit.bus_types,
                                      loading_label='Sensitivity')
+
+            elif current_study == PtdfTimeSeries.name:
+
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.ptdf_ts_analysis.results.S[current_step],
+                                     s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
+                                     voltages=np.ones(len(self.circuit.buses)),
+                                     loadings=self.ptdf_ts_analysis.results.loading[current_step],
+                                     types=None)
 
             elif current_study == 'Transient stability':
                 pass
@@ -4719,6 +4733,16 @@ class MainGUI(QMainWindow):
                 self.msg('The OPF time series has no results :(')
         else:
             self.msg('The OPF time series has not been run!')
+
+    def valid_time_series(self):
+        """
+        Check if there are valid time series
+        """
+        if len(self.circuit.buses) > 0:
+            if self.circuit.time_profile is not None:
+                if len(self.circuit.time_profile) > 0:
+                    return True
+        return False
 
 
 def run(use_native_dialogues=True):
