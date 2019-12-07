@@ -152,11 +152,11 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: NumericalCircu
     return variations
 
 
-def power_flow_worker(variation: PTDFVariation, nbus, nbr, calculation_inputs: List[CalculationInputs],
+def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[CalculationInputs],
                       options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow
-    :param variation: PTDFVariation instance
+    :param variation: variation id
     :param nbus: number of buses
     :param nbr: number of branches
     :param calculation_inputs: list of CalculationInputs' instances

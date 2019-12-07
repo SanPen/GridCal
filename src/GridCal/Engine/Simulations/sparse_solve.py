@@ -25,7 +25,7 @@ class SparseSolver(Enum):
     SuperLU = 'SuperLU'
     Pardiso = 'Pardiso'
     GMRES = 'GMRES'
-    AMG = 'Algebraic Multigrid'
+    UMFPACK = 'SuiteSparse UmfPack'
 
     def __str__(self):
         return self.value
@@ -63,11 +63,11 @@ except ImportError:
     print('Pardiso failed')
 
 try:
-    import pyamg
+    from scikits.umfpack import spsolve, splu
 
-    available_sparse_solvers.append(SparseSolver.AMG)
+    available_sparse_solvers.append(SparseSolver.UMFPACK)
 except ImportError:
-    print('AMG failed')
+    print(SparseSolver.UMFPACK.value + 'failed')
 
 
 preferred_type = SparseSolver.KLU
@@ -87,10 +87,10 @@ def get_sparse_type(solver_type: SparseSolver = preferred_type):
     :param solver_type:
     :return: sparse matrix type
     """
-    if solver_type in [SparseSolver.BLAS_LAPACK, SparseSolver.Pardiso, SparseSolver.GMRES, SparseSolver.AMG]:
+    if solver_type in [SparseSolver.BLAS_LAPACK, SparseSolver.Pardiso, SparseSolver.GMRES]:
         return csr_matrix
 
-    elif solver_type in [SparseSolver.KLU, SparseSolver.SuperLU, SparseSolver.ILU]:
+    elif solver_type in [SparseSolver.KLU, SparseSolver.SuperLU, SparseSolver.ILU, SparseSolver.UMFPACK]:
         return csc_matrix
 
     else:
@@ -142,15 +142,14 @@ def gmres_linsolve(A, b):
     return x
 
 
-def amg_linsolve(A, b):
+def umfpack_linsolve(A, b):
     """
 
     :param A:
     :param b:
     :return:
     """
-    ml = pyamg.smoothed_aggregation_solver(A)  # construct the multigrid hierarchy
-    return ml.solve(b, tol=1e-5)
+    return spsolve(A, b)
 
 
 def get_linear_solver(solver_type: SparseSolver = preferred_type):
@@ -177,8 +176,8 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type):
     elif solver_type == SparseSolver.GMRES:
             return gmres_linsolve
 
-    elif solver_type == SparseSolver.AMG:
-            return amg_linsolve
+    elif solver_type == SparseSolver.UMFPACK:
+            return umfpack_linsolve
 
 
 if __name__ == '__main__':
@@ -187,16 +186,16 @@ if __name__ == '__main__':
     import scipy.sparse as sp
 
     solver_types = [SparseSolver.BLAS_LAPACK,
-                    # SparseSolver.KLU,
-                    # SparseSolver.SuperLU,
-                    # SparseSolver.ILU,
-                    SparseSolver.AMG
+                    SparseSolver.KLU,
+                    SparseSolver.SuperLU,
+                    SparseSolver.ILU,
+                    SparseSolver.UMFPACK
                     ]
 
     for solver_type_ in solver_types:
         start = time.time()
         repetitions = 50
-        n = 1000
+        n = 4000
         np.random.seed(0)
 
         sparse = get_sparse_type(solver_type_)

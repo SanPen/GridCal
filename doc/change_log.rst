@@ -14,6 +14,7 @@ Version 3.6.4
 ^^^^^^^^^^^^^^
 
 - Integrated better the PTDF into the GUI.
+- Added VTDF calculations in the PTDF and PTDF time series.
 
 
 Version 3.6.3

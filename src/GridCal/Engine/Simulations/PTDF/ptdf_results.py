@@ -42,7 +42,7 @@ class PTDFVariation:
 
 class PTDFResults:
 
-    def __init__(self, n_variations=0, n_br=0, br_names=()):
+    def __init__(self, n_variations=0, n_br=0, n_bus=0, br_names=(), bus_names=()):
         """
         Number of variations
         :param n_variations:
@@ -56,6 +56,8 @@ class PTDFResults:
 
         # number of branches
         self.n_br = n_br
+
+        self.n_bus = n_bus
 
         # names of the branches
         self.br_names = br_names
@@ -71,9 +73,11 @@ class PTDFResults:
 
         self.logger = Logger()
 
-        self.sensitivity_matrix = None
+        self.flows_sensitivity_matrix = None
+        self.voltage_sensitivity_matrix = None
 
-        self.available_results = [ResultTypes.PTDFBranchesSensitivity]
+        self.available_results = [ResultTypes.PTDFBranchesSensitivity,
+                                  ResultTypes.PTDFBusVoltageSensitivity]
 
     def add_results_at(self, i, results: PowerFlowResults, variation: PTDFVariation):
         """
@@ -93,8 +97,18 @@ class PTDFResults:
         :param i: variation index
         :return: array of sensitivities from -1 to 1
         """
-        dSbranch = (self.pf_results[i].Sbranch.real - self.default_pf_results.Sbranch.real)
-        return dSbranch / (self.variations[i].original_power + 1e-20)
+        delta = (self.pf_results[i].Sbranch.real - self.default_pf_results.Sbranch.real)
+        return delta / (self.variations[i].original_power + 1e-20)
+
+    def get_voltage_sensitivity_at(self, i):
+        """
+        get Branch sensitivities
+        :param i: variation index
+        :return: array of sensitivities from -1 to 1
+        """
+        v0 = np.abs(self.default_pf_results.voltage)
+        delta = (np.abs(self.pf_results[i].voltage) - v0)
+        return delta / (self.variations[i].original_power + 1e-20)
 
     def get_var_names(self):
         """
@@ -108,21 +122,25 @@ class PTDFResults:
         Consolidate results in matrix
         :return:
         """
-        self.sensitivity_matrix = np.zeros((self.n_variations, self.n_br))
-
+        self.flows_sensitivity_matrix = np.zeros((self.n_variations, self.n_br))
         for i in range(self.n_variations):
-            self.sensitivity_matrix[i, :] = self.get_branch_sensitivity_at(i)
+            self.flows_sensitivity_matrix[i, :] = self.get_branch_sensitivity_at(i)
 
-        return self.sensitivity_matrix
+        self.voltage_sensitivity_matrix = np.zeros((self.n_variations, self.n_bus))
+        for i in range(self.n_variations):
+            self.voltage_sensitivity_matrix[i, :] = self.get_voltage_sensitivity_at(i)
 
-    def get_results_data_frame(self):
+    def get_flows_data_frame(self):
         """
         Get Pandas DataFrame with the results
         :return: pandas DataFrame
         """
-        values = self.consolidate()
+
+        if self.flows_sensitivity_matrix is None:
+            self.consolidate()
+
         var_names = self.get_var_names()
-        df = pd.DataFrame(data=values.transpose(), index=self.br_names, columns=var_names).fillna(0)
+        df = pd.DataFrame(data=self.flows_sensitivity_matrix.T, index=self.br_names, columns=var_names).fillna(0)
 
         return df
 
@@ -150,9 +168,14 @@ class PTDFResults:
             labels = names[indices]
 
             if result_type == ResultTypes.PTDFBranchesSensitivity:
-                y = self.sensitivity_matrix[:, indices]
+                y = self.flows_sensitivity_matrix[:, indices]
                 y_label = '(p.u.)'
                 title = 'Branches sensitivity'
+
+            elif result_type == ResultTypes.PTDFBusVoltageSensitivity:
+                y = self.voltage_sensitivity_matrix[:, indices]
+                y_label = '(p.u.)'
+                title = 'Buses voltage sensitivity'
 
             else:
                 n = len(labels)
@@ -163,7 +186,6 @@ class PTDFResults:
             # assemble model
             mdl = ResultsModel(data=y, index=self.get_var_names(), columns=labels, title=title, ylabel=y_label)
             return mdl
-
 
         else:
             return None

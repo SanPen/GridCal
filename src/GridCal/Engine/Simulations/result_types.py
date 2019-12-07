@@ -62,7 +62,8 @@ class ResultTypes(Enum):
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
 
     # PTDF
-    PTDFBranchesSensitivity = 'Branch sensitivity', DeviceType.BranchDevice
+    PTDFBranchesSensitivity = 'Branch Flow sensitivity', DeviceType.BranchDevice
+    PTDFBusVoltageSensitivity = 'Bus voltage sensitivity', DeviceType.BusDevice
 
     OTDF = 'Outage transfer distribution factors', DeviceType.BranchDevice
 

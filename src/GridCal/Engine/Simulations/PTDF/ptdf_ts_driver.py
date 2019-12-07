@@ -51,6 +51,8 @@ class PtdfTimeSeriesResults(PowerFlowResults):
 
         if nt > 0:
 
+            self.voltage = np.zeros((nt, n), dtype=float)
+
             self.S = np.zeros((nt, n), dtype=float)
 
             self.Sbranch = np.zeros((nt, m), dtype=float)
@@ -58,14 +60,18 @@ class PtdfTimeSeriesResults(PowerFlowResults):
             self.loading = np.zeros((nt, m), dtype=float)
 
         else:
+
+            self.voltage = None
+
             self.S = None
 
             self.Sbranch = None
 
             self.loading = None
 
-        self.available_results = [ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusActivePower,
+                                  # ResultTypes.BusReactivePower,
                                   ResultTypes.BranchPower,
                                   ResultTypes.BranchLoading]
 
@@ -75,6 +81,8 @@ class PtdfTimeSeriesResults(PowerFlowResults):
         @param t: time index
         @param results: PowerFlowResults instance
         """
+
+        self.voltage[t, :] = results.voltage
 
         self.S[t, :] = results.Sbus
 
@@ -87,29 +95,31 @@ class PtdfTimeSeriesResults(PowerFlowResults):
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'P': self.S.real.tolist(),
+        data = {'V': self.voltage.tolist(),
+                'P': self.S.real.tolist(),
                 'Q': self.S.imag.tolist(),
                 'Sbr_real': self.Sbranch.real.tolist(),
                 'Sbr_imag': self.Sbranch.imag.tolist(),
                 'loading': np.abs(self.loading).tolist()}
         return data
 
-    def save(self, fname):
+    def save(self, file_name):
         """
         Export as json
+        :param file_name: Name of the file
         """
 
-        with open(fname, "wb") as output_file:
+        with open(file_name, "wb") as output_file:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
     def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
         """
-
+        Get ResultsModel instance
         :param result_type:
         :param indices:
         :param names:
-        :return:
+        :return: ResultsModel instance
         """
 
         if indices is None:
@@ -144,6 +154,11 @@ class PtdfTimeSeriesResults(PowerFlowResults):
                 y_label = '(MVA)'
                 title = 'Branch losses'
 
+            elif result_type == ResultTypes.BusVoltageModule:
+                data = self.voltage[:, indices]
+                y_label = '(p.u.)'
+                title = 'Bus voltage'
+
             elif result_type == ResultTypes.SimulationError:
                 data = self.error.reshape(-1, 1)
                 y_label = 'Per unit power'
@@ -161,9 +176,6 @@ class PtdfTimeSeriesResults(PowerFlowResults):
             # assemble model
             mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label)
             return mdl
-
-        else:
-            return None
 
 
 class PtdfTimeSeries(QThread):
@@ -235,7 +247,9 @@ class PtdfTimeSeries(QThread):
             ptdf_driver.run()
 
             # get the PTDF matrix
-            ptdf = ptdf_driver.results.consolidate()
+            ptdf_driver.results.consolidate()
+            ptdf = ptdf_driver.results.flows_sensitivity_matrix
+            vtdf = ptdf_driver.results.voltage_sensitivity_matrix
 
             # compose the power injections
             Pbus = nc.C_bus_gen * nc.generator_power_profile.T
@@ -245,11 +259,13 @@ class PtdfTimeSeries(QThread):
 
             # base magnitudes
             Pbr_0 = ptdf_driver.results.default_pf_results.Sbranch.real  # MW
+            V_0 = np.abs(ptdf_driver.results.default_pf_results.voltage)  # MW
             Pbus_0 = nc.C_bus_gen * nc.generator_power - nc.C_bus_load * nc.load_power.real  # MW
 
             # run the PTDF time series
             for k, t_idx in enumerate(range(self.start_, self.end_)):
                 dP = (Pbus_0[:] - Pbus[:, t_idx])
+                results.voltage[k, :] = V_0 + np.dot(dP, vtdf)
                 results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
                 results.loading[k, :] = results.Sbranch[k, :] / nc.br_rates
                 results.S[k, :] = Pbus[:, t_idx]
@@ -302,25 +318,40 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    pf_options = PowerFlowOptions(solver_type=SolverType.NR)
-    ptdf_driver = PtdfTimeSeries(grid=main_circuit, pf_options=pf_options)
+    pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)
+    ptdf_driver = PtdfTimeSeries(grid=main_circuit, pf_options=pf_options_)
     ptdf_driver.run()
 
-    pf_options = PowerFlowOptions(solver_type=SolverType.NR)
-    ts_driver = TimeSeries(grid=main_circuit, options=pf_options)
+    pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)
+    ts_driver = TimeSeries(grid=main_circuit, options=pf_options_)
     ts_driver.run()
 
-    plt.figure(1)
-    plt.title('Newton-Raphson based flow')
-    plt.plot(ts_driver.results.Sbranch.real)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax1.set_title('Newton-Raphson based flow')
+    ax1.plot(ts_driver.results.Sbranch.real)
 
-    plt.figure(2)
-    plt.title('PTDF based flow')
-    plt.plot(ptdf_driver.results.Sbranch.real)
+    ax2 = fig.add_subplot(222)
+    ax2.set_title('PTDF based flow')
+    ax2.plot(ptdf_driver.results.Sbranch.real)
 
-    plt.figure(3)
-    plt.title('Difference')
+    ax3 = fig.add_subplot(223)
+    ax3.set_title('Difference')
     diff = ts_driver.results.Sbranch.real - ptdf_driver.results.Sbranch.real
-    plt.plot(diff)
+    ax3.plot(diff)
+
+    fig2 = plt.figure()
+    ax1 = fig2.add_subplot(221)
+    ax1.set_title('Newton-Raphson based voltage')
+    ax1.plot(np.abs(ts_driver.results.voltage))
+
+    ax2 = fig2.add_subplot(222)
+    ax2.set_title('PTDF based voltage')
+    ax2.plot(ptdf_driver.results.voltage)
+
+    ax3 = fig2.add_subplot(223)
+    ax3.set_title('Difference')
+    diff = np.abs(ts_driver.results.voltage) - ptdf_driver.results.voltage
+    ax3.plot(diff)
 
     plt.show()

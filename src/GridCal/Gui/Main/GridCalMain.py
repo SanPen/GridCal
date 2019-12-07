@@ -2281,7 +2281,7 @@ class MainGUI(QMainWindow):
                 colour_the_schematic(circuit=self.circuit,
                                      s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
                                      s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
-                                     voltages=np.ones(len(self.circuit.buses)),
+                                     voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
                                      loadings=self.ptdf_ts_analysis.results.loading.max(axis=0),
                                      types=None)
 
@@ -3505,7 +3505,7 @@ class MainGUI(QMainWindow):
                 colour_the_schematic(circuit=self.circuit,
                                      s_bus=self.ptdf_ts_analysis.results.S[current_step],
                                      s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
-                                     voltages=np.ones(len(self.circuit.buses)),
+                                     voltages=self.ptdf_ts_analysis.results.voltage[current_step],
                                      loadings=self.ptdf_ts_analysis.results.loading[current_step],
                                      types=None)
 

@@ -110,7 +110,9 @@ class PTDF(QThread):
         # declare the PTDF results
         results = PTDFResults(n_variations=len(delta_of_power_variations) - 1,
                               n_br=numerical_circuit.nbr,
-                              br_names=numerical_circuit.branch_names)
+                              n_bus=numerical_circuit.nbus,
+                              br_names=numerical_circuit.branch_names,
+                              bus_names=numerical_circuit.bus_names)
 
         if text_func is not None:
             text_func('Running PTDF...')
@@ -178,7 +180,9 @@ class PTDF(QThread):
         # declare the PTDF results
         results = PTDFResults(n_variations=len(delta_of_power_variations) - 1,
                               n_br=numerical_circuit.nbr,
-                              br_names=numerical_circuit.branch_names)
+                              n_bus=numerical_circuit.nbus,
+                              br_names=numerical_circuit.branch_names,
+                              bus_names=numerical_circuit.bus_names)
 
         if text_func is not None:
             text_func('Running PTDF...')
@@ -295,7 +299,7 @@ if __name__ == '__main__':
     options_ = PTDFOptions(group_mode=PtdfGroupMode.ByGenLoad, power_increment=10, use_multi_threading=False)
     simulation = PTDF(grid=main_circuit, options=options_, pf_options=pf_options)
     simulation.run()
-    ptdf_df = simulation.results.get_results_data_frame()
+    ptdf_df = simulation.results.get_flows_data_frame()
 
     print(ptdf_df)
 
@@ -304,7 +308,7 @@ if __name__ == '__main__':
     options_ = PTDFOptions(group_mode=PtdfGroupMode.ByGenLoad, power_increment=10, use_multi_threading=True)
     simulation = PTDF(grid=main_circuit, options=options_, pf_options=pf_options)
     simulation.run()
-    ptdf_df = simulation.results.get_results_data_frame()
+    ptdf_df = simulation.results.get_flows_data_frame()
     b = time.time()
     print(ptdf_df)
     print(b-a)
