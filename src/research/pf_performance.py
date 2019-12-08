@@ -6,12 +6,12 @@ def run(fname):
 
     circuit = FileOpen(fname).open()
 
-    options = PowerFlowOptions(solver_type=SolverType.NR,
+    options = PowerFlowOptions(solver_type=SolverType.FASTDECOUPLED,
                                retry_with_other_methods=False,
                                verbose=False,
                                initialize_with_existing_solution=False,
-                               tolerance=1e-3,
-                               max_iter=3,
+                               tolerance=1e-4,
+                               max_iter=5,
                                max_outer_loop_iter=10,
                                control_q=ReactivePowerControlMode.NoControl,
                                control_taps=TapsControlMode.NoControl,
@@ -34,6 +34,8 @@ def run(fname):
     for r in driver.results.convergence_reports:
         print(r)
 
+
 if __name__ == '__main__':
 
-    run('/home/santi/Descargas/Equivalent.gridcal')
+    run('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx')
+    # run('/home/santi/Descargas/Equivalent.gridcal')

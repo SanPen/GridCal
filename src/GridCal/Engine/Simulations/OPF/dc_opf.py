@@ -18,7 +18,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.OPF.opf_templates import Opf
+from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.ThirdParty.pulp import *
 
 
@@ -38,13 +38,13 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     :return: Nothing, just assign the objective function
     """
 
-    f_obj = (cost_g * Pg).sum()
+    f_obj = lpSum(cost_g * Pg)
 
-    f_obj += (cost_b * Pb).sum()
+    f_obj += lpSum(cost_b * Pb)
 
-    f_obj += (cost_l * LSlack).sum()
+    f_obj += lpSum(cost_l * LSlack)
 
-    f_obj += (cost_br * (FSlack1 + FSlack2)).sum()
+    f_obj += lpSum(cost_br * (FSlack1 + FSlack2))
 
     return f_obj
 
@@ -178,12 +178,12 @@ def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries
 
 class OpfDc(Opf):
 
-    def __init__(self, numerical_circuit: NumericalCircuit):
+    def __init__(self, numerical_circuit: NumericalCircuit, solver: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         """
-        Opf.__init__(self, numerical_circuit=numerical_circuit)
+        Opf.__init__(self, numerical_circuit=numerical_circuit, solver=solver)
 
         # build the formulation
         self.problem = self.formulate()

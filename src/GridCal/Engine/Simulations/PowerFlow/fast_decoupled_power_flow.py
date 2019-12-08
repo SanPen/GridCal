@@ -29,15 +29,15 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
 
     # set voltage vector for the iterations
     voltage = Vbus.copy()
-    Va = angle(voltage)
-    Vm = abs(voltage)
+    Va = np.angle(voltage)
+    Vm = np.abs(voltage)
 
     # Factorize B1 and B2
     J1 = splu(B1[np.ix_(pqpv, pqpv)])
     J2 = splu(B2[np.ix_(pq, pq)])
 
     # evaluate initial mismatch
-    Scalc = voltage * conj(Ybus * voltage - Ibus)
+    Scalc = voltage * np.conj(Ybus * voltage - Ibus)
     mis = Scalc - Sbus  # complex power mismatch
     incP = mis[pqpv].real
     incQ = mis[pq].imag
@@ -45,10 +45,7 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     if len(pqpv) > 0:
         normP = norm(incP, Inf)
         normQ = norm(incQ, Inf)
-        if normP < tol and normQ < tol:
-            converged = True
-        else:
-            converged = False
+        converged = normP < tol and normQ < tol
 
         # iterate
         iter_ = 0
@@ -96,7 +93,7 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
         # evaluate F(x)
         Scalc = voltage * conj(Ybus * voltage - Ibus)
         mis = Scalc - Sbus  # complex power mismatch
-        F = r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+        F = r_[mis[pqpv].real, mis[pq].imag]  # concatenate again
 
         # check for convergence
         normF = norm(F, Inf)

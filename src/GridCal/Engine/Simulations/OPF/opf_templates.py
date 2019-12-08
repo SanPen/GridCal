@@ -20,7 +20,7 @@ from GridCal.ThirdParty.pulp import *
 
 class Opf:
 
-    def __init__(self, numerical_circuit: NumericalCircuit, solver: MIPSolvers=MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: NumericalCircuit, solver: MIPSolvers = MIPSolvers.CBC):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance
@@ -62,12 +62,18 @@ class Opf:
         if self.solver == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
 
+        elif self.solver == MIPSolvers.SCIP:
+            params = SCIP_CMD(msg=1)
+
         elif self.solver == MIPSolvers.CPLEX:
             params = CPLEX_CMD(msg=1)
+
         elif self.solver == MIPSolvers.GUROBI:
             params = GUROBI_CMD(msg=1)
+
         elif self.solver == MIPSolvers.XPRESS:
             params = XPRESS(msg=1)
+
         else:
             raise Exception('Solver not supported! ' + str(self.solver))
 
@@ -209,12 +215,19 @@ class OpfTimeSeries:
 
         if self.solver == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
+
+        elif self.solver == MIPSolvers.SCIP:
+            params = SCIP_CMD(msg=msg)
+
         elif self.solver == MIPSolvers.CPLEX:
             params = CPLEX_CMD(msg=msg)
+
         elif self.solver == MIPSolvers.GUROBI:
             params = GUROBI_CMD(msg=msg)
+
         elif self.solver == MIPSolvers.XPRESS:
             params = XPRESS(msg=msg)
+
         else:
             raise Exception('Solver not supported! ' + str(self.solver))
 

@@ -114,11 +114,13 @@ class OptimalPowerFlow(QThread):
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
-            problem = OpfDc(numerical_circuit=numerical_circuit)
+            problem = OpfDc(numerical_circuit=numerical_circuit,
+                            solver=self.options.mip_solver)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
-            problem = OpfAc(numerical_circuit=numerical_circuit)
+            problem = OpfAc(numerical_circuit=numerical_circuit,
+                            solver=self.options.mip_solver)
 
         elif self.options.solver == SolverType.Simple_OPF:
             # AC optimal power flow

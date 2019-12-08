@@ -44,6 +44,7 @@ class SolverType(Enum):
     """
 
     NR = 'Newton Raphson'
+    NRD = 'Newton Raphson Decoupled'
     NRFD_XB = 'Fast decoupled XB'
     NRFD_BX = 'Fast decoupled BX'
     GAUSS = 'Gauss-Seidel'
@@ -423,6 +424,7 @@ class StatisticalCharacterization:
 
 class MIPSolvers(Enum):
     CBC = 'CBC'
+    SCIP = 'SCIP'
     CPLEX = 'CPLEX'
     GUROBI = 'Gurobi'
     XPRESS = 'Xpress'

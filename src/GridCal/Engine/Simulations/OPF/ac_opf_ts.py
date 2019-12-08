@@ -41,13 +41,13 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     :return: Nothing, just assign the objective function
     """
 
-    f_obj = (cost_g * Pg).sum()
+    f_obj = lpSum(cost_g * Pg)
 
-    f_obj += (cost_b * Pb).sum()
+    f_obj += lpSum(cost_b * Pb)
 
-    f_obj += (cost_l * LSlack).sum()
+    f_obj += lpSum(cost_l * LSlack)
 
-    f_obj += (cost_br * (FSlack1 + FSlack2)).sum()
+    f_obj += lpSum(cost_br * (FSlack1 + FSlack2))
 
     return f_obj
 

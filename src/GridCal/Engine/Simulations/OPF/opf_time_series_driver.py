@@ -315,21 +315,23 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         if not remote:
             self.progress_signal.emit(0.0)
-            self.progress_text.emit('Running all in an external solver, this may take a while...')
+            self.progress_text.emit('Formulating problem...')
 
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
             problem = OpfDcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_, end_idx=end_,
-                                      solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0)
+                                      solver=self.options.mip_solver,
+                                      batteries_energy_0=batteries_energy_0)
 
         elif self.options.solver == SolverType.AC_OPF:
 
             # AC optimal power flow
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_, end_idx=end_,
-                                      solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0)
+                                      solver=self.options.mip_solver,
+                                      batteries_energy_0=batteries_energy_0)
 
         elif self.options.solver == SolverType.Simple_OPF:
 
@@ -343,9 +345,13 @@ class OptimalPowerFlowTimeSeries(QThread):
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
             return
 
+        if not remote:
+            self.progress_signal.emit(0.0)
+            self.progress_text.emit('Running all in an external solver, this may take a while...')
+
         # solve the problem
         status = problem.solve()
-        # print("Status:", status)
+        print("Status:", status)
 
         a = start_
         b = end_
