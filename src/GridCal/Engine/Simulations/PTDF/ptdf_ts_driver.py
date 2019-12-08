@@ -252,10 +252,7 @@ class PtdfTimeSeries(QThread):
             vtdf = ptdf_driver.results.voltage_sensitivity_matrix
 
             # compose the power injections
-            Pbus = nc.C_bus_gen * nc.generator_power_profile.T
-            Pbus += nc.C_bus_batt * nc.battery_power_profile.T
-            Pbus += nc.C_bus_sta_gen * nc.static_gen_power_profile.real.T
-            Pbus -= nc.C_bus_load * nc.load_power_profile.real.T  # MW
+            Pbus = nc.get_power_injections().real
 
             # base magnitudes
             Pbr_0 = ptdf_driver.results.default_pf_results.Sbranch.real  # MW

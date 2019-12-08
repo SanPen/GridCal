@@ -2283,7 +2283,7 @@ class MainGUI(QMainWindow):
                                      s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
                                      s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
                                      voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
-                                     loadings=self.ptdf_ts_analysis.results.loading.max(axis=0),
+                                     loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
                                      types=None)
 
                 self.update_available_results()
@@ -2443,10 +2443,12 @@ class MainGUI(QMainWindow):
 
                         self.power_flow.run_at(start_idx)
 
+                        nc = self.circuit.compile()
+                        Sprof = nc.get_power_injections()
                         vc_inputs = VoltageCollapseInput(
-                            Sbase=self.circuit.time_series_input.Sprof.values[start_idx, :],
+                            Sbase=Sprof[start_idx, :],
                             Vbase=self.power_flow.results.voltage,
-                            Starget=self.circuit.time_series_input.Sprof.values[end_idx, :])
+                            Starget=Sprof[end_idx, :])
 
                         # create object
                         self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options,
@@ -2562,7 +2564,7 @@ class MainGUI(QMainWindow):
             self.remove_simulation(SimulationTypes.TimeSeries_run)
 
             voltage = self.time_series.results.voltage.max(axis=0)
-            loading = self.time_series.results.loading.max(axis=0)
+            loading = np.abs(self.time_series.results.loading).max(axis=0)
             Sbranch = self.time_series.results.Sbranch.max(axis=0)
 
             colour_the_schematic(circuit=self.circuit,
@@ -3414,7 +3416,7 @@ class MainGUI(QMainWindow):
                                      s_bus=self.power_flow.results.Sbus,
                                      s_branch=self.power_flow.results.Sbranch,
                                      voltages=self.power_flow.results.voltage,
-                                     loadings=self.power_flow.results.loading,
+                                     loadings=np.abs(self.power_flow.results.loading),
                                      types=self.circuit.numerical_circuit.bus_types,
                                      losses=self.power_flow.results.losses)
 
@@ -3428,7 +3430,7 @@ class MainGUI(QMainWindow):
                                      s_bus=None,
                                      s_branch=Sbranch,
                                      voltages=voltage,
-                                     loadings=loading,
+                                     loadings=np.abs(loading),
                                      types=self.circuit.numerical_circuit.bus_types)
 
             elif current_study == VoltageCollapse.name:
@@ -3437,14 +3439,14 @@ class MainGUI(QMainWindow):
                                      s_bus=self.voltage_stability.results.Sbus,
                                      s_branch=self.voltage_stability.results.Sbranch,
                                      voltages=self.voltage_stability.results.voltages[current_step, :],
-                                     loadings=self.voltage_stability.results.loading,
+                                     loadings=np.abs(self.voltage_stability.results.loading),
                                      types=self.circuit.numerical_circuit.bus_types)
 
             elif current_study == MonteCarlo.name:
 
                 colour_the_schematic(circuit=self.circuit,
                                      voltages=self.monte_carlo.results.V_points[current_step, :],
-                                     loadings=self.monte_carlo.results.loading_points[current_step, :],
+                                     loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
                                      s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
                                      types=self.circuit.numerical_circuit.bus_types,
                                      s_bus=self.monte_carlo.results.S_points[current_step, :])
@@ -3484,7 +3486,7 @@ class MainGUI(QMainWindow):
                                      s_bus=None,
                                      s_branch=Sbranch,
                                      voltages=voltage,
-                                     loadings=loading,
+                                     loadings=np.abs(loading),
                                      types=self.circuit.numerical_circuit.bus_types)
 
             elif current_study == PTDF.name:
@@ -3507,7 +3509,7 @@ class MainGUI(QMainWindow):
                                      s_bus=self.ptdf_ts_analysis.results.S[current_step],
                                      s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
                                      voltages=self.ptdf_ts_analysis.results.voltage[current_step],
-                                     loadings=self.ptdf_ts_analysis.results.loading[current_step],
+                                     loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
                                      types=None)
 
             elif current_study == 'Transient stability':

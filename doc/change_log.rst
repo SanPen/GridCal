@@ -17,6 +17,7 @@ Version 3.6.4
 - Added VTDF calculations in the PTDF and PTDF time series.
 - Improved the OPF formulation times.
 - Improved the Jacobian-based power flow speeds by reducing the steps in the error computation.
+- Fixed loading visualization in the schematic.
 
 
 Version 3.6.3

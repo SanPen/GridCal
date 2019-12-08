@@ -414,6 +414,17 @@ class NumericalCircuit:
 
         self.C_bus_shunt = sp.lil_matrix((n_bus, n_sh), dtype=int)
 
+    def get_power_injections(self):
+        """
+        returns the complex power injections
+        """
+        Sbus = - self.C_bus_load * self.load_power_profile.T  # MW
+        Sbus += self.C_bus_gen * self.generator_power_profile.T
+        Sbus += self.C_bus_batt * self.battery_power_profile.T
+        Sbus += self.C_bus_sta_gen * self.static_gen_power_profile.T
+
+        return Sbus
+
     def set_profile(self):
         pass
 
