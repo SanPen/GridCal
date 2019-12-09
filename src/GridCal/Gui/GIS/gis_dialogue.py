@@ -35,12 +35,11 @@ class GISWindow(QMainWindow):
 
         # # action linking
         self.ui.actionSave_map.triggered.connect(self.save)
-        # self.ui.actionZoom_in.triggered.connect(self.map_.zoom_increase)
-        # self.ui.actionZoom_out.triggered.connect(self.map_.zoom_decrease)
 
     def closeEvent(self, event):
         """
-        Remove the file
+        Remove the file on close
+        :param event:
         """
         if os.path.exists(self.file_path):
             os.remove(self.file_path)
@@ -48,6 +47,7 @@ class GISWindow(QMainWindow):
     def save(self):
         """
         Save a copy of the displayed map
+        :return:
         """
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog

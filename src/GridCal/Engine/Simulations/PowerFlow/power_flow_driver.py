@@ -61,11 +61,16 @@ class PowerFlowDriver(QThread):
 
     @staticmethod
     def get_steps():
+        """
+
+        :return:
+        """
         return list()
 
     def run(self):
         """
         Pack run_pf for the QThread
+        :return:
         """
         self.results = multi_island_pf(multi_circuit=self.grid,
                                        options=self.options,
