@@ -340,8 +340,8 @@ class Branch(EditableDevice):
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice, 'Name of the bus at the "to" '
-                                                                   'side of the branch.'),
+                                                  'bus_to': GCProp('', DeviceType.BusDevice,
+                                                                   'Name of the bus at the "to" side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
@@ -382,7 +382,8 @@ class Branch(EditableDevice):
                                                                     'Used in short circuit studies.'),
                                                   'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
                                                                     'Used in short circuit studies.'),
-                                                  'fault_pos': GCProp('p.u.', float, 'Per-unit positioning of the fault:\n'
+                                                  'fault_pos': GCProp('p.u.', float,
+                                                                      'Per-unit positioning of the fault:\n'
                                                                       '0 would be at the "from" side,\n'
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
@@ -718,16 +719,6 @@ class Branch(EditableDevice):
         """
         conv = BranchTypeConverter(None)
 
-        # if self.template is None:
-        #     template = ''
-        # else:
-        #     template = str(self.template)
-        #
-        # return [self.name, self.bus_from.name, self.bus_to.name, self.active, self.rate, self.mttf, self.mttr,
-        #         self.R, self.X, self.G, self.B, self.tolerance, self.length, self.tap_module, self.angle,
-        #         self.bus_to_regulated, self.vset, self.temp_base, self.temp_oper, self.alpha, self.r_fault,
-        #         self.x_fault, self.fault_pos, conv.inv_conv[self.branch_type], template]
-
         data = list()
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
@@ -809,3 +800,8 @@ class Branch(EditableDevice):
         if show_fig:
             plt.show()
 
+    def get_coordinates(self):
+        """
+        Get the branch defining coordinates
+        """
+        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]

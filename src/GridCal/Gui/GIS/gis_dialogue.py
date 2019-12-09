@@ -3,6 +3,7 @@ import os
 from PySide2.QtWidgets import *
 from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
 import folium
+from shutil import copyfile
 
 from GridCal.Gui.GIS.gui import *
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
@@ -10,10 +11,10 @@ from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 class GISWindow(QMainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, external_file_path=''):
         """
-
-        :param parent:
+        Constructor
+        :param external_file_path: path to the file to open
         """
         QMainWindow.__init__(self)
         self.ui = Ui_GisWindow()
@@ -24,13 +25,42 @@ class GISWindow(QMainWindow):
         self.web_layout = QtWidgets.QVBoxLayout(self.ui.webFrame)
         self.webView = QWebView()
         self.web_layout.addWidget(self.webView)
-        file_path = self.generate_blank_map_html(lon_avg=40.430, lat_avg=3.56)
-        self.webView.setUrl(QtCore.QUrl.fromLocalFile(file_path))
+
+        if os.path.exists(external_file_path):
+            self.file_path = external_file_path
+        else:
+            self.file_path = self.generate_blank_map_html(lon_avg=40.430, lat_avg=3.56)
+
+        self.webView.setUrl(QtCore.QUrl.fromLocalFile(self.file_path))
 
         # # action linking
-        # self.ui.actionNight_mode.triggered.connect(self.map_.toggle_night_mode)
+        self.ui.actionSave_map.triggered.connect(self.save)
         # self.ui.actionZoom_in.triggered.connect(self.map_.zoom_increase)
         # self.ui.actionZoom_out.triggered.connect(self.map_.zoom_decrease)
+
+    def closeEvent(self, event):
+        """
+        Remove the file
+        """
+        if os.path.exists(self.file_path):
+            os.remove(self.file_path)
+
+    def save(self):
+        """
+        Save a copy of the displayed map
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+
+        file, filter = QFileDialog.getSaveFileName(self, "Save map", '',
+                                                   filter="html (*.html)",
+                                                   options=options)
+
+        if file != '':
+            if not file.endswith('.html'):
+                file += '.html'
+
+            copyfile(self.file_path, file)
 
     def msg(self, text, title="Warning"):
         """

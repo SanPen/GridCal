@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import folium
+from folium.plugins import MarkerCluster
 from PySide2 import QtCore, QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -32,7 +33,7 @@ def get_loading_color_map():
 
 
 def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types=None, losses=None,
-                         failed_br_idx=None, loading_label='loading'):
+                         failed_br_idx=None, loading_label='loading', file_name=None):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -156,15 +157,9 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
         latitudes[i] = bus.latitude
         nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
-    min_lat = latitudes.min()
-    max_lat = latitudes.max()
-    min_lon = longitudes.min()
-    max_lon = longitudes.max()
-
     # create map at he average location
-    lon_avg = (min_lon + max_lon) / 2.0
-    lat_avg = (min_lat + max_lat) / 2.0
-    my_map = folium.Map(location=[lat_avg, lon_avg], zoom_start=5)
+    my_map = folium.Map(location=circuit.get_center_location(), zoom_start=5)
+    marker_cluster = MarkerCluster().add_to(my_map)
 
     # add node positions
     for i, bus in enumerate(circuit.buses):
@@ -177,9 +172,18 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
         if types is not None:
             tooltip += '\nType: ' + bus_types[types[i]]
 
-        position = (bus.latitude, bus.longitude)
-        html = '<i>' + bus.name + '</i>'
-        folium.Marker(position, popup=html, tooltip=tooltip).add_to(my_map)
+        # get the line colour
+        r, g, b, a = voltage_cmap(vnorm[i])
+        color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+        html_color = color.name()
+
+        position = bus.get_coordinates()
+        html = '<i>' + tooltip + '</i>'
+        folium.Circle(position,
+                      popup=html,
+                      radius=50,
+                      color=html_color,
+                      tooltip=tooltip).add_to(marker_cluster)
 
     # add lines
     lnorm = abs(loadings)
@@ -187,33 +191,37 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
 
     for i, branch in enumerate(circuit.branches):
 
-        points = list()
-        node_from_name = branch.bus_from.name
-        node_to_name = branch.bus_to.name
-        lat, lon = nodes_dict[node_from_name]
-        points.append((lat, lon))
-        lat, lon = nodes_dict[node_to_name]
-        points.append((lat, lon))
+        points = branch.get_coordinates()
 
-        # compose the tooltip
-        tooltip = str(i) + ': ' + branch.name
-        tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-        if s_branch is not None:
-            tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
-        if losses is not None:
-            tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+        if not has_null_coordinates(points):
+            # compose the tooltip
+            tooltip = str(i) + ': ' + branch.name
+            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+            if s_branch is not None:
+                tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
+            if losses is not None:
+                tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
-        # get the line colour
-        r, g, b, a = loading_cmap(lnorm[i])
-        color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-        html_color = color.name()
-        weight = 1
+            # get the line colour
+            r, g, b, a = loading_cmap(lnorm[i])
+            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+            html_color = color.name()
+            weight = 6
 
-        # draw the line
-        folium.PolyLine(points, color=html_color, weight=weight, opacity=1, tooltip=tooltip).add_to(my_map)
+            # draw the line
+            folium.PolyLine(points, color=html_color, weight=weight, opacity=1, tooltip=tooltip).add_to(marker_cluster)
 
     # save the map
-    path = os.path.join(get_create_gridcal_folder(), file_name)
-    my_map.save(path)
+    my_map.save(file_name)
 
-    return path
+    print('Map saved to:\n' + file_name)
+
+
+def has_null_coordinates(coord):
+    """
+
+    """
+    for x, y in coord:
+        if x == 0.0 and y == 0.0:
+            return True
+    return False

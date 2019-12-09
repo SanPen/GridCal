@@ -24,7 +24,8 @@ from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
-from GridCal.Gui.Main.visualization import colour_the_schematic
+from GridCal.Gui.GIS.gis_dialogue import GISWindow
+from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -54,7 +55,6 @@ import os.path
 import platform
 import sys
 import datetime
-import codecs
 from collections import OrderedDict
 from multiprocessing import cpu_count
 from geopy.geocoders import Nominatim
@@ -212,6 +212,10 @@ class MainGUI(QMainWindow):
         if platform.system() == 'Windows':
             self.ui.use_multiprocessing_checkBox.setEnabled(False)
 
+        # list of pointers to the GIS windows
+        self.gis_dialogues = list()
+        self.files_to_delete_at_exit = list()
+
         ################################################################################################################
         # Declare the schematic editor
         ################################################################################################################
@@ -361,6 +365,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionSet_OPF_generation_to_profiles.triggered.connect(self.copy_opf_to_profiles)
 
+        self.ui.actionShow_color_controls.triggered.connect(self.set_colouring_frame_state)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -431,13 +437,13 @@ class MainGUI(QMainWindow):
 
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
-        self.ui.colour_results_pushButton.clicked.connect(self.colour_now)
+        self.ui.colour_results_pushButton.clicked.connect(lambda: self.colour_now(False))
+
+        self.ui.show_map_pushButton.clicked.connect(lambda: self.colour_now(True))
 
         self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
 
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
-
-        self.ui.close_colour_toolbox_pushButton.clicked.connect(self.hide_color_tool_box)
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
@@ -503,7 +509,6 @@ class MainGUI(QMainWindow):
         ################################################################################################################
         # Other actions
         ################################################################################################################
-        self.ui.actionShow_map.setVisible(False)
 
         self.ui.grid_colouring_frame.setVisible(False)
 
@@ -1174,11 +1179,13 @@ class MainGUI(QMainWindow):
             reply = QMessageBox.question(self, 'Close', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
             if reply == QMessageBox.Yes:
+                self.delete_created_files()
                 event.accept()
             else:
                 event.ignore()
         else:
             # no buses so exit
+            self.delete_created_files()
             event.accept()
 
     def export_pf_results(self):
@@ -3342,19 +3349,29 @@ class MainGUI(QMainWindow):
 
         available_results = self.get_available_results()
 
+        max_steps = 0
         for driver in available_results:
             lst.append(driver.name)
             self.available_results_dict[driver.name] = driver.results.available_results
-            self.available_results_steps_dict[driver.name] = driver.get_steps()
+            steps = driver.get_steps()
+            self.available_results_steps_dict[driver.name] = steps
+            if len(steps) > max_steps:
+                max_steps = len(steps)
 
         mdl = get_list_model(lst)
         self.ui.result_listView.setModel(mdl)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
 
-        if len(lst) > 1:
-            self.ui.grid_colouring_frame.setVisible(True)
-        else:
-            self.ui.grid_colouring_frame.setVisible(False)
+        if len(lst) > 1 or max_steps > 0:
+            self.ui.actionShow_color_controls.setChecked(True)
+            self.set_colouring_frame_state()
+
+    def set_colouring_frame_state(self):
+        """
+        Set the colouring frame visibility according to the check button
+        """
+        state = self.ui.actionShow_color_controls.isChecked()
+        self.ui.grid_colouring_frame.setVisible(state)
 
     def clear_results(self):
         """
@@ -3395,16 +3412,19 @@ class MainGUI(QMainWindow):
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
 
-    def hide_color_tool_box(self):
-        """
-        Hide the colour tool box
-        """
-        self.ui.grid_colouring_frame.setVisible(False)
-
-    def colour_now(self):
+    def colour_now(self, html=False):
         """
         Color the grid now
         """
+
+        if html:
+            plot_function = plot_html_map
+            k = len(self.files_to_delete_at_exit)
+            file_name = os.path.join(get_create_gridcal_folder(), 'map_' + str(k+1) + '.html')
+        else:
+            plot_function = colour_the_schematic
+            file_name = ''
+
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
@@ -3412,13 +3432,14 @@ class MainGUI(QMainWindow):
 
             if current_study == PowerFlowDriver.name:
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.power_flow.results.Sbus,
-                                     s_branch=self.power_flow.results.Sbranch,
-                                     voltages=self.power_flow.results.voltage,
-                                     loadings=np.abs(self.power_flow.results.loading),
-                                     types=self.circuit.numerical_circuit.bus_types,
-                                     losses=self.power_flow.results.losses)
+                plot_function(circuit=self.circuit,
+                              s_bus=self.power_flow.results.Sbus,
+                              s_branch=self.power_flow.results.Sbranch,
+                              voltages=self.power_flow.results.voltage,
+                              loadings=np.abs(self.power_flow.results.loading),
+                              types=self.circuit.numerical_circuit.bus_types,
+                              losses=self.power_flow.results.losses,
+                              file_name=file_name)
 
             elif current_study == TimeSeries.name:
 
@@ -3426,55 +3447,61 @@ class MainGUI(QMainWindow):
                 loading = self.time_series.results.loading[current_step, :]
                 Sbranch = self.time_series.results.Sbranch[current_step, :]
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=None,
-                                     s_branch=Sbranch,
-                                     voltages=voltage,
-                                     loadings=np.abs(loading),
-                                     types=self.circuit.numerical_circuit.bus_types)
+                plot_function(circuit=self.circuit,
+                              s_bus=None,
+                              s_branch=Sbranch,
+                              voltages=voltage,
+                              loadings=np.abs(loading),
+                              types=self.circuit.numerical_circuit.bus_types,
+                              file_name=file_name)
 
             elif current_study == VoltageCollapse.name:
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.voltage_stability.results.Sbus,
-                                     s_branch=self.voltage_stability.results.Sbranch,
-                                     voltages=self.voltage_stability.results.voltages[current_step, :],
-                                     loadings=np.abs(self.voltage_stability.results.loading),
-                                     types=self.circuit.numerical_circuit.bus_types)
+                plot_function(circuit=self.circuit,
+                              s_bus=self.voltage_stability.results.Sbus,
+                              s_branch=self.voltage_stability.results.Sbranch,
+                              voltages=self.voltage_stability.results.voltages[current_step, :],
+                              loadings=np.abs(self.voltage_stability.results.loading),
+                              types=self.circuit.numerical_circuit.bus_types,
+                              file_name=file_name)
 
             elif current_study == MonteCarlo.name:
 
-                colour_the_schematic(circuit=self.circuit,
-                                     voltages=self.monte_carlo.results.V_points[current_step, :],
-                                     loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
-                                     s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
-                                     types=self.circuit.numerical_circuit.bus_types,
-                                     s_bus=self.monte_carlo.results.S_points[current_step, :])
+                plot_function(circuit=self.circuit,
+                              voltages=self.monte_carlo.results.V_points[current_step, :],
+                              loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
+                              s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
+                              types=self.circuit.numerical_circuit.bus_types,
+                              s_bus=self.monte_carlo.results.S_points[current_step, :],
+                              file_name=file_name)
 
             elif current_study == LatinHypercubeSampling.name:
 
-                colour_the_schematic(circuit=self.circuit,
-                                     voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
-                                     loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
-                                     s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
-                                     types=self.circuit.numerical_circuit.bus_types,
-                                     s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :])
+                plot_function(circuit=self.circuit,
+                              voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
+                              loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
+                              s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
+                              types=self.circuit.numerical_circuit.bus_types,
+                              s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :],
+                              file_name=file_name)
 
             elif current_study == ShortCircuit.name:
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.short_circuit.results.Sbus,
-                                     s_branch=self.short_circuit.results.Sbranch,
-                                     voltages=self.short_circuit.results.voltage,
-                                     types=self.circuit.numerical_circuit.bus_types,
-                                     loadings=self.short_circuit.results.loading)
+                plot_function(circuit=self.circuit,
+                              s_bus=self.short_circuit.results.Sbus,
+                              s_branch=self.short_circuit.results.Sbranch,
+                              voltages=self.short_circuit.results.voltage,
+                              types=self.circuit.numerical_circuit.bus_types,
+                              loadings=self.short_circuit.results.loading,
+                              file_name=file_name)
 
             elif current_study == OptimalPowerFlow.name:
-                colour_the_schematic(circuit=self.circuit,
-                                     voltages=self.optimal_power_flow.results.voltage,
-                                     loadings=self.optimal_power_flow.results.loading,
-                                     types=self.circuit.numerical_circuit.bus_types,
-                                     s_branch=self.optimal_power_flow.results.Sbranch,
-                                     s_bus=self.optimal_power_flow.results.Sbus)
+                plot_function(circuit=self.circuit,
+                              voltages=self.optimal_power_flow.results.voltage,
+                              loadings=self.optimal_power_flow.results.loading,
+                              types=self.circuit.numerical_circuit.bus_types,
+                              s_branch=self.optimal_power_flow.results.Sbranch,
+                              s_bus=self.optimal_power_flow.results.Sbus,
+                              file_name=file_name)
 
             elif current_study == OptimalPowerFlowTimeSeries.name:
 
@@ -3482,12 +3509,13 @@ class MainGUI(QMainWindow):
                 loading = self.optimal_power_flow_time_series.results.loading[current_step, :]
                 Sbranch = self.optimal_power_flow_time_series.results.Sbranch[current_step, :]
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=None,
-                                     s_branch=Sbranch,
-                                     voltages=voltage,
-                                     loadings=np.abs(loading),
-                                     types=self.circuit.numerical_circuit.bus_types)
+                plot_function(circuit=self.circuit,
+                              s_bus=None,
+                              s_branch=Sbranch,
+                              voltages=voltage,
+                              loadings=np.abs(loading),
+                              types=self.circuit.numerical_circuit.bus_types,
+                              file_name=file_name)
 
             elif current_study == PTDF.name:
 
@@ -3495,25 +3523,34 @@ class MainGUI(QMainWindow):
                 loading = self.ptdf_analysis.results.sensitivity_matrix[current_step, :]
                 Sbranch = self.ptdf_analysis.results.pf_results[current_step].Sbranch
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=None,
-                                     s_branch=Sbranch,
-                                     voltages=voltage,
-                                     loadings=loading,
-                                     types=self.circuit.numerical_circuit.bus_types,
-                                     loading_label='Sensitivity')
+                plot_function(circuit=self.circuit,
+                              s_bus=None,
+                              s_branch=Sbranch,
+                              voltages=voltage,
+                              loadings=loading,
+                              types=self.circuit.numerical_circuit.bus_types,
+                              loading_label='Sensitivity',
+                              file_name=file_name)
 
             elif current_study == PtdfTimeSeries.name:
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.ptdf_ts_analysis.results.S[current_step],
-                                     s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
-                                     voltages=self.ptdf_ts_analysis.results.voltage[current_step],
-                                     loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
-                                     types=None)
+                plot_function(circuit=self.circuit,
+                              s_bus=self.ptdf_ts_analysis.results.S[current_step],
+                              s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
+                              voltages=self.ptdf_ts_analysis.results.voltage[current_step],
+                              loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
+                              types=None,
+                              file_name=file_name)
 
             elif current_study == 'Transient stability':
-                pass
+                raise Exception('Not implemented :(')
+
+            if html:
+                self.files_to_delete_at_exit.append(file_name)
+                dialogue = GISWindow(external_file_path=file_name)
+                dialogue.resize(int(1.61 * 600.0), 600)
+                self.gis_dialogues.append(dialogue)
+                dialogue.show()
 
     def colour_next_simulation_step(self):
         """
@@ -4746,6 +4783,14 @@ class MainGUI(QMainWindow):
                 if len(self.circuit.time_profile) > 0:
                     return True
         return False
+
+    def delete_created_files(self):
+        """
+        Delete the files created by GridCal as temporary files
+        """
+        for f in self.files_to_delete_at_exit:
+            if os.path.exists(f):
+                os.remove(f)
 
 
 def run(use_native_dialogues=True):

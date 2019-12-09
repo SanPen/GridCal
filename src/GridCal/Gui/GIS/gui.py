@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Sun Aug 25 15:35:40 2019
+# Created: Mon Dec  9 12:39:51 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,12 +30,27 @@ class Ui_GisWindow(object):
         self.statusbar = QtWidgets.QStatusBar(GisWindow)
         self.statusbar.setObjectName("statusbar")
         GisWindow.setStatusBar(self.statusbar)
+        self.toolBar = QtWidgets.QToolBar(GisWindow)
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.toolBar.setObjectName("toolBar")
+        GisWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        self.actionSave_map = QtWidgets.QAction(GisWindow)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/savec.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSave_map.setIcon(icon1)
+        self.actionSave_map.setObjectName("actionSave_map")
+        self.toolBar.addAction(self.actionSave_map)
 
         self.retranslateUi(GisWindow)
         QtCore.QMetaObject.connectSlotsByName(GisWindow)
 
     def retranslateUi(self, GisWindow):
         GisWindow.setWindowTitle(QtWidgets.QApplication.translate("GisWindow", "GridCal - GIS", None, -1))
+        self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("GisWindow", "toolBar", None, -1))
+        self.actionSave_map.setText(QtWidgets.QApplication.translate("GisWindow", "Save map", None, -1))
+        self.actionSave_map.setToolTip(QtWidgets.QApplication.translate("GisWindow", "Save this map", None, -1))
+        self.actionSave_map.setShortcut(QtWidgets.QApplication.translate("GisWindow", "Ctrl+S", None, -1))
 
 from .icons_rc import *
 

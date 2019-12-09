@@ -547,3 +547,8 @@ class Bus(EditableDevice):
         """
         return complex(self.r_fault, self.x_fault)
 
+    def get_coordinates(self):
+        """
+        Get tuple of the bus coordinates (latitude, longitude)
+        """
+        return self.latitude, self.longitude

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/show_color_controls.svg</file>
     <file>icons/move_bus.svg</file>
     <file>icons/ptdf_ts.svg</file>
     <file>icons/otdf.svg</file>

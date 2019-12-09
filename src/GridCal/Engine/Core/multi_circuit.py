@@ -1483,3 +1483,11 @@ class MultiCircuit:
 
             bus.x = x_m
             bus.y = y_m
+
+    def get_center_location(self):
+        """
+        Get the mean coordinates of the system
+        """
+        coord = np.array([b.get_coordinates() for b in self.buses])
+
+        return coord.mean(axis=0).tolist()
