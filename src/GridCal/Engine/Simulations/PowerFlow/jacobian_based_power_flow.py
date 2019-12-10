@@ -23,6 +23,7 @@ import scipy.sparse as sp
 import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -198,6 +199,21 @@ def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
     return J11, J22
 
 
+def calc_power(V, Ybus, Ibus):
+    """
+
+    :param V:
+    :param Ybus:
+    :param Ibus:
+    :return:
+    """
+    S = V * np.conj(Ybus * V - Ibus)
+    # Y = Ybus.tocsr()
+    # S = calc_power_csr_numba(n=V.shape[0], Yp=Ybus.indptr, Yj=Ybus.indices, Yx=Ybus.data, V=V, I=Ibus, n_par=500)
+
+    return S
+
+
 def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
     """
     Solves the power flow using a full Newton's method with backtrack correction.
@@ -239,7 +255,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     j3 = j2 + npq
 
     # evaluate F(x0)
-    Scalc = V * np.conj(Ybus * V - Ibus)
+    # Scalc = V * np.conj(Ybus * V - Ibus)
+    Scalc = calc_power(V, Ybus, Ibus)
     dS = Scalc - Sbus  # compute the mismatch
     f = np.r_[dS[pvpq].real, dS[pq].imag]
 
@@ -274,7 +291,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         Vnew = Vm * np.exp(1.0j * Va)
 
         # compute the mismatch function f(x_new)
-        Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
+        Scalc = calc_power(Vnew, Ybus, Ibus)  #  Vnew * np.conj(Ybus * Vnew - Ibus)
         dS = Scalc - Sbus  # complex power mismatch
         f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
         norm_f_new = 0.5 * f_new.dot(f_new)
@@ -297,7 +314,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
             Vnew = Vm * np.exp(1.0j * Va)
 
             # compute the mismatch function f(x_new)
-            Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
+            Scalc = calc_power(Vnew, Ybus, Ibus)  # Vnew * np.conj(Ybus * Vnew - Ibus)
             dS = Scalc - Sbus  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
