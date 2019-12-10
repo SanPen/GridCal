@@ -64,6 +64,7 @@ dependencies = ["numpy>=1.14.0",
                 "chardet>=3.0.4",
                 "scikit-learn>=0.18",
                 "geopy>=1.16",
+                "numba>=0.46",
                 "pytest>=3.8"]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.

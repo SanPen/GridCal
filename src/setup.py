@@ -70,6 +70,7 @@ dependencies = ["PySide2>=5.11",
                 "geopy>=1.16",
                 "pytest>=3.8",
                 "h5py>=2.9.0",
+                "numba>=0.46",
                 "folium"]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.

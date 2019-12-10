@@ -18,3 +18,4 @@ geopy>=1.16
 pytest>=3.8
 h5py>=2.9.0
 tabulate==0.8.3
+numba>=0.46

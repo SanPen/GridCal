@@ -15,7 +15,7 @@
    height="192"
    viewBox="0 0 192 192"
    sodipodi:docname="savec.svg"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+   inkscape:version="0.92.4 (unknown)">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -39,19 +39,19 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1503"
-     inkscape:window-height="616"
+     inkscape:window-width="1863"
+     inkscape:window-height="1025"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="1.2291667"
-     inkscape:cx="-192"
-     inkscape:cy="96.000006"
+     inkscape:zoom="1.1020922"
+     inkscape:cx="-112.84034"
+     inkscape:cy="120.23219"
      inkscape:window-x="57"
      inkscape:window-y="27"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <path
-     style="fill:#5555ff;stroke-width:1.33333337"
+     style="fill:#5555ff;stroke-width:4;stroke:none;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
      d="m 37.559322,153.62712 v -8 h 56 55.999998 v 8 8 h -55.999998 -56 z m 28,-52.66667 -27.30894,-27.333331 h 15.654471 15.654469 v -24 -24 h 24 23.999998 v 24 24 h 15.65447 15.65446 l -27.30893,27.333331 c -15.01992,15.03334 -27.619918,27.33334 -27.999998,27.33334 -0.38008,0 -12.98008,-12.3 -28,-27.33334 z"
      id="path817"
      inkscape:connector-curvature="0" />

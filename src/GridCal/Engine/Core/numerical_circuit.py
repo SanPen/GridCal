@@ -541,7 +541,7 @@ class NumericalCircuit:
             # search this state in the already existing states
             found = False
             for t2 in states.keys():
-                if (self.branch_active_prof[t, :] == self.branch_active_prof[t2, :]).all():
+                if np.array_equal(self.branch_active_prof[t, :], self.branch_active_prof[t2, :]):
                     states[t2].append(t)
                     found = True
 
