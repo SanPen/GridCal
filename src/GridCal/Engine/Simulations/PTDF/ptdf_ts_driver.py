@@ -264,7 +264,7 @@ class PtdfTimeSeries(QThread):
                 dP = (Pbus_0[:] - Pbus[:, t_idx])
                 results.voltage[k, :] = V_0 + np.dot(dP, vtdf)
                 results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
-                results.loading[k, :] = results.Sbranch[k, :] / nc.br_rates
+                results.loading[k, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
                 results.S[k, :] = Pbus[:, t_idx]
 
                 progress = ((t_idx - self.start_ + 1) / (self.end_ - self.start_)) * 100
@@ -309,10 +309,10 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     from GridCal.Engine import FileOpen, SolverType, TimeSeries
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-
+    fname = r'C:\Users\PENVERSA\OneDrive - Red Eléctrica Corporación\Escritorio\IEEE cases\WSCC 9 bus.gridcal'
     main_circuit = FileOpen(fname).open()
 
     pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)

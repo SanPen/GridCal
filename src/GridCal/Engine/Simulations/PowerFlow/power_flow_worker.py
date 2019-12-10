@@ -20,7 +20,7 @@ from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, S
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import LevenbergMarquardtPF
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import levenberg_marquardt_pf
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS, NRD_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -109,14 +109,14 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
 
     # Levenberg-Marquardt
     elif solver_type == SolverType.LM:
-        V0, converged, normF, Scalc, it, el = LevenbergMarquardtPF(Ybus=Ybus,
-                                                                   Sbus=Sbus,
-                                                                   V0=V0,
-                                                                   Ibus=Ibus,
-                                                                   pv=pv,
-                                                                   pq=pq,
-                                                                   tol=tolerance,
-                                                                   max_it=max_iter)
+        V0, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
+                                                                     Sbus=Sbus,
+                                                                     V0=V0,
+                                                                     Ibus=Ibus,
+                                                                     pv=pv,
+                                                                     pq=pq,
+                                                                     tol=tolerance,
+                                                                     max_it=max_iter)
 
     # Fast decoupled
     elif solver_type == SolverType.FASTDECOUPLED:

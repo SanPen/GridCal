@@ -201,21 +201,18 @@ def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
 def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
     """
     Solves the power flow using a full Newton's method with backtrack correction.
-    Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
-        acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
-        error_registry: list to store the error for plotting
-    Returns:
-        Voltage solution, converged?, error, calculated power injections
-
-    @Author: Santiago Penate Vera
+    @Author: Santiago Peñate Vera
+    :param Ybus: Admittance matrix
+    :param Sbus: Array of nodal power injections
+    :param V0: Array of nodal voltages (initial solution)
+    :param Ibus: Array of nodal current injections
+    :param pv: Array with the indices of the PV buses
+    :param pq: Array with the indices of the PQ buses
+    :param tol: Tolerance
+    :param max_it: Maximum number of iterations
+    :param acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+    :param error_registry: list to store the error for plotting
+    :return: Voltage solution, converged?, error, calculated power injections
     """
     start = time.time()
 
@@ -235,15 +232,11 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     npv = len(pv)
     npq = len(pq)
 
-    # j1:j2 - V angle of pv buses
+    # j1:j2 - V angle of pv and pq buses
     j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
+    j2 = npv + npq
+    # j2:j3 - V mag of pq buses
+    j3 = j2 + npq
 
     # evaluate F(x0)
     Scalc = V * np.conj(Ybus * V - Ibus)
@@ -271,14 +264,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         dx = linear_solver(J, f)
 
         # reassign the solution vector
-        # if npv:
-        #     dVa[pv] = dx[j1:j2]
-        # if npq:
-        #     dVa[pq] = dx[j3:j4]
-        #     dVm[pq] = dx[j5:j6]
-
-        dVa[pvpq] = dx[j1:j4]
-        dVm[pq] = dx[j5:j6]
+        dVa[pvpq] = dx[j1:j2]
+        dVm[pq] = dx[j2:j3]
 
         # update voltage the Newton way (mu=1)
         mu_ = 1.0
@@ -287,7 +274,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         Vnew = Vm * np.exp(1.0j * Va)
 
         # compute the mismatch function f(x_new)
-        dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+        Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
+        dS = Scalc - Sbus  # complex power mismatch
         f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
         norm_f_new = 0.5 * f_new.dot(f_new)
 
@@ -309,7 +297,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
             Vnew = Vm * np.exp(1.0j * Va)
 
             # compute the mismatch function f(x_new)
-            dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
+            dS = Scalc - Sbus  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
             norm_f_new = 0.5 * f_new.dot(f_new)
@@ -327,7 +316,12 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         f = f_new
 
         # check for convergence
-        norm_f = 0.5 * f_new.dot(f_new)
+        if l_iter == 0:
+            # no correction loop executed, hence compute the error fresh
+            norm_f = 0.5 * f_new.dot(f_new)
+        else:
+            # pick the latest computer error in the correction loop
+            norm_f = norm_f_new
 
         if error_registry is not None:
             error_registry.append(norm_f)
@@ -338,32 +332,29 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     end = time.time()
     elapsed = end - start
 
-    # print('iter_', iter_, '  -  back_track_counter', back_track_counter,
-    #       '  -  back_track_iterations', back_track_iterations)
-
     return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
     """
     Solves the power flow using a full Newton's method with backtrack correction.
-    Args:
-        Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
-        V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
-        acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
-        error_registry: list to store the error for plotting
-    Returns:
-        Voltage solution, converged?, error, calculated power injections
-
-    @Author: Santiago Penate Vera
+    @Author: Santiago Peñate Vera
+    :param Ybus: Admittance matrix
+    :param Sbus: Array of nodal power injections
+    :param V0: Array of nodal voltages (initial solution)
+    :param Ibus: Array of nodal current injections
+    :param pv: Array with the indices of the PV buses
+    :param pq: Array with the indices of the PQ buses
+    :param tol: Tolerance
+    :param max_it: Maximum number of iterations
+    :param acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+    :param error_registry: list to store the error for plotting
+    :return: Voltage solution, converged?, error, calculated power injections
     """
+
     start = time.time()
+
+    use_norm_error = True
 
     # initialize
     back_track_counter = 0
@@ -381,23 +372,16 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
     npv = len(pv)
     npq = len(pq)
 
-    # j1:j2 - V angle of pv buses
-    j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
-
     # evaluate F(x0)
     Scalc = V * np.conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
     f = np.r_[dS[pvpq].real, dS[pq].imag]
 
     # check tolerance
-    norm_f = 0.5 * f.dot(f)
+    if use_norm_error:
+        norm_f = np.linalg.norm(f, np.Inf)
+    else:
+        norm_f = 0.5 * f.dot(f)
 
     if error_registry is not None:
         error_registry.append(norm_f)
@@ -426,7 +410,11 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
         # compute the mismatch function f(x_new)
         dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
         f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
-        norm_f_new = 0.5 * f_new.dot(f_new)
+
+        if use_norm_error:
+            norm_f_new = np.linalg.norm(f_new, np.Inf)
+        else:
+            norm_f_new = 0.5 * f_new.dot(f_new)
 
         if error_registry is not None:
             error_registry.append(norm_f_new)
@@ -449,7 +437,10 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
             dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-            norm_f_new = 0.5 * f_new.dot(f_new)
+            if use_norm_error:
+                norm_f_new = np.linalg.norm(f_new, np.Inf)
+            else:
+                norm_f_new = 0.5 * f_new.dot(f_new)
 
             cond = norm_f_new > norm_f
 
@@ -464,7 +455,10 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
         f = f_new
 
         # check for convergence
-        norm_f = 0.5 * f_new.dot(f_new)
+        if use_norm_error:
+            norm_f = np.linalg.norm(f_new, np.Inf)
+        else:
+            norm_f = 0.5 * f_new.dot(f_new)
 
         if error_registry is not None:
             error_registry.append(norm_f)
@@ -518,20 +512,14 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
 
     # j1:j2 - V angle of pv buses
     j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
+    j2 = npv + npq
+    # j2:j3 - V mag of pq buses
+    j3 = j2 + npq
 
     # evaluate F(x0)
     Scalc = V * np.conj(Ybus * V - Ibus)
     mis = Scalc - Sbus  # compute the mismatch
-    f = np.r_[mis[pv].real,
-              mis[pq].real,
-              mis[pq].imag]
+    f = np.r_[mis[pvpq].real, mis[pq].imag]
 
     if (npq + npv) > 0:
 
@@ -553,8 +541,8 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             dx = linear_solver(J, f)
 
             # reassign the solution vector
-            dVa[pvpq] = dx[j1:j4]
-            dVm[pq] = dx[j5:j6]
+            dVa[pvpq] = dx[j1:j2]
+            dVm[pq] = dx[j2:j3]
             dV = dVm * np.exp(1j * dVa)  # voltage mismatch
 
             # update voltage
@@ -596,7 +584,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     return V, converged, norm_f, Scalc, iter_, elapsed
 
 
-def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
+def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
@@ -622,20 +610,17 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     Vm = np.abs(V)
     dVa = np.zeros_like(Va)
     dVm = np.zeros_like(Vm)
+
     # set up indexing for updating V
     pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
 
-    # j1:j2 - V angle of pv buses
+    # j1:j2 - V angle of pv and pq buses
     j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
+    j2 = npv + npq
+    # j2:j3 - V mag of pq buses
+    j3 = j2 + npq
 
     if (npq + npv) > 0:
         update_jacobian = True
@@ -646,7 +631,7 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         f_prev = 1e9  # very large number
         nn = 2 * npq + npv
         ii = np.linspace(0, nn-1, nn)
-        Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csr_matrix identity
+        Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
 
         while not converged and iter_ < max_it:
 
@@ -697,23 +682,24 @@ def LevenbergMarquardtPF(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
                 nu = 2.0
 
                 # reassign the solution vector
-                dVa[pvpq] = dx[j1:j4]
-                dVm[pq] = dx[j5:j6]
+                dVa[pvpq] = dx[j1:j2]
+                dVm[pq] = dx[j2:j3]
 
+                # update Vm and Va again in case we wrapped around with a negative Vm
                 Vm -= dVm
                 Va -= dVa
-                # update Vm and Va again in case we wrapped around with a negative Vm
-                V = Vm * np.exp(1j * Va)
-                Vm = np.abs(V)
-                Va = np.angle(V)
+                V = Vm * np.exp(1.0j * Va)
+
             else:
                 update_jacobian = False
                 lbmda *= nu
                 nu *= 2.0
 
             # check convergence
-            # normF = np.linalg.norm(dx, np.Inf)
-            normF = np.linalg.norm(Sbus - V * np.conj(Ybus.dot(V)), np.Inf)
+            Scalc = V * np.conj(Ybus.dot(V))
+            ds = Sbus - Scalc
+            e = np.r_[ds[pvpq].real, ds[pq].imag]
+            normF = 0.5 * np.dot(e, e)
             converged = normF < tol
             f_prev = f
 

@@ -25,7 +25,7 @@ class SparseSolver(Enum):
     SuperLU = 'SuperLU'
     Pardiso = 'Pardiso'
     GMRES = 'GMRES'
-    UMFPACK = 'SuiteSparse UmfPack'
+    UMFPACK = 'UmfPack'
 
     def __str__(self):
         return self.value
@@ -42,7 +42,7 @@ try:
 
     available_sparse_solvers.append(SparseSolver.KLU)
 except ImportError:
-    print('KLU failed')
+    print(SparseSolver.KLU.value + ' failed')
 
 
 try:
@@ -52,7 +52,7 @@ try:
     available_sparse_solvers.append(SparseSolver.SuperLU)
     available_sparse_solvers.append(SparseSolver.GMRES)
 except ImportError:
-    print('Blas/Lapack failed')
+    print(SparseSolver.BLAS_LAPACK.value + ' failed')
 
 
 try:
@@ -60,14 +60,14 @@ try:
 
     available_sparse_solvers.append(SparseSolver.Pardiso)
 except ImportError:
-    print('Pardiso failed')
+    print(SparseSolver.Pardiso.value + ' failed')
 
 try:
     from scikits.umfpack import spsolve, splu
 
     available_sparse_solvers.append(SparseSolver.UMFPACK)
 except ImportError:
-    print(SparseSolver.UMFPACK.value + 'failed')
+    print(SparseSolver.UMFPACK.value + ' failed')
 
 
 preferred_type = SparseSolver.KLU

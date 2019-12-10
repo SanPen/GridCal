@@ -340,7 +340,11 @@ class PSSeLoad:
         ir, ii = self.IP, self.IQ
         p, q = self.PL, self.QL
         name = str(self.I) + '_' + self.ID.replace("'", "")
-        elm = Load(name=name, G=g, B=b, Ir=ir, Ii=ii, P=p, Q=q)
+        elm = Load(name=name,
+                   active=bool(self.STATUS),
+                   G=g, B=b,
+                   Ir=ir, Ii=ii,
+                   P=p, Q=q)
 
         return elm
 
@@ -1767,6 +1771,9 @@ class PSSeTransformer:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
 
+            name = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT) + self.NAME.strip()
+            name = name.replace("'", "")
+
             if self.CZ == 1:
                 r = self.R1_2
                 x = self.X1_2
@@ -1781,16 +1788,21 @@ class PSSeTransformer:
 
                 logger.append('Transformer impedance is not in p.u.')
 
+            if self.CW == 1:
+                tap_mod = self.WINDV1 * self.WINDV2
+            else:
+                tap_mod = 1.0
+
             elm = Branch(bus_from=bus_from, bus_to=bus_to,
-                         name=self.NAME.replace("'", "").strip(),
+                         name=name,
                          r=r,
                          x=x,
                          g=g,
                          b=b,
                          rate=max(self.RATA1, self.RATB1, self.RATC1),
-                         tap=1,
-                         shift_angle=0,
-                         active=True,
+                         tap=tap_mod,
+                         shift_angle=self.ANG1,
+                         active=bool(self.STAT),
                          mttf=0,
                          mttr=0,
                          branch_type=BranchType.Transformer)
@@ -1808,8 +1820,11 @@ class PSSeTransformer:
             g = self.MAG1
             b = self.MAG2
 
+            name1 = str(self.I) + '_' + str(self.J) + '_ij' + self.NAME.strip()
+            name1 = name1.replace("'", "")
+
             object1 = Branch(bus_from=bus_1, bus_to=bus_2,
-                             name=self.NAME.replace("'", "").strip() + '_1_2',
+                             name=name1,
                              r=r,
                              x=x,
                              g=g,
@@ -1817,7 +1832,7 @@ class PSSeTransformer:
                              rate=max(self.RATA1, self.RATB1, self.RATC1),
                              tap=1,
                              shift_angle=0,
-                             active=True,
+                             active=bool(self.STAT),
                              mttf=0,
                              mttr=0,
                              branch_type=BranchType.Transformer)
@@ -1827,8 +1842,11 @@ class PSSeTransformer:
             g = self.MAG1
             b = self.MAG2
 
+            name2 = str(self.J) + '_' + str(self.K) + '_jk' + self.NAME.strip()
+            name2 = name2.replace("'", "")
+
             object2 = Branch(bus_from=bus_2, bus_to=bus_3,
-                             name=self.NAME.replace("'", "").strip() + '_2_3',
+                             name=name2,
                              r=r,
                              x=x,
                              g=g,
@@ -1836,7 +1854,7 @@ class PSSeTransformer:
                              rate=max(self.RATA1, self.RATB1, self.RATC1),
                              tap=1,
                              shift_angle=0,
-                             active=True,
+                             active=bool(self.STAT),
                              mttf=0,
                              mttr=0,
                              branch_type=BranchType.Transformer)
@@ -1846,8 +1864,11 @@ class PSSeTransformer:
             g = self.MAG1
             b = self.MAG2
 
+            name3 = str(self.K) + '_' + str(self.I) + '_ki' + self.NAME.strip()
+            name3 = name3.replace("'", "")
+
             object3 = Branch(bus_from=bus_3, bus_to=bus_1,
-                             name=self.NAME.replace("'", "").strip() + '_3_1',
+                             name=name3,
                              r=r,
                              x=x,
                              g=g,
@@ -1855,7 +1876,7 @@ class PSSeTransformer:
                              rate=max(self.RATA1, self.RATB1, self.RATC1),
                              tap=1,
                              shift_angle=0,
-                             active=True,
+                             active=bool(self.STAT),
                              mttf=0,
                              mttr=0,
                              branch_type=BranchType.Transformer)
