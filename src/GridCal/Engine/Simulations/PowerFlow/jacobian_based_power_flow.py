@@ -210,9 +210,9 @@ def calc_power(V, Ybus, Ibus):
     :param Ibus:
     :return:
     """
-    S = V * np.conj(Ybus * V - Ibus)
+    # S = V * np.conj(Ybus * V - Ibus)
     # Y = Ybus.tocsr()
-    # S = calc_power_csr_numba(n=V.shape[0], Yp=Ybus.indptr, Yj=Ybus.indices, Yx=Ybus.data, V=V, I=Ibus, n_par=500)
+    S = calc_power_csr_numba(n=V.shape[0], Yp=Ybus.indptr, Yj=Ybus.indices, Yx=Ybus.data, V=V, I=Ibus, n_par=500)
 
     return S
 
