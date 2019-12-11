@@ -16,6 +16,7 @@
 
 import numba as nb
 import numpy as np
+from scipy.sparse import csc_matrix
 
 
 @nb.njit("c16[:](i8, i4[:], i4[:], c16[:], c16[:], c16[:], i8)", parallel=True)
@@ -51,3 +52,29 @@ def calc_power_csr_numba(n, Yp, Yj, Yx, V, I, n_par=500):
                 s += Yx[p] * V[Yj[p]]
             S[i] = V[i] * np.conj(s - I[i])
     return S
+
+
+@nb.njit("Tuple((i4[:], i4[:], c16[:]))(i8, c16[:])")
+def csc_diagonal_from_array(m, array):
+    """
+
+    :param m:
+    :param array:
+    :return:
+    """
+    indptr = np.empty(m + 1, dtype=nb.int32)
+    indices = np.empty(m, dtype=nb.int32)
+    data = np.empty(m, dtype=nb.complex128)
+    for i in range(m):
+        indptr[i] = i
+        indices[i] = i
+        data[i] = array[i]
+    indptr[m] = m
+
+    return indices, indptr, data
+
+
+def diag(x):
+    m = x.shape[0]
+    indices, indptr, data = csc_diagonal_from_array(m, x)
+    return csc_matrix((data, indices, indptr), shape=(m, m))

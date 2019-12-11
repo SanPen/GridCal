@@ -24,7 +24,7 @@ import numpy as np
 
 from GridCal.Engine.Sparse.csc import pack_4_by_4
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
-from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba
+from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba, diag
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -154,23 +154,8 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
     dS_dVa = 1.0j * diagV * np.conj(diagI - Ybus * diagV)
 
-    # J11 = dS_dVa[np.array([pvpq]).T, pvpq].real
-    # J12 = dS_dVm[np.array([pvpq]).T, pq].real
-    # J21 = dS_dVa[np.array([pq]).T, pvpq].imag
-    # J22 = dS_dVm[np.array([pq]).T, pq].imag
-
-    # J = sp.vstack([sp.hstack([J11, J12]),
-    #                sp.hstack([J21, J22])], format="csr")
-
-    J11 = dS_dVa[np.ix_(pvpq, pvpq)].real.tocsc()
-    J12 = dS_dVm[np.ix_(pvpq, pq)].real.tocsc()
-    J21 = dS_dVa[np.ix_(pq, pvpq)].imag.tocsc()
-    J22 = dS_dVm[np.ix_(pq, pq)].imag.tocsc()
-
-    # J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
-    #                sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csr")
-
-    J = pack_4_by_4(J11, J12, J21, J22)
+    J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
+                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csc")
 
     return sparse(J)
 
@@ -258,8 +243,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     j3 = j2 + npq
 
     # evaluate F(x0)
-    # Scalc = V * np.conj(Ybus * V - Ibus)
-    Scalc = calc_power(V, Ybus, Ibus)
+    Scalc = V * np.conj(Ybus * V - Ibus)
     dS = Scalc - Sbus  # compute the mismatch
     f = np.r_[dS[pvpq].real, dS[pq].imag]
 
@@ -294,7 +278,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         Vnew = Vm * np.exp(1.0j * Va)
 
         # compute the mismatch function f(x_new)
-        Scalc = calc_power(Vnew, Ybus, Ibus)  #  Vnew * np.conj(Ybus * Vnew - Ibus)
+        Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
         dS = Scalc - Sbus  # complex power mismatch
         f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
         norm_f_new = 0.5 * f_new.dot(f_new)
@@ -317,7 +301,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
             Vnew = Vm * np.exp(1.0j * Va)
 
             # compute the mismatch function f(x_new)
-            Scalc = calc_power(Vnew, Ybus, Ibus)  # Vnew * np.conj(Ybus * Vnew - Ibus)
+            Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
             dS = Scalc - Sbus  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 

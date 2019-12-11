@@ -127,7 +127,7 @@ def test_gridcal_regulator():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,

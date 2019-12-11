@@ -125,7 +125,7 @@ def test_xfo_static_tap_1():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
@@ -276,7 +276,7 @@ def test_xfo_static_tap_2():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,

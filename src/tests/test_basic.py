@@ -127,7 +127,7 @@ def test_basic():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
@@ -279,7 +279,7 @@ def test_gridcal_basic_pi():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
