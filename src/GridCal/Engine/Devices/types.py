@@ -18,6 +18,7 @@ from enum import Enum
 class BranchType(Enum):
     Branch = 'branch'
     Line = 'line'
+    DCLine = 'DC-line'
     Transformer = 'transformer'
     Reactance = 'reactance'
     Switch = 'switch'
@@ -34,6 +35,10 @@ class BranchType(Enum):
             return BranchType[s]
         except KeyError:
             return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
 
 
 class TimeFrame(Enum):
@@ -67,6 +72,10 @@ class DeviceType(Enum):
         except KeyError:
             return s
 
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 class GeneratorTechnologyType(Enum):
     Nuclear = 'Nuclear'
@@ -92,3 +101,7 @@ class GeneratorTechnologyType(Enum):
             return GeneratorTechnologyType[s]
         except KeyError:
             return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))

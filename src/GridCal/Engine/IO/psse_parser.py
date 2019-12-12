@@ -154,7 +154,7 @@ class PSSeGrid:
         # Go through Branches
         for psse_banch in self.branches:
             # get the object
-            branch = psse_banch.get_object(psse_bus_dict, logger)
+            branch = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
 
             # Add to the circuit
             circuit.add_branch(branch)
@@ -824,7 +824,7 @@ class PSSeBranch:
 
             logger.append('Branch not implemented for version ' + str(version))
 
-    def get_object(self, psse_bus_dict, logger: list):
+    def get_object(self, psse_bus_dict, Sbase, logger: list):
         """
         Return GridCal branch object
         Args:
@@ -991,7 +991,7 @@ class PSSeTwoTerminalDCLine:
         else:
             logger.append('Version ' + str(version) + ' not implemented for DC Lines')
 
-    def get_object(self, psse_bus_dict, logger: list):
+    def get_object(self, psse_bus_dict, Sbase, logger: list):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1003,19 +1003,26 @@ class PSSeTwoTerminalDCLine:
 
         if self.MDC == 1:
             # SETVL is in MW
-            rate = self.SETVL
+            specified_power = self.SETVL
         elif self.MDC == 2:
-            # SETVL is in A
-            rate = self.SETVL * self.VSCHD / 1000.0
+            # SETVL is in A, specified_power in MW
+            specified_power = self.SETVL * self.VSCHD / 1000.0
         else:
             # doesn't say, so I expect it to be MW
-            rate = self.SETVL
+            specified_power = self.SETVL
+
+        z_base = self.VSCHD * self.VSCHD / Sbase
+        r_pu = self.RDC / z_base
+
+        name1 = self.NAME.replace("'", "").replace('/', '').strip()
+        name = str(self.IPR) + '_' + str(self.IPI) + '_' + name1 + '_DC_2_terminals'
 
         obj = Branch(bus_from=bus1,
                      bus_to=bus2,
-                     name=self.NAME + '_DC_2_terminals',
-                     r=self.RDC,
-                     rate=rate)
+                     name=name,
+                     r=r_pu,
+                     rate=specified_power,
+                     branch_type=BranchType.DCLine)
         return obj
 
 
@@ -1116,7 +1123,7 @@ class PSSeVscDCLine:
         else:
             logger.append('Version ' + str(version) + ' not implemented for DC Lines')
 
-    def get_object(self, psse_bus_dict, logger: list):
+    def get_object(self, psse_bus_dict, Sbase, logger: list):
         """
         GEt equivalent object
         :param psse_bus_dict:

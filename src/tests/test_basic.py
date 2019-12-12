@@ -42,20 +42,20 @@ def test_basic():
 
     # Create buses
     POI = Bus(name="POI",
-              vnom=100, #kV
+              vnom=100,  # kV
               is_slack=True)
     grid.add_bus(POI)
 
     B_C3 = Bus(name="B_C3",
-               vnom=10) #kV
+               vnom=10)  # kV
     grid.add_bus(B_C3)
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10) #kV
+                   vnom=10)  # kV
     grid.add_bus(B_MV_M32)
 
     B_LV_M32 = Bus(name="B_LV_M32",
-                   vnom=0.6) #kV
+                   vnom=0.6)  # kV
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)
@@ -65,33 +65,33 @@ def test_basic():
 
     # Create static generators (with fixed power factor)
     M32 = StaticGenerator(name="M32",
-                          P=4.2, # MW
-                          Q=0.0j) # MVAR
+                          P=4.2,  # MW
+                          Q=0.0j)  # MVAr
     M32.bus = B_LV_M32
     grid.add_static_generator(B_LV_M32, M32)
 
     # Create transformer types
-    s = 5 # MVA
-    z = 8 # %
+    s = 5  # MVA
+    z = 8  # %
     xr = 40
     SS = TransformerType(name="SS",
-                         hv_nominal_voltage=100, # kV
-                         lv_nominal_voltage=10, # kV
+                         hv_nominal_voltage=100,  # kV
+                         lv_nominal_voltage=10,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z, xr).real*s*1000/S_base,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000 / S_base,
                          iron_losses=1e-20,
                          no_load_current=1e-20,
                          short_circuit_voltage=z)
     grid.add_transformer_type(SS)
 
-    s = 5 # MVA
-    z = 6 # %
+    s = 5  # MVA
+    z = 6  # %
     xr = 20
     PM = TransformerType(name="PM",
-                         hv_nominal_voltage=10, # kV
-                         lv_nominal_voltage=0.6, # kV
+                         hv_nominal_voltage=10,  # kV
+                         lv_nominal_voltage=0.6,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z, xr).real*s*1000/S_base,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000 / S_base,
                          iron_losses=1e-20,
                          no_load_current=1e-20,
                          short_circuit_voltage=z)
@@ -138,7 +138,7 @@ def test_basic():
     power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
-    approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
+    approx_volt = [round(100 * abs(v), 1) for v in power_flow.results.voltage]
     solution = [100.0, 99.6, 102.7, 102.9]  # Expected solution from GridCal and ETAP 16.1.0, for reference
 
     print()
@@ -331,3 +331,10 @@ def test_gridcal_basic_pi():
             equal = False
 
     assert equal
+
+
+if __name__ == '__main__':
+
+    test_basic()
+
+    test_gridcal_basic_pi()

@@ -173,7 +173,7 @@ class MainGUI(QMainWindow):
             self.ui.plt_style_comboBox.setCurrentText('fivethirtyeight')
 
         # branch types for reduction
-        mdl = get_list_model(BranchTypeConverter(BranchType.Branch).options, checks=True)
+        mdl = get_list_model(BranchType.list(), checks=True)
         self.ui.removeByTypeListView.setModel(mdl)
 
         # opf solvers dictionary
@@ -3097,7 +3097,7 @@ class MainGUI(QMainWindow):
                     selected_types = list()
                     for i in checked:
                         selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                        selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
+                        selected_type = BranchType(selected_type_txt)
                         selected_types.append(selected_type)
 
                     # compose options

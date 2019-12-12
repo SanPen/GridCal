@@ -270,8 +270,8 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 if conv is None:
                     setattr(obj_, attr, values[a])
                 elif conv is BranchType:
-                    cbr = BranchTypeConverter(None)
-                    setattr(obj_, attr, cbr(values[a]))
+                    # cbr = BranchTypeConverter(None)
+                    setattr(obj_, attr, BranchType(values[a]))
                 else:
                     setattr(obj_, attr, conv(values[a]))
             else:
@@ -710,8 +710,8 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 if conv is None:
                     setattr(obj_, attr, values[a])
                 elif conv is BranchType:
-                    cbr = BranchTypeConverter(None)
-                    setattr(obj_, attr, cbr(values[a]))
+                    # cbr = BranchTypeConverter(None)
+                    setattr(obj_, attr, BranchType(values[a]))
                 else:
                     setattr(obj_, attr, conv(values[a]))
             else:

@@ -146,6 +146,7 @@ class LatinHypercubeSampling(QThread):
                     lhs_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                     lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
                     lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                    lhs_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
                     lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                     lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
@@ -231,9 +232,10 @@ class LatinHypercubeSampling(QThread):
                                            options=self.options, logger=self.logger)
 
                     # Gather the results
-                    lhs_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
+                    lhs_results.S_points[t, numerical_island.original_bus_idx] = S
                     lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
                     lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                    lhs_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
                     lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                     lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 

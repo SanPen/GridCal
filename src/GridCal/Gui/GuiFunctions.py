@@ -20,11 +20,10 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
 from warnings import warn
 from enum import EnumMeta
-from GridCal.Engine.Devices import BranchTypeConverter, DeviceType, BranchTemplate, BranchType, Bus
+from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from collections import defaultdict
 from matplotlib import pyplot as plt
-from matplotlib.dates import  DateFormatter, DayLocator
 
 
 class TreeDelegate(QItemDelegate):
@@ -638,8 +637,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
         elif tpe is BranchType:
-            conv = BranchTypeConverter(None)
-            return conv.inv_conv[getattr(self.objects[obj_idx], attr)]
+            # conv = BranchType(None)
+            return BranchType(getattr(self.objects[obj_idx], attr))
         else:
             return getattr(self.objects[obj_idx], attr)
 
@@ -682,11 +681,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         if not taken:
             if self.attributes[attr_idx] not in self.non_editable_attributes:
                 if tpe is BranchType:
-                    conv = BranchTypeConverter(None)
-
-                    setattr(self.objects[obj_idx], self.attributes[attr_idx], conv.conv[value.name.lower()])
+                    setattr(self.objects[obj_idx], self.attributes[attr_idx], BranchType(value))
+                    self.objects[obj_idx].graphic_obj.update_symbol()
                 else:
-
                     setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
             else:
                 pass  # the column cannot be edited

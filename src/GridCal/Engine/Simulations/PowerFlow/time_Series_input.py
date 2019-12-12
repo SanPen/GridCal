@@ -54,15 +54,15 @@ class TimeSeriesInput:
         cols = list()
         self.valid = False
         merged = None
-        for p in [self.Sprof, self.Iprof, self.Yprof]:
-            if p is None:
+        for profile in [self.Sprof, self.Iprof, self.Yprof]:
+            if profile is None:
                 cols.append(None)
             else:
                 if merged is None:
-                    merged = p
+                    merged = profile
                 else:
-                    merged = pd.concat([merged, p], axis=1)
-                cols.append(p.columns)
+                    merged = pd.concat([merged, profile], axis=1)
+                cols.append(profile.columns)
                 self.valid = True
 
         # by merging there could have been time inconsistencies that would produce NaN

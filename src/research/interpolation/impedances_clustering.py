@@ -6,7 +6,7 @@ import numpy as np
 
 import matplotlib.mlab as mlab
 import math
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import MultiCircuit, FileOpen
 
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
@@ -28,12 +28,12 @@ def plot_normal(ax, arr):
         ax.plot(x, mlab.normpdf(x, mu, sigma))
 
 
-def analize_impedances(circuit: Circuit):
+def analize_impedances(circuit: MultiCircuit):
 
     properties = ['R', 'X', 'G', 'B']
     p = len(properties)
     n = len(circuit.branches)
-    vals = zeros((n, p))
+    vals = np.zeros((n, p))
 
     for i, branch in enumerate(circuit.branches):
 
@@ -62,7 +62,7 @@ def analize_impedances(circuit: Circuit):
         axs[j].hist(x, bins=100, range=r, density=None, weights=None,
                     cumulative=False, bottom=None, histtype='bar',
                     align='mid', orientation='vertical', normed=True)
-        axs[j].plot(x, zeros(n), 'o')
+        axs[j].plot(x, np.zeros(n), 'o')
         axs[j].set_title(properties[j])
 
 ########################################################################################################################

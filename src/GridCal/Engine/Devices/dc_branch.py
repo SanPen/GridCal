@@ -28,157 +28,6 @@ from GridCal.Engine.Devices.underground_line import UndergroundLineType
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
 
-# Global sqrt of 3 (bad practice?)
-SQRT3 = np.sqrt(3.0)
-
-
-class BranchTemplate:
-
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch):
-
-        self.name = name
-
-        self.tpe = tpe
-
-        self.edit_headers = []
-        self.units = []
-        self.non_editable_indices = []
-        self.edit_types = {}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-
-        dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
-        return dta
-
-
-class TapChanger:
-    """
-    The **TapChanger** class defines a transformer's tap changer, either onload or
-    offload. It needs to be attached to a predefined transformer (i.e. a
-    :ref:`Branch<branch>` object).
-
-    The following example shows how to attach a tap changer to a transformer tied to a
-    voltage regulated :ref:`bus`:
-
-    .. code:: ipython3
-
-        from GridCal.Engine.Core.multi_circuit import MultiCircuit
-        from GridCal.Engine.devices import *
-        from GridCal.Engine.device_types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      bus_to_regulated=True,
-                      vset=1.05)
-
-        # Attach tap changer
-        X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1, min_reg=0.9)
-        X_C3.tap_changer.set_tap(X_C3.tap_module)
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Arguments:
-
-        **taps_up** (int, 5): Number of taps position up
-
-        **taps_down** (int, 5): Number of tap positions down
-
-        **max_reg** (float, 1.1): Maximum regulation up i.e 1.1 -> +10%
-
-        **min_reg** (float, 0.9): Maximum regulation down i.e 0.9 -> -10%
-
-    Additional Properties:
-
-        **tap** (int, 0): Current tap position
-
-    """
-
-    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
-        self.max_tap = taps_up
-
-        self.min_tap = -taps_down
-
-        self.inc_reg_up = (max_reg - 1.0) / taps_up
-
-        self.inc_reg_down = (1.0 - min_reg) / taps_down
-
-        self.tap = 0
-
-    def tap_up(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap + 1 <= self.max_tap:
-            self.tap += 1
-
-    def tap_down(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap - 1 >= self.min_tap:
-            self.tap -= 1
-
-    def get_tap(self):
-        """
-        Get the tap voltage regulation module
-        """
-        if self.tap == 0:
-            return 1.0
-        elif self.tap > 0:
-            return 1.0 + self.tap * self.inc_reg_up
-        elif self.tap < 0:
-            return 1.0 + self.tap * self.inc_reg_down
-
-    def set_tap(self, tap_module):
-        """
-        Set the integer tap position corresponding to a tap value
-
-        Attribute:
-
-            **tap_module** (float): Tap module centered around 1.0
-
-        """
-        if tap_module == 1.0:
-            self.tap = 0
-        elif tap_module > 1:
-            self.tap = round((tap_module - 1.0) / self.inc_reg_up)
-        elif tap_module < 1:
-            self.tap = -round((1.0 - tap_module) / self.inc_reg_down)
-
 
 class Branch(EditableDevice):
     """
@@ -288,12 +137,11 @@ class Branch(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
-                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
-                 temp_base=20, temp_oper=20, alpha=0.00330,
-                 bus_to_regulated=False, template=BranchTemplate(), ):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='DC Line', r=1e-20,
+                 rate=1.0, active=True, tolerance=0, cost=0.0,
+                 mttf=0, mttr=0, r_fault=0.0, fault_pos=0.5,
+                 branch_type: BranchType = BranchType.DCLine, length=1, vset=1.0,
+                 temp_base=20, temp_oper=20, alpha=0.00330):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -311,19 +159,12 @@ class Branch(EditableDevice):
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
                                                   'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total reactance.'),
-                                                  'G': GCProp('p.u.', float, 'Total shunt conductance.'),
-                                                  'B': GCProp('p.u.', float, 'Total shunt susceptance.'),
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
                                                                       '0% for lines.'),
                                                   'length': GCProp('km', float, 'Length of the branch '
                                                                    '(not used for calculation)'),
-                                                  'tap_module': GCProp('', float, 'Tap changer module, '
-                                                                       'it a value close to 1.0'),
-                                                  'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
-                                                  'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
                                                   'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
                                                                  'the bus when regulating the tap.'),
                                                   'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
@@ -340,17 +181,7 @@ class Branch(EditableDevice):
                                                                   'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
-                                                  'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'fault_pos': GCProp('p.u.', float,
-                                                                      'Per-unit positioning of the fault:\n'
-                                                                      '0 would be at the "from" side,\n'
-                                                                      '1 would be at the "to" side,\n'
-                                                                      'therefore 0.5 is at the middle.'),
-                                                  'branch_type': GCProp('', BranchType, ''),
-                                                  'template': GCProp('', BranchTemplate, '')},
+                                                  'branch_type': GCProp('', BranchType, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
@@ -372,14 +203,10 @@ class Branch(EditableDevice):
 
         # short circuit impedance
         self.r_fault = r_fault
-        self.x_fault = x_fault
         self.fault_pos = fault_pos
 
         # total impedance and admittance in p.u.
         self.R = r
-        self.X = x
-        self.G = g
-        self.B = b
 
         self.mttf = mttf
 
@@ -400,19 +227,6 @@ class Branch(EditableDevice):
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
 
-        # tap changer object
-        self.tap_changer = TapChanger()
-
-        # Tap module
-        if tap != 0:
-            self.tap_module = tap
-            self.tap_changer.set_tap(self.tap_module)
-        else:
-            self.tap_module = self.tap_changer.get_tap()
-
-        # Tap angle
-        self.angle = shift_angle
-
         # branch rating in MVA
         self.rate = rate
 
@@ -422,8 +236,6 @@ class Branch(EditableDevice):
         self.branch_type = branch_type
 
         # type template
-        self.template = template
-        self.bus_to_regulated = bus_to_regulated
         self.vset = vset
 
         # converter for enumerations
@@ -679,14 +491,14 @@ class Branch(EditableDevice):
         Return the data that matches the edit_headers
         :return:
         """
-        # conv = BranchTypeConverter(None)
+        conv = BranchTypeConverter(None)
 
         data = list()
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
             if properties.tpe == BranchType:
-                obj = self.branch_type.value
+                obj = conv.inv_conv[self.branch_type]
             elif properties.tpe == BranchTemplate:
                 if obj is None:
                     obj = ''

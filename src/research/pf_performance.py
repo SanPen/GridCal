@@ -38,4 +38,5 @@ def run(fname):
 if __name__ == '__main__':
 
     # run('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx')
-    run('/home/santi/Descargas/Equivalent.gridcal')
+    # run('/home/santi/Descargas/Equivalent.gridcal')
+    run(r'C:\Users\PENVERSA\OneDrive - Red Eléctrica Corporación\Escritorio\Casos GridCal\Equivalent.gridcal')

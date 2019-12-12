@@ -411,6 +411,10 @@ class BranchGraphicItem(QGraphicsLineItem):
             self.make_reactance_symbol()
             self.symbol_type = BranchType.Switch
 
+        elif self.api_object.branch_type == BranchType.DCLine:
+            self.make_dc_line_symbol()
+            self.symbol_type = BranchType.DCLine
+
         else:
             # this is a line
             self.symbol = None
@@ -457,6 +461,36 @@ class BranchGraphicItem(QGraphicsLineItem):
         h = 40.0
         w = h
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+        self.symbol.setPen(QPen(self.color, self.width, self.style))
+        if self.api_object.active:
+            self.symbol.setBrush(self.color)
+        else:
+            self.symbol.setBrush(QBrush(Qt.white))
+
+    def make_dc_line_symbol(self):
+        """
+        Make the DC Line symbol
+        :return:
+        """
+        h = 30.0
+        w = h
+        w2 = int(w / 2)
+        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+
+        offset = 3
+        t_points = QPolygonF()
+        t_points.append(QPointF(0, offset))
+        t_points.append(QPointF(w-offset, w2))
+        t_points.append(QPointF(0, w-offset))
+        triangle = QGraphicsPolygonItem(self.symbol)
+        triangle.setPolygon(t_points)
+        triangle.setPen(QPen(Qt.white))
+        triangle.setBrush(QBrush(Qt.white))
+
+        line = QGraphicsRectItem(QRectF(h-offset, offset, offset, w-2*offset), parent=self.symbol)
+        line.setPen(QPen(Qt.white))
+        line.setBrush(QBrush(Qt.white))
+
         self.symbol.setPen(QPen(self.color, self.width, self.style))
         if self.api_object.active:
             self.symbol.setBrush(self.color)
@@ -662,6 +696,13 @@ class BranchGraphicItem(QGraphicsLineItem):
                 self.symbol.setBrush(self.color)
             else:
                 self.symbol.setBrush(Qt.white)
+
+        if self.symbol_type == BranchType.DCLine:
+            self.symbol.setBrush(self.color)
+            if self.api_object.active:
+                self.symbol.setPen(QPen(ACTIVE['color']))
+            else:
+                self.symbol.setPen(QPen(DEACTIVATED['color']))
 
         # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))

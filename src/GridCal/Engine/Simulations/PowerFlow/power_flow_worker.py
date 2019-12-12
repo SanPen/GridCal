@@ -428,7 +428,7 @@ def outer_loop_power_flow(circuit: CalculationInputs, options: PowerFlowOptions,
                                                     branch_rates=branch_rates)
 
     # voltage, Sbranch, loading, losses, error, converged, Qpv
-    results = PowerFlowResults(Sbus=Sbus,
+    results = PowerFlowResults(Sbus=Scalc,
                                voltage=voltage_solution,
                                Sbranch=Sbranch,
                                Ibranch=Ibranch,
