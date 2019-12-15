@@ -134,7 +134,7 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
 
 def Jacobian(Ybus, V, Ibus, pq, pvpq):
     """
-    Computes the system Jacobian matrix
+    Computes the system Jacobian matrix in polar coordinates
     Args:
         Ybus: Admittance matrix
         V: Array of nodal voltages
@@ -156,6 +156,44 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
 
     J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
                    sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csc")
+
+    return sparse(J)
+
+
+def Jacobian_cartesian(Ybus, V, Ibus, pq, pvpq):
+    """
+    Computes the system Jacobian matrix in cartesian coordinates
+    Args:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
+
+    Returns:
+        The system Jacobian matrix in cartesian coordinates
+    """
+    I = Ybus * V - Ibus
+
+    diagV = sp.diags(V)
+    diagI = sp.diags(I)
+    VY = diagV * np.conj(Ybus)
+
+    dS_dVr = np.conj(diagI) + VY  # dSbus / dVr
+    dS_dVi = 1j * (np.conj(diagI) - VY)  # dSbus / dVi
+
+    '''
+    j11 = real(dSbus_dVr([pq; pv], pq));    j12 = real(dSbus_dVi([pq; pv], [pv; pq]));
+    
+    j21 = imag(dSbus_dVr(pq, pq));          j22 = imag(dSbus_dVi(pq, [pv; pq]));
+    
+
+    J = [   j11 j12;
+            j21 j22;    ];
+    '''
+
+    J = sp.vstack([sp.hstack([dS_dVr[np.ix_(pvpq, pq)].real, dS_dVi[np.ix_(pvpq, pvpq)].real]),
+                   sp.hstack([dS_dVr[np.ix_(pq, pq)].imag,   dS_dVi[np.ix_(pq, pvpq)].imag])], format="csc")
 
     return sparse(J)
 

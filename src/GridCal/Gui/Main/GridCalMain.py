@@ -579,13 +579,15 @@ class MainGUI(QMainWindow):
         """
         # print(event)
         if event.mimeData().hasUrls:
-            file_name = event.mimeData().urls()[0].toLocalFile()
-            name, file_extension = os.path.splitext(file_name)
-            accepted = ['.gridcal', '.xlsx', '.xls', '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
-            if file_extension.lower() in accepted:
-                self.open_file_now(filename=file_name)
-            else:
-                self.msg('File type not accepted :(')
+            events = event.mimeData().urls()
+            if len(events) > 0:
+                file_name = events[0].toLocalFile()
+                name, file_extension = os.path.splitext(file_name)
+                accepted = ['.gridcal', '.xlsx', '.xls', '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
+                if file_extension.lower() in accepted:
+                    self.open_file_now(filename=file_name)
+                else:
+                    self.msg('File type not accepted :(')
 
     def add_simulation(self, val: SimulationTypes):
         """

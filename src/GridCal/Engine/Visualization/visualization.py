@@ -120,6 +120,32 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
             circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
 
+def get_base_map(location, zoom_start=5):
+    """
+    Get map with all the base defined layers
+    :param location: (lat, lon)
+    :param zoom_start: integer
+    :return: map, marker_layer
+    """
+
+    my_map = folium.Map(location=location, zoom_start=zoom_start)
+
+    # add possible tiles
+    folium.TileLayer('cartodbpositron').add_to(my_map)
+    folium.TileLayer('cartodbdark_matter').add_to(my_map)
+    folium.TileLayer('openstreetmap').add_to(my_map)
+    folium.TileLayer('Mapbox Bright').add_to(my_map)
+    folium.TileLayer('stamentoner').add_to(my_map)
+
+    # add markers layer
+    marker_cluster = MarkerCluster().add_to(my_map)
+
+    # add the layer control
+    folium.LayerControl().add_to(my_map)
+
+    return my_map, marker_cluster
+
+
 def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types, losses=None, failed_br_idx=None,
                   loading_label='loading', file_name='map.html'):
     """
@@ -158,8 +184,7 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
         nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
     # create map at he average location
-    my_map = folium.Map(location=circuit.get_center_location(), zoom_start=5)
-    marker_cluster = MarkerCluster().add_to(my_map)
+    my_map, marker_cluster = get_base_map(location=circuit.get_center_location(), zoom_start=5)
 
     # add node positions
     for i, bus in enumerate(circuit.buses):
@@ -186,7 +211,7 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
                       tooltip=tooltip).add_to(marker_cluster)
 
     # add lines
-    lnorm = abs(loadings)
+    lnorm = np.abs(loadings)
     lnorm[lnorm == np.inf] = 0
 
     for i, branch in enumerate(circuit.branches):
@@ -206,10 +231,14 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
             r, g, b, a = loading_cmap(lnorm[i])
             color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
             html_color = color.name()
-            weight = 6
+            weight = 3
 
             # draw the line
-            folium.PolyLine(points, color=html_color, weight=weight, opacity=1, tooltip=tooltip).add_to(marker_cluster)
+            folium.PolyLine(points,
+                            color=html_color,
+                            weight=weight,
+                            opacity=1,
+                            tooltip=tooltip).add_to(marker_cluster)
 
     # save the map
     my_map.save(file_name)
