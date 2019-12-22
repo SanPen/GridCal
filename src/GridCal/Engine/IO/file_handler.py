@@ -30,6 +30,7 @@ from GridCal.Engine.IO.json_parser import parse_json
 from GridCal.Engine.IO.psse_parser import PSSeParser
 from GridCal.Engine.IO.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
+from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 
 
 from PySide2.QtCore import QThread, Signal
@@ -87,6 +88,15 @@ class FileOpen:
                 data_dictionary = open_data_frames_from_zip(self.file_name,
                                                             text_func=text_func,
                                                             progress_func=progress_func)
+                # interpret file content
+                self.circuit = data_frames_to_circuit(data_dictionary)
+
+            elif file_extension.lower() == '.sqlite':
+
+                # open file content
+                data_dictionary = open_data_frames_from_sqlite(self.file_name,
+                                                               text_func=text_func,
+                                                               progress_func=progress_func)
                 # interpret file content
                 self.circuit = data_frames_to_circuit(data_dictionary)
 
@@ -181,6 +191,9 @@ class FileSave:
         elif self.file_name.endswith('.gridcal'):
             logger = self.save_zip()
 
+        elif self.file_name.endswith('.sqlite'):
+            logger = self.save_sqlite()
+
         elif self.file_name.endswith('.json'):
             logger = self.save_json()
 
@@ -217,6 +230,23 @@ class FileSave:
                                 filename_zip=self.file_name,
                                 text_func=self.text_func,
                                 progress_func=self.progress_func)
+
+        return logger
+
+    def save_sqlite(self):
+        """
+        Save the circuit information in sqlite
+        :return: logger with information
+        """
+
+        logger = Logger()
+
+        dfs = create_data_frames(self.circuit)
+
+        save_data_frames_to_sqlite(dfs,
+                                   file_path=self.file_name,
+                                   text_func=self.text_func,
+                                   progress_func=self.progress_func)
 
         return logger
 

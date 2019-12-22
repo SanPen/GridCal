@@ -644,22 +644,25 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def schematic_from_api(self, explode_factor=1.0):
+    def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0):
         """
-        Generate schematic from the API
-        :param explode_factor: factor to separate the nodes
-        :return: Nothing
-        """
-        # clear all
-        self.diagramView.scene_.clear()
 
+        :param circuit:
+        :param explode_factor:
+        :return:
+        """
         # first create the buses
-        for bus in self.circuit.buses:
+        for bus in circuit.buses:
             bus.graphic_obj = self.add_api_bus(bus, explode_factor)
 
-        for branch in self.circuit.branches:
+        for branch in circuit.branches:
             branch.graphic_obj = self.add_api_branch(branch)
 
+    def align_schematic(self):
+        """
+
+        :return:
+        """
         # figure limits
         min_x = sys.maxsize
         min_y = sys.maxsize
@@ -681,6 +684,23 @@ class GridEditor(QSplitter):
 
         # set the figure limits
         self.set_limits(min_x, max_x, min_y, max_y)
+
         #  center the view
         self.center_nodes()
+
+    def schematic_from_api(self, explode_factor=1.0):
+        """
+        Generate schematic from the API
+        :param explode_factor: factor to separate the nodes
+        :return: Nothing
+        """
+        # clear all
+        self.diagramView.scene_.clear()
+
+        # add to schematic
+        self.add_circuit_to_schematic(self.circuit, explode_factor=explode_factor)
+
+        self.align_schematic()
+
+
 

@@ -303,6 +303,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOpen_file.triggered.connect(self.open_file)
 
+        self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
+
         self.ui.actionSave.triggered.connect(self.save_file)
 
         self.ui.actionSave_as.triggered.connect(self.save_file_as)
@@ -583,7 +585,8 @@ class MainGUI(QMainWindow):
             if len(events) > 0:
                 file_name = events[0].toLocalFile()
                 name, file_extension = os.path.splitext(file_name)
-                accepted = ['.gridcal', '.xlsx', '.xls', '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
+                accepted = ['.gridcal', '.xlsx', '.xls', '.sqlite',
+                            '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
                 if file_extension.lower() in accepted:
                     self.open_file_now(filename=file_name)
                 else:
@@ -875,9 +878,7 @@ class MainGUI(QMainWindow):
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
-            # self.grid_editor.center_nodes()
-            self.grid_editor.diagramView.fitInView(self.grid_editor.diagramScene.sceneRect(), Qt.KeepAspectRatio)
-            self.grid_editor.diagramView.scale(1.0, 1.0)
+            self.grid_editor.align_schematic()
 
     def new_project_now(self):
         """
@@ -962,12 +963,12 @@ class MainGUI(QMainWindow):
         else:
             self.msg('There is a file being processed now.')
 
-    def open_file_threaded(self):
+    def open_file_threaded(self, post_function=None):
         """
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
+        files_types = "Formats (*.gridcal *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
         # files_types = ''
         # call dialog to select the file
 
@@ -977,17 +978,18 @@ class MainGUI(QMainWindow):
 
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
                                                                         caption='Open file',
-                                                                        directory=self.project_directory,
+                                                                        dir=self.project_directory,
                                                                         filter=files_types,
                                                                         options=options)
 
         if len(filename) > 0:
-            self.open_file_now(filename)
+            self.open_file_now(filename, post_function)
 
-    def open_file_now(self, filename):
+    def open_file_now(self, filename, post_function=None):
         """
 
         :param filename:
+        :param post_function:
         :return:
         """
         self.file_name = filename
@@ -1005,7 +1007,10 @@ class MainGUI(QMainWindow):
         self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
         self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
         self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-        self.open_file_thread_object.done_signal.connect(self.post_open_file)
+        if post_function is None:
+            self.open_file_thread_object.done_signal.connect(self.post_open_file)
+        else:
+            self.open_file_thread_object.done_signal.connect(post_function)
 
         # thread start
         self.open_file_thread_object.start()
@@ -1058,6 +1063,43 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def add_circuit(self):
+        """
+        Prompt to add another circuit
+        """
+        self.open_file_threaded(post_function=self.post_add_circuit)
+
+    def post_add_circuit(self):
+        """
+        Stuff to do after opening another circuit
+        :return: Nothing
+        """
+        self.stuff_running_now.remove('file_open')
+
+        if self.open_file_thread_object is not None:
+
+            if len(self.open_file_thread_object.logger) > 0:
+                if len(self.open_file_thread_object.logger) > 0:
+                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                    dlg.exec_()
+
+            if self.open_file_thread_object.valid:
+
+                if len(self.circuit.buses) == 0:
+                    # load the circuit
+                    self.stuff_running_now.append('file_open')
+                    self.post_open_file()
+                else:
+                    # add the circuit
+                    buses = self.circuit.add_circuit(self.open_file_thread_object.circuit, angle=0)
+
+                    # add to schematic
+                    self.grid_editor.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
+                    self.grid_editor.align_schematic()
+
+                    for bus in buses:
+                        bus.graphic_obj.setSelected(True)
+
     def update_date_dependent_combos(self):
         """
         update the drop down menus that display dates
@@ -1086,7 +1128,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "GridCal zip (*.gridcal);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json)"
+        files_types = "GridCal zip (*.gridcal);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json);;Sqlite (*.sqlite)"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1119,6 +1161,7 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['JSON (*.json)'] = '.json'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                extension['Sqlite (*.sqlite)'] = '.sqlite'
 
                 if file_extension == '':
                     filename = name + extension[type_selected]

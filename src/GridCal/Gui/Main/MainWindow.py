@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Mon Dec  9 11:23:56 2019
+# Created: Sat Dec 21 15:57:56 2019
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1178, 799)
+        mainWindow.resize(1207, 768)
         mainWindow.setBaseSize(QtCore.QSize(0, 0))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Program icon/GridCal_icon.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -1818,7 +1818,7 @@ class Ui_mainWindow(object):
         self.verticalLayout.addWidget(self.progress_frame)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(mainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1178, 22))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1207, 22))
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
@@ -2069,9 +2069,16 @@ class Ui_mainWindow(object):
         icon71.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionShow_color_controls.setIcon(icon71)
         self.actionShow_color_controls.setObjectName("actionShow_color_controls")
+        self.actionAdd_circuit = QtWidgets.QAction(mainWindow)
+        icon72 = QtGui.QIcon()
+        icon72.addPixmap(QtGui.QPixmap(":/Icons/icons/load_add.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionAdd_circuit.setIcon(icon72)
+        self.actionAdd_circuit.setObjectName("actionAdd_circuit")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
+        self.menuProject.addSeparator()
+        self.menuProject.addAction(self.actionAdd_circuit)
         self.menuProject.addAction(self.actionSave_as)
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionExport)
@@ -2446,6 +2453,8 @@ class Ui_mainWindow(object):
         self.actionPTDF_time_series.setText(QtWidgets.QApplication.translate("mainWindow", "PTDF time series power flow", None, -1))
         self.actionPTDF_time_series.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Runs the PTDF based time series power flow", None, -1))
         self.actionShow_color_controls.setText(QtWidgets.QApplication.translate("mainWindow", "Show color controls", None, -1))
+        self.actionAdd_circuit.setText(QtWidgets.QApplication.translate("mainWindow", "Add circuit", None, -1))
+        self.actionAdd_circuit.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Add circuit to the current circuit", None, -1))
 
 from .icons_rc import *
 

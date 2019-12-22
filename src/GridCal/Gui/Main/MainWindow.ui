@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1178</width>
-    <height>799</height>
+    <width>1207</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -4598,8 +4598,8 @@ points from time series</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1178</width>
-     <height>21</height>
+     <width>1207</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -4609,6 +4609,8 @@ points from time series</string>
     <addaction name="actionNew_project"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_circuit"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
@@ -5382,6 +5384,18 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Show color controls</string>
+   </property>
+  </action>
+  <action name="actionAdd_circuit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/load_add.svg</normaloff>:/Icons/icons/load_add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add circuit</string>
+   </property>
+   <property name="toolTip">
+    <string>Add circuit to the current circuit</string>
    </property>
   </action>
  </widget>

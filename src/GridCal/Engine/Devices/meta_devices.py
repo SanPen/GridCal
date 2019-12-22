@@ -159,14 +159,14 @@ class EditableDevice:
             if index is not None:
                 prof_attr = self.properties_with_profile[magnitude]
 
-                df = getattr(self, prof_attr)
+                profile = getattr(self, prof_attr)
 
-                if df is None:
+                if profile is None:
                     # there is no profile, create a new one with the default values
                     # print(self.name, ': created profile for ' + prof_attr)
                     self.create_profile(magnitude=magnitude, index=index)
                 else:
-                    if df.shape[0] != len(index):
+                    if profile.shape[0] != len(index):
                         # the length of the profile is different from the length of the master profile
                         # print(self.name, ': created profile for ' + prof_attr)
                         self.create_profile(magnitude=magnitude, index=index)
