@@ -19,6 +19,7 @@ import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.excel_interface import check_names
+from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 
 def save_data_frames_to_sqlite(dfs, file_path, text_func=None, progress_func=None):
@@ -71,26 +72,8 @@ def open_data_frames_from_sqlite(file_path, text_func=None, progress_func=None):
 
         dfs[key] = pd.read_sql('select * from ' + key, conn)
 
-    df = dfs['config']
-    if 'baseMVA' in df.index:
-        dfs["baseMVA"] = float(df.at['name', 'Value'])
-    else:
-        dfs["baseMVA"] = 100
-
-    if 'version' in df.index:
-        dfs["version"] = float(df.at['version', 'Value'])
-
-    if 'name' in df.index:
-        dfs["name"] = df.at['name', 'Value']
-    elif 'Name' in df.index:
-        dfs["name"] = df.at['Name', 'Value']
-    else:
-        dfs["name"] = 'Grid'
-
-    if 'Comments' in df.index:
-        dfs["Comments"] = df.at['Comments', 'Value']
-    else:
-        dfs["Comments"] = ''
+    # parse the configuration
+    dfs = parse_config_df(dfs['config'], dfs)
 
     return dfs
 

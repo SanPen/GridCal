@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1207</width>
+    <width>1264</width>
     <height>768</height>
    </rect>
   </property>
@@ -4159,6 +4159,181 @@ points from time series</string>
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_8">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/sync.svg</normaloff>:/Icons/icons/sync.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>Synchronization</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QFrame" name="frame_4">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_39">
+                 <property name="text">
+                  <string>Sync interval (minutes)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QSpinBox" name="sync_interval_spinBox">
+                 <property name="toolTip">
+                  <string>Interval in minutes to save the model when the mode syncronization is activated</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>120</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="2">
+                <widget class="Line" name="line_7">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="QLabel" name="user_name_label">
+                 <property name="toolTip">
+                  <string>Model user to store in the file saving.</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="model_version_label">
+                 <property name="toolTip">
+                  <string>Current model version. Increases with every model saving.</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="QLabel" name="label_37">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Model syncronization</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <spacer name="verticalSpacer_14">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
         <item row="0" column="0">
@@ -4523,7 +4698,11 @@ points from time series</string>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="plt_style_comboBox"/>
+               <widget class="QComboBox" name="plt_style_comboBox">
+                <property name="toolTip">
+                 <string>MatPlotlib plot styles to choose from</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -4598,7 +4777,7 @@ points from time series</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1207</width>
+     <width>1264</width>
      <height>22</height>
     </rect>
    </property>
@@ -4696,6 +4875,7 @@ points from time series</string>
    <addaction name="actionNew_project"/>
    <addaction name="actionOpen_file"/>
    <addaction name="actionSave"/>
+   <addaction name="actionSync"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionPower_Flow_Time_series"/>
@@ -5396,6 +5576,21 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>Add circuit to the current circuit</string>
+   </property>
+  </action>
+  <action name="actionSync">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/sync.svg</normaloff>:/Icons/icons/sync.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Sync</string>
+   </property>
+   <property name="toolTip">
+    <string>Sync with the file for colaborative editing of the grid</string>
    </property>
   </action>
  </widget>

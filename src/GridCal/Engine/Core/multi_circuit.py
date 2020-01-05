@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import os
 from datetime import timedelta
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
@@ -22,6 +23,15 @@ from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
+
+
+def get_system_user():
+    """
+    Get the system user name
+    :return: string
+    """
+    getUser = lambda: os.environ["USERNAME"] if "C:" in os.getcwd() else os.environ["USER"]
+    return getUser()
 
 
 class MultiCircuit:
@@ -57,6 +67,12 @@ class MultiCircuit:
         self.name = name
 
         self.comments = ''
+
+        # this is a number that serves
+        self.model_version = 1
+
+        # user mane
+        self.user_name = get_system_user()
 
         # Base power (MVA)
         self.Sbase = 100.0
@@ -502,6 +518,8 @@ class MultiCircuit:
                 'phases': 'ps',
                 'name': self.name,
                 'Sbase': self.Sbase,
+                'ModelVersion': self.model_version,
+                'UserName': self.user_name,
                 'comments': self.comments}
 
     def assign_circuit(self, circ):

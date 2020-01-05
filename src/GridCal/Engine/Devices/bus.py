@@ -552,3 +552,10 @@ class Bus(EditableDevice):
         Get tuple of the bus coordinates (latitude, longitude)
         """
         return self.latitude, self.longitude
+
+    def get_devices_list(self):
+        """
+        Return a list of all the connected objects
+        :return: list of connected objects
+        """
+        return self.loads + self.controlled_generators + self.batteries + self.static_generators + self.shunts

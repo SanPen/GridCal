@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/sync.svg</file>
     <file>icons/show_color_controls.svg</file>
     <file>icons/load_add.svg</file>
     <file>icons/move_bus.svg</file>

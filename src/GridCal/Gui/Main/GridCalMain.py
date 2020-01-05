@@ -25,6 +25,7 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
+from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
 
 # Engine imports
@@ -37,7 +38,7 @@ from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReductio
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import *
-from GridCal.Engine.IO.file_handler import *
+
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
@@ -48,6 +49,8 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 from GridCal.Engine.IO.export_results_driver import ExportAllThread
+from GridCal.Engine.IO.file_handler import *
+from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 
 import gc
@@ -271,6 +274,10 @@ class MainGUI(QMainWindow):
         self.painter = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
+        self.file_sync_thread = FileSyncThread(None, None, None)
+
+        # window pointers
+        self.file_sync_window = None
 
         self.stuff_running_now = list()
 
@@ -368,6 +375,8 @@ class MainGUI(QMainWindow):
         self.ui.actionSet_OPF_generation_to_profiles.triggered.connect(self.copy_opf_to_profiles)
 
         self.ui.actionShow_color_controls.triggered.connect(self.set_colouring_frame_state)
+
+        self.ui.actionSync.triggered.connect(self.file_sync_toggle)
 
         # Buttons
 
@@ -519,6 +528,8 @@ class MainGUI(QMainWindow):
         self.view_template_controls(False)
 
         self.view_cascade_menu()
+
+        self.clear_results()
 
     def LOCK(self, val=True):
         """
@@ -1045,6 +1056,7 @@ class MainGUI(QMainWindow):
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
                 self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+                self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
 
                 # set circuit comments
                 try:
@@ -1170,7 +1182,6 @@ class MainGUI(QMainWindow):
                 self.file_name = filename
                 self.save_file_now(self.file_name)
         else:
-
             # save directly
             self.save_file_now(self.file_name)
 
@@ -1209,6 +1220,8 @@ class MainGUI(QMainWindow):
             dlg.exec_()
 
         self.stuff_running_now.remove('file_save')
+
+        self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
 
         # call the garbage collector to free memory
         gc.collect()
@@ -3450,12 +3463,14 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
-
+        self.ui.resultsTableView.setModel(None)
         self.ui.dataStructureTableView.setModel(None)
         self.ui.catalogueTreeView.setModel(None)
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+        self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+        self.ui.user_name_label.setText('User: ' + str(self.circuit.user_name))
 
     def colour_now(self, html=False):
         """
@@ -4836,6 +4851,66 @@ class MainGUI(QMainWindow):
         for f in self.files_to_delete_at_exit:
             if os.path.exists(f):
                 os.remove(f)
+
+    def enable_manual_file_operations(self, val=True):
+        """
+        Enable / disable manual operations
+        :param val: True/False
+        """
+        self.ui.actionSave.setEnabled(val)
+        self.ui.actionNew_project.setEnabled(val)
+        self.ui.actionOpen_file.setEnabled(val)
+
+    def file_sync_toggle(self):
+        """
+        Toggle file sync on/off
+        """
+        if self.ui.actionSync.isChecked():
+            # attempt to start synchronizing
+            if os.path.exists(self.file_name):
+                # sleep_time = self.ui.sync_interval_spinBox.value() * 60  # seconds to sleep
+                sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
+                self.file_sync_thread = FileSyncThread(self.circuit, file_name=self.file_name, sleep_time=sleep_time)
+                self.file_sync_thread.sync_event.connect(self.post_file_sync)
+                self.file_sync_thread.start()
+
+                # disable the regular save so that you cannot override the synchronization process
+                self.enable_manual_file_operations(False)
+
+            else:
+                self.msg('Cannot sync because the file does not exist.\nDid you save the model?')
+                self.ui.actionSync.setChecked(False)
+
+                # enable the regular save button
+                self.enable_manual_file_operations(True)
+        else:
+            # attempt to stop the synchronization
+            if self.file_sync_thread.isRunning():
+                self.file_sync_thread.cancel()
+
+                # enable the regular save button
+                self.enable_manual_file_operations(True)
+
+    def post_file_sync(self):
+        """
+        Actions to perform upon synchronization
+        """
+        print('Sync event performed!!')
+
+        if self.file_sync_thread.version_conflict:
+            # version conflict and changes
+            if len(self.file_sync_thread.issues) > 0:
+                self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread until resolve
+                self.file_sync_window.setModal(True)
+                self.file_sync_window.show()
+            else:
+                self.circuit.model_version = self.file_sync_thread.highest_version
+                self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
+        else:
+            # no version conflict, and there were changes
+            if len(self.file_sync_thread.issues) > 0:
+                self.save_file()
 
 
 def run(use_native_dialogues=True):

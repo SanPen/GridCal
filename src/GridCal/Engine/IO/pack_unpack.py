@@ -67,6 +67,12 @@ def create_data_frames(circuit: MultiCircuit):
     obj.append(['Version', 4])
     obj.append(['Name', str(circuit.name)])
     obj.append(['Comments', str(circuit.comments)])
+
+    # increase the model version
+    circuit.model_version += 1
+
+    obj.append(['ModelVersion', str(circuit.model_version)])
+    obj.append(['UserName', str(circuit.user_name)])
     obj.append(['program', 'GridCal'])
 
     dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
@@ -179,13 +185,22 @@ def data_frames_to_circuit(data: Dict):
     # create circuit
     circuit = MultiCircuit()
 
-    circuit.name = data['name']
+    if 'name' in data.keys():
+        circuit.name = data['name']
 
     # set the base magnitudes
-    circuit.Sbase = data['baseMVA']
+    if 'baseMVA' in data.keys():
+        circuit.Sbase = data['baseMVA']
 
     # Set comments
-    circuit.comments = data['Comments'] if 'Comments' in data.keys() else ''
+    if 'Comments' in data.keys():
+        circuit.comments = data['Comments']
+
+    if 'ModelVersion' in data.keys():
+        circuit.model_version = int(data['ModelVersion'])
+
+    if 'UserName' in data.keys():
+        circuit.user_name = data['UserName']
 
     # dictionary of objects to iterate
     object_types = get_objects_dictionary()
