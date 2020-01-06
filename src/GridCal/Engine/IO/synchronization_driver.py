@@ -16,6 +16,7 @@
 import os
 import time
 from math import isclose
+from typing import List, Dict
 from PySide2.QtCore import QThread, Signal
 from PySide2 import QtGui
 
@@ -29,152 +30,50 @@ from PySide2.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
 from PySide2.QtWidgets import QApplication, QTreeView
 
 
-class TreeItem(object):
-    def __init__(self, data, parent=None):
-        self.parentItem = parent
-        self.itemData = data
-        self.childItems = []
+class SyncIssue:
 
-    def appendChild(self, item):
-        self.childItems.append(item)
+    def __init__(self, device_type, issue_type, property_name, my_elm, their_elm):
+        """
 
-    def child(self, row):
-        return self.childItems[row]
+        :param device_type:
+        :param issue_type:
+        :param property_name:
+        :param my_elm:
+        :param their_elm:
+        """
 
-    def childCount(self):
-        return len(self.childItems)
+        self.device_type = device_type
 
-    def columnCount(self):
-        return len(self.itemData)
+        self.issue_type = issue_type
 
-    def data(self, column):
-        try:
-            return self.itemData[column]
-        except IndexError:
-            return None
+        self.property_name = property_name
 
-    def parent(self):
-        return self.parentItem
+        self.my_elm = my_elm
 
-    def row(self):
-        if self.parentItem:
-            return self.parentItem.childItems.index(self)
+        self.their_elm = their_elm
 
-        return 0
+        self.__accept__ = True
 
+    def accept(self):
+        self.__accept__ = True
 
-class SyncTreeModel(QAbstractItemModel):
+    def reject(self):
+        self.__accept__ = False
 
-    def __init__(self, data, parent=None):
-        super(SyncTreeModel, self).__init__(parent)
+    def get_my_name(self):
+        return str(self.my_elm)
 
-        self.rootItem = TreeItem(("Conflicted?", "Device", "Property", "Mine", "Theirs", "Accept theirs?"))
-
-        self.setupModelData(data.split('\n'), self.rootItem)
-
-    def columnCount(self, parent):
-        if parent.isValid():
-            return parent.internalPointer().columnCount()
+    def get_my_value(self):
+        if self.my_elm is not None:
+            return getattr(self.my_elm, self.property_name)
         else:
-            return self.rootItem.columnCount()
+            return ""
 
-    def data(self, index, role):
-        if not index.isValid():
-            return None
-
-        if role != Qt.DisplayRole:
-            return None
-
-        item = index.internalPointer()
-
-        return item.data(index.column())
-
-    def flags(self, index):
-        if not index.isValid():
-            return Qt.NoItemFlags
-
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-    def headerData(self, section, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.rootItem.data(section)
-
-        return None
-
-    def index(self, row, column, parent):
-        if not self.hasIndex(row, column, parent):
-            return QModelIndex()
-
-        if not parent.isValid():
-            parentItem = self.rootItem
+    def get_their_value(self):
+        if self.their_elm is not None:
+            return getattr(self.their_elm, self.property_name)
         else:
-            parentItem = parent.internalPointer()
-
-        childItem = parentItem.child(row)
-        if childItem:
-            return self.createIndex(row, column, childItem)
-        else:
-            return QModelIndex()
-
-    def parent(self, index):
-        if not index.isValid():
-            return QModelIndex()
-
-        childItem = index.internalPointer()
-        parentItem = childItem.parent()
-
-        if parentItem == self.rootItem:
-            return QModelIndex()
-
-        return self.createIndex(parentItem.row(), 0, parentItem)
-
-    def rowCount(self, parent):
-        if parent.column() > 0:
-            return 0
-
-        if not parent.isValid():
-            parentItem = self.rootItem
-        else:
-            parentItem = parent.internalPointer()
-
-        return parentItem.childCount()
-
-    def setupModelData(self, lines, parent):
-        parents = [parent]
-        indentations = [0]
-
-        number = 0
-
-        while number < len(lines):
-            position = 0
-            while position < len(lines[number]):
-                if lines[number][position] != ' ':
-                    break
-                position += 1
-
-            lineData = lines[number][position:].trimmed()
-
-            if lineData:
-                # Read the column data from the rest of the line.
-                columnData = [s for s in lineData.split('\t') if s]
-
-                if position > indentations[-1]:
-                    # The last child of the current parent is now the new
-                    # parent unless the current parent has no children.
-
-                    if parents[-1].childCount() > 0:
-                        parents.append(parents[-1].child(parents[-1].childCount() - 1))
-                        indentations.append(position)
-
-                else:
-                    while position < indentations[-1] and len(parents) > 0:
-                        parents.pop()
-                        indentations.pop()
-
-                # Append a new item to the current parent's list of children.
-                parents[-1].appendChild(TreeItem(columnData, parents[-1]))
-
-            number += 1
+            return ""
 
 
 def compare_devices(dev1: EditableDevice, dev2: EditableDevice):
@@ -207,7 +106,7 @@ def compare_devices_lists(dev_list1, dev_list2):
     Compare two devices lists
     :param dev_list1: list of devices 1
     :param dev_list2: list of devices 2
-    :return: List of issues: device name, issue type, property, my value, their value, my object, their object
+    :return: List of issues
     """
 
     items_dict1 = {elm.name: elm for elm in dev_list1}
@@ -226,7 +125,12 @@ def compare_devices_lists(dev_list1, dev_list2):
             # perform the comparison in the same types, compare
             ls = compare_devices(elm1, elm2)
             for prop, val1, val2 in ls:
-                issues.append([elm1.device_type, 'Conflict', prop, val1, val2, elm1, elm2])
+                issue = SyncIssue(device_type=elm1.device_type,
+                                  issue_type='Conflict',
+                                  property_name=prop,
+                                  my_elm=elm1,
+                                  their_elm=elm2)
+                issues.append(issue)
 
             # if this is a bus, then examine the children
             if elm1.device_type == DeviceType.BusDevice:
@@ -239,13 +143,23 @@ def compare_devices_lists(dev_list1, dev_list2):
 
         else:
             # my element has been deleted
-            issues.append([elm1.device_type, 'Deleted', "", name1, "", elm1, None])
+            issue = SyncIssue(device_type=elm1.device_type,
+                              issue_type='Deleted',
+                              property_name="",
+                              my_elm=elm1,
+                              their_elm=None)
+            issues.append(issue)
 
     # check the file buses against mine, here we only need to check for disagreements in the existence
     for name2, elm2 in items_dict2.items():
         if name2 not in items_dict1.keys():
             # new element added
-            issues.append([elm2.device_type, 'Added', "", "", name2, None, elm2])
+            issue = SyncIssue(device_type=elm2.device_type,
+                              issue_type='Added',
+                              property_name="",
+                              my_elm=None,
+                              their_elm=elm2)
+            issues.append(issue)
 
     return issues
 
@@ -295,7 +209,7 @@ def model_check(current_circuit: MultiCircuit, file_circuit: MultiCircuit):
     return issues, version_conflict
 
 
-def get_issues_tree_view_model(issues):
+def get_issues_tree_view_model(issues: List[SyncIssue]):
     """
     Get TreeView model of the issues
     :param issues: list of issues
@@ -304,38 +218,58 @@ def get_issues_tree_view_model(issues):
     # structure the issues by issue type and by device type
     k = 0
     data = dict()
-    for device_type, issue_type, prop, val1, val2, elm1, elm2 in issues:
+    for issue in issues:
 
-        if issue_type in data.keys():
+        # device_type
+        # issue_type
+        # prop
+        # val1
+        # val2
+        # elm1
+        # elm2
 
-            if device_type.value in data[issue_type].keys():
-                data[issue_type][device_type.value].append([k, prop, val1, val2])
+        if issue.issue_type in data.keys():
+
+            if issue.device_type.value in data[issue.issue_type].keys():
+                data[issue.issue_type][issue.device_type.value].append((k, issue))
             else:
-                data[issue_type][device_type.value] = [[k, prop, val1, val2]]
+                data[issue.issue_type][issue.device_type.value] = [(k, issue)]
 
         else:
-            data[issue_type] = {device_type.value: [[k, prop, val1, val2]]}
+            data[issue.issue_type] = {issue.device_type.value: [(k, issue)]}
 
         k += 1
 
     # build the tree
     model = QtGui.QStandardItemModel()
-    model.setHorizontalHeaderLabels(['Issue #', 'property', 'my value', 'their value', 'Accept theirs'])
+    model.setHorizontalHeaderLabels(['Issue #', 'name', 'property', 'my value', 'their value', 'Accept theirs'])
 
     # populate data
-    for issue, devices in data.items():
+    for issue_name, devices in data.items():
 
-        parent1 = QtGui.QStandardItem(issue)  # add the issue group
+        parent1 = QtGui.QStandardItem(issue_name)  # add the issue group
 
-        for device, values in devices.items():
+        for device, list_of_issues in devices.items():
 
             parent2 = QtGui.QStandardItem(device)  # add the device type group
 
-            for vals in values:  # add the row of information
-                items = [QtGui.QStandardItem(str(v)) for v in vals]
-                check = QtGui.QStandardItem()
+            for k, issue_item in list_of_issues:  # add the row of information
+
+                items = list()
+                items.append(QtGui.QStandardItem(str(k)))
+                items.append(QtGui.QStandardItem(issue_item.get_my_name()))
+                items.append(QtGui.QStandardItem(issue_item.property_name))
+                items.append(QtGui.QStandardItem(str(issue_item.get_my_value())))
+                items.append(QtGui.QStandardItem(str(issue_item.get_their_value())))
+
+                check = QtGui.QStandardItem(str(issue_item.__accept__))
                 check.isCheckable()
-                check.setCheckState(Qt.Checked)
+
+                if issue_item.__accept__:
+                    check.setCheckState(Qt.Checked)
+                else:
+                    check.setCheckState(Qt.Unchecked)
+
                 items.append(check)
 
                 for item in items:

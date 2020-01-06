@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Sun Jan  5 10:12:20 2020
+# Created: Mon Jan  6 14:16:49 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -38,20 +38,28 @@ class Ui_Dialog(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame_2)
         self.horizontalLayout.setContentsMargins(-1, 0, -1, -1)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(632, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.accept_pushButton = QtWidgets.QPushButton(self.frame_2)
+        self.accept_selected_pushButton = QtWidgets.QPushButton(self.frame_2)
+        self.accept_selected_pushButton.setText("")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/icons/accept.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.accept_pushButton.setIcon(icon)
-        self.accept_pushButton.setObjectName("accept_pushButton")
-        self.horizontalLayout.addWidget(self.accept_pushButton)
-        self.dismiss_pushButton = QtWidgets.QPushButton(self.frame_2)
+        self.accept_selected_pushButton.setIcon(icon)
+        self.accept_selected_pushButton.setObjectName("accept_selected_pushButton")
+        self.horizontalLayout.addWidget(self.accept_selected_pushButton)
+        self.reject_selected_pushButton = QtWidgets.QPushButton(self.frame_2)
+        self.reject_selected_pushButton.setText("")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/Icons/icons/delete.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.dismiss_pushButton.setIcon(icon1)
-        self.dismiss_pushButton.setObjectName("dismiss_pushButton")
-        self.horizontalLayout.addWidget(self.dismiss_pushButton)
+        self.reject_selected_pushButton.setIcon(icon1)
+        self.reject_selected_pushButton.setObjectName("reject_selected_pushButton")
+        self.horizontalLayout.addWidget(self.reject_selected_pushButton)
+        spacerItem = QtWidgets.QSpacerItem(632, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.doit_pushButton = QtWidgets.QPushButton(self.frame_2)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/Icons/icons/accept2.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.doit_pushButton.setIcon(icon2)
+        self.doit_pushButton.setObjectName("doit_pushButton")
+        self.horizontalLayout.addWidget(self.doit_pushButton)
         self.verticalLayout.addWidget(self.frame_2)
 
         self.retranslateUi(Dialog)
@@ -59,8 +67,10 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "Dialog", None, -1))
-        self.accept_pushButton.setText(QtWidgets.QApplication.translate("Dialog", "Accept changes", None, -1))
-        self.dismiss_pushButton.setText(QtWidgets.QApplication.translate("Dialog", "Dismiss changes", None, -1))
+        self.accept_selected_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Accept selected", None, -1))
+        self.reject_selected_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Reject selected changes", None, -1))
+        self.doit_pushButton.setToolTip(QtWidgets.QApplication.translate("Dialog", "Process all changes as especified", None, -1))
+        self.doit_pushButton.setText(QtWidgets.QApplication.translate("Dialog", "Do it", None, -1))
 
 from .icons_rc import *
 

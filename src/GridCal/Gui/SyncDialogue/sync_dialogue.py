@@ -1,7 +1,7 @@
 
 import sys
 from PySide2.QtWidgets import *
-
+from PySide2.QtCore import Qt
 from GridCal.Gui.SyncDialogue.gui import *
 from GridCal.Engine.IO.synchronization_driver import get_issues_tree_view_model, FileSyncThread
 
@@ -22,11 +22,13 @@ class SyncDialogueWindow(QtWidgets.QDialog):
 
         self.file_sync_thread.pause()
 
-        self.model = get_issues_tree_view_model(file_sync_thread.issues)
+        self.model = get_issues_tree_view_model(self.file_sync_thread.issues)
         self.ui.treeView.setModel(self.model)
+        self.ui.treeView.expandAll()
 
-        self.ui.accept_pushButton.clicked.connect(self.accept_changes)
-        self.ui.dismiss_pushButton.clicked.connect(self.dismiss_changes)
+        self.ui.accept_selected_pushButton.clicked.connect(self.accept_changes)
+        self.ui.reject_selected_pushButton.clicked.connect(self.reject_changes)
+        self.ui.doit_pushButton.clicked.connect(self.doit)
 
     def msg(self, text, title="Warning"):
         """
@@ -46,11 +48,63 @@ class SyncDialogueWindow(QtWidgets.QDialog):
     def closeEvent(self, event):
         self.file_sync_thread.resume()
 
-    def accept_changes(self):
-        print('Accepted')
+    def get_item_level(self, item):
 
-    def dismiss_changes(self):
-        print('dismiss')
+        l = 0
+        idx = item
+        while idx.parent().data() is not None:
+            idx = idx.parent()
+            l += 1
+        return l
+
+    def set_selection_value(self, value=True):
+        """
+        Change the selected tree items
+        :param value: True / False
+        :return: Nothing
+        """
+        idx = self.ui.treeView.selectedIndexes()
+
+        # filter by indices of level 2
+        for i in idx:
+
+            c = i.column()
+            r = i.row()
+
+            if c == 0 or c == 5:
+                if self.get_item_level(i) == 2:
+
+                    if c == 0:  # if it is the first column process the issue index
+                        issue_idx = int(i.data())
+                        self.file_sync_thread.issues[issue_idx].__accept__ = value
+
+                    elif c == 5:   # if it is the status column, process the status
+
+                        check = QtGui.QStandardItem(str(value))
+                        check.isCheckable()
+                        if value:
+                            check.setCheckState(Qt.Checked)
+                        else:
+                            check.setCheckState(Qt.Unchecked)
+                        self.model.setItem(r, c, check)
+
+    def accept_changes(self):
+        """
+        Accept selected issues
+        """
+        self.set_selection_value(True)
+
+    def reject_changes(self):
+        """
+        Reject selected issues
+        """
+        self.set_selection_value(False)
+
+    def doit(self):
+        """
+        close
+        """
+        self.close()
 
 
 if __name__ == "__main__":

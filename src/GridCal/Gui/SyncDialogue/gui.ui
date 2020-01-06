@@ -67,6 +67,34 @@
        <number>0</number>
       </property>
       <item>
+       <widget class="QPushButton" name="accept_selected_pushButton">
+        <property name="toolTip">
+         <string>Accept selected</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/Icons/icons/accept.svg</normaloff>:/Icons/icons/accept.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="reject_selected_pushButton">
+        <property name="toolTip">
+         <string>Reject selected changes</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -80,24 +108,16 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="accept_pushButton">
+       <widget class="QPushButton" name="doit_pushButton">
+        <property name="toolTip">
+         <string>Process all changes as especified</string>
+        </property>
         <property name="text">
-         <string>Accept changes</string>
+         <string>Do it</string>
         </property>
         <property name="icon">
          <iconset resource="icons.qrc">
-          <normaloff>:/Icons/icons/accept.svg</normaloff>:/Icons/icons/accept.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="dismiss_pushButton">
-        <property name="text">
-         <string>Dismiss changes</string>
-        </property>
-        <property name="icon">
-         <iconset resource="icons.qrc">
-          <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+          <normaloff>:/Icons/icons/accept2.svg</normaloff>:/Icons/icons/accept2.svg</iconset>
         </property>
        </widget>
       </item>
