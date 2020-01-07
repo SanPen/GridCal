@@ -25,6 +25,7 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
+from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
 
 # Engine imports
@@ -37,7 +38,7 @@ from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReductio
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import *
-from GridCal.Engine.IO.file_handler import *
+
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
@@ -48,6 +49,8 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
 from GridCal.Engine.IO.export_results_driver import ExportAllThread
+from GridCal.Engine.IO.file_handler import *
+from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 
 import gc
@@ -271,6 +274,10 @@ class MainGUI(QMainWindow):
         self.painter = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
+        self.file_sync_thread = FileSyncThread(None, None, None)
+
+        # window pointers
+        self.file_sync_window = None
 
         self.stuff_running_now = list()
 
@@ -302,6 +309,8 @@ class MainGUI(QMainWindow):
         self.ui.actionNew_project.triggered.connect(self.new_project)
 
         self.ui.actionOpen_file.triggered.connect(self.open_file)
+
+        self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
 
         self.ui.actionSave.triggered.connect(self.save_file)
 
@@ -366,6 +375,8 @@ class MainGUI(QMainWindow):
         self.ui.actionSet_OPF_generation_to_profiles.triggered.connect(self.copy_opf_to_profiles)
 
         self.ui.actionShow_color_controls.triggered.connect(self.set_colouring_frame_state)
+
+        self.ui.actionSync.triggered.connect(self.file_sync_toggle)
 
         # Buttons
 
@@ -518,6 +529,8 @@ class MainGUI(QMainWindow):
 
         self.view_cascade_menu()
 
+        self.clear_results()
+
     def LOCK(self, val=True):
         """
         Lock the interface to prevent new simulation launches
@@ -583,7 +596,8 @@ class MainGUI(QMainWindow):
             if len(events) > 0:
                 file_name = events[0].toLocalFile()
                 name, file_extension = os.path.splitext(file_name)
-                accepted = ['.gridcal', '.xlsx', '.xls', '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
+                accepted = ['.gridcal', '.xlsx', '.xls', '.sqlite',
+                            '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
                 if file_extension.lower() in accepted:
                     self.open_file_now(filename=file_name)
                 else:
@@ -875,9 +889,7 @@ class MainGUI(QMainWindow):
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
-            # self.grid_editor.center_nodes()
-            self.grid_editor.diagramView.fitInView(self.grid_editor.diagramScene.sceneRect(), Qt.KeepAspectRatio)
-            self.grid_editor.diagramView.scale(1.0, 1.0)
+            self.grid_editor.align_schematic()
 
     def new_project_now(self):
         """
@@ -962,12 +974,12 @@ class MainGUI(QMainWindow):
         else:
             self.msg('There is a file being processed now.')
 
-    def open_file_threaded(self):
+    def open_file_threaded(self, post_function=None):
         """
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.xlsx *.xls *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
+        files_types = "Formats (*.gridcal *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
         # files_types = ''
         # call dialog to select the file
 
@@ -977,17 +989,18 @@ class MainGUI(QMainWindow):
 
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
                                                                         caption='Open file',
-                                                                        directory=self.project_directory,
+                                                                        dir=self.project_directory,
                                                                         filter=files_types,
                                                                         options=options)
 
         if len(filename) > 0:
-            self.open_file_now(filename)
+            self.open_file_now(filename, post_function)
 
-    def open_file_now(self, filename):
+    def open_file_now(self, filename, post_function=None):
         """
 
         :param filename:
+        :param post_function:
         :return:
         """
         self.file_name = filename
@@ -1005,7 +1018,10 @@ class MainGUI(QMainWindow):
         self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
         self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
         self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-        self.open_file_thread_object.done_signal.connect(self.post_open_file)
+        if post_function is None:
+            self.open_file_thread_object.done_signal.connect(self.post_open_file)
+        else:
+            self.open_file_thread_object.done_signal.connect(post_function)
 
         # thread start
         self.open_file_thread_object.start()
@@ -1040,6 +1056,7 @@ class MainGUI(QMainWindow):
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
                 self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+                self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
 
                 # set circuit comments
                 try:
@@ -1057,6 +1074,43 @@ class MainGUI(QMainWindow):
                 warn('The file was not valid')
         else:
             pass
+
+    def add_circuit(self):
+        """
+        Prompt to add another circuit
+        """
+        self.open_file_threaded(post_function=self.post_add_circuit)
+
+    def post_add_circuit(self):
+        """
+        Stuff to do after opening another circuit
+        :return: Nothing
+        """
+        self.stuff_running_now.remove('file_open')
+
+        if self.open_file_thread_object is not None:
+
+            if len(self.open_file_thread_object.logger) > 0:
+                if len(self.open_file_thread_object.logger) > 0:
+                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                    dlg.exec_()
+
+            if self.open_file_thread_object.valid:
+
+                if len(self.circuit.buses) == 0:
+                    # load the circuit
+                    self.stuff_running_now.append('file_open')
+                    self.post_open_file()
+                else:
+                    # add the circuit
+                    buses = self.circuit.add_circuit(self.open_file_thread_object.circuit, angle=0)
+
+                    # add to schematic
+                    self.grid_editor.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
+                    self.grid_editor.align_schematic()
+
+                    for bus in buses:
+                        bus.graphic_obj.setSelected(True)
 
     def update_date_dependent_combos(self):
         """
@@ -1086,7 +1140,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "GridCal zip (*.gridcal);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json)"
+        files_types = "GridCal zip (*.gridcal);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json);;Sqlite (*.sqlite)"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1119,6 +1173,7 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['JSON (*.json)'] = '.json'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                extension['Sqlite (*.sqlite)'] = '.sqlite'
 
                 if file_extension == '':
                     filename = name + extension[type_selected]
@@ -1127,7 +1182,6 @@ class MainGUI(QMainWindow):
                 self.file_name = filename
                 self.save_file_now(self.file_name)
         else:
-
             # save directly
             self.save_file_now(self.file_name)
 
@@ -1166,6 +1220,8 @@ class MainGUI(QMainWindow):
             dlg.exec_()
 
         self.stuff_running_now.remove('file_save')
+
+        self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
 
         # call the garbage collector to free memory
         gc.collect()
@@ -3407,12 +3463,14 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
-
+        self.ui.resultsTableView.setModel(None)
         self.ui.dataStructureTableView.setModel(None)
         self.ui.catalogueTreeView.setModel(None)
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+        self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+        self.ui.user_name_label.setText('User: ' + str(self.circuit.user_name))
 
     def colour_now(self, html=False):
         """
@@ -4793,6 +4851,66 @@ class MainGUI(QMainWindow):
         for f in self.files_to_delete_at_exit:
             if os.path.exists(f):
                 os.remove(f)
+
+    def enable_manual_file_operations(self, val=True):
+        """
+        Enable / disable manual operations
+        :param val: True/False
+        """
+        self.ui.actionSave.setEnabled(val)
+        self.ui.actionNew_project.setEnabled(val)
+        self.ui.actionOpen_file.setEnabled(val)
+
+    def file_sync_toggle(self):
+        """
+        Toggle file sync on/off
+        """
+        if self.ui.actionSync.isChecked():
+            # attempt to start synchronizing
+            if os.path.exists(self.file_name):
+                # sleep_time = self.ui.sync_interval_spinBox.value() * 60  # seconds to sleep
+                sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
+                self.file_sync_thread = FileSyncThread(self.circuit, file_name=self.file_name, sleep_time=sleep_time)
+                self.file_sync_thread.sync_event.connect(self.post_file_sync)
+                self.file_sync_thread.start()
+
+                # disable the regular save so that you cannot override the synchronization process
+                self.enable_manual_file_operations(False)
+
+            else:
+                self.msg('Cannot sync because the file does not exist.\nDid you save the model?')
+                self.ui.actionSync.setChecked(False)
+
+                # enable the regular save button
+                self.enable_manual_file_operations(True)
+        else:
+            # attempt to stop the synchronization
+            if self.file_sync_thread.isRunning():
+                self.file_sync_thread.cancel()
+
+                # enable the regular save button
+                self.enable_manual_file_operations(True)
+
+    def post_file_sync(self):
+        """
+        Actions to perform upon synchronization
+        """
+        print('Sync event performed!!')
+
+        if self.file_sync_thread.version_conflict:
+            # version conflict and changes
+            if len(self.file_sync_thread.issues) > 0:
+                self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread until resolve
+                self.file_sync_window.setModal(True)
+                self.file_sync_window.show()
+            else:
+                self.circuit.model_version = self.file_sync_thread.highest_version
+                self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
+        else:
+            # no version conflict, and there were changes
+            if len(self.file_sync_thread.issues) > 0:
+                self.save_file()
 
 
 def run(use_native_dialogues=True):

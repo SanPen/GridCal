@@ -17,6 +17,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 from GridCal.Engine.IO.pack_unpack import create_data_frames
+from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 
 def check_names(names):

@@ -20,6 +20,8 @@ import pandas as pd
 import zipfile
 from typing import List, Dict
 
+from GridCal.Engine.IO.generic_io_functions import parse_config_df
+
 
 def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip",
                             text_func=None, progress_func=None):
@@ -99,26 +101,7 @@ def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None)
 
             if name.lower() == "config":
                 df = pd.read_csv(file_pointer, index_col=0)
-
-                if 'baseMVA' in df.index:
-                    data["baseMVA"] = float(df.at['name', 'Value'])
-                else:
-                    data["baseMVA"] = 100
-
-                if 'version' in df.index:
-                    data["version"] = float(df.at['version', 'Value'])
-
-                if 'name' in df.index:
-                    data["name"] = df.at['name', 'Value']
-                elif 'Name' in df.index:
-                    data["name"] = df.at['Name', 'Value']
-                else:
-                    data["name"] = 'Grid'
-
-                if 'Comments' in df.index:
-                    data["Comments"] = df.at['Comments', 'Value']
-                else:
-                    data["Comments"] = ''
+                data = parse_config_df(df, data)
             else:
                 # make pandas read the file
                 df = pd.read_csv(file_pointer)

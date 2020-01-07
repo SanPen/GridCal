@@ -18,31 +18,37 @@ import numpy as np
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.excel_interface import create_data_frames, interpret_excel_v3, check_names
+from GridCal.Engine.IO.excel_interface import check_names
+from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 
-def save_sqlite(circuit: MultiCircuit, file_path):
+def save_data_frames_to_sqlite(dfs, file_path, text_func=None, progress_func=None):
     """
     Save the circuit information in excel format
-    :param circuit: MultiCircuit instance
+    :param dfs: list of DataFrames
     :param file_path: path to the excel file
     :return: logger with information
     """
     logger = Logger()
 
-    dfs = create_data_frames(circuit=circuit)
-
     conn = sqlite3.connect(file_path)
 
-    for key in dfs.keys():
-        dfs[key].to_sql(key, conn, if_exists='replace', index=True)
+    n = len(dfs.keys())
+
+    for i, key in enumerate(dfs.keys()):
+
+        if progress_func is not None:
+            progress_func((i + 1) / n * 100)
+
+        if text_func is not None:
+            text_func('Saving ' + key)
+
+        dfs[key].to_sql(key, conn, if_exists='replace', index=False)
 
     return logger
 
 
-def open_sqlite(file_path):
-
-    circuit = MultiCircuit()
+def open_data_frames_from_sqlite(file_path, text_func=None, progress_func=None):
 
     # make connection
     conn = sqlite3.connect(file_path)
@@ -55,52 +61,40 @@ def open_sqlite(file_path):
     names = [t[0] for t in tables]
 
     check_names(names)
+    n = len(names)
+    for i, key in enumerate(names):
 
-    for key in names:
+        if progress_func is not None:
+            progress_func((i + 1) / n * 100)
+
+        if text_func is not None:
+            text_func('select * from ' + key)
+
         dfs[key] = pd.read_sql('select * from ' + key, conn)
 
-    df = dfs['config']
-    idx = df['Property'][df['Property'] == 'BaseMVA'].index
-    if len(idx) > 0:
-        dfs["baseMVA"] = np.double(df.values[idx, 1])
-    else:
-        dfs["baseMVA"] = 100
+    # parse the configuration
+    dfs = parse_config_df(dfs['config'], dfs)
 
-    idx = df['Property'][df['Property'] == 'Version'].index
-    if len(idx) > 0:
-        dfs["version"] = np.double(df.values[idx, 1])
-
-    idx = df['Property'][df['Property'] == 'Name'].index
-    if len(idx) > 0:
-        dfs["name"] = df.values[idx[0], 1]
-    else:
-        dfs["name"] = 'Grid'
-
-    idx = df['Property'][df['Property'] == 'Comments'].index
-    if len(idx) > 0:
-        dfs["Comments"] = df.values[idx[0], 1]
-    else:
-        dfs["Comments"] = ''
-
-    # fill circuit data
-    interpret_excel_v3(circuit, dfs)
-
-    return circuit
+    return dfs
 
 
 if __name__ == '__main__':
     import time
     from GridCal.Engine.IO.file_handler import *
+    from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/src/GridCal/Monash.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.gridcal'
 
-    a = time.clock()
-    circuit = FileOpen(fname).open()
-    print('excel based open:', time.clock() - a)
+    a = time.time()
+    circuit_ = FileOpen(fname).open()
+    print('native based open:', time.time() - a)
 
-    save_sqlite(circuit, file_path='1354 pegase.sqlite')
+    print('Saving .sqlite ...')
+    dfs = dfs = create_data_frames(circuit=circuit_)
+    save_data_frames_to_sqlite(dfs, file_path=circuit_.name + '.sqlite')
 
-    a = time.clock()
-    circuit2 = open_sqlite('1354 pegase.sqlite')
-    print('sql based open:', time.clock() - a)
+    a = time.time()
+    data = open_data_frames_from_sqlite(circuit_.name + '.sqlite')
+    circuit2 = data_frames_to_circuit(data)
+    print('sql based open:', time.time() - a)

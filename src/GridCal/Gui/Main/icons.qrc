@@ -1,10 +1,11 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/sync.svg</file>
     <file>icons/show_color_controls.svg</file>
+    <file>icons/load_add.svg</file>
     <file>icons/move_bus.svg</file>
     <file>icons/ptdf_ts.svg</file>
     <file>icons/otdf.svg</file>
-    <file>icons/dcopf2ts.svg</file>
     <file>icons/ptdf.svg</file>
     <file>icons/delete3.svg</file>
     <file>icons/highlight2.svg</file>

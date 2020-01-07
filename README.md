@@ -16,9 +16,9 @@ This software aims to be a complete platform for power systems research and simu
 
 Try: `pip install GridCal`
 
-For more options, follow the
+For more options (including a standalone setup one), follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
-from the project's documentation.
+from the project's [documentation](https://gridcal.readthedocs.io).
 
 
 # Execution
@@ -68,19 +68,20 @@ It is pure Python, it works for Windows, Linux and OSX.
 Some of the features you'll find already are:
 
 - Compatible with other formats:
-  - Import (Drag & Drop)
+  - **Import** (Drag & Drop)
     - CIM (Common Information Model v16)
     - PSS/e RAW versions 29, 30, 32, 33 and 34.
     - Matpower (might not be fully compatible, notify me if not).
     - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
     
-  - Export
+  - **Export**
     - Zip file `.gridcal` with CSV inside (fastest, normal GridCal format) 
+    - Sqlite
     - Excel
     - Custom JSON
     - CIM (Common Information Model v16)
 
-- Power flow:
+- **Power flow**:
   - Robust Newton Raphson in power and current equations.
   - Newton Raphson Iwamoto (optimal acceleration).
   - Fast Decoupled Power Flow
@@ -89,39 +90,39 @@ Some of the features you'll find already are:
   - DC approximation.
   - Linear AC approximation.
   
-- Optimal power flow (OPF) and generation dispatch:
+- **Optimal power flow (OPF)** and generation dispatch:
   - Linear (DC) with losses.
   - Linear (Ac) with losses.
   - Loss-less simple generation dispatch.  
   - All the modes can be split the runs in hours, days, weeks or months!
 
-- Time series with profiles in all the objects physical magnitudes.
+- **Time series** with profiles in all the objects physical magnitudes.
 
-- PTDF approximated branch flow time series for super fast estimation of the flows.
+- **PTDF** approximated branch flow time series for super fast estimation of the flows.
 
 - Bifurcation point with predictor-corrector Newton-Raphson.
 
-- Monte Carlo / Latin Hypercube stochastic power flow based on the input profiles.
+- **Monte Carlo / Latin Hypercube** stochastic power flow based on the input profiles.
 
-- Blackout cascading in simulation and step by step mode.
+- **Blackout cascading** in simulation and step by step mode.
 
-- Three-phase short circuit.
+- Three-phase **short circuit**.
 
 - Includes the Z-I-P load model, this means that the power flows can handle both power and current.
 
 - The ability to handle island grids in all the simulation modes.
 
-- Profile editor and importer from Excel and CSV.
+- **Profile editor** and importer from Excel and CSV.
 
-- Grid elements analysis to discover data problems.
+- **Grid elements' analysis** to discover data problems.
 
-- Overhead line construction from wire scheme.
+- **Overhead line construction** from wire scheme.
 
-- Device templates (lines and transformers).
+- Device **templates** (lines and transformers).
 
-- Grid reduction based on branch type and filtering by impedance values
+- **Grid reduction** based on branch type and filtering by impedance values
 
-- Export the schematic in SVG and PNG formats.
+- **Export** the schematic in SVG and PNG formats.
 
 [Check out the documentation](https://gridcal.readthedocs.io) to learn more and to get started.
 

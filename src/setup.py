@@ -51,7 +51,7 @@ package_data = {'GridCal': ['*.md'],
                 'GridCal.ThirdParty.pulp.solverdir.cbc.osx.64': ['*', '*.*'],
                 }
 
-dependencies = ["PySide2>=5.11",
+dependencies = ["PySide2==5.13",  # for now, 5.14 breaks the UI generation for development
                 "numpy>=1.14.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
@@ -63,7 +63,6 @@ dependencies = ["PySide2>=5.11",
                 "pyDOE>=0.3.8",
                 "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",
-                # "pulp>=1.6.8",
                 "smopy>=0.0.6",
                 "chardet>=3.0.4",
                 "scikit-learn>=0.18",
@@ -81,7 +80,7 @@ setup(
     # package, this name will be registered for you. It will determine how
     # users can install this project, e.g.:
     #
-    # $ pip install sampleproject
+    # $ pip install sample_project
     #
     # And where it will live on PyPI: https://pypi.org/project/sampleproject/
     #
@@ -248,5 +247,5 @@ setup(
     # issues, where the source is hosted, where to say thanks to the package
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
-    # project_urls='',  # optional
+    project_urls='https://github.com/SanPen/GridCal',  # optional
 )

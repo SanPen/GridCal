@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import os
 from datetime import timedelta
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
@@ -21,6 +23,15 @@ from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
+
+
+def get_system_user():
+    """
+    Get the system user name
+    :return: string
+    """
+    getUser = lambda: os.environ["USERNAME"] if "C:" in os.getcwd() else os.environ["USER"]
+    return getUser()
 
 
 class MultiCircuit:
@@ -56,6 +67,12 @@ class MultiCircuit:
         self.name = name
 
         self.comments = ''
+
+        # this is a number that serves
+        self.model_version = 1
+
+        # user mane
+        self.user_name = get_system_user()
 
         # Base power (MVA)
         self.Sbase = 100.0
@@ -501,6 +518,8 @@ class MultiCircuit:
                 'phases': 'ps',
                 'name': self.name,
                 'Sbase': self.Sbase,
+                'ModelVersion': self.model_version,
+                'UserName': self.user_name,
                 'comments': self.comments}
 
     def assign_circuit(self, circ):
@@ -1486,8 +1505,87 @@ class MultiCircuit:
 
     def get_center_location(self):
         """
-        Get the mean coordinates of the system
+        Get the mean coordinates of the system (lat, lon)
         """
         coord = np.array([b.get_coordinates() for b in self.buses])
 
         return coord.mean(axis=0).tolist()
+
+    def get_boundaries(self, buses):
+        """
+
+        :return:
+        """
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
+        # shrink selection only
+        for bus in buses:
+            bus.retrieve_graphic_position()
+            x = bus.x
+            y = bus.y
+            max_x = max(max_x, x)
+            min_x = min(min_x, x)
+            max_y = max(max_y, y)
+            min_y = min(min_y, y)
+
+        return min_x, max_x, min_y, max_y
+
+    def average_separation(self, branches):
+        """
+        Average separation of the buses
+        :param branches: list of Branch elements
+        :return: average separation
+        """
+        separation = 0.0
+        for branch in branches:
+            s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
+            separation += s
+        return separation / len(branches)
+
+    def add_circuit(self, circuit: "MultiCircuit", angle):
+        """
+        Add a circuit to this circuit
+        :param circuit: Circuit to insert
+        :param angle: angle in degrees
+        :return: Nothing
+        """
+
+        min_x, max_x, min_y, max_y = self.get_boundaries(self.buses)
+        sep1 = self.average_separation(self.branches)
+
+        # compute the average point
+        xm = (max_x + min_x) / 2
+        ym = (max_y + min_y) / 2
+
+        # compute the radius
+        r = np.sqrt((max_x-xm)**2 + (max_y-ym)**2)
+        a = np.deg2rad(angle)
+
+        # compute the zero point at which to insert the circuit
+        x0 = xm + r * np.cos(a)
+        y0 = xm + r * np.sin(a)
+
+        # modify the coordinates of the new circuit
+        min_x2, max_x2, min_y2, max_y2 = self.get_boundaries(circuit.buses)
+        sep2 = self.average_separation(circuit.branches)
+        factor = sep2 / sep1
+        for bus in circuit.buses:
+            bus.x = x0 + (bus.x - min_x2) * factor
+            bus.y = y0 + (bus.y - min_y2) * factor
+
+        # add profiles if required
+        if self.time_profile is not None:
+
+            for bus in circuit.buses:
+                bus.create_profiles(index=self.time_profile)
+
+            for branch in circuit.branches:
+                branch.create_profiles(index=self.time_profile)
+
+        self.buses += circuit.buses
+        self.branches += circuit.branches
+
+        return circuit.buses
