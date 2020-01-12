@@ -1187,7 +1187,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with data from the results
     """
-    def __init__(self, data: np.ndarray, columns, index, palette=None, title='', xlabel='', ylabel='',
+    def __init__(self, data: np.ndarray, columns, index, palette=None, title='', xlabel='', ylabel='', units='',
                  parent=None, editable=False, editable_min_idx=-1, decimals=6):
         """
 
@@ -1217,6 +1217,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         self.title = title
         self.xlabel = xlabel
         self.ylabel = ylabel
+        self.units = units
         self.r, self.c = self.data_c.shape
         self.isDate = False
         if self.r > 0 and self.c > 0:

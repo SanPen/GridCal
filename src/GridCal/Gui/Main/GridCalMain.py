@@ -26,7 +26,6 @@ from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
-from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -38,6 +37,8 @@ from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReductio
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import *
+from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
+from GridCal.Engine.basic_structures import Logger, SyncIssueType
 
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
@@ -3472,6 +3473,8 @@ class MainGUI(QMainWindow):
         self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
         self.ui.user_name_label.setText('User: ' + str(self.circuit.user_name))
 
+        self.ui.units_label.setText("")
+
     def colour_now(self, html=False):
         """
         Color the grid now
@@ -3784,8 +3787,10 @@ class MainGUI(QMainWindow):
             if self.results_mdl is not None:
                 # set the table model
                 self.ui.resultsTableView.setModel(self.results_mdl)
+                self.ui.units_label.setText(self.results_mdl.units)
             else:
                 self.ui.resultsTableView.setModel(None)
+                self.ui.units_label.setText("")
 
     def plot_results(self):
         """
@@ -4868,10 +4873,15 @@ class MainGUI(QMainWindow):
         if self.ui.actionSync.isChecked():
             # attempt to start synchronizing
             if os.path.exists(self.file_name):
-                # sleep_time = self.ui.sync_interval_spinBox.value() * 60  # seconds to sleep
                 sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
                 self.file_sync_thread = FileSyncThread(self.circuit, file_name=self.file_name, sleep_time=sleep_time)
+
+                # upon sync check (call the gui dialogue)
                 self.file_sync_thread.sync_event.connect(self.post_file_sync)
+
+                # upon sync gui check
+                self.file_sync_thread.items_processed_event.connect(self.post_file_sync_items_processed)
+
                 self.file_sync_thread.start()
 
                 # disable the regular save so that you cannot override the synchronization process
@@ -4895,22 +4905,96 @@ class MainGUI(QMainWindow):
         """
         Actions to perform upon synchronization
         """
-        print('Sync event performed!!')
+        # print('Sync event performed!!')
 
         if self.file_sync_thread.version_conflict:
             # version conflict and changes
             if len(self.file_sync_thread.issues) > 0:
-                self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread until resolve
-                self.file_sync_window.setModal(True)
-                self.file_sync_window.show()
+
+                if self.ui.accept_newer_changes_checkBox.isChecked():
+                    if self.file_sync_thread.highest_version > self.circuit.model_version:
+                        # there are newer changes and we want to automatically accept them
+                        self.post_file_sync_items_processed()
+                    else:
+                        # there are newer changes but we do not want to automatically accept them
+                        self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread
+                        self.file_sync_window.setModal(True)
+                        self.file_sync_window.show()
+                else:
+                    # we want to check all the conflicts
+                    self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread
+                    self.file_sync_window.setModal(True)
+                    self.file_sync_window.show()
             else:
+                # just read the file because there were no changes but the version was upgraded
                 self.circuit.model_version = self.file_sync_thread.highest_version
                 self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
 
         else:
-            # no version conflict, and there were changes
+            # no version conflict, and there were changes on my side
             if len(self.file_sync_thread.issues) > 0:
                 self.save_file()
+
+    def post_file_sync_items_processed(self):
+        """
+        Modify, Add or delete objects after the sync acceptation
+        This is done here because it concerns the GUI thread
+        """
+
+        # first add any bus that has been created
+        for issue in self.file_sync_thread.issues:
+            if issue.issue_type == SyncIssueType.Added and issue.device_type == DeviceType.BusDevice:
+                # add the bus directly with all the device it may contain
+                issue.their_elm.delete_children()
+                issue.their_elm.graphic_obj = self.grid_editor.add_api_bus(issue.their_elm)
+                self.circuit.add_bus(issue.their_elm)
+
+        # create dictionary of buses
+        bus_dict = self.circuit.get_bus_dict()
+
+        # add the rest of the devices
+        for issue in self.file_sync_thread.issues:
+            print(issue)
+
+            if issue.issue_type == SyncIssueType.Conflict:
+                if issue.accepted():
+                    issue.accept_change()
+
+            elif issue.issue_type == SyncIssueType.Added:
+
+                if issue.device_type == DeviceType.BranchDevice:
+                    # re_map the buses
+                    name_f = issue.their_elm.bus_from.name
+                    issue.their_elm.bus_from = bus_dict[name_f]
+                    name_t = issue.their_elm.bus_to.name
+                    issue.their_elm.bus_to = bus_dict[name_t]
+
+                    # add the device
+                    issue.their_elm.graphic_obj = self.grid_editor.add_api_branch(issue.their_elm)
+                    issue.their_elm.bus_from.graphic_obj.update()
+                    issue.their_elm.bus_to.graphic_obj.update()
+                    issue.their_elm.graphic_obj.redraw()
+                    self.circuit.add_branch(issue.their_elm)
+
+                elif issue.device_type == DeviceType.BusDevice:
+                    # we already added the buses, but we need to exclude them from the list
+                    continue
+
+                else:
+                    # re_map the buses
+                    name_f = issue.their_elm.bus.name
+                    bus = bus_dict[name_f]
+                    issue.their_elm.bus = bus
+
+                    # add the device
+                    bus.add_device(issue.their_elm)
+                    bus.graphic_obj.create_children_icons()
+
+            elif issue.issue_type == SyncIssueType.Deleted:
+                issue.my_elm.graphic_obj.remove()
+
+        # center nodes
+        self.grid_editor.align_schematic()
 
 
 def run(use_native_dialogues=True):

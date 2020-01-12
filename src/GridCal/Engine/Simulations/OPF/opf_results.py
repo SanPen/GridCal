@@ -202,7 +202,7 @@ class OptimalPowerFlowResults:
                 pass
 
             mdl = ResultsModel(data=y, index=labels, columns=[result_type], title=title,
-                               ylabel=y_label, xlabel='')
+                               ylabel=y_label, xlabel='', units=y_label)
             return mdl
         else:
             return None

@@ -184,7 +184,8 @@ class PTDFResults:
                 title = ''
 
             # assemble model
-            mdl = ResultsModel(data=y, index=self.get_var_names(), columns=labels, title=title, ylabel=y_label)
+            mdl = ResultsModel(data=y, index=self.get_var_names(), columns=labels, title=title,
+                               ylabel=y_label, units=y_label)
             return mdl
 
         else:

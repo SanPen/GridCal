@@ -24,12 +24,18 @@ class ResultTypes(Enum):
     BusActivePower = 'Bus active power', DeviceType.BusDevice
     BusReactivePower = 'Bus reactive power', DeviceType.BusDevice
     BranchPower = 'Branch power', DeviceType.BranchDevice
+    BranchActivePower = 'Branch active power', DeviceType.BranchDevice
+    BranchReactivePower = 'Branch reactive power', DeviceType.BranchDevice
     BranchCurrent = 'Branch current', DeviceType.BranchDevice
+    BranchActiveCurrent = 'Branch active current', DeviceType.BranchDevice
+    BranchReactiveCurrent = 'Branch reactive current', DeviceType.BranchDevice
     BranchLoading = 'Branch loading', DeviceType.BranchDevice
     BranchTapModule = 'Branch tap module', DeviceType.BranchDevice
     BranchVoltage = 'Branch voltage drop', DeviceType.BranchDevice
     BranchAngles = 'Branch voltage angles', DeviceType.BranchDevice
     BranchLosses = 'Branch losses', DeviceType.BranchDevice
+    BranchActiveLosses = 'Branch active losses', DeviceType.BranchDevice
+    BranchReactiveLosses = 'Branch reactive losses', DeviceType.BranchDevice
     BatteryPower = 'Battery power', DeviceType.BatteryDevice
     BatteryEnergy = 'Battery energy', DeviceType.BatteryDevice
 

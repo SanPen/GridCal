@@ -89,12 +89,15 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.short_circuit_power = SCpower
 
-        self.available_results = [ResultTypes.BusVoltage,
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchCurrent,
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusVoltageAngle,
+                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchReactivePower,
+                                  ResultTypes.BranchActiveCurrent,
+                                  ResultTypes.BranchReactiveCurrent,
                                   ResultTypes.BranchLoading,
-                                  ResultTypes.BranchLosses,
-                                  ResultTypes.BusShortCircuitPower]
+                                  ResultTypes.BranchActiveLosses,
+                                  ResultTypes.BranchReactiveLosses]
 
     def copy(self):
         """
@@ -174,65 +177,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         if results.buses_useful_for_storage is not None:
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
-
-    def mdl(self, result_type, indices=None, names=None) -> "ResultsModel":
-        """
-        Plot the results
-        Args:
-            result_type:
-            ax:
-            indices:
-            names:
-
-        Returns:
-
-        """
-
-        if indices is None:
-            indices = np.array(range(len(names)))
-
-        if len(indices) > 0:
-            labels = names[indices]
-            ylabel = ''
-            title = ''
-            if result_type == ResultTypes.BusVoltage:
-                y = self.voltage[indices]
-                ylabel = '(p.u.)'
-                title = 'Bus voltage '
-
-            elif result_type == ResultTypes.BranchPower:
-                y = self.Sbranch[indices]
-                ylabel = '(MVA)'
-                title = 'Branch power '
-
-            elif result_type == ResultTypes.BranchCurrent:
-                y = self.Ibranch[indices]
-                ylabel = '(p.u.)'
-                title = 'Branch current '
-
-            elif result_type == ResultTypes.BranchLoading:
-                y = self.loading[indices] * 100
-                ylabel = '(%)'
-                title = 'Branch loading '
-
-            elif result_type == ResultTypes.BranchLosses:
-                y = self.losses[indices]
-                ylabel = '(MVA)'
-                title = 'Branch losses '
-
-            elif result_type == ResultTypes.BusShortCircuitPower:
-                y = self.short_circuit_power[indices]
-                ylabel = '(MVA)'
-                title = 'Bus short circuit power'
-            else:
-                pass
-
-            mdl = ResultsModel(data=y, index=labels, columns=[result_type], title=title,
-                               ylabel=ylabel, xlabel='')
-            return mdl
-
-        else:
-            return None
 
 
 class ShortCircuit(QRunnable):

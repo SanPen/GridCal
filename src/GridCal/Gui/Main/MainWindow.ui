@@ -1634,6 +1634,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QPushButton" name="copy_results_pushButton">
+                 <property name="toolTip">
+                  <string>Copy to clipboard</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -1654,6 +1657,13 @@ p, li { white-space: pre-wrap; }
                  <property name="icon">
                   <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="units_label">
+                 <property name="text">
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -1737,7 +1747,7 @@ p, li { white-space: pre-wrap; }
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideNone</enum>
@@ -1951,6 +1961,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item row="9" column="0" colspan="2">
                 <widget class="QCheckBox" name="auto_precision_checkBox">
+                 <property name="toolTip">
+                  <string>If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful</string>
+                 </property>
                  <property name="text">
                   <string>Automatic precision</string>
                  </property>
@@ -4180,7 +4193,7 @@ points from time series</string>
                <item row="4" column="0">
                 <widget class="QLabel" name="label_39">
                  <property name="text">
-                  <string>Sync interval (minutes)</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sync interval (seconds)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -4193,7 +4206,7 @@ points from time series</string>
                   <number>1</number>
                  </property>
                  <property name="maximum">
-                  <number>120</number>
+                  <number>99999999</number>
                  </property>
                 </widget>
                </item>
@@ -4329,8 +4342,28 @@ points from time series</string>
                  </property>
                 </spacer>
                </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QCheckBox" name="accept_newer_changes_checkBox">
+                 <property name="text">
+                  <string>Accept newer changes</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -4793,6 +4826,7 @@ points from time series</string>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
+    <addaction name="actionExport_all_the_device_s_profiles"/>
     <addaction name="actionExport_all_results"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -4808,7 +4842,6 @@ points from time series</string>
     </property>
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
-    <addaction name="actionExport_all_the_device_s_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="separator"/>

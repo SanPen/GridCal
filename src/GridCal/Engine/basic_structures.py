@@ -202,6 +202,12 @@ class TapsControlMode(Enum):
     Iterative = "Iterative"
 
 
+class SyncIssueType(Enum):
+    Added = 'Added'
+    Deleted = 'Deleted'
+    Conflict = 'Conflict'
+
+
 class CDF:
     """
     Inverse Cumulative density function of a given array of data

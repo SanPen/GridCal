@@ -114,12 +114,14 @@ class PowerFlowResults:
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
-                                  # 'Bus voltage (polar)',
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchCurrent,
+                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchReactivePower,
+                                  ResultTypes.BranchActiveCurrent,
+                                  ResultTypes.BranchReactiveCurrent,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchTapModule,
-                                  ResultTypes.BranchLosses,
+                                  ResultTypes.BranchActiveLosses,
+                                  ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
                                   ResultTypes.BatteryPower]
@@ -369,6 +371,16 @@ class PowerFlowResults:
                 y_label = '(MVA)'
                 title = 'Branch power '
 
+            elif result_type == ResultTypes.BranchActivePower:
+                y = self.Sbranch[indices].real
+                y_label = '(MW)'
+                title = 'Branch active power '
+
+            elif result_type == ResultTypes.BranchReactivePower:
+                y = self.Sbranch[indices].imag
+                y_label = '(MVAr)'
+                title = 'Branch reactive power '
+
             elif result_type == ResultTypes.BranchTapModule:
                 y = self.tap_module[indices]
                 y_label = '(p.u.)'
@@ -379,8 +391,18 @@ class PowerFlowResults:
                 y_label = '(p.u.)'
                 title = 'Branch current '
 
+            elif result_type == ResultTypes.BranchActiveCurrent:
+                y = self.Ibranch[indices].real
+                y_label = '(p.u.)'
+                title = 'Branch active current '
+
+            elif result_type == ResultTypes.BranchReactiveCurrent:
+                y = self.Ibranch[indices].imag
+                y_label = '(p.u.)'
+                title = 'Branch reactive current '
+
             elif result_type == ResultTypes.BranchLoading:
-                y = self.loading[indices] * 100
+                y = np.abs(self.loading[indices]) * 100
                 y_label = '(%)'
                 title = 'Branch loading '
 
@@ -388,6 +410,16 @@ class PowerFlowResults:
                 y = self.losses[indices]
                 y_label = '(MVA)'
                 title = 'Branch losses '
+
+            elif result_type == ResultTypes.BranchActiveLosses:
+                y = self.losses[indices].real
+                y_label = '(MW)'
+                title = 'Branch active losses '
+
+            elif result_type == ResultTypes.BranchReactiveLosses:
+                y = self.losses[indices].imag
+                y_label = '(MVAr)'
+                title = 'Branch reactive losses '
 
             elif result_type == ResultTypes.BranchVoltage:
                 y = np.abs(self.Vbranch[indices])
@@ -414,7 +446,7 @@ class PowerFlowResults:
 
             # assemble model
             mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
-                               title=title, ylabel=y_label)
+                               title=title, ylabel=y_label, units=y_label)
             return mdl
 
         else:

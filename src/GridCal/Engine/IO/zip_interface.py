@@ -75,7 +75,10 @@ def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None)
     """
 
     # open the zip file
-    zip_file_pointer = zipfile.ZipFile(file_name_zip)
+    try:
+        zip_file_pointer = zipfile.ZipFile(file_name_zip)
+    except zipfile.BadZipFile:
+        return None
 
     names = zip_file_pointer.namelist()
 
@@ -100,11 +103,21 @@ def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None)
             file_pointer = zip_file_pointer.open(file_name)
 
             if name.lower() == "config":
-                df = pd.read_csv(file_pointer, index_col=0)
-                data = parse_config_df(df, data)
+                try:
+                    df = pd.read_csv(file_pointer, index_col=0)
+                    data = parse_config_df(df, data)
+                except EOFError:
+                    return None
+                except zipfile.BadZipFile:
+                    return None
             else:
                 # make pandas read the file
-                df = pd.read_csv(file_pointer)
+                try:
+                    df = pd.read_csv(file_pointer)
+                except EOFError:
+                    return None
+                except zipfile.BadZipFile:
+                    return None
 
             # append the DataFrame to the list
             data[name] = df

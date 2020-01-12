@@ -77,7 +77,11 @@ class FileOpen:
                     interpret_excel_v3(self.circuit, data_dictionary)
 
                 elif data_dictionary['version'] == 4.0:
-                    self.circuit = data_frames_to_circuit(data_dictionary)
+                    if data_dictionary is not None:
+                        self.circuit = data_frames_to_circuit(data_dictionary)
+                    else:
+                        self.logger.add("Error while reading the file :(")
+                        return None
 
                 else:
                     self.logger.add('The file could not be processed')
@@ -89,7 +93,11 @@ class FileOpen:
                                                             text_func=text_func,
                                                             progress_func=progress_func)
                 # interpret file content
-                self.circuit = data_frames_to_circuit(data_dictionary)
+                if data_dictionary is not None:
+                    self.circuit = data_frames_to_circuit(data_dictionary)
+                else:
+                    self.logger.add("Error while reading the file :(")
+                    return None
 
             elif file_extension.lower() == '.sqlite':
 
@@ -98,7 +106,11 @@ class FileOpen:
                                                                text_func=text_func,
                                                                progress_func=progress_func)
                 # interpret file content
-                self.circuit = data_frames_to_circuit(data_dictionary)
+                if data_dictionary is not None:
+                    self.circuit = data_frames_to_circuit(data_dictionary)
+                else:
+                    self.logger.add("Error while reading the file :(")
+                    return None
 
             elif file_extension.lower() == '.dgs':
                 circ = dgs_to_circuit(self.file_name)

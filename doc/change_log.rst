@@ -15,6 +15,9 @@ Version 3.6.5
 
 - Added Sqlite save/open support
 - Added Grid append functionality
+- Added units in the results
+- Now all the results are displayed in real numbers instead of in complex numbers.
+- Added an amazing functionality to allow model synchronization across several computers.
 
 
 Version 3.6.4

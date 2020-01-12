@@ -20,7 +20,7 @@ from typing import List, Dict
 from PySide2.QtCore import QThread, Signal
 from PySide2 import QtGui
 
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.basic_structures import Logger, SyncIssueType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType
@@ -32,7 +32,7 @@ from PySide2.QtWidgets import QApplication, QTreeView
 
 class SyncIssue:
 
-    def __init__(self, device_type, issue_type, property_name, my_elm, their_elm):
+    def __init__(self, device_type, issue_type: SyncIssueType, property_name, my_elm, their_elm):
         """
 
         :param device_type:
@@ -54,26 +54,47 @@ class SyncIssue:
 
         self.__accept__ = True
 
+    def __str__(self):
+        if self.issue_type == SyncIssueType.Conflict:
+            return 'Mod::' + self.device_type.value + ', ' + self.issue_type.value + ', ' + self.my_elm.name + ':' + self.property_name
+        elif self.issue_type == SyncIssueType.Added:
+            return 'Add::' + self.device_type.value + ', ' + self.issue_type.value + ', ' + self.their_elm.name
+        elif self.issue_type == SyncIssueType.Deleted:
+            return 'Del::' + self.device_type.value + ', ' + self.issue_type.value + ', ' + self.my_elm.name
+        else:
+            return ""
+
     def accept(self):
         self.__accept__ = True
 
     def reject(self):
         self.__accept__ = False
 
+    def accepted(self):
+        return self.__accept__
+
     def get_my_name(self):
         return str(self.my_elm)
 
     def get_my_value(self):
-        if self.my_elm is not None:
+        if self.my_elm is not None and self.property_name != "":
             return getattr(self.my_elm, self.property_name)
         else:
             return ""
 
     def get_their_value(self):
-        if self.their_elm is not None:
+        if self.their_elm is not None and self.property_name != "":
             return getattr(self.their_elm, self.property_name)
         else:
             return ""
+
+    def accept_change(self):
+        """
+        process the change
+        :return:
+        """
+        their_val = self.get_their_value()
+        setattr(self.my_elm, self.property_name, their_val)
 
 
 def compare_devices(dev1: EditableDevice, dev2: EditableDevice):
@@ -126,7 +147,7 @@ def compare_devices_lists(dev_list1, dev_list2):
             ls = compare_devices(elm1, elm2)
             for prop, val1, val2 in ls:
                 issue = SyncIssue(device_type=elm1.device_type,
-                                  issue_type='Conflict',
+                                  issue_type=SyncIssueType.Conflict,
                                   property_name=prop,
                                   my_elm=elm1,
                                   their_elm=elm2)
@@ -134,7 +155,7 @@ def compare_devices_lists(dev_list1, dev_list2):
 
             # if this is a bus, then examine the children
             if elm1.device_type == DeviceType.BusDevice:
-                # self.loads + self.controlled_generators + self.batteries + self.static_generators + self.shunts
+
                 issues += compare_devices_lists(elm1.loads, elm2.loads)
                 issues += compare_devices_lists(elm1.controlled_generators, elm2.controlled_generators)
                 issues += compare_devices_lists(elm1.batteries, elm2.batteries)
@@ -144,7 +165,7 @@ def compare_devices_lists(dev_list1, dev_list2):
         else:
             # my element has been deleted
             issue = SyncIssue(device_type=elm1.device_type,
-                              issue_type='Deleted',
+                              issue_type=SyncIssueType.Deleted,
                               property_name="",
                               my_elm=elm1,
                               their_elm=None)
@@ -155,7 +176,7 @@ def compare_devices_lists(dev_list1, dev_list2):
         if name2 not in items_dict1.keys():
             # new element added
             issue = SyncIssue(device_type=elm2.device_type,
-                              issue_type='Added',
+                              issue_type=SyncIssueType.Added,
                               property_name="",
                               my_elm=None,
                               their_elm=elm2)
@@ -230,13 +251,13 @@ def get_issues_tree_view_model(issues: List[SyncIssue]):
 
         if issue.issue_type in data.keys():
 
-            if issue.device_type.value in data[issue.issue_type].keys():
-                data[issue.issue_type][issue.device_type.value].append((k, issue))
+            if issue.device_type.value in data[issue.issue_type.value].keys():
+                data[issue.issue_type.value][issue.device_type.value].append((k, issue))
             else:
-                data[issue.issue_type][issue.device_type.value] = [(k, issue)]
+                data[issue.issue_type.value][issue.device_type.value] = [(k, issue)]
 
         else:
-            data[issue.issue_type] = {issue.device_type.value: [(k, issue)]}
+            data[issue.issue_type.value] = {issue.device_type.value: [(k, issue)]}
 
         k += 1
 
@@ -290,6 +311,7 @@ class FileSyncThread(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     sync_event = Signal()
+    items_processed_event = Signal()
 
     def __init__(self, circuit: MultiCircuit, file_name, sleep_time):
         """
@@ -338,13 +360,17 @@ class FileSyncThread(QThread):
                     file_circuit = fopen.open(text_func=self.progress_text.emit,
                                               progress_func=self.progress_signal.emit)
 
-                    # sync the models
-                    self.issues, self.version_conflict = model_check(self.circuit, file_circuit)
+                    if file_circuit is not None:
+                        # sync the models
+                        self.issues, self.version_conflict = model_check(self.circuit, file_circuit)
 
-                    self.highest_version = max(self.circuit.model_version, file_circuit.model_version)
+                        self.highest_version = max(self.circuit.model_version, file_circuit.model_version)
 
-                    # notify the external world that we did sync
-                    self.sync_event.emit()
+                        # notify the external world that we did sync
+                        self.sync_event.emit()
+                    else:
+                        # the sync failed because the file was being used by another sync process
+                        pass
 
                 else:
                     # the file disappeared!
@@ -357,20 +383,33 @@ class FileSyncThread(QThread):
             else:
                 # sleep 1 second to catch other events
                 time.sleep(1)
-                print('Paused...')
 
         # post events
         self.progress_text.emit('Done!')
-
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Cancel the sync checking
+        """
         self.__cancel__ = True
 
     def pause(self):
+        """
+        Pause the sync checking
+        """
         self.__pause__ = True
-        print('\tPaused')
 
     def resume(self):
+        """
+        Resume the sync checking
+        """
         self.__pause__ = False
-        print('\tResume')
+
+    def process_issues(self):
+        """
+        Process all the issues
+        :return:
+        """
+
+        self.items_processed_event.emit()

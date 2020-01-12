@@ -228,7 +228,8 @@ class VoltageCollapseResults:
                 y = self.voltages[:, indices]
 
             # assemble model
-            mdl = ResultsModel(data=y, index=x, columns=labels, title=title, ylabel=y_label, xlabel=x_label)
+            mdl = ResultsModel(data=y, index=x, columns=labels, title=title,
+                               ylabel=y_label, xlabel=x_label, units=y_label)
             return mdl
 
 

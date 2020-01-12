@@ -126,10 +126,13 @@ class TimeSeriesResults(PowerFlowResults):
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
                                   ResultTypes.BusReactivePower,
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchCurrent,
+                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchReactivePower,
+                                  ResultTypes.BranchActiveCurrent,
+                                  ResultTypes.BranchReactiveCurrent,
                                   ResultTypes.BranchLoading,
-                                  ResultTypes.BranchLosses,
+                                  ResultTypes.BranchActiveLosses,
+                                  ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
                                   ResultTypes.SimulationError]
@@ -326,19 +329,49 @@ class TimeSeriesResults(PowerFlowResults):
                 y_label = '(MVA)'
                 title = 'Branch power '
 
+            elif result_type == ResultTypes.BranchActivePower:
+                data = self.Sbranch[:, indices].real
+                y_label = '(MW)'
+                title = 'Branch power '
+
+            elif result_type == ResultTypes.BranchReactivePower:
+                data = self.Sbranch[:, indices].imag
+                y_label = '(MVAr)'
+                title = 'Branch power '
+
             elif result_type == ResultTypes.BranchCurrent:
                 data = self.Ibranch[:, indices]
                 y_label = '(kA)'
                 title = 'Branch current '
 
+            elif result_type == ResultTypes.BranchActiveCurrent:
+                data = self.Ibranch[:, indices].real
+                y_label = '(p.u.)'
+                title = 'Branch current '
+
+            elif result_type == ResultTypes.BranchReactiveCurrent:
+                data = self.Ibranch[:, indices].imag
+                y_label = '(p.u.)'
+                title = 'Branch current '
+
             elif result_type == ResultTypes.BranchLoading:
-                data = self.loading[:, indices] * 100
+                data = np.abs(self.loading[:, indices]) * 100
                 y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == ResultTypes.BranchLosses:
                 data = self.losses[:, indices]
                 y_label = '(MVA)'
+                title = 'Branch losses'
+
+            elif result_type == ResultTypes.BranchActiveLosses:
+                data = self.losses[:, indices].real
+                y_label = '(MW)'
+                title = 'Branch losses'
+
+            elif result_type == ResultTypes.BranchReactiveLosses:
+                data = self.losses[:, indices].imag
+                y_label = '(MVAr)'
                 title = 'Branch losses'
 
             elif result_type == ResultTypes.BranchVoltage:
@@ -358,8 +391,8 @@ class TimeSeriesResults(PowerFlowResults):
 
             elif result_type == ResultTypes.SimulationError:
                 data = self.error.reshape(-1, 1)
-                y_label = 'Per unit power'
-                labels = [y_label]
+                y_label = 'p.u.'
+                labels = ['Error']
                 title = 'Error'
 
             else:
@@ -371,7 +404,7 @@ class TimeSeriesResults(PowerFlowResults):
                 index = list(range(data.shape[0]))
 
             # assemble model
-            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label)
+            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
             return mdl
 
         else:

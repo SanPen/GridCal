@@ -22,8 +22,7 @@ from PySide2.QtGui import *
 from PySide2.QtSvg import QSvgGenerator
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE
-from GridCal.Gui.GridEditorWidget.bus import HandleItem, TerminalItem, BusGraphicItem
+from GridCal.Gui.GridEditorWidget.bus import TerminalItem, BusGraphicItem
 from GridCal.Gui.GridEditorWidget.branch import BranchGraphicItem, BranchType, Branch
 
 
@@ -64,7 +63,6 @@ class EditorGraphicsView(QGraphicsView):
         self.scene_ = scene
         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.editor = editor
-        self.last_n = 1
         self.setAlignment(Qt.AlignCenter)
 
     def adapt_map_size(self):
@@ -104,8 +102,7 @@ class EditorGraphicsView(QGraphicsView):
             stream = QDataStream(data, QIODevice.WriteOnly)
             stream.writeQString('Bus')
             if obj_type == data:
-                name = 'Bus ' + str(self.last_n)
-                self.last_n += 1
+                name = 'Bus ' + str(len(self.scene_.circuit.buses))
                 obj = Bus(name=name)
                 elm = BusGraphicItem(diagramScene=self.scene(), name=name, editor=self.editor, bus=obj)
                 obj.graphic_obj = elm
@@ -142,7 +139,9 @@ class EditorGraphicsView(QGraphicsView):
             explode_factor: factor to position the node
         """
         elm = BusGraphicItem(diagramScene=self.scene(), name=bus.name, editor=self.editor, bus=bus)
-        elm.setPos(self.mapToScene(QPoint(bus.x * explode_factor, bus.y * explode_factor)))
+        x = int(bus.x * explode_factor)
+        y = int(bus.y * explode_factor)
+        elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
         return elm
 
@@ -213,6 +212,8 @@ class DiagramScene(QGraphicsScene):
         @return:
         """
         self.parent_.sceneMouseReleaseEvent(mouseEvent)
+
+        # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(DiagramScene, self).mouseReleaseEvent(mouseEvent)
 
 
@@ -263,8 +264,6 @@ class GridEditor(QSplitter):
 
         # nodes distance "explosion" factor
         self.expand_factor = 1.5
-
-        self.branch_editor_count = 1
 
         # Widget layout and child widgets:
         self.horizontalLayout = QHBoxLayout(self)
@@ -370,14 +369,11 @@ class GridEditor(QSplitter):
                 if type(item) is TerminalItem:  # connect only to terminals
                     if item.parent is not self.started_branch.fromPort.parent:  # forbid connecting to itself
 
-                        # if type(item.parent) is not type(self.startedConnection.fromPort.parent):
-                        #  forbid same type connections
-
                         self.started_branch.setToPort(item)
                         item.hosting_connections.append(self.started_branch)
                         # self.started_branch.setZValue(-1)
                         self.started_branch.bus_to = item.parent
-                        name = 'Branch ' + str(self.branch_editor_count)
+                        name = 'Branch ' + str(len(self.circuit.branches))
                         v1 = self.started_branch.bus_from.api_object.Vnom
                         v2 = self.started_branch.bus_to.api_object.Vnom
 
@@ -394,10 +390,7 @@ class GridEditor(QSplitter):
                         self.started_branch.api_object = obj
                         self.circuit.add_branch(obj)
                         item.process_callbacks(item.parent.pos() + item.pos())
-
                         self.started_branch.setZValue(-1)
-                        # if self.diagramView.map.isVisible():
-                        #     self.diagramView.map.setZValue(-1)
 
             if self.started_branch.toPort is None:
                 self.started_branch.remove_widget()
@@ -519,8 +512,8 @@ class GridEditor(QSplitter):
         dy = max_y - min_y
         mx = margin_factor * dx
         my = margin_factor * dy
-        h = dy + 2 * my
-        w = dx + 2 * mx
+        h = dy + 2 * my + 80
+        w = dx + 2 * mx + 80
         self.diagramScene.setSceneRect(min_x - mx, min_y - my, w, h)
 
     def center_nodes(self):
@@ -541,7 +534,8 @@ class GridEditor(QSplitter):
 
         pos = nx.spectral_layout(self.circuit.graph, scale=2, weight='weight')
 
-        pos = nx.fruchterman_reingold_layout(self.circuit.graph, dim=2, k=None, pos=pos, fixed=None, iterations=500,
+        pos = nx.fruchterman_reingold_layout(self.circuit.graph, dim=2,
+                                             k=None, pos=pos, fixed=None, iterations=500,
                                              weight='weight', scale=20.0, center=None)
 
         # assign the positions to the graphical objects of the nodes
@@ -555,14 +549,13 @@ class GridEditor(QSplitter):
                 bus.y = y
 
             except KeyError as ex:
-                warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+                warn('auto_layout: Node ' + str(i) + ' not in the graph!!!! \n' + str(ex))
 
         self.center_nodes()
 
     def export(self, filename, w=1920, h=1080):
         """
         Save the grid to a png file
-        :return:
         """
 
         name, extension = os.path.splitext(filename.lower())
@@ -588,7 +581,7 @@ class GridEditor(QSplitter):
             self.diagramScene.render(painter)
             painter.end()
         else:
-            pass
+            raise Exception('Extension ' + str(extension) + ' not supported :(')
 
     def add_branch(self, branch):
         """
@@ -626,9 +619,8 @@ class GridEditor(QSplitter):
 
     def add_api_branch(self, branch: Branch):
         """
-
-        :param branch:
-        :return:
+        add API branch to the Scene
+        :param branch: Branch instance
         """
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
@@ -646,10 +638,9 @@ class GridEditor(QSplitter):
 
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0):
         """
-
-        :param circuit:
-        :param explode_factor:
-        :return:
+        Add a complete circuit to the schematic scene
+        :param circuit: MultiCircuit instance
+        :param explode_factor: factor of "explosion": Separation of the nodes factor
         """
         # first create the buses
         for bus in circuit.buses:
@@ -660,8 +651,7 @@ class GridEditor(QSplitter):
 
     def align_schematic(self):
         """
-
-        :return:
+        Align the scene view to the content
         """
         # figure limits
         min_x = sys.maxsize

@@ -80,13 +80,11 @@ class SyncDialogueWindow(QtWidgets.QDialog):
 
                     elif c == 5:   # if it is the status column, process the status
 
-                        check = QtGui.QStandardItem(str(value))
-                        check.isCheckable()
+                        item = self.ui.treeView.model().itemFromIndex(i)
                         if value:
-                            check.setCheckState(Qt.Checked)
+                            item.setCheckState(Qt.Checked)
                         else:
-                            check.setCheckState(Qt.Unchecked)
-                        self.model.setItem(r, c, check)
+                            item.setCheckState(Qt.Unchecked)
 
     def accept_changes(self):
         """
@@ -102,8 +100,10 @@ class SyncDialogueWindow(QtWidgets.QDialog):
 
     def doit(self):
         """
-        close
+        process issues and close
         """
+
+        self.file_sync_thread.process_issues()
         self.close()
 
 

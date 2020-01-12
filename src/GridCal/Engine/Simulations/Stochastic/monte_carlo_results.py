@@ -412,11 +412,11 @@ class MonteCarloResults:
                 # assemble model
                 index = np.arange(0, y.shape[0], 1)
                 mdl = ResultsModel(data=np.abs(y), index=index, columns=labels, title=title,
-                                   ylabel=y_label, xlabel=x_label)
+                                   ylabel=y_label, xlabel=x_label, units=y_label)
 
             else:
                 mdl = ResultsModel(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
-                                   ylabel=y_label, xlabel=x_label)
+                                   ylabel=y_label, xlabel=x_label, units=y_label)
             return mdl
 
         else:

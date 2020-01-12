@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Jan  5 21:44:36 2020
-#      by: pyside2-uic  running on PySide2 5.13.0
+# Created: Sun Jan 12 15:18:35 2020
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -711,6 +711,10 @@ class Ui_mainWindow(object):
         self.saveResultsButton.setIcon(icon34)
         self.saveResultsButton.setObjectName("saveResultsButton")
         self.horizontalLayout_2.addWidget(self.saveResultsButton)
+        self.units_label = QtWidgets.QLabel(self.frame_8)
+        self.units_label.setText("")
+        self.units_label.setObjectName("units_label")
+        self.horizontalLayout_2.addWidget(self.units_label)
         spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem10)
         self.plot_data_pushButton = QtWidgets.QPushButton(self.frame_8)
@@ -1656,7 +1660,7 @@ class Ui_mainWindow(object):
         self.gridLayout_5.addWidget(self.label_39, 4, 0, 1, 1)
         self.sync_interval_spinBox = QtWidgets.QSpinBox(self.frame_4)
         self.sync_interval_spinBox.setMinimum(1)
-        self.sync_interval_spinBox.setMaximum(120)
+        self.sync_interval_spinBox.setMaximum(99999999)
         self.sync_interval_spinBox.setObjectName("sync_interval_spinBox")
         self.gridLayout_5.addWidget(self.sync_interval_spinBox, 4, 1, 1, 1)
         self.line_7 = QtWidgets.QFrame(self.frame_4)
@@ -1704,7 +1708,12 @@ class Ui_mainWindow(object):
         self.gridLayout_5.addWidget(self.label_37, 0, 0, 1, 2)
         spacerItem29 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_5.addItem(spacerItem29, 6, 0, 1, 2)
+        self.accept_newer_changes_checkBox = QtWidgets.QCheckBox(self.frame_4)
+        self.accept_newer_changes_checkBox.setObjectName("accept_newer_changes_checkBox")
+        self.gridLayout_5.addWidget(self.accept_newer_changes_checkBox, 5, 0, 1, 2)
         self.horizontalLayout_6.addWidget(self.frame_4)
+        spacerItem30 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem30)
         icon44 = QtGui.QIcon()
         icon44.addPixmap(QtGui.QPixmap(":/Icons/icons/sync.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.settings_tabWidget.addTab(self.tab_8, icon44, "")
@@ -1855,8 +1864,8 @@ class Ui_mainWindow(object):
         self.plt_style_comboBox.setObjectName("plt_style_comboBox")
         self.verticalLayout_16.addWidget(self.plt_style_comboBox)
         self.verticalLayout_12.addWidget(self.frame_24)
-        spacerItem30 = QtWidgets.QSpacerItem(20, 363, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_12.addItem(spacerItem30)
+        spacerItem31 = QtWidgets.QSpacerItem(20, 363, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_12.addItem(spacerItem31)
         self.gridLayout_8.addWidget(self.frame_7, 0, 0, 1, 1)
         icon45 = QtGui.QIcon()
         icon45.addPixmap(QtGui.QPixmap(":/Icons/icons/gear.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -2153,12 +2162,12 @@ class Ui_mainWindow(object):
         self.menuProject.addAction(self.actionSave_as)
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionExport)
+        self.menuProject.addAction(self.actionExport_all_the_device_s_profiles)
         self.menuProject.addAction(self.actionExport_all_results)
         self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionAbout)
         self.menuActions.addAction(self.actionPower_flow)
         self.menuActions.addAction(self.actionPower_Flow_Time_series)
-        self.menuActions.addAction(self.actionExport_all_the_device_s_profiles)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionShort_Circuit)
         self.menuActions.addSeparator()
@@ -2229,7 +2238,7 @@ class Ui_mainWindow(object):
         self.retranslateUi(mainWindow)
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
-        self.settings_tabWidget.setCurrentIndex(0)
+        self.settings_tabWidget.setCurrentIndex(5)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
     def retranslateUi(self, mainWindow):
@@ -2314,6 +2323,7 @@ class Ui_mainWindow(object):
         self.select_all_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Select all", None, -1))
         self.plot_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Plot selection", None, -1))
         self.label_15.setText(QtWidgets.QApplication.translate("mainWindow", "Devices", None, -1))
+        self.copy_results_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Copy to clipboard", None, -1))
         self.saveResultsButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Export data", None, -1))
         self.plot_data_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Plot the data in a separated window", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.ResultsTab), QtWidgets.QApplication.translate("mainWindow", "Results", None, -1))
@@ -2331,6 +2341,7 @@ class Ui_mainWindow(object):
         self.apply_impedance_tolerances_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Apply impedance tolerances", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("mainWindow", "Numerical method max. iterations", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("mainWindow", "Precision", None, -1))
+        self.auto_precision_checkBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None, -1))
         self.auto_precision_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Automatic precision", None, -1))
         self.temperature_correction_checkBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Correct the branches resistance using the temperature", None, -1))
         self.temperature_correction_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Apply temperature correction", None, -1))
@@ -2397,11 +2408,12 @@ class Ui_mainWindow(object):
         self.branch_rating_doubleSpinBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>Factor to aply to the branch calculated power to use as rating</p></body></html>", None, -1))
         self.rating_override_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "override values", None, -1))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_13), QtWidgets.QApplication.translate("mainWindow", "Topology", None, -1))
-        self.label_39.setText(QtWidgets.QApplication.translate("mainWindow", "Sync interval (minutes)", None, -1))
+        self.label_39.setText(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>Sync interval (seconds)</p></body></html>", None, -1))
         self.sync_interval_spinBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Interval in minutes to save the model when the mode syncronization is activated", None, -1))
         self.user_name_label.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Model user to store in the file saving.", None, -1))
         self.model_version_label.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Current model version. Increases with every model saving.", None, -1))
         self.label_37.setText(QtWidgets.QApplication.translate("mainWindow", "Model syncronization", None, -1))
+        self.accept_newer_changes_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Accept newer changes", None, -1))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_8), QtWidgets.QApplication.translate("mainWindow", "Synchronization", None, -1))
         self.label_11.setText(QtWidgets.QApplication.translate("mainWindow", "General settings", None, -1))
         self.label_57.setText(QtWidgets.QApplication.translate("mainWindow", "Base power (MVA)", None, -1))

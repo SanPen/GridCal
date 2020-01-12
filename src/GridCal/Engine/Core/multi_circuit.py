@@ -15,6 +15,7 @@
 
 import sys
 import os
+from uuid import getnode as get_mac
 from datetime import timedelta
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
@@ -27,11 +28,21 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacob
 
 def get_system_user():
     """
-    Get the system user name
-    :return: string
+    Get the system mac + user name
+    :return: string with the system mac address and the current user
     """
+
+    # get the proper function to find the user depending on the platform
     getUser = lambda: os.environ["USERNAME"] if "C:" in os.getcwd() else os.environ["USER"]
-    return getUser()
+
+    user = getUser()
+
+    try:
+        mac = get_mac()
+    except:
+        mac = ''
+
+    return str(mac) + ':' + user
 
 
 class MultiCircuit:
@@ -993,6 +1004,13 @@ class MultiCircuit:
         for circuit_island in self.circuits:
             idx = circuit_island.bus_original_idx  # get the buses original indexing in the island
             circuit_island.power_flow_input.Sbus = S[idx]  # set the values
+
+    def get_bus_dict(self):
+        """
+        Return dictionary of buses
+        :return: dictionary of buses {name:object}
+        """
+        return {b.name: b for b in self.buses}
 
     def add_bus(self, obj: Bus):
         """

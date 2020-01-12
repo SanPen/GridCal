@@ -182,6 +182,16 @@ class Bus(EditableDevice):
         self.longitude = longitude
         self.latitude = latitude
 
+    def delete_children(self):
+        """
+        Delete all the children
+        """
+        self.batteries.clear()
+        self.shunts.clear()
+        self.static_generators.clear()
+        self.loads.clear()
+        self.controlled_generators.clear()
+
     def add_device(self, device):
         """
         Add device to the bus in the corresponding list
@@ -204,8 +214,7 @@ class Bus(EditableDevice):
             self.controlled_generators.append(device)
 
         else:
-            pass
-            # raise Exception('Device type not understood:' + str(device.device_type))
+            raise Exception('Device type not understood:' + str(device.device_type))
 
     def determine_bus_type(self):
         """
@@ -378,8 +387,6 @@ class Bus(EditableDevice):
         bus.substation = self.substation
 
         bus.measurements = self.measurements
-
-        # self.graphic_obj = None
 
         return bus
 
