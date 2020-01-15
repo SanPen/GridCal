@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Jan 12 15:18:35 2020
-#      by: pyside2-uic  running on PySide2 5.13.2
+# Created: Wed Jan 15 18:34:28 2020
+#      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -2157,9 +2157,9 @@ class Ui_mainWindow(object):
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
+        self.menuProject.addAction(self.actionSave_as)
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionAdd_circuit)
-        self.menuProject.addAction(self.actionSave_as)
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionExport)
         self.menuProject.addAction(self.actionExport_all_the_device_s_profiles)

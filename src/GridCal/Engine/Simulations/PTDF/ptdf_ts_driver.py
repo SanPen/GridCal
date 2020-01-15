@@ -72,7 +72,7 @@ class PtdfTimeSeriesResults(PowerFlowResults):
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusActivePower,
                                   # ResultTypes.BusReactivePower,
-                                  ResultTypes.BranchPower,
+                                  ResultTypes.BranchActivePower,
                                   ResultTypes.BranchLoading]
 
     def set_at(self, t, results: PowerFlowResults):
@@ -144,6 +144,11 @@ class PtdfTimeSeriesResults(PowerFlowResults):
                 y_label = '(MVA)'
                 title = 'Branch power '
 
+            elif result_type == ResultTypes.BranchActivePower:
+                data = self.Sbranch[:, indices].real
+                y_label = '(MW)'
+                title = 'Branch power '
+
             elif result_type == ResultTypes.BranchLoading:
                 data = self.loading[:, indices] * 100
                 y_label = '(%)'
@@ -174,7 +179,7 @@ class PtdfTimeSeriesResults(PowerFlowResults):
                 index = list(range(data.shape[0]))
 
             # assemble model
-            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label)
+            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
             return mdl
 
 
@@ -184,7 +189,7 @@ class PtdfTimeSeries(QThread):
     done_signal = Signal()
     name = 'PTDF Time Series'
 
-    def __init__(self, grid: MultiCircuit, pf_options: PowerFlowOptions, start_=0, end_=None):
+    def __init__(self, grid: MultiCircuit, pf_options: PowerFlowOptions, start_=0, end_=None, power_delta=10):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
@@ -199,9 +204,13 @@ class PtdfTimeSeries(QThread):
 
         self.results = None
 
+        self.ptdf_driver = None
+
         self.start_ = start_
 
         self.end_ = end_
+
+        self.power_delta = power_delta
 
         self.elapsed = 0
 
@@ -236,36 +245,36 @@ class PtdfTimeSeries(QThread):
             nc = self.grid.compile()
 
             options_ = PTDFOptions(group_mode=PtdfGroupMode.ByNode,
-                                   power_increment=10,
+                                   power_increment=self.power_delta,
                                    use_multi_threading=False)
 
             # run a node based PTDF
-            ptdf_driver = PTDF(grid=self.grid,
-                               options=options_,
-                               pf_options=self.pf_options)
-            ptdf_driver.progress_signal = self.progress_signal
-            ptdf_driver.run()
+            self.ptdf_driver = PTDF(grid=self.grid,
+                                    options=options_,
+                                    pf_options=self.pf_options)
+            self.ptdf_driver.progress_signal = self.progress_signal
+            self.ptdf_driver.run()
 
             # get the PTDF matrix
-            ptdf_driver.results.consolidate()
-            ptdf = ptdf_driver.results.flows_sensitivity_matrix
-            vtdf = ptdf_driver.results.voltage_sensitivity_matrix
+            self.ptdf_driver.results.consolidate()
+            ptdf = self.ptdf_driver.results.flows_sensitivity_matrix
+            vtdf = self.ptdf_driver.results.voltage_sensitivity_matrix
 
             # compose the power injections
             Pbus = nc.get_power_injections().real
 
             # base magnitudes
-            Pbr_0 = ptdf_driver.results.default_pf_results.Sbranch.real  # MW
-            V_0 = np.abs(ptdf_driver.results.default_pf_results.voltage)  # MW
+            Pbr_0 = self.ptdf_driver.results.default_pf_results.Sbranch.real  # MW
+            V_0 = np.abs(self.ptdf_driver.results.default_pf_results.voltage)  # MW
             Pbus_0 = nc.C_bus_gen * nc.generator_power - nc.C_bus_load * nc.load_power.real  # MW
 
             # run the PTDF time series
             for k, t_idx in enumerate(range(self.start_, self.end_)):
                 dP = (Pbus_0[:] - Pbus[:, t_idx])
-                results.voltage[k, :] = V_0 + np.dot(dP, vtdf)
-                results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
-                results.loading[k, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
-                results.S[k, :] = Pbus[:, t_idx]
+                results.voltage[t_idx, :] = V_0 + np.dot(dP, vtdf)
+                results.Sbranch[t_idx, :] = Pbr_0 + np.dot(dP, ptdf)
+                results.loading[t_idx, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
+                results.S[t_idx, :] = Pbus[:, t_idx]
 
                 progress = ((t_idx - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)

@@ -153,9 +153,10 @@ class MainGUI(QMainWindow):
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
+        self.ptdf_group_modes[PtdfGroupMode.ByNode.value] = PtdfGroupMode.ByNode
         self.ptdf_group_modes[PtdfGroupMode.ByGenLoad.value] = PtdfGroupMode.ByGenLoad
         self.ptdf_group_modes[PtdfGroupMode.ByTechnology.value] = PtdfGroupMode.ByTechnology
-        self.ptdf_group_modes[PtdfGroupMode.ByNode.value] = PtdfGroupMode.ByNode
+
         lst = list(self.ptdf_group_modes.keys())
         mdl = get_list_model(lst)
         self.ui.ptdf_grouping_comboBox.setModel(mdl)
@@ -2315,7 +2316,14 @@ class MainGUI(QMainWindow):
 
                     pf_options = self.get_selected_power_flow_options()
 
-                    self.ptdf_ts_analysis = PtdfTimeSeries(grid=self.circuit, pf_options=pf_options)
+                    power_delta = self.ui.ptdf_power_delta_doubleSpinBox.value()
+                    start_ = self.ui.profile_start_slider.value()
+                    end_ = self.ui.profile_end_slider.value()
+                    self.ptdf_ts_analysis = PtdfTimeSeries(grid=self.circuit,
+                                                           pf_options=pf_options,
+                                                           start_=start_,
+                                                           end_=end_,
+                                                           power_delta=power_delta)
 
                     self.ui.progress_label.setText('Running PTDF time series...')
                     QtGui.QGuiApplication.processEvents()
