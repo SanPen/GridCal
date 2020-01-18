@@ -9,23 +9,22 @@ np.set_printoptions(linewidth=320)
 def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     """
     Fast decoupled power flow
-    Args:
-        Vbus:
-        Sbus:
-        Ibus:
-        Ybus:
-        B1:
-        B2:
-        pq:
-        pv:
-        pqpv:
-        tol:
-
-    Returns:
-
+    :param Vbus:
+    :param Sbus:
+    :param Ibus:
+    :param Ybus:
+    :param B1:
+    :param B2:
+    :param pq:
+    :param pv:
+    :param pqpv:
+    :param tol:
+    :param max_it:
+    :return:
     """
 
     start = time.time()
+    # pvpq = np.r_[pv, pq]
 
     # set voltage vector for the iterations
     voltage = Vbus.copy()
@@ -38,13 +37,13 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
 
     # evaluate initial mismatch
     Scalc = voltage * np.conj(Ybus * voltage - Ibus)
-    mis = Scalc - Sbus  # complex power mismatch
-    incP = mis[pqpv].real
-    incQ = mis[pq].imag
+    mis = (Scalc - Sbus) / Vm  # complex power mismatch
+    dP = mis[pqpv].real
+    dQ = mis[pq].imag
 
     if len(pqpv) > 0:
-        normP = norm(incP, Inf)
-        normQ = norm(incQ, Inf)
+        normP = norm(dP, Inf)
+        normQ = norm(dQ, Inf)
         converged = normP < tol and normQ < tol
 
         # iterate
@@ -53,8 +52,9 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
 
             iter_ += 1
 
+            # ----------------------------- P iteration to update Va ----------------------
             # solve voltage angles
-            dVa = -J1.solve(incP)
+            dVa = -J1.solve(dP)
 
             # update voltage
             Va[pqpv] = Va[pqpv] + dVa
@@ -62,18 +62,18 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
 
             # evaluate mismatch
             Scalc = voltage * conj(Ybus * voltage - Ibus)
-            mis = Scalc - Sbus  # complex power mismatch
-            incP = mis[pqpv].real
-            incQ = mis[pq].imag
-            normP = norm(incP, Inf)
-            normQ = norm(incQ, Inf)
+            mis = (Scalc - Sbus) / Vm  # complex power mismatch
+            dP = mis[pqpv].real
+            dQ = mis[pq].imag
+            normP = norm(dP, Inf)
+            normQ = norm(dQ, Inf)
 
             if normP < tol and normQ < tol:
                 converged = True
-
             else:
+                # ----------------------------- Q iteration to update Vm ----------------------
                 # Solve voltage modules
-                dVm = -J2.solve(incQ)
+                dVm = -J2.solve(dQ)
 
                 # update voltage
                 Vm[pq] = Vm[pq] + dVm
@@ -81,28 +81,51 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
 
                 # evaluate mismatch
                 Scalc = voltage * conj(Ybus * voltage - Ibus)
-                mis = Scalc - Sbus  # complex power mismatch
-                incP = mis[pqpv].real
-                incQ = mis[pq].imag
-                normP = norm(incP, Inf)
-                normQ = norm(incQ, Inf)
+                mis = (Scalc - Sbus) / Vm  # complex power mismatch
+                dP = mis[pqpv].real
+                dQ = mis[pq].imag
+                normP = norm(dP, Inf)
+                normQ = norm(dQ, Inf)
 
                 if normP < tol and normQ < tol:
                     converged = True
 
-        # evaluate F(x)
-        Scalc = voltage * conj(Ybus * voltage - Ibus)
-        mis = Scalc - Sbus  # complex power mismatch
-        F = r_[mis[pqpv].real, mis[pq].imag]  # concatenate again
-
-        # check for convergence
-        normF = norm(F, Inf)
     else:
-        normF = 0
         converged = True
         iter_ = 0
+
+    F = r_[dP, dQ]  # concatenate again
+    normF = norm(F, Inf)
 
     end = time.time()
     elapsed = end - start
 
     return voltage, converged, normF, Scalc, iter_, elapsed
+
+
+if __name__ == '__main__':
+
+    fname = r'/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 9 Bus.gridcal'
+
+    from GridCal.Engine import FileOpen
+
+    circuit = FileOpen(fname).open()
+    nc = circuit.compile()
+    islands = nc.compute()
+    island = islands[0]
+
+    voltage, converged, normF, Scalc, iter_, elapsed = FDPF(Vbus=island.Vbus,
+                                                            Sbus=island.Sbus,
+                                                            Ibus=island.Ibus,
+                                                            Ybus=island.Ybus,
+                                                            B1=island.B1,
+                                                            B2=island.B2,
+                                                            pq=island.pq,
+                                                            pv=island.pv,
+                                                            pqpv=island.pqpv,
+                                                            tol=1e-9,
+                                                            max_it=100)
+
+    print(np.abs(voltage))
+    print('iter:', iter_)
+    print('Error:', normF)

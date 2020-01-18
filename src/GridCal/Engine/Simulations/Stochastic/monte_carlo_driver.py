@@ -85,7 +85,7 @@ class MonteCarlo(QThread):
 
         self.logger = Logger()
 
-        self.pool = multiprocessing.Pool()
+        self.pool = None
 
         self.returned_results = list()
 
@@ -100,9 +100,6 @@ class MonteCarlo(QThread):
 
     def update_progress_mt(self, res):
         """
-
-        :param res:
-        :return:
         """
         t, _ = res
         progress = (t + 1) / self.sampling_points * 100
@@ -112,7 +109,7 @@ class MonteCarlo(QThread):
     def run_multi_thread(self):
         """
         Run the monte carlo simulation
-        @return:
+        @return: MonteCarloResults instance
         """
 
         self.__cancel__ = False
@@ -120,7 +117,7 @@ class MonteCarlo(QThread):
         # initialize the grid time series results
         # we will append the island results with another function
         self.circuit.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
-
+        self.pool = multiprocessing.Pool()
         it = 0
         variance_sum = 0.0
         std_dev_progress = 0
@@ -223,10 +220,6 @@ class MonteCarlo(QThread):
             if std_dev_progress > 100:
                 std_dev_progress = 100
             self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
-
-            # print(iter, '/', max_mc_iter)
-            # print('Vmc:', Vavg)
-            # print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
 
         # compute the averaged branch magnitudes
         mc_results.sbranch = avg_res.Sbranch

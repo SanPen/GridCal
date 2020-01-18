@@ -53,7 +53,7 @@ class LatinHypercubeSampling(QThread):
 
         self.logger = Logger()
 
-        self.pool = multiprocessing.Pool()
+        self.pool = None
 
         self.returned_results = list()
 
@@ -90,6 +90,7 @@ class LatinHypercubeSampling(QThread):
         n = len(self.circuit.buses)
         m = len(self.circuit.branches)
         n_cores = multiprocessing.cpu_count()
+        self.pool = multiprocessing.Pool()
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running Latin Hypercube Sampling in parallel using ' + str(n_cores) + ' cores ...')

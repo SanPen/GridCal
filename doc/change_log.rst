@@ -13,16 +13,16 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 3.6.6
 ^^^^^^^^^^^^^^
 
-- Fixed PTDFTimeSeries timing
-- Connected loose parameters on the PTDFTimeSeries class
-
+- Fixed PTDFTimeSeries timing.
+- Connected loose parameters on the PTDFTimeSeries class.
+- Fixed the Fast decoupled power flow algorithm.
 
 Version 3.6.5
 ^^^^^^^^^^^^^^
 
-- Added Sqlite save/open support
-- Added Grid append functionality
-- Added units in the results
+- Added Sqlite save/open support.
+- Added Grid append functionality.
+- Added units in the results.
 - Now all the results are displayed in real numbers instead of in complex numbers.
 - Added an amazing functionality to allow model synchronization across several computers.
 

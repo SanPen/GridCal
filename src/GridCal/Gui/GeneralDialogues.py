@@ -190,7 +190,10 @@ class LogsDialogue(QtWidgets.QDialog):
 
         # logs_list
         self.logs_table = QtWidgets.QTableView()
-        self.logs_table.setModel(LogsModel(logs))
+        model = LogsModel(logs)
+        self.logs_table.setModel(model)
+        for i in range(model.columnCount()):
+            self.logs_table.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.Stretch)
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()

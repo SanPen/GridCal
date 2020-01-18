@@ -110,8 +110,9 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
 
     # Form the matrices for fast decoupled
     b1 = 1.0 / (X + 1e-20)
-    B1f = sp.diags(-b1) * Cf + sp.diags(-b1) * Ct
-    B1t = sp.diags(-b1) * Cf + sp.diags(-b1) * Ct
+    b1_tt = sp.diags(b1)
+    B1f = b1_tt * Cf - b1_tt * Ct
+    B1t = -b1_tt * Cf + b1_tt * Ct
     B1 = sparse(Cf.T * B1f + Ct.T * B1t)
 
     b2 = b1 + B
@@ -119,8 +120,8 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     b2_ft = -(b1 / np.conj(tap)).real
     b2_tf = -(b1 / tap).real
     b2_tt = - b2
-    B2f = sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
-    B2t = sp.diags(b2_tf) * Cf + sp.diags(b2_tt) * Ct
+    B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
+    B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
     B2 = sparse(Cf.T * B2f + Ct.T * B2t)
 
     ################################################################################################################

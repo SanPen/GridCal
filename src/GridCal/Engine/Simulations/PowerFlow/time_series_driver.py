@@ -445,7 +445,7 @@ class TimeSeries(QThread):
 
         self.returned_results = list()
 
-        self.pool = multiprocessing.Pool()
+        self.pool = None
 
         self.__cancel__ = False
 
@@ -615,6 +615,7 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         n_cores = multiprocessing.cpu_count()
+        self.pool = multiprocessing.Pool()
 
         # compile the multi-circuit
         numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
@@ -748,7 +749,7 @@ class SampledTimeSeries(QThread):
 
         self.returned_results = list()
 
-        self.pool = multiprocessing.Pool()
+        self.pool = None
 
         self.steps = self.sample_steps()
 
@@ -922,6 +923,7 @@ class SampledTimeSeries(QThread):
             self.end_ = nt
 
         n_cores = multiprocessing.cpu_count()
+        self.pool = multiprocessing.Pool()
 
         # compile the multi-circuit
         numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
