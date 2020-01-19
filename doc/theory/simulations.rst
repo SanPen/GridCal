@@ -13,6 +13,7 @@ The following subsections include theory about the power flow algorithms support
 
     power_flow/newton_raphson
     power_flow/levenberg_marquardt
+    power_flow/fast_decoupled
     power_flow/dc_approximation
     power_flow/linear_ac_power_flow
     power_flow/holomorphic_embedding

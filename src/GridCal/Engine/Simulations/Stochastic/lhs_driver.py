@@ -296,7 +296,8 @@ class LatinHypercubeSampling(QThread):
         Cancel the simulation
         """
         self.__cancel__ = True
-        self.pool.terminate()
+        if self.pool is not None:
+            self.pool.terminate()
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()

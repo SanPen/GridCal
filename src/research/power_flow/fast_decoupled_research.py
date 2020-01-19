@@ -24,7 +24,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     """
 
     start = time.time()
-    # pvpq = np.r_[pv, pq]
+
+    error_list = list()
 
     # set voltage vector for the iterations
     voltage = Vbus.copy()
@@ -40,6 +41,11 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     mis = (Scalc - Sbus) / Vm  # complex power mismatch
     dP = mis[pqpv].real
     dQ = mis[pq].imag
+
+    # compute and store error
+    F = r_[dP, dQ]
+    normF = norm(F, Inf)
+    error_list.append(normF)
 
     if len(pqpv) > 0:
         normP = norm(dP, Inf)
@@ -90,6 +96,11 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
                 if normP < tol and normQ < tol:
                     converged = True
 
+            # compute and store error
+            F = r_[dP, dQ]
+            normF = norm(F, Inf)
+            error_list.append(normF)
+
     else:
         converged = True
         iter_ = 0
@@ -100,13 +111,14 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     end = time.time()
     elapsed = end - start
 
-    return voltage, converged, normF, Scalc, iter_, elapsed
+    return voltage, converged, normF, Scalc, iter_, elapsed, error_list
 
 
 if __name__ == '__main__':
 
     fname = r'/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 9 Bus.gridcal'
 
+    from matplotlib import pyplot as plt
     from GridCal.Engine import FileOpen
 
     circuit = FileOpen(fname).open()
@@ -114,18 +126,25 @@ if __name__ == '__main__':
     islands = nc.compute()
     island = islands[0]
 
-    voltage, converged, normF, Scalc, iter_, elapsed = FDPF(Vbus=island.Vbus,
-                                                            Sbus=island.Sbus,
-                                                            Ibus=island.Ibus,
-                                                            Ybus=island.Ybus,
-                                                            B1=island.B1,
-                                                            B2=island.B2,
-                                                            pq=island.pq,
-                                                            pv=island.pv,
-                                                            pqpv=island.pqpv,
-                                                            tol=1e-9,
-                                                            max_it=100)
+    voltage, converged, normF, Scalc, iter_, elapsed, err_lst = FDPF(Vbus=island.Vbus,
+                                                                     Sbus=island.Sbus,
+                                                                     Ibus=island.Ibus,
+                                                                     Ybus=island.Ybus,
+                                                                     B1=island.B1,
+                                                                     B2=island.B2,
+                                                                     pq=island.pq,
+                                                                     pv=island.pv,
+                                                                     pqpv=island.pqpv,
+                                                                     tol=1e-9,
+                                                                     max_it=100)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_yscale('log')
+    ax.plot(err_lst)
 
     print(np.abs(voltage))
     print('iter:', iter_)
     print('Error:', normF)
+
+    plt.show()
