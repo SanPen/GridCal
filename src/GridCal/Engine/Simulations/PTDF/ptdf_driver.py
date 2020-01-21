@@ -233,13 +233,14 @@ class PTDF(QThread):
             text_func('Collecting results...')
 
         # gather the results
-        for v in range(nvar):
-            pf_results, log = return_dict[v]
-            results.logger += log
-            if v == 0:
-                results.default_pf_results = pf_results
-            else:
-                results.add_results_at(v - 1, pf_results, delta_of_power_variations[v])
+        if not self.__cancel__:
+            for v in range(nvar):
+                pf_results, log = return_dict[v]
+                results.logger += log
+                if v == 0:
+                    results.default_pf_results = pf_results
+                else:
+                    results.add_results_at(v - 1, pf_results, delta_of_power_variations[v])
 
         return results
 

@@ -355,8 +355,8 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                                 self.log.add(object_type='Branch', element_name=elm.name, element_index=i,
                                              severity='High',
                                              propty='Connection',
-                                             message='The branch is connected between a voltage '
-                                                      'that differs in 10% or more. Should this be a transformer?' + s)
+                                             message='The branch is connected between voltages '
+                                                      'that differ in 10% or more. Should this be a transformer?' + s)
                         else:
                             self.log.add(object_type='Branch', element_name=elm.name, element_index=i, severity='High',
                                          propty='Voltage', message='The branch does is connected to a bus with '

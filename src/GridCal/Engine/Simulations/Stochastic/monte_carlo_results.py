@@ -53,8 +53,6 @@ class MonteCarloResults:
 
         self.losses_points = np.zeros((p, m), dtype=complex)
 
-        # self.Vstd = zeros(n, dtype=complex)
-
         self.error_series = list()
 
         self.bus_types = np.zeros(n, dtype=int)

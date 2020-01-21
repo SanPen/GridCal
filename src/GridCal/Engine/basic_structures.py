@@ -224,7 +224,6 @@ class CDF:
             self.arr = sort(ndarray.flatten(data.values))
 
         else:
-            # self.arr = sort(ndarray.flatten(data), axis=0)
             self.arr = sort(data, axis=0)
 
         self.iscomplex = iscomplexobj(self.arr)
