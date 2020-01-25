@@ -318,9 +318,11 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         else:
             self.msg('Select a data structure')
 
-    def analyze_all(self):
+    def analyze_all(self, imbalance_threshold=0.1):
         """
         Analyze all
+        :param imbalance_threshold: Allowed percentage of imbalance
+        :return: Nothing
         """
 
         Pl = 0
@@ -409,7 +411,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                     # add the name to a set
                     names.add(elm.name)
 
-            elif object_type.lower() == 'controlled generators':
+            elif object_type.lower() == 'generators':
                 elements = self.circuit.get_generators()
 
                 for obj in elements:
@@ -468,29 +470,33 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                         Ql_prof += obj.Q_prof
 
         # compare loads
-        p_ratio = Pg / (Pl + 1e-20)
-        q_ratio = Qg / (Ql + 1e-20)
-
-        if 0.8 < p_ratio < 1.25:
-            self.log.add(object_type='Grid',
+        p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
+        format_str = "{:.1f}"
+        if p_ratio > imbalance_threshold:
+            msg = format_str.format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
+            self.log.add(object_type='Grid snapshot',
                          element_name=self.circuit,
-                         element_index=0,
+                         element_index=-1,
                          severity='High',
-                         propty='Active power balance',
-                         message='There is too much active power imbalance, ratio:' + '{.2}'.format(p_ratio))
+                         propty='Active power balance ' + msg,
+                         message='There is too much active power imbalance')
 
-        if 0.8 < p_ratio < 1.25:
-            self.log.add(object_type='Grid',
-                         element_name=self.circuit,
-                         element_index=0,
-                         severity='High',
-                         propty='Reactive power balance',
-                         message='There is too much reactive power imbalance, ratio:' + '{.2}'.format(q_ratio))
+        if self.circuit.time_profile is not None:
+            nt = len(self.circuit.time_profile)
+            for t in range(nt):
+                p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
+                if p_ratio > imbalance_threshold:
+                    msg = format_str.format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
+                    self.log.add(object_type='Grid time events',
+                                 element_name=self.circuit,
+                                 element_index=t,
+                                 severity='High',
+                                 propty='Active power balance ' + msg,
+                                 message='There is too much active power imbalance')
 
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
         print('Done!')
-
 
 
 if __name__ == "__main__":
