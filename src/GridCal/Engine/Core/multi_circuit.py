@@ -33,9 +33,12 @@ def get_system_user():
     """
 
     # get the proper function to find the user depending on the platform
-    getUser = lambda: os.environ["USERNAME"] if "C:" in os.getcwd() else os.environ["USER"]
-
-    user = getUser()
+    if 'USERNAME' in os.environ:
+        user = os.environ["USERNAME"]
+    elif 'USER' in os.environ:
+        user = os.environ["USER"]
+    else:
+        user = ''
 
     try:
         mac = get_mac()
