@@ -318,11 +318,14 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         else:
             self.msg('Select a data structure')
 
-    def analyze_all(self, imbalance_threshold=0.1):
+    def analyze_all(self, imbalance_threshold=0.1, v_low=0.95, v_high=1.05):
         """
-        Analyze all
+        Analyze the model data
         :param imbalance_threshold: Allowed percentage of imbalance
-        :return: Nothing
+        :param v_low: lower voltage setting
+        :param v_high: higher voltage setting
+        :param format_str: Formatting string
+        :return:
         """
 
         Pl = 0
@@ -412,13 +415,29 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                     names.add(elm.name)
 
             elif object_type.lower() == 'generators':
+
                 elements = self.circuit.get_generators()
 
-                for obj in elements:
+                for k, obj in enumerate(elements):
                     Pg += obj.P
 
                     if self.circuit.time_profile is not None:
                         Pg_prof += obj.P_prof
+
+                    if obj.Vset < v_low:
+                        self.log.add(object_type='Generator',
+                                     element_name=obj,
+                                     element_index=k,
+                                     severity='Medium',
+                                     propty='Vset=' + str(obj.Vset) + '>' + str(v_low),
+                                     message='The set point looks too low')
+                    elif obj.Vset > v_high:
+                        self.log.add(object_type='Generator',
+                                     element_name=obj,
+                                     element_index=k,
+                                     severity='Medium',
+                                     propty='Vset=' + str(obj.Vset) + '>' + str(v_high),
+                                     message='The set point looks too high')
 
             elif object_type.lower() == 'batteries':
                 elements = self.circuit.get_batteries()
@@ -440,21 +459,6 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                         Pg_prof += obj.P_prof
                         Qg_prof += obj.Q_prof
 
-                    if obj.Vset < 0.95:
-                        self.log.add(object_type='Generator',
-                                     element_name=obj,
-                                     element_index=k,
-                                     severity='Medium',
-                                     propty='Vset',
-                                     message='The set point it too low:' + '{.2}'.format(obj.Vset))
-                    elif obj.Vset > 1.8:
-                        self.log.add(object_type='Generator',
-                                     element_name=obj,
-                                     element_index=k,
-                                     severity='Medium',
-                                     propty='Vset',
-                                     message='The set point it too high:' + '{.2}'.format(obj.Vset))
-
             elif object_type.lower() == 'shunts':
                 elements = self.circuit.get_shunts()
 
@@ -471,9 +475,9 @@ class GridAnalysisGUI(QtWidgets.QDialog):
 
         # compare loads
         p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
-        format_str = "{:.1f}"
+
         if p_ratio > imbalance_threshold:
-            msg = format_str.format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
+            msg = "{:.1f}".format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
             self.log.add(object_type='Grid snapshot',
                          element_name=self.circuit,
                          element_index=-1,
@@ -486,7 +490,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             for t in range(nt):
                 p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
                 if p_ratio > imbalance_threshold:
-                    msg = format_str.format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
+                    msg = "{:.1f}".format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
                     self.log.add(object_type='Grid time events',
                                  element_name=self.circuit,
                                  element_index=t,
