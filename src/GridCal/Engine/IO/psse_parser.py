@@ -2020,8 +2020,11 @@ class PSSeParser:
         detection = chardet.detect(open(self.file_name, "rb").read())
 
         # open the text file into a variable
+        txt = ''
         with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
-            txt = my_file.read()
+            for line in my_file:
+                if line[0] != '@':
+                    txt += line
 
         # split the text file into sections
         sections = txt.split(' /')
