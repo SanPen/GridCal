@@ -429,7 +429,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
                                      element_name=obj,
                                      element_index=k,
                                      severity='Medium',
-                                     propty='Vset=' + str(obj.Vset) + '>' + str(v_low),
+                                     propty='Vset=' + str(obj.Vset) + '<' + str(v_low),
                                      message='The set point looks too low')
                     elif obj.Vset > v_high:
                         self.log.add(object_type='Generator',

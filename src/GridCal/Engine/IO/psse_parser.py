@@ -1908,7 +1908,7 @@ class PSSeInterArea:
 
         self.ARNAME = ''
 
-        if version in [29, 33]:
+        if version in [29, 30, 32, 33]:
             # I, ISW, PDES, PTOL, 'ARNAME'
             self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
 
@@ -1931,7 +1931,7 @@ class PSSeArea:
 
         self.ARNAME = ''
 
-        if version in [29, 33]:
+        if version in [29, 30, 32, 33]:
             # I, ISW, PDES, PTOL, 'ARNAME'
             self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
 
@@ -1954,7 +1954,7 @@ class PSSeZone:
 
         self.ZONAME = ''
 
-        if version in [29, 33]:
+        if version in [29, 30, 32, 33]:
             # I, 'ZONAME'
             self.I, self.ZONAME = data[0]
 
