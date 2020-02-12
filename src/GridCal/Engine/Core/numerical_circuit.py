@@ -107,6 +107,8 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
     Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
     Yseries = sparse(Cf.T * Yfs + Ct.T * Yts)
+    Gsh = GBc / 2.0
+    Ysh += Cf.T * Gsh + Ct.T * Gsh
 
     # Form the matrices for fast decoupled
     b1 = 1.0 / (X + 1e-20)

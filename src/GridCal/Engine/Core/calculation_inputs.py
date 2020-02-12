@@ -333,6 +333,8 @@ class CalculationInputs:
         Yfs = diags(Yffs) * Cf + diags(Yfts) * Ct
         Yts = diags(Ytfs) * Cf + diags(Ytts) * Ct
         self.Yseries = csc_matrix(Cf.T * Yfs + Ct.T * Yts)
+        Gsh = self.GBc / 2.0
+        self.Ysh += Cf.T * Gsh + Ct.T * Gsh
 
         X = (1 / self.Ys).imag
         b1 = 1.0 / (X + 1e-20)
