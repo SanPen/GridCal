@@ -1,3 +1,4 @@
+import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch, TapChanger
@@ -9,8 +10,6 @@ from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
     PowerFlowOptions, ReactivePowerControlMode, SolverType, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow import PowerFlowDriver
-
-Sbase = 100  # MVA
 
 
 def complex_impedance(z, XR):
@@ -33,7 +32,7 @@ def test_gridcal_regulator():
     """
     test_name = "test_gridcal_regulator"
     grid = MultiCircuit(name=test_name)
-    grid.Sbase = Sbase
+    grid.Sbase = 100.0  # MVA
     grid.time_profile = None
     grid.logger = Logger()
 
@@ -74,7 +73,7 @@ def test_gridcal_regulator():
                          hv_nominal_voltage=100,  # kV
                          lv_nominal_voltage=10,  # kV
                          nominal_power=s,  # MVA
-                         copper_losses=complex_impedance(z, xr).real*s*1000/Sbase,  # kW
+                         copper_losses=complex_impedance(z, xr).real * s * 1000.0 / grid.Sbase,  # kW
                          iron_losses=125,  # kW
                          no_load_current=0.5,  # %
                          short_circuit_voltage=z)  # %
@@ -87,7 +86,7 @@ def test_gridcal_regulator():
                          hv_nominal_voltage=10,  # kV
                          lv_nominal_voltage=0.6,  # kV
                          nominal_power=s,  # MVA
-                         copper_losses=complex_impedance(z, xr).real*s*1000/Sbase,  # kW
+                         copper_losses=complex_impedance(z, xr).real * s * 1000.0 / grid.Sbase,  # kW
                          iron_losses=6.25,  # kW
                          no_load_current=0.5,  # %
                          short_circuit_voltage=z)  # %
@@ -139,8 +138,8 @@ def test_gridcal_regulator():
     power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
-    approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 105.2, 130.0, 130.1] # Expected solution from GridCal
+    approx_volt = [round(100 * abs(v), 1) for v in power_flow.results.voltage]
+    solution = [100.0, 105.2, 129.9, 130.0]  # Expected solution from GridCal
 
     print()
     print(f"Test: {test_name}")
@@ -170,9 +169,10 @@ def test_gridcal_regulator():
 
     print(f"Voltage settings: {grid.numerical_circuit.vset}")
 
-    equal = True
-    for i in range(len(approx_volt)):
-        if approx_volt[i] != solution[i]:
-            equal = False
+    equal = np.isclose(approx_volt, solution, atol=1e-3).all()
 
     assert equal
+
+
+if __name__ == '__main__':
+    test_gridcal_regulator()

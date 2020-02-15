@@ -125,6 +125,9 @@ class MultiCircuit:
         # List of transformer types
         self.transformer_types = list()
 
+        # logger of events
+        self.logger = Logger()
+
         # Object with the necessary inputs for a power flow study
         self.numerical_circuit = None
 
