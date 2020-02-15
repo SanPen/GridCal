@@ -987,7 +987,7 @@ if __name__ == '__main__':
                                         verbose=False)
 
     # just for this test
-    numeric_circuit = main_circuit.compile()
+    numeric_circuit = main_circuit.compile_snapshot()
     numeric_inputs = numeric_circuit.compute(ignore_single_node_islands=options.ignore_single_node_islands)
     Sbase = zeros(len(main_circuit.buses), dtype=complex)
     Vbase = zeros(len(main_circuit.buses), dtype=complex)

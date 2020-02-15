@@ -21,7 +21,7 @@ def test_all_grids():
         try:
             file_handler = FileOpen(path)
             circuit = file_handler.open()
-            circuit.compile()
+            circuit.compile_snapshot()
             print('ok')
         except:
             print('Failed')
@@ -36,6 +36,6 @@ def test_all_grids():
         path = os.path.join(grids_path, f)
         file_handler = FileOpen(path)
         circuit = file_handler.open()
-        circuit.compile()
+        circuit.compile_snapshot()
 
     assert len(failed) == 0

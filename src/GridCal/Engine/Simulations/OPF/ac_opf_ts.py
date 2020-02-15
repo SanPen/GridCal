@@ -19,8 +19,10 @@ That means that solves the OPF problem for a complete time series at once
 """
 
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesIslandInputs
 from GridCal.ThirdParty.pulp import *
 
 
@@ -97,7 +99,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSl
     return P, Q
 
 
-def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, P, Q, start_, end_):
+def add_ac_nodal_power_balance(numerical_circuit: StaticSeriesIslandInputs, problem: LpProblem, dvm, dva, P, Q, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -108,7 +110,7 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     """
 
     # do the topological computation
-    calc_inputs_dict = numerical_circuit.compute_ts()
+    calc_inputs_dict = numerical_circuit.compute()
 
     # generate the time indices to simulate
     if end_ == -1:
@@ -262,7 +264,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: StaticSeriesInputs, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
                  batteries_energy_0=None):
         """
         AC time series linear optimal power flow

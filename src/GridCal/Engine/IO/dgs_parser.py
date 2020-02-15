@@ -1149,7 +1149,7 @@ if __name__ == "__main__":
     # fname = 'Example4.dgs'
     circuit = dgs_to_circuit(fname)
 
-    circuit.compile()
+    circuit.compile_snapshot()
 
     # print(BUS_NAMES, '\n')
     # print(BUSES)

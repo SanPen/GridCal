@@ -1,4 +1,4 @@
-from GridCal.Engine.calculation_engine import MultiCircuit, BranchType
+from GridCal.Engine import MultiCircuit, BranchType, FileOpen
 from networkx import DiGraph, all_simple_paths
 import numpy as np
 import pandas as pd
@@ -10,9 +10,7 @@ pd.set_option('display.width', 1000)
 
 def get_connectivity(file_name):
 
-    circuit = MultiCircuit()
-    circuit.load_file(file_name)
-    circuit.compile()
+    circuit = FileOpen(file_name).open()
 
     # form C
     threshold = 1e-5
@@ -212,13 +210,8 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 2.xlsx'
 
-    circuit_ = MultiCircuit()
-    circuit_.load_file(fname)
-    # circuit.compile()
+    circuit_ = FileOpen(fname).open()
 
     reduce_grid(circuit=circuit_, rx_criteria=False, rx_threshold=1e-5,
                 type_criteria=True, selected_type=BranchType.Branch)
 
-    # circuit_.compile()
-    # circuit_.plot_graph()
-    # plt.show()

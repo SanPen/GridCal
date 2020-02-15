@@ -530,7 +530,7 @@ class GridEditor(QSplitter):
         """
 
         if self.circuit.graph is None:
-            self.circuit.compile()
+            self.circuit.compile_snapshot()
 
         pos = nx.spectral_layout(self.circuit.graph, scale=2, weight='weight')
 

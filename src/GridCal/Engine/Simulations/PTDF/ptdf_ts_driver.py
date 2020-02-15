@@ -242,7 +242,7 @@ class PtdfTimeSeries(QThread):
         # if there are valid profiles...
         if self.grid.time_profile is not None:
 
-            nc = self.grid.compile()
+            nc = self.grid.compile_time_series()
 
             options_ = PTDFOptions(group_mode=PtdfGroupMode.ByNode,
                                    power_increment=self.power_delta,

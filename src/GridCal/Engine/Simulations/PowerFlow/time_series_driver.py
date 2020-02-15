@@ -470,11 +470,11 @@ class TimeSeries(QThread):
             self.end_ = nt
 
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
 
         # do the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                        ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         time_series_results.bus_types = numerical_circuit.bus_types
 
@@ -618,12 +618,11 @@ class TimeSeries(QThread):
         self.pool = multiprocessing.Pool()
 
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                        ignore_single_node_islands=self.options.ignore_single_node_islands)
-
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():
@@ -783,11 +782,11 @@ class SampledTimeSeries(QThread):
                                                 time_array=self.grid.time_profile[self.steps])
 
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
 
         # do the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                        ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         time_series_results.bus_types = numerical_circuit.bus_types
 
@@ -927,12 +926,11 @@ class SampledTimeSeries(QThread):
         self.pool = multiprocessing.Pool()
 
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile(opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                        ignore_single_node_islands=self.options.ignore_single_node_islands)
-
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():

@@ -17,14 +17,15 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf
 from GridCal.ThirdParty.pulp import *
 
 
 class OpfSimple(Opf):
 
-    def __init__(self, numerical_circuit: NumericalCircuit):
+    def __init__(self, numerical_circuit: StaticSnapshotInputs):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -185,7 +186,7 @@ if __name__ == '__main__':
 
         main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
-        numerical_circuit_ = main_circuit.compile()
+        numerical_circuit_ = main_circuit.compile_snapshot()
         problem = OpfSimple(numerical_circuit=numerical_circuit_)
 
         print('Solving...')

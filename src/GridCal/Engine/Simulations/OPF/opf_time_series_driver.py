@@ -239,7 +239,7 @@ class OptimalPowerFlowTimeSeries(QThread):
         # Grid to run a power flow in
         self.grid = grid
 
-        self.numerical_circuit = self.grid.compile()
+        self.numerical_circuit = self.grid.compile_time_series()
 
         # Options to use
         self.options = options

@@ -40,7 +40,7 @@ class AcOPFBlackBox:
 
         self.multi_circuit = multi_circuit
 
-        self.numerical_circuit = self.multi_circuit.compile()
+        self.numerical_circuit = self.multi_circuit.compile_snapshot()
 
         self.islands = self.numerical_circuit.compute()
 

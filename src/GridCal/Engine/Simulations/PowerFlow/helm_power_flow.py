@@ -381,7 +381,7 @@ if __name__ == '__main__':
 
     grid = FileOpen(file_name).open()
 
-    nc = grid.compile()
+    nc = grid.compile_snapshot()
     islands = nc.compute()
     circuit = islands[0]
 

@@ -28,6 +28,7 @@ from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 
 # Engine imports
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotIslandInputs
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
@@ -232,7 +233,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = CalculationInputs(1, 1, 1, 1, 1)
+        pfo = StaticSnapshotIslandInputs(1, 1, 1, 1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -721,7 +722,8 @@ class MainGUI(QMainWindow):
         print('\tapp.adjust_all_node_width(): Adjust the width of all the nodes according to their name.')
 
         print('\n\nCircuit functions:')
-        print('\tapp.circuit.compile(): Compile the grid(s)')
+        print('\tapp.circuit.compile_snapshot(): Compile the grid(s) snapshot mode')
+        print('\tapp.circuit.compile_time_series(): Compile the grid(s) time series mode')
         print('\tapp.circuit.plot_graph(): Plot a graph in a Matplotlib window. Call plt.show() after.')
         print('\tapp.circuit.load_file("file_name.xlsx/.m/.raw/.dgs"): Load GridCal compatible file')
         print('\tapp.circuit.save_file("file_name.xlsx"): Save GridCal file')
@@ -1253,8 +1255,6 @@ class MainGUI(QMainWindow):
         Export power flow results
         """
         if self.power_flow is not None:
-            # if self.circuit.graph is None:
-            #     self.compile()
 
             # declare the allowed file types
             files_types = "Excel file (*.xlsx)"
@@ -1287,8 +1287,6 @@ class MainGUI(QMainWindow):
         Export object profiles
         """
         if self.circuit.time_profile is not None:
-            # if self.circuit.graph is None:
-            #     self.compile()
 
             # declare the allowed file types
             files_types = "Excel file (*.xlsx)"
@@ -2060,14 +2058,13 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                # self.compile()  # compiles inside
 
                 # get the power flow options from the GUI
                 options = self.get_selected_power_flow_options()
 
                 # compute the automatic precision
                 if self.ui.auto_precision_checkBox.isChecked():
-                    numerical = self.circuit.compile()
+                    numerical = self.circuit.compile_snapshot()
                     S = numerical.load_power / numerical.Sbase
                     lg = np.log10(abs(S))
                     lg[lg == -np.inf] = 0
@@ -2479,7 +2476,6 @@ class MainGUI(QMainWindow):
 
                         self.ui.progress_label.setText('Compiling the grid...')
                         QtGui.QGuiApplication.processEvents()
-                        # self.compile()
 
                         n = len(self.circuit.buses)
                         #  compose the base power
@@ -2513,11 +2509,9 @@ class MainGUI(QMainWindow):
                         # lock the UI
                         self.LOCK()
 
-                        # self.compile()
-
                         self.power_flow.run_at(start_idx)
 
-                        nc = self.circuit.compile()
+                        nc = self.circuit.compile_time_series()
                         Sprof = nc.get_power_injections()
                         vc_inputs = VoltageCollapseInput(
                             Sbase=Sprof[start_idx, :],
@@ -2671,7 +2665,6 @@ class MainGUI(QMainWindow):
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
-                    # self.compile()  # compiles inside
 
                     options = self.get_selected_power_flow_options()
 
@@ -2736,7 +2729,6 @@ class MainGUI(QMainWindow):
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
-                    # self.compile()  # compiles inside
 
                     options = self.get_selected_power_flow_options()
 
@@ -2822,7 +2814,6 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
-                # self.compile()  # compiles inside
 
                 options = self.get_selected_power_flow_options()
                 options.solver_type = SolverType.LM
@@ -3238,7 +3229,7 @@ class MainGUI(QMainWindow):
                 if self.time_series is not None:
 
                     # get the numerical object of the circuit
-                    numeric_circuit = self.circuit.compile()
+                    numeric_circuit = self.circuit.compile_time_series()
 
                     # perform a time series analysis
                     ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, self.time_series.results)
@@ -4284,7 +4275,7 @@ class MainGUI(QMainWindow):
         """
         if self.circuit is not None:
             # print('Compiling...', end='')
-            numerical_circuit = self.circuit.compile()
+            numerical_circuit = self.circuit.compile_snapshot()
             self.calculation_inputs_to_display = numerical_circuit.compute()
             return True
         else:

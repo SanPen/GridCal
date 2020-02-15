@@ -124,7 +124,7 @@ class PulpSolver(GeneralSolver):
         fobj = 0
 
         # compile the assets into arrays
-        numerical = self.problem.compile()
+        numerical = self.problem.compile_snapshot()
         # get start and ending time indices
         t_min, t_max = self.options.start_, self.options.end_
         time = self.problem.time_profile[TimeFrame.ShortTerm].astype(float) / 1e9 / 3600  # unix time array in hours

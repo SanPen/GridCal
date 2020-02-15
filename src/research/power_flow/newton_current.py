@@ -407,16 +407,14 @@ def NR_I2(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine.calculation_engine import *
+    from GridCal.Engine import *
 
-    grid = MultiCircuit()
+    grid = FileOpen('IEEE30.xlsx').open()
     # grid.load_file('lynn5buspq.xlsx')
-    grid.load_file('IEEE30.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
     # grid.load_file('D:\GitHub\GridCal\Grids_and_profiles\grids\Pegasus 89 Bus.xlsx')
-    grid.compile()
 
-    circuit = grid.circuits[0]
+    circuit = grid.compile_snapshot().compute()
 
     print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
     print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())

@@ -148,7 +148,7 @@ class NMinusK(QThread):
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_time_series()
 
         # re-index the profile (this is essential for time-compatibility)
         self.progress_signal.emit(100)
@@ -180,9 +180,9 @@ class NMinusK(QThread):
         # do the topological computation
         self.progress_text.emit("Compiling topology...")
         self.progress_signal.emit(0.0)
-        calc_inputs_dict = numerical_circuit.compute_ts(ignore_single_node_islands=pf_options.ignore_single_node_islands,
-                                                        prog_func=self.progress_signal.emit,
-                                                        text_func=self.progress_text.emit)
+        calc_inputs_dict = numerical_circuit.compute(ignore_single_node_islands=pf_options.ignore_single_node_islands,
+                                                     prog_func=self.progress_signal.emit,
+                                                     text_func=self.progress_text.emit)
 
         n_k_results.bus_types = numerical_circuit.bus_types
 
@@ -280,7 +280,7 @@ class NMinusK(QThread):
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_time_series()
 
         # if no base profile time is given, pick the base values
         if indices is None:
@@ -311,7 +311,7 @@ class NMinusK(QThread):
         # do the topological computation
         self.progress_text.emit("Compiling topology...")
         self.progress_signal.emit(0.0)
-        calc_inputs_dict = numerical_circuit.compute_ts(ignore_single_node_islands=pf_options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(ignore_single_node_islands=pf_options.ignore_single_node_islands)
 
         n_k_results.bus_types = numerical_circuit.bus_types
 

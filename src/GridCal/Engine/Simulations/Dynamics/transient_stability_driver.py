@@ -86,7 +86,7 @@ class TransientStability(QThread):
         self.progress_text.emit('Running transient stability...')
 
         # print('Compiling...', end='')
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_snapshot()
         calculation_inputs = numerical_circuit.compute()
 
         for calculation_input in calculation_inputs:

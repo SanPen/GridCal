@@ -19,7 +19,8 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 from GridCal.Engine.Devices import DeviceType
 
 
@@ -85,7 +86,7 @@ def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
     return events
 
 
-def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
+def get_reliability_scenario(nc: StaticSnapshotInputs, horizon=10000):
     """
     Get reliability events
     Args:
@@ -116,7 +117,7 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     return all_events
 
 
-def run_events(nc: NumericalCircuit, events_list: list):
+def run_events(nc: StaticSnapshotInputs, events_list: list):
 
     for t, tpe, i, state in events_list:
 
@@ -188,7 +189,7 @@ class ReliabilityStudy(QThread):
         print('Running voltage collapse...')
 
         # compile the numerical circuit
-        numerical_circuit = self.circuit.compile()
+        numerical_circuit = self.circuit.compile_snapshot()
 
         evt = get_reliability_scenario(numerical_circuit)
 

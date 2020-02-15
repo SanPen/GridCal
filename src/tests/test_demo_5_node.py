@@ -26,14 +26,13 @@ from GridCal.print_power_flow_results import print_power_flow_results
 from tests.conftest import ROOT_PATH
 
 
-def test_demo_5_node(root_path):
+def test_demo_5_node(root_path=ROOT_PATH):
     np.core.arrayprint.set_printoptions(precision=4)
 
     grid = MultiCircuit()
 
     # Add buses
     bus1 = Bus('Bus 1', vnom=20)
-    # bus1.is_slack = True
     grid.add_bus(bus1)
     gen1 = Generator('Slack Generator', voltage_module=1.0)
     grid.add_generator(bus1, gen1)
@@ -71,6 +70,9 @@ def test_demo_5_node(root_path):
     power_flow.run()
 
     print_power_flow_results(power_flow=power_flow)
+    v = np.array([1., 0.9553, 0.9548, 0.9334, 0.9534])
+    all_ok = np.isclose(np.abs(power_flow.results.voltage), v, atol=1e-3)
+    return all_ok
 
 
 if __name__ == '__main__':

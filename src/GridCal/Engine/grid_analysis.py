@@ -16,12 +16,12 @@ import numpy as np
 
 
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
-from GridCal.Engine.Core.multi_circuit import NumericalCircuit
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 
 
 class TimeSeriesResultsAnalysis:
 
-    def __init__(self, numerical_circuit: NumericalCircuit, results: TimeSeriesResults):
+    def __init__(self, numerical_circuit: StaticSeriesInputs, results: TimeSeriesResults):
         """
         Constructor
         Args:

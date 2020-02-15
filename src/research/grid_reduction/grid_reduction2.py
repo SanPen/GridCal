@@ -9,14 +9,10 @@ pd.set_option('display.width', 1000)
 
 file_name = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 2.xlsx'
 
-from GridCal.Engine.calculation_engine import MultiCircuit, BranchType
+from GridCal.Engine import MultiCircuit, BranchType, FileOpen
 
 
-circuit = MultiCircuit()
-
-circuit.load_file(file_name)
-
-circuit.compile()
+circuit = FileOpen(file_name).open()
 
 # form C
 threshold = 1e-5

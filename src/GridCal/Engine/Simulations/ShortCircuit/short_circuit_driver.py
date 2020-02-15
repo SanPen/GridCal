@@ -22,7 +22,7 @@ from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotIslandInputs
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
 from GridCal.Gui.GuiFunctions import ResultsModel
@@ -273,7 +273,7 @@ class ShortCircuit(QRunnable):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self, calculation_inputs: CalculationInputs, Vpf, Zf):
+    def single_short_circuit(self, calculation_inputs: StaticSnapshotIslandInputs, Vpf, Zf):
         """
         Run a power flow simulation for a single circuit
         @param calculation_inputs:
@@ -326,7 +326,7 @@ class ShortCircuit(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(calculation_inputs: CalculationInputs, V):
+    def compute_branch_results(calculation_inputs: StaticSnapshotIslandInputs, V):
         """
         Compute the power flows trough the branches
         @param calculation_inputs: instance of Circuit
@@ -380,7 +380,7 @@ class ShortCircuit(QRunnable):
         results.initialize(n, m)
 
         # Compile the grid
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_snapshot()
         calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                                        ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 

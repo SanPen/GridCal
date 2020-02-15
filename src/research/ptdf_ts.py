@@ -56,7 +56,7 @@ def run(fname):
                                   ignore_single_node_islands=False,
                                   correction_parameter=1e-4)
 
-    nc = circuit.compile()
+    nc = circuit.compile_time_series()
 
     ts_driver = TimeSeries(circuit, pf_options)
     ts_driver.run()

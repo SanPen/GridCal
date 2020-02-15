@@ -110,7 +110,7 @@ if __name__ == '__main__':
     from GridCal.Engine import FileOpen
 
     circuit = FileOpen(fname).open()
-    nc = circuit.compile()
+    nc = circuit.compile_snapshot()
     islands = nc.compute()
     island = islands[0]
 

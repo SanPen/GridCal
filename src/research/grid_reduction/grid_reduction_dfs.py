@@ -1,4 +1,4 @@
-from GridCal.Engine.calculation_engine import MultiCircuit, BranchType
+from GridCal.Engine import MultiCircuit, BranchType, FileOpen
 from networkx import Graph, all_simple_paths
 import numpy as np
 import pandas as pd
@@ -10,9 +10,7 @@ pd.set_option('display.width', 1000)
 
 def get_connectivity(file_name):
 
-    circuit = MultiCircuit()
-    circuit.load_file(file_name)
-    circuit.compile()
+    circuit = FileOpen(file_name).open()
 
     # form C
     threshold = 1e-5
@@ -63,9 +61,7 @@ if __name__ == '__main__':
 
     fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 2.xlsx'
 
-    circuit = MultiCircuit()
-    circuit.load_file(fname)
-    circuit.compile()
+    circuit = FileOpen(fname).open()
 
     # form C
     threshold = 1e-5

@@ -19,7 +19,8 @@ That means that solves the OPF problem for a complete time series at once
 """
 
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import *
 
@@ -104,7 +105,7 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
     """
 
     # do the topological computation
-    calc_inputs_dict = numerical_circuit.compute_ts()
+    calc_inputs_dict = numerical_circuit.compute()
 
     # generate the time indices to simulate
     if end_ == -1:
@@ -230,7 +231,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfDcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: StaticSeriesInputs, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
                  batteries_energy_0=None):
         """
         DC time series linear optimal power flow

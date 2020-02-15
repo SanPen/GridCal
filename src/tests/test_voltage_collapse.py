@@ -23,7 +23,7 @@ def test_voltage_collapse(root_path=ROOT_PATH):
     print('\n\n')
     vc_options = VoltageCollapseOptions()
     # just for this test
-    numeric_circuit = main_circuit.compile()
+    numeric_circuit = main_circuit.compile_snapshot()
     numeric_inputs = numeric_circuit.compute()
     Sbase = np.zeros(len(main_circuit.buses), dtype=complex)
     Vbase = np.zeros(len(main_circuit.buses), dtype=complex)

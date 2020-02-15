@@ -55,7 +55,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         self.power_flow = PowerFlowDriver(self.circuit, self.options)
 
         # compile circuits
-        self.numerical_circuit = self.circuit.compile()
+        self.numerical_circuit = self.circuit.compile_snapshot()
         self.numerical_input_islands = self.numerical_circuit.compute()
 
         n = len(self.circuit.buses)

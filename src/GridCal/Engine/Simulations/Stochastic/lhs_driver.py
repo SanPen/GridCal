@@ -100,12 +100,11 @@ class LatinHypercubeSampling(QThread):
         avg_res.initialize(n, m)
 
         # compile the multi-circuit
-        numerical_circuit = self.circuit.compile()
+        numerical_circuit = self.circuit.compile_time_series()
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(
-            branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-            ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         # for each partition of the profiles...
         for t_key, calc_inputs in calc_inputs_dict.items():
@@ -196,12 +195,11 @@ class LatinHypercubeSampling(QThread):
         avg_res.initialize(n, m)
 
         # compile the multi-circuit
-        numerical_circuit = self.circuit.compile()
+        numerical_circuit = self.circuit.compile_time_series()
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(
-            branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-            ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         it = 0
         # for each partition of the profiles...

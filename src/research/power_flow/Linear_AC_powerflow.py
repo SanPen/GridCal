@@ -207,7 +207,7 @@ if __name__ == '__main__':
 
     grid = FileOpen(fname).open()
 
-    numerical_circuit = grid.compile()
+    numerical_circuit = grid.compile_snapshot()
 
     circuits = numerical_circuit.compute()
 

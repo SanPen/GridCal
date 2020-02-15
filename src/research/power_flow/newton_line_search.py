@@ -760,7 +760,7 @@ if __name__ == "__main__":
     fname = '/home/santi/Documentos/Private_Grids/2026_INVIERNO_para Plexos_FINAL_9.raw'
 
     grid = FileOpen(file_name=fname).open()
-    nc = grid.compile()
+    nc = grid.compile_snapshot()
     islands = nc.compute()
     circuit = islands[0]
 

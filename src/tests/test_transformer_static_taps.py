@@ -429,7 +429,6 @@ def test_xfo_static_tap_3():
         print(f" - bus[{i}]: {b}")
     print()
 
-    grid.compile()
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,

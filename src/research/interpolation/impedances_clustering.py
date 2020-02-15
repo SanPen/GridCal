@@ -68,17 +68,15 @@ def analize_impedances(circuit: MultiCircuit):
 ########################################################################################################################
 #  MAIN
 ########################################################################################################################
+
 if __name__ == "__main__":
 
-
-    grid = MultiCircuit()
     # grid.load_file('lynn5buspq.xlsx')
     # grid.load_file('IEEE30.xlsx')
     # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
-    grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Europe winter 2009 model.xlsx')
-    grid.compile()
+    file_name = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Europe winter 2009 model.xlsx'
 
-    circuit = grid.circuits[0]
+    grid = FileOpen(file_name).open()
 
-    analize_impedances(circuit)
+    analize_impedances(grid)
     plt.show()

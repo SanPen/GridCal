@@ -203,7 +203,7 @@ class StateEstimation(QRunnable):
         self.se_results = StateEstimationResults()
         self.se_results.initialize(n, m)
 
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_snapshot()
         islands = numerical_circuit.compute()
 
         self.se_results.bus_types = numerical_circuit.bus_types

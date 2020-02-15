@@ -21,7 +21,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_input import MonteCarloInput
-from GridCal.Engine.Core.calculation_inputs import CalculationInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesIslandInputs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
@@ -33,7 +33,7 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesRe
 ########################################################################################################################
 
 
-def make_monte_carlo_input(numerical_input_island: CalculationInputs):
+def make_monte_carlo_input(numerical_input_island: StaticSeriesIslandInputs):
     """
     Generate a monte carlo input instance
     :param numerical_input_island:
@@ -131,12 +131,11 @@ class MonteCarlo(QThread):
         avg_res.initialize(n, m)
 
         # compile circuits
-        numerical_circuit = self.circuit.compile()
+        numerical_circuit = self.circuit.compile_time_series()
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(
-            branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-            ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         mc_results.bus_types = numerical_circuit.bus_types
 
@@ -256,12 +255,11 @@ class MonteCarlo(QThread):
         m = len(self.circuit.branches)
 
         # compile circuits
-        numerical_circuit = self.circuit.compile()
+        numerical_circuit = self.circuit.compile_time_series()
 
         # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute_ts(
-            branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-            ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         mc_results = MonteCarloResults(n, m, name='Monte Carlo')
         avg_res = PowerFlowResults()

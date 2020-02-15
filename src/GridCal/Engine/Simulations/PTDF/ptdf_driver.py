@@ -96,7 +96,7 @@ class PTDF(QThread):
             text_func('Compiling...')
 
         # compile to arrays
-        numerical_circuit = circuit.compile()
+        numerical_circuit = circuit.compile_snapshot()
         calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
                                                        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                                        ignore_single_node_islands=options.ignore_single_node_islands)
@@ -166,7 +166,7 @@ class PTDF(QThread):
             text_func('Compiling...')
 
         # compile to arrays
-        numerical_circuit = circuit.compile()
+        numerical_circuit = circuit.compile_snapshot()
         calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
                                                        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                                        ignore_single_node_islands=options.ignore_single_node_islands)

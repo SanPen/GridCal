@@ -492,11 +492,6 @@ if __name__ == '__main__':
     print('Loading...')
     grid = FileOpen('lynn5buspv.xlsx').open()
 
-    # grid.load_file('IEEE30.xlsx')
-    # grid.load_file('Illinois200Bus.xlsx')
-
-    grid.compile()
-
     print('Solving...')
     # declare and solve problem
     problem = AcOPf(grid)

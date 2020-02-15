@@ -37,7 +37,7 @@ def _test_api_dcopf():
 
     print('loading...')
     grid = FileOpen(fname).open()
-    grid.compile()
+    grid.compile_snapshot()
     opf_options = OptimalPowerFlowOptions()
     # opf = OptimalPowerFlow(grid, opf_options)
     # opf.run()

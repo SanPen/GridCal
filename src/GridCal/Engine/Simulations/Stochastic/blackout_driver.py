@@ -24,7 +24,8 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 
 
 class CascadeType(Enum):
@@ -156,7 +157,7 @@ class Cascading(QThread):
         return idx, criteria
 
     @staticmethod
-    def remove_probability_based(numerical_circuit: NumericalCircuit, results: MonteCarloResults, max_val, min_prob):
+    def remove_probability_based(numerical_circuit: StaticSnapshotInputs, results: MonteCarloResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
         :param numerical_circuit:
@@ -206,9 +207,6 @@ class Cascading(QThread):
             Nothing
         """
 
-        # recompile the grid
-        self.grid.compile()
-
         # initialize the simulator
         if self.cascade_type is CascadeType.PowerFlow:
             model_simulator = PowerFlowDriver(self.grid, self.options)
@@ -255,7 +253,7 @@ class Cascading(QThread):
 
         # compile
         # print('Compiling...', end='')
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_time_series()
         calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
 
         self.results = CascadingResults(self.cascade_type)

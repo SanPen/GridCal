@@ -20,10 +20,11 @@ from datetime import timedelta
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 
 
 def get_system_user():
@@ -396,7 +397,7 @@ class MultiCircuit:
             as full matrix (False)
         """
 
-        numerical_circuit = self.compile()
+        numerical_circuit = self.compile_snapshot()
         islands = numerical_circuit.compute()
         i = 0
         # Initial magnitudes
@@ -568,7 +569,7 @@ class MultiCircuit:
         """
 
         # print('Compiling...', end='')
-        numerical_circuit = self.compile()
+        numerical_circuit = self.compile_snapshot()
         calculation_inputs = numerical_circuit.compute()
 
         writer = pd.ExcelWriter(file_path)
@@ -597,7 +598,8 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> NumericalCircuit:
+    def compile_snapshot(self, opf_results=None, opf_time_series_results=None,
+                         logger=Logger()) -> StaticSnapshotInputs:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -611,7 +613,7 @@ class MultiCircuit:
 
             grid = MultiCircuit()
             grid.load_file("grid.xlsx")
-            grid.compile()
+            grid.compile_snapshot()
 
             options = PowerFlowOptions()
 
@@ -634,10 +636,6 @@ class MultiCircuit:
 
         n = len(self.buses)
         m = len(self.branches)
-        if self.time_profile is not None:
-            n_time = len(self.time_profile)
-        else:
-            n_time = 0
 
         if opf_time_series_results is not None and opf_time_series_results is None:
             raise Exception('You want to use the OPF results but none is passed')
@@ -658,13 +656,9 @@ class MultiCircuit:
             n_sh += len(bus.shunts)
 
         # declare the numerical circuit
-        circuit = NumericalCircuit(n_bus=n, n_br=m, n_ld=n_ld, n_gen=n_ctrl_gen,
-                                   n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
-                                   n_time=n_time, Sbase=self.Sbase)
-
-        # set hte time array profile
-        if n_time > 0:
-            circuit.time_array = self.time_profile
+        circuit = StaticSnapshotInputs(n_bus=n, n_br=m, n_ld=n_ld, n_gen=n_ctrl_gen,
+                                       n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
+                                       Sbase=self.Sbase)
 
         # compile the buses and the shunt devices
         i_ld = 0
@@ -683,13 +677,6 @@ class MultiCircuit:
             circuit.Vmax[i] = bus.Vmax
             circuit.Vmin[i] = bus.Vmin
             circuit.bus_types[i] = bus.determine_bus_type().value
-
-            if n_time > 0:
-                # active profile
-                if bus.active_prof is None:
-                    bus.ensure_profiles_exist(self.time_profile)
-
-                circuit.bus_active_prof[:, i] = bus.active_prof
 
             # Add buses dictionary entry
             self.bus_dictionary[bus] = i
@@ -710,17 +697,6 @@ class MultiCircuit:
                 else:
                     circuit.load_power[i_ld] = complex(elm.P, elm.Q)
 
-                if n_time > 0:
-                    circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
-                    circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
-                    circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
-                    circuit.load_active_prof[:, i_ld] = elm.active_prof
-                    circuit.load_cost_prof[:, i_ld] = elm.Cost_prof
-
-                    if opf_time_series_results is not None:
-                        # subtract the load shedding from the generation
-                        circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_gen]
-
                 circuit.C_bus_load[i, i_ld] = 1
                 i_ld += 1
 
@@ -730,10 +706,6 @@ class MultiCircuit:
                 circuit.static_gen_active[i_sta_gen] = elm.active
                 circuit.static_gen_mttf[i_sta_gen] = elm.mttf
                 circuit.static_gen_mttr[i_sta_gen] = elm.mttr
-
-                if n_time > 0:
-                    circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
-                    circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
 
                 circuit.C_bus_sta_gen[i, i_sta_gen] = 1
                 i_sta_gen += 1
@@ -758,23 +730,6 @@ class MultiCircuit:
                     circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
                 else:
                     circuit.generator_power[i_gen] = elm.P
-
-                if n_time > 0:
-                    # power profile
-                    if opf_time_series_results is not None:
-                        circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
-                    else:
-                        circuit.generator_power_profile[:, i_gen] = elm.P_prof
-
-                    circuit.generator_active_prof[:, i_gen] = elm.active_prof
-
-                    # Power factor profile
-                    circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof
-
-                    # Voltage profile
-                    circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
-
-                    circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
 
                 circuit.C_bus_gen[i, i_gen] = 1
 
@@ -805,19 +760,6 @@ class MultiCircuit:
                 circuit.battery_min_soc[i_batt] = elm.min_soc
                 circuit.battery_max_soc[i_batt] = elm.max_soc
 
-                if n_time > 0:
-                    # power profile
-                    if opf_time_series_results is not None:
-                        circuit.battery_power_profile[:, i_batt] = opf_time_series_results.battery_power[:, i_batt]
-                    else:
-                        circuit.battery_power_profile[:, i_batt] = elm.P_prof
-                    # Voltage profile
-                    circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
-
-                    circuit.battery_active_prof[:, i_batt] = elm.active_prof
-
-                    circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
-
                 circuit.C_bus_batt[i, i_batt] = 1
                 circuit.V0[i] *= elm.Vset
                 i_batt += 1
@@ -828,10 +770,6 @@ class MultiCircuit:
                 circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
                 circuit.shunt_mttf[i_sh] = elm.mttf
                 circuit.shunt_mttr[i_sh] = elm.mttr
-
-                if n_time > 0:
-                    circuit.shunt_active_prof[:, i_sh] = elm.active_prof
-                    circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
 
                 circuit.C_bus_shunt[i, i_sh] = 1
                 i_sh += 1
@@ -881,12 +819,6 @@ class MultiCircuit:
             circuit.tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
             circuit.vset[i] = branch.vset
 
-            if n_time > 0:
-                circuit.branch_active_prof[:, i] = branch.active_prof
-                circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
-                circuit.branch_cost_profile[:, i] = branch.Cost_prof
-                circuit.br_rate_profile[:, i] = branch.rate_prof
-
             # switches
             if branch.branch_type == BranchType.Switch:
                 circuit.switch_indices.append(i)
@@ -898,6 +830,309 @@ class MultiCircuit:
         # Assign and return
         self.numerical_circuit = circuit
         return circuit
+
+    def compile_time_series(self, opf_results=None, opf_time_series_results=None,
+                            logger=Logger()) -> StaticSeriesInputs:
+        """
+        Compile the circuit assets into an equivalent circuit that only contains
+        matrices and vectors for calculation. This method returns the numerical
+        circuit, but it also assigns it to **self.numerical_circuit**, which is used
+        when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
+        :ref:`simulation driver<gridcal_engine_simulations>`, for example:
+
+        .. code:: ipython3
+
+            from GridCal.Engine import *
+
+            grid = MultiCircuit()
+            grid.load_file("grid.xlsx")
+            grid.compile_snapshot()
+
+            options = PowerFlowOptions()
+
+            power_flow = PowerFlowMP(grid, options)
+            power_flow.run()
+
+        Arguments:
+
+            **use_opf_vals** (bool, False): Use OPF results as inputs
+
+            **opf_time_series_results** (list, None): OPF results to be used as inputs
+
+            **logger** (list, []): Message log
+
+        Returns:
+
+            **self.numerical_circuit** (NumericalCircuit): Compiled numerical circuit
+            of the grid
+        """
+
+        n = len(self.buses)
+        m = len(self.branches)
+        if self.time_profile is not None:
+            n_time = len(self.time_profile)
+
+            if opf_time_series_results is not None and opf_time_series_results is None:
+                raise Exception('You want to use the OPF results but none is passed')
+
+            self.bus_dictionary = dict()
+
+            # Element count
+            n_ld = 0
+            n_ctrl_gen = 0
+            n_sta_gen = 0
+            n_batt = 0
+            n_sh = 0
+            for bus in self.buses:
+                n_ld += len(bus.loads)
+                n_ctrl_gen += len(bus.controlled_generators)
+                n_sta_gen += len(bus.static_generators)
+                n_batt += len(bus.batteries)
+                n_sh += len(bus.shunts)
+
+            # declare the numerical circuit
+            circuit = StaticSeriesInputs(n_bus=n, n_br=m, n_ld=n_ld, n_gen=n_ctrl_gen,
+                                         n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
+                                         n_time=n_time, Sbase=self.Sbase)
+
+            # set hte time array profile
+            if n_time > 0:
+                circuit.time_array = self.time_profile
+
+            # compile the buses and the shunt devices
+            i_ld = 0
+            i_gen = 0
+            i_sta_gen = 0
+            i_batt = 0
+            i_sh = 0
+            self.bus_names = np.zeros(n, dtype=object)
+            for i, bus in enumerate(self.buses):
+
+                # bus parameters
+                self.bus_names[i] = bus.name
+                circuit.bus_names[i] = bus.name
+                circuit.bus_active[i] = bus.active
+                circuit.bus_vnom[i] = bus.Vnom  # kV
+                circuit.Vmax[i] = bus.Vmax
+                circuit.Vmin[i] = bus.Vmin
+                circuit.bus_types[i] = bus.determine_bus_type().value
+
+                if n_time > 0:
+                    # active profile
+                    if bus.active_prof is None:
+                        bus.ensure_profiles_exist(self.time_profile)
+
+                    circuit.bus_active_prof[:, i] = bus.active_prof
+
+                # Add buses dictionary entry
+                self.bus_dictionary[bus] = i
+
+                for elm in bus.loads:
+                    circuit.load_names[i_ld] = elm.name
+
+                    circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
+                    circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
+                    circuit.load_active[i_ld] = elm.active
+                    circuit.load_mttf[i_ld] = elm.mttf
+                    circuit.load_mttr[i_ld] = elm.mttr
+                    circuit.load_cost[i_ld] = elm.Cost
+
+                    if opf_results is not None:
+                        # subtract the load shedding
+                        circuit.load_power[i_ld] = complex(elm.P - opf_results.load_shedding[i_ld], elm.Q)
+                    else:
+                        circuit.load_power[i_ld] = complex(elm.P, elm.Q)
+
+                    if n_time > 0:
+                        circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+                        circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
+                        circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
+                        circuit.load_active_prof[:, i_ld] = elm.active_prof
+                        circuit.load_cost_prof[:, i_ld] = elm.Cost_prof
+
+                        if opf_time_series_results is not None:
+                            # subtract the load shedding from the generation
+                            circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_gen]
+
+                    circuit.C_bus_load[i, i_ld] = 1
+                    i_ld += 1
+
+                for elm in bus.static_generators:
+                    circuit.static_gen_names[i_sta_gen] = elm.name
+                    circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
+                    circuit.static_gen_active[i_sta_gen] = elm.active
+                    circuit.static_gen_mttf[i_sta_gen] = elm.mttf
+                    circuit.static_gen_mttr[i_sta_gen] = elm.mttr
+
+                    if n_time > 0:
+                        circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
+                        circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
+
+                    circuit.C_bus_sta_gen[i, i_sta_gen] = 1
+                    i_sta_gen += 1
+
+                for elm in bus.controlled_generators:
+                    circuit.generator_names[i_gen] = elm.name
+
+                    circuit.generator_power_factor[i_gen] = elm.Pf
+                    circuit.generator_voltage[i_gen] = elm.Vset
+                    circuit.generator_qmin[i_gen] = elm.Qmin
+                    circuit.generator_qmax[i_gen] = elm.Qmax
+                    circuit.generator_pmin[i_gen] = elm.Pmin
+                    circuit.generator_pmax[i_gen] = elm.Pmax
+                    circuit.generator_active[i_gen] = elm.active
+                    circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
+                    circuit.generator_mttf[i_gen] = elm.mttf
+                    circuit.generator_mttr[i_gen] = elm.mttr
+                    circuit.generator_cost[i_gen] = elm.Cost
+                    circuit.generator_nominal_power[i_gen] = elm.Snom
+
+                    if opf_results is not None:
+                        circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
+                    else:
+                        circuit.generator_power[i_gen] = elm.P
+
+                    if n_time > 0:
+                        # power profile
+                        if opf_time_series_results is not None:
+                            circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
+                        else:
+                            circuit.generator_power_profile[:, i_gen] = elm.P_prof
+
+                        circuit.generator_active_prof[:, i_gen] = elm.active_prof
+
+                        # Power factor profile
+                        circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof
+
+                        # Voltage profile
+                        circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
+
+                        circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
+
+                    circuit.C_bus_gen[i, i_gen] = 1
+
+                    if circuit.V0[i].real == 1.0:
+                        circuit.V0[i] = complex(elm.Vset, 0)
+                    elif elm.Vset != circuit.V0[i]:
+                        logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
+                    i_gen += 1
+
+                for elm in bus.batteries:
+                    circuit.battery_names[i_batt] = elm.name
+                    circuit.battery_power[i_batt] = elm.P
+                    circuit.battery_voltage[i_batt] = elm.Vset
+                    circuit.battery_qmin[i_batt] = elm.Qmin
+                    circuit.battery_qmax[i_batt] = elm.Qmax
+                    circuit.battery_active[i_batt] = elm.active
+                    circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
+                    circuit.battery_mttf[i_batt] = elm.mttf
+                    circuit.battery_mttr[i_batt] = elm.mttr
+                    circuit.battery_cost[i_batt] = elm.Cost
+
+                    circuit.battery_pmin[i_batt] = elm.Pmin
+                    circuit.battery_pmax[i_batt] = elm.Pmax
+                    circuit.battery_Enom[i_batt] = elm.Enom
+                    circuit.battery_soc_0[i_batt] = elm.soc_0
+                    circuit.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
+                    circuit.battery_charge_efficiency[i_batt] = elm.charge_efficiency
+                    circuit.battery_min_soc[i_batt] = elm.min_soc
+                    circuit.battery_max_soc[i_batt] = elm.max_soc
+
+                    if n_time > 0:
+                        # power profile
+                        if opf_time_series_results is not None:
+                            circuit.battery_power_profile[:, i_batt] = opf_time_series_results.battery_power[:, i_batt]
+                        else:
+                            circuit.battery_power_profile[:, i_batt] = elm.P_prof
+                        # Voltage profile
+                        circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
+
+                        circuit.battery_active_prof[:, i_batt] = elm.active_prof
+
+                        circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
+
+                    circuit.C_bus_batt[i, i_batt] = 1
+                    circuit.V0[i] *= elm.Vset
+                    i_batt += 1
+
+                for elm in bus.shunts:
+                    circuit.shunt_names[i_sh] = elm.name
+                    circuit.shunt_active[i_sh] = elm.active
+                    circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
+                    circuit.shunt_mttf[i_sh] = elm.mttf
+                    circuit.shunt_mttr[i_sh] = elm.mttr
+
+                    if n_time > 0:
+                        circuit.shunt_active_prof[:, i_sh] = elm.active_prof
+                        circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
+
+                    circuit.C_bus_shunt[i, i_sh] = 1
+                    i_sh += 1
+
+            # Compile the branches
+            self.branch_names = np.zeros(m, dtype=object)
+            for i, branch in enumerate(self.branches):
+
+                self.branch_names[i] = branch.name
+                f = self.bus_dictionary[branch.bus_from]
+                t = self.bus_dictionary[branch.bus_to]
+
+                # connectivity
+                circuit.C_branch_bus_f[i, f] = 1
+                circuit.C_branch_bus_t[i, t] = 1
+                circuit.F[i] = f
+                circuit.T[i] = t
+
+                # name and state
+                circuit.branch_names[i] = branch.name
+                circuit.branch_active[i] = branch.active
+                circuit.br_mttf[i] = branch.mttf
+                circuit.br_mttr[i] = branch.mttr
+                circuit.branch_cost[i] = branch.Cost
+
+                # impedance and tap
+                circuit.R[i] = branch.R
+                circuit.X[i] = branch.X
+                circuit.G[i] = branch.G
+                circuit.B[i] = branch.B
+                circuit.impedance_tolerance[i] = branch.tolerance
+                circuit.br_rates[i] = branch.rate
+                circuit.tap_mod[i] = branch.tap_module
+                circuit.tap_ang[i] = branch.angle
+
+                # Thermal correction
+                circuit.temp_base[i] = branch.temp_base
+                circuit.temp_oper[i] = branch.temp_oper
+                circuit.alpha[i] = branch.alpha
+
+                # tap changer
+                circuit.is_bus_to_regulated[i] = branch.bus_to_regulated
+                circuit.tap_position[i] = branch.tap_changer.tap
+                circuit.min_tap[i] = branch.tap_changer.min_tap
+                circuit.max_tap[i] = branch.tap_changer.max_tap
+                circuit.tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
+                circuit.tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
+                circuit.vset[i] = branch.vset
+
+                if n_time > 0:
+                    circuit.branch_active_prof[:, i] = branch.active_prof
+                    circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
+                    circuit.branch_cost_profile[:, i] = branch.Cost_prof
+                    circuit.br_rate_profile[:, i] = branch.rate_prof
+
+                # switches
+                if branch.branch_type == BranchType.Switch:
+                    circuit.switch_indices.append(i)
+
+                # virtual taps for transformers where the connection voltage is off
+                elif branch.branch_type == BranchType.Transformer:
+                    circuit.tap_f[i], circuit.tap_t[i] = branch.get_virtual_taps()
+
+            # Assign and return
+            self.numerical_circuit = circuit
+            return circuit
+        else:
+            raise Exception('This compilation needs time profiles, make sure you initialize the time series.')
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """

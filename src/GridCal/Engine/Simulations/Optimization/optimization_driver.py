@@ -73,7 +73,7 @@ class VoltageOptimizationProblem(OptimizationProblem):
         self.results = MonteCarloResults(n, m, self.max_eval, name='Voltage optimization')
 
         # compile circuits
-        self.numerical_circuit = self.circuit.compile()
+        self.numerical_circuit = self.circuit.compile_snapshot()
         self.numerical_input_islands = self.numerical_circuit.compute(ignore_single_node_islands=options.ignore_single_node_islands)
 
         self.it = 0

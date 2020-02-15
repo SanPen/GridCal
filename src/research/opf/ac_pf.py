@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import hstack as hstack_s, vstack as vstack_s
 
-from GridCal.Engine.calculation_engine import *
+from GridCal.Engine import *
 
 
 class AcPf:
@@ -125,13 +125,8 @@ class AcPf:
 
 if __name__ == '__main__':
 
-    grid = MultiCircuit()
-
-    grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('IEEE30.xlsx')
-    # grid.load_file('Illinois200Bus.xlsx')
-
-    grid.compile()
+    file_name = 'lynn5buspq.xlsx'
+    grid = FileOpen(file_name).open()
 
     print('Running...')
     for circuit in grid.circuits:

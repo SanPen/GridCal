@@ -404,7 +404,7 @@ def solve(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
 
 if __name__ == '__main__':
 
-    from GridCal.Engine.calculation_engine import *
+    from GridCal.Engine import *
 
     m_circuit = MultiCircuit()
 
@@ -440,24 +440,20 @@ if __name__ == '__main__':
 
     br = [br1, br2, br3]
 
-    m_circuit.compile()
+    se = StateEstimation(circuit=m_circuit)
 
-    circuit = m_circuit.circuits[0]
+    se.run()
 
-    se = StateEstimation(circuit=circuit)
-
-    # se.run()
-
-    v_sol = solve(Ybus=circuit.power_flow_input.Ybus,
-                  Yf=circuit.power_flow_input.Yf,
-                  Yt=circuit.power_flow_input.Yt,
-                  f=circuit.power_flow_input.F,
-                  t=circuit.power_flow_input.T,
-                  se_input=se,
-                  ref=circuit.power_flow_input.ref,
-                  pq=circuit.power_flow_input.pq,
-                  pv=circuit.power_flow_input.pv)
-
+    # v_sol = solve(Ybus=circuit.power_flow_input.Ybus,
+    #               Yf=circuit.power_flow_input.Yf,
+    #               Yt=circuit.power_flow_input.Yt,
+    #               f=circuit.power_flow_input.F,
+    #               t=circuit.power_flow_input.T,
+    #               se_input=se,
+    #               ref=circuit.power_flow_input.ref,
+    #               pq=circuit.power_flow_input.pq,
+    #               pv=circuit.power_flow_input.pv)
+    v_sol = se.se_results.voltage
     print()
     print('V: ', v_sol)
     print('Vm: ', np.abs(v_sol))

@@ -33,7 +33,7 @@ def run(fname):
     driver.run()
 
     # compose the train set
-    nc = circuit.compile()
+    nc = circuit.compile_time_series()
     Pbus = nc.get_power_injections().real.T
 
     model = KNeighborsRegressor(n_neighbors=2)

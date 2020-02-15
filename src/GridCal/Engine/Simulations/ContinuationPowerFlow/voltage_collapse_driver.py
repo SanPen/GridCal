@@ -288,7 +288,7 @@ class VoltageCollapse(QThread):
         self.results = VoltageCollapseResults(nbus=nbus, nbr=nbr)
 
         # compile the numerical circuit
-        numerical_circuit = self.circuit.compile()
+        numerical_circuit = self.circuit.compile_snapshot()
         numerical_input_islands = numerical_circuit.compute()
 
         self.results.bus_types = numerical_circuit.bus_types

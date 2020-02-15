@@ -110,7 +110,7 @@ class OptimalPowerFlow(QThread):
         # print('PowerFlowDriver at ', self.grid.name)
 
         # self.progress_signal.emit(0.0)
-        numerical_circuit = self.grid.compile()
+        numerical_circuit = self.grid.compile_snapshot()
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow

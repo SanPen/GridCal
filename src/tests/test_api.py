@@ -71,7 +71,7 @@ def _test_api():
     print('Running TS...', '')
     ts = TimeSeries(grid=main_circuit, options=pf_options, start_=0, end_=96)
     ts.run()
-    numeric_circuit = main_circuit.compile()
+    numeric_circuit = main_circuit.compile_snapshot()
     ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
     ####################################################################################################################
     # OPF
@@ -97,7 +97,7 @@ def _test_api():
     ####################################################################################################################
     vc_options = VoltageCollapseOptions()
     # just for this test
-    numeric_circuit = main_circuit.compile()
+    numeric_circuit = main_circuit.compile_snapshot()
     numeric_inputs = numeric_circuit.compute()
     Sbase = np.zeros(len(main_circuit.buses), dtype=complex)
     Vbase = np.zeros(len(main_circuit.buses), dtype=complex)

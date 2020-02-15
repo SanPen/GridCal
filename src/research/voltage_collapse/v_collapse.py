@@ -14,7 +14,7 @@ circuit.add_bus(b2)
 circuit.add_load(b2, l2)
 circuit.add_branch(br1)
 
-islands = circuit.compile().compute()
+islands = circuit.compile_snapshot().compute()
 
 npv = len(islands[0].pv)
 npq = len(islands[0].pq)
