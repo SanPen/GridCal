@@ -18,8 +18,7 @@ from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs, StaticSnapshotIslandInputs
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
@@ -153,7 +152,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshot
     return variations
 
 
-def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[StaticSnapshotInputs],
+def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[StaticSnapshotIslandInputs],
                       options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow

@@ -16,6 +16,8 @@ Version 3.6.8
 - Replaced the numerical circuit by two specialized objects: one for static power flow and another one for time series
   This allows to include specific circuit compilations for different studies such as harmonics ot dynamic studies
   without overcrowding the numerical circuit object with unused stuff.
+- Greatly improved the time series flushing when saving
+- Improved the auto-link feature in the time series import
 
 Version 3.6.7
 ^^^^^^^^^^^^^^

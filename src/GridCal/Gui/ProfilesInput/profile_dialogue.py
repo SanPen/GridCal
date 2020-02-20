@@ -172,7 +172,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         self.original_data_frame = None
 
-        self.profile_names = []
+        self.profile_names = list()
 
         # click
         self.ui.open_button.clicked.connect(self.import_profile)
@@ -265,7 +265,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 return
 
             # set the profile names list
-            self.profile_names = self.original_data_frame.columns
+            self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values], dtype=object)
 
             # set the loaded data_frame to the GUI
             model = PandasModel(self.original_data_frame)
@@ -394,6 +394,40 @@ class ProfileInputGUI(QtWidgets.QDialog):
             s = s.replace(p, '')
         return s.lower().strip()
 
+    def check_simularity(self, name_to_search, names_array, threshold):
+        """
+
+        :param name_to_search:
+        :param names_array:
+        :param threshold:
+        :return:
+        """
+
+        if name_to_search in names_array:
+            return np.where(names_array == name_to_search)[0][0]
+
+        # else determine the likelihood
+        if threshold > 0.01:
+            max_val = 0
+            max_idx = None
+            for idx_s, col_name in enumerate(names_array):
+                profile_name = col_name.strip()
+
+                # find the string distance
+                d = SequenceMatcher(None, name_to_search, profile_name).ratio()
+
+                if d > max_val:
+                    max_val = d
+                    max_idx = idx_s
+
+            # assign the string with the closest profile (60% or better similarity)
+            if max_idx is not None and max_val > threshold:
+                return max_idx
+            else:
+                return None
+        else:
+            return None
+
     def auto_link(self):
         """
         Performs an automatic link between the sources and the objectives based on the names
@@ -403,20 +437,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         for idx_o, elm in enumerate(self.objects):
 
-            max_val = 0
-            max_idx = None
-            for idx_s, profile_name in enumerate(self.profile_names):
-
-                # find the string distance
-                d = SequenceMatcher(None, elm.name, profile_name).ratio()
-
-                if d > max_val:
-                    max_val = d
-                    max_idx = idx_s
+            idx = self.check_simularity(name_to_search=elm.name.strip(),
+                                        names_array=self.profile_names,
+                                        threshold=threshold)
 
             # assign the string with the closest profile (60% or better similarity)
-            if max_idx is not None and max_val > threshold:
-                self.make_association(max_idx, idx_o, mult)
+            if idx is not None:
+                self.make_association(idx, idx_o, mult)
 
         self.display_associations()
 
@@ -424,7 +451,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         Random link
         """
-        scale = self.get_multiplier()
+        # scale = self.get_multiplier()
         cosfi = 0.9
         mult = 1
         scale = self.get_multiplier()

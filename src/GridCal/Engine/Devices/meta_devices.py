@@ -175,8 +175,6 @@ class EditableDevice:
                         pass
 
             else:
-                # warn('The time index is None')
-                # self.logger.append('The time index is None')
                 pass
 
     def delete_profiles(self):

@@ -308,6 +308,9 @@ class PtdfTimeSeries(QThread):
         Cancel the simulation
         """
         self.__cancel__ = True
+        if self.ptdf_driver is not None:
+            self.ptdf_driver.cancel()
+
         if self.pool is not None:
             self.pool.terminate()
         self.progress_signal.emit(0.0)

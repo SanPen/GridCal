@@ -119,7 +119,7 @@ def create_data_frames(circuit: MultiCircuit):
         object_names = list()
         if len(lists_of_objects) > 0:
 
-            for elm in lists_of_objects:
+            for k, elm in enumerate(lists_of_objects):
 
                 # get the object normal information
                 obj.append(elm.get_save_data())
@@ -127,23 +127,22 @@ def create_data_frames(circuit: MultiCircuit):
                 object_names.append(elm.name)
 
                 if T is not None:
-                    if len(T) > 0:
+                    nt = len(T)
+                    if nt > 0:
 
                         elm.ensure_profiles_exist(T)
 
                         for profile_property in object_sample.properties_with_profile.values():
 
+                            # get the array
+                            arr = getattr(elm, profile_property)
+
                             if profile_property not in profiles.keys():
                                 # create the profile
-                                profiles[profile_property] = getattr(elm, profile_property)
-                            else:
-                                # concatenate the new profile
-                                profiles[profile_property] = np.c_[profiles[profile_property],
-                                                                   getattr(elm, profile_property)]
-                    else:
-                        pass
-                else:
-                    pass
+                                profiles[profile_property] = np.zeros((nt, len(lists_of_objects)), dtype=arr.dtype)
+
+                            # copy the object profile to the array of profiles
+                            profiles[profile_property][:, k] = arr
 
             # convert the objects' list to an array
             dta = np.array(obj)
