@@ -2254,7 +2254,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="11" column="0">
                 <spacer name="verticalSpacer_9">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -2267,14 +2267,14 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </spacer>
                </item>
-               <item row="7" column="0">
+               <item row="8" column="0">
                 <widget class="QLabel" name="label_21">
                  <property name="text">
                   <string>k</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="8" column="1">
                 <widget class="QSpinBox" name="spinBox">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of elements failed at one simulation. It is incremental, so when k=2, the simulation does the branch failing for k=1 and k=2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -2287,7 +2287,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0" colspan="2">
+               <item row="7" column="0" colspan="2">
                 <widget class="Line" name="line_23">
                  <property name="palette">
                   <palette>
@@ -2337,7 +2337,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0" colspan="2">
+               <item row="6" column="0" colspan="2">
                 <widget class="QLabel" name="label_61">
                  <property name="palette">
                   <palette>
@@ -2393,6 +2393,23 @@ p, li { white-space: pre-wrap; }
                  </property>
                  <property name="text">
                   <string>dispatch storage</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QCheckBox" name="useClustersCheckBox">
+                 <property name="text">
+                  <string>Use clustering</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QSpinBox" name="cluster_number_spinBox">
+                 <property name="minimum">
+                  <number>2</number>
+                 </property>
+                 <property name="maximum">
+                  <number>999999</number>
                  </property>
                 </widget>
                </item>

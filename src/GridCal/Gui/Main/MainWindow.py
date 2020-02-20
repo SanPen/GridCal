@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sat Jan 18 17:08:42 2020
+# Created: Thu Feb 20 21:50:31 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -931,15 +931,15 @@ class Ui_mainWindow(object):
         self.line_15.setObjectName("line_15")
         self.gridLayout_13.addWidget(self.line_15, 2, 0, 1, 2)
         spacerItem14 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.gridLayout_13.addItem(spacerItem14, 10, 0, 1, 1)
+        self.gridLayout_13.addItem(spacerItem14, 11, 0, 1, 1)
         self.label_21 = QtWidgets.QLabel(self.frame_14)
         self.label_21.setObjectName("label_21")
-        self.gridLayout_13.addWidget(self.label_21, 7, 0, 1, 1)
+        self.gridLayout_13.addWidget(self.label_21, 8, 0, 1, 1)
         self.spinBox = QtWidgets.QSpinBox(self.frame_14)
         self.spinBox.setMinimum(1)
         self.spinBox.setProperty("value", 1)
         self.spinBox.setObjectName("spinBox")
-        self.gridLayout_13.addWidget(self.spinBox, 7, 1, 1, 1)
+        self.gridLayout_13.addWidget(self.spinBox, 8, 1, 1, 1)
         self.line_23 = QtWidgets.QFrame(self.frame_14)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(186, 189, 182))
@@ -957,7 +957,7 @@ class Ui_mainWindow(object):
         self.line_23.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_23.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_23.setObjectName("line_23")
-        self.gridLayout_13.addWidget(self.line_23, 6, 0, 1, 2)
+        self.gridLayout_13.addWidget(self.line_23, 7, 0, 1, 2)
         self.label_61 = QtWidgets.QLabel(self.frame_14)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(85, 87, 83))
@@ -974,10 +974,18 @@ class Ui_mainWindow(object):
         font.setPointSize(12)
         self.label_61.setFont(font)
         self.label_61.setObjectName("label_61")
-        self.gridLayout_13.addWidget(self.label_61, 5, 0, 1, 2)
+        self.gridLayout_13.addWidget(self.label_61, 6, 0, 1, 2)
         self.dispatch_storage_checkBox = QtWidgets.QCheckBox(self.frame_14)
         self.dispatch_storage_checkBox.setObjectName("dispatch_storage_checkBox")
         self.gridLayout_13.addWidget(self.dispatch_storage_checkBox, 3, 0, 1, 2)
+        self.useClustersCheckBox = QtWidgets.QCheckBox(self.frame_14)
+        self.useClustersCheckBox.setObjectName("useClustersCheckBox")
+        self.gridLayout_13.addWidget(self.useClustersCheckBox, 4, 0, 1, 1)
+        self.cluster_number_spinBox = QtWidgets.QSpinBox(self.frame_14)
+        self.cluster_number_spinBox.setMinimum(2)
+        self.cluster_number_spinBox.setMaximum(999999)
+        self.cluster_number_spinBox.setObjectName("cluster_number_spinBox")
+        self.gridLayout_13.addWidget(self.cluster_number_spinBox, 5, 0, 1, 2)
         self.gridLayout_9.addWidget(self.frame_14, 0, 1, 1, 1)
         self.frame_32 = QtWidgets.QFrame(self.tab_3)
         self.frame_32.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -2356,6 +2364,7 @@ class Ui_mainWindow(object):
         self.label_61.setText(QtWidgets.QApplication.translate("mainWindow", "N-k", None, -1))
         self.dispatch_storage_checkBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>When enabled, the storage devices beheave as actual storage devices taking into account their energy limitations when delivering power.</p><p>When disabled, the storage devices beheave exactly as controlled generators</p></body></html>", None, -1))
         self.dispatch_storage_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "dispatch storage", None, -1))
+        self.useClustersCheckBox.setText(QtWidgets.QApplication.translate("mainWindow", "Use clustering", None, -1))
         self.label_40.setText(QtWidgets.QApplication.translate("mainWindow", "PTDF", None, -1))
         self.label_56.setText(QtWidgets.QApplication.translate("mainWindow", "Power increment (MW)", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("mainWindow", "Grouping", None, -1))

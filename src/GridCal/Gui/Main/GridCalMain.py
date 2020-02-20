@@ -2602,10 +2602,12 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
-
+                    use_clusters = self.ui.useClustersCheckBox.isChecked()
+                    cluster_num = self.ui.cluster_number_spinBox.value()
                     self.time_series = TimeSeries(grid=self.circuit, options=options,
                                                   opf_time_series_results=opf_time_series_results,
-                                                  start_=start, end_=end)
+                                                  start_=start, end_=end, use_clustering=use_clusters,
+                                                  cluster_number=cluster_num)
 
                     # Set the time series run options
                     self.time_series.progress_signal.connect(self.ui.progressBar.setValue)

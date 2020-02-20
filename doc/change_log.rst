@@ -18,6 +18,7 @@ Version 3.6.8
   without overcrowding the numerical circuit object with unused stuff.
 - Greatly improved the time series flushing when saving
 - Improved the auto-link feature in the time series import
+- Added clustering to the time series
 
 Version 3.6.7
 ^^^^^^^^^^^^^^
