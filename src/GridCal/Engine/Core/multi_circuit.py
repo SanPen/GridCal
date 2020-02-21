@@ -175,7 +175,7 @@ class MultiCircuit:
                 self.device_type_name_dict[dev.device_type.value] = dev.device_type
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def clear(self):
         """

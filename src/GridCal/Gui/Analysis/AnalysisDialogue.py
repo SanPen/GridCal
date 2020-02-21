@@ -121,12 +121,16 @@ class GridErrorLog:
         for message_key, entries in self.logs.items():
             parent1 = QtGui.QStandardItem(message_key)
             for object_type, element_name, element_index, severity, prop in entries:
+                try:
+                    parent1.appendRow([QtGui.QStandardItem(str(object_type)),
+                                       QtGui.QStandardItem(str(element_name)),
+                                       QtGui.QStandardItem(str(element_index)),
+                                       QtGui.QStandardItem(str(severity)),
+                                       QtGui.QStandardItem(str(prop))])
+                except:
+                    print('Failed to append the entry:')
+                    print(entries)
 
-                parent1.appendRow([QtGui.QStandardItem(str(object_type)),
-                                   QtGui.QStandardItem(str(element_name)),
-                                   QtGui.QStandardItem(str(element_index)),
-                                   QtGui.QStandardItem(str(severity)),
-                                   QtGui.QStandardItem(str(prop))])
             model.appendRow(parent1)
 
         return model
