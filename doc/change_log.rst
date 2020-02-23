@@ -10,15 +10,18 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
-Version 3.6.8
+Version 3.7.0
 ^^^^^^^^^^^^^^
 
 - Replaced the numerical circuit by two specialized objects: one for static power flow and another one for time series
   This allows to include specific circuit compilations for different studies such as harmonics ot dynamic studies
   without overcrowding the numerical circuit object with unused stuff.
-- Greatly improved the time series flushing when saving
-- Improved the auto-link feature in the time series import
-- Added clustering to the time series
+- Greatly improved the time series flushing speed when saving.
+- Improved the auto-link feature in the time series import.
+- Added clustering to the time series.
+- Added ability to not to draw the schematic. This speeds up operation with very large grids.
+- Replaced the HELM version by a working one thanks to Josep Fanals Batllori.
+- The time series now adjust to the selected time interval.
 
 Version 3.6.7
 ^^^^^^^^^^^^^^

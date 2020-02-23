@@ -4754,6 +4754,19 @@ points from time series</string>
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QCheckBox" name="draw_schematic_checkBox">
+                <property name="toolTip">
+                 <string>Draw the schematic. You may disable it for very large grids where the drawing takes time.</string>
+                </property>
+                <property name="text">
+                 <string>Draw schematic</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -4884,6 +4897,7 @@ points from time series</string>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionGrid_Reduction"/>
     <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionDrawSchematic"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionReset_console"/>
@@ -5641,6 +5655,15 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>Sync with the file for colaborative editing of the grid</string>
+   </property>
+  </action>
+  <action name="actionDrawSchematic">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Draw schematic</string>
    </property>
   </action>
  </widget>

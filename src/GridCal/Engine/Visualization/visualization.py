@@ -71,7 +71,7 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
     bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
 
     for i, bus in enumerate(circuit.buses):
-        if bus.active:
+        if bus.active and bus.graphic_obj is not None:
             r, g, b, a = voltage_cmap(vnorm[i])
             bus.graphic_obj.set_tile_color(QtGui.QColor(r * 255, g * 255, b * 255, a * 255))
 
@@ -93,31 +93,32 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
         lnorm[lnorm == np.inf] = 0
 
         for i, branch in enumerate(circuit.branches):
+            if branch.graphic_obj is not None:
+                w = branch.graphic_obj.pen_width
+                if branch.active:
+                    style = QtCore.Qt.SolidLine
+                    r, g, b, a = loading_cmap(lnorm[i])
+                    color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                else:
+                    style = QtCore.Qt.DashLine
+                    color = QtCore.Qt.gray
 
-            w = branch.graphic_obj.pen_width
-            if branch.active:
-                style = QtCore.Qt.SolidLine
-                r, g, b, a = loading_cmap(lnorm[i])
-                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-            else:
-                style = QtCore.Qt.DashLine
-                color = QtCore.Qt.gray
-
-            tooltip = str(i) + ': ' + branch.name
-            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-            if s_branch is not None:
-                tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
-            if losses is not None:
-                tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-            branch.graphic_obj.setToolTipText(tooltip)
-            branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
+                tooltip = str(i) + ': ' + branch.name
+                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                if s_branch is not None:
+                    tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
+                if losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+                branch.graphic_obj.setToolTipText(tooltip)
+                branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
     if failed_br_idx is not None:
         for i in failed_br_idx:
-            w = circuit.branches[i].graphic_obj.pen_width
-            style = QtCore.Qt.DashLine
-            color = QtCore.Qt.gray
-            circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
+            if circuit.branches[i].graphic_obj is not None:
+                w = circuit.branches[i].graphic_obj.pen_width
+                style = QtCore.Qt.DashLine
+                color = QtCore.Qt.gray
+                circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
 
 def get_base_map(location, zoom_start=5):

@@ -19,19 +19,10 @@ matplotlib.use('Qt5Agg')
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-
+from GridCal.__version__ import about_msg
 from GridCal.Gui.Main.GridCalMain import run
 
 
-# TODO: Fix the cascading with the new module
-
-
 if __name__ == "__main__":
-    print("GridCal\n" +
-          "Copyright (C) 2015-2020\n"
-          "Santiago Peñate Vera, Michel Lavoie and Bengt Lüers\n" +
-          "This program comes with ABSOLUTELY NO WARRANTY.\n" +
-          "This is free software, and you are welcome to \n" +
-          "redistribute it under certain conditions;\n" +
-          "See the license file for more details.\n\n")
+    print(about_msg)
     run(use_native_dialogues=True)

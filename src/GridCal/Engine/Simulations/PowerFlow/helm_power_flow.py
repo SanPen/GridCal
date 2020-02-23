@@ -1,427 +1,419 @@
-"""
-Method implemented from the article:
-Online voltage stability assessment for load areas based on the holomorphic embedding method
-by Chengxi Liu, Bin Wang, Fengkai Hu, Kai Sun and Claus Leth Bak
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-Implemented by Santiago Peñate Vera 2018
-This implementation computes W[n] for all the buses outside the system matrix leading to better results
-"""
+# AUTHORS: Josep Fanals Batllori and Santiago Peñate Vera
+# CONTACT:  u1946589@campus.udg.edu and santiago.penate.vera@gmail.com
+# thanks to Llorenç Fanals Batllori for his help at coding
+
 import numpy as np
-np.set_printoptions(linewidth=32000, suppress=False)
-from numpy import zeros, ones, mod, angle, conj, array, c_, r_, linalg, Inf, complex128, double
-from numpy.linalg import solve
-from scipy.sparse.linalg import factorized
-from scipy.sparse import lil_matrix
-from scipy.sparse import hstack as hstack_s, vstack as vstack_s
+import numba as nb
 import time
-# Set the complex precision to use
-complex_type = complex128
+from warnings import warn
+from scipy.sparse import csc_matrix, coo_matrix
+from scipy.sparse import hstack as hs, vstack as vs
+from scipy.sparse.linalg import spsolve, factorized
 
 
-def prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref):
+def epsilon(Sn, n, E):
     """
-    Prepare the system matrices
-    :param Ybus:
-    :param Vbus:
-    :param pqpv:
-    :param ref:
-    :return:
+    Fast recursive Wynn's epsilon algorithm from:
+        NONLINEAR SEQUENCE TRANSFORMATIONS FOR THE ACCELERATION OF CONVERGENCE
+        AND THE SUMMATION OF DIVERGENT SERIES
+
+        by Ernst Joachim Weniger
+    Args:
+        Sn: sum of coefficients
+        n: order
+        E: Coefficients structure copy that is modified in this algorithm
+
+    Returns:
+
     """
-    n_bus = len(Vbus)
-    n_bus2 = 2 * n_bus
-    npv = len(pv)
-    # ##################################################################################################################
-    # Compute the starting voltages
-    # ##################################################################################################################
+    Zero = complex(0)
+    One = complex(1)
+    Tiny = np.finfo(complex).min
+    Huge = np.finfo(complex).max
 
-    # System matrix
-    A = lil_matrix((n_bus2, n_bus2))  # lil matrices are faster to populate
-
-    # Expanded slack voltages
-    Vslack = zeros(n_bus2)
-
-    # Populate A
-    for a in pqpv:  # rows
-        for ii in range(Ybus.indptr[a], Ybus.indptr[a + 1]):  # columns in sparse format
-            b = Ybus.indices[ii]
-
-            A[2 * a + 0, 2 * b + 0] = Ybus[a, b].real
-            A[2 * a + 0, 2 * b + 1] = -Ybus[a, b].imag
-            A[2 * a + 1, 2 * b + 0] = Ybus[a, b].imag
-            A[2 * a + 1, 2 * b + 1] = Ybus[a, b].real
-
-    # set vd elements
-    for a in ref:
-        A[a * 2, a * 2] = 1.0
-        A[a * 2 + 1, a * 2 + 1] = 1.0
-
-        Vslack[a * 2] = Vbus[a].real
-        Vslack[a * 2 + 1] = Vbus[a].imag
-
-    # Solve starting point voltages
-    Vst_expanded = factorized(A.tocsc())(Vslack)
-
-    # Invert the voltages obtained: Get the complex voltage and voltage inverse vectors
-    Vst = Vst_expanded[2 * bus_idx] + 1j * Vst_expanded[2 * bus_idx + 1]
-    Wst = 1.0 / Vst
-
-    # ##################################################################################################################
-    # Compute the final system matrix
-    # ##################################################################################################################
-
-    # System matrices
-    B = lil_matrix((n_bus2, npv))
-    C = lil_matrix((npv, n_bus2 + npv))
-
-    for i, a in enumerate(pv):
-        # "a" is the actual bus index
-        # "i" is the number of the pv bus in the pv buses list
-
-        B[2 * a + 0, i + 0] = Wst[a].imag
-        B[2 * a + 1, i + 0] = Wst[a].real
-
-        C[i + 0, 2 * a + 0] = Vst[a].real
-        C[i + 0, 2 * a + 1] = Vst[a].imag
-
-    Asys = vstack_s([
-                    hstack_s([A, B]),
-                    C
-                    ], format="csc")
-
-    return Asys, Vst, Wst
-
-
-def calc_W(n, V, W):
-    """
-    Calculation of the inverse coefficients W.
-    @param n: Order of the coefficients
-    @param V: Structure of voltage coefficients (Ncoeff x nbus elements)
-    @param W: Structure of inverse voltage coefficients (Ncoeff x nbus elements)
-    @return: Array of inverse voltage coefficients for the order n
-    """
+    E[n] = Sn
 
     if n == 0:
-        res = 1.0 / conj(V[0, :])
+        estim = Sn
     else:
-        l = array(range(n))
-        res = -(W[l, :] * V[n - l, :]).sum(axis=0)
+        AUX2 = Zero
 
-        res /= conj(V[0, :])
+        for j in range(n, 0, -1):  # range from n to 1 (both included)
+            AUX1 = AUX2
+            AUX2 = E[j - 1]
+            DIFF = E[j] - AUX2
 
-    return res
+            if abs(DIFF) <= Tiny:
+                E[j - 1] = Huge
+            else:
+                if DIFF == 0:
+                    DIFF = Tiny
+                E[j - 1] = AUX1 + One / DIFF
+
+        if np.mod(n, 2) == 0:
+            estim = E[0]
+        else:
+            estim = E[1]
+
+    return estim, E
 
 
-def get_rhs(n, V, W, Q, Vbus, Vst, Sbus, Pbus, nsys, nbus2, pv, pq, pvpos):
+@nb.njit("(c16[:])(i8, c16[:, :], i8)")
+def pade4all(order, coeff_mat, s=1):
     """
-    Right hand side
-    :param n: order of the coefficients
-    :param V: Voltage coefficients (order, all buses)
-    :param W: Inverse voltage coefficients (order, pv buses)
-    :param Q: Reactive power coefficients  (order, pv buses)
-    :param Vbus: Initial bus estimate (only used to pick the PV buses set voltage)
-    :param Vst: Start voltage due to slack injections
-    :param Pbus: Active power injections (all the buses)
-    :param nsys: number of rows or cols in the system matrix A
-    :param nbus2: two times the number of buses
-    :param pv: list of pv indices in the grid
-    :param pvpos: array from 0..npv
-    :return: right hand side vector to solve the coefficients of order n
-    """
-    rhs = zeros(nsys)
-    m = array(range(1, n), dtype=int)
-    # ##################################################################################################################
-    # PQ nodes
-    # ##################################################################################################################
-
-    f1 = conj(Sbus[pq] * W[:, pq][n - 1, :])
-    idx1 = 2 * pq
-    rhs[idx1 + 0] = f1.real
-    rhs[idx1 + 1] = f1.imag
-
-    # ##################################################################################################################
-    # PV nodes
-    # ##################################################################################################################
-    # Compute convolutions
-    QW_convolution = (Q[n - m, :] * W[m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
-    VV_convolution = (V[m, :][:, pv] * V[n - m, :][:, pv].conjugate()).sum(axis=0)  # only pv nodes
-
-    # compute the formulas
-    f2 = Pbus[pv] * W[n-1, pv] + QW_convolution
-
-    epsilon = -0.5 * VV_convolution
-    if n == 1:
-        epsilon += 0.5 * (abs(Vbus[pv]) ** 2 - abs(Vst[pv]) ** 2)
-
-    # Assign the values to the right hand side vector
-    idx2 = 2 * pv
-    idx3 = pvpos + nbus2
-
-    rhs[idx2 + 0] = f2.real
-    rhs[idx2 + 1] = f2.imag
-
-    if len(idx3) > 0:
-        rhs[idx3] = epsilon.real
-
-    else:
-
-        # No PV nodes
-        pass
-
-    return rhs
-
-
-def assign_solution(x, bus_idx, pvpos, pv, nbus):
-    """
-    Assign the solution vector to the appropriate coefficients
-    :param x: solution vector
-    :param bus_idx: array from 0..nbus-1
-    :param nbus2: two times the number of buses (integer)
-    :param pvpos: array from 0..npv
-    :return: Array of:
-            - voltage coefficients
-            - reactive power
-            of order n
-    """
-
-    nbus2 = 2 * nbus
-
-    # assign the voltage coefficients
-    v = x[2 * bus_idx] + 1j * x[2 * bus_idx + 1]
-
-    if len(pvpos) > 0:
-
-        # assign the reactive power coefficients of the PV nodes
-        q = x[nbus2 + pvpos]
-
-    else:
-
-        # No PV nodes
-
-        q = zeros(0)
-
-    return v, q
-
-
-def pade_approximation(n, an, s=1):
-    """
-    Computes the n/2 pade approximant of the series an at the approximation
-    point s
+    Computes the "order" Padè approximant of the coefficients at the approximation point s
 
     Arguments:
-        an: coefficient matrix, (number of coefficients, number of series)
-        n:  order of the series
+        coeff_mat: coefficient matrix (order, buses)
+        order:  order of the series
         s: point of approximation
 
     Returns:
-        pade approximation at s
+        Padè approximation at s for all the series
     """
-    nn = int(n / 2)
-    if mod(nn, 2) == 0:
-        nn -= 1
+    nbus = coeff_mat.shape[1]
 
+    complex_type = nb.complex128
+
+    voltages = np.zeros(nbus, dtype=complex_type)
+
+    nn = int(order / 2)
     L = nn
     M = nn
 
-    an = np.ndarray.flatten(an)
-    rhs = an[L + 1:L + M + 1]
+    for d in range(nbus):
 
-    C = zeros((L, M), dtype=complex_type)
-    for i in range(L):
-        k = i + 1
-        C[i, :] = an[L - M + k:L + k]
+        # formation of the linear system right hand side
+        rhs = coeff_mat[L + 1:L + M + 1, d]
 
-    try:
-        b = solve(C, -rhs)  # bn to b1
-    except:
-        return 0, zeros(L + 1, dtype=complex_type), zeros(L + 1, dtype=complex_type)
+        # formation of the coefficients matrix
+        C = np.zeros((L, M), dtype=complex_type)
+        for i in range(L):
+            k = i + 1
+            C[i, :] = coeff_mat[L - M + k:L + k, d]
 
-    b = r_[1, b[::-1]]  # b0 = 1
+        # Obtaining of the b coefficients for orders greater than 0
+        b = np.zeros(rhs.shape[0] + 1, dtype=complex_type)
+        x = np.linalg.solve(C, -rhs)  # bn to b1
+        b[0] = 1
+        b[1:] = x[::-1]
 
-    a = zeros(L + 1, dtype=complex_type)
-    a[0] = an[0]
-    for i in range(L):
-        val = complex_type(0)
-        k = i + 1
-        for j in range(k + 1):
-            val += an[k - j] * b[j]
-        a[i + 1] = val
+        # Obtaining of the coefficients 'a'
+        a = np.zeros(L + 1, dtype=complex_type)
+        a[0] = coeff_mat[0, d]
+        for i in range(L):
+            val = complex_type(0)
+            k = i + 1
+            for j in range(k + 1):
+                val += coeff_mat[k - j, d] * b[j]
+            a[i + 1] = val
 
-    p = complex_type(0)
-    q = complex_type(0)
-    for i in range(L + 1):
-        p += a[i] * s ** i
-        q += b[i] * s ** i
+        # evaluation of the function for the value 's'
+        p = complex_type(0)
+        q = complex_type(0)
+        for i in range(L + 1):
+            p += a[i] * s ** i
+            q += b[i] * s ** i
 
-    return p / q, a, b
+        voltages[d] = p / q
+
+    return voltages
 
 
-def helm(Vbus, Sbus, Ybus, pq, pv, ref, pqpv, tol=1e-9, max_coefficient_count=30):
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+def conv1(A, B, c, indices):
     """
-    Helm Method
-    :param Vbus: voltages array
-    :param Sbus: Power injections array
-    :param Ibus: Currents injection array
-    :param Ybus: System admittance matrix
-    :param pq: list of pq node indices
-    :param pv: list of pv node indices
-    :param ref: list of slack node indices
-    :param pqpv: list of pq and pv node indices sorted
-    :param tol: tolerance
-    :return: Voltage array and the power mismatch
+    Performs the convolution of A* and B
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
     """
-    start = time.time()
+    suma = np.zeros(len(indices), dtype=nb.complex128)
+    for k in range(1, c + 1):
+        for i, d in enumerate(indices):
+            suma[i] += np.conj(A[k, d]) * B[c - k, d]
+    return suma
 
-    nbus = len(Vbus)
+
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+def conv2(A, B, c, indices):
+    """
+    Performs the convolution of A and B
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
+    """
+    suma = np.zeros(len(indices), dtype=nb.complex128)
+    for k in range(1, c):
+        for i, d in enumerate(indices):
+            suma[i] += A[k, d] * B[c - 1 - k, d]
+    return suma
+
+
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+def conv3(A, B, c, indices):
+    """
+    Performs the convolution of A and B*
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
+    """
+    suma = np.zeros(len(indices), dtype=nb.complex128)
+    for k in range(1, c):
+        for i, d in enumerate(indices):
+            suma[i] += A[k, d] * np.conj(B[c - k, d])
+    return suma
+
+
+def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
+               verbose=False):
+    """
+    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+    :param Ybus: Complete admittance matrix
+    :param Yseries: Admittance matrix of the series elements
+    :param V0: vector of specified voltages
+    :param S0: vector of specified power
+    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param pq: list of pq nodes
+    :param pv: list of pv nodes
+    :param sl: list of slack nodes
+    :param pqpv: sorted list of pq and pv nodes
+    :param tolerance: target error (or tolerance)
+    :param max_coeff: maximum number of coefficients
+    :param use_pade: Use the Padè approximation? otherwise a simple summation is done
+    :return: V, converged, norm_f, Scalc, iter_, elapsed
+    """
+
+    start_time = time.time()
+
+    npqpv = len(pqpv)
     npv = len(pv)
-    bus_idx = array(range(nbus), dtype=int)
-    pvpos = array(range(npv))
+    nsl = len(sl)
+    n = Yseries.shape[0]
 
-    # Prepare system matrices
-    Asys, Vst, Wst = prepare_system_matrices(Ybus, Vbus, bus_idx, pqpv, pq, pv, ref)
+    if n < 2:
+        # V, converged, norm_f, Scalc, iter_, elapsed
+        return V0, True, 0.0, S0, 0, 0.0
 
-    # Factorize the system matrix
-    Afact = factorized(Asys)
+    # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
+    U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
+    U_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of voltages
+    U_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of voltages
+    X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
+    X_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of X
+    X_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of X
+    Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
+    Vm0 = np.abs(V0)
+    vec_W = Vm0 * Vm0
 
-    # get the shape
-    nsys = Asys.shape[0]
+    if verbose:
+        print('Yseries')
+        print(Yseries.toarray())
+        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, Vm0],
+                          columns=['Ysh', 'P0', 'Q0', 'V0'])
+        print(df)
 
-    # declare the active power injections
-    Pbus = Sbus.real
+    Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
+    Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
+    G = np.real(Yred)  # real parts of Yij
+    B = np.imag(Yred)  # imaginary parts of Yij
+    vec_P = S0.real[pqpv]
+    vec_Q = S0.imag[pqpv]
+    Vslack = V0[sl]
 
-    # declare the matrix of coefficients: [order, bus index]
-    V = zeros((1, nbus), dtype=complex_type)
+    # indices 0 based in the internal scheme
+    nsl_counted = np.zeros(n, dtype=int)
+    compt = 0
+    for i in range(n):
+        if i in sl:
+            compt += 1
+        nsl_counted[i] = compt
 
-    # Declare the inverse voltage coefficients: [order, pv bus index]
-    W = zeros((1, nbus), dtype=complex_type)
+    pq_ = pq - nsl_counted[pq]
+    pv_ = pv - nsl_counted[pv]
+    pqpv_ = np.sort(np.r_[pq_, pv_])
 
-    # Reactive power coefficients on the PV nodes: [order, pv bus index]
-    Q = zeros((1, npv), dtype=double)
+    # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
 
-    # Assign the initial values
-    V[0, :] = Vst
-    W[0, :] = Wst
+    if nsl > 1:
+        U[0, :] = spsolve(Yred, Yslack.sum(axis=1))
+    else:
+        U[0, :] = spsolve(Yred, Yslack)
 
-    # Compute the reactive power matching the initial solution Vst, then assign it as initial reactive power
-    Scalc = Vst * conj(Ybus * Vst)
-    Q[0, :] = Scalc[pv].imag
+    X[0, :] = 1 / np.conj(U[0, :])
+    U_re[0, :] = U[0, :].real
+    U_im[0, :] = U[0, :].imag
+    X_re[0, :] = X[0, :].real
+    X_im[0, :] = X[0, :].imag
 
-    n = 1
-    converged = False
+    # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
+    valor = np.zeros(npqpv, dtype=complex)
 
-    while n < max_coefficient_count and not converged:
+    # get the current injections that appear due to the slack buses reduction
+    I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-        # Compute the free terms
-        rhs = get_rhs(n=n, V=V, W=W, Q=Q,
-                      Vbus=Vbus, Vst=Vst,
-                      Sbus=Sbus,
-                      Pbus=Pbus, nsys=nsys,
-                      nbus2=2 * nbus,
-                      pv=pv, pq=pq,
-                      pvpos=pvpos)
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh0[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh0[pv_]
 
-        # Solve the linear system Asys x res = rhs
-        res = Afact(rhs)
+    # compose the right-hand side vector
+    RHS = np.r_[valor.real,
+                valor.imag,
+                vec_W[pv] - 1.0]
 
-        # get the new rows of coefficients
-        v, q = assign_solution(x=res, bus_idx=bus_idx, pvpos=pvpos, pv=pv, nbus=nbus)
+    # Form the system matrix (MAT)
+    Upv = U[0, pv_]
+    Xpv = X[0, pv_]
+    VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+    VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+    XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+    XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+    EMPTY = csc_matrix((npv, npv))
 
-        # Add coefficients row
-        V = np.vstack((V, v))
-        Q = np.vstack((Q, q))
+    MAT = vs((hs((G, -B, XIM)),
+              hs((B, G, XRE)),
+              hs((VRE, VIM, EMPTY))), format='csc')
 
-        # Calculate W[n] and add it to the coefficients structure
-        w = calc_W(n, V, W)
-        W = np.vstack((W, w))
+    if verbose:
+        print('MAT')
+        print(MAT.toarray())
 
-        voltage = V.sum(axis=0)
+    # factorize (only once)
+    MAT_LU = factorized(MAT.tocsc())
 
-        # Calculate the error and check the convergence
-        Scalc = voltage * conj(Ybus * voltage)
-        mismatch = Scalc - Sbus  # complex power mismatch
-        power_mismatch_ = r_[mismatch[pv].real, mismatch[pq].real, mismatch[pq].imag]
+    # solve
+    LHS = MAT_LU(RHS)
 
-        # check for convergence
-        normF = linalg.norm(power_mismatch_, Inf)
+    # update coefficients
+    U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
+    Q[0, pv_] = LHS[2 * npqpv:]
+    X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
-        converged = normF < tol
-        n += 1
+    # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
+    iter_ = 1
+    range_pqpv = np.arange(npqpv, dtype=int)
+    for c in range(2, max_coeff):  # c defines the current depth
 
-    end = time.time()
-    elapsed = end - start
+        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh0[pq_]
+        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh0[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
-    # V, converged, normF, Scalc, it, el
-    return voltage, converged, normF, Scalc, n, elapsed
+        RHS = np.r_[valor.real,
+                    valor.imag,
+                    -conv3(U, U, c, pv_).real]
 
+        LHS = MAT_LU(RHS)
 
-def res_2_df(V, Sbus, tpe):
-    """
-    Create dataframe to display the results nicely
-    :param V: Voltage complex vector
-    :param Sbus: Power complex vector
-    :param tpe: Types
-    :return: Pandas DataFrame
-    """
-    vm = abs(V)
-    va = angle(V)
+        # update voltage coefficients
+        U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
 
-    d = {1: 'PQ', 2: 'PV', 3: 'VD'}
+        # update reactive power
+        Q[c - 1, pv_] = LHS[2 * npqpv:]
 
-    tpe_str = array([d[i] for i in tpe], dtype=object)
-    data = c_[tpe_str, Sbus.real, Sbus.imag, vm, va]
-    cols = ['Type', 'P', 'Q', '|V|', 'angle']
-    df = pd.DataFrame(data=data, columns=cols)
+        # update voltage inverse coefficients
+        X[c, range_pqpv] = -conv1(U, X, c, range_pqpv) / np.conj(U[0, range_pqpv])
 
-    return df
+        iter_ += 1
+
+    # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------
+    if verbose:
+        print('V coefficients')
+        print(U)
+
+    # compute the final voltage
+    V = np.zeros(n, dtype=complex)
+    if use_pade:
+        try:
+            V[pqpv] = pade4all(max_coeff - 1, U, 1)
+        except:
+            warn('Padè failed :(, using coefficients summation')
+            V[pqpv] = U.sum(axis=0)
+    else:
+        V[pqpv] = U.sum(axis=0)
+
+    V[sl] = Vslack
+
+    # compute power mismatch
+    Scalc = V * np.conj(Ybus * V)
+    dP = np.abs(S0[pqpv].real - Scalc[pqpv].real)
+    dQ = np.abs(S0[pq].imag - Scalc[pq].imag)
+    # norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
+
+    # same as max(abs())  ¿Omit the reactive mismatch? need to investigate why the Q mismatch is large
+    norm_f = np.linalg.norm(dP, np.inf)
+
+    # check convergence
+    converged = norm_f < tolerance
+
+    elapsed = time.time() - start_time
+
+    return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 if __name__ == '__main__':
-    from GridCal.Engine import *
+    from GridCal.Engine import FileOpen
+    import pandas as pd
 
-    file_name = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    np.set_printoptions(linewidth=2000, suppress=True)
+    pd.set_option('display.max_rows', 500)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.width', 1000)
 
-    grid = FileOpen(file_name).open()
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Descargas/Penísula Ibérica 2026.gridcal'
+    # fname = 'helm_data1.gridcal'
+
+    grid = FileOpen(fname).open()
 
     nc = grid.compile_snapshot()
-    islands = nc.compute()
-    circuit = islands[0]
+    inputs = nc.compute()[0]  # pick the first island
 
-    print('\nYbus:\n', circuit.Ybus.todense())
-    print('\nSbus:\n', circuit.Sbus)
-    print('\nIbus:\n', circuit.Ibus)
-    print('\nVbus:\n', circuit.Vbus)
-    print('\ntypes:\n', circuit.types)
-    print('\npq:\n', circuit.pq)
-    print('\npv:\n', circuit.pv)
-    print('\nvd:\n', circuit.ref)
-
-    start_time = time.time()
-
-    # voltage, converged, normF, Scalc, n, elapsed
-    v,_, err, _, _, _ = helm(Vbus=circuit.Vbus,
-                             Sbus=circuit.Sbus,
-                             Ybus=circuit.Ybus,
-                             pq=circuit.pq,
-                             pv=circuit.pv,
-                             ref=circuit.ref,
-                             pqpv=circuit.pqpv)
-
-    print('HEM:')
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print('Results:\n', res_2_df(v, circuit.Sbus, circuit.types))
-    print('error: \t', err)
-
-    # check the HELM solution: v against the NR power flow
-    print('\nNR')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
-    power_flow = PowerFlowDriver(grid, options)
-
-    start_time = time.time()
-    power_flow.run()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = power_flow.results.voltage
-
-    print('Results:\n', res_2_df(vnr, circuit.Sbus, circuit.types))
-    print('error: \t', power_flow.results.error)
-
-    # check
-    print('\ndiff:\t', v - vnr)
+    V, converged_, error, Scalc_, iter_, elapsed_ = helm_josep(Ybus=inputs.Ybus,
+                                                               Yseries=inputs.Yseries,
+                                                               V0=inputs.Vbus,
+                                                               S0=inputs.Sbus,
+                                                               Ysh0=-inputs.Ysh,
+                                                               pq=inputs.pq,
+                                                               pv=inputs.pv,
+                                                               sl=inputs.ref,
+                                                               pqpv=inputs.pqpv,
+                                                               tolerance=1e-6,
+                                                               max_coeff=10,
+                                                               use_pade=False,
+                                                               verbose=False)
+    Vm = np.abs(V)
+    Va = np.angle(V)
+    dP = np.abs(inputs.Sbus.real - Scalc_.real)
+    dP[inputs.ref] = 0
+    dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
+    dQ[inputs.pv] = np.nan
+    dQ[inputs.ref] = np.nan
+    df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
+                      columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
+    print(df)
+    print('Error', error)
+    print('P error', np.max(np.abs(dP)))
+    print('Elapsed', elapsed_)

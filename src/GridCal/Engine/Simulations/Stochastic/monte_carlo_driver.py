@@ -116,7 +116,7 @@ class MonteCarlo(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.circuit.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
+        self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
         self.pool = multiprocessing.Pool()
         it = 0
         variance_sum = 0.0
@@ -243,7 +243,7 @@ class MonteCarlo(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.circuit.time_series_results = TimeSeriesResults(0, 0, 0, 0, 0)
+        self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
         Sbase = self.circuit.Sbase
 
         it = 0

@@ -63,7 +63,7 @@ class TimeSeriesResultsAnalysis:
 
         self.buses_selected_for_storage_frequency = np.zeros(self.res.n)
 
-        for t in range(self.res.start, self.res.end):
+        for t in range(self.res.nt):
 
             bus_voltage = np.abs(self.res.voltage[t])
 

@@ -18,7 +18,7 @@ import numpy as np
 
 from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_josep
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import levenberg_marquardt_pf
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS, NRD_LS
@@ -30,7 +30,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
 
 
-def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
+def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
           acceleration_parameter=1e-5):
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -46,6 +46,8 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
         **Ybus**: Admittance matrix
 
         **Yseries**: Series elements' Admittance matrix
+
+        **Ysh++: Vector of shunt admittances that complements Yseries
 
         **B1**: B' for the fast decoupled method
 
@@ -74,15 +76,19 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, B1, B2, Bpqpv, Bref, pq, p
     """
     # type HELM
     if solver_type == SolverType.HELM:
-        V0, converged, normF, Scalc, it, el = helm(Vbus=V0,
-                                                   Sbus=Sbus,
-                                                   Ybus=Ybus,
-                                                   pq=pq,
-                                                   pv=pv,
-                                                   ref=ref,
-                                                   pqpv=pqpv,
-                                                   tol=tolerance,
-                                                   max_coefficient_count=max_iter)
+        V0, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
+                                                         Yseries=Yseries,
+                                                         V0=V0,
+                                                         S0=Sbus,
+                                                         Ysh0=-Ysh,
+                                                         pq=pq,
+                                                         pv=pv,
+                                                         sl=ref,
+                                                         pqpv=pqpv,
+                                                         tolerance=tolerance,
+                                                         max_coeff=max_iter,
+                                                         use_pade=True,
+                                                         verbose=False)
 
     # type DC
     elif solver_type == SolverType.DC:
@@ -272,6 +278,7 @@ def outer_loop_power_flow(circuit: StaticSnapshotIslandInputs, options: PowerFlo
                                                                       Ibus=Ibus,
                                                                       Ybus=circuit.Ybus,
                                                                       Yseries=circuit.Yseries,
+                                                                      Ysh=circuit.Ysh,
                                                                       B1=circuit.B1,
                                                                       B2=circuit.B2,
                                                                       Bpqpv=circuit.Bpqpv,
@@ -298,6 +305,7 @@ def outer_loop_power_flow(circuit: StaticSnapshotIslandInputs, options: PowerFlo
                                                                                 Ibus=Ibus,
                                                                                 Ybus=circuit.Ybus,
                                                                                 Yseries=circuit.Yseries,
+                                                                                Ysh=circuit.Ysh,
                                                                                 B1=circuit.B1,
                                                                                 B2=circuit.B2,
                                                                                 Bpqpv=circuit.Bpqpv,

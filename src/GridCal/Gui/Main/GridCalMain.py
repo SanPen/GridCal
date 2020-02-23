@@ -15,7 +15,7 @@
 
 
 # GUI imports
-from GridCal.__version__ import __GridCal_VERSION__
+from GridCal.__version__ import __GridCal_VERSION__, about_msg
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
@@ -381,6 +381,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionSync.triggered.connect(self.file_sync_toggle)
 
+        self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -667,22 +669,8 @@ class MainGUI(QMainWindow):
         Display about box
         :return:
         """
-        url = 'https://github.com/SanPen/GridCal'
 
-        msg = "Gridcal v" + str(__GridCal_VERSION__) + '\n\n'
-
-        msg += "GridCal has been carefully crafted since 2015 to serve as a platform for research and consultancy.\n\n"
-
-        msg += 'This program comes with ABSOLUTELY NO WARRANTY. \n'
-        msg += 'This is free software, and you are welcome to redistribute it under certain conditions; '
-
-        msg += "GridCal is licensed under the GNU general public license V.3 "
-        msg += 'See the license file for more details. \n\n'
-        msg += "The source of Gridcal can be found at:\n" + url + "\n\n"
-
-        msg += 'Copyright (C) 2019\nSantiago Peñate Vera\nMichel Lavoie'
-
-        QMessageBox.about(self, "About GridCal", msg)
+        QMessageBox.about(self, "About GridCal", about_msg)
 
     @staticmethod
     def show_online_docs(self):
@@ -1042,9 +1030,8 @@ class MainGUI(QMainWindow):
         if self.open_file_thread_object is not None:
 
             if len(self.open_file_thread_object.logger) > 0:
-                if len(self.open_file_thread_object.logger) > 0:
-                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-                    dlg.exec_()
+                dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                dlg.exec_()
 
             if self.open_file_thread_object.valid:
 
@@ -1095,9 +1082,8 @@ class MainGUI(QMainWindow):
         if self.open_file_thread_object is not None:
 
             if len(self.open_file_thread_object.logger) > 0:
-                if len(self.open_file_thread_object.logger) > 0:
-                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-                    dlg.exec_()
+                dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                dlg.exec_()
 
             if self.open_file_thread_object.valid:
 
@@ -1422,15 +1408,24 @@ class MainGUI(QMainWindow):
                 h = 1080 * factor
                 self.grid_editor.export(filename, w, h)
 
-    def create_schematic_from_api(self, explode_factor=1):
+    def draw_schematic(self):
+        """
+        Sandbox to call create_schematic_from_api from the action item without affecting the explode factor variable
+        """
+        self.create_schematic_from_api()
+
+    def create_schematic_from_api(self, explode_factor=1.0):
         """
         This function explores the API values and draws an schematic layout
         @return:
         """
-        # set pointer to the circuit
-        self.grid_editor.circuit = self.circuit
+        if self.ui.draw_schematic_checkBox.isChecked():
+            # set pointer to the circuit
+            self.grid_editor.circuit = self.circuit
 
-        self.grid_editor.schematic_from_api(explode_factor=explode_factor)
+            self.grid_editor.schematic_from_api(explode_factor=explode_factor)
+        else:
+            self.msg('The schematic drawing is disabled')
 
     def post_create_schematic(self):
 
@@ -2123,13 +2118,14 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(SimulationTypes.PowerFlow_run)
 
-            colour_the_schematic(circuit=self.circuit,
-                                 s_bus=self.power_flow.results.Sbus,
-                                 s_branch=self.power_flow.results.Sbranch,
-                                 voltages=self.power_flow.results.voltage,
-                                 loadings=self.power_flow.results.loading,
-                                 types=self.power_flow.results.bus_types,
-                                 losses=self.power_flow.results.losses)
+            if self.ui.draw_schematic_checkBox.isChecked():
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.power_flow.results.Sbus,
+                                     s_branch=self.power_flow.results.Sbranch,
+                                     voltages=self.power_flow.results.voltage,
+                                     loadings=self.power_flow.results.loading,
+                                     types=self.power_flow.results.bus_types,
+                                     losses=self.power_flow.results.losses)
             self.update_available_results()
 
             # print convergence reports on the console
@@ -2228,13 +2224,13 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
-
-            colour_the_schematic(circuit=self.circuit,
-                                 s_bus=self.short_circuit.results.Sbus,
-                                 s_branch=self.short_circuit.results.Sbranch,
-                                 voltages=self.short_circuit.results.voltage,
-                                 types=self.short_circuit.results.bus_types,
-                                 loadings=self.short_circuit.results.loading)
+            if self.ui.draw_schematic_checkBox.isChecked():
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=self.short_circuit.results.Sbus,
+                                     s_branch=self.short_circuit.results.Sbranch,
+                                     voltages=self.short_circuit.results.voltage,
+                                     types=self.short_circuit.results.bus_types,
+                                     loadings=self.short_circuit.results.loading)
             self.update_available_results()
         else:
             warn('Something went wrong, There are no power flow results.')
@@ -2349,13 +2345,13 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
-
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
-                                     s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
-                                     voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
-                                     loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
-                                     types=None)
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    colour_the_schematic(circuit=self.circuit,
+                                         s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
+                                         s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
+                                         voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
+                                         loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
+                                         types=None)
 
                 self.update_available_results()
             else:
@@ -2545,14 +2541,16 @@ class MainGUI(QMainWindow):
             self.remove_simulation(SimulationTypes.VoltageCollapse_run)
 
             if self.voltage_stability.results.voltages is not None:
-                V = self.voltage_stability.results.voltages[-1, :]
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.voltage_stability.results.Sbus,
-                                     s_branch=self.voltage_stability.results.Sbranch,
-                                     voltages=V,
-                                     loadings=self.voltage_stability.results.loading,
-                                     types=self.voltage_stability.results.bus_types)
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    V = self.voltage_stability.results.voltages[-1, :]
+
+                    colour_the_schematic(circuit=self.circuit,
+                                         s_bus=self.voltage_stability.results.Sbus,
+                                         s_branch=self.voltage_stability.results.Sbranch,
+                                         voltages=V,
+                                         loadings=self.voltage_stability.results.loading,
+                                         types=self.voltage_stability.results.bus_types)
                 self.update_available_results()
             else:
                 self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
@@ -2633,13 +2631,14 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(SimulationTypes.TimeSeries_run)
 
-            voltage = self.time_series.results.voltage.max(axis=0)
-            loading = np.abs(self.time_series.results.loading).max(axis=0)
-            Sbranch = self.time_series.results.Sbranch.max(axis=0)
+            if self.ui.draw_schematic_checkBox.isChecked():
+                voltage = self.time_series.results.voltage.max(axis=0)
+                loading = np.abs(self.time_series.results.loading).max(axis=0)
+                Sbranch = self.time_series.results.Sbranch.max(axis=0)
 
-            colour_the_schematic(circuit=self.circuit,
-                                 s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                 types=self.time_series.results.bus_types)
+                colour_the_schematic(circuit=self.circuit,
+                                     s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                     types=self.time_series.results.bus_types)
 
             self.update_available_results()
 
@@ -2699,12 +2698,13 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(SimulationTypes.MonteCarlo_run)
 
-            colour_the_schematic(circuit=self.circuit,
-                                 voltages=self.monte_carlo.results.voltage,
-                                 loadings=self.monte_carlo.results.loading,
-                                 s_branch=self.monte_carlo.results.sbranch,
-                                 types=self.monte_carlo.results.bus_types,
-                                 s_bus=None)
+            if self.ui.draw_schematic_checkBox.isChecked():
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=self.monte_carlo.results.voltage,
+                                     loadings=self.monte_carlo.results.loading,
+                                     s_branch=self.monte_carlo.results.sbranch,
+                                     types=self.monte_carlo.results.bus_types,
+                                     s_bus=None)
             self.update_available_results()
 
         else:
@@ -2759,12 +2759,13 @@ class MainGUI(QMainWindow):
         self.remove_simulation(SimulationTypes.LatinHypercube_run)
 
         if not self.latin_hypercube_sampling.__cancel__:
-            colour_the_schematic(circuit=self.circuit,
-                                 voltages=self.latin_hypercube_sampling.results.voltage,
-                                 loadings=self.latin_hypercube_sampling.results.loading,
-                                 types=self.latin_hypercube_sampling.results.bus_types,
-                                 s_branch=self.latin_hypercube_sampling.results.sbranch,
-                                 s_bus=None)
+            if self.ui.draw_schematic_checkBox.isChecked():
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=self.latin_hypercube_sampling.results.voltage,
+                                     loadings=self.latin_hypercube_sampling.results.loading,
+                                     types=self.latin_hypercube_sampling.results.bus_types,
+                                     s_branch=self.latin_hypercube_sampling.results.sbranch,
+                                     s_bus=None)
             self.update_available_results()
 
         else:
@@ -2866,13 +2867,14 @@ class MainGUI(QMainWindow):
             results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
 
             # print grid
-            colour_the_schematic(circuit=self.circuit,
-                                 voltages=results.voltage,
-                                 loadings=results.loading,
-                                 types=results.bus_types,
-                                 s_branch=results.sbranch,
-                                 s_bus=None,
-                                 failed_br_idx=br_idx)
+            if self.ui.draw_schematic_checkBox.isChecked():
+                colour_the_schematic(circuit=self.circuit,
+                                     voltages=results.voltage,
+                                     loadings=results.loading,
+                                     types=results.bus_types,
+                                     s_branch=results.sbranch,
+                                     s_bus=None,
+                                     failed_br_idx=br_idx)
 
             # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
@@ -2940,12 +2942,13 @@ class MainGUI(QMainWindow):
 
             if self.optimal_power_flow.results.converged:
 
-                colour_the_schematic(circuit=self.circuit,
-                                     voltages=self.optimal_power_flow.results.voltage,
-                                     loadings=self.optimal_power_flow.results.loading,
-                                     types=self.optimal_power_flow.results.bus_types,
-                                     s_branch=self.optimal_power_flow.results.Sbranch,
-                                     s_bus=self.optimal_power_flow.results.Sbus)
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    colour_the_schematic(circuit=self.circuit,
+                                         voltages=self.optimal_power_flow.results.voltage,
+                                         loadings=self.optimal_power_flow.results.loading,
+                                         types=self.optimal_power_flow.results.bus_types,
+                                         s_branch=self.optimal_power_flow.results.Sbranch,
+                                         s_bus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
 
             else:
@@ -3029,13 +3032,17 @@ class MainGUI(QMainWindow):
             self.remove_simulation(SimulationTypes.OPFTimeSeries_run)
 
             if self.optimal_power_flow_time_series.results is not None:
-                voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
-                loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
-                Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
+                    loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
+                    Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
 
-                colour_the_schematic(circuit=self.circuit,
-                                     s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
-                                     types=self.optimal_power_flow_time_series.results.bus_types)
+                    colour_the_schematic(circuit=self.circuit,
+                                         s_bus=None,
+                                         s_branch=Sbranch,
+                                         voltages=voltage,
+                                         loadings=loading,
+                                         types=self.optimal_power_flow_time_series.results.bus_types)
 
                 self.update_available_results()
 
@@ -3422,6 +3429,8 @@ class MainGUI(QMainWindow):
         self.ui.result_listView.setModel(mdl)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
 
+        self.ui.resultsTableView.setModel(None)
+
         if len(lst) > 1 or max_steps > 0:
             self.ui.actionShow_color_controls.setChecked(True)
             self.set_colouring_frame_state()
@@ -3486,6 +3495,11 @@ class MainGUI(QMainWindow):
             k = len(self.files_to_delete_at_exit)
             file_name = os.path.join(get_create_gridcal_folder(), 'map_' + str(k+1) + '.html')
         else:
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                print('The schematic drawing is disabled')
+                return None
+
             plot_function = colour_the_schematic
             file_name = ''
 

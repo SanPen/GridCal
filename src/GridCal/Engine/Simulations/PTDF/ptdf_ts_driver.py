@@ -32,7 +32,7 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class PtdfTimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, nt, start, end, time_array=None):
+    def __init__(self, n, m, time_array):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -41,23 +41,20 @@ class PtdfTimeSeriesResults(PowerFlowResults):
         """
         PowerFlowResults.__init__(self)
         self.name = 'PTDF Time series'
-        self.nt = nt
+        self.nt = len(time_array)
         self.m = m
         self.n = n
-        self.start = start
-        self.end = end
-
         self.time = time_array
 
-        if nt > 0:
+        if self.nt > 0:
 
-            self.voltage = np.zeros((nt, n), dtype=float)
+            self.voltage = np.zeros((self.nt, n), dtype=float)
 
-            self.S = np.zeros((nt, n), dtype=float)
+            self.S = np.zeros((self.nt, n), dtype=float)
 
-            self.Sbranch = np.zeros((nt, m), dtype=float)
+            self.Sbranch = np.zeros((self.nt, m), dtype=float)
 
-            self.loading = np.zeros((nt, m), dtype=float)
+            self.loading = np.zeros((self.nt, m), dtype=float)
 
         else:
 
@@ -224,7 +221,7 @@ class PtdfTimeSeries(QThread):
         """
         return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
 
-    def run_nodal_mode(self) -> PtdfTimeSeriesResults:
+    def run_nodal_mode(self, time_indices) -> PtdfTimeSeriesResults:
         """
         Run multi thread time series
         :return: TimeSeriesResults instance
@@ -233,11 +230,7 @@ class PtdfTimeSeries(QThread):
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
         m = len(self.grid.branches)
-        nt = len(self.grid.time_profile)
-        results = PtdfTimeSeriesResults(n, m, nt, self.start_, self.end_, time_array=self.grid.time_profile)
-
-        if self.end_ is None:
-            self.end_ = nt
+        results = PtdfTimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
 
         # if there are valid profiles...
         if self.grid.time_profile is not None:
@@ -269,12 +262,12 @@ class PtdfTimeSeries(QThread):
             Pbus_0 = nc.C_bus_gen * nc.generator_power - nc.C_bus_load * nc.load_power.real  # MW
 
             # run the PTDF time series
-            for k, t_idx in enumerate(range(self.start_, self.end_)):
+            for k, t_idx in enumerate(time_indices):
                 dP = (Pbus_0[:] - Pbus[:, t_idx])
-                results.voltage[t_idx, :] = V_0 + np.dot(dP, vtdf)
-                results.Sbranch[t_idx, :] = Pbr_0 + np.dot(dP, ptdf)
-                results.loading[t_idx, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
-                results.S[t_idx, :] = Pbus[:, t_idx]
+                results.voltage[k, :] = V_0 + np.dot(dP, vtdf)
+                results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
+                results.loading[k, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
+                results.S[k, :] = Pbus[:, t_idx]
 
                 progress = ((t_idx - self.start_ + 1) / (self.end_ - self.start_)) * 100
                 self.progress_signal.emit(progress)
@@ -294,7 +287,11 @@ class PtdfTimeSeries(QThread):
         self.__cancel__ = False
         a = time.time()
 
-        self.results = self.run_nodal_mode()
+        if self.end_ is None:
+            self.end_ = len(self.grid.time_profile)
+        time_indices = np.arange(self.start_, self.end_)
+
+        self.results = self.run_nodal_mode(time_indices)
 
         self.elapsed = time.time() - a
 

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Thu Feb 20 21:50:31 2020
+# Created: Sun Feb 23 12:14:15 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -1871,6 +1871,10 @@ class Ui_mainWindow(object):
         self.plt_style_comboBox = QtWidgets.QComboBox(self.frame_24)
         self.plt_style_comboBox.setObjectName("plt_style_comboBox")
         self.verticalLayout_16.addWidget(self.plt_style_comboBox)
+        self.draw_schematic_checkBox = QtWidgets.QCheckBox(self.frame_24)
+        self.draw_schematic_checkBox.setChecked(True)
+        self.draw_schematic_checkBox.setObjectName("draw_schematic_checkBox")
+        self.verticalLayout_16.addWidget(self.draw_schematic_checkBox)
         self.verticalLayout_12.addWidget(self.frame_24)
         spacerItem31 = QtWidgets.QSpacerItem(20, 363, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_12.addItem(spacerItem31)
@@ -2162,6 +2166,11 @@ class Ui_mainWindow(object):
         self.actionSync.setCheckable(True)
         self.actionSync.setIcon(icon44)
         self.actionSync.setObjectName("actionSync")
+        self.actionDrawSchematic = QtWidgets.QAction(mainWindow)
+        icon74 = QtGui.QIcon()
+        icon74.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionDrawSchematic.setIcon(icon74)
+        self.actionDrawSchematic.setObjectName("actionDrawSchematic")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2201,6 +2210,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionAuto_rate_branches)
         self.menuActions.addAction(self.actionGrid_Reduction)
         self.menuActions.addAction(self.actionTry_to_fix_buses_location)
+        self.menuActions.addAction(self.actionDrawSchematic)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuActions.addAction(self.actionReset_console)
@@ -2433,6 +2443,8 @@ class Ui_mainWindow(object):
         self.resolution_factor_spinBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "<html><head/><body><p>Resolution factor.</p><p>1K = 1920 x 1080 pixels</p></body></html>", None, -1))
         self.label_38.setText(QtWidgets.QApplication.translate("mainWindow", "Plotting style", None, -1))
         self.plt_style_comboBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "MatPlotlib plot styles to choose from", None, -1))
+        self.draw_schematic_checkBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Draw the schematic. You may disable it for very large grids where the drawing takes time.", None, -1))
+        self.draw_schematic_checkBox.setText(QtWidgets.QApplication.translate("mainWindow", "Draw schematic", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QtWidgets.QApplication.translate("mainWindow", "Settings", None, -1))
         self.cancelButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Cancel process", None, -1))
         self.menuProject.setTitle(QtWidgets.QApplication.translate("mainWindow", "File", None, -1))
@@ -2557,6 +2569,7 @@ class Ui_mainWindow(object):
         self.actionAdd_circuit.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Add circuit to the current circuit", None, -1))
         self.actionSync.setText(QtWidgets.QApplication.translate("mainWindow", "Sync", None, -1))
         self.actionSync.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Sync with the file for colaborative editing of the grid", None, -1))
+        self.actionDrawSchematic.setText(QtWidgets.QApplication.translate("mainWindow", "Draw schematic", None, -1))
 
 from .icons_rc import *
 
