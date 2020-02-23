@@ -522,6 +522,9 @@ class MainGUI(QMainWindow):
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.smart_search)
 
+        # check boxes
+        self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
+
         ################################################################################################################
         # Other actions
         ################################################################################################################
@@ -551,6 +554,15 @@ class MainGUI(QMainWindow):
         Unlock the interface
         """
         self.LOCK(False)
+
+    def set_grid_editor_state(self):
+        """
+        Enable/disable the grid editor
+        """
+        if self.ui.draw_schematic_checkBox.isChecked():
+            self.grid_editor.setEnabled(True)
+        else:
+            self.grid_editor.setDisabled(True)
 
     def create_console(self):
         """
@@ -595,7 +607,6 @@ class MainGUI(QMainWindow):
         Drop file on the GUI, the default behaviour is to load the file
         :param event: event containing all the information
         """
-        # print(event)
         if event.mimeData().hasUrls:
             events = event.mimeData().urls()
             if len(events) > 0:
@@ -604,7 +615,18 @@ class MainGUI(QMainWindow):
                 accepted = ['.gridcal', '.xlsx', '.xls', '.sqlite',
                             '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
                 if file_extension.lower() in accepted:
-                    self.open_file_now(filename=file_name)
+
+                    if len(self.circuit.buses) > 0:
+                        quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
+                                   "\n If the process is cancelled the grid will remain."
+                        reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                        if reply == QMessageBox.Yes:
+                            self.open_file_now(filename=file_name)
+                    else:
+                        # Just open the file
+                        self.open_file_now(filename=file_name)
+
                 else:
                     self.msg('File type not accepted :(')
 
@@ -1389,7 +1411,6 @@ class MainGUI(QMainWindow):
 
             # declare the allowed file types
             files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
-            # files_types = 'PDF (*.pdf)'
 
             fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 

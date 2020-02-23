@@ -22,6 +22,7 @@ Version 3.7.0
 - Added ability to not to draw the schematic. This speeds up operation with very large grids.
 - Replaced the HELM version by a working one thanks to Josep Fanals Batllori.
 - The time series now adjust to the selected time interval.
+- Now to drop a file does now automatically load the grid when another one is loaded.
 
 Version 3.6.7
 ^^^^^^^^^^^^^^
