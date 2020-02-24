@@ -117,7 +117,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     b1_tt = sp.diags(b1)
     B1f = b1_tt * Cf - b1_tt * Ct
     B1t = -b1_tt * Cf + b1_tt * Ct
-    B1 = sparse(Cf.T * B1f + Ct.T * B1t)
+    B1 = sparse(Cf.T * B1f + Ct.T * B1t).tocsc()
 
     b2 = b1 + B
     b2_ff = -(b2 / (tap * np.conj(tap))).real
@@ -126,7 +126,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     b2_tt = - b2
     B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
     B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
-    B2 = sparse(Cf.T * B2f + Ct.T * B2t)
+    B2 = sparse(Cf.T * B2f + Ct.T * B2t).tocsc()
 
     ################################################################################################################
     # Bus connectivity
