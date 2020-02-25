@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import time
 import multiprocessing
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.cluster import KMeans
 from PySide2.QtCore import QThread, QThreadPool, Signal
 
 from GridCal.Engine.basic_structures import Logger
@@ -417,6 +417,49 @@ class TimeSeriesResults(PowerFlowResults):
             return None
 
 
+def kmeans_case_sampling(X, n_points=10):
+    """
+    K-Means clustering
+    :param X: injections matrix (time, bus)
+    :param n_points: number of clusters
+    :return: indices of the closest to the cluster centers, deviation of the closest representatives
+    """
+
+    # declare the model
+    model = KMeans(n_clusters=n_points)
+
+    # model fitting
+    model.fit(X)
+
+    centers = model.cluster_centers_
+    labels = model.labels_
+
+    # get the closest indices to the cluster centers
+    closest_idx = np.zeros(n_points, dtype=int)
+    closest_prob = np.zeros(n_points, dtype=float)
+    nt = X.shape[0]
+
+    unique_labels, counts = np.unique(labels, return_counts=True)
+    probabilities = counts.astype(float) / float(nt)
+
+    prob_dict = {u: p for u, p in zip(unique_labels, probabilities)}
+    for i in range(n_points):
+        deviations = np.sum(np.power(X - centers[i, :], 2.0), axis=1)
+        idx = deviations.argmin()
+        closest_idx[i] = idx
+
+    # sort the indices
+    closest_idx = np.sort(closest_idx)
+
+    # compute the probabilities of each index (sorted already)
+    for i, idx in enumerate(closest_idx):
+        lbl = model.predict(X[idx, :].reshape(1, -1))[0]
+        prob = prob_dict[lbl]
+        closest_prob[i] = prob
+
+    return closest_idx, closest_prob
+
+
 def time_series_worker(n, m, time_profile, numerical_circuit, options: PowerFlowOptions,
                        time_indices, logger: Logger) -> (TimeSeriesResults, np.array):
     """
@@ -682,19 +725,17 @@ class TimeSeries(QThread):
 
     def run_single_thread_clustering(self, time_indices) -> TimeSeriesResults:
         """
-        Run single thread time series
+        Run single thread time series using the time series clustering
         :param time_indices: array of time indices to consider
         :return: TimeSeriesResults instance
         """
         # compile the multi-circuit
         numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
-        X = numerical_circuit.get_power_injections().T
-        model = KNeighborsClassifier(n_neighbors=self.cluster_number, n_jobs=-1)
-        model.fit(X[time_indices, :])
 
-        # model._
-
-        time_idx = np.zeros(self.cluster_number, dtype=int)
+        self.progress_text.emit('Clustering...')
+        X = numerical_circuit.get_power_injections()
+        X = X[:, time_indices].real.T
+        time_idx, closest_prob = kmeans_case_sampling(X, n_points=self.cluster_number)
 
         time_series_results = self.run_single_thread(time_indices=time_idx)
 

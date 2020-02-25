@@ -10,7 +10,7 @@ Standalone setup
 You can install GridCal as a separated standalone program without having to bother
 about setting up python.
 
-`GridCal for windows x64 <https://sanpv.files.wordpress.com/2019/05/gridcalsetup-1.zip>`_
+`GridCal for windows x64 <https://drive.google.com/open?id=1_ln73z0pKYcxw8TEYroWXTqK6ZYLY6hS>`_
 
 `GridCal for linux x64 <https://sanpv.files.wordpress.com/2018/11/gridcal-standalone-linux.zip>`_
 
