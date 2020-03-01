@@ -77,21 +77,21 @@ def _test_api():
     # OPF
     ####################################################################################################################
     print('Running OPF...', '')
-    opf_options = OptimalPowerFlowOptions(verbose=False,
-                                          solver=SolverType.DC_OPF,
-                                          mip_solver=False)
-    opf = OptimalPowerFlow(grid=main_circuit, options=opf_options)
-    opf.run()
+    # opf_options = OptimalPowerFlowOptions(verbose=False,
+    #                                       solver=SolverType.DC_OPF,
+    #                                       mip_solver=False)
+    # opf = OptimalPowerFlow(grid=main_circuit, options=opf_options)
+    # opf.run()
     ####################################################################################################################
     # OPF Time Series
     ####################################################################################################################
     print('Running OPF-TS...', '')
-    opf_options = OptimalPowerFlowOptions(verbose=False,
-                                          solver=SolverType.NELDER_MEAD_OPF,
-                                          mip_solver=False)
-    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options,
-                                        start_=0, end_=96)
-    opf_ts.run()
+    # opf_options = OptimalPowerFlowOptions(verbose=False,
+    #                                       solver=SolverType.NELDER_MEAD_OPF,
+    #                                       mip_solver=False)
+    # opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit, options=opf_options,
+    #                                     start_=0, end_=96)
+    # opf_ts.run()
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
@@ -111,7 +111,10 @@ def _test_api():
     vc = VoltageCollapse(circuit=main_circuit, options=vc_options,
                          inputs=vc_inputs)
     vc.run()
-    # vc.results.plot()
+    mdl = vc.results.mdl()
+    mdl.plot()
+    from matplotlib import pyplot as plt
+    plt.show()
     ####################################################################################################################
     # Monte Carlo
     ####################################################################################################################

@@ -257,7 +257,11 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     if n < 2:
         # V, converged, norm_f, Scalc, iter_, elapsed
-        return V0, True, 0.0, S0, 0, 0.0
+        if compute_sigma:
+            z = np.zeros(n)
+            return V0, True, 0.0, S0, 0, 0.0, z, z
+        else:
+            return V0, True, 0.0, S0, 0, 0.0
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages

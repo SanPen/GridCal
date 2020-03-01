@@ -92,7 +92,9 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
         if results is not None:
             ax = self.ui.plotwidget.get_axis()
+            fig = self.ui.plotwidget.get_figure()
             self.results.plot(ax)
+            fig.tight_layout()
 
             n = len(bus_names)
 

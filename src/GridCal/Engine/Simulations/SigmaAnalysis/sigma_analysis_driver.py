@@ -164,7 +164,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
         for i, calculation_input in enumerate(calculation_inputs):
 
             if len(calculation_input.ref) > 0:
-
+                # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
                 V, converged_, error, Scalc_, iter_, elapsed_, Sre, Sim = helm_josep(Ybus=calculation_input.Ybus,
                                                                                      Yseries=calculation_input.Yseries,
                                                                                      V0=calculation_input.Vbus,
@@ -177,7 +177,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                                                                      tolerance=options.tolerance,
                                                                                      max_coeff=options.max_iter,
                                                                                      use_pade=False,
-                                                                                     verbose=True,
+                                                                                     verbose=False,
                                                                                      compute_sigma=True)
 
                 island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
