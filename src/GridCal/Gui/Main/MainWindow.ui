@@ -1951,6 +1951,9 @@ p, li { white-space: pre-wrap; }
                     <property name="toolTip">
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
+                    <property name="prefix">
+                     <string>1e-</string>
+                    </property>
                     <property name="minimum">
                      <number>1</number>
                     </property>
@@ -2278,8 +2281,11 @@ p, li { white-space: pre-wrap; }
                  <property name="toolTip">
                   <string>Number of clusters in case of clustering</string>
                  </property>
+                 <property name="suffix">
+                  <string> Clusters</string>
+                 </property>
                  <property name="minimum">
-                  <number>2</number>
+                  <number>50</number>
                  </property>
                  <property name="maximum">
                   <number>999999</number>
@@ -2562,7 +2568,7 @@ p, li { white-space: pre-wrap; }
                <item row="2" column="0" colspan="2">
                 <widget class="QLabel" name="label_56">
                  <property name="text">
-                  <string>Power increment (MW)</string>
+                  <string>Power increment</string>
                  </property>
                 </widget>
                </item>
@@ -2624,6 +2630,12 @@ p, li { white-space: pre-wrap; }
                </item>
                <item row="3" column="0" colspan="2">
                 <widget class="QDoubleSpinBox" name="ptdf_power_delta_doubleSpinBox">
+                 <property name="suffix">
+                  <string> MW</string>
+                 </property>
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
                  <property name="minimum">
                   <double>-1000000000000000000000.000000000000000</double>
                  </property>
@@ -3555,6 +3567,9 @@ points from time series</string>
               <layout class="QGridLayout" name="gridLayout_6">
                <item row="5" column="1">
                 <widget class="QSpinBox" name="tolerance_stochastic_spinBox">
+                 <property name="prefix">
+                  <string>1e-</string>
+                 </property>
                  <property name="minimum">
                   <number>1</number>
                  </property>
@@ -4933,6 +4948,9 @@ points from time series</string>
                  <property name="toolTip">
                   <string>Interval in minutes to save the model when the mode syncronization is activated</string>
                  </property>
+                 <property name="suffix">
+                  <string> seconds</string>
+                 </property>
                  <property name="minimum">
                   <number>1</number>
                  </property>
@@ -4994,7 +5012,7 @@ points from time series</string>
                <item row="4" column="0">
                 <widget class="QLabel" name="label_39">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sync interval (seconds)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sync interval&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -5331,12 +5349,15 @@ points from time series</string>
               <item>
                <widget class="QLabel" name="label_57">
                 <property name="text">
-                 <string>Base power (MVA)</string>
+                 <string>Base power</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QDoubleSpinBox" name="sbase_doubleSpinBox">
+                <property name="suffix">
+                 <string> MVA</string>
+                </property>
                 <property name="decimals">
                  <number>0</number>
                 </property>
@@ -5354,12 +5375,15 @@ points from time series</string>
               <item>
                <widget class="QLabel" name="label_58">
                 <property name="text">
-                 <string>Frequency (Hz)</string>
+                 <string>Frequency</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QDoubleSpinBox" name="fbase_doubleSpinBox">
+                <property name="suffix">
+                 <string> Hz</string>
+                </property>
                 <property name="decimals">
                  <number>0</number>
                 </property>
@@ -5597,7 +5621,7 @@ points from time series</string>
               <item>
                <widget class="QLabel" name="label_32">
                 <property name="text">
-                 <string>Export resolution (K)</string>
+                 <string>Export resolution</string>
                 </property>
                </widget>
               </item>
@@ -5605,6 +5629,9 @@ points from time series</string>
                <widget class="QSpinBox" name="resolution_factor_spinBox">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Resolution factor.&lt;/p&gt;&lt;p&gt;1K = 1920 x 1080 pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="suffix">
+                 <string> K</string>
                 </property>
                 <property name="minimum">
                  <number>1</number>
@@ -5822,6 +5849,7 @@ points from time series</string>
    <addaction name="actionPower_Flow_Time_series"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
+   <addaction name="actionSigma_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
@@ -6541,6 +6569,18 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Draw schematic</string>
+   </property>
+  </action>
+  <action name="actionSigma_analysis">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/sigma.svg</normaloff>:/Icons/icons/sigma.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Sigma analysis</string>
+   </property>
+   <property name="toolTip">
+    <string>Perform HELM-Sigma analysis</string>
    </property>
   </action>
  </widget>

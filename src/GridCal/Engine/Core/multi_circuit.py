@@ -601,8 +601,15 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile_snapshot(self, opf_results=None, opf_time_series_results=None,
-                         logger=Logger()) -> StaticSnapshotInputs:
+    def compile(self, logger=Logger()) -> StaticSnapshotInputs:
+        """
+        Keep the compile function for retro-compatibility
+        :param logger:
+        :return: StaticSnapshotInputs instance
+        """
+        return self.compile_snapshot(opf_results=None, opf_time_series_results=None, logger=logger)
+
+    def compile_snapshot(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> StaticSnapshotInputs:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical

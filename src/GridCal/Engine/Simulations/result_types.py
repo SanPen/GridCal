@@ -77,6 +77,11 @@ class ResultTypes(Enum):
 
     OTDFSimulationError = 'Error', DeviceType.BranchDevice
 
+    # sigma
+    SigmaReal = 'Sigma real', DeviceType.BusDevice
+    SigmaImag = 'Sigma imaginary', DeviceType.BusDevice
+    SigmaDistances = 'Sigma distances', DeviceType.BusDevice
+
 
 class SimulationTypes(Enum):
     PowerFlow_run = 'power flow'

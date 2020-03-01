@@ -88,7 +88,8 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, 
                                                          tolerance=tolerance,
                                                          max_coeff=max_iter,
                                                          use_pade=True,
-                                                         verbose=False)
+                                                         verbose=False,
+                                                         compute_sigma=False)
 
     # type DC
     elif solver_type == SolverType.DC:

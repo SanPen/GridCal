@@ -196,7 +196,7 @@ class PowerFlowResults:
 
         self.methods = list()
 
-    def apply_from_island(self, results, b_idx, br_idx):
+    def apply_from_island(self, results: "PowerFlowResults", b_idx, br_idx):
         """
         Apply results from another island circuit to the circuit results represented
         here.

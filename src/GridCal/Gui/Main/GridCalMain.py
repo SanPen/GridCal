@@ -383,6 +383,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
+        self.ui.actionSigma_analysis.triggered.connect(self.sigma_analisys)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -3312,6 +3314,19 @@ class MainGUI(QMainWindow):
                     pass
         else:
             pass
+
+    def sigma_analisys(self):
+
+        from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver
+        from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+        options = self.get_selected_power_flow_options()
+        bus_names = np.array([b.name for b in self.circuit.buses])
+        sigma_driver = SigmaAnalysisDriver(grid=self.circuit, options=options)
+        sigma_driver.run()
+
+        self.sigma_dialogue = SigmaAnalysisGUI(parent=self, results=sigma_driver.results, bus_names=bus_names)
+        self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+        self.sigma_dialogue.show()  # exec leaves the parent on hold
 
     def set_cancel_state(self):
         """

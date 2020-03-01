@@ -79,6 +79,82 @@ def pade4all(order, coeff_mat, s=1):
     return voltages
 
 
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
+def Sigma_funcO(coeff_matU, coeff_matX, order, V_slack):
+    """
+
+    :param coeff_matU: array with voltage coefficients
+    :param coeff_matX: array with inverse conjugated voltage coefficients
+    :param order: should be prof - 1
+    :param V_slack: slack bus voltage vector. Must contain only 1 slack bus
+    :return: sigma complex value
+    """
+    if len(V_slack) > 1:
+        print('Sigma values may not be correct')
+    V0 = V_slack[0]
+    coeff_matU = coeff_matU / V0
+    coeff_matX = coeff_matX / V0
+    nbus = coeff_matU.shape[1]
+    complex_type = nb.complex128
+    sigmes = np.zeros(nbus, dtype=complex_type)
+
+    if order % 2 == 0:
+        M = int(order / 2) - 1
+    else:
+        M = int(order / 2)
+
+    for d in range(nbus):
+        a = coeff_matU[1:2 * M + 2, d]
+        b = coeff_matX[0:2 * M + 1, d]
+        C = np.zeros((2 * M + 1, 2 * M + 1), dtype=complex_type)
+
+        for i in range(2 * M + 1):
+            if i < M:
+                C[1 + i:, i] = a[:2 * M - i]
+            else:
+                C[i - M:, i] = - b[:3 * M - i + 1]
+
+        lhs = np.linalg.solve(C, -a)
+
+        sigmes[d] = np.sum(lhs[M:]) / (np.sum(lhs[:M]) + 1)
+
+    return sigmes
+
+
+def distance(a, b):
+    """
+    Distance to the collapse in the sigma space
+
+    The boundary curve is given by y = sqrt(1/4 + x)
+
+    the distance is d = sqrt((x-a)^2 + (sqrt(1/4+ x) - b)^2)
+
+    the derivative of this is d'=(2 (-a + x) + (-b + sqrt(1/4 + x))/sqrt(1/4 + x))/(2 sqrt((-a + x)^2 + (-b + sqrt(1/4 + x))^2))
+
+    Making d'=0, and solving for x, we obtain:
+
+    x1 = 1/12 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3) - (-256 a^2 + 128 a - 16)/
+         (192 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
+
+    x2 = 1/12 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3) - (-256 a^2 + 128 a - 16)/
+         (192 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
+    :param a: Sigma real
+    :param b: Sigma imag
+    :return: distance of the sigma point to sqrt(0.25 + x)
+    """
+
+    t1 = (-64 * a**3
+          + 48 * a**2
+          + 12 * np.sqrt(3)*np.sqrt(-64 * a**3 * b**2
+                                    + 48 * a**2 * b**2
+                                    - 12 * a * b**2
+                                    + 108 * b**4 + b**2)
+          - 12 * a + 216 * b **2 + 1)**(1 / 3)
+
+    x1 = 1 / 12 * t1 - (-256 * a**2 + 128*a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
+    return x1
+
+
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
 def conv1(A, B, c, indices):
     """
@@ -151,7 +227,8 @@ def conv3(A, B, c, indices):
 #     return suma
 
 
-def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True, verbose=False):
+def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
+               verbose=False, compute_sigma=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     :param Ybus: Complete admittance matrix
@@ -324,7 +401,19 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    return V, converged, norm_f, Scalc, iter_, elapsed
+    if compute_sigma:
+
+        # compute the sigma value
+        Sig_re = np.zeros(n, dtype=float)
+        Sig_im = np.zeros(n, dtype=float)
+        Sigma = Sigma_funcO(U, X, iter_ - 1, Vslack)
+        Sig_re[pqpv] = np.real(Sigma)
+        Sig_im[pqpv] = np.imag(Sigma)
+
+        return V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
+
+    else:
+        return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 if __name__ == '__main__':
@@ -337,9 +426,9 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
 
@@ -348,19 +437,19 @@ if __name__ == '__main__':
     nc = grid.compile_snapshot()
     inputs = nc.compute()[0]  # pick the first island
 
-    V, converged_, error, Scalc_, iter_, elapsed_ = helm_josep(Ybus=inputs.Ybus,
-                                                               Yseries=inputs.Yseries,
-                                                               V0=inputs.Vbus,
-                                                               S0=inputs.Sbus,
-                                                               Ysh0=-inputs.Ysh,
-                                                               pq=inputs.pq,
-                                                               pv=inputs.pv,
-                                                               sl=inputs.ref,
-                                                               pqpv=inputs.pqpv,
-                                                               tolerance=1e-6,
-                                                               max_coeff=40,
-                                                               use_pade=False,
-                                                               verbose=False)
+    V, converged_, error, Scalc_, iter_, elapsed_, Sre, Sim = helm_josep(Ybus=inputs.Ybus,
+                                                                         Yseries=inputs.Yseries,
+                                                                         V0=inputs.Vbus,
+                                                                         S0=inputs.Sbus,
+                                                                         Ysh0=inputs.Ysh,
+                                                                         pq=inputs.pq,
+                                                                         pv=inputs.pv,
+                                                                         sl=inputs.ref,
+                                                                         pqpv=inputs.pqpv,
+                                                                         tolerance=1e-6,
+                                                                         max_coeff=10,
+                                                                         use_pade=False,
+                                                                         verbose=True, compute_sigma=True)
     Vm = np.abs(V)
     Va = np.angle(V)
     dP = np.abs(inputs.Sbus.real - Scalc_.real)
@@ -368,9 +457,29 @@ if __name__ == '__main__':
     dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
     dQ[inputs.pv] = np.nan
     dQ[inputs.ref] = np.nan
-    df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
-                      columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
-    print(df)
+
+    sigma_distances = distance(Sre, Sim)
+
+    df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ, np.abs(sigma_distances)],
+                      columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch', 'Distances'])
+    print(df.sort_values('Distances'))
     print('Error', error)
     print('P error', np.max(np.abs(dP)))
     print('Elapsed', elapsed_)
+
+    # sigma plot
+    # sx = np.linspace(0, np.max(Sre), 100)
+    sx = np.linspace(-0.25, np.max(Sre), 100)
+    sy1 = np.sqrt(0.25 + sx)
+    sy2 = -np.sqrt(0.25 + sx)
+
+    from matplotlib import pyplot as plt
+    fig = plt.figure(figsize=(8, 7))
+    ax = fig.add_subplot(111)
+    ax.plot(Sre, Sim, 'o')
+    ax.plot(sx, sy1, 'b')
+    ax.plot(sx, sy2, 'r')
+    ax.set_title('Sigma plot')
+    ax.set_xlabel('$\sigma_{re}$')
+    ax.set_ylabel('$\sigma_{im}$')
+    plt.show()
