@@ -16,7 +16,7 @@
 # AUTHORS: Josep Fanals Batllori and Santiago Peñate Vera
 # CONTACT:  u1946589@campus.udg.edu and santiago.penate.vera@gmail.com
 # thanks to Llorenç Fanals Batllori for his help at coding
-
+import pandas as pd
 import numpy as np
 import numba as nb
 import time
@@ -135,6 +135,48 @@ def pade4all(order, coeff_mat, s=1):
     return voltages
 
 
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
+def Sigma_funcO(coeff_matU, coeff_matX, order, V_slack):
+    """
+
+    :param coeff_matU: array with voltage coefficients
+    :param coeff_matX: array with inverse conjugated voltage coefficients
+    :param order: should be prof - 1
+    :param V_slack: slack bus voltage vector. Must contain only 1 slack bus
+    :return: sigma complex value
+    """
+    if len(V_slack) > 1:
+        print('Sigma values may not be correct')
+    V0 = V_slack[0]
+    coeff_matU = coeff_matU / V0
+    coeff_matX = coeff_matX / V0
+    nbus = coeff_matU.shape[1]
+    complex_type = nb.complex128
+    sigmes = np.zeros(nbus, dtype=complex_type)
+
+    if order % 2 == 0:
+        M = int(order / 2) - 1
+    else:
+        M = int(order / 2)
+
+    for d in range(nbus):
+        a = coeff_matU[1:2 * M + 2, d]
+        b = coeff_matX[0:2 * M + 1, d]
+        C = np.zeros((2 * M + 1, 2 * M + 1), dtype=complex_type)
+
+        for i in range(2 * M + 1):
+            if i < M:
+                C[1 + i:, i] = a[:2 * M - i]
+            else:
+                C[i - M:, i] = - b[:3 * M - i + 1]
+
+        lhs = np.linalg.solve(C, -a)
+
+        sigmes[d] = np.sum(lhs[M:]) / (np.sum(lhs[:M]) + 1)
+
+    return sigmes
+
+
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
 def conv1(A, B, c, indices):
     """
@@ -187,7 +229,7 @@ def conv3(A, B, c, indices):
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
-               verbose=False):
+               verbose=False, compute_sigma=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     :param Ybus: Complete admittance matrix
@@ -202,6 +244,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param use_pade: Use the Padè approximation? otherwise a simple summation is done
+    :param compute_sigma: Compute the sigma values
     :return: V, converged, norm_f, Scalc, iter_, elapsed
     """
 
@@ -214,7 +257,11 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     if n < 2:
         # V, converged, norm_f, Scalc, iter_, elapsed
-        return V0, True, 0.0, S0, 0, 0.0
+        if compute_sigma:
+            z = np.zeros(n)
+            return V0, True, 0.0, S0, 0, 0.0, z, z
+        else:
+            return V0, True, 0.0, S0, 0, 0.0
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
@@ -366,7 +413,19 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    return V, converged, norm_f, Scalc, iter_, elapsed
+    if compute_sigma:
+
+        # compute the sigma value
+        Sig_re = np.zeros(n, dtype=float)
+        Sig_im = np.zeros(n, dtype=float)
+        Sigma = Sigma_funcO(U, X, iter_ - 1, Vslack)
+        Sig_re[pqpv] = np.real(Sigma)
+        Sig_im[pqpv] = np.imag(Sigma)
+
+        return V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
+
+    else:
+        return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 if __name__ == '__main__':

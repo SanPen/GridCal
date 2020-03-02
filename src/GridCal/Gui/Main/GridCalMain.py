@@ -54,6 +54,8 @@ from GridCal.Engine.IO.export_results_driver import ExportAllThread
 from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
+from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver
+from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 
 import gc
 import os.path
@@ -281,7 +283,7 @@ class MainGUI(QMainWindow):
 
         # window pointers
         self.file_sync_window = None
-
+        self.sigma_dialogue = None
         self.stuff_running_now = list()
 
         self.file_name = ''
@@ -382,6 +384,8 @@ class MainGUI(QMainWindow):
         self.ui.actionSync.triggered.connect(self.file_sync_toggle)
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
+
+        self.ui.actionSigma_analysis.triggered.connect(self.sigma_analisys)
 
         # Buttons
 
@@ -3312,6 +3316,22 @@ class MainGUI(QMainWindow):
                     pass
         else:
             pass
+
+    def sigma_analisys(self):
+        """
+
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            options = self.get_selected_power_flow_options()
+            bus_names = np.array([b.name for b in self.circuit.buses])
+            sigma_driver = SigmaAnalysisDriver(grid=self.circuit, options=options)
+            sigma_driver.run()
+
+            self.sigma_dialogue = SigmaAnalysisGUI(parent=self, results=sigma_driver.results, bus_names=bus_names)
+            self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+            self.sigma_dialogue.show()  # exec leaves the parent on hold
 
     def set_cancel_state(self):
         """

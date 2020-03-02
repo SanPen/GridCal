@@ -8,12 +8,8 @@ flow method. Trias originally developed a version with no voltage controlled nod
 (PV), in which the convergence properties are excellent (With this software try to
 solve any grid without PV nodes to check this affirmation). 
 
-The version programmed in GridCal has been adapted from the master thesis of Muthu
-Kumar Subramanian at the Arizona State University (ASU) [2]_. This version includes a
-formulation of the voltage controlled nodes. My experience indicates that the
-introduction of the PV control deteriorates the convergence properties of the
-holomorphic embedding method. However, in many cases, it is the best approximation to
-a solution. especially when Newton-Raphson does not provide one.
+The version programmed in GridCal has been adapted from the outstanding contribution
+by Josep Fanals Batllori. This version includes a formulation of the voltage controlled nodes.
 
 GridCal's integration contains a vectorized version of the algorithm. This means that
 the execution in python is much faster than a previous version that uses loops.
@@ -140,7 +136,7 @@ Which is not zero, obviously. Now with the proposed change:
 
     \partial \left( \textbf{V}( \alpha^* )\right)^* / \partial \alpha^*  = \partial \left(\sum_{n}^{\infty} \textbf{V}_n^* \alpha ^n \right) / \partial \alpha^*  = 0
     
-Yay!, now we're mathematically happy, since this stuff has no effect in practice because our $\alpha$ is not going to be a complex parameter, but for sake of being correct the equation is now:
+Yay!, now we're mathematically happy, since this stuff has no effect in practice because our :math:`\alpha` is not going to be a complex parameter, but for sake of being correct the equation is now:
 
 .. _base_eq_embedded2:
 

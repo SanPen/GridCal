@@ -133,7 +133,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
             # re-assign the right bus
             if f2 == f:
                 circuit.branches[k].bus_from = bus_t
-            elif t2 == t2:
+            elif t2 == t:
                 circuit.branches[k].bus_to = bus_t
 
             # copy the state of the removed branch

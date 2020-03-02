@@ -81,7 +81,7 @@ class Bus(EditableDevice):
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False,
-                 area='Default', zone='Default', substation='Default', longitude=0.0, latitude=0.0):
+                 area='Default', zone='Default', substation='Default', country='', longitude=0.0, latitude=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -108,6 +108,7 @@ class Bus(EditableDevice):
                                                   'y': GCProp('px', float, 'y position in pixels.'),
                                                   'h': GCProp('px', float, 'height of the bus in pixels.'),
                                                   'w': GCProp('px', float, 'Width of the bus in pixels.'),
+                                                  'country': GCProp('', str, 'Country of the bus'),
                                                   'area': GCProp('', str, 'Area of the bus'),
                                                   'zone': GCProp('', str, 'Zone of the bus'),
                                                   'substation': GCProp('', str, 'Substation of the bus.'),
@@ -139,6 +140,8 @@ class Bus(EditableDevice):
         self.active = active
 
         self.active_prof = None
+
+        self.country = country
 
         self.area = area
 
