@@ -229,7 +229,7 @@ def conv3(A, B, c, indices):
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
-               verbose=False, compute_sigma=False):
+               verbose=False, return_structures=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     :param Ybus: Complete admittance matrix
@@ -244,7 +244,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param use_pade: Use the Padè approximation? otherwise a simple summation is done
-    :param compute_sigma: Compute the sigma values
+    :param return_structures: Compute the sigma values
     :return: V, converged, norm_f, Scalc, iter_, elapsed
     """
 
@@ -257,7 +257,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     if n < 2:
         # V, converged, norm_f, Scalc, iter_, elapsed
-        if compute_sigma:
+        if return_structures:
             z = np.zeros(n)
             return V0, True, 0.0, S0, 0, 0.0, z, z
         else:
@@ -337,8 +337,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
     EMPTY = csc_matrix((npv, npv))
 
-    MAT = vs((hs((G, -B, XIM)),
-              hs((B, G, XRE)),
+    MAT = vs((hs((G,  -B,   XIM)),
+              hs((B,   G,   XRE)),
               hs((VRE, VIM, EMPTY))), format='csc')
 
     if verbose:
@@ -413,17 +413,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    if compute_sigma:
-
-        # compute the sigma value
-        Sig_re = np.zeros(n, dtype=float)
-        Sig_im = np.zeros(n, dtype=float)
-        Sigma = Sigma_funcO(U, X, iter_ - 1, Vslack)
-        Sig_re[pqpv] = np.real(Sigma)
-        Sig_im[pqpv] = np.imag(Sigma)
-
-        return V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-
+    if return_structures:
+        return V, converged, norm_f, Scalc, iter_, elapsed, U, X
     else:
         return V, converged, norm_f, Scalc, iter_, elapsed
 

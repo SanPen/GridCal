@@ -21,7 +21,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_josep
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_josep, Sigma_funcO
 
 
 class SigmaAnalysisResults:
@@ -86,9 +86,9 @@ class SigmaAnalysisResults:
         sy1 = np.sqrt(0.25 + sx)
         sy2 = -np.sqrt(0.25 + sx)
 
+        ax.plot(sx, sy1, 'k', linewidth=2)
+        ax.plot(sx, sy2, 'k', linewidth=2)
         ax.plot(self.sigma_re, self.sigma_im, 'o')
-        ax.plot(sx, sy1, 'b')
-        ax.plot(sx, sy2, 'r')
         ax.set_title('Sigma plot')
         ax.set_xlabel('$\sigma_{re}$')
         ax.set_ylabel('$\sigma_{im}$')
@@ -165,27 +165,37 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
 
             if len(calculation_input.ref) > 0:
                 # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-                V, converged_, error, Scalc_, iter_, elapsed_, Sre, Sim = helm_josep(Ybus=calculation_input.Ybus,
-                                                                                     Yseries=calculation_input.Yseries,
-                                                                                     V0=calculation_input.Vbus,
-                                                                                     S0=calculation_input.Sbus,
-                                                                                     Ysh0=calculation_input.Ysh,
-                                                                                     pq=calculation_input.pq,
-                                                                                     pv=calculation_input.pv,
-                                                                                     sl=calculation_input.ref,
-                                                                                     pqpv=calculation_input.pqpv,
-                                                                                     tolerance=options.tolerance,
-                                                                                     max_coeff=options.max_iter,
-                                                                                     use_pade=False,
-                                                                                     verbose=False,
-                                                                                     compute_sigma=True)
+                V, converged_, error, Scalc_, iter_, elapsed_, U, X = helm_josep(Ybus=calculation_input.Ybus,
+                                                                                 Yseries=calculation_input.Yseries,
+                                                                                 V0=calculation_input.Vbus,
+                                                                                 S0=calculation_input.Sbus,
+                                                                                 Ysh0=calculation_input.Ysh,
+                                                                                 pq=calculation_input.pq,
+                                                                                 pv=calculation_input.pv,
+                                                                                 sl=calculation_input.ref,
+                                                                                 pqpv=calculation_input.pqpv,
+                                                                                 tolerance=options.tolerance,
+                                                                                 max_coeff=options.max_iter,
+                                                                                 use_pade=False,
+                                                                                 verbose=False,
+                                                                                 return_structures=True)
 
+                # compute the sigma values
+                n = len(V)
+                Sig_re = np.zeros(n, dtype=float)
+                Sig_im = np.zeros(n, dtype=float)
+                Sigma = Sigma_funcO(U, X, iter_ - 1, V[calculation_input.ref])
+                Sig_re[calculation_input.pqpv] = np.real(Sigma)
+                Sig_im[calculation_input.pqpv] = np.imag(Sigma)
+                sigma_distances = sigma_distance(Sig_re, Sig_im)
+
+                # store the results
                 island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
                 island_results.lambda_value = 1.0
                 island_results.Sbus = calculation_input.Sbus
-                island_results.sigma_re = Sre
-                island_results.sigma_im = Sim
-                island_results.distances = sigma_distance(Sre, Sim)
+                island_results.sigma_re = Sig_re
+                island_results.sigma_im = Sig_im
+                island_results.distances = sigma_distances
 
                 bus_original_idx = calculation_input.original_bus_idx
 
@@ -199,27 +209,37 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
         if len(calculation_inputs[0].ref) > 0:
             # only one island
             calculation_input = calculation_inputs[0]
-            V, converged_, error, Scalc_, iter_, elapsed_, Sre, Sim = helm_josep(Ybus=calculation_input.Ybus,
-                                                                                 Yseries=calculation_input.Yseries,
-                                                                                 V0=calculation_input.Vbus,
-                                                                                 S0=calculation_input.Sbus,
-                                                                                 Ysh0=calculation_input.Ysh,
-                                                                                 pq=calculation_input.pq,
-                                                                                 pv=calculation_input.pv,
-                                                                                 sl=calculation_input.ref,
-                                                                                 pqpv=calculation_input.pqpv,
-                                                                                 tolerance=options.tolerance,
-                                                                                 max_coeff=options.max_iter,
-                                                                                 use_pade=False,
-                                                                                 verbose=False,
-                                                                                 compute_sigma=True)
+            V, converged_, error, Scalc_, iter_, elapsed_, U, X = helm_josep(Ybus=calculation_input.Ybus,
+                                                                             Yseries=calculation_input.Yseries,
+                                                                             V0=calculation_input.Vbus,
+                                                                             S0=calculation_input.Sbus,
+                                                                             Ysh0=calculation_input.Ysh,
+                                                                             pq=calculation_input.pq,
+                                                                             pv=calculation_input.pv,
+                                                                             sl=calculation_input.ref,
+                                                                             pqpv=calculation_input.pqpv,
+                                                                             tolerance=options.tolerance,
+                                                                             max_coeff=options.max_iter,
+                                                                             use_pade=False,
+                                                                             verbose=False,
+                                                                             return_structures=True)
 
+            # compute the sigma values
+            n = len(V)
+            Sig_re = np.zeros(n, dtype=float)
+            Sig_im = np.zeros(n, dtype=float)
+            Sigma = Sigma_funcO(U, X, iter_ - 1, V[calculation_input.ref])
+            Sig_re[calculation_input.pqpv] = np.real(Sigma)
+            Sig_im[calculation_input.pqpv] = np.imag(Sigma)
+            sigma_distances = sigma_distance(Sig_re, Sig_im)
+
+            # store the results
             results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
             results.lambda_value = 1.0
             results.Sbus = calculation_input.Sbus
-            results.sigma_re = Sre
-            results.sigma_im = Sim
-            results.distances = sigma_distance(Sre, Sim)
+            results.sigma_re = Sig_re
+            results.sigma_im = Sig_im
+            results.distances = sigma_distances
         else:
             logger.append('There are no slack nodes')
 

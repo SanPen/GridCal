@@ -89,7 +89,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, 
                                                          max_coeff=max_iter,
                                                          use_pade=True,
                                                          verbose=False,
-                                                         compute_sigma=False)
+                                                         return_structures=False)
 
     # type DC
     elif solver_type == SolverType.DC:
