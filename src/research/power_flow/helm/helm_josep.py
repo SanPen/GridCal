@@ -228,7 +228,7 @@ def conv3(A, B, c, indices):
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
-               verbose=False, compute_sigma=False):
+               verbose=False, return_structs=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     :param Ybus: Complete admittance matrix
@@ -401,16 +401,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    if compute_sigma:
-
-        # compute the sigma value
-        Sig_re = np.zeros(n, dtype=float)
-        Sig_im = np.zeros(n, dtype=float)
-        Sigma = Sigma_funcO(U, X, iter_ - 1, Vslack)
-        Sig_re[pqpv] = np.real(Sigma)
-        Sig_im[pqpv] = np.imag(Sigma)
-
-        return V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
+    if return_structs:
+        return V, converged, norm_f, Scalc, iter_, elapsed, U, X
 
     else:
         return V, converged, norm_f, Scalc, iter_, elapsed
@@ -437,19 +429,20 @@ if __name__ == '__main__':
     nc = grid.compile_snapshot()
     inputs = nc.compute()[0]  # pick the first island
 
-    V, converged_, error, Scalc_, iter_, elapsed_, Sre, Sim = helm_josep(Ybus=inputs.Ybus,
-                                                                         Yseries=inputs.Yseries,
-                                                                         V0=inputs.Vbus,
-                                                                         S0=inputs.Sbus,
-                                                                         Ysh0=inputs.Ysh,
-                                                                         pq=inputs.pq,
-                                                                         pv=inputs.pv,
-                                                                         sl=inputs.ref,
-                                                                         pqpv=inputs.pqpv,
-                                                                         tolerance=1e-6,
-                                                                         max_coeff=10,
-                                                                         use_pade=False,
-                                                                         verbose=True, compute_sigma=True)
+    V, converged_, error, Scalc_, iter_, elapsed_, U_, X_ = helm_josep(Ybus=inputs.Ybus,
+                                                                       Yseries=inputs.Yseries,
+                                                                       V0=inputs.Vbus,
+                                                                       S0=inputs.Sbus,
+                                                                       Ysh0=inputs.Ysh,
+                                                                       pq=inputs.pq,
+                                                                       pv=inputs.pv,
+                                                                       sl=inputs.ref,
+                                                                       pqpv=inputs.pqpv,
+                                                                       tolerance=1e-6,
+                                                                       max_coeff=10,
+                                                                       use_pade=False,
+                                                                       verbose=True,
+                                                                       return_structs=True)
     Vm = np.abs(V)
     Va = np.angle(V)
     dP = np.abs(inputs.Sbus.real - Scalc_.real)
@@ -458,7 +451,14 @@ if __name__ == '__main__':
     dQ[inputs.pv] = np.nan
     dQ[inputs.ref] = np.nan
 
-    sigma_distances = distance(Sre, Sim)
+    # compute the sigma value
+    n = len(V)
+    Sig_re = np.zeros(n, dtype=float)
+    Sig_im = np.zeros(n, dtype=float)
+    Sigma = Sigma_funcO(U_, X_, iter_ - 1, V[inputs.ref])
+    Sig_re[inputs.pqpv] = np.real(Sigma)
+    Sig_im[inputs.pqpv] = np.imag(Sigma)
+    sigma_distances = distance(Sig_re, Sig_im)
 
     df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ, np.abs(sigma_distances)],
                       columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch', 'Distances'])
@@ -469,14 +469,15 @@ if __name__ == '__main__':
 
     # sigma plot
     # sx = np.linspace(0, np.max(Sre), 100)
-    sx = np.linspace(-0.25, np.max(Sre), 100)
+    sx = np.linspace(-0.25, np.max(Sig_re)+0.1, 100)
     sy1 = np.sqrt(0.25 + sx)
     sy2 = -np.sqrt(0.25 + sx)
 
     from matplotlib import pyplot as plt
+
     fig = plt.figure(figsize=(8, 7))
     ax = fig.add_subplot(111)
-    ax.plot(Sre, Sim, 'o')
+    ax.plot(Sig_re, Sig_im, 'o')
     ax.plot(sx, sy1, 'b')
     ax.plot(sx, sy2, 'r')
     ax.set_title('Sigma plot')
