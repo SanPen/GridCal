@@ -288,6 +288,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     vec_P = S0.real[pqpv]
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
+    Ysh = -Ysh0[pqpv]
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -320,8 +321,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh0[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh0[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
@@ -361,8 +362,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     range_pqpv = np.arange(npqpv, dtype=np.int64)
     for c in range(2, max_coeff):  # c defines the current depth
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh0[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh0[pv_] + X[c - 1, pv_] * vec_P[pv_]
+        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
+        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
@@ -403,10 +404,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     Scalc = V * np.conj(Ybus * V)
     dP = np.abs(S0[pqpv].real - Scalc[pqpv].real)
     dQ = np.abs(S0[pq].imag - Scalc[pq].imag)
-    # norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
-
-    # same as max(abs())  ¿Omit the reactive mismatch? need to investigate why the Q mismatch is large
-    norm_f = np.linalg.norm(dP, np.inf)
+    norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
 
     # check convergence
     converged = norm_f < tolerance
@@ -444,7 +442,7 @@ if __name__ == '__main__':
                                                                Yseries=inputs.Yseries,
                                                                V0=inputs.Vbus,
                                                                S0=inputs.Sbus,
-                                                               Ysh0=-inputs.Ysh,
+                                                               Ysh0=inputs.Ysh,
                                                                pq=inputs.pq,
                                                                pv=inputs.pv,
                                                                sl=inputs.ref,

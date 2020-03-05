@@ -110,7 +110,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
     Yseries = sparse(Cf.T * Yfs + Ct.T * Yts)
     Gsh = GBc / 2.0
-    Ysh += Cf.T * Gsh + Ct.T * Gsh
+    Yshunt = Ysh + Cf.T * Gsh + Ct.T * Gsh
 
     # Form the matrices for fast decoupled
     b1 = 1.0 / (X + 1e-20)
@@ -138,7 +138,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
     bus_states_diag = sp.diags(bus_active)
     C_bus_bus = bus_states_diag * (C_branch_bus.T * C_branch_bus)
 
-    return Ybus, Yf, Yt, B1, B2, Yseries, Ys, GBc, Cf, Ct, C_bus_bus, C_branch_bus
+    return Ybus, Yf, Yt, B1, B2, Yseries, Yshunt, Ys, GBc, Cf, Ct, C_bus_bus, C_branch_bus
 
 
 def calc_islands(circuit: "StaticSnapshotIslandInputs", bus_active, C_bus_bus, C_branch_bus, C_bus_gen, C_bus_batt,
@@ -940,6 +940,7 @@ class StaticSnapshotInputs:
         circuit.B1, \
         circuit.B2, \
         circuit.Yseries, \
+        circuit.Ysh, \
         circuit.Ys, \
         circuit.GBc, \
         circuit.C_branch_bus_f, \
@@ -1026,7 +1027,7 @@ class StaticSnapshotInputs:
         # form the admittance matrices
         Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
         Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-        Ybus = sparse(Cf.T * Yf + Ct.T * Yt + sp.diags(Ysh))
+        Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt + sp.diags(Ysh))
 
         return Ybus.imag
 
