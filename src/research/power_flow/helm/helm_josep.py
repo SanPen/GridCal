@@ -1,5 +1,20 @@
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+
 # AUTHORS: Josep Fanals Batllori and Santiago Peñate Vera
-# CONTACT:  santiago.penate.vera@gmail.com, u1946589@campus.udg.edu
+# CONTACT:  u1946589@campus.udg.edu, santiago.penate.vera@gmail.com
 # thanks to Llorenç Fanals Batllori for his help at coding
 
 # --------------------------- LIBRARIES
@@ -283,6 +298,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     vec_P = S0.real[pqpv]
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
+    Ysh = -Ysh0[pqpv]
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -315,8 +331,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh0[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh0[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
@@ -356,8 +372,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     range_pqpv = np.arange(npqpv, dtype=np.int64)
     for c in range(2, max_coeff):  # c defines the current depth
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh0[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh0[pv_] + X[c - 1, pv_] * vec_P[pv_]
+        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
+        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
@@ -418,12 +434,13 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
-
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
+    # fname = 'IEEE 14 PQ only full.gridcal'
     grid = FileOpen(fname).open()
 
     nc = grid.compile_snapshot()
@@ -439,7 +456,7 @@ if __name__ == '__main__':
                                                                        sl=inputs.ref,
                                                                        pqpv=inputs.pqpv,
                                                                        tolerance=1e-6,
-                                                                       max_coeff=10,
+                                                                       max_coeff=50,
                                                                        use_pade=False,
                                                                        verbose=True,
                                                                        return_structs=True)
@@ -468,19 +485,18 @@ if __name__ == '__main__':
     print('Elapsed', elapsed_)
 
     # sigma plot
-    # sx = np.linspace(0, np.max(Sre), 100)
-    sx = np.linspace(-0.25, np.max(Sig_re)+0.1, 100)
-    sy1 = np.sqrt(0.25 + sx)
-    sy2 = -np.sqrt(0.25 + sx)
-
-    from matplotlib import pyplot as plt
-
-    fig = plt.figure(figsize=(8, 7))
-    ax = fig.add_subplot(111)
-    ax.plot(Sig_re, Sig_im, 'o')
-    ax.plot(sx, sy1, 'b')
-    ax.plot(sx, sy2, 'r')
-    ax.set_title('Sigma plot')
-    ax.set_xlabel('$\sigma_{re}$')
-    ax.set_ylabel('$\sigma_{im}$')
-    plt.show()
+    # sx = np.linspace(-0.25, np.max(Sig_re)+0.1, 100)
+    # sy1 = np.sqrt(0.25 + sx)
+    # sy2 = -np.sqrt(0.25 + sx)
+    #
+    # from matplotlib import pyplot as plt
+    #
+    # fig = plt.figure(figsize=(8, 7))
+    # ax = fig.add_subplot(111)
+    # ax.plot(Sig_re, Sig_im, 'o')
+    # ax.plot(sx, sy1, 'b')
+    # ax.plot(sx, sy2, 'r')
+    # ax.set_title('Sigma plot')
+    # ax.set_xlabel('$\sigma_{re}$')
+    # ax.set_ylabel('$\sigma_{im}$')
+    # plt.show()

@@ -228,11 +228,10 @@ def conv3(A, B, c, indices):
     return suma
 
 
-def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
-               verbose=False, return_structures=False):
+def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
-    :param Ybus: Complete admittance matrix
+    THis function just returns the coefficients for further usage in other routines
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
@@ -243,25 +242,14 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param pqpv: sorted list of pq and pv nodes
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
-    :param use_pade: Use the Padè approximation? otherwise a simple summation is done
-    :param return_structures: Compute the sigma values
-    :return: V, converged, norm_f, Scalc, iter_, elapsed
+    :param verbose: print intermediate information
+    :return: U, X, Q, iterations
     """
-
-    start_time = time.time()
 
     npqpv = len(pqpv)
     npv = len(pv)
     nsl = len(sl)
     n = Yseries.shape[0]
-
-    if n < 2:
-        # V, converged, norm_f, Scalc, iter_, elapsed
-        if return_structures:
-            z = np.zeros(n)
-            return V0, True, 0.0, S0, 0, 0.0, z, z
-        else:
-            return V0, True, 0.0, S0, 0, 0.0
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
@@ -273,6 +261,9 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
     Vm0 = np.abs(V0)
     vec_W = Vm0 * Vm0
+
+    if n < 2:
+        return U, X, Q, 0
 
     if verbose:
         print('Yseries')
@@ -288,6 +279,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     vec_P = S0.real[pqpv]
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
+    Ysh = -Ysh0[pqpv]
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -320,8 +312,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh0[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh0[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
@@ -361,8 +353,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     range_pqpv = np.arange(npqpv, dtype=np.int64)
     for c in range(2, max_coeff):  # c defines the current depth
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh0[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh0[pv_] + X[c - 1, pv_] * vec_P[pv_]
+        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
+        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
@@ -381,13 +373,42 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
         iter_ += 1
 
+    return U, X, Q, iter_
+
+
+def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
+               verbose=False):
+    """
+    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+    :param Ybus: Complete admittance matrix
+    :param Yseries: Admittance matrix of the series elements
+    :param V0: vector of specified voltages
+    :param S0: vector of specified power
+    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param pq: list of pq nodes
+    :param pv: list of pv nodes
+    :param sl: list of slack nodes
+    :param pqpv: sorted list of pq and pv nodes
+    :param tolerance: target error (or tolerance)
+    :param max_coeff: maximum number of coefficients
+    :param use_pade: Use the Padè approximation? otherwise a simple summation is done
+    :param verbose: print intermediate information
+    :return: V, converged, norm_f, Scalc, iter_, elapsed
+    """
+
+    start_time = time.time()
+
+    # compute the series of coefficients
+    U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
+                                             tolerance=tolerance, max_coeff=max_coeff, verbose=verbose)
+
     # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------
     if verbose:
         print('V coefficients')
         print(U)
 
-    # compute the final voltage
-    V = np.zeros(n, dtype=complex)
+    # compute the final voltage vector
+    V = V0.copy()
     if use_pade:
         try:
             V[pqpv] = pade4all(max_coeff - 1, U, 1)
@@ -397,26 +418,18 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     else:
         V[pqpv] = U.sum(axis=0)
 
-    V[sl] = Vslack
-
     # compute power mismatch
     Scalc = V * np.conj(Ybus * V)
     dP = np.abs(S0[pqpv].real - Scalc[pqpv].real)
     dQ = np.abs(S0[pq].imag - Scalc[pq].imag)
-    # norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
-
-    # same as max(abs())  ¿Omit the reactive mismatch? need to investigate why the Q mismatch is large
-    norm_f = np.linalg.norm(dP, np.inf)
+    norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
 
     # check convergence
     converged = norm_f < tolerance
 
     elapsed = time.time() - start_time
 
-    if return_structures:
-        return V, converged, norm_f, Scalc, iter_, elapsed, U, X
-    else:
-        return V, converged, norm_f, Scalc, iter_, elapsed
+    return V, converged, norm_f, Scalc, iter_, elapsed
 
 
 if __name__ == '__main__':
@@ -444,7 +457,7 @@ if __name__ == '__main__':
                                                                Yseries=inputs.Yseries,
                                                                V0=inputs.Vbus,
                                                                S0=inputs.Sbus,
-                                                               Ysh0=-inputs.Ysh,
+                                                               Ysh0=inputs.Ysh,
                                                                pq=inputs.pq,
                                                                pv=inputs.pv,
                                                                sl=inputs.ref,

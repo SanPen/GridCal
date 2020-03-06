@@ -460,7 +460,7 @@ def kmeans_case_sampling(X, n_points=10):
     return closest_idx, closest_prob
 
 
-def time_series_worker(n, m, time_profile, numerical_circuit, options: PowerFlowOptions,
+def time_series_worker(n, m, time_profile, namespace, options: PowerFlowOptions,
                        time_indices, logger: Logger) -> (TimeSeriesResults, np.array):
     """
 
@@ -476,14 +476,10 @@ def time_series_worker(n, m, time_profile, numerical_circuit, options: PowerFlow
     """
 
     # initialize the grid time series results we will append the island results with another function
-
     time_series_results = TimeSeriesResults(n, m, time_array=time_profile[time_indices])
 
-    # do the topological computation
-    calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                 ignore_single_node_islands=options.ignore_single_node_islands)
-
-    time_series_results.bus_types = numerical_circuit.bus_types
+    calc_inputs_dict = namespace.calc_inputs_dict
+    time_series_results.bus_types = namespace.bus_types
 
     # for each partition of the profiles...
     for t_key, calc_inputs in calc_inputs_dict.items():
@@ -865,11 +861,20 @@ class TimeSeries(QThread):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running in parallel...')
         self.pool = multiprocessing.Pool()
+        manager = multiprocessing.Manager()
+        namespace = manager.Namespace()
+
         stuff = list()
+
+        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
+
+        namespace.calc_inputs_dict = calc_inputs_dict
+        namespace.bus_types = numerical_circuit.bus_types
+
         for time_chunk in time_chunks:
             # n, m, time_profile, buses, numerical_circuit, options, time_indices, logger
-            args = (n, m, self.grid.time_profile, numerical_circuit, self.options,
-                    time_chunk, self.logger)
+            args = (n, m, self.grid.time_profile, namespace, self.options, time_chunk, self.logger)
             p = self.pool.apply_async(func=time_series_worker, args=args, callback=self.collect_mt_result)
             stuff.append(p)
 

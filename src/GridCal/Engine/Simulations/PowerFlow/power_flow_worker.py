@@ -76,73 +76,85 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, 
     """
     # type HELM
     if solver_type == SolverType.HELM:
-        V0, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
-                                                         Yseries=Yseries,
-                                                         V0=V0,
-                                                         S0=Sbus,
-                                                         Ysh0=-Ysh,
-                                                         pq=pq,
-                                                         pv=pv,
-                                                         sl=ref,
-                                                         pqpv=pqpv,
-                                                         tolerance=tolerance,
-                                                         max_coeff=max_iter,
-                                                         use_pade=True,
-                                                         verbose=False,
-                                                         return_structures=False)
+        V, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
+                                                        Yseries=Yseries,
+                                                        V0=V0,
+                                                        S0=Sbus,
+                                                        Ysh0=Ysh,
+                                                        pq=pq,
+                                                        pv=pv,
+                                                        sl=ref,
+                                                        pqpv=pqpv,
+                                                        tolerance=tolerance,
+                                                        max_coeff=max_iter,
+                                                        use_pade=True,
+                                                        verbose=False)
 
     # type DC
     elif solver_type == SolverType.DC:
-        V0, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
-                                                   Bpqpv=Bpqpv,
-                                                   Bref=Bref,
-                                                   Sbus=Sbus,
-                                                   Ibus=Ibus,
-                                                   V0=V0,
-                                                   ref=ref,
-                                                   pvpq=pqpv,
-                                                   pq=pq,
-                                                   pv=pv)
+        V, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
+                                                  Bpqpv=Bpqpv,
+                                                  Bref=Bref,
+                                                  Sbus=Sbus,
+                                                  Ibus=Ibus,
+                                                  V0=V0,
+                                                  ref=ref,
+                                                  pvpq=pqpv,
+                                                  pq=pq,
+                                                  pv=pv)
 
     # LAC PF
     elif solver_type == SolverType.LACPF:
-        V0, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
-                                                    Ys=Yseries,
-                                                    S=Sbus,
-                                                    I=Ibus,
-                                                    Vset=V0,
-                                                    pq=pq,
-                                                    pv=pv)
+        V, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
+                                                   Ys=Yseries,
+                                                   S=Sbus,
+                                                   I=Ibus,
+                                                   Vset=V0,
+                                                   pq=pq,
+                                                   pv=pv)
 
     # Levenberg-Marquardt
     elif solver_type == SolverType.LM:
-        V0, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
-                                                                     Sbus=Sbus,
-                                                                     V0=V0,
-                                                                     Ibus=Ibus,
-                                                                     pv=pv,
-                                                                     pq=pq,
-                                                                     tol=tolerance,
-                                                                     max_it=max_iter)
+        V, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
+                                                                    Sbus=Sbus,
+                                                                    V0=V0,
+                                                                    Ibus=Ibus,
+                                                                    pv=pv,
+                                                                    pq=pq,
+                                                                    tol=tolerance,
+                                                                    max_it=max_iter)
 
     # Fast decoupled
     elif solver_type == SolverType.FASTDECOUPLED:
-        V0, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
-                                                   Sbus=Sbus,
-                                                   Ibus=Ibus,
-                                                   Ybus=Ybus,
-                                                   B1=B1,
-                                                   B2=B2,
-                                                   pq=pq,
-                                                   pv=pv,
-                                                   pqpv=pqpv,
-                                                   tol=tolerance,
-                                                   max_it=max_iter)
+        V, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
+                                                  Sbus=Sbus,
+                                                  Ibus=Ibus,
+                                                  Ybus=Ybus,
+                                                  B1=B1,
+                                                  B2=B2,
+                                                  pq=pq,
+                                                  pv=pv,
+                                                  pqpv=pqpv,
+                                                  tol=tolerance,
+                                                  max_it=max_iter)
 
     # Newton-Raphson (full)
     elif solver_type == SolverType.NR:
         # Solve NR with the linear AC solution
-        V0, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
+        V, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
+                                                   Sbus=Sbus,
+                                                   V0=V0,
+                                                   Ibus=Ibus,
+                                                   pv=pv,
+                                                   pq=pq,
+                                                   tol=tolerance,
+                                                   max_it=max_iter,
+                                                   acceleration_parameter=acceleration_parameter)
+
+    # Newton-Raphson-Decpupled
+    elif solver_type == SolverType.NRD:
+        # Solve NR with the linear AC solution
+        V, converged, normF, Scalc, it, el = NRD_LS(Ybus=Ybus,
                                                     Sbus=Sbus,
                                                     V0=V0,
                                                     Ibus=Ibus,
@@ -152,47 +164,34 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, 
                                                     max_it=max_iter,
                                                     acceleration_parameter=acceleration_parameter)
 
-    # Newton-Raphson-Decpupled
-    elif solver_type == SolverType.NRD:
-        # Solve NR with the linear AC solution
-        V0, converged, normF, Scalc, it, el = NRD_LS(Ybus=Ybus,
-                                                     Sbus=Sbus,
-                                                     V0=V0,
-                                                     Ibus=Ibus,
-                                                     pv=pv,
-                                                     pq=pq,
-                                                     tol=tolerance,
-                                                     max_it=max_iter,
-                                                     acceleration_parameter=acceleration_parameter)
-
     # Newton-Raphson-Iwamoto
     elif solver_type == SolverType.IWAMOTO:
-        V0, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
-                                                        Sbus=Sbus,
-                                                        V0=V0,
-                                                        Ibus=Ibus,
-                                                        pv=pv,
-                                                        pq=pq,
-                                                        tol=tolerance,
-                                                        max_it=max_iter,
-                                                        robust=True)
+        V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
+                                                       Sbus=Sbus,
+                                                       V0=V0,
+                                                       Ibus=Ibus,
+                                                       pv=pv,
+                                                       pq=pq,
+                                                       tol=tolerance,
+                                                       max_it=max_iter,
+                                                       robust=True)
 
     # Newton-Raphson in current equations
     elif solver_type == SolverType.NRI:
-        V0, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
-                                                      Sbus_sp=Sbus,
-                                                      V0=V0,
-                                                      Ibus_sp=Ibus,
-                                                      pv=pv,
-                                                      pq=pq,
-                                                      tol=tolerance,
-                                                      max_it=max_iter)
+        V, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
+                                                     Sbus_sp=Sbus,
+                                                     V0=V0,
+                                                     Ibus_sp=Ibus,
+                                                     pv=pv,
+                                                     pq=pq,
+                                                     tol=tolerance,
+                                                     max_it=max_iter)
 
     else:
         # for any other method, raise exception
         raise Exception(solver_type + ' Not supported in power flow mode')
 
-    return V0, converged, normF, Scalc, it, el
+    return V, converged, normF, Scalc, it, el
 
 
 def outer_loop_power_flow(circuit: StaticSnapshotIslandInputs, options: PowerFlowOptions, solver_type: SolverType,
