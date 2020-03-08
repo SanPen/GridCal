@@ -3329,7 +3329,10 @@ class MainGUI(QMainWindow):
             sigma_driver = SigmaAnalysisDriver(grid=self.circuit, options=options)
             sigma_driver.run()
 
-            self.sigma_dialogue = SigmaAnalysisGUI(parent=self, results=sigma_driver.results, bus_names=bus_names)
+            self.sigma_dialogue = SigmaAnalysisGUI(parent=self,
+                                                   results=sigma_driver.results,
+                                                   bus_names=bus_names,
+                                                   use_native_dialogues=self.use_native_dialogues)
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
 

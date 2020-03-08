@@ -73,15 +73,15 @@ def epsilon(Sn, n, E):
     return estim, E
 
 
-@nb.njit("(c16[:])(i8, c16[:, :], i8)")
-def pade4all(order, coeff_mat, s=1):
+@nb.njit("(c16[:])(i8, c16[:, :], f8)")
+def pade4all(order, coeff_mat, s=1.0):
     """
     Computes the "order" Padè approximant of the coefficients at the approximation point s
 
     Arguments:
         coeff_mat: coefficient matrix (order, buses)
         order:  order of the series
-        s: point of approximation
+        s: point of approximation (at 1 you get the voltage)
 
     Returns:
         Padè approximation at s for all the series
@@ -136,7 +136,7 @@ def pade4all(order, coeff_mat, s=1):
 
 
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
-def Sigma_funcO(coeff_matU, coeff_matX, order, V_slack):
+def sigma_function(coeff_matU, coeff_matX, order, V_slack):
     """
 
     :param coeff_matU: array with voltage coefficients
@@ -318,7 +318,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
                 valor.imag,
-                vec_W[pv] - 1.0]
+                vec_W[pv] - (U[0, pv_] * U[0, pv_]).real]
 
     # Form the system matrix (MAT)
     Upv = U[0, pv_]
@@ -442,11 +442,11 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-    fname = 'helm_data1.gridcal'
+    # fname = 'helm_data1.gridcal'
 
     grid = FileOpen(fname).open()
 

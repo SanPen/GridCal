@@ -21,7 +21,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, Sigma_funcO
+from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
 
 
 class SigmaAnalysisResults:
@@ -44,7 +44,8 @@ class SigmaAnalysisResults:
 
         self.available_results = [ResultTypes.SigmaReal,
                                   ResultTypes.SigmaImag,
-                                  ResultTypes.SigmaDistances,]
+                                  ResultTypes.SigmaDistances,
+                                  ResultTypes.SigmaPlusDistances]
 
         self.elapsed = 0
 
@@ -124,6 +125,15 @@ class SigmaAnalysisResults:
                 y_label = '(p.u.)'
                 title = 'Imaginary Sigma '
 
+            elif result_type == ResultTypes.SigmaPlusDistances:
+                y = np.c_[self.sigma_re[indices], self.sigma_im[indices], self.distances[indices]]
+                y_label = '(p.u.)'
+                title = 'Sigma and distances'
+
+                mdl = ResultsModel(data=y, index=labels, columns=['σ real', 'σ imaginary', 'Distances'],
+                                   title=title, ylabel=y_label, units=y_label)
+                return mdl
+
             else:
                 n = len(labels)
                 y = np.zeros(n)
@@ -181,10 +191,10 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 n = calculation_input.nbus
                 Sig_re = np.zeros(n, dtype=float)
                 Sig_im = np.zeros(n, dtype=float)
-                Sigma = Sigma_funcO(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.ref])
+                Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.ref])
                 Sig_re[calculation_input.pqpv] = np.real(Sigma)
                 Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-                sigma_distances = sigma_distance(Sig_re, Sig_im)
+                sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
 
                 # store the results
                 island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
@@ -223,10 +233,10 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             n = calculation_input.nbus
             Sig_re = np.zeros(n, dtype=float)
             Sig_im = np.zeros(n, dtype=float)
-            Sigma = Sigma_funcO(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.ref])
+            Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.ref])
             Sig_re[calculation_input.pqpv] = np.real(Sigma)
             Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-            sigma_distances = sigma_distance(Sig_re, Sig_im)
+            sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
 
             # store the results
             results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
@@ -260,7 +270,7 @@ def sigma_distance(a, b):
          (192 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
     :param a: Sigma real
     :param b: Sigma imag
-    :return: distance of the sigma point to sqrt(0.25 + x)
+    :return: distance of the sigma point to the curve sqrt(0.25 + x)
     """
 
     t1 = (-64 * a**3
@@ -269,7 +279,7 @@ def sigma_distance(a, b):
                                     + 48 * a**2 * b**2
                                     - 12 * a * b**2
                                     + 108 * b**4 + b**2)
-          - 12 * a + 216 * b **2 + 1)**(1 / 3)
+          - 12 * a + 216 * b**2 + 1)**(1 / 3)
 
     x1 = 1 / 12 * t1 - (-256 * a**2 + 128*a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
     return x1

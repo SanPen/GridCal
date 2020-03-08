@@ -81,6 +81,7 @@ class ResultTypes(Enum):
     SigmaReal = 'Sigma real', DeviceType.BusDevice
     SigmaImag = 'Sigma imaginary', DeviceType.BusDevice
     SigmaDistances = 'Sigma distances', DeviceType.BusDevice
+    SigmaPlusDistances = 'Sigma + distances', DeviceType.BusDevice
 
 
 class SimulationTypes(Enum):

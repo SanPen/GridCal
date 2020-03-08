@@ -922,7 +922,7 @@ class StaticSeriesInputs(StaticSnapshotInputs):
              circuit.B1, \
              circuit.B2, \
              circuit.Yseries, \
-             circuit.Ysh, \
+             circuit.Ysh_helm, \
              circuit.Ys, \
              circuit.GBc, \
              circuit.C_branch_bus_f, \
