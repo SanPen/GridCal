@@ -295,17 +295,13 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
-    U_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of voltages
-    U_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of voltages
-    X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
-    X_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of X
-    X_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of X
+    W = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
     Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
     Vm0 = np.abs(V0)
-    vec_W = Vm0 * Vm0
+    Vm2 = Vm0 * Vm0
 
     if n < 2:
-        return U, X, Q, 0
+        return U, W, Q, 0
 
     if verbose:
         print('Yseries')
@@ -316,12 +312,13 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
     Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
+    Yslack_vec = Yslack.sum(axis=1).A1
     G = np.real(Yred)  # real parts of Yij
     B = np.imag(Yred)  # imaginary parts of Yij
-    vec_P = S0.real[pqpv]
-    vec_Q = S0.imag[pqpv]
+    P_red = S0.real[pqpv]
+    Q_red = S0.imag[pqpv]
     Vslack = V0[sl]
-    Ysh = -Ysh0[pqpv]
+    Ysh_red = Ysh0[pqpv]
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -333,38 +330,29 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
     pq_ = pq - nsl_counted[pq]
     pv_ = pv - nsl_counted[pv]
-    pqpv_ = np.sort(np.r_[pq_, pv_])
 
     # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
 
-    if nsl > 1:
-        U[0, :] = spsolve(Yred, Yslack.sum(axis=1))
-    else:
-        U[0, :] = spsolve(Yred, Yslack)
-
-    X[0, :] = 1 / np.conj(U[0, :])
-    U_re[0, :] = U[0, :].real
-    U_im[0, :] = U[0, :].imag
-    X_re[0, :] = X[0, :].real
-    X_im[0, :] = X[0, :].imag
+    U[0, :] = spsolve(Yred, Yslack_vec)
+    W[0, :] = 1 / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
 
     # get the current injections that appear due to the slack buses reduction
-    I_inj_slack = Yslack[pqpv_, :] * Vslack
+    I_inj_slack = Yslack * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack_vec[pq_] + (P_red[pq_] - Q_red[pq_] * 1j) * W[0, pq_] - U[0, pq_] * Ysh_red[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack_vec[pv_] + P_red[pv_] * W[0, pv_] - U[0, pv_] * Ysh_red[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
                 valor.imag,
-                vec_W[pv] - (U[0, pv_] * U[0, pv_]).real]
+                Vm2[pv] - (U[0, pv_] * U[0, pv_]).real]
 
     # Form the system matrix (MAT)
     Upv = U[0, pv_]
-    Xpv = X[0, pv_]
+    Xpv = W[0, pv_]
     VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
     VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
     XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
@@ -388,7 +376,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     # update coefficients
     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
     Q[0, pv_] = LHS[2 * npqpv:]
-    X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
+    W[1, :] = -W[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
@@ -400,8 +388,8 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
     while c < max_coeff and not converged:  # c defines the current depth
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
+        valor[pq_] = (P_red[pq_] - Q_red[pq_] * 1j) * W[c - 1, pq_] - U[c - 1, pq_] * Ysh_red[pq_]
+        valor[pv_] = -1j * conv2(W, Q, c, pv_) - U[c - 1, pv_] * Ysh_red[pv_] + W[c - 1, pv_] * P_red[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
@@ -416,7 +404,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
         Q[c - 1, pv_] = LHS[2 * npqpv:]
 
         # update voltage inverse coefficients
-        X[c, range_pqpv] = -conv1(U, X, c, range_pqpv) / np.conj(U[0, range_pqpv])
+        W[c, range_pqpv] = -conv1(U, W, c, range_pqpv) / np.conj(U[0, range_pqpv])
 
         # compute power mismatch
         if not np.mod(c, 2):  # check the mismatch every 4 iterations
@@ -433,7 +421,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
         c += 1
         iter_ += 1
 
-    return U, X, Q, iter_, norm_f
+    return U, W, Q, iter_, norm_f
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
@@ -626,13 +614,13 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
-    fname = 'IEEE 14 PQ only full.gridcal'
+    # fname = 'IEEE 14 PQ only full.gridcal'
     grid = FileOpen(fname).open()
 
     test_voltage(grid=grid)

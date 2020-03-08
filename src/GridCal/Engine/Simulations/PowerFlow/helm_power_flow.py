@@ -253,11 +253,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
-    U_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of voltages
-    U_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of voltages
     X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
-    X_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of X
-    X_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of X
     Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
     Vm0 = np.abs(V0)
     vec_W = Vm0 * Vm0
@@ -272,6 +268,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
                           columns=['Ysh', 'P0', 'Q0', 'V0'])
         print(df)
 
+    # build the reduced system
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
     Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
     G = np.real(Yred)  # real parts of Yij
@@ -279,7 +276,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     vec_P = S0.real[pqpv]
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
-    Ysh = -Ysh0[pqpv]
+    Ysh = Ysh0[pqpv]
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -301,10 +298,6 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
         U[0, :] = spsolve(Yred, Yslack)
 
     X[0, :] = 1 / np.conj(U[0, :])
-    U_re[0, :] = U[0, :].real
-    U_im[0, :] = U[0, :].imag
-    X_re[0, :] = X[0, :].real
-    X_im[0, :] = X[0, :].imag
 
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
@@ -312,8 +305,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[0, pq_] * Ysh[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] - U[0, pv_] * Ysh[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
@@ -353,8 +346,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     range_pqpv = np.arange(npqpv, dtype=np.int64)
     for c in range(2, max_coeff):  # c defines the current depth
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
+        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
+        valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
