@@ -13,7 +13,7 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 3.7.0 (HELM)
 ^^^^^^^^^^^^^^^^^^^^^
 
-- Replaced the numerical circuit by two specialized objects: one for static power flow and another one for time series
+- Replaced the numerical circuit by two specialised objects: one for static power flow and another one for time series
   This allows to include specific circuit compilations for different studies such as harmonics ot dynamic studies
   without overcrowding the numerical circuit object with unused stuff.
 - Greatly improved the time series flushing speed when saving.
@@ -22,8 +22,8 @@ Version 3.7.0 (HELM)
 - Added ability to not to draw the schematic. This speeds up operation with very large grids.
 - The time series output size now adjust to the selected time interval.
 - Now to drop a file does not automatically load the grid when another one is loaded.
-- Replaced the HELM version by a working one thanks to Josep Fanals Batllori.
-- Added HELM-Sigma analysis tool.
+- Replaced the previous HELM version by a working and competitive one thanks to Josep Fanals Batllori.
+- Added the HELM-Sigma analysis tool.
 
 Version 3.6.7
 ^^^^^^^^^^^^^^

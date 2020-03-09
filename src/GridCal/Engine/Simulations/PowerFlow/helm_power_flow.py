@@ -255,8 +255,6 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
     X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
     Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
-    Vm0 = np.abs(V0)
-    vec_W = Vm0 * Vm0
 
     if n < 2:
         return U, X, Q, 0
@@ -264,7 +262,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     if verbose:
         print('Yseries')
         print(Yseries.toarray())
-        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, Vm0],
+        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, np.abs(V0)],
                           columns=['Ysh', 'P0', 'Q0', 'V0'])
         print(df)
 
@@ -277,6 +275,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
     Ysh = Ysh0[pqpv]
+    Vm0 = np.abs(V0[pqpv])
+    vec_W = Vm0 * Vm0
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -311,7 +311,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
                 valor.imag,
-                vec_W[pv] - (U[0, pv_] * U[0, pv_]).real]
+                vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
+                ]
 
     # Form the system matrix (MAT)
     Upv = U[0, pv_]
@@ -390,6 +391,10 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     """
 
     start_time = time.time()
+
+    n = Yseries.shape[0]
+    if n < 2:
+        return V0, True, 0.0, S0, 0, 0.0
 
     # compute the series of coefficients
     U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
