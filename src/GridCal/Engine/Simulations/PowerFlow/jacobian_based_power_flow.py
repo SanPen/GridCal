@@ -25,6 +25,7 @@ import numpy as np
 from GridCal.Engine.Sparse.csc import pack_4_by_4
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba, diag
+from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba, get_fastest_jacobian_function
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -97,7 +98,7 @@ def dSbus_dV(Ybus, V, I):
     return dS_dVm, dS_dVa
 
 
-def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
+def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq, npv, npq):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
@@ -116,7 +117,15 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq):
     # evaluate the Jacobian of the voltage derivative
     # theoretically this is the second derivative matrix
     # since the Jacobian (J2) has been calculated with dV instead of V
-    J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
+
+    # generate lookup pvpq -> index pvpq (used in createJ)
+    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+
+    createJ = get_fastest_jacobian_function(pvpq, pq)
+    J2 = _create_J_with_numba(Ybus, dV, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+
+    # J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
 
     a = incS
     b = J * dx
@@ -274,6 +283,10 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     npv = len(pv)
     npq = len(pq)
 
+    # generate lookup pvpq -> index pvpq (used in createJ)
+    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+
     # j1:j2 - V angle of pv and pq buses
     j1 = 0
     j2 = npv + npq
@@ -294,13 +307,16 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     if norm_f < tol:
         converged = 1
 
+    createJ = get_fastest_jacobian_function(pvpq, pq)
+
     # do Newton iterations
     while not converged and iter_ < max_it:
         # update iteration counter
         iter_ += 1
 
         # evaluate Jacobian
-        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        J = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
 
         # compute update step
         dx = linear_solver(J, f)
@@ -552,6 +568,10 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     npv = len(pv)
     npq = len(pq)
 
+    # generate lookup pvpq -> index pvpq (used in createJ)
+    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+
     # j1:j2 - V angle of pv buses
     j1 = 0
     j2 = npv + npq
@@ -562,6 +582,8 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     Scalc = V * np.conj(Ybus * V - Ibus)
     mis = Scalc - Sbus  # compute the mismatch
     f = np.r_[mis[pvpq].real, mis[pq].imag]
+
+    createJ = get_fastest_jacobian_function(pvpq, pq)
 
     if (npq + npv) > 0:
 
@@ -577,10 +599,16 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             iter_ += 1
 
             # evaluate Jacobian
-            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            J = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
 
             # compute update step
-            dx = linear_solver(J, f)
+            try:
+                dx = linear_solver(J, f)
+            except:
+                print(J)
+                converged = False
+                iter_ = max_it + 1  # exit condition
 
             # reassign the solution vector
             dVa[pvpq] = dx[j1:j2]
@@ -592,7 +620,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, Ibus, J, f, dV, dx, pvpq, pq)
+                    mu_ = mu(Ybus, Ibus, J, f, dV, dx, pvpq, pq, npv, npq)
                 else:
                     mu_ = 1.0
             else:
@@ -657,6 +685,11 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
+    # generate lookup pvpq -> index pvpq (used in createJ)
+    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+
+    createJ = get_fastest_jacobian_function(pvpq, pq)
 
     # j1:j2 - V angle of pv and pq buses
     j1 = 0
@@ -679,7 +712,8 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
             # evaluate Jacobian
             if update_jacobian:
-                H = Jacobian(Ybus, V, Ibus, pq, pvpq)
+                H = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+                # H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # evaluate the solution error F(x0)
             Scalc = V * np.conj(Ybus * V - Ibus)

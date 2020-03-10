@@ -10,9 +10,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="420mm"
-   height="230mm"
-   viewBox="0 0 420 230"
+   width="464mm"
+   height="240mm"
+   viewBox="0 0 464 240"
    version="1.1"
    id="svg8"
    inkscape:export-filename="/home/santi/Documentos/GitHub/GridCal/pics/GridCal.png"
@@ -121,9 +121,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.26660135"
-     inkscape:cx="1492.7787"
-     inkscape:cy="-139.60006"
+     inkscape:zoom="1.0664054"
+     inkscape:cx="1387.4971"
+     inkscape:cy="643.35353"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -140,7 +140,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -148,10 +148,12 @@
      inkscape:label="Capa 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-67)">
+     transform="translate(0,-57)">
     <g
        id="g902"
-       transform="matrix(0.8548607,0,0,0.8548607,378.46407,-13.745292)">
+       transform="matrix(0.92884904,0,0,0.92884904,421.39724,-25.155955)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <g
          transform="matrix(1.1836489,0,0,1.1836489,-352.93263,-76.599213)"
          id="g868">
@@ -2755,7 +2757,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY5z8VJllU34uA2AAAAABJRU5ErkJggg==
     </g>
     <g
        id="g918"
-       transform="matrix(0.841802,0,0,0.841802,248.25077,34.059618)">
+       transform="matrix(0.9482293,0,0,0.9482293,289.10862,16.85297)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <rect
          transform="matrix(1.0501228,0,0,0.90660716,4.3239849,21.877105)"
          ry="2.6952574"
@@ -2776,7 +2780,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY5z8VJllU34uA2AAAAABJRU5ErkJggg==
     </g>
     <g
        id="g914"
-       transform="matrix(0.7517745,0,0,0.7517745,-96.395543,73.216079)">
+       transform="matrix(0.84333408,0,0,0.84333408,-81.308567,57.975561)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <rect
          ry="2.6952574"
          y="192.73944"
@@ -2796,7 +2802,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY5z8VJllU34uA2AAAAABJRU5ErkJggg==
     </g>
     <g
        id="g968"
-       transform="matrix(0.82332822,0,0,0.82332822,-126.99157,196.27892)">
+       transform="matrix(0.86386066,0,0,0.86386066,-96.030867,201.43552)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <rect
          transform="matrix(0.9965829,0,0,0.9965829,169.11684,-171.6776)"
          ry="2.6952574"
@@ -2817,7 +2825,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY5z8VJllU34uA2AAAAABJRU5ErkJggg==
     </g>
     <g
        id="g909"
-       transform="matrix(0.57876077,0,0,0.57876077,432.50743,33.559623)">
+       transform="matrix(0.64166576,0,0,0.64166576,470.96745,17.55281)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <g
          id="g924-9"
          transform="matrix(0.89156716,0,0,1.0046389,-199.95126,123.84843)">
@@ -2842,7 +2852,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY5z8VJllU34uA2AAAAABJRU5ErkJggg==
     </g>
     <g
        id="g896"
-       transform="matrix(0.91246348,0,0,0.91246348,-71.567439,171.79156)">
+       transform="matrix(0.91246348,0,0,0.91246348,-71.567439,171.79156)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <g
          id="g924-5"
          transform="matrix(0.77798422,0,0,0.63275991,162.77666,-89.603909)">
@@ -5076,7 +5088,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcOj/tu2CLEdHPZ8AAAAASUVORK5CYII=
     </g>
     <g
        id="g915"
-       transform="matrix(0.62637376,0,0,0.62637376,111.08395,145.8849)">
+       transform="matrix(0.62637376,0,0,0.62637376,112.07638,153.82245)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
       <g
          id="g924-7"
          transform="matrix(0.7378005,0,0,0.70672319,-125.42716,-17.613223)">

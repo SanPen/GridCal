@@ -1108,6 +1108,7 @@ def single_island_pf(circuit: StaticSnapshotIslandInputs, Vbus, Sbus, Ibus, bran
         solvers = [options.solver_type,
                    SolverType.IWAMOTO,
                    SolverType.LM,
+                   SolverType.HELM,
                    SolverType.LACPF]
     else:
         # No retry selected
