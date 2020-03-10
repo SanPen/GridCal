@@ -36,7 +36,7 @@ class SigmaAnalysisResults:
 
         self.Sbus = np.zeros(n, dtype=complex)
 
-        self.distances = np.zeros(n, dtype=float)
+        self.distances = np.zeros(n, dtype=float) + 0.25  # the default distance is 0.25
 
         self.sigma_re = np.zeros(n, dtype=float)
 
@@ -239,12 +239,14 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
 
             # store the results
-            results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
-            results.lambda_value = 1.0
-            results.Sbus = calculation_input.Sbus
-            results.sigma_re = Sig_re
-            results.sigma_im = Sig_im
-            results.distances = sigma_distances
+            island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
+            island_results.lambda_value = 1.0
+            island_results.Sbus = calculation_input.Sbus
+            island_results.sigma_re = Sig_re
+            island_results.sigma_im = Sig_im
+            island_results.distances = sigma_distances
+
+            results.apply_from_island(island_results, calculation_input.original_bus_idx)
         else:
             logger.append('There are no slack nodes')
 
