@@ -73,15 +73,15 @@ def epsilon(Sn, n, E):
     return estim, E
 
 
-@nb.njit("(c16[:])(i8, c16[:, :], i8)")
-def pade4all(order, coeff_mat, s=1):
+@nb.njit("(c16[:])(i8, c16[:, :], f8)")
+def pade4all(order, coeff_mat, s=1.0):
     """
     Computes the "order" Padè approximant of the coefficients at the approximation point s
 
     Arguments:
         coeff_mat: coefficient matrix (order, buses)
         order:  order of the series
-        s: point of approximation
+        s: point of approximation (at 1 you get the voltage)
 
     Returns:
         Padè approximation at s for all the series
@@ -136,7 +136,7 @@ def pade4all(order, coeff_mat, s=1):
 
 
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
-def Sigma_funcO(coeff_matU, coeff_matX, order, V_slack):
+def sigma_function(coeff_matU, coeff_matX, order, V_slack):
     """
 
     :param coeff_matU: array with voltage coefficients
@@ -253,14 +253,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
-    U_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of voltages
-    U_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of voltages
     X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
-    X_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of X
-    X_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of X
     Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
-    Vm0 = np.abs(V0)
-    vec_W = Vm0 * Vm0
 
     if n < 2:
         return U, X, Q, 0
@@ -268,10 +262,11 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     if verbose:
         print('Yseries')
         print(Yseries.toarray())
-        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, Vm0],
+        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, np.abs(V0)],
                           columns=['Ysh', 'P0', 'Q0', 'V0'])
         print(df)
 
+    # build the reduced system
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
     Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
     G = np.real(Yred)  # real parts of Yij
@@ -279,7 +274,9 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     vec_P = S0.real[pqpv]
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
-    Ysh = -Ysh0[pqpv]
+    Ysh = Ysh0[pqpv]
+    Vm0 = np.abs(V0[pqpv])
+    vec_W = Vm0 * Vm0
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -301,10 +298,6 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
         U[0, :] = spsolve(Yred, Yslack)
 
     X[0, :] = 1 / np.conj(U[0, :])
-    U_re[0, :] = U[0, :].real
-    U_im[0, :] = U[0, :].imag
-    X_re[0, :] = X[0, :].real
-    X_im[0, :] = X[0, :].imag
 
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
@@ -312,13 +305,14 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[0, pq_] * Ysh[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] - U[0, pv_] * Ysh[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
                 valor.imag,
-                vec_W[pv] - 1.0]
+                vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
+                ]
 
     # Form the system matrix (MAT)
     Upv = U[0, pv_]
@@ -353,8 +347,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     range_pqpv = np.arange(npqpv, dtype=np.int64)
     for c in range(2, max_coeff):  # c defines the current depth
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
+        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
+        valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
@@ -397,6 +391,10 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     """
 
     start_time = time.time()
+
+    n = Yseries.shape[0]
+    if n < 2:
+        return V0, True, 0.0, S0, 0, 0.0
 
     # compute the series of coefficients
     U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
@@ -442,11 +440,11 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-    fname = 'helm_data1.gridcal'
+    # fname = 'helm_data1.gridcal'
 
     grid = FileOpen(fname).open()
 

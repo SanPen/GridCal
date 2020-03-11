@@ -253,6 +253,7 @@ class StaticSnapshotIslandInputs:
         self.Bpqpv = None
         self.Bref = None
 
+        self.Ysh_helm = np.zeros(nbus, dtype=complex)
         self.Ysh = np.zeros(nbus, dtype=complex)
         self.Sbus = np.zeros(nbus, dtype=complex)
         self.Ibus = np.zeros(nbus, dtype=complex)
@@ -940,7 +941,7 @@ class StaticSnapshotInputs:
         circuit.B1, \
         circuit.B2, \
         circuit.Yseries, \
-        circuit.Ysh, \
+        circuit.Ysh_helm, \
         circuit.Ys, \
         circuit.GBc, \
         circuit.C_branch_bus_f, \

@@ -139,7 +139,7 @@ def test_gridcal_regulator():
     power_flow.run()
 
     approx_volt = [round(100 * abs(v), 1) for v in power_flow.results.voltage]
-    solution = [100.0, 105.2, 129.9, 130.0]  # Expected solution from GridCal
+    solution = [100.0, 105.2, 130.0, 130.1]  # Expected solution from GridCal
 
     print()
     print(f"Test: {test_name}")

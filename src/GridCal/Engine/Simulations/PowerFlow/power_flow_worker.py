@@ -30,7 +30,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
 
 
-def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
+def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
           acceleration_parameter=1e-5):
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -80,7 +80,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh, B1, B2, Bpqpv, Bref, 
                                                         Yseries=Yseries,
                                                         V0=V0,
                                                         S0=Sbus,
-                                                        Ysh0=Ysh,
+                                                        Ysh0=Ysh_helm,
                                                         pq=pq,
                                                         pv=pv,
                                                         sl=ref,
@@ -278,7 +278,7 @@ def outer_loop_power_flow(circuit: StaticSnapshotIslandInputs, options: PowerFlo
                                                                       Ibus=Ibus,
                                                                       Ybus=circuit.Ybus,
                                                                       Yseries=circuit.Yseries,
-                                                                      Ysh=circuit.Ysh,
+                                                                      Ysh_helm=circuit.Ysh_helm,
                                                                       B1=circuit.B1,
                                                                       B2=circuit.B2,
                                                                       Bpqpv=circuit.Bpqpv,
@@ -305,7 +305,7 @@ def outer_loop_power_flow(circuit: StaticSnapshotIslandInputs, options: PowerFlo
                                                                                 Ibus=Ibus,
                                                                                 Ybus=circuit.Ybus,
                                                                                 Yseries=circuit.Yseries,
-                                                                                Ysh=circuit.Ysh,
+                                                                                Ysh_helm=circuit.Ysh_helm,
                                                                                 B1=circuit.B1,
                                                                                 B2=circuit.B2,
                                                                                 Bpqpv=circuit.Bpqpv,
@@ -1108,6 +1108,7 @@ def single_island_pf(circuit: StaticSnapshotIslandInputs, Vbus, Sbus, Ibus, bran
         solvers = [options.solver_type,
                    SolverType.IWAMOTO,
                    SolverType.LM,
+                   SolverType.HELM,
                    SolverType.LACPF]
     else:
         # No retry selected

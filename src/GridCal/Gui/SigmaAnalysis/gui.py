@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Sun Mar  1 22:21:56 2020
+# Created: Sun Mar  8 13:42:31 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,6 +14,9 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(841, 518)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Icons/icons/sigma.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -45,18 +48,37 @@ class Ui_MainWindow(object):
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 841, 22))
         self.menubar.setObjectName("menubar")
+        self.menuActions = QtWidgets.QMenu(self.menubar)
+        self.menuActions.setObjectName("menuActions")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actionCopy_to_clipboard = QtWidgets.QAction(MainWindow)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/Icons/icons/copy.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionCopy_to_clipboard.setIcon(icon1)
+        self.actionCopy_to_clipboard.setObjectName("actionCopy_to_clipboard")
+        self.actionSave = QtWidgets.QAction(MainWindow)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/Icons/icons/import_profiles.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSave.setIcon(icon2)
+        self.actionSave.setObjectName("actionSave")
+        self.menuActions.addAction(self.actionCopy_to_clipboard)
+        self.menuActions.addAction(self.actionSave)
+        self.menubar.addAction(self.menuActions.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
+        self.menuActions.setTitle(QtWidgets.QApplication.translate("MainWindow", "Actions", None, -1))
+        self.actionCopy_to_clipboard.setText(QtWidgets.QApplication.translate("MainWindow", "Copy to clipboard", None, -1))
+        self.actionSave.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
 
 from .matplotlibwidget import MatplotlibWidget
+from .icons_rc import *
 
 if __name__ == "__main__":
     import sys

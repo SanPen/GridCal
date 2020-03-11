@@ -962,7 +962,7 @@ class MultiCircuit:
 
                         if opf_time_series_results is not None:
                             # subtract the load shedding from the generation
-                            circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_gen]
+                            circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_ld]
 
                     circuit.C_bus_load[i, i_ld] = 1
                     i_ld += 1

@@ -22,9 +22,11 @@ import numpy as np
 import pandas as pd
 import numba as nb
 import time
+from warnings import warn
 from scipy.sparse import coo_matrix, csc_matrix
 from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import factorized, spsolve
+from matplotlib import pyplot as plt
 
 np.set_printoptions(linewidth=2000, edgeitems=1000)
 pd.set_option('display.max_rows', 500)
@@ -32,8 +34,55 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
-@nb.njit("(c16[:])(i8, c16[:, :], i8)")
-def pade4all(order, coeff_mat, s=1):
+def epsilon(Sn, n, E):
+    """
+    Fast recursive Wynn's epsilon algorithm from:
+        NONLINEAR SEQUENCE TRANSFORMATIONS FOR THE ACCELERATION OF CONVERGENCE
+        AND THE SUMMATION OF DIVERGENT SERIES
+
+        by Ernst Joachim Weniger
+    Args:
+        Sn: sum of coefficients
+        n: order
+        E: Coefficients structure copy that is modified in this algorithm
+
+    Returns:
+
+    """
+    Zero = complex(0)
+    One = complex(1)
+    Tiny = np.finfo(complex).min
+    Huge = np.finfo(complex).max
+
+    E[n] = Sn
+
+    if n == 0:
+        estim = Sn
+    else:
+        AUX2 = Zero
+
+        for j in range(n, 0, -1):  # range from n to 1 (both included)
+            AUX1 = AUX2
+            AUX2 = E[j - 1]
+            DIFF = E[j] - AUX2
+
+            if abs(DIFF) <= Tiny:
+                E[j - 1] = Huge
+            else:
+                if DIFF == 0:
+                    DIFF = Tiny
+                E[j - 1] = AUX1 + One / DIFF
+
+        if np.mod(n, 2) == 0:
+            estim = E[0]
+        else:
+            estim = E[1]
+
+    return estim, E
+
+
+@nb.njit("(c16[:])(i8, c16[:, :], f8)")
+def pade4all(order, coeff_mat, s=1.0):
     """
     Computes the "order" Padè approximant of the coefficients at the approximation point s
 
@@ -46,9 +95,9 @@ def pade4all(order, coeff_mat, s=1):
         Padè approximation at s for all the series
     """
     nbus = coeff_mat.shape[1]
-    
+
     complex_type = nb.complex128
-    
+
     voltages = np.zeros(nbus, dtype=complex_type)
 
     nn = int(order / 2)
@@ -95,7 +144,7 @@ def pade4all(order, coeff_mat, s=1):
 
 
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
-def Sigma_funcO(coeff_matU, coeff_matX, order, V_slack):
+def sigma_function(coeff_matU, coeff_matX, order, V_slack):
     """
 
     :param coeff_matU: array with voltage coefficients
@@ -136,7 +185,7 @@ def Sigma_funcO(coeff_matU, coeff_matX, order, V_slack):
     return sigmes
 
 
-def distance(a, b):
+def sigma_distance(a, b):
     """
     Distance to the collapse in the sigma space
 
@@ -155,7 +204,7 @@ def distance(a, b):
          (192 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
     :param a: Sigma real
     :param b: Sigma imag
-    :return: distance of the sigma point to sqrt(0.25 + x)
+    :return: distance of the sigma point to the curve sqrt(0.25 + x)
     """
 
     t1 = (-64 * a**3
@@ -164,7 +213,7 @@ def distance(a, b):
                                     + 48 * a**2 * b**2
                                     - 12 * a * b**2
                                     + 108 * b**4 + b**2)
-          - 12 * a + 216 * b **2 + 1)**(1 / 3)
+          - 12 * a + 216 * b**2 + 1)**(1 / 3)
 
     x1 = 1 / 12 * t1 - (-256 * a**2 + 128*a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
     return x1
@@ -221,32 +270,10 @@ def conv3(A, B, c, indices):
     return suma
 
 
-# def conv1(A, B, c, indices):
-#     suma = np.zeros(len(indices), dtype=np.complex128)
-#     for k in range(1, c + 1):
-#         suma += np.conj(A[k, indices]) * B[c - k, indices]
-#     return suma
-#
-#
-# def conv2(A, B, c, indices):
-#     suma = np.zeros(len(indices), dtype=np.complex128)
-#     for k in range(1, c):
-#         suma += A[k, indices] * B[c - 1 - k, indices]
-#     return suma
-#
-#
-# def conv3(A, B, c, indices):
-#     suma = np.zeros(len(indices), dtype=np.complex128)
-#     for k in range(1, c):
-#         suma += A[k, indices] * np.conj(B[c - k, indices])
-#     return suma
-
-
-def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
-               verbose=False, return_structs=False):
+def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
-    :param Ybus: Complete admittance matrix
+    THis function just returns the coefficients for further usage in other routines
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
@@ -257,32 +284,24 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param pqpv: sorted list of pq and pv nodes
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
-    :param use_pade: Use the Padè approximation? otherwise a simple summation is done
-    :param verbose: Print intermediate objects and calculations?
-    :return: V, converged, norm_f, Scalc, iter_, elapsed
+    :param verbose: print intermediate information
+    :return: U, X, Q, iterations
     """
-
-    start_time = time.time()
 
     npqpv = len(pqpv)
     npv = len(pv)
     nsl = len(sl)
     n = Yseries.shape[0]
 
-    if n < 2:
-        # V, converged, norm_f, Scalc, iter_, elapsed
-        return V0, True, 0.0, S0, 0, 0.0
-
-    # --------------------------- PREPARING IMPLEMENTATION--------------------------------------------------------------
+    # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
-    U_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of voltages
-    U_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of voltages
-    X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
-    X_re = np.zeros((max_coeff, npqpv), dtype=float)  # real part of X
-    X_im = np.zeros((max_coeff, npqpv), dtype=float)  # imaginary part of X
+    W = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
     Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
     Vm0 = np.abs(V0)
-    vec_W = Vm0 * Vm0
+    Vm2 = Vm0 * Vm0
+
+    if n < 2:
+        return U, W, Q, 0
 
     if verbose:
         print('Yseries')
@@ -293,12 +312,13 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
     Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
+    Yslack_vec = Yslack.sum(axis=1).A1
     G = np.real(Yred)  # real parts of Yij
     B = np.imag(Yred)  # imaginary parts of Yij
-    vec_P = S0.real[pqpv]
-    vec_Q = S0.imag[pqpv]
+    P_red = S0.real[pqpv]
+    Q_red = S0.imag[pqpv]
     Vslack = V0[sl]
-    Ysh = -Ysh0[pqpv]
+    Ysh_red = Ysh0[pqpv]
 
     # indices 0 based in the internal scheme
     nsl_counted = np.zeros(n, dtype=int)
@@ -310,47 +330,38 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     pq_ = pq - nsl_counted[pq]
     pv_ = pv - nsl_counted[pv]
-    pqpv_ = np.sort(np.r_[pq_, pv_])
 
     # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
 
-    if nsl > 1:
-        U[0, :] = spsolve(Yred, Yslack.sum(axis=1))
-    else:
-        U[0, :] = spsolve(Yred, Yslack)
-
-    X[0, :] = 1 / np.conj(U[0, :])
-    U_re[0, :] = U[0, :].real
-    U_im[0, :] = U[0, :].imag
-    X_re[0, :] = X[0, :].real
-    X_im[0, :] = X[0, :].imag
+    U[0, :] = spsolve(Yred, Yslack_vec)
+    W[0, :] = 1 / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
 
     # get the current injections that appear due to the slack buses reduction
-    I_inj_slack = Yslack[pqpv_, :] * Vslack
+    I_inj_slack = Yslack * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] + U[0, pq_] * Ysh[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] + U[0, pv_] * Ysh[pv_]
+    valor[pq_] = I_inj_slack[pq_] - Yslack_vec[pq_] + (P_red[pq_] - Q_red[pq_] * 1j) * W[0, pq_] - U[0, pq_] * Ysh_red[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack_vec[pv_] + P_red[pv_] * W[0, pv_] - U[0, pv_] * Ysh_red[pv_]
 
     # compose the right-hand side vector
     RHS = np.r_[valor.real,
                 valor.imag,
-                vec_W[pv] - 1.0]
+                Vm2[pv] - (U[0, pv_] * U[0, pv_]).real]
 
     # Form the system matrix (MAT)
     Upv = U[0, pv_]
-    Xpv = X[0, pv_]
+    Xpv = W[0, pv_]
     VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
     VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
     XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
     XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
     EMPTY = csc_matrix((npv, npv))
 
-    MAT = vs((hs((G,   -B,   XIM)),
-              hs((B,    G,   XRE)),
-              hs((VRE,  VIM, EMPTY))), format='csc')
+    MAT = vs((hs((G,  -B,   XIM)),
+              hs((B,   G,   XRE)),
+              hs((VRE, VIM, EMPTY))), format='csc')
 
     if verbose:
         print('MAT')
@@ -363,17 +374,22 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     LHS = MAT_LU(RHS)
 
     # update coefficients
-    Q[0, pv_] = LHS[2 * npqpv:]
     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
-    X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
+    Q[0, pv_] = LHS[2 * npqpv:]
+    W[1, :] = -W[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
     range_pqpv = np.arange(npqpv, dtype=np.int64)
-    for c in range(2, max_coeff):  # c defines the current depth
+    V = V0.copy()
+    c = 2
+    converged = False
+    norm_f = tolerance + 1.0  # any number that violates the convergence
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] + U[c - 1, pq_] * Ysh[pq_]
-        valor[pv_] = conv2(X, Q, c, pv_) * -1j + U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
+    while c < max_coeff and not converged:  # c defines the current depth
+
+        valor[pq_] = (P_red[pq_] - Q_red[pq_] * 1j) * W[c - 1, pq_] - U[c - 1, pq_] * Ysh_red[pq_]
+        valor[pv_] = -1j * conv2(W, Q, c, pv_) - U[c - 1, pv_] * Ysh_red[pv_] + W[c - 1, pv_] * P_red[pv_]
 
         RHS = np.r_[valor.real,
                     valor.imag,
@@ -388,23 +404,67 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
         Q[c - 1, pv_] = LHS[2 * npqpv:]
 
         # update voltage inverse coefficients
-        X[c, range_pqpv] = -conv1(U, X, c, range_pqpv) / np.conj(U[0, range_pqpv])
+        W[c, range_pqpv] = -conv1(U, W, c, range_pqpv) / np.conj(U[0, range_pqpv])
 
+        # compute power mismatch
+        if not np.mod(c, 2):  # check the mismatch every 4 iterations
+            V[pqpv] = U.sum(axis=0)
+            Scalc = V * np.conj(Ybus * V)
+            dP = np.abs(S0[pqpv].real - Scalc[pqpv].real)
+            dQ = np.abs(S0[pq].imag - Scalc[pq].imag)
+            norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
+
+            # check convergence
+            converged = norm_f < tolerance
+            print('mismatch check at c=', c)
+
+        c += 1
         iter_ += 1
+
+    return U, W, Q, iter_, norm_f
+
+
+def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
+               verbose=False):
+    """
+    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+    :param Ybus: Complete admittance matrix
+    :param Yseries: Admittance matrix of the series elements
+    :param V0: vector of specified voltages
+    :param S0: vector of specified power
+    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param pq: list of pq nodes
+    :param pv: list of pv nodes
+    :param sl: list of slack nodes
+    :param pqpv: sorted list of pq and pv nodes
+    :param tolerance: target error (or tolerance)
+    :param max_coeff: maximum number of coefficients
+    :param use_pade: Use the Padè approximation? otherwise a simple summation is done
+    :param verbose: print intermediate information
+    :return: V, converged, norm_f, Scalc, iter_, elapsed
+    """
+
+    start_time = time.time()
+
+    # compute the series of coefficients
+    U, X, Q, iter_, norm_f = helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
+                                                     tolerance=tolerance, max_coeff=max_coeff, verbose=verbose)
 
     # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------
     if verbose:
         print('V coefficients')
         print(U)
 
-    # compute the final voltage
-    V = np.zeros(n, dtype=complex)
+    # compute the final voltage vector
+    V = V0.copy()
     if use_pade:
-        V[pqpv] = pade4all(max_coeff - 1, U, 1)
+        try:
+            V[pqpv] = pade4all(iter_, U, 1.0)
+        except:
+            warn('Padè failed :(, using coefficients summation')
+            V[pqpv] = U.sum(axis=0)
     else:
         V[pqpv] = U.sum(axis=0)
-
-    V[sl] = Vslack  # copy the slack buses
 
     # compute power mismatch
     Scalc = V * np.conj(Ybus * V)
@@ -417,11 +477,131 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    if return_structs:
-        return V, converged, norm_f, Scalc, iter_, elapsed, U, X
+    return V, converged, norm_f, Scalc, iter_, elapsed
 
-    else:
-        return V, converged, norm_f, Scalc, iter_, elapsed
+
+def test_voltage(grid):
+    """
+    Grid solution test
+    :param grid: MultiCircuit instance
+    :return: True/False
+    """
+    nc = grid.compile_snapshot()
+    inputs = nc.compute()[0]  # pick the first island
+    tolerance = 1e-6
+
+    V, converged_, error, Scalc_, iter_, elapsed_ = helm_josep(Ybus=inputs.Ybus,
+                                                               Yseries=inputs.Yseries,
+                                                               V0=inputs.Vbus,
+                                                               S0=inputs.Sbus,
+                                                               Ysh0=inputs.Ysh_helm,
+                                                               pq=inputs.pq,
+                                                               pv=inputs.pv,
+                                                               sl=inputs.ref,
+                                                               pqpv=inputs.pqpv,
+                                                               tolerance=tolerance,
+                                                               max_coeff=50,
+                                                               use_pade=True,
+                                                               verbose=True)
+    Vm = np.abs(V)
+    Va = np.angle(V)
+    dP = np.abs(inputs.Sbus.real - Scalc_.real)
+    dP[inputs.ref] = 0
+    dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
+    dQ[inputs.pv] = np.nan
+    dQ[inputs.ref] = np.nan
+
+    df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
+                      columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
+    print(df)
+    print('Error', error)
+    print('P error', np.max(np.abs(dP)))
+    print('Elapsed', elapsed_)
+    print('Iterations', iter_)
+
+    return error < tolerance
+
+
+def test_sigma(grid):
+    """
+    Sigma-distances test
+    :param grid:
+    :return:
+    """
+    nc = grid.compile_snapshot()
+    inputs = nc.compute()[0]  # pick the first island
+
+    U_, X_, Q_, iter_, normF = helm_coefficients_josep(Ybus=inputs.Ybus,
+                                                       Yseries=inputs.Yseries,
+                                                       V0=inputs.Vbus,
+                                                       S0=inputs.Sbus,
+                                                       Ysh0=-inputs.Ysh_helm,
+                                                       pq=inputs.pq,
+                                                       pv=inputs.pv,
+                                                       sl=inputs.ref,
+                                                       pqpv=inputs.pqpv,
+                                                       tolerance=1e-6,
+                                                       max_coeff=50,
+                                                       verbose=False)
+
+    n = inputs.nbus
+    Sig_re = np.zeros(n, dtype=float)
+    Sig_im = np.zeros(n, dtype=float)
+    Sigma = sigma_function(U_, X_, iter_ - 1, inputs.Vbus[inputs.ref])
+    Sig_re[inputs.pqpv] = np.real(Sigma)
+    Sig_im[inputs.pqpv] = np.imag(Sigma)
+    sigma_distances = sigma_distance(Sig_re, Sig_im)
+
+    # sigma plot
+    sx = np.linspace(-0.25, np.max(Sig_re)+0.1, 100)
+    sy1 = np.sqrt(0.25 + sx)
+    sy2 = -np.sqrt(0.25 + sx)
+
+    fig = plt.figure(figsize=(8, 7))
+    ax = fig.add_subplot(111)
+    ax.plot(Sig_re, Sig_im, 'o')
+    ax.plot(sx, sy1, 'b')
+    ax.plot(sx, sy2, 'r')
+    ax.set_title('Sigma plot')
+    ax.set_xlabel('$\sigma_{re}$')
+    ax.set_ylabel('$\sigma_{im}$')
+    plt.show()
+
+    return sigma_distances
+
+
+def test_pade(grid):
+    """
+    Sigma-distances test
+    :param grid:
+    :return:
+    """
+    nc = grid.compile_snapshot()
+    inputs = nc.compute()[0]  # pick the first island
+
+    U_, X_, Q_, iter_, normF = helm_coefficients_josep(Ybus=inputs.Ybus,
+                                                       Yseries=inputs.Yseries,
+                                                       V0=inputs.Vbus,
+                                                       S0=inputs.Sbus,
+                                                       Ysh0=-inputs.Ysh_helm,
+                                                       pq=inputs.pq,
+                                                       pv=inputs.pv,
+                                                       sl=inputs.ref,
+                                                       pqpv=inputs.pqpv,
+                                                       tolerance=1e-6,
+                                                       max_coeff=50,
+                                                       verbose=False)
+
+    alphas = np.arange(1, 4, 0.01)
+    n = inputs.nbus
+    na = len(alphas)
+    V = np.zeros((na, n))
+    V[:, inputs.ref] = np.abs(inputs.Vbus[inputs.ref])
+    for i, alpha in enumerate(alphas):
+        V[i, inputs.pqpv] = np.abs(pade4all(order=iter_, coeff_mat=U_, s=alpha))
+
+    plt.plot(alphas, V)
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -443,60 +623,8 @@ if __name__ == '__main__':
     # fname = 'IEEE 14 PQ only full.gridcal'
     grid = FileOpen(fname).open()
 
-    nc = grid.compile_snapshot()
-    inputs = nc.compute()[0]  # pick the first island
+    test_voltage(grid=grid)
 
-    V, converged_, error, Scalc_, iter_, elapsed_, U_, X_ = helm_josep(Ybus=inputs.Ybus,
-                                                                       Yseries=inputs.Yseries,
-                                                                       V0=inputs.Vbus,
-                                                                       S0=inputs.Sbus,
-                                                                       Ysh0=inputs.Ysh,
-                                                                       pq=inputs.pq,
-                                                                       pv=inputs.pv,
-                                                                       sl=inputs.ref,
-                                                                       pqpv=inputs.pqpv,
-                                                                       tolerance=1e-6,
-                                                                       max_coeff=50,
-                                                                       use_pade=False,
-                                                                       verbose=True,
-                                                                       return_structs=True)
-    Vm = np.abs(V)
-    Va = np.angle(V)
-    dP = np.abs(inputs.Sbus.real - Scalc_.real)
-    dP[inputs.ref] = 0
-    dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
-    dQ[inputs.pv] = np.nan
-    dQ[inputs.ref] = np.nan
+    # test_sigma(grid=grid)
 
-    # compute the sigma value
-    n = len(V)
-    Sig_re = np.zeros(n, dtype=float)
-    Sig_im = np.zeros(n, dtype=float)
-    Sigma = Sigma_funcO(U_, X_, iter_ - 1, V[inputs.ref])
-    Sig_re[inputs.pqpv] = np.real(Sigma)
-    Sig_im[inputs.pqpv] = np.imag(Sigma)
-    sigma_distances = distance(Sig_re, Sig_im)
-
-    df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ, np.abs(sigma_distances)],
-                      columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch', 'Distances'])
-    print(df.sort_values('Distances'))
-    print('Error', error)
-    print('P error', np.max(np.abs(dP)))
-    print('Elapsed', elapsed_)
-
-    # sigma plot
-    # sx = np.linspace(-0.25, np.max(Sig_re)+0.1, 100)
-    # sy1 = np.sqrt(0.25 + sx)
-    # sy2 = -np.sqrt(0.25 + sx)
-    #
-    # from matplotlib import pyplot as plt
-    #
-    # fig = plt.figure(figsize=(8, 7))
-    # ax = fig.add_subplot(111)
-    # ax.plot(Sig_re, Sig_im, 'o')
-    # ax.plot(sx, sy1, 'b')
-    # ax.plot(sx, sy2, 'r')
-    # ax.set_title('Sigma plot')
-    # ax.set_xlabel('$\sigma_{re}$')
-    # ax.set_ylabel('$\sigma_{im}$')
-    # plt.show()
+    # test_pade(grid)

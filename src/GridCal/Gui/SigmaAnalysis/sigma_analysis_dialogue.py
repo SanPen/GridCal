@@ -77,7 +77,7 @@ def get_list_model(iterable):
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
-    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None):
+    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None, use_native_dialogues=True):
         """
 
         :param parent:
@@ -87,6 +87,8 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('HELM-Sigma analysis dialogue')
+
+        self.use_native_dialogues = use_native_dialogues
 
         self.results = results
 
@@ -98,10 +100,15 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
             n = len(bus_names)
 
-            mdl = self.results.mdl(result_type=ResultTypes.SigmaDistances,
-                                   indices=np.arange(n),
-                                   names=bus_names)
-            self.ui.tableView.setModel(mdl)
+            self.mdl = self.results.mdl(result_type=ResultTypes.SigmaPlusDistances,
+                                        indices=np.arange(n),
+                                        names=bus_names)
+            self.ui.tableView.setModel(self.mdl)
+        else:
+            self.mdl = None
+
+        self.ui.actionCopy_to_clipboard.triggered.connect(self.copy_to_clipboard)
+        self.ui.actionSave.triggered.connect(self.save)
 
     def msg(self, text, title="Warning"):
         """
@@ -118,6 +125,40 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
 
+    def copy_to_clipboard(self):
+        """
+        Copy data to clipboard
+        """
+        if self.mdl is not None:
+            self.mdl.copy_to_clipboard()
+
+    def save(self):
+        """
+
+        :return:
+        """
+        if self.mdl is not None:
+            options = QFileDialog.Options()
+            if self.use_native_dialogues:
+                options |= QFileDialog.DontUseNativeDialog
+
+            file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
+                                                       filter="CSV (*.csv);;Excel files (*.xlsx)",
+                                                       options=options)
+
+            if file != '':
+                if 'xlsx' in filter:
+                    f = file
+                    if not f.endswith('.xlsx'):
+                        f += '.xlsx'
+                    self.mdl.save_to_excel(f, mode='real')
+                    print('Saved!')
+                if 'csv' in filter:
+                    f = file
+                    if not f.endswith('.csv'):
+                        f += '.csv'
+                    self.mdl.save_to_csv(f, mode='real')
+                    print('Saved!')
 
 
 
