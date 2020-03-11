@@ -73,7 +73,7 @@ just removed:
 
 .. math::
 
-    \textbf{Y} \times \textbf{V} = \textbf{I}^* - \textbf{I}_{slack}
+    \textbf{Y}_{red} \times \textbf{V}_{red} = \textbf{I}_{red}^* - \textbf{I}_{slack}
 
 We also need to split the admittance matrix :math:`Y` into :math:`Y_{series}` and :math:`Y_{shunt}`.
 :math:`Y_{shunt}` could be stored as a vector, but for mathematecal accuracy, let's deal with it as a
@@ -81,20 +81,20 @@ diagonal matrix. The following relation should hold:
 
 .. math::
 
-    Y = Y_{series} + Y_{shunt}
+    Y_{red} = Y_{red, series} + Y_{red, shunt}
 
 Substituting and rearranging we should have:
 
 .. math::
 
-    \textbf{Y}_{series} \times \textbf{V} = \textbf{I}^*  -\textbf{I}_{slack} - \textbf{Y}_{shunt} \times \textbf{V}
+    \textbf{Y}_{red, series} \times \textbf{V}_{red} = \textbf{I}^*_{red}  -\textbf{I}_{slack} - \textbf{Y}_{red, shunt} \times \textbf{V}_{red}
 
 It is necessary to express the nodal current injections in terms of the specified power:
 
 
 .. math::
 
-    \textbf{Y}_{series} \times \textbf{V} = \frac{\textbf{S}^*}{\textbf{V}^*} - \textbf{I}_{slack} - \textbf{Y}_{shunt} \times \textbf{V}
+    \textbf{Y}_{red, series} \times \textbf{V}_{red} = \frac{\textbf{S}_{red}^*}{\textbf{V}_{red}^*} - \textbf{I}_{slack} - \textbf{Y}_{red, shunt} \times \textbf{V}_{red}
 
 
 The holomorphic embedding is to insert a "travelling" parameter :math:`\alpha`, such
@@ -106,7 +106,7 @@ and for :math:`\alpha=1` we have the solution for the specified load situation (
 
 .. math::
 
-    \textbf{Y}_{series} \times \textbf{V}(\alpha) = \frac{\alpha \cdot \textbf{S}^*}{\textbf{V}^*(\alpha^*)} - \textbf{I}_{slack}(\alpha) - \alpha \cdot \textbf{Y}_{shunt} \times \textbf{V}(\alpha)
+    \textbf{Y}_{red, series} \times \textbf{V}_{red}(\alpha) = \frac{\alpha \cdot \textbf{S}_{red}^*}{\textbf{V}_{red}^*(\alpha^*)} - \textbf{I}_{slack}(\alpha) - \alpha \cdot \textbf{Y}_{red, shunt} \times \textbf{V}_{red}(\alpha)
 
 For :math:`\alpha=0` the power term becomes zero, in this way the equation becomes linear, and its
 solution is mathematically exact. This will be useful later. Now we need to express all the
@@ -236,8 +236,127 @@ is not going to be a complex parameter.
 
         Coefficients Structure
 
-Padè approximation
+
+
+
+Implementation
 ------------------
+
+What we want with the method is to compute order after order the terms of the voltage series which will
+provide the nodal voltage of the reduced grid (this is ok, because we know the slack voltages already).
+Therefore, in our case we want to compute the complex voltage (:math:`U`) at the PQ and PV nodes of the grid, and
+the reactive power at the PV nodes (:math:`Q`).
+
+As explained before, we are working with an equivalent grid that contains no slack nodes, since we have
+reduced then and replaced their influence by current injections (:math:`I_{slack}`) Hence, the number
+of nodes in the number of PQ nodes plus the number of PV nodes.
+
+.. figure:: ../../figures/matrix-reduction.png
+    :alt: Matrix reduction (VD: Slack, PV: Voltage controlled, PQ: Power controlled)
+
+In this implementation the lists denoted as pq and pv, are referred to the reduced grid, not to the complete grid.
+To remember this is of capital importance because the dimensions belong to a grid with :math:`n - n\_slack=npqpv` nodes.
+
+Also, from the mathematical derivation we have concluded that we have three kinds of coefficients;
+The first ones (:math:`c=0`) that will provide the zero-load solution, the second ones (:math:`c=1`)
+and the rest (:math:`c>1`). The coefficients of order 0 require no system solution whatsoever.
+It also to be noted that the system matrix is computed and factorized only once. The resulting series are perfectly
+convergent so that you may find the nodal voltage by a simple voltage coefficient summation.
+
+We will store three kinds of coefficients:
+
+- :math:`U[ncoeff, npqpv]`: Complex voltage coefficients for all the nodes of the reduced scheme.
+- :math:`W[ncoeff, npqpv]`: Complex inverse voltage coefficients for all the nodes of the reduced scheme.
+  The exist because dividing a series by another is too hard, and thus we came up with the inverse to be
+  able to operate the coefficient divisions via convolutions.
+- :math:`Q[ncoeff, npv]`: Reactive power coefficients at the PV nodes. These are to be able to compute
+  the voltage while keeping the voltage module set.
+
+
+Linear system
+^^^^^^^^^^^^^^
+
+This is the linear system of equations that is to be solved for coefficient orders greater than 0 (:math:`c>0`):
+
+.. math::
+
+    \begin{bmatrix}
+    G_{red} & -B_{red} & -diag(Im\{W[0]\})\\
+    B_{red} & G_{red} & diag(Re\{W[0]\})\\
+    diag(2 \cdot V_{re}[0]) & diag(2 \cdot V_{im}[0]) & 0
+    \end{bmatrix} \times \begin{bmatrix}
+    U_{re}^{(c}\\
+    U_{im}^{(c}\\
+    Q^{(c}
+    \end{bmatrix} = \begin{bmatrix}
+    RHS_{pq}^{(c}\\
+    RHS_{pv}^{(c}\\
+    RHS_{Q}^{(c}
+    \end{bmatrix}
+
+The updating of the voltage and PV-node reactive power coefficient arrays is done like this:
+
+.. math::
+
+    U[c, :] = U_{re}^{(c} + j \cdot U_{im}^{(c}
+
+    Q[c, :] = Q^{(c}
+
+    W[c, :] = -W[c-1, :] \cdot \frac{U[c, :]^*}{U[c-1, :]^*}
+
+C=0
+^^^^^^^
+
+.. math::
+
+    U[0, :] = Y_{red}^{-1} \times Y_{slack}
+
+    W[0, :] = \frac{1}{U[0, :]^*}
+
+C=1
+^^^^^^^
+
+.. math::
+
+    I_{inj} = Y_{slack} \times V_{slack}
+
+.. math::
+
+    RHS_{pq}^{(1} = I_{inj}[pq] - Y_{slack}[pq] + S_{red}[pq] \cdot W[0, pq] - Y_{shunt\_red, pq} \cdot U[0, pq]
+
+    RHS_{pv}^{(1} = I_{inj}[pv] - Y_{slack}[pv] + P_{red}[pv] \cdot W[0, pv] - Y_{shunt\_red, pv} \cdot U[0, pv]
+
+    RHS_{Q}^{(1} = |V_{red}[pv]|^2 - Re \left\{U[0, pv] \cdot U[0, pv]^* \right\}
+
+
+C>1
+^^^^^^^
+
+.. math::
+
+    RHS_{pq}^{(c} = S_{red}[pq] \cdot W[c-1, pq] - Y_{shunt\_red}[pq] \cdot U[c-1, pq]
+
+    RHS_{pv}^{(c} = -j \cdot W[:, pv] \circledast Q[:,pv] + P_{red}[pv] \cdot W[c-1, pv] - Y_{shunt\_red}[pv] \cdot U[c-1, pv]
+
+    RHS_{Q}^{(c} = -Re \left\{U[:, pv] \circledast U[:, pv]^* \right\}
+
+The :math:`\circledast` symbol is the convolution symbol.
+
+Finding the voltage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The simplest way to find the voltage is to sum the coefficients.
+
+.. math::
+
+    V_i = \sum_k^{ncoeff} U[k, i]
+
+More refined methods might accelerate the obtaining of the voltage. This is that a more accurate solution
+can be obtained with less coefficients computed. For instance the Padè approximation.
+
+
+Padè approximation
+--------------------
 
 The :ref:`McLaurinV equation<McLaurinV>` provides us with an expression to obtain the voltage from
 the coefficients, knowing that for :math:`\alpha=1` we get the final voltage results.
@@ -331,7 +450,7 @@ coefficients per Padé approximation.
 Wynn published a paper in 1969 [4]_ where he proposed a simple calculation method to
 obtain the Padè approximation. This method is based on a table. Weniger in 1989
 publishes his thesis [5]_ where a faster version of Wynn's algorithm is provided in
-Fortran code. 
+Fortran code.
 
 That very Fortran piece of code has been translated into Python and included in GridCal.
 
@@ -346,78 +465,6 @@ On top of that my experience shows that the canonical implementation provides a 
 consistent convergence.
 
 Anyway, both implementations are there to be used in the code.
-
-
-
-Implementation
-------------------
-
-System matrix
-^^^^^^^^^^^^^^
-
-.. math::
-
-    \begin{bmatrix}
-    G_{red} & -B_{red} & -X[0]_{im}\\
-    B_{red} & G_{red} & X[0]_{re}\\
-    diag(2 \cdot V[0]_{re}) & diag(2 \cdot V[0]_{im}) & 0
-    \end{bmatrix} \times \begin{bmatrix}
-    V[c]_{re}\\
-    V[c]_{im}\\
-    Q[c]
-    \end{bmatrix} = \begin{bmatrix}
-    RHS[c]_{pq}\\
-    RHS[c]_{pv}\\
-    RHS[c]_{Q}
-    \end{bmatrix}
-
-The updating of the coefficient arrays is done like this:
-
-.. math::
-
-    V[c] = V[c]_{re} + j \cdot V[c]_{im}
-
-    Q[c] = Q[c]
-
-    W[c] = -W[c-1] \cdot \frac{V[c]^*}{V[c-1]^*}
-
-C=0
-^^^^^^^
-
-.. math::
-
-    V[0] = Y_{red}^{-1} \times Y_{slack}
-
-    X[0] = \frac{1}{V[0]^*}
-
-C=1
-^^^^^^^
-
-.. math::
-
-    I_{inj} = Y_{slack} \times V_{slack}
-
-.. math::
-
-    RHS[1]_{pq} = I_{inj, pq} - Y_{slack, pq} + S_{red, pq} \cdot W[0]_{pq} - Y_{shunt\_red, pq} \cdot V[0]_{pq}
-
-    RHS[1]_{pv} = I_{inj, pv} - Y_{slack, pv} + P_{red, pv} \cdot W[0]_{pv} - Y_{shunt\_red, pv} \cdot V[0]_{pv}
-
-    RHS[1]_{Q} = |V_{red, pv}|^2 - Re \left\{V[0]_{pv} \cdot V[0]_{pv} \right\}
-
-
-C>1
-^^^^^^^
-
-.. math::
-
-    RHS[c]_{pq} = S_{red, pq} \cdot W[c-1]_{pq} - Y_{shunt\_red, pq} \cdot V[c-1]_{pq}
-
-    RHS[c]_{pv} = -j \cdot W_{pv} \circledast Q_{pv} + P_{red, pv} \cdot W[c-1]_{pv} - Y_{shunt\_red, pv} \cdot V[c-1]_{pv}
-
-    RHS[c]_{Q} = -Re \left\{V_{pv} \circledast V_{pv} \right\}
-
-The :math:`\circledast` symbol is the convolution symbol.
 
 
 .. [1] Trias, Antonio. "The holomorphic embedding load flow method." Power and Energy Society General Meeting, 2012 IEEE. IEEE, 2012.
