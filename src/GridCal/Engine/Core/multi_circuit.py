@@ -724,7 +724,12 @@ class MultiCircuit:
                 circuit.generator_names[i_gen] = elm.name
 
                 circuit.generator_power_factor[i_gen] = elm.Pf
-                circuit.generator_voltage[i_gen] = elm.Vset
+
+                if elm.active:
+                    circuit.generator_voltage[i_gen] = elm.Vset
+                else:
+                    circuit.generator_voltage[i_gen] = 1.0
+
                 circuit.generator_qmin[i_gen] = elm.Qmin
                 circuit.generator_qmax[i_gen] = elm.Qmax
                 circuit.generator_pmin[i_gen] = elm.Pmin
@@ -752,7 +757,12 @@ class MultiCircuit:
             for elm in bus.batteries:
                 circuit.battery_names[i_batt] = elm.name
                 circuit.battery_power[i_batt] = elm.P
-                circuit.battery_voltage[i_batt] = elm.Vset
+
+                if elm.active:
+                    circuit.battery_voltage[i_batt] = elm.Vset
+                else:
+                    circuit.battery_voltage[i_batt] = 1.0
+
                 circuit.battery_qmin[i_batt] = elm.Qmin
                 circuit.battery_qmax[i_batt] = elm.Qmax
                 circuit.battery_active[i_batt] = elm.active
@@ -985,7 +995,12 @@ class MultiCircuit:
                     circuit.generator_names[i_gen] = elm.name
 
                     circuit.generator_power_factor[i_gen] = elm.Pf
-                    circuit.generator_voltage[i_gen] = elm.Vset
+
+                    if elm.active:
+                        circuit.generator_voltage[i_gen] = elm.Vset
+                    else:
+                        circuit.generator_voltage[i_gen] = 1.0
+
                     circuit.generator_qmin[i_gen] = elm.Qmin
                     circuit.generator_qmax[i_gen] = elm.Qmax
                     circuit.generator_pmin[i_gen] = elm.Pmin
@@ -1030,7 +1045,12 @@ class MultiCircuit:
                 for elm in bus.batteries:
                     circuit.battery_names[i_batt] = elm.name
                     circuit.battery_power[i_batt] = elm.P
-                    circuit.battery_voltage[i_batt] = elm.Vset
+
+                    if elm.active:
+                        circuit.battery_voltage[i_batt] = elm.Vset
+                    else:
+                        circuit.battery_voltage[i_batt] = 1.0
+
                     circuit.battery_qmin[i_batt] = elm.Qmin
                     circuit.battery_qmax[i_batt] = elm.Qmax
                     circuit.battery_active[i_batt] = elm.active

@@ -102,7 +102,7 @@ class MonteCarlo(QThread):
         """
         """
         t, _ = res
-        progress = (t + 1) / self.sampling_points * 100
+        progress = (t + 1) / self.max_mc_iter * 100
         self.progress_signal.emit(progress)
         self.returned_results.append(res)
 

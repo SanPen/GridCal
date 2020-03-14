@@ -1,7 +1,7 @@
 .. _holomorphic_embedding:
 
 Holomorphic Embedding
-=====================
+========================
 
 First introduced by Antonio Trias in 2012 [1]_, promises to be a non-divergent power
 flow method. Trias originally developed a version with no voltage controlled nodes
@@ -10,13 +10,12 @@ solve any grid without PV nodes to check this affirmation).
 
 The version programmed in GridCal has been adapted from the outstanding contribution
 by Josep Fanals Batllori. This version includes a formulation of the voltage controlled nodes
-that is competitive with the traditional methods.
+that is competitive with the traditional methods. It is safe to say that now GridCal features
+the first source code holomorphic embedding open that works for real life grids.
 
-GridCal's integration contains a vectorized version of the algorithm. This means that
-the execution in python is much faster than a previous version that uses loops.
 
 Concepts
---------
+------------
 
 All the power flow algorithms until the HELM method was introduced were iterative and
 recursive. The helm method is iterative but not recursive. A simple way to think of
@@ -53,10 +52,10 @@ state is reached.
 
 .. _fundamentals:
 
-Fundamentals
-------------
+Formulation
+----------------
 
-The fundamental equation that defines the power flow problem is:
+The fundamental equation that defines the power flow problem is the Ohm law in matrix form for AC current:
 
 .. _base_eq:
 
@@ -64,18 +63,20 @@ The fundamental equation that defines the power flow problem is:
     
     \textbf{Y} \times \textbf{V} = \textbf{I}^*
 
-Where :math:`\textbf{Y}` is the admittance matrix, :math:`\textbf{V}` is the nodal voltages vector and
+Where :math:`\textbf{Y}` is the nodal complex admittance matrix, :math:`\textbf{V}` is the nodal voltages vector and
 :math:`\textbf{I}` is the nodal current injections vector. To be able to solve this equation we need to
-specify at least one of the voltages (the slack node voltage). This leads to a reduced system and the
-appearance of extra nodal injection currents derived from the voltage source (the slack) that we have
-just removed:
+specify at least one of the voltages (the slack node voltage that acts as a voltage source).
+But we still have a problem, the admittance matrix is singular. To deal with this, we reduce the grid by removing the
+slack nodes and computing the equivalent current injections:
 
 
 .. math::
 
     \textbf{Y}_{red} \times \textbf{V}_{red} = \textbf{I}_{red}^* - \textbf{I}_{slack}
 
-We also need to split the admittance matrix :math:`Y` into :math:`Y_{series}` and :math:`Y_{shunt}`.
+Now, for the holomorphic embedding to work we need to compose voltage series which first coefficient is close to 1.
+To achieve this, we need to split the admittance matrix :math:`Y` into :math:`Y_{series}` and :math:`Y_{shunt}`.
+We eill see later why this is necessary, for now suffice that this is a required step.
 :math:`Y_{shunt}` could be stored as a vector, but for mathematecal accuracy, let's deal with it as a
 diagonal matrix. The following relation should hold:
 
@@ -83,11 +84,13 @@ diagonal matrix. The following relation should hold:
 
     Y_{red} = Y_{red, series} + Y_{red, shunt}
 
+:math:`Y_{series}` is the admittance matrix formed only by series elements of the grid. :math:`Y_{shunt}` is a vector or
+diagonal matrix formed only by the shunt admittances. This includes the shunt admittances of the branch pi model too.
 Substituting and rearranging we should have:
 
 .. math::
 
-    \textbf{Y}_{red, series} \times \textbf{V}_{red} = \textbf{I}^*_{red}  -\textbf{I}_{slack} - \textbf{Y}_{red, shunt} \times \textbf{V}_{red}
+    \textbf{Y}_{red, series} \times \textbf{V}_{red} = \textbf{I}_{red}^*  -\textbf{I}_{slack} - \textbf{Y}_{red, shunt} \times \textbf{V}_{red}
 
 It is necessary to express the nodal current injections in terms of the specified power:
 
@@ -99,7 +102,7 @@ It is necessary to express the nodal current injections in terms of the specifie
 
 The holomorphic embedding is to insert a "travelling" parameter :math:`\alpha`, such
 that for :math:`\alpha=0` we have an mathematically exact solution of the problem in the no-load situation,
-and for :math:`\alpha=1` we have the solution for the specified load situation (the one we're looking for)
+and for :math:`\alpha=1` we have the solution for the specified load (the one we're looking for)
 
 
 .. _base_eq_alpha_0:
@@ -237,6 +240,27 @@ is not going to be a complex parameter.
         Coefficients Structure
 
 
+Alright! Now we know that we have to use McLaurin series, let's continue with the formulation. For the sake of clarity
+lets call the voltage coefficients :math:`U` to separate them from the voltage :math:`V`. THe coefficients :math:`U`
+aready represent the reduced scheme, so no need for the *red* subscript.
+
+.. math::
+
+    \textbf{Y}_{red, series} \times \left(\sum_{c}^{\infty} U_c \cdot \alpha ^c \right)= \frac{\textbf{S}_{red}^*}{\left(\sum_{c}^{\infty} U_c \cdot \alpha ^c \right)^*} - \textbf{I}_{slack}(\alpha) - \alpha \cdot \textbf{Y}_{red, shunt} \times  \left(\sum_{c}^{\infty} U_c \cdot \alpha ^c \right)
+
+In this equation we have a couple of problems; First we have a dividing series of voltage coefficients and second
+we have :math:`I_{slack}(\alpha)` still around. To deal with the dividing voltage coefficients is relatively easy, we
+substitute them by their inverse.
+
+.. math::
+
+    W = \frac{1}{U^*}
+
+Substituting we get:
+
+.. math::
+
+    \textbf{Y}_{red, series} \times \left(\sum_{c}^{\infty} U_c \cdot \alpha ^c \right)= \textbf{S}_{red}^* \times \left(\sum_{c}^{\infty} W_c \cdot \alpha ^c \right) - \textbf{I}_{slack}(\alpha) - \alpha \cdot \textbf{Y}_{red, shunt} \times  \left(\sum_{c}^{\infty} U_c \cdot \alpha ^c \right)
 
 
 Implementation
