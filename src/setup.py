@@ -51,7 +51,7 @@ package_data = {'GridCal': ['*.md'],
                 'GridCal.ThirdParty.pulp.solverdir.cbc.osx.64': ['*', '*.*'],
                 }
 
-dependencies = ["PySide2==5.13",  # for now, 5.14 breaks the UI generation for development
+dependencies = ["PySide2>=5.13",  # for now, 5.14 breaks the UI generation for development
                 "numpy>=1.14.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",

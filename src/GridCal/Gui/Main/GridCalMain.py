@@ -306,7 +306,10 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         self.console = None
-        self.create_console()
+        try:
+            self.create_console()
+        except TypeError:
+            self.msg('The console has failed because the QtConsole guys have a bug in their package :(')
 
         ################################################################################################################
         # Connections
@@ -829,8 +832,11 @@ class MainGUI(QMainWindow):
             **msg_** (str): Message
 
         """
-        dte = datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
-        self.console.print_text('\n' + dte + '->' + msg_)
+        if self.console is not None:
+            dte = datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
+            self.console.print_text('\n' + dte + '->' + msg_)
+        else:
+            print(msg_)
 
     def auto_layout(self):
         """
@@ -1286,7 +1292,7 @@ class MainGUI(QMainWindow):
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
 
-            if filename is not "":
+            if filename != "":
                 if not filename.endswith('.xlsx'):
                     filename += '.xlsx'
                 # TODO: Correct this function
@@ -1318,7 +1324,7 @@ class MainGUI(QMainWindow):
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
 
-            if filename is not "":
+            if filename != "":
                 if not filename.endswith('.xlsx'):
                     filename += '.xlsx'
                 # TODO: correct this function
@@ -1348,7 +1354,7 @@ class MainGUI(QMainWindow):
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
 
-            if filename is not "":
+            if filename != "":
                 self.LOCK()
 
                 self.stuff_running_now.append('export_all')
@@ -1400,7 +1406,7 @@ class MainGUI(QMainWindow):
         filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                               options=options)
 
-        if filename is not "":
+        if filename != "":
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
             # TODO: Correct this function to not to depend on a previous compilation
@@ -1426,7 +1432,7 @@ class MainGUI(QMainWindow):
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
 
-            if filename is not "":
+            if filename != "":
                 # save in factor * K
                 factor = self.ui.resolution_factor_spinBox.value()
                 w = 1920 * factor
