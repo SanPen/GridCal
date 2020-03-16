@@ -14,6 +14,7 @@ Version 3.7.1
 ^^^^^^^^^^^^^^^^^^^^^
 
 - Added Jacobian with numba optimization from Pandapower increasing Newton-Raphson performance by x20.
+- Measuring the branch power instead of the current in the stochastic simulations.
 
 Version 3.7.0 (HELM)
 ^^^^^^^^^^^^^^^^^^^^^

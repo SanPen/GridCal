@@ -44,9 +44,9 @@ class ResultTypes(Enum):
     BusVoltageStd = 'Bus voltage std', DeviceType.BusDevice
     BusVoltageCDF = 'Bus voltage CDF', DeviceType.BusDevice
     BusPowerCDF = 'Bus power CDF', DeviceType.BusDevice
-    BranchCurrentAverage = 'Branch current avg', DeviceType.BranchDevice
-    BranchCurrentStd = 'Branch current std', DeviceType.BranchDevice
-    BranchCurrentCDF = 'Branch current CDF', DeviceType.BranchDevice
+    BranchPowerAverage = 'Branch power avg', DeviceType.BranchDevice
+    BranchPowerStd = 'Branch power std', DeviceType.BranchDevice
+    BranchPowerCDF = 'Branch power CDF', DeviceType.BranchDevice
     BranchLoadingAverage = 'Branch loading avg', DeviceType.BranchDevice
     BranchLoadingStd = 'Branch loading std', DeviceType.BranchDevice
     BranchLoadingCDF = 'Branch loading CDF', DeviceType.BranchDevice

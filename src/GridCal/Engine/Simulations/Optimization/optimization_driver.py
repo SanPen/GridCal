@@ -103,7 +103,7 @@ class VoltageOptimizationProblem(OptimizationProblem):
             self.results.S_points[self.it, numerical_island.original_bus_idx] = S
             self.results.V_points[self.it, numerical_island.original_bus_idx] = res.voltage[
                 numerical_island.original_bus_idx]
-            self.results.I_points[self.it, numerical_island.original_branch_idx] = res.Ibranch[
+            self.results.Sbr_points[self.it, numerical_island.original_branch_idx] = res.Ibranch[
                 numerical_island.original_branch_idx]
             self.results.loading_points[self.it, numerical_island.original_branch_idx] = res.loading[
                 numerical_island.original_branch_idx]
