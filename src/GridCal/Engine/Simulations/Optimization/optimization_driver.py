@@ -55,7 +55,7 @@ class VoltageOptimizationProblem(OptimizationProblem):
         self.power_flow = PowerFlowDriver(self.circuit, self.options)
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         self.max_eval = max_iter
 
@@ -154,14 +154,6 @@ class Optimize(QThread):
         Run the optimization
         @return: Nothing
         """
-        # self.it = 0
-        # n = len(self.circuit.buses)
-        # m = len(self.circuit.branches)
-        # self.xlow = zeros(n)  # lower bounds
-        # self.xup = ones(n)  # upper bounds
-        # self.progress_signal.emit(0.0)
-        # self.progress_text.emit('Running stochastic voltage collapse...')
-        # self.results = MonteCarloResults(n, m, self.max_eval)
 
         self.problem = VoltageOptimizationProblem(self.circuit,
                                                   self.options,

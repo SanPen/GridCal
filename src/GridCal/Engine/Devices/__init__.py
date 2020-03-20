@@ -15,6 +15,8 @@
 
 from GridCal.Engine.Devices.battery import *
 from GridCal.Engine.Devices.branch import *
+from GridCal.Engine.Devices.dc_branch import *
+from GridCal.Engine.Devices.vsc import *
 from GridCal.Engine.Devices.bus import *
 from GridCal.Engine.Devices.generator import *
 from GridCal.Engine.Devices.load import *

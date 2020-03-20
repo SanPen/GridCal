@@ -25,6 +25,7 @@ from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
 from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Devices.meta_devices import DeviceType
 
 
 def get_system_user():
@@ -97,6 +98,8 @@ class MultiCircuit:
 
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
+        self.vsc_branches = list()
+        self.hvdc_branches = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -176,6 +179,40 @@ class MultiCircuit:
 
     def __str__(self):
         return str(self.name)
+
+    def get_bus_number(self):
+        """
+        Return the number of buses
+        :return: number
+        """
+        return len(self.buses)
+
+    def get_branch_number(self):
+        """
+        return the number of branches (of all types)
+        :return: number
+        """
+        n_hvdc = len(self.hvdc_branches)
+        n_vsc = len(self.vsc_branches)
+        n_br = len(self.branches)
+        return n_br + n_hvdc + n_vsc
+
+    def get_time_number(self):
+        """
+        Return the number of buses
+        :return: number
+        """
+        if self.time_profile is not None:
+            return len(self.time_profile)
+        else:
+            return 0
+
+    def get_dimensions(self):
+        """
+        Get the three dimensions of the circuit: number of buses, number of branches, number of time steps
+        :return: (nbus, nbranch, ntime)
+        """
+        return self.get_bus_number(), self.get_branch_number(), self.get_time_number()
 
     def clear(self):
         """
@@ -644,20 +681,19 @@ class MultiCircuit:
             of the grid
         """
 
-        n = len(self.buses)
-        m = len(self.branches)
-
         if opf_time_series_results is not None and opf_time_series_results is None:
             raise Exception('You want to use the OPF results but none is passed')
 
         self.bus_dictionary = dict()
 
         # Element count
+        n = len(self.buses)
         n_ld = 0
         n_ctrl_gen = 0
         n_sta_gen = 0
         n_batt = 0
         n_sh = 0
+
         for bus in self.buses:
             n_ld += len(bus.loads)
             n_ctrl_gen += len(bus.controlled_generators)
@@ -665,9 +701,15 @@ class MultiCircuit:
             n_batt += len(bus.batteries)
             n_sh += len(bus.shunts)
 
+        # count the number of branches
+        n_hvdc = len(self.hvdc_branches)
+        n_vsc = len(self.vsc_branches)
+        n_br = len(self.branches)
+
         # declare the numerical circuit
-        circuit = StaticSnapshotInputs(n_bus=n, n_br=m, n_ld=n_ld, n_gen=n_ctrl_gen,
+        circuit = StaticSnapshotInputs(n_bus=n, n_br=n_br, n_ld=n_ld, n_gen=n_ctrl_gen,
                                        n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
+                                       n_hvdc=n_hvdc, n_vsc=n_vsc,
                                        Sbase=self.Sbase)
 
         # compile the buses and the shunt devices
@@ -795,22 +837,21 @@ class MultiCircuit:
                 i_sh += 1
 
         # Compile the branches
-        self.branch_names = np.zeros(m, dtype=object)
         for i, branch in enumerate(self.branches):
 
-            self.branch_names[i] = branch.name
+            # common to all branches
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
 
-            # connectivity
+            circuit.branch_names[i] = branch.name
+            circuit.branch_active[i] = branch.active
+
             circuit.C_branch_bus_f[i, f] = 1
             circuit.C_branch_bus_t[i, t] = 1
             circuit.F[i] = f
             circuit.T[i] = t
 
             # name and state
-            circuit.branch_names[i] = branch.name
-            circuit.branch_active[i] = branch.active
             circuit.br_mttf[i] = branch.mttf
             circuit.br_mttr[i] = branch.mttr
             circuit.branch_cost[i] = branch.Cost
@@ -847,7 +888,53 @@ class MultiCircuit:
             elif branch.branch_type == BranchType.Transformer:
                 circuit.tap_f[i], circuit.tap_t[i] = branch.get_virtual_taps()
 
+        for i, branch in enumerate(self.hvdc_branches):
+            ii = i + n_br
+
+            # common to all branches
+            f = self.bus_dictionary[branch.bus_from]
+            t = self.bus_dictionary[branch.bus_to]
+
+            circuit.C_branch_bus_f[ii, f] = 1
+            circuit.C_branch_bus_t[ii, t] = 1
+
+            circuit.F[ii] = f
+            circuit.T[ii] = t
+
+            circuit.branch_names[ii] = branch.name
+            circuit.branch_active[ii] = branch.active
+            circuit.br_rates[ii] = branch.rate
+
+            # specific to HVDC
+            circuit.Rdc[i] = branch.Rdc
+
+        for i, branch in enumerate(self.vsc_branches):
+            ii = i + n_br + n_hvdc
+
+            # common to all branches
+            f = self.bus_dictionary[branch.bus_from]
+            t = self.bus_dictionary[branch.bus_to]
+
+            circuit.C_branch_bus_f[ii, f] = 1
+            circuit.C_branch_bus_t[ii, t] = 1
+
+            circuit.F[ii] = f
+            circuit.T[ii] = t
+
+            circuit.branch_names[ii] = branch.name
+            circuit.branch_active[ii] = branch.active
+            circuit.br_rates[ii] = branch.rate
+
+            # specific to VSC
+            circuit.vsc_R1[i] = branch.R1
+            circuit.vsc_X1[i] = branch.X1
+            circuit.vsc_G0[i] = branch.G0
+            circuit.vsc_Beq[i] = branch.Beq
+            circuit.vsc_m[i] = branch.m
+            circuit.vsc_theta[i] = branch.theta
+
         # Assign and return
+        self.branch_names = circuit.branch_names
         self.numerical_circuit = circuit
         return circuit
 
@@ -887,15 +974,18 @@ class MultiCircuit:
             of the grid
         """
 
-        n = len(self.buses)
-        m = len(self.branches)
-        if self.time_profile is not None:
-            n_time = len(self.time_profile)
+        n, mm, n_time = self.get_dimensions()
+
+        if n_time > 0:
 
             if opf_time_series_results is not None and opf_time_series_results is None:
                 raise Exception('You want to use the OPF results but none is passed')
 
             self.bus_dictionary = dict()
+
+            n_br = len(self.branches)
+            n_hvdc = len(self.hvdc_branches)
+            n_vsc = len(self.vsc_branches)
 
             # Element count
             n_ld = 0
@@ -911,9 +1001,17 @@ class MultiCircuit:
                 n_sh += len(bus.shunts)
 
             # declare the numerical circuit
-            circuit = StaticSeriesInputs(n_bus=n, n_br=m, n_ld=n_ld, n_gen=n_ctrl_gen,
-                                         n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
-                                         n_time=n_time, Sbase=self.Sbase)
+            circuit = StaticSeriesInputs(n_bus=n,
+                                         n_br=n_br,
+                                         n_hvdc=n_hvdc,
+                                         n_vsc=n_vsc,
+                                         n_ld=n_ld,
+                                         n_gen=n_ctrl_gen,
+                                         n_sta_gen=n_sta_gen,
+                                         n_batt=n_batt,
+                                         n_sh=n_sh,
+                                         n_time=n_time,
+                                         Sbase=self.Sbase)
 
             # set hte time array profile
             if n_time > 0:
@@ -1100,10 +1198,8 @@ class MultiCircuit:
                     i_sh += 1
 
             # Compile the branches
-            self.branch_names = np.zeros(m, dtype=object)
             for i, branch in enumerate(self.branches):
 
-                self.branch_names[i] = branch.name
                 f = self.bus_dictionary[branch.bus_from]
                 t = self.bus_dictionary[branch.bus_to]
 
@@ -1159,6 +1255,7 @@ class MultiCircuit:
                     circuit.tap_f[i], circuit.tap_t[i] = branch.get_virtual_taps()
 
             # Assign and return
+            self.branch_names = circuit.branch_names
             self.numerical_circuit = circuit
             return circuit
         else:
@@ -1312,7 +1409,7 @@ class MultiCircuit:
             print('Deleted', obj.name)
             self.buses.remove(obj)
 
-    def add_branch(self, obj: Branch):
+    def add_branch(self, obj):
         """
         Add a :ref:`Branch<branch>` object to the grid.
 
@@ -1324,7 +1421,12 @@ class MultiCircuit:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
 
-        self.branches.append(obj)
+        if obj.device_type == DeviceType.VscDevice:
+            self.vsc_branches.append(obj)
+        elif obj.device_type == DeviceType.DCBranchDevice:
+            self.hvdc_branches.append(obj)
+        else:
+            self.branches.append(obj)
 
     def delete_branch(self, obj: Branch):
         """
@@ -1726,7 +1828,7 @@ class MultiCircuit:
         :return: Cf, Ct, C
         """
         n = len(self.buses)
-        m = len(self.branches)
+        m = self.circuit.get_branch_number()
         Cf = lil_matrix((m, n))
         Ct = lil_matrix((m, n))
 

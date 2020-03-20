@@ -171,8 +171,8 @@ class NMinusK(QThread):
         pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
 
         # initialize the grid time series results we will append the island results with another function
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
+        n = self.grid.get_bus_number()
+        m = self.grid.get_branch_number()
         nt = len(profile_indices)
 
         n_k_results = NMinusKResults(n, m, nt, time_array=numerical_circuit.time_array)
@@ -303,7 +303,7 @@ class NMinusK(QThread):
 
         # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
-        m = len(self.grid.branches)
+        m = self.circuit.get_branch_number()
         nt = len(profile_indices)
 
         n_k_results = NMinusKResults(n, m, nt, time_array=numerical_circuit.time_array, states=states)

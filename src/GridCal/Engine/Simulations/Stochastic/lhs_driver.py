@@ -88,7 +88,7 @@ class LatinHypercubeSampling(QThread):
         # initialize vars
         batch_size = self.sampling_points
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
         n_cores = multiprocessing.cpu_count()
         self.pool = multiprocessing.Pool()
 
@@ -184,7 +184,7 @@ class LatinHypercubeSampling(QThread):
 
         batch_size = self.sampling_points
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running Latin Hypercube Sampling...')

@@ -177,12 +177,9 @@ def main():
     print('\nError:', pf.results.error)
     print('Elapsed time (s):', pf.results.elapsed, '\n')
 
-
-    from tabulate import tabulate
-
-    print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
+    print(v_df)
     print()
-    print(tabulate(br_df, tablefmt="pipe", headers=br_df.columns.values))
+    print(br_df)
 
 
 if __name__ == '__main__':

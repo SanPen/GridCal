@@ -228,8 +228,8 @@ class PtdfTimeSeries(QThread):
         """
 
         # initialize the grid time series results, we will append the island results with another function
-        n = len(self.grid.buses)
-        m = len(self.grid.branches)
+        n = self.grid.get_bus_number()
+        m = self.grid.get_branch_number()
         results = PtdfTimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
 
         # if there are valid profiles...

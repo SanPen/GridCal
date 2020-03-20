@@ -19,6 +19,7 @@ class BranchType(Enum):
     Branch = 'branch'
     Line = 'line'
     DCLine = 'DC-line'
+    VSC = 'VSC'
     Transformer = 'transformer'
     Reactance = 'reactance'
     Switch = 'switch'
@@ -48,6 +49,8 @@ class TimeFrame(Enum):
 class DeviceType(Enum):
     BusDevice = 'Bus'
     BranchDevice = 'Branch'
+    DCBranchDevice = 'DC Branch'
+    VscDevice = 'VSC'
     BatteryDevice = 'Battery'
     LoadDevice = 'Load'
     GeneratorDevice = 'Generator'

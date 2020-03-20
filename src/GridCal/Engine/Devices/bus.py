@@ -80,7 +80,7 @@ class Bus(EditableDevice):
     """
 
     def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
-                 xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False,
+                 xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
                  area='Default', zone='Default', substation='Default', country='', longitude=0.0, latitude=0.0):
 
         EditableDevice.__init__(self,
@@ -172,6 +172,9 @@ class Bus(EditableDevice):
 
         # Flag to determine if the bus is a slack bus or not
         self.is_slack = is_slack
+
+        # determined if this bus is an AC or DC bus
+        self.is_dc = is_dc
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed

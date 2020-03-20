@@ -235,7 +235,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = StaticSnapshotIslandInputs(1, 1, 1, 1, 1)
+        pfo = StaticSnapshotIslandInputs(1, 1, 1, 1, 1, 1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -3546,7 +3546,7 @@ class MainGUI(QMainWindow):
             file_name = os.path.join(get_create_gridcal_folder(), 'map_' + str(k+1) + '.html')
         else:
 
-            if self.ui.draw_schematic_checkBox.isChecked():
+            if not self.ui.draw_schematic_checkBox.isChecked():
                 print('The schematic drawing is disabled')
                 return None
 

@@ -79,7 +79,7 @@ class MonteCarlo(QThread):
         self.max_mc_iter = max_mc_iter
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         self.results = MonteCarloResults(n, m, name='Monte Carlo')
 
@@ -124,7 +124,7 @@ class MonteCarlo(QThread):
         v_variance = 0
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         mc_results = MonteCarloResults(n, m, name='Monte Carlo')
         avg_res = PowerFlowResults()
@@ -252,7 +252,7 @@ class MonteCarlo(QThread):
         v_variance = 0
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         # compile circuits
         numerical_circuit = self.circuit.compile_time_series()
