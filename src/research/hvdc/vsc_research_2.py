@@ -72,9 +72,10 @@ grid.add_branch(Branch(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate
 grid.add_branch(Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
 grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
-grid.add_branch(VSC(bus5, bus6, name='VSC 5-6', r1=0.0001, x1=0.05, m=0.8, theta=0.1, G0=1e-5, Beq=0.001, rate=30))
-grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7', r1=0.01, rate=30))
-grid.add_branch(VSC(bus7, bus8, name='VSC 7-8', r1=0.0001, x1=0.05, m=0.8, theta=0.1, G0=1e-5, Beq=0.001, rate=30))
+grid.add_branch(VSC(bus5, bus6, name='VSC 5-6', r1=0.0001, x1=0.05, m=0.9, theta=0.01, G0=1e-5, Beq=0.001, rate=30))
+grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (1)', r1=0.1, rate=30))
+grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (2)', r1=0.1, rate=30))
+grid.add_branch(VSC(bus7, bus8, name='VSC 7-8', r1=0.0001, x1=0.05, m=1.0, theta=0.01, G0=1e-5, Beq=0.01, rate=30))
 
 ####################################################################################################################
 # Run a power flow simulation
@@ -116,8 +117,3 @@ print('\n', br_df)
 # Finally the execution metrics
 print('\nError:', pf.results.error)
 print('Elapsed time (s):', pf.results.elapsed, '\n')
-
-print(v_df)
-print()
-print(br_df)
-

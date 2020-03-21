@@ -84,6 +84,7 @@ class VSC(EditableDevice):
         else:
             self.bus_from = bus_to
             self.bus_to = bus_from
+            print('Corrected the connection direction of the VSC device:', self.name)
 
         # List of measurements
         self.measurements = list()

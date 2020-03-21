@@ -132,15 +132,16 @@ def calc_connectivity(n_br, n_hvdc, n_vsc,
     # HVDC LINE MODEL --------------------------------------------------------------------------------------------------
     a = n_br
     b = a + n_hvdc
-    Ytt[a:b] = Rdc
-    Yff[a:b] = Rdc
-    Yft[a:b] = - Rdc
-    Ytf[a:b] = - Rdc
+    Ydc = 1 / Rdc
+    Ytt[a:b] = Ydc
+    Yff[a:b] = Ydc
+    Yft[a:b] = - Ydc
+    Ytf[a:b] = - Ydc
 
-    Ytts[a:b] = Rdc
-    Yffs[a:b] = Rdc
-    Yfts[a:b] = - Rdc
-    Ytfs[a:b] = - Rdc
+    Ytts[a:b] = Ydc
+    Yffs[a:b] = Ydc
+    Yfts[a:b] = - Ydc
+    Ytfs[a:b] = - Ydc
 
     # VSC MODEL --------------------------------------------------------------------------------------------------------
     a = n_br + n_hvdc
