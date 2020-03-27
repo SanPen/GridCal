@@ -30,6 +30,7 @@ if os.path.exists(os.path.join(here, '..', 'doc', 'about.rst')):
         description = f.read()
 else:
     description = ''
+    print('Unable to read the description file')
 
 
 base_path = os.path.join('GridCal')

@@ -246,10 +246,6 @@ class MonteCarloResults:
 
         model = RandomForestRegressor(10)
 
-        # model = DecisionTreeRegressor()
-
-        # model = LinearRegression()
-
         model.fit(x_train, y_train)
 
         y_pred = model.predict(x_test)
@@ -322,7 +318,7 @@ class MonteCarloResults:
 
             elif result_type == ResultTypes.BranchPowerAverage:
                 y = self.s_avg_conv[1:-1, indices]
-                y_label = '(p.u.)'
+                y_label = '(MW)'
                 x_label = 'Sampling points'
                 title = 'Bus current \naverage convergence'
 
@@ -346,7 +342,7 @@ class MonteCarloResults:
 
             elif result_type == ResultTypes.BranchPowerStd:
                 y = self.s_std_conv[1:-1, indices]
-                y_label = '(p.u.)'
+                y_label = '(MW)'
                 x_label = 'Sampling points'
                 title = 'Bus current standard \ndeviation convergence'
 
@@ -384,15 +380,13 @@ class MonteCarloResults:
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BranchPowerCDF:
-                cdf = CDF(np.abs(self.Sbr_points[:, indices]))
-                # cdf.plot(ax=ax)
-                y_label = '(kA)'
+                cdf = CDF(self.Sbr_points[:, indices].real)
+                y_label = '(MW)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BusPowerCDF:
-                cdf = CDF(np.abs(self.S_points[:, indices]))
-                # cdf.plot(ax=ax)
+                cdf = CDF(self.S_points[:, indices].real)
                 y_label = '(p.u.)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]

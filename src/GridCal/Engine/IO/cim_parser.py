@@ -84,7 +84,7 @@ class GeneralContainer:
 
             val = val.replace('\n', '')
 
-            if prop is not "":
+            if prop != "":
                 # if val not in ["", "\n"]:
                 # if val not in [ "\n"]:
                 self.properties[prop] = val
@@ -406,7 +406,7 @@ class CIMCircuit:
                     # and of which type of the ones pre-specified
                     start_rec, end_rec, tpe = self.check_type(line, classes)
 
-                    if tpe is not "":
+                    if tpe != "":
                         # a recognisable object was found
 
                         if start_rec:
