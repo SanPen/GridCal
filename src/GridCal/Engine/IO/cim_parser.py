@@ -1151,7 +1151,6 @@ class CIMImport:
                 if len(elm.base_voltage) > 0:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
                 else:
-                    #self.logger.append(elm.tpe + ':' + name + ' has no nominal voltage associated.')
                     Vnom = 0
 
                 CN = Bus(name=name, vnom=Vnom)
@@ -1224,7 +1223,7 @@ class CIMImport:
                 name = elm.properties['name']
                 
                 prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                template=BranchTemplate()
+                template = BranchTemplate()
                 if 'PerLengthImpedance' in elm.properties and 'length' in elm.properties:
                     pli = elm.properties['PerLengthImpedance']
                     l =  float(elm.properties['length'])
@@ -1236,7 +1235,7 @@ class CIMImport:
                         continue
                 else:
                     r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
-                    l =  float(elm.properties['length'])
+                    l = float(elm.properties['length'])
                 try:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
                 except:
@@ -1291,7 +1290,6 @@ class CIMImport:
         if 'PowerTransformer' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['PowerTransformer']:
 
-                # assert(len(elm.windings) == 2)
                 name = elm.properties['name']
 
                 if len(elm.windings) == 2:

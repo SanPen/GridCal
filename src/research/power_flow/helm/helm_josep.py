@@ -592,7 +592,7 @@ def test_pade(grid):
                                                        max_coeff=50,
                                                        verbose=False)
 
-    alphas = np.arange(1, 4, 0.01)
+    alphas = np.arange(0, 1.1, 0.01)
     n = inputs.nbus
     na = len(alphas)
     V = np.zeros((na, n))
@@ -600,7 +600,11 @@ def test_pade(grid):
     for i, alpha in enumerate(alphas):
         V[i, inputs.pqpv] = np.abs(pade4all(order=iter_, coeff_mat=U_, s=alpha))
 
+    plt.axvline(0, c='k')
+    plt.axvline(1, c='k')
     plt.plot(alphas, V)
+    plt.ylabel('Voltage (p.u.)')
+    plt.xlabel('$\lambda$')
     plt.show()
 
 
@@ -623,8 +627,8 @@ if __name__ == '__main__':
     # fname = 'IEEE 14 PQ only full.gridcal'
     grid = FileOpen(fname).open()
 
-    test_voltage(grid=grid)
+    # test_voltage(grid=grid)
 
     # test_sigma(grid=grid)
 
-    # test_pade(grid)
+    test_pade(grid)

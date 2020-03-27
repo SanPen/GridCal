@@ -15,6 +15,7 @@ Version 3.7.1
 
 - Added Jacobian with numba optimization from Pandapower increasing Newton-Raphson performance by x20.
 - Measuring the branch power instead of the current in the stochastic simulations.
+- Fixes the problem with qtConsole by not displaying the console if the package crashes. Hopefully the QtConsole team will fix their issue.
 
 Version 3.7.0 (HELM)
 ^^^^^^^^^^^^^^^^^^^^^
