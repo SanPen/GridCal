@@ -199,6 +199,9 @@ class Generator(EditableDevice):
         # is the generator active?
         gen.active = self.active
 
+        # active profile
+        gen.active_prof = self.active_prof
+
         # power profile for this load
         gen.P_prof = self.P_prof
 
@@ -238,22 +241,35 @@ class Generator(EditableDevice):
         :param bus_dict: Dictionary of buses [object] -> ID
         :return: json-compatible dictionary
         """
-        return {'id': id,
-                'type': 'controlled_gen',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'is_controlled': self.is_controlled,
-                'P': self.P,
-                'Pf': self.Pf,
-                'vset': self.Vset,
-                'Snom': self.Snom,
-                'qmin': self.Qmin,
-                'qmax': self.Qmax,
-                'Pmin': self.Pmin,
-                'Pmax': self.Pmax,
-                'Cost': self.Cost}
+
+        d = {'id': id,
+             'type': 'controlled_gen',
+             'phases': 'ps',
+             'name': self.name,
+             'bus': bus_dict[self.bus],
+             'active': self.active,
+             'is_controlled': self.is_controlled,
+             'P': self.P,
+             'Pf': self.Pf,
+             'vset': self.Vset,
+             'Snom': self.Snom,
+             'qmin': self.Qmin,
+             'qmax': self.Qmax,
+             'Pmin': self.Pmin,
+             'Pmax': self.Pmax,
+             'Cost': self.Cost,
+             'active_profile': [],
+             'P_prof': [],
+             'Pf_prof': [],
+             'Vset_prof': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+            d['P_prof'] = self.P_prof.tolist()
+            d['Pf_prof'] = self.Pf_prof.tolist()
+            d['Vset_prof'] = self.Vset_prof.tolist()
+
+        return d
 
     def plot_profiles(self, time=None, show_fig=True):
         """

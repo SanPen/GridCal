@@ -568,14 +568,20 @@ class MultiCircuit:
 
             **id**: Arbitrary identifier
         """
-        return {'id': id,
-                'type': 'circuit',
-                'phases': 'ps',
-                'name': self.name,
-                'Sbase': self.Sbase,
-                'ModelVersion': self.model_version,
-                'UserName': self.user_name,
-                'comments': self.comments}
+        d = {'id': id,
+             'type': 'circuit',
+             'phases': 'ps',
+             'name': self.name,
+             'Sbase': self.Sbase,
+             'ModelVersion': self.model_version,
+             'UserName': self.user_name,
+             'comments': self.comments,
+             'time': []}
+
+        if self.time_profile is not None:
+            d['time'] = self.time_profile.astype(int).tolist()
+
+        return d
 
     def assign_circuit(self, circ):
         """

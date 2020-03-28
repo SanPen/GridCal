@@ -164,18 +164,37 @@ class Load(EditableDevice):
         :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
-        return {'id': id,
-                'type': 'load',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'G': self.G,
-                'B': self.B,
-                'Ir': self.Ir,
-                'Ii': self.Ii,
-                'P': self.P,
-                'Q': self.Q}
+
+        d = {'id': id,
+             'type': 'load',
+             'phases': 'ps',
+             'name': self.name,
+             'bus': bus_dict[self.bus],
+             'active': self.active,
+             'G': self.G,
+             'B': self.B,
+             'Ir': self.Ir,
+             'Ii': self.Ii,
+             'P': self.P,
+             'Q': self.Q,
+             'active_profile': [],
+             'P_prof': [],
+             'Q_prof': [],
+             'Ir_prof': [],
+             'Ii_prof': [],
+             'G_prof': [],
+             'B_prof': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+            d['P_prof'] = self.P_prof.tolist()
+            d['Q_prof'] = self.Q_prof.tolist()
+            d['Ir_prof'] = self.Ir_prof.tolist()
+            d['Ii_prof'] = self.Ii_prof.tolist()
+            d['G_prof'] = self.G_prof.tolist()
+            d['B_prof'] = self.B_prof.tolist()
+
+        return d
 
     def plot_profiles(self, time=None, show_fig=True):
         """

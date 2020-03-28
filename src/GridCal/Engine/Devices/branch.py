@@ -679,21 +679,22 @@ class Branch(EditableDevice):
         Return the data that matches the edit_headers
         :return:
         """
-        # conv = BranchTypeConverter(None)
-
         data = list()
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
+
             elif properties.tpe == BranchTemplate:
                 if obj is None:
                     obj = ''
                 else:
                     obj = str(obj)
+
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)
+
             data.append(obj)
         return data
 
@@ -704,27 +705,36 @@ class Branch(EditableDevice):
         :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
-        return {'id': id,
-                'type': 'branch',
-                'phases': 'ps',
-                'name': self.name,
-                'from': bus_dict[self.bus_from],
-                'to': bus_dict[self.bus_to],
-                'active': self.active,
-                'rate': self.rate,
-                'r': self.R,
-                'x': self.X,
-                'g': self.G,
-                'b': self.B,
-                'length': self.length,
-                'tap_module': self.tap_module,
-                'bus_to_regulated': self.bus_to_regulated,
-                'vset': self.vset,
-                'temp_base': self.temp_base,
-                'temp_oper': self.temp_oper,
-                'alpha': self.alpha,
-                'tap_angle': self.angle,
-                'branch_type': self.branch_type}
+
+        d = {'id': id,
+             'type': 'branch',
+             'phases': 'ps',
+             'name': self.name,
+             'from': bus_dict[self.bus_from],
+             'to': bus_dict[self.bus_to],
+             'active': self.active,
+             'rate': self.rate,
+             'r': self.R,
+             'x': self.X,
+             'g': self.G,
+             'b': self.B,
+             'length': self.length,
+             'tap_module': self.tap_module,
+             'bus_to_regulated': self.bus_to_regulated,
+             'vset': self.vset,
+             'temp_base': self.temp_base,
+             'temp_oper': self.temp_oper,
+             'alpha': self.alpha,
+             'tap_angle': self.angle,
+             'branch_type': str(self.branch_type),
+             'active_profile': [],
+             'rate_prof': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+            d['rate_prof'] = self.rate_prof.tolist()
+
+        return d
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

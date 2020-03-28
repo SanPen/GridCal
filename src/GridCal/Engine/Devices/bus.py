@@ -401,24 +401,33 @@ class Bus(EditableDevice):
         Return Json-like dictionary
         :return: Dictionary
         """
-        return {'id': id,
-                'type': 'bus',
-                'phases': 'ps',
-                'name': self.name,
-                'active': self.active,
-                'is_slack': self.is_slack,
-                'Vnom': self.Vnom,
-                'vmin': self.Vmin,
-                'vmax': self.Vmax,
-                'rf': self.r_fault,
-                'xf': self.x_fault,
-                'x': self.x,
-                'y': self.y,
-                'h': self.h,
-                'w': self.w,
-                'area': self.area,
-                'zone': self.zone,
-                'substation': self.substation}
+
+        d = {'id': id,
+             'type': 'bus',
+             'phases': 'ps',
+             'name': self.name,
+             'active': self.active,
+             'is_slack': self.is_slack,
+             'Vnom': self.Vnom,
+             'vmin': self.Vmin,
+             'vmax': self.Vmax,
+             'rf': self.r_fault,
+             'xf': self.x_fault,
+             'x': self.x,
+             'y': self.y,
+             'h': self.h,
+             'w': self.w,
+             'lat': self.latitude,
+             'lon': self.longitude,
+             'area': self.area,
+             'zone': self.zone,
+             'substation': self.substation,
+             'active_profile': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+
+        return d
 
     def set_state(self, t):
         """
