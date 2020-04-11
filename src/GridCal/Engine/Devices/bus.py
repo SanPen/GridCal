@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class Bus(EditableDevice):

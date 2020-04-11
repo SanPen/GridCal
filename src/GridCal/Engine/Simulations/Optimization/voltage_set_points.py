@@ -64,7 +64,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         self.max_eval = max_iter
 
         # the dimension is the number of nodes
-        self.dim = self.numerical_circuit.n_ctrl_gen
+        self.dim = self.numerical_circuit.n_gen
         self.x0 = np.abs(self.numerical_circuit.generator_voltage) - np.ones(self.dim)
         self.min = 0
         self.minimum = np.zeros(self.dim)

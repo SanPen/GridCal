@@ -17,7 +17,7 @@
 from warnings import warn
 import pandas as pd
 import numpy as np
-from GridCal.Engine.Devices.meta_devices import DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import DeviceType, GCProp
 from GridCal.Engine.Devices.generator import Generator
 
 

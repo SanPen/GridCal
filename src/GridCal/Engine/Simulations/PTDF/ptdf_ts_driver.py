@@ -266,7 +266,7 @@ class PtdfTimeSeries(QThread):
                 dP = (Pbus_0[:] - Pbus[:, t_idx])
                 results.voltage[k, :] = V_0 + np.dot(dP, vtdf)
                 results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
-                results.loading[k, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
+                results.loading[k, :] = results.Sbranch[k, :] / (nc.branch_rates + 1e-9)
                 results.S[k, :] = Pbus[:, t_idx]
 
                 progress = ((t_idx - self.start_ + 1) / (self.end_ - self.start_)) * 100

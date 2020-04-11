@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sun Mar  1 21:36:28 2020
+# Created: Sun Apr  5 12:21:06 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -698,9 +698,6 @@ class Ui_mainWindow(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame_8)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.export_mode_comboBox = QtWidgets.QComboBox(self.frame_8)
-        self.export_mode_comboBox.setObjectName("export_mode_comboBox")
-        self.horizontalLayout_2.addWidget(self.export_mode_comboBox)
         self.copy_results_pushButton = QtWidgets.QPushButton(self.frame_8)
         self.copy_results_pushButton.setText("")
         self.copy_results_pushButton.setIcon(icon3)

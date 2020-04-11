@@ -19,8 +19,8 @@ That means that solves the OPF problem for a complete time series at once
 """
 
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.snapshot_data import SnapshotData
+from GridCal.Engine.Core.time_series_data import SeriesData
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import *
 
@@ -231,7 +231,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfDcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: StaticSeriesInputs, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: SeriesData, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
                  batteries_energy_0=None):
         """
         DC time series linear optimal power flow
@@ -253,53 +253,52 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """
-        numerical_circuit = self.numerical_circuit
 
         # general indices
-        n = numerical_circuit.nbus
-        m = numerical_circuit.nbr
-        ng = numerical_circuit.n_ctrl_gen
-        nb = numerical_circuit.n_batt
-        nl = numerical_circuit.n_ld
+        n = self.numerical_circuit.nbus
+        m = self.numerical_circuit.nbr
+        ng = self.numerical_circuit.n_gen
+        nb = self.numerical_circuit.n_batt
+        nl = self.numerical_circuit.n_ld
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
-        Sbase = numerical_circuit.Sbase
+        Sbase = self.numerical_circuit.Sbase
 
         # battery
-        Capacity = numerical_circuit.battery_Enom / Sbase
-        minSoC = numerical_circuit.battery_min_soc
-        maxSoC = numerical_circuit.battery_max_soc
+        Capacity = self.numerical_circuit.battery_Enom / Sbase
+        minSoC = self.numerical_circuit.battery_min_soc
+        maxSoC = self.numerical_circuit.battery_max_soc
         if batteries_energy_0 is None:
-            SoC0 = numerical_circuit.battery_soc_0
+            SoC0 = self.numerical_circuit.battery_soc_0
         else:
             SoC0 = (batteries_energy_0 / Sbase) / Capacity
-        Pb_max = numerical_circuit.battery_pmax / Sbase
-        Pb_min = numerical_circuit.battery_pmin / Sbase
-        Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
-        cost_b = numerical_circuit.battery_cost_profile[a:b, :].transpose()
+        Pb_max = self.numerical_circuit.battery_pmax / Sbase
+        Pb_min = self.numerical_circuit.battery_pmin / Sbase
+        Efficiency = (self.numerical_circuit.battery_discharge_efficiency + self.numerical_circuit.battery_charge_efficiency) / 2.0
+        cost_b = self.numerical_circuit.battery_cost_profile[a:b, :].transpose()
 
         # generator
-        Pg_max = numerical_circuit.generator_pmax / Sbase
-        Pg_min = numerical_circuit.generator_pmin / Sbase
-        P_profile = numerical_circuit.generator_power_profile[a:b, :].transpose() / Sbase
-        cost_g = numerical_circuit.generator_cost_profile[a:b, :].transpose()
-        enabled_for_dispatch = numerical_circuit.generator_dispatchable
+        Pg_max = self.numerical_circuit.generator_pmax / Sbase
+        Pg_min = self.numerical_circuit.generator_pmin / Sbase
+        P_profile = self.numerical_circuit.generator_power_profile[a:b, :].transpose() / Sbase
+        cost_g = self.numerical_circuit.generator_cost_profile[a:b, :].transpose()
+        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active_prof[a:b, :] * numerical_circuit.load_power_profile.real[a:b, :]).transpose() / Sbase
-        cost_l = numerical_circuit.load_cost_prof[a:b, :].transpose()
+        Pl = (self.numerical_circuit.load_active_prof[a:b, :] * self.numerical_circuit.load_power_profile.real[a:b, :]).transpose() / Sbase
+        cost_l = self.numerical_circuit.load_cost_prof[a:b, :].transpose()
 
         # branch
-        branch_ratings = numerical_circuit.br_rate_profile[a:b, :].transpose() / Sbase
-        Bseries = (numerical_circuit.branch_active_prof[a:b, :] * (
-                    1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
-        cost_br = numerical_circuit.branch_cost_profile[a:b, :].transpose()
+        branch_ratings = self.numerical_circuit.branch_rate_profile[a:b, :].transpose() / Sbase
+        Bseries = (self.numerical_circuit.branch_active_prof[a:b, :] * (
+                    1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X))).imag.transpose()
+        cost_br = self.numerical_circuit.branch_cost_profile[a:b, :].transpose()
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
         for t in range(1, nt):
-            dt[t - 1] = (numerical_circuit.time_array[a + t] - numerical_circuit.time_array[a + t - 1]).seconds / 3600
+            dt[t - 1] = (self.numerical_circuit.time_array[a + t] - self.numerical_circuit.time_array[a + t - 1]).seconds / 3600
 
         # create LP variables
         Pg = lpMakeVars(name='Pg', shape=(ng, nt), lower=Pg_min, upper=Pg_max)
@@ -307,8 +306,8 @@ class OpfDcTimeSeries(OpfTimeSeries):
         E = lpMakeVars(name='E', shape=(nb, nt), lower=Capacity * minSoC, upper=Capacity * maxSoC)
         load_slack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
         theta = lpMakeVars(name='theta', shape=(n, nt), lower=-3.14, upper=3.14)
-        theta_f = theta[numerical_circuit.F, :]
-        theta_t = theta[numerical_circuit.T, :]
+        theta_f = theta[self.numerical_circuit.F, :]
+        theta_t = theta[self.numerical_circuit.T, :]
         branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
         branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
@@ -324,16 +323,16 @@ class OpfDcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections
-        P = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.C_bus_gen,
                                  Pg=Pg,
-                                 C_bus_bat=numerical_circuit.C_bus_batt,
+                                 C_bus_bat=self.numerical_circuit.C_bus_batt,
                                  Pb=Pb,
-                                 C_bus_load=numerical_circuit.C_bus_load,
+                                 C_bus_load=self.numerical_circuit.C_bus_load,
                                  LSlack=load_slack,
                                  Pl=Pl)
 
         # set the nodal restrictions
-        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit, problem, theta, P,
+        nodal_restrictions = add_dc_nodal_power_balance(self.numerical_circuit, problem, theta, P,
                                                         start_=self.start_idx, end_=self.end_idx)
 
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,

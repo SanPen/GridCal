@@ -111,18 +111,23 @@ class PSSeGrid:
         psse_bus_dict = dict()
         for psse_bus in self.buses:
 
-            # relate each PSS bus index with a GridCal bus object
-            psse_bus_dict[psse_bus.I] = psse_bus.bus
+            bus = psse_bus.get_object(areas=self.areas, logger=logger)
 
-            # replace area idx by area name if available
-            if abs(psse_bus.bus.area) in area_dict.keys():
-                psse_bus.bus.area = area_dict[abs(psse_bus.bus.area)]
+            if bus is not None:
+                # relate each PSS bus index with a GridCal bus object
+                psse_bus_dict[psse_bus.I] = bus
 
-            if abs(psse_bus.bus.zone) in zones_dict.keys():
-                psse_bus.bus.zone = zones_dict[abs(psse_bus.bus.zone)]
+                # replace area idx by area name if available
+                if abs(bus.area) in area_dict.keys():
+                    bus.area = area_dict[abs(bus.area)]
 
-            # add the bus to the circuit
-            circuit.add_bus(psse_bus.bus)
+                if abs(bus.zone) in zones_dict.keys():
+                    bus.zone = zones_dict[abs(bus.zone)]
+
+                # add the bus to the circuit
+                circuit.add_bus(bus)
+            else:
+                logger.append('The bus ' + str(psse_bus.I) + ' was not converted to GridCal')
 
         # Go through loads
         for psse_load in self.loads:
@@ -151,13 +156,19 @@ class PSSeGrid:
         # ---------------------------------------------------------------------
         # Branches
         # ---------------------------------------------------------------------
+        already_there = set()
+
         # Go through Branches
         for psse_banch in self.branches:
             # get the object
             branch = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
 
-            # Add to the circuit
-            circuit.add_branch(branch)
+            if branch.name not in already_there:  # yes, fucking .raw files may have repeated elements
+                # Add to the circuit
+                circuit.add_branch(branch)
+                already_there.add(branch.name)
+            else:
+                logger.add('Branch ' + branch.name + ' is repeated and is omitted from the model')
 
         # Go through Transformers
         for psse_banch in self.transformers:
@@ -166,9 +177,62 @@ class PSSeGrid:
 
             # Add to the circuit
             for branch in branches:
-                circuit.add_branch(branch)
+                # circuit.add_branch(branch)
+
+                if branch.name not in already_there:  # yes, fucking .raw files may have repeated elements
+                    # Add to the circuit
+                    circuit.add_branch(branch)
+                    already_there.add(branch.name)
+                else:
+                    logger.add('Branch ' + branch.name + ' is repeated and is omitted from the model')
 
         return circuit
+
+
+class PSSeArea:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        self.I = -1
+
+        self.ARNAME = ''
+
+        if version in [29, 30, 32, 33]:
+            # I, ISW, PDES, PTOL, 'ARNAME'
+            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+
+            self.ARNAME = self.ARNAME.replace("'", "").strip()
+        else:
+            logger.append('Areas not defined for version ' + str(version))
+
+
+class PSSeZone:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        self.I = -1
+
+        self.ZONAME = ''
+
+        if version in [29, 30, 32, 33]:
+            # I, 'ZONAME'
+            self.I, self.ZONAME = data[0]
+
+            self.ZONAME = self.ZONAME.replace("'", "").strip()
+        else:
+            logger.append('Zones not defined for version ' + str(version))
 
 
 class PSSeBus:
@@ -200,8 +264,7 @@ class PSSeBus:
         Args:
             data:
         """
-
-        bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.REF, 4: BusMode.PQ}
+        self.version = version
 
         if version == 33:
             n = len(data[0])
@@ -211,57 +274,87 @@ class PSSeBus:
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, \
              self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = dta
 
-            # create bus
-            name = self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
-                           area=self.AREA, zone=self.ZONE)
-
         elif version == 32:
 
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, self.OWNER, self.VM, self.VA = data[0]
-
-            # create bus
-            name = self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE)
 
         elif version in [29, 30]:
             # I, ’NAME’, BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
             self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
+        else:
+            logger.append('Bus not implemented for version ' + str(version))
+
+    def get_object(self, areas: List[PSSeArea], logger: list):
+        """
+        Return GridCal Load object
+        Returns:
+            Gridcal Load object
+        """
+
+        name = str(self.I) + '_' + self.NAME.replace("'", "").strip()
+
+        bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.REF, 4: BusMode.PQ}
+
+        slack_idx = [a.ISW for a in areas if a.ISW > 0]
+
+        bus = None
+
+        if self.version == 33:
+
+            # create bus
+
+            bus = Bus(name=name, vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
+                      area=self.AREA, zone=self.ZONE)
+
+        elif self.version == 32:
+            bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+                      active=True, area=self.AREA, zone=self.ZONE)
+
+        elif self.version in [29, 30]:
             # create bus
             name = self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE)
+            bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+                      active=True, area=self.AREA, zone=self.ZONE)
 
             if self.GL > 0 or self.BL > 0:
                 sh = Shunt(name='Shunt_' + str(self.I),
                            G=self.GL, B=self.BL,
                            active=True)
 
-                self.bus.shunts.append(sh)
+                bus.shunts.append(sh)
 
+        if bus is not None:
+            # set type
+            if self.IDE in bustype.keys():
+                bus.type = bustype[self.IDE]
+            else:
+                bus.type = BusMode.PQ
+
+            if int(self.IDE) == 4:
+                bus.active = False
+
+            if bus.type == BusMode.REF:
+                if len(slack_idx) > 0:
+                    if self.I in slack_idx:
+                        bus.is_slack = True
+                    else:
+                        bus.is_slack = False
+                        logger.append('The bus ' + str(self.I) + ' is marked as slack but it is not in the area')
+                else:
+                    bus.is_slack = True
+            else:
+                if self.I in slack_idx:
+                    bus.is_slack = True
+                    logger.append('Setting the bus ' + str(self.I) + ' as the slack despite not being marked as slack itself')
+
+            if int(self.IDE) == 4:
+                bus.active = False
+
+            return bus
         else:
-            logger.append('Bus not implemented for version ' + str(version))
-
-        # set type
-        if self.IDE in bustype.keys():
-            self.bus.type = bustype[self.IDE]
-        else:
-            self.bus.type = BusMode.PQ
-
-        if int(self.IDE) == 4:
-            self.bus.active = False
-
-        if self.bus.type == BusMode.REF:
-            self.bus.is_slack = True
-
-        if int(self.IDE) == 4:
-            self.bus.active = False
-
-        # Ensures unique name
-        self.bus.name = str(self.I) + '_' + self.bus.name.replace("'", "").strip()
+            return None
 
 
 class PSSeLoad:
@@ -528,8 +621,9 @@ class PSSeShunt:
 
         g = self.GL
         b = self.BL
-
-        elm = Shunt(name=str(self.I) + '_' + str(self.ID),
+        name = str(self.I) + '_' + str(self.ID).replace("'", "")
+        name = name.strip()
+        elm = Shunt(name=name,
                     G=g, B=b,
                     active=bool(self.STATUS))
 
@@ -677,6 +771,7 @@ class PSSeGenerator:
             Gridcal Load object
         """
         name = str(self.I) + '_' + str(self.ID).replace("'", "")
+        name = name.strip()
         elm = Generator(name=name,
                         active_power=self.PG,
                         voltage_module=self.VS,
@@ -838,7 +933,7 @@ class PSSeBranch:
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
         name = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "")
-
+        name = name.strip()
         branch = Branch(bus_from=bus_from, bus_to=bus_to,
                         name=name,
                         r=self.R,
@@ -1779,7 +1874,7 @@ class PSSeTransformer:
             bus_to = psse_bus_dict[self.J]
 
             name = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT) + self.NAME.strip()
-            name = name.replace("'", "")
+            name = name.replace("'", "").strip()
 
             if self.CZ == 1:
                 r = self.R1_2
@@ -1827,8 +1922,8 @@ class PSSeTransformer:
             g = self.MAG1
             b = self.MAG2
 
-            name1 = str(self.I) + '_' + str(self.J) + '_ij' + self.NAME.strip()
-            name1 = name1.replace("'", "")
+            name1 = str(self.I) + '_' + str(self.J) + '_12' + self.NAME.strip()
+            name1 = name1.replace("'", "").strip()
 
             object1 = Branch(bus_from=bus_1, bus_to=bus_2,
                              name=name1,
@@ -1849,8 +1944,8 @@ class PSSeTransformer:
             g = self.MAG1
             b = self.MAG2
 
-            name2 = str(self.J) + '_' + str(self.K) + '_jk' + self.NAME.strip()
-            name2 = name2.replace("'", "")
+            name2 = str(self.J) + '_' + str(self.K) + '_23' + self.NAME.strip()
+            name2 = name2.replace("'", "").strip()
 
             object2 = Branch(bus_from=bus_2, bus_to=bus_3,
                              name=name2,
@@ -1871,8 +1966,8 @@ class PSSeTransformer:
             g = self.MAG1
             b = self.MAG2
 
-            name3 = str(self.K) + '_' + str(self.I) + '_ki' + self.NAME.strip()
-            name3 = name3.replace("'", "")
+            name3 = str(self.K) + '_' + str(self.I) + '_31' + self.NAME.strip()
+            name3 = name3.replace("'", "").strip()
 
             object3 = Branch(bus_from=bus_3, bus_to=bus_1,
                              name=name3,
@@ -1915,52 +2010,6 @@ class PSSeInterArea:
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:
             logger.append('Areas not defined for version ' + str(version))
-
-
-class PSSeArea:
-
-    def __init__(self, data, version, logger: list):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
-
-        self.I = -1
-
-        self.ARNAME = ''
-
-        if version in [29, 30, 32, 33]:
-            # I, ISW, PDES, PTOL, 'ARNAME'
-            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
-
-            self.ARNAME = self.ARNAME.replace("'", "").strip()
-        else:
-            logger.append('Areas not defined for version ' + str(version))
-
-
-class PSSeZone:
-
-    def __init__(self, data, version, logger: list):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
-
-        self.I = -1
-
-        self.ZONAME = ''
-
-        if version in [29, 30, 32, 33]:
-            # I, 'ZONAME'
-            self.I, self.ZONAME = data[0]
-
-            self.ZONAME = self.ZONAME.replace("'", "").strip()
-        else:
-            logger.append('Zones not defined for version ' + str(version))
 
 
 def interpret_line(line, splitter=','):
@@ -2115,6 +2164,7 @@ class PSSeParser:
         meta_data['two-terminal dc'] = [grid.branches, PSSeTwoTerminalDCLine, 3]
         meta_data['vsc dc line'] = [grid.branches, PSSeVscDCLine, 3]
         meta_data['area data'] = [grid.areas, PSSeArea, 1]
+        meta_data['area'] = [grid.areas, PSSeArea, 1]
         meta_data['inter-area transfer'] = [grid.areas, PSSeInterArea, 1]
         meta_data['zone'] = [grid.zones, PSSeZone, 1]
 
@@ -2180,7 +2230,7 @@ class PSSeParser:
 
 if __name__ == '__main__':
 
-    fname = '/home/santi/Descargas/PSS_file.raw'
+    fname = 'IEEE 118 Bus.raw'
 
     pss_parser = PSSeParser(fname)
 

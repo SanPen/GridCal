@@ -28,7 +28,7 @@ from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 
 # Engine imports
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotIslandInputs
+from GridCal.Engine.Core.snapshot_data import SnapshotIsland
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
@@ -211,11 +211,6 @@ class MainGUI(QMainWindow):
         self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
 
-        # export modes
-        mdl = get_list_model(['real', 'imag', 'abs'])
-        self.ui.export_mode_comboBox.setModel(mdl)
-        self.ui.export_mode_comboBox.setCurrentIndex(0)
-
         # do not allow MP under windows because it crashes
         if platform.system() == 'Windows':
             self.ui.use_multiprocessing_checkBox.setEnabled(False)
@@ -235,7 +230,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = StaticSnapshotIslandInputs(1, 1, 1, 1, 1, 1, 1)
+        pfo = SnapshotIsland(1, 1, 1, 1, 1, 1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -3868,8 +3863,8 @@ class MainGUI(QMainWindow):
 
             fig = plt.figure(figsize=(12, 8))
             ax = fig.add_subplot(111)
-            mode = self.ui.export_mode_comboBox.currentText()
-            self.results_mdl.plot(ax=ax, mode=mode)
+
+            self.results_mdl.plot(ax=ax)
             plt.show()
 
     def save_results_df(self):
@@ -3877,7 +3872,7 @@ class MainGUI(QMainWindow):
         Save the data displayed at the results as excel
         """
         mdl = self.ui.resultsTableView.model()
-        mode = self.ui.export_mode_comboBox.currentText()
+
         if mdl is not None:
 
             options = QFileDialog.Options()
@@ -3893,13 +3888,13 @@ class MainGUI(QMainWindow):
                     f = file
                     if not f.endswith('.xlsx'):
                         f += '.xlsx'
-                    mdl.save_to_excel(f, mode=mode)
+                    mdl.save_to_excel(f)
                     print('Saved!')
                 if'csv' in filter:
                     f = file
                     if not f.endswith('.csv'):
                         f += '.csv'
-                    mdl.save_to_csv(f, mode=mode)
+                    mdl.save_to_csv(f)
                     print('Saved!')
                 else:
                     self.msg(file[0] + ' is not valid :(')
@@ -3911,9 +3906,8 @@ class MainGUI(QMainWindow):
         Copy the current displayed profiles to the clipboard
         """
         mdl = self.ui.resultsTableView.model()
-        mode = self.ui.export_mode_comboBox.currentText()
         if mdl is not None:
-            mdl.copy_to_clipboard(mode=mode)
+            mdl.copy_to_clipboard()
             print('Copied!')
         else:
             self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')

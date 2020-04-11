@@ -23,9 +23,9 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
-from GridCal.Engine.Devices.meta_devices import DeviceType
+from GridCal.Engine.Core.snapshot_data import SnapshotData
+from GridCal.Engine.Core.time_series_data import SeriesData
+from GridCal.Engine.Devices.editable_device import DeviceType
 
 
 def get_system_user():
@@ -98,8 +98,6 @@ class MultiCircuit:
 
         # Should be able to accept Branches, Lines and Transformers alike
         self.branches = list()
-        self.vsc_branches = list()
-        self.hvdc_branches = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -192,10 +190,8 @@ class MultiCircuit:
         return the number of branches (of all types)
         :return: number
         """
-        n_hvdc = len(self.hvdc_branches)
-        n_vsc = len(self.vsc_branches)
         n_br = len(self.branches)
-        return n_br + n_hvdc + n_vsc
+        return n_br
 
     def get_time_number(self):
         """
@@ -644,15 +640,15 @@ class MultiCircuit:
 
         return self.graph
 
-    def compile(self, logger=Logger()) -> StaticSnapshotInputs:
+    def compile(self, logger=Logger()) -> SnapshotData:
         """
         Keep the compile function for retro-compatibility
         :param logger:
-        :return: StaticSnapshotInputs instance
+        :return: SnapshotData instance
         """
         return self.compile_snapshot(opf_results=None, opf_time_series_results=None, logger=logger)
 
-    def compile_snapshot(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> StaticSnapshotInputs:
+    def compile_snapshot(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> SnapshotData:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -708,15 +704,29 @@ class MultiCircuit:
             n_sh += len(bus.shunts)
 
         # count the number of branches
-        n_hvdc = len(self.hvdc_branches)
-        n_vsc = len(self.vsc_branches)
-        n_br = len(self.branches)
+        n_hvdc = 0
+        n_vsc = 0
+        n_pi = 0
+        idx_hvdc = list()
+        idx_vsc = list()
+        idx_pi = list()
+        for i, obj in enumerate(self.branches):
+            if obj.device_type == DeviceType.VscDevice:
+                n_vsc += 1
+                idx_vsc.append(i)
+            elif obj.device_type == DeviceType.DCBranchDevice:
+                n_hvdc += 1
+                idx_hvdc.append(i)
+            else:
+                n_pi += 1
+                idx_pi.append(i)
 
         # declare the numerical circuit
-        circuit = StaticSnapshotInputs(n_bus=n, n_br=n_br, n_ld=n_ld, n_gen=n_ctrl_gen,
-                                       n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
-                                       n_hvdc=n_hvdc, n_vsc=n_vsc,
-                                       Sbase=self.Sbase)
+        circuit = SnapshotData(n_bus=n, n_pi=n_pi, n_ld=n_ld, n_gen=n_ctrl_gen,
+                               n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
+                               n_hvdc=n_hvdc, n_vsc=n_vsc,
+                               idx_pi=idx_pi, idx_hvdc=idx_hvdc, idx_vsc=idx_vsc,
+                               Sbase=self.Sbase)
 
         # compile the buses and the shunt devices
         i_ld = 0
@@ -769,6 +779,7 @@ class MultiCircuit:
                 i_sta_gen += 1
 
             for elm in bus.controlled_generators:
+
                 circuit.generator_names[i_gen] = elm.name
 
                 circuit.generator_power_factor[i_gen] = elm.Pf
@@ -843,14 +854,16 @@ class MultiCircuit:
                 i_sh += 1
 
         # Compile the branches
-        for i, branch in enumerate(self.branches):
+        for ii, i in enumerate(idx_pi):
 
             # common to all branches
+            branch = self.branches[i]
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
 
             circuit.branch_names[i] = branch.name
             circuit.branch_active[i] = branch.active
+            circuit.branch_rates[i] = branch.rate
 
             circuit.C_branch_bus_f[i, f] = 1
             circuit.C_branch_bus_t[i, t] = 1
@@ -858,86 +871,90 @@ class MultiCircuit:
             circuit.T[i] = t
 
             # name and state
-            circuit.br_mttf[i] = branch.mttf
-            circuit.br_mttr[i] = branch.mttr
-            circuit.branch_cost[i] = branch.Cost
+            circuit.branch_mttf[ii] = branch.mttf
+            circuit.branch_mttr[ii] = branch.mttr
+            circuit.branch_cost[ii] = branch.Cost
 
             # impedance and tap
-            circuit.R[i] = branch.R
-            circuit.X[i] = branch.X
-            circuit.G[i] = branch.G
-            circuit.B[i] = branch.B
-            circuit.impedance_tolerance[i] = branch.tolerance
-            circuit.br_rates[i] = branch.rate
-            circuit.tap_mod[i] = branch.tap_module
-            circuit.tap_ang[i] = branch.angle
+            circuit.branch_R[ii] = branch.R
+            circuit.branch_X[ii] = branch.X
+            circuit.branch_G[ii] = branch.G
+            circuit.branch_B[ii] = branch.B
+            circuit.branch_impedance_tolerance[ii] = branch.tolerance
+            circuit.branch_tap_mod[ii] = branch.tap_module
+            circuit.branch_tap_ang[ii] = branch.angle
 
             # Thermal correction
-            circuit.temp_base[i] = branch.temp_base
-            circuit.temp_oper[i] = branch.temp_oper
-            circuit.alpha[i] = branch.alpha
+            circuit.branch_temp_base[ii] = branch.temp_base
+            circuit.branch_temp_oper[ii] = branch.temp_oper
+            circuit.branch_alpha[ii] = branch.alpha
 
             # tap changer
-            circuit.is_bus_to_regulated[i] = branch.bus_to_regulated
-            circuit.tap_position[i] = branch.tap_changer.tap
-            circuit.min_tap[i] = branch.tap_changer.min_tap
-            circuit.max_tap[i] = branch.tap_changer.max_tap
-            circuit.tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
-            circuit.tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
-            circuit.vset[i] = branch.vset
+            circuit.branch_is_bus_to_regulated[ii] = branch.bus_to_regulated
+            circuit.branch_tap_position[ii] = branch.tap_changer.tap
+            circuit.branch_min_tap[ii] = branch.tap_changer.min_tap
+            circuit.branch_max_tap[ii] = branch.tap_changer.max_tap
+            circuit.branch_tap_inc_reg_up[ii] = branch.tap_changer.inc_reg_up
+            circuit.branch_tap_inc_reg_down[ii] = branch.tap_changer.inc_reg_down
+            circuit.branch_vset[ii] = branch.vset
 
             # switches
             if branch.branch_type == BranchType.Switch:
-                circuit.switch_indices.append(i)
+                circuit.branch_switch_indices.append(i)
 
             # virtual taps for transformers where the connection voltage is off
             elif branch.branch_type == BranchType.Transformer:
-                circuit.tap_f[i], circuit.tap_t[i] = branch.get_virtual_taps()
+                circuit.branch_tap_f[ii], circuit.branch_tap_t[ii] = branch.get_virtual_taps()
 
-        for i, branch in enumerate(self.hvdc_branches):
-            ii = i + n_br
+        for ii, i in enumerate(idx_hvdc):
 
             # common to all branches
+            branch = self.branches[i]
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
 
-            circuit.C_branch_bus_f[ii, f] = 1
-            circuit.C_branch_bus_t[ii, t] = 1
+            circuit.C_branch_bus_f[i, f] = 1
+            circuit.C_branch_bus_t[i, t] = 1
 
-            circuit.F[ii] = f
-            circuit.T[ii] = t
+            circuit.F[i] = f
+            circuit.T[i] = t
 
-            circuit.branch_names[ii] = branch.name
-            circuit.branch_active[ii] = branch.active
-            circuit.br_rates[ii] = branch.rate
+            circuit.branch_names[i] = branch.name
+            circuit.branch_active[i] = branch.active
+            circuit.branch_rates[i] = branch.rate
 
             # specific to HVDC
-            circuit.Rdc[i] = branch.Rdc
+            circuit.hvdc_R[ii] = branch.Rdc
 
-        for i, branch in enumerate(self.vsc_branches):
-            ii = i + n_br + n_hvdc
+            if branch.force_flow:
+                circuit.hvdc_Pset[ii] = branch.P_dc_set
+                circuit.bus_types[f] = BusMode.PV.value
+                circuit.bus_types[t] = BusMode.PV.value
+
+        for ii, i in enumerate(idx_vsc):
 
             # common to all branches
+            branch = self.branches[i]
             f = self.bus_dictionary[branch.bus_from]
             t = self.bus_dictionary[branch.bus_to]
 
-            circuit.C_branch_bus_f[ii, f] = 1
-            circuit.C_branch_bus_t[ii, t] = 1
+            circuit.C_branch_bus_f[i, f] = 1
+            circuit.C_branch_bus_t[i, t] = 1
 
-            circuit.F[ii] = f
-            circuit.T[ii] = t
+            circuit.F[i] = f
+            circuit.T[i] = t
 
-            circuit.branch_names[ii] = branch.name
-            circuit.branch_active[ii] = branch.active
-            circuit.br_rates[ii] = branch.rate
+            circuit.branch_names[i] = branch.name
+            circuit.branch_active[i] = branch.active
+            circuit.branch_rates[i] = branch.rate
 
             # specific to VSC
-            circuit.vsc_R1[i] = branch.R1
-            circuit.vsc_X1[i] = branch.X1
-            circuit.vsc_G0[i] = branch.G0
-            circuit.vsc_Beq[i] = branch.Beq
-            circuit.vsc_m[i] = branch.m
-            circuit.vsc_theta[i] = branch.theta
+            circuit.vsc_R1[ii] = branch.R1
+            circuit.vsc_X1[ii] = branch.X1
+            circuit.vsc_G0[ii] = branch.G0
+            circuit.vsc_Beq[ii] = branch.Beq
+            circuit.vsc_m[ii] = branch.m
+            circuit.vsc_theta[ii] = branch.theta
 
         # Assign and return
         self.branch_names = circuit.branch_names
@@ -945,7 +962,7 @@ class MultiCircuit:
         return circuit
 
     def compile_time_series(self, opf_results=None, opf_time_series_results=None,
-                            logger=Logger()) -> StaticSeriesInputs:
+                            logger=Logger()) -> SeriesData:
         """
         Compile the circuit assets into an equivalent circuit that only contains
         matrices and vectors for calculation. This method returns the numerical
@@ -989,10 +1006,6 @@ class MultiCircuit:
 
             self.bus_dictionary = dict()
 
-            n_br = len(self.branches)
-            n_hvdc = len(self.hvdc_branches)
-            n_vsc = len(self.vsc_branches)
-
             # Element count
             n_ld = 0
             n_ctrl_gen = 0
@@ -1006,18 +1019,39 @@ class MultiCircuit:
                 n_batt += len(bus.batteries)
                 n_sh += len(bus.shunts)
 
+            # count the number of branches
+            n_hvdc = 0
+            n_vsc = 0
+            n_pi = 0
+            idx_hvdc = list()
+            idx_vsc = list()
+            idx_pi = list()
+            for i, obj in enumerate(self.branches):
+                if obj.device_type == DeviceType.VscDevice:
+                    n_vsc += 1
+                    idx_vsc.append(i)
+                elif obj.device_type == DeviceType.DCBranchDevice:
+                    n_hvdc += 1
+                    idx_hvdc.append(i)
+                else:
+                    n_pi += 1
+                    idx_pi.append(i)
+
             # declare the numerical circuit
-            circuit = StaticSeriesInputs(n_bus=n,
-                                         n_br=n_br,
-                                         n_hvdc=n_hvdc,
-                                         n_vsc=n_vsc,
-                                         n_ld=n_ld,
-                                         n_gen=n_ctrl_gen,
-                                         n_sta_gen=n_sta_gen,
-                                         n_batt=n_batt,
-                                         n_sh=n_sh,
-                                         n_time=n_time,
-                                         Sbase=self.Sbase)
+            circuit = SeriesData(n_bus=n,
+                                 n_pi=n_pi,
+                                 n_hvdc=n_hvdc,
+                                 n_vsc=n_vsc,
+                                 n_ld=n_ld,
+                                 n_gen=n_ctrl_gen,
+                                 n_sta_gen=n_sta_gen,
+                                 n_batt=n_batt,
+                                 n_sh=n_sh,
+                                 n_time=n_time,
+                                 idx_pi=idx_pi,
+                                 idx_hvdc=idx_hvdc,
+                                 idx_vsc=idx_vsc,
+                                 Sbase=self.Sbase)
 
             # set hte time array profile
             if n_time > 0:
@@ -1218,47 +1252,154 @@ class MultiCircuit:
                 # name and state
                 circuit.branch_names[i] = branch.name
                 circuit.branch_active[i] = branch.active
-                circuit.br_mttf[i] = branch.mttf
-                circuit.br_mttr[i] = branch.mttr
+                circuit.branch_mttf[i] = branch.mttf
+                circuit.branch_mttr[i] = branch.mttr
                 circuit.branch_cost[i] = branch.Cost
 
                 # impedance and tap
-                circuit.R[i] = branch.R
-                circuit.X[i] = branch.X
-                circuit.G[i] = branch.G
-                circuit.B[i] = branch.B
-                circuit.impedance_tolerance[i] = branch.tolerance
-                circuit.br_rates[i] = branch.rate
-                circuit.tap_mod[i] = branch.tap_module
-                circuit.tap_ang[i] = branch.angle
+                circuit.branch_R[i] = branch.R
+                circuit.branch_X[i] = branch.X
+                circuit.branch_G[i] = branch.G
+                circuit.branch_B[i] = branch.B
+                circuit.branch_impedance_tolerance[i] = branch.tolerance
+                circuit.branch_rates[i] = branch.rate
+                circuit.branch_tap_mod[i] = branch.tap_module
+                circuit.branch_tap_ang[i] = branch.angle
 
                 # Thermal correction
-                circuit.temp_base[i] = branch.temp_base
-                circuit.temp_oper[i] = branch.temp_oper
-                circuit.alpha[i] = branch.alpha
+                circuit.branch_temp_base[i] = branch.temp_base
+                circuit.branch_temp_oper[i] = branch.temp_oper
+                circuit.branch_alpha[i] = branch.alpha
 
                 # tap changer
-                circuit.is_bus_to_regulated[i] = branch.bus_to_regulated
-                circuit.tap_position[i] = branch.tap_changer.tap
-                circuit.min_tap[i] = branch.tap_changer.min_tap
-                circuit.max_tap[i] = branch.tap_changer.max_tap
-                circuit.tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
-                circuit.tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
-                circuit.vset[i] = branch.vset
+                circuit.branch_is_bus_to_regulated[i] = branch.bus_to_regulated
+                circuit.branch_tap_position[i] = branch.tap_changer.tap
+                circuit.branch_min_tap[i] = branch.tap_changer.min_tap
+                circuit.branch_max_tap[i] = branch.tap_changer.max_tap
+                circuit.branch_tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
+                circuit.branch_tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
+                circuit.branch_vset[i] = branch.vset
 
                 if n_time > 0:
                     circuit.branch_active_prof[:, i] = branch.active_prof
-                    circuit.temp_oper_prof[:, i] = branch.temp_oper_prof
+                    circuit.branch_temp_oper_prof[:, i] = branch.temp_oper_prof
                     circuit.branch_cost_profile[:, i] = branch.Cost_prof
-                    circuit.br_rate_profile[:, i] = branch.rate_prof
+                    circuit.branch_rate_profile[:, i] = branch.rate_prof
 
                 # switches
                 if branch.branch_type == BranchType.Switch:
-                    circuit.switch_indices.append(i)
+                    circuit.branch_switch_indices.append(i)
 
                 # virtual taps for transformers where the connection voltage is off
                 elif branch.branch_type == BranchType.Transformer:
-                    circuit.tap_f[i], circuit.tap_t[i] = branch.get_virtual_taps()
+                    circuit.branch_tap_f[i], circuit.branch_tap_t[i] = branch.get_virtual_taps()
+
+            # Compile the branches
+            for ii, i in enumerate(idx_pi):
+
+                # common to all branches
+                branch = self.branches[i]
+                f = self.bus_dictionary[branch.bus_from]
+                t = self.bus_dictionary[branch.bus_to]
+
+                circuit.branch_names[i] = branch.name
+                circuit.branch_active[i] = branch.active
+                circuit.branch_rates[i] = branch.rate
+
+                circuit.C_branch_bus_f[i, f] = 1
+                circuit.C_branch_bus_t[i, t] = 1
+                circuit.F[i] = f
+                circuit.T[i] = t
+
+                circuit.branch_active_prof[:, i] = branch.active_prof
+                circuit.branch_rate_profile[:, i] = branch.rate_prof
+
+                # OPF
+                circuit.branch_mttf[ii] = branch.mttf
+                circuit.branch_mttr[ii] = branch.mttr
+                circuit.branch_cost[ii] = branch.Cost
+                circuit.branch_cost_profile[:, i] = branch.Cost_prof
+
+                # impedance and tap
+                circuit.branch_R[ii] = branch.R
+                circuit.branch_X[ii] = branch.X
+                circuit.branch_G[ii] = branch.G
+                circuit.branch_B[ii] = branch.B
+                circuit.branch_impedance_tolerance[ii] = branch.tolerance
+                circuit.branch_tap_mod[ii] = branch.tap_module
+                circuit.branch_tap_ang[ii] = branch.angle
+
+                # Thermal correction
+                circuit.branch_temp_base[ii] = branch.temp_base
+                circuit.branch_temp_oper[ii] = branch.temp_oper
+                circuit.branch_alpha[ii] = branch.alpha
+                circuit.branch_temp_oper_prof[:, i] = branch.temp_oper_prof
+
+                # tap changer
+                circuit.branch_is_bus_to_regulated[ii] = branch.bus_to_regulated
+                circuit.branch_tap_position[ii] = branch.tap_changer.tap
+                circuit.branch_min_tap[ii] = branch.tap_changer.min_tap
+                circuit.branch_max_tap[ii] = branch.tap_changer.max_tap
+                circuit.branch_tap_inc_reg_up[ii] = branch.tap_changer.inc_reg_up
+                circuit.branch_tap_inc_reg_down[ii] = branch.tap_changer.inc_reg_down
+                circuit.branch_vset[ii] = branch.vset
+
+                # switches
+                if branch.branch_type == BranchType.Switch:
+                    circuit.branch_switch_indices.append(i)
+
+                # virtual taps for transformers where the connection voltage is off
+                elif branch.branch_type == BranchType.Transformer:
+                    circuit.branch_tap_f[ii], circuit.branch_tap_t[ii] = branch.get_virtual_taps()
+
+            for ii, i in enumerate(idx_hvdc):
+                # common to all branches
+                branch = self.branches[i]
+                f = self.bus_dictionary[branch.bus_from]
+                t = self.bus_dictionary[branch.bus_to]
+
+                circuit.C_branch_bus_f[i, f] = 1
+                circuit.C_branch_bus_t[i, t] = 1
+
+                circuit.F[i] = f
+                circuit.T[i] = t
+
+                circuit.branch_names[i] = branch.name
+                circuit.branch_active[i] = branch.active
+                circuit.branch_rates[i] = branch.rate
+
+                circuit.branch_active_prof[:, i] = branch.active_prof
+                circuit.branch_rate_profile[:, i] = branch.rate_prof
+
+                # specific to HVDC
+                circuit.hvdc_R[ii] = branch.Rdc
+
+            for ii, i in enumerate(idx_vsc):
+                # common to all branches
+                branch = self.branches[i]
+                f = self.bus_dictionary[branch.bus_from]
+                t = self.bus_dictionary[branch.bus_to]
+
+                circuit.C_branch_bus_f[i, f] = 1
+                circuit.C_branch_bus_t[i, t] = 1
+
+                circuit.F[i] = f
+                circuit.T[i] = t
+
+                circuit.branch_names[i] = branch.name
+                circuit.branch_active[i] = branch.active
+                circuit.branch_rates[i] = branch.rate
+
+                circuit.branch_active_prof[:, i] = branch.active_prof
+                circuit.branch_rate_profile[:, i] = branch.rate_prof
+
+                # specific to VSC
+                circuit.vsc_R1[ii] = branch.R1
+                circuit.vsc_X1[ii] = branch.X1
+                circuit.vsc_G0[ii] = branch.G0
+                circuit.vsc_Beq[ii] = branch.Beq
+                circuit.vsc_m[ii] = branch.m
+                circuit.vsc_theta[ii] = branch.theta
 
             # Assign and return
             self.branch_names = circuit.branch_names
@@ -1426,13 +1567,7 @@ class MultiCircuit:
 
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
-
-        if obj.device_type == DeviceType.VscDevice:
-            self.vsc_branches.append(obj)
-        elif obj.device_type == DeviceType.DCBranchDevice:
-            self.hvdc_branches.append(obj)
-        else:
-            self.branches.append(obj)
+        self.branches.append(obj)
 
     def delete_branch(self, obj: Branch):
         """

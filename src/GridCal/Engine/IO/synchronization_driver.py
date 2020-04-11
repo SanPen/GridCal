@@ -23,7 +23,7 @@ from PySide2 import QtGui
 from GridCal.Engine.basic_structures import Logger, SyncIssueType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType
 
 
 from PySide2.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt

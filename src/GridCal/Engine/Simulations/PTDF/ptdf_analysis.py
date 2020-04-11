@@ -18,7 +18,7 @@ from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs, StaticSnapshotIslandInputs
+from GridCal.Engine.Core.snapshot_data import SnapshotData, SnapshotIsland
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
@@ -52,7 +52,7 @@ def group_generators_by_technology(circuit: MultiCircuit):
     return groups
 
 
-def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshotInputs, group_mode: PtdfGroupMode, power_amount):
+def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotData, group_mode: PtdfGroupMode, power_amount):
     """
     Get the PTDF variations
     :param circuit: MultiCircuit instance
@@ -94,10 +94,10 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshot
     elif group_mode == PtdfGroupMode.ByGenLoad:
 
         # add the generation variations
-        for i in range(numerical_circuit.n_ctrl_gen):
+        for i in range(numerical_circuit.n_gen):
 
             # generate array of zeros, and modify the generation for the particular generator
-            dPg = np.zeros(numerical_circuit.n_ctrl_gen)
+            dPg = np.zeros(numerical_circuit.n_gen)
             dPg[i] = power
 
             # declare the variation object
@@ -152,7 +152,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshot
     return variations
 
 
-def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[StaticSnapshotIslandInputs],
+def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[SnapshotIsland],
                       options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow

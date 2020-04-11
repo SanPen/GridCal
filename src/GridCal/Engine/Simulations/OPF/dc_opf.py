@@ -17,8 +17,8 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.snapshot_data import SnapshotData
+from GridCal.Engine.Core.time_series_data import SeriesData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.ThirdParty.pulp import *
 
@@ -179,7 +179,7 @@ def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries
 
 class OpfDc(Opf):
 
-    def __init__(self, numerical_circuit: StaticSnapshotInputs, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotData, solver: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -194,44 +194,43 @@ class OpfDc(Opf):
         Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
         :return: PuLP Problem instance
         """
-        numerical_circuit = self.numerical_circuit
 
         # general indices
-        n = numerical_circuit.nbus
-        m = numerical_circuit.nbr
-        ng = numerical_circuit.n_ctrl_gen
-        nb = numerical_circuit.n_batt
-        nl = numerical_circuit.n_ld
-        Sbase = numerical_circuit.Sbase
+        n = self.numerical_circuit.nbus
+        m = self.numerical_circuit.nbr
+        ng = self.numerical_circuit.n_gen
+        nb = self.numerical_circuit.n_batt
+        nl = self.numerical_circuit.n_ld
+        Sbase = self.numerical_circuit.Sbase
 
         # battery
-        Pb_max = numerical_circuit.battery_pmax / Sbase
-        Pb_min = numerical_circuit.battery_pmin / Sbase
-        cost_b = numerical_circuit.battery_cost
+        Pb_max = self.numerical_circuit.battery_pmax / Sbase
+        Pb_min = self.numerical_circuit.battery_pmin / Sbase
+        cost_b = self.numerical_circuit.battery_cost
 
         # generator
-        Pg_max = numerical_circuit.generator_pmax / Sbase
-        Pg_min = numerical_circuit.generator_pmin / Sbase
-        cost_g = numerical_circuit.generator_cost
-        P_fix = numerical_circuit.generator_power / Sbase
-        enabled_for_dispatch = numerical_circuit.generator_dispatchable
+        Pg_max = self.numerical_circuit.generator_pmax / Sbase
+        Pg_min = self.numerical_circuit.generator_pmin / Sbase
+        cost_g = self.numerical_circuit.generator_cost
+        P_fix = self.numerical_circuit.generator_power / Sbase
+        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active * numerical_circuit.load_power.real)/ Sbase
-        cost_l = numerical_circuit.load_cost
+        Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_power.real) / Sbase
+        cost_l = self.numerical_circuit.load_cost
 
         # branch
-        branch_ratings = numerical_circuit.br_rates / Sbase
-        Bseries = (numerical_circuit.branch_active * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag
-        cost_br = numerical_circuit.branch_cost
+        branch_ratings = self.numerical_circuit.branch_rates / Sbase
+        Bseries = (self.numerical_circuit.branch_active * (1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X))).imag
+        cost_br = self.numerical_circuit.branch_cost
 
         # create LP variables
         Pg = lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
         Pb = lpMakeVars(name='Pb', shape=nb, lower=Pb_min, upper=Pb_max)
         load_slack = lpMakeVars(name='LSlack', shape=nl, lower=0, upper=None)
         theta = lpMakeVars(name='theta', shape=n, lower=-3.14, upper=3.14)
-        theta_f = theta[numerical_circuit.F]
-        theta_t = theta[numerical_circuit.T]
+        theta_f = theta[self.numerical_circuit.F]
+        theta_t = theta[self.numerical_circuit.T]
         branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=m, lower=0, upper=None)
         branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=m, lower=0, upper=None)
 
@@ -246,13 +245,13 @@ class OpfDc(Opf):
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the nodal power injections
-        P = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen, Pg=Pg,
-                                 C_bus_bat=numerical_circuit.C_bus_batt, Pb=Pb,
-                                 C_bus_load=numerical_circuit.C_bus_load,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.C_bus_gen, Pg=Pg,
+                                 C_bus_bat=self.numerical_circuit.C_bus_batt, Pb=Pb,
+                                 C_bus_load=self.numerical_circuit.C_bus_load,
                                  LSlack=load_slack, Pl=Pl)
 
         # add the DC grid restrictions
-        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit, problem, theta, P)
+        nodal_restrictions = add_dc_nodal_power_balance(self.numerical_circuit, problem, theta, P)
 
         # add the branch loading restriction
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
@@ -278,10 +277,8 @@ if __name__ == '__main__':
 
         from GridCal.Engine.IO.file_handler import FileOpen
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
         # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
         fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (2 islands).gridcal'
 
         main_circuit = FileOpen(fname).open()
 
@@ -306,5 +303,3 @@ if __name__ == '__main__':
 
         pr = problem.get_shadow_prices()
         print('Nodal prices \n', pr)
-
-        pass

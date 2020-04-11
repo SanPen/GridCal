@@ -24,8 +24,8 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.snapshot_data import SnapshotData
+from GridCal.Engine.Core.time_series_data import SeriesData
 
 
 class CascadeType(Enum):
@@ -157,7 +157,7 @@ class Cascading(QThread):
         return idx, criteria
 
     @staticmethod
-    def remove_probability_based(numerical_circuit: StaticSnapshotInputs, results: MonteCarloResults, max_val, min_prob):
+    def remove_probability_based(numerical_circuit: SnapshotData, results: MonteCarloResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
         :param numerical_circuit:

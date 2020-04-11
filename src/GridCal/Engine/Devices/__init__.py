@@ -20,7 +20,7 @@ from GridCal.Engine.Devices.vsc import *
 from GridCal.Engine.Devices.bus import *
 from GridCal.Engine.Devices.generator import *
 from GridCal.Engine.Devices.load import *
-from GridCal.Engine.Devices.sequence_line import *
+from GridCal.Engine.Devices.line import *
 from GridCal.Engine.Devices.shunt import *
 from GridCal.Engine.Devices.static_generator import *
 from GridCal.Engine.Devices.tower import *

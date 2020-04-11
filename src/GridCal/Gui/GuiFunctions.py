@@ -1316,7 +1316,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def is_complex(self):
         return self.data_c.dtype == complex
 
-    def get_data(self, mode=None):
+    def get_data(self, mode='as_is'):
         """
 
         Args:
@@ -1359,23 +1359,23 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             return list(), list(), list()
 
-    def save_to_excel(self, file_name, mode):
+    def save_to_excel(self, file_name):
         """
         save data to excel
         :param file_name:
         :param mode: 'real', 'imag', 'abs'
         """
-        index, columns, data = self.get_data(mode=mode)
+        index, columns, data = self.get_data()
 
         pd.DataFrame(data=data, index=index, columns=columns).to_excel(file_name)
 
-    def save_to_csv(self, file_name, mode):
+    def save_to_csv(self, file_name):
         """
         Save data to csv
         :param file_name:
         :param mode: 'real', 'imag', 'abs', 'as_is'
         """
-        index, columns, data = self.get_data(mode=mode)
+        index, columns, data = self.get_data()
         pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
 
     def get_data_frame(self, mode='as_is'):
@@ -1386,7 +1386,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         index, columns, data = self.get_data(mode=mode)
         return pd.DataFrame(data=data, index=index, columns=columns)
 
-    def copy_to_clipboard(self, mode=None):
+    def copy_to_clipboard(self):
         """
         Copy profiles to clipboard
         Args:
@@ -1396,7 +1396,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         if n > 0:
 
-            index, columns, data = self.get_data(mode=mode)
+            index, columns, data = self.get_data()
 
             # header first
             txt = '\t' + '\t'.join(columns) + '\n'

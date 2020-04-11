@@ -1630,9 +1630,6 @@ p, li { white-space: pre-wrap; }
                 <number>0</number>
                </property>
                <item>
-                <widget class="QComboBox" name="export_mode_comboBox"/>
-               </item>
-               <item>
                 <widget class="QPushButton" name="copy_results_pushButton">
                  <property name="toolTip">
                   <string>Copy to clipboard</string>
