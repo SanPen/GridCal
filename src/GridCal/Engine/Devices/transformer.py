@@ -398,7 +398,7 @@ class Transformer2W(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 active=active,
-                                device_type=DeviceType.BranchDevice,
+                                device_type=DeviceType.Transformer2WDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),

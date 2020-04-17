@@ -27,93 +27,7 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 from GridCal.Engine.Devices.tower import Tower
 
 
-
-class SequenceLineType(EditableDevice):
-
-    def __init__(self, name='SequenceLine', rating=1,
-                 R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
-        """
-        Constructor
-        :param name: name of the model
-        :param rating: Line rating in kA
-        :param R: Resistance of positive sequence in Ohm/km
-        :param X: Reactance of positive sequence in Ohm/km
-        :param G: Conductance of positive sequence in Ohm/km
-        :param B: Susceptance of positive sequence in Ohm/km
-        :param R0: Resistance of zero sequence in Ohm/km
-        :param X0: Reactance of zero sequence in Ohm/km
-        :param G0: Conductance of zero sequence in Ohm/km
-        :param B0: Susceptance of zero sequence in Ohm/km
-        """
-
-        EditableDevice.__init__(self,
-                                name=name,
-                                active=True,
-                                device_type=DeviceType.SequenceLineDevice,
-                                editable_headers={'name': GCProp('', str, "Name of the line template"),
-                                                  'rating': GCProp('kA', float, "Current rating of the line"),
-                                                  'R': GCProp('Ohm/km', float, "Positive-sequence "
-                                                              "resistance per km"),
-                                                  'X': GCProp('Ohm/km', float, "Positive-sequence "
-                                                              "reactance per km"),
-                                                  'G': GCProp('S/km', float, "Positive-sequence "
-                                                              "shunt conductance per km"),
-                                                  'B': GCProp('S/km', float, "Positive-sequence "
-                                                              "shunt susceptance per km"),
-                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                               "resistance per km"),
-                                                  'X0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                               "reactance per km"),
-                                                  'G0': GCProp('S/km', float, "Zero-sequence "
-                                                               "shunt conductance per km"),
-                                                  'B0': GCProp('S/km', float, "Zero-sequence "
-                                                               "shunt susceptance per km")},
-                                non_editable_attributes=list(),
-                                properties_with_profile={})
-
-        self.tpe = tpe
-
-        self.rating = rating
-
-        # impedances and admittances per unit of length
-        self.R = R
-        self.X = X
-        self.G = G
-        self.B = B
-
-        self.R0 = R0
-        self.X0 = X0
-        self.G0 = G0
-        self.B0 = B0
-
-
-
-
-class LineTemplate:
-
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch):
-
-        self.name = name
-
-        self.tpe = tpe
-
-        self.edit_headers = []
-        self.units = []
-        self.non_editable_indices = []
-        self.edit_types = {}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-
-        dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
-        return dta
-
-
-class Line(EditableDevice):
+class HvdcLine(EditableDevice):
     """
     The **Line** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
@@ -221,17 +135,16 @@ class Line(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', r=1e-20, x=1e-20, b=1e-20,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', r=1e-20, psch=0.0,
                  rate=1.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1,
-                 temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=LineTemplate(), ):
+                 temp_base=20, temp_oper=20, alpha=0.00330):
 
         EditableDevice.__init__(self,
                                 name=name,
                                 active=active,
-                                device_type=DeviceType.LineDevice,
+                                device_type=DeviceType.HVDCLineDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
@@ -244,8 +157,7 @@ class Line(EditableDevice):
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
                                                   'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total reactance.'),
-                                                  'B': GCProp('p.u.', float, 'Total shunt susceptance.'),
+                                                  'Psch': GCProp('MW', float, 'Scheduled power.'),
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
@@ -278,9 +190,10 @@ class Line(EditableDevice):
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
                                                   'branch_type': GCProp('', BranchType, ''),
-                                                  'template': GCProp('', LineTemplate, '')},
+                                                  },
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
+                                                         'Psch': 'Psch_prof',
                                                          'rate': 'rate_prof',
                                                          'temp_oper': 'temp_oper_prof',
                                                          'Cost': 'Cost_prof'})
@@ -305,8 +218,8 @@ class Line(EditableDevice):
 
         # total impedance and admittance in p.u.
         self.R = r
-        self.X = x
-        self.B = b
+
+        self.Psch = psch
 
         self.mttf = mttf
 
@@ -315,6 +228,8 @@ class Line(EditableDevice):
         self.Cost = cost
 
         self.Cost_prof = None
+
+        self.Psch_prof = None
 
         self.active_prof = None
 
@@ -334,9 +249,6 @@ class Line(EditableDevice):
 
         # branch type: Line, Transformer, etc...
         self.branch_type = branch_type
-
-        # type template
-        self.template = template
 
     @property
     def R_corrected(self):
@@ -361,21 +273,19 @@ class Line(EditableDevice):
             f = bus_dict[self.bus_from]
             t = bus_dict[self.bus_to]
 
-        b = Line(bus_from=f,
-                 bus_to=t,
-                 name=self.name,
-                 r=self.R,
-                 x=self.X,
-                 b=self.B,
-                 rate=self.rate,
-                 active=self.active,
-                 mttf=self.mttf,
-                 mttr=self.mttr,
-                 temp_base=self.temp_base,
-                 temp_oper=self.temp_oper,
-                 alpha=self.alpha,
-                 branch_type=self.branch_type,
-                 template=self.template)
+        b = HvdcLine(bus_from=f,
+                     bus_to=t,
+                     name=self.name,
+                     r=self.R,
+                     psch=self.Psch,
+                     rate=self.rate,
+                     active=self.active,
+                     mttf=self.mttf,
+                     mttr=self.mttr,
+                     temp_base=self.temp_base,
+                     temp_oper=self.temp_oper,
+                     alpha=self.alpha,
+                     branch_type=self.branch_type)
 
         b.measurements = self.measurements
 
@@ -396,68 +306,8 @@ class Line(EditableDevice):
             **logger** (list, []): Log list
 
         """
-
-        if type(obj) is Tower:
-
-            if self.branch_type == BranchType.Line:
-                Vn = self.bus_to.Vnom
-                Zbase = (Vn * Vn) / Sbase
-                Ybase = 1 / Zbase
-
-                z = obj.z_series() * self.length / Zbase
-                y = obj.y_shunt() * self.length / Ybase
-
-                self.R = np.round(z.real, 6)
-                self.X = np.round(z.imag, 6)
-                self.B = np.round(y.imag, 6)
-
-                # get the rating in MVA = kA * kV
-                self.rate = obj.rating * Vn * np.sqrt(3)
-
-                if obj != self.template:
-                    self.template = obj
-                    self.branch_type = BranchType.Line
-            else:
-                raise Exception('You are trying to apply an Overhead line type to a non-line branch')
-
-        elif type(obj) is UndergroundLineType:
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            z = obj.z_series() * self.length / Zbase
-            y = obj.y_shunt() * self.length / Ybase
-
-            self.R = np.round(z.real, 6)
-            self.X = np.round(z.imag, 6)
-            self.B = np.round(y.imag, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
-
-            if obj != self.template:
-                self.template = obj
-                self.branch_type = BranchType.Line
-
-        elif type(obj) is SequenceLineType:
-
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            self.R = np.round(obj.R * self.length / Zbase, 6)
-            self.X = np.round(obj.X * self.length / Zbase, 6)
-            self.B = np.round(obj.B * self.length / Ybase, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
-
-            if obj != self.template:
-                self.template = obj
-                self.branch_type = BranchType.Line
-
-        else:
-            logger.append(self.name + ' the object type template was not recognised')
+        from warnings import warn
+        warn('apply_template not implemented in HVDC lines')
 
     def get_save_data(self):
         """
@@ -470,12 +320,6 @@ class Line(EditableDevice):
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
-
-            elif properties.tpe == LineTemplate:
-                if obj is None:
-                    obj = ''
-                else:
-                    obj = str(obj)
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)
@@ -492,7 +336,7 @@ class Line(EditableDevice):
         """
 
         d = {'id': id,
-             'type': 'line',
+             'type': 'branch',
              'phases': 'ps',
              'name': self.name,
              'from': bus_dict[self.bus_from],
@@ -500,8 +344,6 @@ class Line(EditableDevice):
              'active': self.active,
              'rate': self.rate,
              'r': self.R,
-             'x': self.X,
-             'b': self.B,
              'length': self.length,
              'temp_base': self.temp_base,
              'temp_oper': self.temp_oper,

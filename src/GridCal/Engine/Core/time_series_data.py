@@ -28,8 +28,7 @@ from GridCal.Engine.Core.topology import Graph
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Core.snapshot_data import SnapshotData, SnapshotIsland, \
-                                                        calc_connectivity
+from GridCal.Engine.Core.snapshot_data import SnapshotCircuit, SnapshotIsland
 
 sparse = get_sparse_type()
 
@@ -435,7 +434,7 @@ class SeriesIsland(SnapshotIsland):
         print('REF:', self.ref)
 
 
-class SeriesData(SnapshotData):
+class SeriesData(SnapshotCircuit):
     """
     This class represents the set of numerical inputs for simulations that require
     static values from the time series mode (power flow time series, monte carlo, PTDF time-series, etc.)

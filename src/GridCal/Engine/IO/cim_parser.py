@@ -790,109 +790,138 @@ class CIMExport:
         # Branches
         winding_resources = ['connectionType', 'windingType', 'PowerTransformer']
         tap_changer_resources = ['TransformerWinding']
-        for i, branch in enumerate(self.circuit.branches):
+        for i, branch in enumerate(self.circuit.transformers2w):
 
-            if branch.branch_type == BranchType.Transformer:
-                conn_node_id = 'Transformer_' + str(i)
+            conn_node_id = 'Transformer_' + str(i)
 
-                model = GeneralContainer(id=conn_node_id, tpe='PowerTransformer',
-                                         resources=[],
-                                         class_replacements={'name': 'IdentifiedObject',
-                                                             'aliasName': 'IdentifiedObject',
-                                                             'EquipmentContainer': 'Equipment'}
-                                         )
-                model.properties['name'] = branch.name
-                model.properties['aliasName'] = branch.name
+            model = GeneralContainer(id=conn_node_id, tpe='PowerTransformer',
+                                     resources=[],
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject',
+                                                         'EquipmentContainer': 'Equipment'}
+                                     )
+            model.properties['name'] = branch.name
+            model.properties['aliasName'] = branch.name
+            text_file.write(model.get_xml(1))
+
+            #  warnings
+            if branch.rate <= 0.0:
+                self.logger.append(branch.name + ": The rate is 0, this will cause a problem when loading.")
+                raise Exception(branch.name + ": The rate is 0, this will cause a problem when loading.")
+
+            if branch.bus_from.Vnom <= 0.0:
+                self.logger.append(branch.name + ": The voltage at the from side is 0, this will cause a problem when loading.")
+                raise Exception(branch.name + ": The voltage at the from side, this will cause a problem when loading.")
+
+            if branch.bus_to.Vnom <= 0.0:
+                self.logger.append(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
+                raise Exception(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
+
+            # W1 (from)
+            winding_power_rate = branch.rate / 2
+            Zbase = (branch.bus_from.Vnom ** 2) / winding_power_rate
+            Ybase = 1 / Zbase
+            model = GeneralContainer(id=conn_node_id + "_W1", tpe='PowerTransformerEnd',
+                                     resources=winding_resources,
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject',
+                                                         'BaseVoltage': 'ConductingEquipment'}
+                                     )
+            model.properties['name'] = branch.name
+            model.properties['PowerTransformer'] = conn_node_id
+            model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
+            model.properties['r'] = branch.R / 2 * Zbase
+            model.properties['x'] = branch.X / 2 * Zbase
+            model.properties['g'] = branch.G / 2 * Ybase
+            model.properties['b'] = branch.B / 2 * Ybase
+            model.properties['r0'] = 0.0
+            model.properties['x0'] = 0.0
+            model.properties['g0'] = 0.0
+            model.properties['b0'] = 0.0
+            model.properties['ratedS'] = winding_power_rate
+            model.properties['ratedU'] = branch.bus_from.Vnom
+            model.properties['rground'] = 0.0
+            model.properties['xground'] = 0.0
+            model.properties['connectionType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingConnection.Y"
+            model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.primary"
+            text_file.write(model.get_xml(1))
+
+            # W2 (To)
+            Zbase = (branch.bus_to.Vnom ** 2) / winding_power_rate
+            Ybase = 1 / Zbase
+            model = GeneralContainer(id=conn_node_id + "_W2", tpe='PowerTransformerEnd',
+                                     resources=winding_resources,
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject',
+                                                         'BaseVoltage': 'ConductingEquipment'}
+                                     )
+            model.properties['name'] = branch.name
+            model.properties['PowerTransformer'] = conn_node_id
+            model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_to.Vnom]
+            model.properties['r'] = branch.R / 2 * Zbase
+            model.properties['x'] = branch.X / 2 * Zbase
+            model.properties['g'] = branch.G / 2 * Ybase
+            model.properties['b'] = branch.B / 2 * Ybase
+            model.properties['r0'] = 0.0
+            model.properties['x0'] = 0.0
+            model.properties['g0'] = 0.0
+            model.properties['b0'] = 0.0
+            model.properties['ratedS'] = winding_power_rate
+            model.properties['ratedU'] = branch.bus_to.Vnom
+            model.properties['rground'] = 0.0
+            model.properties['xground'] = 0.0
+            model.properties['connectionType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingConnection.Y"
+            model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.secondary"
+            text_file.write(model.get_xml(1))
+
+            # add tap changer at the "to" winding
+            if branch.tap_module != 1.0 and branch.angle != 0.0:
+
+                Vnom = branch.bus_to.Vnom
+                SVI = (Vnom - Vnom * branch.tap_module) * 100.0 / Vnom
+
+                model = GeneralContainer(id=conn_node_id + 'Tap_2', tpe='RatioTapChanger', resources=tap_changer_resources)
+                model.properties['TransformerWinding'] = conn_node_id + "_W2"
+                model.properties['name'] = branch.name + 'tap changer'
+                model.properties['neutralU'] = Vnom
+                model.properties['stepVoltageIncrement'] = SVI
+                model.properties['step'] = 0
+                model.properties['lowStep'] = -1
+                model.properties['highStep'] = 1
+                model.properties['subsequentDelay'] = branch.angle
                 text_file.write(model.get_xml(1))
 
-                #  warnings
-                if branch.rate <= 0.0:
-                    self.logger.append(branch.name + ": The rate is 0, this will cause a problem when loading.")
-                    raise Exception(branch.name + ": The rate is 0, this will cause a problem when loading.")
 
-                if branch.bus_from.Vnom <= 0.0:
-                    self.logger.append(branch.name + ": The voltage at the from side is 0, this will cause a problem when loading.")
-                    raise Exception(branch.name + ": The voltage at the from side, this will cause a problem when loading.")
 
-                if branch.bus_to.Vnom <= 0.0:
-                    self.logger.append(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
-                    raise Exception(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
+            # Terminal 1 (from)
+            model = GeneralContainer(id=conn_node_id + '_T1', tpe='Terminal',
+                                     resources=terminal_resources,
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject'}
+                                     )
+            model.properties['name'] = bus.name + '_' + branch.name + '_T1'
+            model.properties['TopologicalNode'] = bus_id_dict[branch.bus_from]
+            model.properties['ConductingEquipment'] = conn_node_id
+            model.properties['connected'] = 'true'
+            model.properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
 
-                # W1 (from)
-                winding_power_rate = branch.rate / 2
-                Zbase = (branch.bus_from.Vnom ** 2) / winding_power_rate
-                Ybase = 1 / Zbase
-                model = GeneralContainer(id=conn_node_id + "_W1", tpe='PowerTransformerEnd',
-                                         resources=winding_resources,
-                                         class_replacements={'name': 'IdentifiedObject',
-                                                             'aliasName': 'IdentifiedObject',
-                                                             'BaseVoltage': 'ConductingEquipment'}
-                                         )
-                model.properties['name'] = branch.name
-                model.properties['PowerTransformer'] = conn_node_id
-                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
-                model.properties['r'] = branch.R / 2 * Zbase
-                model.properties['x'] = branch.X / 2 * Zbase
-                model.properties['g'] = branch.G / 2 * Ybase
-                model.properties['b'] = branch.B / 2 * Ybase
-                model.properties['r0'] = 0.0
-                model.properties['x0'] = 0.0
-                model.properties['g0'] = 0.0
-                model.properties['b0'] = 0.0
-                model.properties['ratedS'] = winding_power_rate
-                model.properties['ratedU'] = branch.bus_from.Vnom
-                model.properties['rground'] = 0.0
-                model.properties['xground'] = 0.0
-                model.properties['connectionType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingConnection.Y"
-                model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.primary"
-                text_file.write(model.get_xml(1))
+            # Terminal 2 (to)
+            model = GeneralContainer(id=conn_node_id + '_T2', tpe='Terminal',
+                                     resources=terminal_resources,
+                                     class_replacements={'name': 'IdentifiedObject',
+                                                         'aliasName': 'IdentifiedObject'}
+                                     )
+            model.properties['name'] = bus.name + '_' + branch.name + '_T2'
+            model.properties['TopologicalNode'] = bus_id_dict[branch.bus_to]
+            model.properties['ConductingEquipment'] = conn_node_id
+            model.properties['connected'] = 'true'
+            model.properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
 
-                # W2 (To)
-                Zbase = (branch.bus_to.Vnom ** 2) / winding_power_rate
-                Ybase = 1 / Zbase
-                model = GeneralContainer(id=conn_node_id + "_W2", tpe='PowerTransformerEnd',
-                                         resources=winding_resources,
-                                         class_replacements={'name': 'IdentifiedObject',
-                                                             'aliasName': 'IdentifiedObject',
-                                                             'BaseVoltage': 'ConductingEquipment'}
-                                         )
-                model.properties['name'] = branch.name
-                model.properties['PowerTransformer'] = conn_node_id
-                model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_to.Vnom]
-                model.properties['r'] = branch.R / 2 * Zbase
-                model.properties['x'] = branch.X / 2 * Zbase
-                model.properties['g'] = branch.G / 2 * Ybase
-                model.properties['b'] = branch.B / 2 * Ybase
-                model.properties['r0'] = 0.0
-                model.properties['x0'] = 0.0
-                model.properties['g0'] = 0.0
-                model.properties['b0'] = 0.0
-                model.properties['ratedS'] = winding_power_rate
-                model.properties['ratedU'] = branch.bus_to.Vnom
-                model.properties['rground'] = 0.0
-                model.properties['xground'] = 0.0
-                model.properties['connectionType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingConnection.Y"
-                model.properties['windingType'] = "http://iec.ch/TC57/2009/CIM-schema-cim14#WindingType.secondary"
-                text_file.write(model.get_xml(1))
+        for i, branch in enumerate(self.circuit.lines):
 
-                # add tap changer at the "to" winding
-                if branch.tap_module != 1.0 and branch.angle != 0.0:
-
-                    Vnom = branch.bus_to.Vnom
-                    SVI = (Vnom - Vnom * branch.tap_module) * 100.0 / Vnom
-
-                    model = GeneralContainer(id=conn_node_id + 'Tap_2', tpe='RatioTapChanger', resources=tap_changer_resources)
-                    model.properties['TransformerWinding'] = conn_node_id + "_W2"
-                    model.properties['name'] = branch.name + 'tap changer'
-                    model.properties['neutralU'] = Vnom
-                    model.properties['stepVoltageIncrement'] = SVI
-                    model.properties['step'] = 0
-                    model.properties['lowStep'] = -1
-                    model.properties['highStep'] = 1
-                    model.properties['subsequentDelay'] = branch.angle
-                    text_file.write(model.get_xml(1))
-
-            elif branch.branch_type == BranchType.Line or branch.branch_type == BranchType.Branch:
+            if branch.branch_type == BranchType.Line or branch.branch_type == BranchType.Branch:
 
                 conn_node_id = 'Branch_' + str(i)
                 Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase

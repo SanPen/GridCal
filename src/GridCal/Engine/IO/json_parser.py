@@ -20,7 +20,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
 
-def parse_json_data(data):
+def parse_json_data(data) -> MultiCircuit:
     """
     Parse JSON structure into GridCal MultiCircuit
     :param data: JSON structure (list of dictionaries)
@@ -174,7 +174,7 @@ def parse_json_data(data):
     return circuit
 
 
-def parse_json(file_name):
+def parse_json(file_name) -> MultiCircuit:
     """
     Parse JSON file into Circuit
     :param file_name: 
@@ -218,11 +218,12 @@ def save_json_file(file_path, circuit: MultiCircuit):
             key += 1
 
     # branches
-    for branch in circuit.branches:
-        # pack the branch data into a dictionary
-        dictionary = branch.get_json_dict(key, bus_key_dict)
-        elements.append(dictionary)
-        key += 1
+    for branch_list in [circuit.lines, circuit.transformers2w, circuit.hvdc_lines]:
+        for branch in branch_list:
+            # pack the branch data into a dictionary
+            dictionary = branch.get_json_dict(key, bus_key_dict)
+            elements.append(dictionary)
+            key += 1
 
     # convert the list of dictionaries to json
     json_str = json.dumps(elements, indent=True)

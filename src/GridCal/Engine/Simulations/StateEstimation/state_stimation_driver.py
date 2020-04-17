@@ -169,11 +169,12 @@ class StateEstimation(QRunnable):
                                     + str(m.measurement_type))
 
         # collect the branch measurements
+        branches = circuit.get_branches()
         for i in branch_idx:
 
             # branch = circuit.branches[i]
 
-            for m in circuit.branches[i].measurements:
+            for m in branches[i].measurements:
 
                 if m.measurement_type == MeasurementType.Pflow:
                     se_input.p_flow_idx.append(i)
@@ -188,7 +189,7 @@ class StateEstimation(QRunnable):
                     se_input.i_flow.append(m)
 
                 else:
-                    raise Exception('The branch ' + str(circuit.branches[i]) + ' contains a measurement of type '
+                    raise Exception('The branch ' + str(branches[i]) + ' contains a measurement of type '
                                     + str(m.measurement_type))
 
         return se_input

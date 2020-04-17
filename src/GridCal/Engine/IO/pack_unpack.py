@@ -319,7 +319,9 @@ def data_frames_to_circuit(data: Dict):
                 circuit.buses = devices
 
             elif template_elm.device_type == DeviceType.BranchDevice:
-                circuit.branches = devices
+                for d in devices:
+                    circuit.add_branch(d)
+                # circuit.branches = devices
 
             elif template_elm.device_type == DeviceType.TowerDevice:
                 circuit.overhead_line_types = devices

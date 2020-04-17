@@ -23,8 +23,6 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.Core.snapshot_data import SnapshotData
-from GridCal.Engine.Core.time_series_data import SeriesData
 from GridCal.Engine.Devices.editable_device import DeviceType
 
 
@@ -97,34 +95,42 @@ class MultiCircuit:
         self.fBase = 50.0
 
         # Should be able to accept Branches, Lines and Transformers alike
-        self.branches = list()
+        # self.branches = list()
+
+        self.lines = list()  # type: List[Line]
+
+        self.transformers2w = list()  # type: List[Transformer2W]
+
+        self.hvdc_lines = list()  # type: List[HvdcLine]
+
+        self.vsc_converters = list()  # type: List[VSC]
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
 
         # Should accept buses
-        self.buses = list()
+        self.buses = list()  # type: List[Bus]
 
         # array of bus indices in the master circuit
         self.bus_original_idx = list()
 
         # Dictionary relating the bus object to its index. Updated upon compilation
-        self.buses_dict = dict()
+        self.buses_dict = dict()  # type: Dict[Bus, int]
 
         # List of overhead line objects
-        self.overhead_line_types = list()
+        self.overhead_line_types = list()  # type: List[Tower]
 
         # list of wire types
-        self.wire_types = list()
+        self.wire_types = list()  # type: List[Wire]
 
         # underground cable lines
-        self.underground_cable_types = list()
+        self.underground_cable_types = list()  # type: List[UndergroundLineType]
 
         # sequence modelled lines
-        self.sequence_line_types = list()
+        self.sequence_line_types = list()  # type: List[SequenceLineType]
 
         # List of transformer types
-        self.transformer_types = list()
+        self.transformer_types = list()  # type: List[TransformerType]
 
         # logger of events
         self.logger = Logger()
@@ -155,8 +161,9 @@ class MultiCircuit:
 
         # objects with profiles
         self.objects_with_profiles = [Bus(), Load(), StaticGenerator(),
-                                      Generator(), Battery(),
-                                      Shunt(), Branch(None, None)]
+                                      Generator(), Battery(), Shunt(),
+                                      Line(None, None), Transformer2W(None, None),
+                                      HvdcLine(None, None), VSC(Bus(), Bus(is_dc=True))]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
@@ -185,13 +192,19 @@ class MultiCircuit:
         """
         return len(self.buses)
 
+    def get_branch_lists(self):
+
+        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_converters]
+
     def get_branch_number(self):
         """
         return the number of branches (of all types)
         :return: number
         """
-        n_br = len(self.branches)
-        return n_br
+        m = 0
+        for branch_list in self.get_branch_lists():
+            m += len(branch_list)
+        return m
 
     def get_time_number(self):
         """
@@ -215,7 +228,10 @@ class MultiCircuit:
         Clear the multi-circuit (remove the bus and branch objects)
         """
         # Should be able to accept Branches, Lines and Transformers alike
-        self.branches = list()
+        self.lines = list()
+        self.transformers2w = list()
+        self.hvdc_lines = list()
+        self.vsc_converters = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -261,6 +277,13 @@ class MultiCircuit:
         self.branch_names = None
 
         self.time_profile = None
+
+    def get_branches(self):
+        """
+        Return all the branch objects
+        :return: lines + transformers 2w + hvdc
+        """
+        return self.lines + self.transformers2w + self.hvdc_lines + self.vsc_converters
 
     def get_loads(self):
         """
@@ -399,8 +422,17 @@ class MultiCircuit:
         elif element_type == DeviceType.ShuntDevice:
             return self.get_shunts()
 
-        elif element_type == DeviceType.BranchDevice:
-            return self.branches
+        elif element_type == DeviceType.LineDevice:
+            return self.lines
+
+        elif element_type == DeviceType.Transformer2WDevice:
+            return self.transformers2w
+
+        elif element_type == DeviceType.HVDCLineDevice:
+            return self.hvdc_lines
+
+        elif element_type == DeviceType.VscDevice:
+            return self.vsc_converters
 
         elif element_type == DeviceType.BusDevice:
             return self.buses
@@ -472,8 +504,17 @@ class MultiCircuit:
             bus_dict[bus] = bus_cpy
             cpy.buses.append(bus_cpy)
 
-        for branch in self.branches:
-            cpy.branches.append(branch.copy(bus_dict))
+        for branch in self.lines:
+            cpy.lines.append(branch.copy(bus_dict))
+
+        for branch in self.transformers2w:
+            cpy.transformers2w.append(branch.copy(bus_dict))
+
+        for branch in self.hvdc_lines:
+            cpy.hvdc_lines.append(branch.copy(bus_dict))
+
+        for branch in self.vsc_converters:
+            cpy.vsc_converters.append(branch.copy(bus_dict))
 
         cpy.Sbase = self.Sbase
 
@@ -579,7 +620,7 @@ class MultiCircuit:
 
         return d
 
-    def assign_circuit(self, circ):
+    def assign_circuit(self, circ: "MultiCircuit"):
         """
         Assign a circuit object to this object.
 
@@ -589,7 +630,12 @@ class MultiCircuit:
             :ref:`MultiCircuit<multicircuit>` object
         """
         self.buses = circ.buses
-        self.branches = circ.branches
+
+        self.lines = circ.lines
+        self.transformers2w = circ.transformers2w
+        self.hvdc_lines = circ.hvdc_lines
+        self.vsc_converters = circ.vsc_converters
+
         self.name = circ.name
         self.Sbase = circ.Sbase
         self.fBase = circ.fBase
@@ -633,780 +679,781 @@ class MultiCircuit:
 
         self.bus_dictionary = {bus: i for i, bus in enumerate(self.buses)}
 
-        for i, branch in enumerate(self.branches):
-            f = self.bus_dictionary[branch.bus_from]
-            t = self.bus_dictionary[branch.bus_to]
-            self.graph.add_edge(f, t)
+        for branch_list in self.get_branch_lists():
+            for i, branch in enumerate(branch_list):
+                f = self.bus_dictionary[branch.bus_from]
+                t = self.bus_dictionary[branch.bus_to]
+                self.graph.add_edge(f, t)
 
         return self.graph
 
-    def compile(self, logger=Logger()) -> SnapshotData:
-        """
-        Keep the compile function for retro-compatibility
-        :param logger:
-        :return: SnapshotData instance
-        """
-        return self.compile_snapshot(opf_results=None, opf_time_series_results=None, logger=logger)
-
-    def compile_snapshot(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> SnapshotData:
-        """
-        Compile the circuit assets into an equivalent circuit that only contains
-        matrices and vectors for calculation. This method returns the numerical
-        circuit, but it also assigns it to **self.numerical_circuit**, which is used
-        when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
-        :ref:`simulation driver<gridcal_engine_simulations>`, for example:
-
-        .. code:: ipython3
-
-            from GridCal.Engine import *
-
-            grid = MultiCircuit()
-            grid.load_file("grid.xlsx")
-            grid.compile_snapshot()
-
-            options = PowerFlowOptions()
-
-            power_flow = PowerFlowMP(grid, options)
-            power_flow.run()
-
-        Arguments:
-
-            **use_opf_vals** (bool, False): Use OPF results as inputs
-
-            **opf_time_series_results** (list, None): OPF results to be used as inputs
-
-            **logger** (list, []): Message log
-
-        Returns:
-
-            **self.numerical_circuit** (NumericalCircuit): Compiled numerical circuit
-            of the grid
-        """
-
-        if opf_time_series_results is not None and opf_time_series_results is None:
-            raise Exception('You want to use the OPF results but none is passed')
-
-        self.bus_dictionary = dict()
-
-        # Element count
-        n = len(self.buses)
-        n_ld = 0
-        n_ctrl_gen = 0
-        n_sta_gen = 0
-        n_batt = 0
-        n_sh = 0
-
-        for bus in self.buses:
-            n_ld += len(bus.loads)
-            n_ctrl_gen += len(bus.controlled_generators)
-            n_sta_gen += len(bus.static_generators)
-            n_batt += len(bus.batteries)
-            n_sh += len(bus.shunts)
-
-        # count the number of branches
-        n_hvdc = 0
-        n_vsc = 0
-        n_pi = 0
-        idx_hvdc = list()
-        idx_vsc = list()
-        idx_pi = list()
-        for i, obj in enumerate(self.branches):
-            if obj.device_type == DeviceType.VscDevice:
-                n_vsc += 1
-                idx_vsc.append(i)
-            elif obj.device_type == DeviceType.DCBranchDevice:
-                n_hvdc += 1
-                idx_hvdc.append(i)
-            else:
-                n_pi += 1
-                idx_pi.append(i)
-
-        # declare the numerical circuit
-        circuit = SnapshotData(n_bus=n, n_pi=n_pi, n_ld=n_ld, n_gen=n_ctrl_gen,
-                               n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
-                               n_hvdc=n_hvdc, n_vsc=n_vsc,
-                               idx_pi=idx_pi, idx_hvdc=idx_hvdc, idx_vsc=idx_vsc,
-                               Sbase=self.Sbase)
-
-        # compile the buses and the shunt devices
-        i_ld = 0
-        i_gen = 0
-        i_sta_gen = 0
-        i_batt = 0
-        i_sh = 0
-        self.bus_names = np.zeros(n, dtype=object)
-        for i, bus in enumerate(self.buses):
-
-            # bus parameters
-            self.bus_names[i] = bus.name
-            circuit.bus_names[i] = bus.name
-            circuit.bus_active[i] = bus.active
-            circuit.bus_vnom[i] = bus.Vnom  # kV
-            circuit.Vmax[i] = bus.Vmax
-            circuit.Vmin[i] = bus.Vmin
-            circuit.bus_types[i] = bus.determine_bus_type().value
-
-            # Add buses dictionary entry
-            self.bus_dictionary[bus] = i
-
-            for elm in bus.loads:
-                circuit.load_names[i_ld] = elm.name
-
-                circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
-                circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
-                circuit.load_active[i_ld] = elm.active
-                circuit.load_mttf[i_ld] = elm.mttf
-                circuit.load_mttr[i_ld] = elm.mttr
-                circuit.load_cost[i_ld] = elm.Cost
-
-                if opf_results is not None:
-                    # subtract the load shedding
-                    circuit.load_power[i_ld] = complex(elm.P - opf_results.load_shedding[i_ld], elm.Q)
-                else:
-                    circuit.load_power[i_ld] = complex(elm.P, elm.Q)
-
-                circuit.C_bus_load[i, i_ld] = 1
-                i_ld += 1
-
-            for elm in bus.static_generators:
-                circuit.static_gen_names[i_sta_gen] = elm.name
-                circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
-                circuit.static_gen_active[i_sta_gen] = elm.active
-                circuit.static_gen_mttf[i_sta_gen] = elm.mttf
-                circuit.static_gen_mttr[i_sta_gen] = elm.mttr
-
-                circuit.C_bus_sta_gen[i, i_sta_gen] = 1
-                i_sta_gen += 1
-
-            for elm in bus.controlled_generators:
-
-                circuit.generator_names[i_gen] = elm.name
-
-                circuit.generator_power_factor[i_gen] = elm.Pf
-
-                if elm.active:
-                    circuit.generator_voltage[i_gen] = elm.Vset
-                else:
-                    circuit.generator_voltage[i_gen] = 1.0
-
-                circuit.generator_qmin[i_gen] = elm.Qmin
-                circuit.generator_qmax[i_gen] = elm.Qmax
-                circuit.generator_pmin[i_gen] = elm.Pmin
-                circuit.generator_pmax[i_gen] = elm.Pmax
-                circuit.generator_active[i_gen] = elm.active
-                circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
-                circuit.generator_mttf[i_gen] = elm.mttf
-                circuit.generator_mttr[i_gen] = elm.mttr
-                circuit.generator_cost[i_gen] = elm.Cost
-                circuit.generator_nominal_power[i_gen] = elm.Snom
-
-                if opf_results is not None:
-                    circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
-                else:
-                    circuit.generator_power[i_gen] = elm.P
-
-                circuit.C_bus_gen[i, i_gen] = 1
-
-                if circuit.V0[i].real == 1.0:
-                    circuit.V0[i] = complex(elm.Vset, 0)
-                elif elm.Vset != circuit.V0[i]:
-                    logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
-                i_gen += 1
-
-            for elm in bus.batteries:
-                circuit.battery_names[i_batt] = elm.name
-                circuit.battery_power[i_batt] = elm.P
-
-                if elm.active:
-                    circuit.battery_voltage[i_batt] = elm.Vset
-                else:
-                    circuit.battery_voltage[i_batt] = 1.0
-
-                circuit.battery_qmin[i_batt] = elm.Qmin
-                circuit.battery_qmax[i_batt] = elm.Qmax
-                circuit.battery_active[i_batt] = elm.active
-                circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
-                circuit.battery_mttf[i_batt] = elm.mttf
-                circuit.battery_mttr[i_batt] = elm.mttr
-                circuit.battery_cost[i_batt] = elm.Cost
-
-                circuit.battery_pmin[i_batt] = elm.Pmin
-                circuit.battery_pmax[i_batt] = elm.Pmax
-                circuit.battery_Enom[i_batt] = elm.Enom
-                circuit.battery_soc_0[i_batt] = elm.soc_0
-                circuit.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
-                circuit.battery_charge_efficiency[i_batt] = elm.charge_efficiency
-                circuit.battery_min_soc[i_batt] = elm.min_soc
-                circuit.battery_max_soc[i_batt] = elm.max_soc
-
-                circuit.C_bus_batt[i, i_batt] = 1
-                circuit.V0[i] *= elm.Vset
-                i_batt += 1
-
-            for elm in bus.shunts:
-                circuit.shunt_names[i_sh] = elm.name
-                circuit.shunt_active[i_sh] = elm.active
-                circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
-                circuit.shunt_mttf[i_sh] = elm.mttf
-                circuit.shunt_mttr[i_sh] = elm.mttr
-
-                circuit.C_bus_shunt[i, i_sh] = 1
-                i_sh += 1
-
-        # Compile the branches
-        for ii, i in enumerate(idx_pi):
-
-            # common to all branches
-            branch = self.branches[i]
-            f = self.bus_dictionary[branch.bus_from]
-            t = self.bus_dictionary[branch.bus_to]
-
-            circuit.branch_names[i] = branch.name
-            circuit.branch_active[i] = branch.active
-            circuit.branch_rates[i] = branch.rate
-
-            circuit.C_branch_bus_f[i, f] = 1
-            circuit.C_branch_bus_t[i, t] = 1
-            circuit.F[i] = f
-            circuit.T[i] = t
-
-            # name and state
-            circuit.branch_mttf[ii] = branch.mttf
-            circuit.branch_mttr[ii] = branch.mttr
-            circuit.branch_cost[ii] = branch.Cost
-
-            # impedance and tap
-            circuit.branch_R[ii] = branch.R
-            circuit.branch_X[ii] = branch.X
-            circuit.branch_G[ii] = branch.G
-            circuit.branch_B[ii] = branch.B
-            circuit.branch_impedance_tolerance[ii] = branch.tolerance
-            circuit.branch_tap_mod[ii] = branch.tap_module
-            circuit.branch_tap_ang[ii] = branch.angle
-
-            # Thermal correction
-            circuit.branch_temp_base[ii] = branch.temp_base
-            circuit.branch_temp_oper[ii] = branch.temp_oper
-            circuit.branch_alpha[ii] = branch.alpha
-
-            # tap changer
-            circuit.branch_is_bus_to_regulated[ii] = branch.bus_to_regulated
-            circuit.branch_tap_position[ii] = branch.tap_changer.tap
-            circuit.branch_min_tap[ii] = branch.tap_changer.min_tap
-            circuit.branch_max_tap[ii] = branch.tap_changer.max_tap
-            circuit.branch_tap_inc_reg_up[ii] = branch.tap_changer.inc_reg_up
-            circuit.branch_tap_inc_reg_down[ii] = branch.tap_changer.inc_reg_down
-            circuit.branch_vset[ii] = branch.vset
-
-            # switches
-            if branch.branch_type == BranchType.Switch:
-                circuit.branch_switch_indices.append(i)
-
-            # virtual taps for transformers where the connection voltage is off
-            elif branch.branch_type == BranchType.Transformer:
-                circuit.branch_tap_f[ii], circuit.branch_tap_t[ii] = branch.get_virtual_taps()
-
-        for ii, i in enumerate(idx_hvdc):
-
-            # common to all branches
-            branch = self.branches[i]
-            f = self.bus_dictionary[branch.bus_from]
-            t = self.bus_dictionary[branch.bus_to]
-
-            circuit.C_branch_bus_f[i, f] = 1
-            circuit.C_branch_bus_t[i, t] = 1
-
-            circuit.F[i] = f
-            circuit.T[i] = t
-
-            circuit.branch_names[i] = branch.name
-            circuit.branch_active[i] = branch.active
-            circuit.branch_rates[i] = branch.rate
-
-            # specific to HVDC
-            circuit.hvdc_R[ii] = branch.Rdc
-
-            if branch.force_flow:
-                circuit.hvdc_Pset[ii] = branch.P_dc_set
-                circuit.bus_types[f] = BusMode.PV.value
-                circuit.bus_types[t] = BusMode.PV.value
-
-        for ii, i in enumerate(idx_vsc):
-
-            # common to all branches
-            branch = self.branches[i]
-            f = self.bus_dictionary[branch.bus_from]
-            t = self.bus_dictionary[branch.bus_to]
-
-            circuit.C_branch_bus_f[i, f] = 1
-            circuit.C_branch_bus_t[i, t] = 1
-
-            circuit.F[i] = f
-            circuit.T[i] = t
-
-            circuit.branch_names[i] = branch.name
-            circuit.branch_active[i] = branch.active
-            circuit.branch_rates[i] = branch.rate
-
-            # specific to VSC
-            circuit.vsc_R1[ii] = branch.R1
-            circuit.vsc_X1[ii] = branch.X1
-            circuit.vsc_G0[ii] = branch.G0
-            circuit.vsc_Beq[ii] = branch.Beq
-            circuit.vsc_m[ii] = branch.m
-            circuit.vsc_theta[ii] = branch.theta
-
-        # Assign and return
-        self.branch_names = circuit.branch_names
-        self.numerical_circuit = circuit
-        return circuit
-
-    def compile_time_series(self, opf_results=None, opf_time_series_results=None,
-                            logger=Logger()) -> SeriesData:
-        """
-        Compile the circuit assets into an equivalent circuit that only contains
-        matrices and vectors for calculation. This method returns the numerical
-        circuit, but it also assigns it to **self.numerical_circuit**, which is used
-        when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
-        :ref:`simulation driver<gridcal_engine_simulations>`, for example:
-
-        .. code:: ipython3
-
-            from GridCal.Engine import *
-
-            grid = MultiCircuit()
-            grid.load_file("grid.xlsx")
-            grid.compile_snapshot()
-
-            options = PowerFlowOptions()
-
-            power_flow = PowerFlowMP(grid, options)
-            power_flow.run()
-
-        Arguments:
-
-            **use_opf_vals** (bool, False): Use OPF results as inputs
-
-            **opf_time_series_results** (list, None): OPF results to be used as inputs
-
-            **logger** (list, []): Message log
-
-        Returns:
-
-            **self.numerical_circuit** (NumericalCircuit): Compiled numerical circuit
-            of the grid
-        """
-
-        n, mm, n_time = self.get_dimensions()
-
-        if n_time > 0:
-
-            if opf_time_series_results is not None and opf_time_series_results is None:
-                raise Exception('You want to use the OPF results but none is passed')
-
-            self.bus_dictionary = dict()
-
-            # Element count
-            n_ld = 0
-            n_ctrl_gen = 0
-            n_sta_gen = 0
-            n_batt = 0
-            n_sh = 0
-            for bus in self.buses:
-                n_ld += len(bus.loads)
-                n_ctrl_gen += len(bus.controlled_generators)
-                n_sta_gen += len(bus.static_generators)
-                n_batt += len(bus.batteries)
-                n_sh += len(bus.shunts)
-
-            # count the number of branches
-            n_hvdc = 0
-            n_vsc = 0
-            n_pi = 0
-            idx_hvdc = list()
-            idx_vsc = list()
-            idx_pi = list()
-            for i, obj in enumerate(self.branches):
-                if obj.device_type == DeviceType.VscDevice:
-                    n_vsc += 1
-                    idx_vsc.append(i)
-                elif obj.device_type == DeviceType.DCBranchDevice:
-                    n_hvdc += 1
-                    idx_hvdc.append(i)
-                else:
-                    n_pi += 1
-                    idx_pi.append(i)
-
-            # declare the numerical circuit
-            circuit = SeriesData(n_bus=n,
-                                 n_pi=n_pi,
-                                 n_hvdc=n_hvdc,
-                                 n_vsc=n_vsc,
-                                 n_ld=n_ld,
-                                 n_gen=n_ctrl_gen,
-                                 n_sta_gen=n_sta_gen,
-                                 n_batt=n_batt,
-                                 n_sh=n_sh,
-                                 n_time=n_time,
-                                 idx_pi=idx_pi,
-                                 idx_hvdc=idx_hvdc,
-                                 idx_vsc=idx_vsc,
-                                 Sbase=self.Sbase)
-
-            # set hte time array profile
-            if n_time > 0:
-                circuit.time_array = self.time_profile
-
-            # compile the buses and the shunt devices
-            i_ld = 0
-            i_gen = 0
-            i_sta_gen = 0
-            i_batt = 0
-            i_sh = 0
-            self.bus_names = np.zeros(n, dtype=object)
-            for i, bus in enumerate(self.buses):
-
-                # bus parameters
-                self.bus_names[i] = bus.name
-                circuit.bus_names[i] = bus.name
-                circuit.bus_active[i] = bus.active
-                circuit.bus_vnom[i] = bus.Vnom  # kV
-                circuit.Vmax[i] = bus.Vmax
-                circuit.Vmin[i] = bus.Vmin
-                circuit.bus_types[i] = bus.determine_bus_type().value
-
-                if n_time > 0:
-                    # active profile
-                    if bus.active_prof is None:
-                        bus.ensure_profiles_exist(self.time_profile)
-
-                    circuit.bus_active_prof[:, i] = bus.active_prof
-
-                # Add buses dictionary entry
-                self.bus_dictionary[bus] = i
-
-                for elm in bus.loads:
-                    circuit.load_names[i_ld] = elm.name
-
-                    circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
-                    circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
-                    circuit.load_active[i_ld] = elm.active
-                    circuit.load_mttf[i_ld] = elm.mttf
-                    circuit.load_mttr[i_ld] = elm.mttr
-                    circuit.load_cost[i_ld] = elm.Cost
-
-                    if opf_results is not None:
-                        # subtract the load shedding
-                        circuit.load_power[i_ld] = complex(elm.P - opf_results.load_shedding[i_ld], elm.Q)
-                    else:
-                        circuit.load_power[i_ld] = complex(elm.P, elm.Q)
-
-                    if n_time > 0:
-                        circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
-                        circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
-                        circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
-                        circuit.load_active_prof[:, i_ld] = elm.active_prof
-                        circuit.load_cost_prof[:, i_ld] = elm.Cost_prof
-
-                        if opf_time_series_results is not None:
-                            # subtract the load shedding from the generation
-                            circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_ld]
-
-                    circuit.C_bus_load[i, i_ld] = 1
-                    i_ld += 1
-
-                for elm in bus.static_generators:
-                    circuit.static_gen_names[i_sta_gen] = elm.name
-                    circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
-                    circuit.static_gen_active[i_sta_gen] = elm.active
-                    circuit.static_gen_mttf[i_sta_gen] = elm.mttf
-                    circuit.static_gen_mttr[i_sta_gen] = elm.mttr
-
-                    if n_time > 0:
-                        circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
-                        circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
-
-                    circuit.C_bus_sta_gen[i, i_sta_gen] = 1
-                    i_sta_gen += 1
-
-                for elm in bus.controlled_generators:
-                    circuit.generator_names[i_gen] = elm.name
-
-                    circuit.generator_power_factor[i_gen] = elm.Pf
-
-                    if elm.active:
-                        circuit.generator_voltage[i_gen] = elm.Vset
-                    else:
-                        circuit.generator_voltage[i_gen] = 1.0
-
-                    circuit.generator_qmin[i_gen] = elm.Qmin
-                    circuit.generator_qmax[i_gen] = elm.Qmax
-                    circuit.generator_pmin[i_gen] = elm.Pmin
-                    circuit.generator_pmax[i_gen] = elm.Pmax
-                    circuit.generator_active[i_gen] = elm.active
-                    circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
-                    circuit.generator_mttf[i_gen] = elm.mttf
-                    circuit.generator_mttr[i_gen] = elm.mttr
-                    circuit.generator_cost[i_gen] = elm.Cost
-                    circuit.generator_nominal_power[i_gen] = elm.Snom
-
-                    if opf_results is not None:
-                        circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
-                    else:
-                        circuit.generator_power[i_gen] = elm.P
-
-                    if n_time > 0:
-                        # power profile
-                        if opf_time_series_results is not None:
-                            circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
-                        else:
-                            circuit.generator_power_profile[:, i_gen] = elm.P_prof
-
-                        circuit.generator_active_prof[:, i_gen] = elm.active_prof
-
-                        # Power factor profile
-                        circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof
-
-                        # Voltage profile
-                        circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
-
-                        circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
-
-                    circuit.C_bus_gen[i, i_gen] = 1
-
-                    if circuit.V0[i].real == 1.0:
-                        circuit.V0[i] = complex(elm.Vset, 0)
-                    elif elm.Vset != circuit.V0[i]:
-                        logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
-                    i_gen += 1
-
-                for elm in bus.batteries:
-                    circuit.battery_names[i_batt] = elm.name
-                    circuit.battery_power[i_batt] = elm.P
-
-                    if elm.active:
-                        circuit.battery_voltage[i_batt] = elm.Vset
-                    else:
-                        circuit.battery_voltage[i_batt] = 1.0
-
-                    circuit.battery_qmin[i_batt] = elm.Qmin
-                    circuit.battery_qmax[i_batt] = elm.Qmax
-                    circuit.battery_active[i_batt] = elm.active
-                    circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
-                    circuit.battery_mttf[i_batt] = elm.mttf
-                    circuit.battery_mttr[i_batt] = elm.mttr
-                    circuit.battery_cost[i_batt] = elm.Cost
-
-                    circuit.battery_pmin[i_batt] = elm.Pmin
-                    circuit.battery_pmax[i_batt] = elm.Pmax
-                    circuit.battery_Enom[i_batt] = elm.Enom
-                    circuit.battery_soc_0[i_batt] = elm.soc_0
-                    circuit.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
-                    circuit.battery_charge_efficiency[i_batt] = elm.charge_efficiency
-                    circuit.battery_min_soc[i_batt] = elm.min_soc
-                    circuit.battery_max_soc[i_batt] = elm.max_soc
-
-                    if n_time > 0:
-                        # power profile
-                        if opf_time_series_results is not None:
-                            circuit.battery_power_profile[:, i_batt] = opf_time_series_results.battery_power[:, i_batt]
-                        else:
-                            circuit.battery_power_profile[:, i_batt] = elm.P_prof
-                        # Voltage profile
-                        circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
-
-                        circuit.battery_active_prof[:, i_batt] = elm.active_prof
-
-                        circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
-
-                    circuit.C_bus_batt[i, i_batt] = 1
-                    circuit.V0[i] *= elm.Vset
-                    i_batt += 1
-
-                for elm in bus.shunts:
-                    circuit.shunt_names[i_sh] = elm.name
-                    circuit.shunt_active[i_sh] = elm.active
-                    circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
-                    circuit.shunt_mttf[i_sh] = elm.mttf
-                    circuit.shunt_mttr[i_sh] = elm.mttr
-
-                    if n_time > 0:
-                        circuit.shunt_active_prof[:, i_sh] = elm.active_prof
-                        circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
-
-                    circuit.C_bus_shunt[i, i_sh] = 1
-                    i_sh += 1
-
-            # Compile the branches
-            for i, branch in enumerate(self.branches):
-
-                f = self.bus_dictionary[branch.bus_from]
-                t = self.bus_dictionary[branch.bus_to]
-
-                # connectivity
-                circuit.C_branch_bus_f[i, f] = 1
-                circuit.C_branch_bus_t[i, t] = 1
-                circuit.F[i] = f
-                circuit.T[i] = t
-
-                # name and state
-                circuit.branch_names[i] = branch.name
-                circuit.branch_active[i] = branch.active
-                circuit.branch_mttf[i] = branch.mttf
-                circuit.branch_mttr[i] = branch.mttr
-                circuit.branch_cost[i] = branch.Cost
-
-                # impedance and tap
-                circuit.branch_R[i] = branch.R
-                circuit.branch_X[i] = branch.X
-                circuit.branch_G[i] = branch.G
-                circuit.branch_B[i] = branch.B
-                circuit.branch_impedance_tolerance[i] = branch.tolerance
-                circuit.branch_rates[i] = branch.rate
-                circuit.branch_tap_mod[i] = branch.tap_module
-                circuit.branch_tap_ang[i] = branch.angle
-
-                # Thermal correction
-                circuit.branch_temp_base[i] = branch.temp_base
-                circuit.branch_temp_oper[i] = branch.temp_oper
-                circuit.branch_alpha[i] = branch.alpha
-
-                # tap changer
-                circuit.branch_is_bus_to_regulated[i] = branch.bus_to_regulated
-                circuit.branch_tap_position[i] = branch.tap_changer.tap
-                circuit.branch_min_tap[i] = branch.tap_changer.min_tap
-                circuit.branch_max_tap[i] = branch.tap_changer.max_tap
-                circuit.branch_tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
-                circuit.branch_tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
-                circuit.branch_vset[i] = branch.vset
-
-                if n_time > 0:
-                    circuit.branch_active_prof[:, i] = branch.active_prof
-                    circuit.branch_temp_oper_prof[:, i] = branch.temp_oper_prof
-                    circuit.branch_cost_profile[:, i] = branch.Cost_prof
-                    circuit.branch_rate_profile[:, i] = branch.rate_prof
-
-                # switches
-                if branch.branch_type == BranchType.Switch:
-                    circuit.branch_switch_indices.append(i)
-
-                # virtual taps for transformers where the connection voltage is off
-                elif branch.branch_type == BranchType.Transformer:
-                    circuit.branch_tap_f[i], circuit.branch_tap_t[i] = branch.get_virtual_taps()
-
-            # Compile the branches
-            for ii, i in enumerate(idx_pi):
-
-                # common to all branches
-                branch = self.branches[i]
-                f = self.bus_dictionary[branch.bus_from]
-                t = self.bus_dictionary[branch.bus_to]
-
-                circuit.branch_names[i] = branch.name
-                circuit.branch_active[i] = branch.active
-                circuit.branch_rates[i] = branch.rate
-
-                circuit.C_branch_bus_f[i, f] = 1
-                circuit.C_branch_bus_t[i, t] = 1
-                circuit.F[i] = f
-                circuit.T[i] = t
-
-                circuit.branch_active_prof[:, i] = branch.active_prof
-                circuit.branch_rate_profile[:, i] = branch.rate_prof
-
-                # OPF
-                circuit.branch_mttf[ii] = branch.mttf
-                circuit.branch_mttr[ii] = branch.mttr
-                circuit.branch_cost[ii] = branch.Cost
-                circuit.branch_cost_profile[:, i] = branch.Cost_prof
-
-                # impedance and tap
-                circuit.branch_R[ii] = branch.R
-                circuit.branch_X[ii] = branch.X
-                circuit.branch_G[ii] = branch.G
-                circuit.branch_B[ii] = branch.B
-                circuit.branch_impedance_tolerance[ii] = branch.tolerance
-                circuit.branch_tap_mod[ii] = branch.tap_module
-                circuit.branch_tap_ang[ii] = branch.angle
-
-                # Thermal correction
-                circuit.branch_temp_base[ii] = branch.temp_base
-                circuit.branch_temp_oper[ii] = branch.temp_oper
-                circuit.branch_alpha[ii] = branch.alpha
-                circuit.branch_temp_oper_prof[:, i] = branch.temp_oper_prof
-
-                # tap changer
-                circuit.branch_is_bus_to_regulated[ii] = branch.bus_to_regulated
-                circuit.branch_tap_position[ii] = branch.tap_changer.tap
-                circuit.branch_min_tap[ii] = branch.tap_changer.min_tap
-                circuit.branch_max_tap[ii] = branch.tap_changer.max_tap
-                circuit.branch_tap_inc_reg_up[ii] = branch.tap_changer.inc_reg_up
-                circuit.branch_tap_inc_reg_down[ii] = branch.tap_changer.inc_reg_down
-                circuit.branch_vset[ii] = branch.vset
-
-                # switches
-                if branch.branch_type == BranchType.Switch:
-                    circuit.branch_switch_indices.append(i)
-
-                # virtual taps for transformers where the connection voltage is off
-                elif branch.branch_type == BranchType.Transformer:
-                    circuit.branch_tap_f[ii], circuit.branch_tap_t[ii] = branch.get_virtual_taps()
-
-            for ii, i in enumerate(idx_hvdc):
-                # common to all branches
-                branch = self.branches[i]
-                f = self.bus_dictionary[branch.bus_from]
-                t = self.bus_dictionary[branch.bus_to]
-
-                circuit.C_branch_bus_f[i, f] = 1
-                circuit.C_branch_bus_t[i, t] = 1
-
-                circuit.F[i] = f
-                circuit.T[i] = t
-
-                circuit.branch_names[i] = branch.name
-                circuit.branch_active[i] = branch.active
-                circuit.branch_rates[i] = branch.rate
-
-                circuit.branch_active_prof[:, i] = branch.active_prof
-                circuit.branch_rate_profile[:, i] = branch.rate_prof
-
-                # specific to HVDC
-                circuit.hvdc_R[ii] = branch.Rdc
-
-            for ii, i in enumerate(idx_vsc):
-                # common to all branches
-                branch = self.branches[i]
-                f = self.bus_dictionary[branch.bus_from]
-                t = self.bus_dictionary[branch.bus_to]
-
-                circuit.C_branch_bus_f[i, f] = 1
-                circuit.C_branch_bus_t[i, t] = 1
-
-                circuit.F[i] = f
-                circuit.T[i] = t
-
-                circuit.branch_names[i] = branch.name
-                circuit.branch_active[i] = branch.active
-                circuit.branch_rates[i] = branch.rate
-
-                circuit.branch_active_prof[:, i] = branch.active_prof
-                circuit.branch_rate_profile[:, i] = branch.rate_prof
-
-                # specific to VSC
-                circuit.vsc_R1[ii] = branch.R1
-                circuit.vsc_X1[ii] = branch.X1
-                circuit.vsc_G0[ii] = branch.G0
-                circuit.vsc_Beq[ii] = branch.Beq
-                circuit.vsc_m[ii] = branch.m
-                circuit.vsc_theta[ii] = branch.theta
-
-            # Assign and return
-            self.branch_names = circuit.branch_names
-            self.numerical_circuit = circuit
-            return circuit
-        else:
-            raise Exception('This compilation needs time profiles, make sure you initialize the time series.')
+    # def compile(self, logger=Logger()) -> SnapshotData:
+    #     """
+    #     Keep the compile function for retro-compatibility
+    #     :param logger:
+    #     :return: SnapshotData instance
+    #     """
+    #     return self.compile_snapshot(opf_results=None, opf_time_series_results=None, logger=logger)
+    #
+    # def compile_snapshot(self, opf_results=None, opf_time_series_results=None, logger=Logger()) -> SnapshotData:
+    #     """
+    #     Compile the circuit assets into an equivalent circuit that only contains
+    #     matrices and vectors for calculation. This method returns the numerical
+    #     circuit, but it also assigns it to **self.numerical_circuit**, which is used
+    #     when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
+    #     :ref:`simulation driver<gridcal_engine_simulations>`, for example:
+    #
+    #     .. code:: ipython3
+    #
+    #         from GridCal.Engine import *
+    #
+    #         grid = MultiCircuit()
+    #         grid.load_file("grid.xlsx")
+    #         grid.compile_snapshot()
+    #
+    #         options = PowerFlowOptions()
+    #
+    #         power_flow = PowerFlowMP(grid, options)
+    #         power_flow.run()
+    #
+    #     Arguments:
+    #
+    #         **use_opf_vals** (bool, False): Use OPF results as inputs
+    #
+    #         **opf_time_series_results** (list, None): OPF results to be used as inputs
+    #
+    #         **logger** (list, []): Message log
+    #
+    #     Returns:
+    #
+    #         **self.numerical_circuit** (NumericalCircuit): Compiled numerical circuit
+    #         of the grid
+    #     """
+    #
+    #     if opf_time_series_results is not None and opf_time_series_results is None:
+    #         raise Exception('You want to use the OPF results but none is passed')
+    #
+    #     self.bus_dictionary = dict()
+    #
+    #     # Element count
+    #     n = len(self.buses)
+    #     n_ld = 0
+    #     n_ctrl_gen = 0
+    #     n_sta_gen = 0
+    #     n_batt = 0
+    #     n_sh = 0
+    #
+    #     for bus in self.buses:
+    #         n_ld += len(bus.loads)
+    #         n_ctrl_gen += len(bus.controlled_generators)
+    #         n_sta_gen += len(bus.static_generators)
+    #         n_batt += len(bus.batteries)
+    #         n_sh += len(bus.shunts)
+    #
+    #     # count the number of branches
+    #     n_hvdc = 0
+    #     n_vsc = 0
+    #     n_pi = 0
+    #     idx_hvdc = list()
+    #     idx_vsc = list()
+    #     idx_pi = list()
+    #     for i, obj in enumerate(self.branches):
+    #         if obj.device_type == DeviceType.VscDevice:
+    #             n_vsc += 1
+    #             idx_vsc.append(i)
+    #         elif obj.device_type == DeviceType.DCBranchDevice:
+    #             n_hvdc += 1
+    #             idx_hvdc.append(i)
+    #         else:
+    #             n_pi += 1
+    #             idx_pi.append(i)
+    #
+    #     # declare the numerical circuit
+    #     circuit = SnapshotData(n_bus=n, n_pi=n_pi, n_ld=n_ld, n_gen=n_ctrl_gen,
+    #                            n_sta_gen=n_sta_gen, n_batt=n_batt, n_sh=n_sh,
+    #                            n_hvdc=n_hvdc, n_vsc=n_vsc,
+    #                            idx_pi=idx_pi, idx_hvdc=idx_hvdc, idx_vsc=idx_vsc,
+    #                            Sbase=self.Sbase)
+    #
+    #     # compile the buses and the shunt devices
+    #     i_ld = 0
+    #     i_gen = 0
+    #     i_sta_gen = 0
+    #     i_batt = 0
+    #     i_sh = 0
+    #     self.bus_names = np.zeros(n, dtype=object)
+    #     for i, bus in enumerate(self.buses):
+    #
+    #         # bus parameters
+    #         self.bus_names[i] = bus.name
+    #         circuit.bus_names[i] = bus.name
+    #         circuit.bus_active[i] = bus.active
+    #         circuit.bus_vnom[i] = bus.Vnom  # kV
+    #         circuit.Vmax[i] = bus.Vmax
+    #         circuit.Vmin[i] = bus.Vmin
+    #         circuit.bus_types[i] = bus.determine_bus_type().value
+    #
+    #         # Add buses dictionary entry
+    #         self.bus_dictionary[bus] = i
+    #
+    #         for elm in bus.loads:
+    #             circuit.load_names[i_ld] = elm.name
+    #
+    #             circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
+    #             circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
+    #             circuit.load_active[i_ld] = elm.active
+    #             circuit.load_mttf[i_ld] = elm.mttf
+    #             circuit.load_mttr[i_ld] = elm.mttr
+    #             circuit.load_cost[i_ld] = elm.Cost
+    #
+    #             if opf_results is not None:
+    #                 # subtract the load shedding
+    #                 circuit.load_power[i_ld] = complex(elm.P - opf_results.load_shedding[i_ld], elm.Q)
+    #             else:
+    #                 circuit.load_power[i_ld] = complex(elm.P, elm.Q)
+    #
+    #             circuit.C_bus_load[i, i_ld] = 1
+    #             i_ld += 1
+    #
+    #         for elm in bus.static_generators:
+    #             circuit.static_gen_names[i_sta_gen] = elm.name
+    #             circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
+    #             circuit.static_gen_active[i_sta_gen] = elm.active
+    #             circuit.static_gen_mttf[i_sta_gen] = elm.mttf
+    #             circuit.static_gen_mttr[i_sta_gen] = elm.mttr
+    #
+    #             circuit.C_bus_sta_gen[i, i_sta_gen] = 1
+    #             i_sta_gen += 1
+    #
+    #         for elm in bus.controlled_generators:
+    #
+    #             circuit.generator_names[i_gen] = elm.name
+    #
+    #             circuit.generator_power_factor[i_gen] = elm.Pf
+    #
+    #             if elm.active:
+    #                 circuit.generator_voltage[i_gen] = elm.Vset
+    #             else:
+    #                 circuit.generator_voltage[i_gen] = 1.0
+    #
+    #             circuit.generator_qmin[i_gen] = elm.Qmin
+    #             circuit.generator_qmax[i_gen] = elm.Qmax
+    #             circuit.generator_pmin[i_gen] = elm.Pmin
+    #             circuit.generator_pmax[i_gen] = elm.Pmax
+    #             circuit.generator_active[i_gen] = elm.active
+    #             circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
+    #             circuit.generator_mttf[i_gen] = elm.mttf
+    #             circuit.generator_mttr[i_gen] = elm.mttr
+    #             circuit.generator_cost[i_gen] = elm.Cost
+    #             circuit.generator_nominal_power[i_gen] = elm.Snom
+    #
+    #             if opf_results is not None:
+    #                 circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
+    #             else:
+    #                 circuit.generator_power[i_gen] = elm.P
+    #
+    #             circuit.C_bus_gen[i, i_gen] = 1
+    #
+    #             if circuit.V0[i].real == 1.0:
+    #                 circuit.V0[i] = complex(elm.Vset, 0)
+    #             elif elm.Vset != circuit.V0[i]:
+    #                 logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
+    #             i_gen += 1
+    #
+    #         for elm in bus.batteries:
+    #             circuit.battery_names[i_batt] = elm.name
+    #             circuit.battery_power[i_batt] = elm.P
+    #
+    #             if elm.active:
+    #                 circuit.battery_voltage[i_batt] = elm.Vset
+    #             else:
+    #                 circuit.battery_voltage[i_batt] = 1.0
+    #
+    #             circuit.battery_qmin[i_batt] = elm.Qmin
+    #             circuit.battery_qmax[i_batt] = elm.Qmax
+    #             circuit.battery_active[i_batt] = elm.active
+    #             circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
+    #             circuit.battery_mttf[i_batt] = elm.mttf
+    #             circuit.battery_mttr[i_batt] = elm.mttr
+    #             circuit.battery_cost[i_batt] = elm.Cost
+    #
+    #             circuit.battery_pmin[i_batt] = elm.Pmin
+    #             circuit.battery_pmax[i_batt] = elm.Pmax
+    #             circuit.battery_Enom[i_batt] = elm.Enom
+    #             circuit.battery_soc_0[i_batt] = elm.soc_0
+    #             circuit.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
+    #             circuit.battery_charge_efficiency[i_batt] = elm.charge_efficiency
+    #             circuit.battery_min_soc[i_batt] = elm.min_soc
+    #             circuit.battery_max_soc[i_batt] = elm.max_soc
+    #
+    #             circuit.C_bus_batt[i, i_batt] = 1
+    #             circuit.V0[i] *= elm.Vset
+    #             i_batt += 1
+    #
+    #         for elm in bus.shunts:
+    #             circuit.shunt_names[i_sh] = elm.name
+    #             circuit.shunt_active[i_sh] = elm.active
+    #             circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
+    #             circuit.shunt_mttf[i_sh] = elm.mttf
+    #             circuit.shunt_mttr[i_sh] = elm.mttr
+    #
+    #             circuit.C_bus_shunt[i, i_sh] = 1
+    #             i_sh += 1
+    #
+    #     # Compile the branches
+    #     for ii, i in enumerate(idx_pi):
+    #
+    #         # common to all branches
+    #         branch = self.branches[i]
+    #         f = self.bus_dictionary[branch.bus_from]
+    #         t = self.bus_dictionary[branch.bus_to]
+    #
+    #         circuit.branch_names[i] = branch.name
+    #         circuit.branch_active[i] = branch.active
+    #         circuit.branch_rates[i] = branch.rate
+    #
+    #         circuit.C_branch_bus_f[i, f] = 1
+    #         circuit.C_branch_bus_t[i, t] = 1
+    #         circuit.F[i] = f
+    #         circuit.T[i] = t
+    #
+    #         # name and state
+    #         circuit.branch_mttf[ii] = branch.mttf
+    #         circuit.branch_mttr[ii] = branch.mttr
+    #         circuit.branch_cost[ii] = branch.Cost
+    #
+    #         # impedance and tap
+    #         circuit.branch_R[ii] = branch.R
+    #         circuit.branch_X[ii] = branch.X
+    #         circuit.branch_G[ii] = branch.G
+    #         circuit.branch_B[ii] = branch.B
+    #         circuit.branch_impedance_tolerance[ii] = branch.tolerance
+    #         circuit.branch_tap_mod[ii] = branch.tap_module
+    #         circuit.branch_tap_ang[ii] = branch.angle
+    #
+    #         # Thermal correction
+    #         circuit.branch_temp_base[ii] = branch.temp_base
+    #         circuit.branch_temp_oper[ii] = branch.temp_oper
+    #         circuit.branch_alpha[ii] = branch.alpha
+    #
+    #         # tap changer
+    #         circuit.branch_is_bus_to_regulated[ii] = branch.bus_to_regulated
+    #         circuit.branch_tap_position[ii] = branch.tap_changer.tap
+    #         circuit.branch_min_tap[ii] = branch.tap_changer.min_tap
+    #         circuit.branch_max_tap[ii] = branch.tap_changer.max_tap
+    #         circuit.branch_tap_inc_reg_up[ii] = branch.tap_changer.inc_reg_up
+    #         circuit.branch_tap_inc_reg_down[ii] = branch.tap_changer.inc_reg_down
+    #         circuit.branch_vset[ii] = branch.vset
+    #
+    #         # switches
+    #         if branch.branch_type == BranchType.Switch:
+    #             circuit.branch_switch_indices.append(i)
+    #
+    #         # virtual taps for transformers where the connection voltage is off
+    #         elif branch.branch_type == BranchType.Transformer:
+    #             circuit.branch_tap_f[ii], circuit.branch_tap_t[ii] = branch.get_virtual_taps()
+    #
+    #     for ii, i in enumerate(idx_hvdc):
+    #
+    #         # common to all branches
+    #         branch = self.branches[i]
+    #         f = self.bus_dictionary[branch.bus_from]
+    #         t = self.bus_dictionary[branch.bus_to]
+    #
+    #         circuit.C_branch_bus_f[i, f] = 1
+    #         circuit.C_branch_bus_t[i, t] = 1
+    #
+    #         circuit.F[i] = f
+    #         circuit.T[i] = t
+    #
+    #         circuit.branch_names[i] = branch.name
+    #         circuit.branch_active[i] = branch.active
+    #         circuit.branch_rates[i] = branch.rate
+    #
+    #         # specific to HVDC
+    #         circuit.hvdc_R[ii] = branch.Rdc
+    #
+    #         if branch.force_flow:
+    #             circuit.hvdc_Pset[ii] = branch.P_dc_set
+    #             circuit.bus_types[f] = BusMode.PV.value
+    #             circuit.bus_types[t] = BusMode.PV.value
+    #
+    #     for ii, i in enumerate(idx_vsc):
+    #
+    #         # common to all branches
+    #         branch = self.branches[i]
+    #         f = self.bus_dictionary[branch.bus_from]
+    #         t = self.bus_dictionary[branch.bus_to]
+    #
+    #         circuit.C_branch_bus_f[i, f] = 1
+    #         circuit.C_branch_bus_t[i, t] = 1
+    #
+    #         circuit.F[i] = f
+    #         circuit.T[i] = t
+    #
+    #         circuit.branch_names[i] = branch.name
+    #         circuit.branch_active[i] = branch.active
+    #         circuit.branch_rates[i] = branch.rate
+    #
+    #         # specific to VSC
+    #         circuit.vsc_R1[ii] = branch.R1
+    #         circuit.vsc_X1[ii] = branch.X1
+    #         circuit.vsc_G0[ii] = branch.G0
+    #         circuit.vsc_Beq[ii] = branch.Beq
+    #         circuit.vsc_m[ii] = branch.m
+    #         circuit.vsc_theta[ii] = branch.theta
+    #
+    #     # Assign and return
+    #     self.branch_names = circuit.branch_names
+    #     self.numerical_circuit = circuit
+    #     return circuit
+    #
+    # def compile_time_series(self, opf_results=None, opf_time_series_results=None,
+    #                         logger=Logger()) -> SeriesData:
+    #     """
+    #     Compile the circuit assets into an equivalent circuit that only contains
+    #     matrices and vectors for calculation. This method returns the numerical
+    #     circuit, but it also assigns it to **self.numerical_circuit**, which is used
+    #     when the :ref:`MultiCircuit<multicircuit>` object is passed onto a
+    #     :ref:`simulation driver<gridcal_engine_simulations>`, for example:
+    #
+    #     .. code:: ipython3
+    #
+    #         from GridCal.Engine import *
+    #
+    #         grid = MultiCircuit()
+    #         grid.load_file("grid.xlsx")
+    #         grid.compile_snapshot()
+    #
+    #         options = PowerFlowOptions()
+    #
+    #         power_flow = PowerFlowMP(grid, options)
+    #         power_flow.run()
+    #
+    #     Arguments:
+    #
+    #         **use_opf_vals** (bool, False): Use OPF results as inputs
+    #
+    #         **opf_time_series_results** (list, None): OPF results to be used as inputs
+    #
+    #         **logger** (list, []): Message log
+    #
+    #     Returns:
+    #
+    #         **self.numerical_circuit** (NumericalCircuit): Compiled numerical circuit
+    #         of the grid
+    #     """
+    #
+    #     n, mm, n_time = self.get_dimensions()
+    #
+    #     if n_time > 0:
+    #
+    #         if opf_time_series_results is not None and opf_time_series_results is None:
+    #             raise Exception('You want to use the OPF results but none is passed')
+    #
+    #         self.bus_dictionary = dict()
+    #
+    #         # Element count
+    #         n_ld = 0
+    #         n_ctrl_gen = 0
+    #         n_sta_gen = 0
+    #         n_batt = 0
+    #         n_sh = 0
+    #         for bus in self.buses:
+    #             n_ld += len(bus.loads)
+    #             n_ctrl_gen += len(bus.controlled_generators)
+    #             n_sta_gen += len(bus.static_generators)
+    #             n_batt += len(bus.batteries)
+    #             n_sh += len(bus.shunts)
+    #
+    #         # count the number of branches
+    #         n_hvdc = 0
+    #         n_vsc = 0
+    #         n_pi = 0
+    #         idx_hvdc = list()
+    #         idx_vsc = list()
+    #         idx_pi = list()
+    #         for i, obj in enumerate(self.branches):
+    #             if obj.device_type == DeviceType.VscDevice:
+    #                 n_vsc += 1
+    #                 idx_vsc.append(i)
+    #             elif obj.device_type == DeviceType.DCBranchDevice:
+    #                 n_hvdc += 1
+    #                 idx_hvdc.append(i)
+    #             else:
+    #                 n_pi += 1
+    #                 idx_pi.append(i)
+    #
+    #         # declare the numerical circuit
+    #         circuit = SeriesData(n_bus=n,
+    #                              n_pi=n_pi,
+    #                              n_hvdc=n_hvdc,
+    #                              n_vsc=n_vsc,
+    #                              n_ld=n_ld,
+    #                              n_gen=n_ctrl_gen,
+    #                              n_sta_gen=n_sta_gen,
+    #                              n_batt=n_batt,
+    #                              n_sh=n_sh,
+    #                              n_time=n_time,
+    #                              idx_pi=idx_pi,
+    #                              idx_hvdc=idx_hvdc,
+    #                              idx_vsc=idx_vsc,
+    #                              Sbase=self.Sbase)
+    #
+    #         # set hte time array profile
+    #         if n_time > 0:
+    #             circuit.time_array = self.time_profile
+    #
+    #         # compile the buses and the shunt devices
+    #         i_ld = 0
+    #         i_gen = 0
+    #         i_sta_gen = 0
+    #         i_batt = 0
+    #         i_sh = 0
+    #         self.bus_names = np.zeros(n, dtype=object)
+    #         for i, bus in enumerate(self.buses):
+    #
+    #             # bus parameters
+    #             self.bus_names[i] = bus.name
+    #             circuit.bus_names[i] = bus.name
+    #             circuit.bus_active[i] = bus.active
+    #             circuit.bus_vnom[i] = bus.Vnom  # kV
+    #             circuit.Vmax[i] = bus.Vmax
+    #             circuit.Vmin[i] = bus.Vmin
+    #             circuit.bus_types[i] = bus.determine_bus_type().value
+    #
+    #             if n_time > 0:
+    #                 # active profile
+    #                 if bus.active_prof is None:
+    #                     bus.ensure_profiles_exist(self.time_profile)
+    #
+    #                 circuit.bus_active_prof[:, i] = bus.active_prof
+    #
+    #             # Add buses dictionary entry
+    #             self.bus_dictionary[bus] = i
+    #
+    #             for elm in bus.loads:
+    #                 circuit.load_names[i_ld] = elm.name
+    #
+    #                 circuit.load_current[i_ld] = complex(elm.Ir, elm.Ii)
+    #                 circuit.load_admittance[i_ld] = complex(elm.G, elm.B)
+    #                 circuit.load_active[i_ld] = elm.active
+    #                 circuit.load_mttf[i_ld] = elm.mttf
+    #                 circuit.load_mttr[i_ld] = elm.mttr
+    #                 circuit.load_cost[i_ld] = elm.Cost
+    #
+    #                 if opf_results is not None:
+    #                     # subtract the load shedding
+    #                     circuit.load_power[i_ld] = complex(elm.P - opf_results.load_shedding[i_ld], elm.Q)
+    #                 else:
+    #                     circuit.load_power[i_ld] = complex(elm.P, elm.Q)
+    #
+    #                 if n_time > 0:
+    #                     circuit.load_power_profile[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+    #                     circuit.load_current_profile[:, i_ld] = elm.Ir_prof + 1j * elm.Ii_prof
+    #                     circuit.load_admittance_profile[:, i_ld] = elm.G_prof + 1j * elm.B_prof
+    #                     circuit.load_active_prof[:, i_ld] = elm.active_prof
+    #                     circuit.load_cost_prof[:, i_ld] = elm.Cost_prof
+    #
+    #                     if opf_time_series_results is not None:
+    #                         # subtract the load shedding from the generation
+    #                         circuit.load_power_profile[:, i_ld] -= opf_time_series_results.load_shedding[:, i_ld]
+    #
+    #                 circuit.C_bus_load[i, i_ld] = 1
+    #                 i_ld += 1
+    #
+    #             for elm in bus.static_generators:
+    #                 circuit.static_gen_names[i_sta_gen] = elm.name
+    #                 circuit.static_gen_power[i_sta_gen] = complex(elm.P, elm.Q)
+    #                 circuit.static_gen_active[i_sta_gen] = elm.active
+    #                 circuit.static_gen_mttf[i_sta_gen] = elm.mttf
+    #                 circuit.static_gen_mttr[i_sta_gen] = elm.mttr
+    #
+    #                 if n_time > 0:
+    #                     circuit.static_gen_active_prof[:, i_sta_gen] = elm.active_prof
+    #                     circuit.static_gen_power_profile[:, i_sta_gen] = elm.P_prof + 1j * elm.Q_prof
+    #
+    #                 circuit.C_bus_sta_gen[i, i_sta_gen] = 1
+    #                 i_sta_gen += 1
+    #
+    #             for elm in bus.controlled_generators:
+    #                 circuit.generator_names[i_gen] = elm.name
+    #
+    #                 circuit.generator_power_factor[i_gen] = elm.Pf
+    #
+    #                 if elm.active:
+    #                     circuit.generator_voltage[i_gen] = elm.Vset
+    #                 else:
+    #                     circuit.generator_voltage[i_gen] = 1.0
+    #
+    #                 circuit.generator_qmin[i_gen] = elm.Qmin
+    #                 circuit.generator_qmax[i_gen] = elm.Qmax
+    #                 circuit.generator_pmin[i_gen] = elm.Pmin
+    #                 circuit.generator_pmax[i_gen] = elm.Pmax
+    #                 circuit.generator_active[i_gen] = elm.active
+    #                 circuit.generator_dispatchable[i_gen] = elm.enabled_dispatch
+    #                 circuit.generator_mttf[i_gen] = elm.mttf
+    #                 circuit.generator_mttr[i_gen] = elm.mttr
+    #                 circuit.generator_cost[i_gen] = elm.Cost
+    #                 circuit.generator_nominal_power[i_gen] = elm.Snom
+    #
+    #                 if opf_results is not None:
+    #                     circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
+    #                 else:
+    #                     circuit.generator_power[i_gen] = elm.P
+    #
+    #                 if n_time > 0:
+    #                     # power profile
+    #                     if opf_time_series_results is not None:
+    #                         circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
+    #                     else:
+    #                         circuit.generator_power_profile[:, i_gen] = elm.P_prof
+    #
+    #                     circuit.generator_active_prof[:, i_gen] = elm.active_prof
+    #
+    #                     # Power factor profile
+    #                     circuit.generator_power_factor_profile[:, i_gen] = elm.Pf_prof
+    #
+    #                     # Voltage profile
+    #                     circuit.generator_voltage_profile[:, i_gen] = elm.Vset_prof
+    #
+    #                     circuit.generator_cost_profile[:, i_gen] = elm.Cost_prof
+    #
+    #                 circuit.C_bus_gen[i, i_gen] = 1
+    #
+    #                 if circuit.V0[i].real == 1.0:
+    #                     circuit.V0[i] = complex(elm.Vset, 0)
+    #                 elif elm.Vset != circuit.V0[i]:
+    #                     logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(circuit.V0[i]))
+    #                 i_gen += 1
+    #
+    #             for elm in bus.batteries:
+    #                 circuit.battery_names[i_batt] = elm.name
+    #                 circuit.battery_power[i_batt] = elm.P
+    #
+    #                 if elm.active:
+    #                     circuit.battery_voltage[i_batt] = elm.Vset
+    #                 else:
+    #                     circuit.battery_voltage[i_batt] = 1.0
+    #
+    #                 circuit.battery_qmin[i_batt] = elm.Qmin
+    #                 circuit.battery_qmax[i_batt] = elm.Qmax
+    #                 circuit.battery_active[i_batt] = elm.active
+    #                 circuit.battery_dispatchable[i_batt] = elm.enabled_dispatch
+    #                 circuit.battery_mttf[i_batt] = elm.mttf
+    #                 circuit.battery_mttr[i_batt] = elm.mttr
+    #                 circuit.battery_cost[i_batt] = elm.Cost
+    #
+    #                 circuit.battery_pmin[i_batt] = elm.Pmin
+    #                 circuit.battery_pmax[i_batt] = elm.Pmax
+    #                 circuit.battery_Enom[i_batt] = elm.Enom
+    #                 circuit.battery_soc_0[i_batt] = elm.soc_0
+    #                 circuit.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
+    #                 circuit.battery_charge_efficiency[i_batt] = elm.charge_efficiency
+    #                 circuit.battery_min_soc[i_batt] = elm.min_soc
+    #                 circuit.battery_max_soc[i_batt] = elm.max_soc
+    #
+    #                 if n_time > 0:
+    #                     # power profile
+    #                     if opf_time_series_results is not None:
+    #                         circuit.battery_power_profile[:, i_batt] = opf_time_series_results.battery_power[:, i_batt]
+    #                     else:
+    #                         circuit.battery_power_profile[:, i_batt] = elm.P_prof
+    #                     # Voltage profile
+    #                     circuit.battery_voltage_profile[:, i_batt] = elm.Vset_prof
+    #
+    #                     circuit.battery_active_prof[:, i_batt] = elm.active_prof
+    #
+    #                     circuit.battery_cost_profile[:, i_batt] = elm.Cost_prof
+    #
+    #                 circuit.C_bus_batt[i, i_batt] = 1
+    #                 circuit.V0[i] *= elm.Vset
+    #                 i_batt += 1
+    #
+    #             for elm in bus.shunts:
+    #                 circuit.shunt_names[i_sh] = elm.name
+    #                 circuit.shunt_active[i_sh] = elm.active
+    #                 circuit.shunt_admittance[i_sh] = complex(elm.G, elm.B)
+    #                 circuit.shunt_mttf[i_sh] = elm.mttf
+    #                 circuit.shunt_mttr[i_sh] = elm.mttr
+    #
+    #                 if n_time > 0:
+    #                     circuit.shunt_active_prof[:, i_sh] = elm.active_prof
+    #                     circuit.shunt_admittance_profile[:, i_sh] = elm.G_prof + 1j * elm.B_prof
+    #
+    #                 circuit.C_bus_shunt[i, i_sh] = 1
+    #                 i_sh += 1
+    #
+    #         # Compile the branches
+    #         for i, branch in enumerate(self.branches):
+    #
+    #             f = self.bus_dictionary[branch.bus_from]
+    #             t = self.bus_dictionary[branch.bus_to]
+    #
+    #             # connectivity
+    #             circuit.C_branch_bus_f[i, f] = 1
+    #             circuit.C_branch_bus_t[i, t] = 1
+    #             circuit.F[i] = f
+    #             circuit.T[i] = t
+    #
+    #             # name and state
+    #             circuit.branch_names[i] = branch.name
+    #             circuit.branch_active[i] = branch.active
+    #             circuit.branch_mttf[i] = branch.mttf
+    #             circuit.branch_mttr[i] = branch.mttr
+    #             circuit.branch_cost[i] = branch.Cost
+    #
+    #             # impedance and tap
+    #             circuit.branch_R[i] = branch.R
+    #             circuit.branch_X[i] = branch.X
+    #             circuit.branch_G[i] = branch.G
+    #             circuit.branch_B[i] = branch.B
+    #             circuit.branch_impedance_tolerance[i] = branch.tolerance
+    #             circuit.branch_rates[i] = branch.rate
+    #             circuit.branch_tap_mod[i] = branch.tap_module
+    #             circuit.branch_tap_ang[i] = branch.angle
+    #
+    #             # Thermal correction
+    #             circuit.branch_temp_base[i] = branch.temp_base
+    #             circuit.branch_temp_oper[i] = branch.temp_oper
+    #             circuit.branch_alpha[i] = branch.alpha
+    #
+    #             # tap changer
+    #             circuit.branch_is_bus_to_regulated[i] = branch.bus_to_regulated
+    #             circuit.branch_tap_position[i] = branch.tap_changer.tap
+    #             circuit.branch_min_tap[i] = branch.tap_changer.min_tap
+    #             circuit.branch_max_tap[i] = branch.tap_changer.max_tap
+    #             circuit.branch_tap_inc_reg_up[i] = branch.tap_changer.inc_reg_up
+    #             circuit.branch_tap_inc_reg_down[i] = branch.tap_changer.inc_reg_down
+    #             circuit.branch_vset[i] = branch.vset
+    #
+    #             if n_time > 0:
+    #                 circuit.branch_active_prof[:, i] = branch.active_prof
+    #                 circuit.branch_temp_oper_prof[:, i] = branch.temp_oper_prof
+    #                 circuit.branch_cost_profile[:, i] = branch.Cost_prof
+    #                 circuit.branch_rate_profile[:, i] = branch.rate_prof
+    #
+    #             # switches
+    #             if branch.branch_type == BranchType.Switch:
+    #                 circuit.branch_switch_indices.append(i)
+    #
+    #             # virtual taps for transformers where the connection voltage is off
+    #             elif branch.branch_type == BranchType.Transformer:
+    #                 circuit.branch_tap_f[i], circuit.branch_tap_t[i] = branch.get_virtual_taps()
+    #
+    #         # Compile the branches
+    #         for ii, i in enumerate(idx_pi):
+    #
+    #             # common to all branches
+    #             branch = self.branches[i]
+    #             f = self.bus_dictionary[branch.bus_from]
+    #             t = self.bus_dictionary[branch.bus_to]
+    #
+    #             circuit.branch_names[i] = branch.name
+    #             circuit.branch_active[i] = branch.active
+    #             circuit.branch_rates[i] = branch.rate
+    #
+    #             circuit.C_branch_bus_f[i, f] = 1
+    #             circuit.C_branch_bus_t[i, t] = 1
+    #             circuit.F[i] = f
+    #             circuit.T[i] = t
+    #
+    #             circuit.branch_active_prof[:, i] = branch.active_prof
+    #             circuit.branch_rate_profile[:, i] = branch.rate_prof
+    #
+    #             # OPF
+    #             circuit.branch_mttf[ii] = branch.mttf
+    #             circuit.branch_mttr[ii] = branch.mttr
+    #             circuit.branch_cost[ii] = branch.Cost
+    #             circuit.branch_cost_profile[:, i] = branch.Cost_prof
+    #
+    #             # impedance and tap
+    #             circuit.branch_R[ii] = branch.R
+    #             circuit.branch_X[ii] = branch.X
+    #             circuit.branch_G[ii] = branch.G
+    #             circuit.branch_B[ii] = branch.B
+    #             circuit.branch_impedance_tolerance[ii] = branch.tolerance
+    #             circuit.branch_tap_mod[ii] = branch.tap_module
+    #             circuit.branch_tap_ang[ii] = branch.angle
+    #
+    #             # Thermal correction
+    #             circuit.branch_temp_base[ii] = branch.temp_base
+    #             circuit.branch_temp_oper[ii] = branch.temp_oper
+    #             circuit.branch_alpha[ii] = branch.alpha
+    #             circuit.branch_temp_oper_prof[:, i] = branch.temp_oper_prof
+    #
+    #             # tap changer
+    #             circuit.branch_is_bus_to_regulated[ii] = branch.bus_to_regulated
+    #             circuit.branch_tap_position[ii] = branch.tap_changer.tap
+    #             circuit.branch_min_tap[ii] = branch.tap_changer.min_tap
+    #             circuit.branch_max_tap[ii] = branch.tap_changer.max_tap
+    #             circuit.branch_tap_inc_reg_up[ii] = branch.tap_changer.inc_reg_up
+    #             circuit.branch_tap_inc_reg_down[ii] = branch.tap_changer.inc_reg_down
+    #             circuit.branch_vset[ii] = branch.vset
+    #
+    #             # switches
+    #             if branch.branch_type == BranchType.Switch:
+    #                 circuit.branch_switch_indices.append(i)
+    #
+    #             # virtual taps for transformers where the connection voltage is off
+    #             elif branch.branch_type == BranchType.Transformer:
+    #                 circuit.branch_tap_f[ii], circuit.branch_tap_t[ii] = branch.get_virtual_taps()
+    #
+    #         for ii, i in enumerate(idx_hvdc):
+    #             # common to all branches
+    #             branch = self.branches[i]
+    #             f = self.bus_dictionary[branch.bus_from]
+    #             t = self.bus_dictionary[branch.bus_to]
+    #
+    #             circuit.C_branch_bus_f[i, f] = 1
+    #             circuit.C_branch_bus_t[i, t] = 1
+    #
+    #             circuit.F[i] = f
+    #             circuit.T[i] = t
+    #
+    #             circuit.branch_names[i] = branch.name
+    #             circuit.branch_active[i] = branch.active
+    #             circuit.branch_rates[i] = branch.rate
+    #
+    #             circuit.branch_active_prof[:, i] = branch.active_prof
+    #             circuit.branch_rate_profile[:, i] = branch.rate_prof
+    #
+    #             # specific to HVDC
+    #             circuit.hvdc_R[ii] = branch.Rdc
+    #
+    #         for ii, i in enumerate(idx_vsc):
+    #             # common to all branches
+    #             branch = self.branches[i]
+    #             f = self.bus_dictionary[branch.bus_from]
+    #             t = self.bus_dictionary[branch.bus_to]
+    #
+    #             circuit.C_branch_bus_f[i, f] = 1
+    #             circuit.C_branch_bus_t[i, t] = 1
+    #
+    #             circuit.F[i] = f
+    #             circuit.T[i] = t
+    #
+    #             circuit.branch_names[i] = branch.name
+    #             circuit.branch_active[i] = branch.active
+    #             circuit.branch_rates[i] = branch.rate
+    #
+    #             circuit.branch_active_prof[:, i] = branch.active_prof
+    #             circuit.branch_rate_profile[:, i] = branch.rate_prof
+    #
+    #             # specific to VSC
+    #             circuit.vsc_R1[ii] = branch.R1
+    #             circuit.vsc_X1[ii] = branch.X1
+    #             circuit.vsc_G0[ii] = branch.G0
+    #             circuit.vsc_Beq[ii] = branch.Beq
+    #             circuit.vsc_m[ii] = branch.m
+    #             circuit.vsc_theta[ii] = branch.theta
+    #
+    #         # Assign and return
+    #         self.branch_names = circuit.branch_names
+    #         self.numerical_circuit = circuit
+    #         return circuit
+    #     else:
+    #         raise Exception('This compilation needs time profiles, make sure you initialize the time series.')
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -1450,8 +1497,9 @@ class MultiCircuit:
         for elm in self.buses:
             elm.create_profiles(index)
 
-        for elm in self.branches:
-            elm.create_profiles(index)
+        for branch_list in self.get_branch_lists():
+            for elm in branch_list:
+                elm.create_profiles(index)
 
     def get_node_elements_by_type(self, element_type: DeviceType):
         """
@@ -1547,14 +1595,55 @@ class MultiCircuit:
         """
 
         # remove associated branches in reverse order
-        for i in range(len(self.branches) - 1, -1, -1):
-            if self.branches[i].bus_from == obj or self.branches[i].bus_to == obj:
-                self.branches.pop(i)
+        for branch_list in self.get_branch_lists():
+            for i in range(len(branch_list) - 1, -1, -1):
+                if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
+                    branch_list.pop(i)
 
         # remove the bus itself
         if obj in self.buses:
             print('Deleted', obj.name)
             self.buses.remove(obj)
+
+    def add_line(self, obj: Line):
+        """
+        Add a line object
+        :param obj: Line instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.lines.append(obj)
+
+    def add_transformer2w(self, obj: Transformer2W):
+        """
+        Add a transformer object
+        :param obj: Transformer2W instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.transformers2w.append(obj)
+
+    def add_hvdc(self, obj: HvdcLine):
+        """
+        Add a hvdc line object
+        :param obj: HvdcLine instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.hvdc_lines.append(obj)
+
+    def add_vsc(self, obj: VSC):
+        """
+        Add a hvdc line object
+        :param obj: HvdcLine instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.vsc_converters.append(obj)
 
     def add_branch(self, obj):
         """
@@ -1565,9 +1654,14 @@ class MultiCircuit:
             **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
 
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.branches.append(obj)
+        if obj.device_type == DeviceType.LineDevice:
+            self.add_line(obj)
+
+        elif obj.device_type == DeviceType.Transformer2WDevice:
+            self.add_transformer2w(obj)
+
+        elif obj.device_type == DeviceType.HVDCLineDevice:
+            self.add_hvdc(obj)
 
     def delete_branch(self, obj: Branch):
         """
@@ -1577,7 +1671,39 @@ class MultiCircuit:
 
             **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
-        self.branches.remove(obj)
+        for branch_list in self.get_branch_lists():
+            try:
+                branch_list.remove(obj)
+            except:
+                pass
+
+    def delete_line(self, obj: Line):
+        """
+        Delete line
+        :param obj: Line instance
+        """
+        self.lines.remove(obj)
+
+    def delete_transformer2w(self, obj: Transformer2W):
+        """
+        Delete transformer
+        :param obj: Transformer2W instance
+        """
+        self.transformers2w.remove(obj)
+
+    def delete_hvdc_line(self, obj: HvdcLine):
+        """
+        Delete HVDC line
+        :param obj:
+        """
+        self.hvdc_lines.remove(obj)
+
+    def delete_vsc_converter(self, obj: VSC):
+        """
+        Delete VSC
+        :param obj: VSC Instance
+        """
+        self.vsc_converters.remove(obj)
 
     def add_load(self, bus: Bus, api_obj=None):
         """
@@ -1784,7 +1910,10 @@ class MultiCircuit:
         Apply all the branch types
         """
         logger = Logger()
-        for branch in self.branches:
+        for branch in self.lines:
+            branch.apply_template(branch.template, self.Sbase, logger=logger)
+
+        for branch in self.transformers2w:
             branch.apply_template(branch.template, self.Sbase, logger=logger)
 
         return logger
@@ -1907,55 +2036,6 @@ class MultiCircuit:
         else:
             raise Exception('There are no time series!')
 
-    def dispatch(self):
-        """
-        Dispatch either load or generation using a simple equalised share rule of the
-        shedding to be done.
-        """
-        if self.numerical_circuit is not None:
-
-            # get the total power balance
-            balance = abs(self.numerical_circuit.Sbus.sum())
-
-            if balance > 0:  # more generation than load, dispatch generation
-                Gmax = 0
-                Lt = 0
-                for bus in self.buses:
-                    for load in bus.loads:
-                        Lt += abs(load.S)
-                    for gen in bus.controlled_generators:
-                        Gmax += abs(gen.Snom)
-
-                # reassign load
-                factor = Lt / Gmax
-                print('Decreasing generation by ', factor * 100, '%')
-                for bus in self.buses:
-                    for gen in bus.controlled_generators:
-                        gen.P *= factor
-
-            elif balance < 0:  # more load than generation, dispatch load
-
-                Gmax = 0
-                Lt = 0
-                for bus in self.buses:
-                    for load in bus.loads:
-                        Lt += abs(load.S)
-                    for gen in bus.controlled_generators:
-                        Gmax += abs(gen.P + 1j * gen.Qmax)
-
-                # reassign load
-                factor = Gmax / Lt
-                print('Decreasing load by ', factor * 100, '%')
-                for bus in self.buses:
-                    for load in bus.loads:
-                        load.S *= factor
-
-            else:  # nothing to do
-                pass
-
-        else:
-            warn('The grid must be compiled before dispatching it')
-
     def set_state(self, t):
         """
         Set the profiles state at the index t as the default values.
@@ -1969,17 +2049,18 @@ class MultiCircuit:
         :return: Cf, Ct, C
         """
         n = len(self.buses)
-        m = self.circuit.get_branch_number()
+        m = self.get_branch_number()
         Cf = lil_matrix((m, n))
         Ct = lil_matrix((m, n))
 
         bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
-        for k, br in enumerate(self.branches):
-            i = bus_dict[br.bus_from]  # store the row indices
-            j = bus_dict[br.bus_to]  # store the row indices
-            Cf[k, i] = 1
-            Ct[k, j] = 1
+        for branch_list in [self.lines, self.transformers2w, self.hvdc_lines]:
+            for k, br in enumerate(branch_list):
+                i = bus_dict[br.bus_from]  # store the row indices
+                j = bus_dict[br.bus_to]  # store the row indices
+                Cf[k, i] = 1
+                Ct[k, j] = 1
         Cf = csc_matrix(Cf)
         Ct = csc_matrix(Ct)
         C = Cf + Ct
@@ -2083,7 +2164,10 @@ class MultiCircuit:
         """
 
         min_x, max_x, min_y, max_y = self.get_boundaries(self.buses)
-        sep1 = self.average_separation(self.branches)
+
+        branches = self.lines + self.transformers2w + self.hvdc_lines
+
+        sep1 = self.average_separation(branches)
 
         # compute the average point
         xm = (max_x + min_x) / 2
@@ -2099,7 +2183,8 @@ class MultiCircuit:
 
         # modify the coordinates of the new circuit
         min_x2, max_x2, min_y2, max_y2 = self.get_boundaries(circuit.buses)
-        sep2 = self.average_separation(circuit.branches)
+        branches2 = circuit.lines + circuit.transformers2w + circuit.hvdc_lines
+        sep2 = self.average_separation(branches2)
         factor = sep2 / sep1
         for bus in circuit.buses:
             bus.x = x0 + (bus.x - min_x2) * factor
@@ -2111,10 +2196,13 @@ class MultiCircuit:
             for bus in circuit.buses:
                 bus.create_profiles(index=self.time_profile)
 
-            for branch in circuit.branches:
-                branch.create_profiles(index=self.time_profile)
+            for lst in [circuit.lines, circuit.transformers2w, circuit.hvdc_lines]:
+                for branch in lst:
+                    branch.create_profiles(index=self.time_profile)
 
         self.buses += circuit.buses
-        self.branches += circuit.branches
+        self.lines += circuit.lines
+        self.transformers2w += circuit.transformers2w
+        self.hvdc_lines += circuit.hvdc_lines
 
         return circuit.buses

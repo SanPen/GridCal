@@ -15,6 +15,7 @@
 import numpy as np
 
 from GridCal.Gui.GridEditorWidget.generic import *
+from GridCal.Gui.GridEditorWidget.bus import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.branch import Branch, BranchType, TransformerType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
@@ -324,12 +325,14 @@ class LineEditor(QDialog):
 
 class BranchGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, fromPort, toPort, diagramScene, width=5, branch: Branch = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Branch = None):
         """
 
-        @param fromPort:
-        @param toPort:
-        @param diagramScene:
+        :param fromPort:
+        :param toPort:
+        :param diagramScene:
+        :param width:
+        :param branch:
         """
         QGraphicsLineItem.__init__(self, None)
 

@@ -167,7 +167,7 @@ def test_gridcal_regulator():
         print(f" - {grid.branches[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
     print()
 
-    print(f"Voltage settings: {grid.numerical_circuit.branch_vset}")
+    print(f"Voltage settings: {grid.numerical_circuit.branch_vset}")   # TODO: fix this
 
     equal = np.isclose(approx_volt, solution, atol=1e-3).all()
 

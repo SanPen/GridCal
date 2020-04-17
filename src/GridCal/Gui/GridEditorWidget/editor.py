@@ -646,7 +646,7 @@ class GridEditor(QSplitter):
         for bus in circuit.buses:
             bus.graphic_obj = self.add_api_bus(bus, explode_factor)
 
-        for branch in circuit.branches:
+        for branch in circuit.get_branches():
             branch.graphic_obj = self.add_api_branch(branch)
 
     def align_schematic(self):

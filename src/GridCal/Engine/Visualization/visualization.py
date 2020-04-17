@@ -91,8 +91,8 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
     if s_branch is not None:
         lnorm = abs(loadings)
         lnorm[lnorm == np.inf] = 0
-
-        for i, branch in enumerate(circuit.branches):
+        branches = circuit.get_branches()
+        for i, branch in enumerate(branches):
             if branch.graphic_obj is not None:
                 w = branch.graphic_obj.pen_width
                 if branch.active:
@@ -114,11 +114,11 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
 
     if failed_br_idx is not None:
         for i in failed_br_idx:
-            if circuit.branches[i].graphic_obj is not None:
-                w = circuit.branches[i].graphic_obj.pen_width
+            if branches[i].graphic_obj is not None:
+                w = branches[i].graphic_obj.pen_width
                 style = QtCore.Qt.DashLine
                 color = QtCore.Qt.gray
-                circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
+                branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
 
 def get_base_map(location, zoom_start=5):
@@ -214,8 +214,8 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
     # add lines
     lnorm = np.abs(loadings)
     lnorm[lnorm == np.inf] = 0
-
-    for i, branch in enumerate(circuit.branches):
+    branches = circuit.get_branches()
+    for i, branch in enumerate(branches):
 
         points = branch.get_coordinates()
 

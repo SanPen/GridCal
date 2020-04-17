@@ -118,7 +118,7 @@ class NMinusK(QThread):
         branch_names = list()
         branch_index = list()
         branches = list()  # list of filtered branches
-        for i, branch in enumerate(self.grid.branches):
+        for i, branch in enumerate(self.grid.lines):
             if branch.bus_from.Vnom > vmin or branch.bus_to.Vnom > vmin:
                 branch_names.append(branch.name)
                 branch_index.append(i)
@@ -252,7 +252,7 @@ class NMinusK(QThread):
         branch_names = list()
         branch_index = list()
         branches = list()  # list of filtered branches
-        for i, branch in enumerate(self.grid.branches):
+        for i, branch in enumerate(self.grid.lines):
             if branch.bus_from.Vnom > vmin or branch.bus_to.Vnom > vmin:
                 branch_names.append(branch.name)
                 branch_index.append(i)
@@ -383,7 +383,7 @@ class NMinusK(QThread):
 
         self.progress_text.emit('Computing OTDF...')
         if self.results is not None:
-            self.results.branch_names = np.array([b.name for b in self.grid.branches])
+            self.results.branch_names = np.array([b.name for b in self.grid.lines])
             self.results.otdf = self.get_otdf(failure_flow_limit=1.0/100.0)
 
         end = time.time()

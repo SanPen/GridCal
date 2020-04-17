@@ -200,8 +200,14 @@ def detect_changes_and_conflicts(current_circuit: MultiCircuit, file_circuit: Mu
                                     dev_list2=file_circuit.buses)
 
     # branches
-    issues += compare_devices_lists(dev_list1=current_circuit.branches,
-                                    dev_list2=file_circuit.branches)
+    issues += compare_devices_lists(dev_list1=current_circuit.lines,
+                                    dev_list2=file_circuit.lines)
+
+    issues += compare_devices_lists(dev_list1=current_circuit.transformers2w,
+                                    dev_list2=file_circuit.transformers2w)
+
+    issues += compare_devices_lists(dev_list1=current_circuit.hvdc_lines,
+                                    dev_list2=file_circuit.hvdc_lines)
 
     return issues
 

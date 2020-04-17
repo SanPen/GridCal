@@ -245,8 +245,8 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.options = options
 
         # OPF results
-        self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
-                                                         m=len(self.grid.branches),
+        self.results = OptimalPowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
+                                                         m=self.grid.get_branch_number(),
                                                          nt=len(self.grid.time_profile),
                                                          ngen=len(self.grid.get_generators()),
                                                          nbat=len(self.grid.get_batteries()),
@@ -271,8 +271,8 @@ class OptimalPowerFlowTimeSeries(QThread):
         Clears the results
         """
         # reinitialize
-        self.results = OptimalPowerFlowTimeSeriesResults(n=len(self.grid.buses),
-                                                         m=len(self.grid.branches),
+        self.results = OptimalPowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
+                                                         m=self.grid.get_branch_number(),
                                                          nt=len(self.grid.time_profile),
                                                          ngen=len(self.grid.get_generators()),
                                                          nbat=len(self.grid.get_batteries()),

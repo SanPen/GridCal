@@ -226,11 +226,11 @@ class MainGUI(QMainWindow):
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
 
-        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
+        self.ui.dataStructuresListView.setModel(get_list_model([o.device_type.value for o in self.circuit.objects_with_profiles]))
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotIsland(1, 1, 1, 1, 1, 1, 1)
+        pfo = SnapshotIsland(1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -1556,11 +1556,11 @@ class MainGUI(QMainWindow):
 
         self.view_template_controls(False)
 
-        if elm_type == 'Buses':
+        if elm_type == DeviceType.BusDevice.value:
             elm = Bus()
             elements = self.circuit.buses
 
-        elif elm_type == 'Branches':
+        elif elm_type == DeviceType.BranchDevice.value:
 
             self.fill_catalogue_tree_view()
 
@@ -1569,25 +1569,41 @@ class MainGUI(QMainWindow):
 
             self.view_template_controls(True)
 
-        elif elm_type == 'Loads':
+        elif elm_type == DeviceType.LoadDevice.value:
             elm = Load()
             elements = self.circuit.get_loads()
 
-        elif elm_type == 'Static Generators':
+        elif elm_type == DeviceType.StaticGeneratorDevice.value:
             elm = StaticGenerator()
             elements = self.circuit.get_static_generators()
 
-        elif elm_type == 'Generators':
+        elif elm_type == DeviceType.GeneratorDevice.value:
             elm = Generator()
             elements = self.circuit.get_generators()
 
-        elif elm_type == 'Batteries':
+        elif elm_type == DeviceType.BatteryDevice.value:
             elm = Battery()
             elements = self.circuit.get_batteries()
 
-        elif elm_type == 'Shunts':
+        elif elm_type == DeviceType.ShuntDevice.value:
             elm = Shunt()
             elements = self.circuit.get_shunts()
+
+        elif elm_type == DeviceType.LineDevice.value:
+            elm = Line(None, None)
+            elements = self.circuit.lines
+
+        elif elm_type == DeviceType.Transformer2WDevice.value:
+            elm = Transformer2W(None, None)
+            elements = self.circuit.transformers2w
+
+        elif elm_type == DeviceType.HVDCLineDevice.value:
+            elm = HvdcLine(None, None)
+            elements = self.circuit.hvdc_lines
+
+        elif elm_type == DeviceType.VscDevice.value:
+            elm = VSC(Bus(), Bus(is_dc=True))
+            elements = self.circuit.vsc_converters
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
@@ -3560,7 +3576,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.power_flow.results.Sbranch,
                               voltages=self.power_flow.results.voltage,
                               loadings=np.abs(self.power_flow.results.loading),
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
                               losses=self.power_flow.results.losses,
                               file_name=file_name)
 
@@ -3575,7 +3591,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,   # TODO: fix this
                               file_name=file_name)
 
             elif current_study == VoltageCollapse.name:
@@ -3585,7 +3601,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.voltage_stability.results.Sbranch,
                               voltages=self.voltage_stability.results.voltages[current_step, :],
                               loadings=np.abs(self.voltage_stability.results.loading),
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,   # TODO: fix this
                               file_name=file_name)
 
             elif current_study == MonteCarlo.name:
@@ -3594,7 +3610,7 @@ class MainGUI(QMainWindow):
                               voltages=self.monte_carlo.results.V_points[current_step, :],
                               loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
                               s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
                               s_bus=self.monte_carlo.results.S_points[current_step, :],
                               file_name=file_name)
 
@@ -3604,7 +3620,7 @@ class MainGUI(QMainWindow):
                               voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
                               loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
                               s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
                               s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :],
                               file_name=file_name)
 
@@ -3613,7 +3629,7 @@ class MainGUI(QMainWindow):
                               s_bus=self.short_circuit.results.Sbus,
                               s_branch=self.short_circuit.results.Sbranch,
                               voltages=self.short_circuit.results.voltage,
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
                               loadings=self.short_circuit.results.loading,
                               file_name=file_name)
 
@@ -3621,7 +3637,7 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               voltages=self.optimal_power_flow.results.voltage,
                               loadings=self.optimal_power_flow.results.loading,
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
                               s_branch=self.optimal_power_flow.results.Sbranch,
                               s_bus=self.optimal_power_flow.results.Sbus,
                               file_name=file_name)
@@ -3637,7 +3653,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
                               file_name=file_name)
 
             elif current_study == PTDF.name:
@@ -3651,7 +3667,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=loading,
-                              types=self.circuit.numerical_circuit.bus_types,
+                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
                               loading_label='Sensitivity',
                               file_name=file_name)
 

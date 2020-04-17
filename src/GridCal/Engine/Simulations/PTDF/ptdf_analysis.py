@@ -18,7 +18,7 @@ from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_data import SnapshotData, SnapshotIsland
+from GridCal.Engine.Core.snapshot_data import SnapshotCircuit, SnapshotIsland
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
@@ -52,7 +52,7 @@ def group_generators_by_technology(circuit: MultiCircuit):
     return groups
 
 
-def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotData, group_mode: PtdfGroupMode, power_amount):
+def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotCircuit, group_mode: PtdfGroupMode, power_amount):
     """
     Get the PTDF variations
     :param circuit: MultiCircuit instance

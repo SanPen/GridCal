@@ -318,11 +318,12 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
     return np.array(arr)
 
 
-def interpret_data_v1(circuit, data):
+def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     """
     Pass the loaded table-like data to the  structures
-    @param data: Data dictionary
-    @return:
+    :param circuit:
+    :param data: Data dictionary
+    :return:
     """
 
     circuit.clear()
@@ -426,19 +427,32 @@ def interpret_data_v1(circuit, data):
     for i in range(len(table)):
         f = circuit.buses[bus_idx_dict[int(table[i, e.F_BUS])]]
         t = circuit.buses[bus_idx_dict[int(table[i, e.T_BUS])]]
-        branch = Branch(bus_from=f,
-                        bus_to=t,
-                        name=names[i],
-                        r=table[i, e.BR_R],
-                        x=table[i, e.BR_X],
-                        g=0,
-                        b=table[i, e.BR_B],
-                        rate=table[i, e.RATE_A],
-                        tap=table[i, e.TAP],
-                        shift_angle=table[i, e.SHIFT],
-                        active=bool(table[i, e.BR_STATUS]))
 
-        circuit.add_branch(branch)
+        if f.Vnom != t.Vnom or table[i, e.TAP] != 1.0 or table[i, e.SHIFT] != 0.0:
+
+            branch = Transformer2W(bus_from=f,
+                                   bus_to=t,
+                                   name=names[i],
+                                   r=table[i, e.BR_R],
+                                   x=table[i, e.BR_X],
+                                   g=0,
+                                   b=table[i, e.BR_B],
+                                   rate=table[i, e.RATE_A],
+                                   tap=table[i, e.TAP],
+                                   shift_angle=table[i, e.SHIFT],
+                                   active=bool(table[i, e.BR_STATUS]))
+            circuit.add_transformer2w(branch)
+
+        else:
+            branch = Line(bus_from=f,
+                          bus_to=t,
+                          name=names[i],
+                          r=table[i, e.BR_R],
+                          x=table[i, e.BR_X],
+                          b=table[i, e.BR_B],
+                          rate=table[i, e.RATE_A],
+                          active=bool(table[i, e.BR_STATUS]))
+            circuit.add_line(branch)
 
     # add the profiles
     if master_time_array is not None:
@@ -448,7 +462,7 @@ def interpret_data_v1(circuit, data):
     return circuit
 
 
-def parse_matpower_file(filename, export=False):
+def parse_matpower_file(filename, export=False) -> MultiCircuit:
     """
 
     Args:
@@ -495,7 +509,6 @@ def parse_matpower_file(filename, export=False):
             data['branch'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
     circuit = interpret_data_v1(circuit, data)
-    # print(data)
 
     return circuit
 

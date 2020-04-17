@@ -284,8 +284,8 @@ class VoltageCollapse(QThread):
         @return:
         """
         print('Running voltage collapse...')
-        nbus = len(self.circuit.buses)
-        nbr = len(self.circuit.branches)
+        nbus = self.circuit.get_bus_number()
+        nbr = self.circuit.get_branch_number()
         self.results = VoltageCollapseResults(nbus=nbus, nbr=nbr)
 
         # compile the numerical circuit

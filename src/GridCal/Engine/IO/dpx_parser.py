@@ -361,7 +361,7 @@ def repack(data_structures, logger=Logger(), verbose=False):
     return data_structures, logger
 
 
-def load_dpx(file_name,contraction_factor=1000):
+def load_dpx(file_name,contraction_factor=1000) -> MultiCircuit:
     """
     Read DPX file
     :param file_name: file name

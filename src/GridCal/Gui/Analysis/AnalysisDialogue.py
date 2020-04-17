@@ -345,7 +345,7 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         for object_type in self.object_types:
 
             if object_type.lower() == 'branches':
-                elements = self.circuit.branches
+                elements = self.circuit.lines
                 for i, elm in enumerate(elements):
 
                     if elm.branch_type != BranchType.Transformer:

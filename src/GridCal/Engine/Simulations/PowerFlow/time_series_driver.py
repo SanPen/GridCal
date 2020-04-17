@@ -759,7 +759,7 @@ class TimeSeries(QThread):
 
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
 
         n_cores = multiprocessing.cpu_count()
@@ -835,7 +835,7 @@ class TimeSeries(QThread):
 
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         nt = len(time_indices)
         time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
 
@@ -992,10 +992,9 @@ class SampledTimeSeries(QThread):
 
         # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         nt = self.number_of_steps
-        time_series_results = TimeSeriesResults(n, m, nt, start=0, end=self.number_of_steps,
-                                                time_array=self.grid.time_profile[self.steps])
+        time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[self.steps])
 
         # compile the multi-circuit
         numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
@@ -1131,9 +1130,9 @@ class SampledTimeSeries(QThread):
 
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         nt = len(self.grid.time_profile)
-        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time_array=self.grid.time_profile)
+        time_series_results = TimeSeriesResults(n, m, nt, time_array=self.grid.time_profile)
 
         if self.end_ is None:
             self.end_ = nt
