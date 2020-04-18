@@ -4351,8 +4351,12 @@ class MainGUI(QMainWindow):
         """
         if self.circuit is not None:
             # print('Compiling...', end='')
-            numerical_circuit = self.circuit.compile_snapshot()
-            self.calculation_inputs_to_display = numerical_circuit.compute()
+
+            numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
+
+            calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit)
+
+            self.calculation_inputs_to_display = calculation_inputs
             return True
         else:
             self.calculation_inputs_to_display = None

@@ -65,7 +65,6 @@ class ConvergenceReport:
         return df
 
 
-
 def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
           acceleration_parameter=1e-5):
     """
